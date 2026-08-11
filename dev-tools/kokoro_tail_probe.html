@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kokoro tail probe — is there a release burst?</title>
+<style>
+  body { font: 14px/1.45 system-ui, sans-serif; margin: 24px; max-width: 1100px; color: #1e293b; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  p.lede { color: #475569; margin: 0 0 18px; }
+  fieldset { border: 1px solid #cbd5e1; border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; }
+  legend { font-weight: 700; padding: 0 6px; }
+  textarea { width: 100%; height: 54px; font: 13px monospace; }
+  button { font: 600 13px system-ui; padding: 7px 13px; border-radius: 8px; border: 1px solid #6366f1;
+           background: #6366f1; color: #fff; cursor: pointer; }
+  button.secondary { background: #fff; color: #3730a3; }
+  button:disabled { opacity: .5; cursor: default; }
+  table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+  th, td { border-bottom: 1px solid #e2e8f0; padding: 6px 8px; text-align: right; font-variant-numeric: tabular-nums; }
+  th:first-child, td:first-child { text-align: left; font-weight: 700; }
+  tr.flag td { background: #fef3c7; }
+  canvas { border: 1px solid #e2e8f0; border-radius: 6px; display: block; }
+  .row { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
+  code { background: #f1f5f9; padding: 1px 4px; border-radius: 4px; }
+  #log { font: 12px monospace; color: #475569; white-space: pre-wrap; margin-top: 10px; }
+</style>
+</head>
+<body>
+<h1>Kokoro tail probe</h1>
+<p class="lede">
+  Synthesizes each word and measures the last 120&nbsp;ms of the waveform. The question this answers:
+  does a word-final nasal end with an <em>energy rise</em> (a release burst, heard as /t/ or /d/) or a
+  clean decay? Nasal-final words are listed alongside controls that end in a vowel, a stop and a
+  fricative, so the pattern is visible rather than argued about.
+</p>
+
+<fieldset>
+  <legend>Words</legend>
+  <textarea id="words">bun, hon, sun, fun, run, bee, bus, bug, hot, but, buzz, bell</textarea>
+  <div class="row">
+    <label>Voice <input id="voice" value="af_heart" size="10"></label>
+    <button id="run">Synthesize and measure</button>
+    <button id="clearAudio" class="secondary">Clear this app's cached word audio</button>
+  </div>
+  <div id="log"></div>
+</fieldset>
+
+<div id="results"></div>
+
+<script src="../kokoro_tts_loader.js"></script>
+<script>
+const SR_FALLBACK = 24000;
+const TAIL_MS = 120;
+const log = (m) => { document.getElementById('log').textContent += m + '\n'; };
+
+// Parse a 16-bit mono PCM WAV into Float32. Deliberately hand-rolled rather
+// than decodeAudioData: the browser resamples to the AudioContext rate, which
+// would blur exactly the few-millisecond detail being measured here.
+function parseWav(buf) {
+  const view = new DataView(buf);
+  let off = 12, sampleRate = SR_FALLBACK, dataOff = -1, dataLen = 0, bits = 16, channels = 1;
+  while (off + 8 <= view.byteLength) {
+    const id = String.fromCharCode(view.getUint8(off), view.getUint8(off+1), view.getUint8(off+2), view.getUint8(off+3));
+    const size = view.getUint32(off + 4, true);
+    if (id === 'fmt ') {
+      channels = view.getUint16(off + 10, true);
+      sampleRate = view.getUint32(off + 12, true);
+      bits = view.getUint16(off + 22, true);
+    } else if (id === 'data') { dataOff = off + 8; dataLen = size; break; }
+    off += 8 + size + (size % 2);
+  }
+  if (dataOff < 0 || bits !== 16) throw new Error('unsupported WAV (bits=' + bits + ')');
+  const count = Math.floor(dataLen / 2 / channels);
+  const out = new Float32Array(count);
+  for (let i = 0; i < count; i++) out[i] = view.getInt16(dataOff + i * 2 * channels, true) / 32768;
+  return { samples: out, sampleRate };
+}
+
+const rms = (a, from, to) => {
+  let s = 0, n = 0;
+  for (let i = Math.max(0, from); i < Math.min(a.length, to); i++) { s += a[i] * a[i]; n++; }
+  return n ? Math.sqrt(s / n) : 0;
+};
+const db = (v) => (v > 0 ? (20 * Math.log10(v)).toFixed(1) : '-inf');
+
+function measure(samples, sampleRate) {
+  const n = samples.length;
+  const msToS = (ms) => Math.round(sampleRate * ms / 1000);
+  let peak = 0;
+  for (let i = 0; i < n; i++) peak = Math.max(peak, Math.abs(samples[i]));
+
+  // Terminal discontinuity: a non-zero final sample is a step, and a step is a
+  // click. This is what an edge fade removes.
+  const lastSample = Math.abs(samples[n - 1] || 0);
+
+  // Walk the final 120 ms in 10 ms frames. A release burst shows up as a frame
+  // that is louder than the frame before it, after the word has already begun
+  // to decay. A clean ending decays monotonically.
+  const frame = msToS(10);
+  const start = Math.max(0, n - msToS(TAIL_MS));
+  const frames = [];
+  for (let i = start; i < n; i += frame) frames.push(rms(samples, i, i + frame));
+  let riseDb = 0, riseAt = -1;
+  let minSoFar = frames.length ? frames[0] : 0;
+  for (let i = 1; i < frames.length; i++) {
+    if (frames[i] < minSoFar) minSoFar = frames[i];
+    if (minSoFar > 0 && frames[i] > minSoFar) {
+      const r = 20 * Math.log10(frames[i] / minSoFar);
+      if (r > riseDb) { riseDb = r; riseAt = i; }
+    }
+  }
+  return {
+    ms: (n / sampleRate * 1000),
+    peak,
+    lastSample,
+    tailRms: rms(samples, n - msToS(30), n),
+    riseDb,
+    riseAtMs: riseAt < 0 ? null : TAIL_MS - riseAt * 10,
+    frames,
+  };
+}
+
+function drawTail(canvas, samples, sampleRate) {
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+  ctx.strokeStyle = '#cbd5e1'; ctx.beginPath(); ctx.moveTo(0, h/2); ctx.lineTo(w, h/2); ctx.stroke();
+  const count = Math.min(samples.length, Math.round(sampleRate * TAIL_MS / 1000));
+  const start = samples.length - count;
+  ctx.strokeStyle = '#4338ca'; ctx.beginPath();
+  for (let x = 0; x < w; x++) {
+    const i = start + Math.floor(x / w * count);
+    const y = h / 2 - (samples[i] || 0) * (h / 2) * 0.95;
+    x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+}
+
+async function synth(word, voice) {
+  const url = await window._kokoroTTS.speak(word, voice, 1.0);
+  if (!url) throw new Error('no audio returned');
+  const buf = await (await fetch(url)).arrayBuffer();
+  return parseWav(buf);
+}
+
+document.getElementById('run').addEventListener('click', async () => {
+  const btn = document.getElementById('run');
+  btn.disabled = true;
+  document.getElementById('log').textContent = '';
+  const results = document.getElementById('results');
+  results.innerHTML = '';
+  const voice = document.getElementById('voice').value.trim() || 'af_heart';
+  const words = document.getElementById('words').value.split(',').map(s => s.trim()).filter(Boolean);
+
+  try {
+    if (!window._kokoroTTS) throw new Error('kokoro_tts_loader.js did not register window._kokoroTTS');
+    log('Initializing Kokoro (first run downloads ~88MB)…');
+    await window._kokoroTTS.init();
+    log('Ready. Synthesizing ' + words.length + ' words at speed 1.0.');
+
+    const table = document.createElement('table');
+    table.innerHTML = '<tr><th>word</th><th>ms</th><th>peak</th><th>last sample</th>' +
+      '<th>tail RMS (30ms)</th><th>tail rise</th><th>rise at</th><th>last 120 ms</th></tr>';
+    results.appendChild(table);
+
+    for (const word of words) {
+      const { samples, sampleRate } = await synth(word, voice);
+      const m = measure(samples, sampleRate);
+      const tr = document.createElement('tr');
+      // Flag the shape being hunted: energy climbing again at the very end.
+      const suspicious = m.riseDb > 6 && m.riseAtMs !== null && m.riseAtMs <= 60;
+      if (suspicious || m.lastSample > 0.01) tr.className = 'flag';
+      tr.innerHTML =
+        '<td>' + word + '</td>' +
+        '<td>' + m.ms.toFixed(0) + '</td>' +
+        '<td>' + m.peak.toFixed(3) + '</td>' +
+        '<td>' + m.lastSample.toFixed(4) + '</td>' +
+        '<td>' + db(m.tailRms) + ' dB</td>' +
+        '<td>' + (m.riseDb ? '+' + m.riseDb.toFixed(1) + ' dB' : '—') + '</td>' +
+        '<td>' + (m.riseAtMs === null ? '—' : m.riseAtMs + ' ms before end') + '</td>' +
+        '<td></td>';
+      table.appendChild(tr);
+      const canvas = document.createElement('canvas');
+      canvas.width = 260; canvas.height = 54;
+      tr.lastElementChild.appendChild(canvas);
+      drawTail(canvas, samples, sampleRate);
+      log(word + ': ' + m.ms.toFixed(0) + 'ms, last=' + m.lastSample.toFixed(4) +
+          ', rise=' + m.riseDb.toFixed(1) + 'dB' + (suspicious ? '  ← burst-shaped' : ''));
+      await new Promise(r => setTimeout(r, 0));
+    }
+    log('\nRead it like this: a highlighted row means the tail gets LOUDER again in the last 60 ms, ' +
+        'or the clip ends on a non-zero sample. If the nasal-final words flag and the controls do not, ' +
+        'the burst is real and word-final. If everything flags, suspect the measurement, not the model.');
+  } catch (e) {
+    log('FAILED: ' + (e && e.message ? e.message : e));
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// Word Sounds caches generated word audio in localStorage under
+// alloflow_audio_<word>, so a word heard before this change can keep serving
+// the old clip and hide the fix.
+document.getElementById('clearAudio').addEventListener('click', () => {
+  let n = 0;
+  for (let i = localStorage.length - 1; i >= 0; i--) {
+    const k = localStorage.key(i);
+    if (k && k.indexOf('alloflow_audio_') === 0) { localStorage.removeItem(k); n++; }
+  }
+  try { window._kokoroTTS && window._kokoroTTS.clearCache && window._kokoroTTS.clearCache(); } catch (_) {}
+  log('Cleared ' + n + ' cached word clip(s) and the in-memory Kokoro cache.');
+});
+</script>
+</body>
+</html>

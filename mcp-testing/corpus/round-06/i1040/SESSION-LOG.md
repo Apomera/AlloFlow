@@ -2535,3 +2535,99 @@ reports its flush run-ins as `g_d0_f4`; the same page inside a 22-page dump
 reports them as `g_d0_f6`. IDs are consistent within one dump and meaningless
 across dumps, so never carry a face ID from one session's notes into another
 without re-deriving it.
+
+## Full-document end-to-end pass (2026-08-09) - item 1 of "what remains" DONE
+
+`runs/2026-08-09_i1040-126pp_portable/` — the complete 126-page plan through
+`merge-plans` -> `remediate --verapdf auto` -> `verify-init`.
+
+- `outputTextRecall` **1.0** (129,785 plan tokens). `sourceTextRecall` 0.9349,
+  and the miss is furniture-shaped: every top missing token counts ~126 or
+  ~252 — the per-page IRS print-production slug plus folio, ~69 tokens/page.
+  The 08-05 prediction of "near 1.0" undercounted the slug; ~0.935 is this
+  document's ceiling.
+- veraPDF UA-1: 104 rules pass, 2,024,062 checks pass, **the clause 7.2
+  failure persists — and is now ROOT-CAUSED to one table.** veraPDF names
+  struct elem 64540; a full 319-page struct-tree walk finds exactly one
+  malformed table: output page 259, rows `[4,3,3,3,3,3,3]` — the **IRA
+  Deduction Worksheet part 2 of 2** (Schedule 1 line 20, lines 7-12). The
+  authored HTML is correct (all 105 tables span-consistent; blank entry cells
+  carry the ZWSP filler), but in the tagged PDF each body row lost exactly ONE
+  of its two ZWSP cells. Part 1 — same shape, same fillers — passes on page
+  258. The defect is Chromium-tagging/finalizer-side and pagination-dependent,
+  which is exactly why the 104pp bisect saw halves pass and the union fail.
+  Next step and fix options are in the run NOTES.
+- Clause 5 remains the withheld-identifier consequence, correct behaviour.
+- `verify-init` derived the **1,664-item** worksheet (committed in the run
+  dir). Item 2 of "what remains" — `verify-check` by a fresh-context reader —
+  is still open and still must not be filled by the tranche author.
+
+## PDF/UA-1 PASS (2026-08-09, same day, engine 0.2.3) - 7.2-43 FIXED
+
+`runs/2026-08-09_i1040-126pp-ua1-pass_portable/` — the empty-cell filler
+changed from ZERO-WIDTH space to NO-BREAK space (@008c75de7): Chromium culls
+a zero-advance-only cell under fragmentation, and an nbsp always emits a text
+run, so the /TD survives. **veraPDF: failedRules [], identifier claimed and
+earned, exit 0 under `--verapdf required`.** Both recall figures are
+byte-identical pre/post fix — the filler is whitespace-only. A fresh 319-page
+struct-tree walk confirms zero malformed tables. `--verapdf required` also
+now keeps artifacts+report on gate failure instead of deleting the staging
+dir. The worksheet was REGENERATED against the passing run's HTML (sha256
+bindings); the fresh-context `verify-check` remains the open item.
+
+## Independent verification RUN (2026-08-10) - item 2 of "what remains" DONE
+
+A fresh-context reader (subagent, never saw the plan or these sessions) filled
+all 1,664 items against the source PDF and the passing run's HTML:
+**1,645 verified / 19 discrepancies / 0 unreadable**; `verify-check` enforced
+bindings and stamped `verification-report.json` (committed in the ua1-pass run
+dir alongside the filled worksheet). The reader extracted all 126 pages with
+pdf.js including resolved font programs, script-compared every heading, ~28k
+table cells, list, link, and emphasis span in both directions, and visually
+read 26 rendered pages plus all 126 as thumbnails.
+
+**The two-model rule earned its keep. All 19 discrepancies were real:**
+
+1. **Sixteen were one bug**: `gen_tranche_58.py` attributed a category to page
+   118 iff its first topic number was < 400 - but everything through
+   "Employer tax information" (750s) PRINTS on 118. Eight h4s and eight topic
+   tables carried `source_page: 119` for content a reader finds on 118. Fixed
+   by carrying the sub-head's page through from the GEOMETRY instead of
+   guessing from topic numbers, plus two new gates (start pages in range,
+   non-decreasing). Regenerated: exactly 16 lines change, all
+   `source_page: 119` -> `118`.
+2. **Three were emphasis-span defects**, each confirmed against the embedded
+   font programs: p87 "e-filed" and p88 "State and Local Income Tax Refund
+   Worksheet" are regular roman in the source (both de-italicised); p40's
+   span included "(SSN)" which the source continues in roman (boundary
+   moved). Generators 12/27/28 fixed and regenerated - the plain text is
+   byte-identical, only `runs` change.
+
+Full e2e re-run on the corrected plan: 2,106 blocks, `pagesWithoutBlocks: []`,
+**PDF/UA-1 PASS, identifier earned, exit 0 under `--verapdf required`,
+outputTextRecall 1.0, sourceTextRecall 0.9349** (the slug ceiling, unchanged).
+
+A correction that postdates its verification: the 19 fixes above were made
+AFTER the worksheet was attested, so the committed report describes the
+PRE-fix artifact. The changes are 16 metadata integers and 3 styling runs,
+each the exact repair the discrepancy note prescribes; re-attesting those 19
+items (not the other 1,645) is the honest residual if anyone wants the loop
+fully closed.
+
+## Re-attestation (2026-08-10) - the residual CLOSED: `result: "verified"`
+
+A SECOND fresh-context reader re-attested exactly the 19 corrected items
+against the corrected artifact. The new worksheet was derived from the
+corrected plan/HTML (1,663 items - the two de-italicised blocks dropped one
+inline_style item net); the 1,644 items whose content is byte-identical
+carried the first reader's attestations, disclosed in the verifier statement.
+The reader rebuilt the Tax Topics columns from page-118/119 geometry (all
+eight categories print on 118; topics 751-752 on 118 and 753-763 on 119, so
+table-077's start-page-118 attribution follows the convention) and confirmed
+the three emphasis fixes against resolved font programs
+(TimesNewRomanPS-ItalicMT vs -PSMT). **All 19 verified. verify-check:
+1,663/1,663, 0 discrepancies, `result: "verified"`** -
+`verification-report-v2.json` in the ua1-pass run dir.
+
+THE PROTOCOL IS COMPLETE: authored (126/126), conformant (UA-1 identifier
+earned), independently verified, discrepancies fixed, re-verified clean.

@@ -68,6 +68,21 @@ const AnimatedNumber = ({ value, duration = 1000, disableAnimations = false }) =
   return <>{displayValue}</>;
 };
 
+// Bold every occurrence of the target word inside a sentence/story preview —
+// the teacher's eye should land on the word the item is about. English-only
+// content (the sentence activities are language-gated), so \b is safe here.
+const wsHighlightTarget = (text, target) => {
+  const tw = String(target || '').trim();
+  const s = String(text || '');
+  if (!tw) return s;
+  const esc = tw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return s.split(new RegExp(`\\b(${esc})\\b`, 'gi')).map((p, i) =>
+    p.toLowerCase() === tw.toLowerCase()
+      ? <strong key={i} className="text-sky-800 font-black">{p}</strong>
+      : p
+  );
+};
+
 const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved, acceptedAnswers, displayWord }) => {
   const { t } = useContext(LanguageContext);
   const _solved = displayWord || targetWord;
@@ -200,6 +215,12 @@ const WordSoundsReviewPanel = ({
     onBackToSetup,
     onPlayAudio,
     onRegenerateWord,
+    // The focused phoneme checker (Gemini + eSpeak + dictionary in parallel,
+    // with agreement metadata). The host has always passed it; this panel never
+    // destructured it, so the "Check" button below ran a full word
+    // regeneration instead — which is what the row's own regenerate control
+    // already does, and which does not triangulate.
+    onCheckPhonemes,
     onRegenerateOption,
     onRegenerateManipulationTask,
     onRegenerateAll,
@@ -234,6 +255,119 @@ const WordSoundsReviewPanel = ({
         setBankLabelMode(m);
         try { localStorage.setItem('alloWsBankLabelMode', m); } catch (_) {}
     };
+    // Readiness fixes: which gap is running, and what the last one did. Only a
+    // fix the teacher pressed reports an outcome.
+    const [fixingGap, setFixingGap] = React.useState(null);
+    const [gapFixResult, setGapFixResult] = React.useState(null);
+    const unmountedRef = React.useRef(false);
+    // The runner reads words through a ref, not the prop it closed over: a fix
+    // updates host state, and the async loop needs to see the result to know
+    // whether the gap actually closed.
+    const latestWordsRef = React.useRef(preloadedWords);
+    latestWordsRef.current = preloadedWords;
+    // Synchronous lock. `fixingGap` drives the UI, but a state value read
+    // inside an async loop is the value from the render that created the
+    // closure, so it cannot serialise anything. The ref can.
+    const gapBusyRef = React.useRef(false);
+    React.useEffect(() => () => { unmountedRef.current = true; }, []);
+    // Runs one gap and RETURNS its tally. It does not write the outcome line,
+    // so the same function serves a single fix and a combined run without the
+    // second one overwriting its own result at every step.
+    // How many words in a row may come back unchanged before the run gives up.
+    // The dominant cause of a run of failures is the service rate-limiting
+    // (Gemini imposes a 60-second cooldown), and hammering it makes the whole
+    // session worse, including the audio prewarm.
+    const GAP_FIX_GIVE_UP_AFTER = 3;
+    const runOneGapFix = React.useCallback(async (gap) => {
+        let fixed = 0;
+        let unchanged = 0;
+        let requested = 0;
+        let stalled = false;
+        if (!gap) return { fixed, unchanged, requested, stalled };
+        setFixingGap(gap.key);
+        if (gap.batch) {
+            // Re-arms the prefetch for every affected word at once; the clips
+            // then arrive in the background, so nothing here can be verified
+            // yet. Reported as requested, which is what actually happened.
+            try {
+                await gap.batch();
+                requested = gap.indices.length;
+            } catch (e) {
+                unchanged = gap.indices.length;
+            }
+        } else if (gap.each) {
+            let inARow = 0;
+            // Sequential on purpose: the host tracks a single
+            // regeneratingIndex, and firing these in parallel would both
+            // scramble that indicator and burst the rate limit that already
+            // costs this panel 401s.
+            for (const idx of gap.indices) {
+                if (unmountedRef.current) break;
+                try {
+                    await gap.each(idx);
+                } catch (e) {
+                    // Rare: the host fixers catch their own errors. Falls
+                    // through to the same verification either way.
+                }
+                // Let the host's state update land before reading it.
+                await new Promise((r) => setTimeout(r, 0));
+                const after = (latestWordsRef.current || [])[idx];
+                // VERIFY, do not assume. Every host fixer toasts its own
+                // failure and resolves normally, so "the call returned" says
+                // nothing. The gap predicate is the only honest signal.
+                if (after && !gap.test(after)) {
+                    fixed += 1;
+                    inARow = 0;
+                } else {
+                    unchanged += 1;
+                    inARow += 1;
+                    if (inARow >= GAP_FIX_GIVE_UP_AFTER) { stalled = true; break; }
+                }
+            }
+        }
+        return { fixed, unchanged, requested, stalled };
+    }, []);
+    // Say what actually happened. A count of calls made would read as success
+    // for words that did not change.
+    const describeGapFix = ({ fixed, unchanged, requested, stalled }) => {
+        const parts = [];
+        if (fixed) parts.push(`${fixed} fixed`);
+        if (requested) parts.push(`audio requested for ${requested} (arrives in the background)`);
+        if (unchanged) parts.push(`${unchanged} unchanged`);
+        if (!parts.length) return 'Nothing to do.';
+        const summary = parts.join(', ') + '.';
+        if (stalled) {
+            return `${summary} Stopped early: the service is refusing requests, which usually means a rate-limit cooldown. Try again in a minute.`;
+        }
+        return unchanged
+            ? `${summary} Try again, or edit those words by hand.`
+            : summary;
+    };
+    const runGapFixes = React.useCallback(async (gaps) => {
+        const list = (Array.isArray(gaps) ? gaps : [gaps]).filter(Boolean);
+        if (!list.length || gapBusyRef.current) return;
+        gapBusyRef.current = true;
+        setGapFixResult(null);
+        const total = { fixed: 0, unchanged: 0, requested: 0, stalled: false };
+        try {
+            for (const gap of list) {
+                if (unmountedRef.current) return;
+                const tally = await runOneGapFix(gap);
+                total.fixed += tally.fixed;
+                total.unchanged += tally.unchanged;
+                total.requested += tally.requested;
+                // One stalled gap stops the whole run. If the service is in a
+                // cooldown, the next gap would only extend it.
+                if (tally.stalled) { total.stalled = true; break; }
+            }
+        } finally {
+            gapBusyRef.current = false;
+            if (!unmountedRef.current) {
+                setFixingGap(null);
+                setGapFixResult(describeGapFix(total));
+            }
+        }
+    }, [runOneGapFix]);
     const [imageRefinementInputs, setImageRefinementInputs] = React.useState({});
     const [draggedPhoneme, setDraggedPhoneme] = React.useState(null);
     const [dragOverIndex, setDragOverIndex] = React.useState(null);
@@ -502,28 +636,259 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                             const w = norm(item && (item.targetWord || item.word || item.term));
                             if (w && item.image) imageKeys.add(w);
                         });
+                        // Each gap carries the PREDICATE that defines it, and
+                        // its indices are derived from that same predicate, so
+                        // the two cannot drift. The runner re-tests the
+                        // predicate after each fix, because every host fixer
+                        // swallows its own errors and resolves normally on
+                        // failure — the only trustworthy signal that a fix
+                        // landed is that the gap closed.
+                        //
+                        // `needsNetwork` means the fix calls out and will fail
+                        // offline. It is NOT a cost warning: in Canvas the
+                        // calls are environment-provided, and Kokoro TTS is a
+                        // free on-device voice. What is actually scarce here is
+                        // the rate limit, which the runner handles by stopping
+                        // when the service starts refusing.
                         const gaps = [];
-                        const noAudio = preloadedWords.filter((w) => w && !w.ttsReady && !portableKeys.has(norm(w.targetWord || w.word || w.term))).length;
-                        if (noAudio > 0) gaps.push(`🔇 ${noAudio} word${noAudio === 1 ? '' : 's'} without portable audio`);
-                        const noRhyme = preloadedWords.filter((w) => w && !(w.rhymeWord || (w.rhymes || [])[0])).length;
-                        if (noRhyme > 0) gaps.push(`🎵 ${noRhyme} without a rhyme answer (board is built on-device)`);
-                        const noTask = preloadedWords.filter((w) => w && !(w.manipulationTask && w.manipulationTask.answer)).length;
-                        if (noTask > 0) gaps.push(`🔁 ${noTask} without a Sound Swap task (fallback task used)`);
+                        const addGap = (gap) => {
+                            const indices = preloadedWords
+                                .map((w, i) => (gap.test(w) ? i : -1))
+                                .filter((i) => i >= 0);
+                            if (!indices.length) return;
+                            gaps.push({ ...gap, indices, text: gap.text(indices.length) });
+                        };
+                        // Kokoro is local, free and rate-limit-free, so on a
+                        // Kokoro setup this fix touches no network at all.
+                        const ttsIsLocal = typeof window !== 'undefined' && !!(window._kokoroTTS && window._kokoroTTS.ready);
+
+                        // Two different problems that both sound like "no audio".
+                        //
+                        // PORTABLE audio is what travels to a student device, and
+                        // it is written once, by the pack compiler in setup.
+                        // Nothing in the player can create it: Retry audio fetches
+                        // a blob that dies with the tab. So this line carries NO
+                        // fix button — offering one that cannot close the gap
+                        // would be worse than saying plainly what does.
+                        // If the packing run itself reported trouble, say what
+                        // happened rather than leaving the teacher to infer it
+                        // from a count. A rate limit is recoverable by trying
+                        // again later; nothing else about the pack is wrong.
+                        const coverage = (preloadedWords[0] || {})._ttsCoverage;
+                        const packNote = coverage && coverage.rateLimited
+                            ? (coverage.gaveUp
+                                ? ' The last packing run was cut short by a rate limit, so most of this audio was never generated. Re-prepare in setup, ideally on the Kokoro local voice.'
+                                : ' The last packing run hit a rate limit and recovered, so some audio may be missing.')
+                            : ' Student devices will be silent for these; re-prepare the pack in setup to fix this.';
+                        addGap({
+                            key: 'audio',
+                            test: (w) => w && !w.ttsReady && !portableKeys.has(norm(w.targetWord || w.word || w.term)),
+                            text: (n) => `🔇 ${n} word${n === 1 ? '' : 's'} without portable audio.${packNote}`,
+                            each: null,
+                        });
+
+                        // RUNTIME failures are what Retry audio actually fixes:
+                        // a fetch that failed this session on a device that can
+                        // still reach TTS.
+                        addGap({
+                            key: 'audio_runtime',
+                            test: (w) => w && w._ttsFailed,
+                            text: (n) => `🔁 ${n} word${n === 1 ? '' : 's'} whose audio failed to load in this session`,
+                            label: t('word_sounds.fix_audio') || 'Retry audio',
+                            needsNetwork: !ttsIsLocal,
+                            // Batch by nature: it re-arms the prefetch for every
+                            // word at once rather than taking an index. The
+                            // clips then arrive in the background, so this one
+                            // is reported as requested, not as fixed.
+                            batch: onRetryFailedTTS,
+                        });
+
+                        addGap({
+                            key: 'rhyme',
+                            test: (w) => w && !(w.rhymeWord || (w.rhymes || [])[0]),
+                            text: (n) => `🎵 ${n} without a rhyme answer (board is built on-device)`,
+                            // The player derives one at runtime, so this is a
+                            // completeness note, not a broken board. Fixing it
+                            // means regenerating the whole word.
+                            label: t('word_sounds.fix_regenerate') || 'Regenerate',
+                            needsNetwork: true,
+                            each: onRegenerateWord,
+                        });
+
+                        addGap({
+                            key: 'task',
+                            test: (w) => w && !(w.manipulationTask && w.manipulationTask.answer),
+                            text: (n) => `🔁 ${n} without a Sound Swap task (fallback task used)`,
+                            label: t('word_sounds.fix_tasks') || 'Build tasks',
+                            needsNetwork: true,
+                            each: onRegenerateManipulationTask,
+                        });
+
                         const missingDecodingImgs = preloadedWords.reduce((sum, w) => {
                             const choices = w && w.activityItems && w.activityItems.decoding && w.activityItems.decoding.choices;
                             if (!Array.isArray(choices)) return sum;
                             return sum + choices.filter((c) => !imageKeys.has(norm(c))).length;
                         }, 0);
-                        if (missingDecodingImgs > 0) gaps.push(`🖼️ ${missingDecodingImgs} Read & Match picture${missingDecodingImgs === 1 ? '' : 's'} missing`);
-                        const edited = preloadedWords.filter((w) => w && w._packEdited).length;
-                        if (edited > 0) gaps.push(`✏️ ${edited} word${edited === 1 ? '' : 's'} edited since preparation (boards rebuild from your edits)`);
-                        const letterSplit = preloadedWords.filter((w) => w && w._fallbackUsed).length;
-                        if (letterSplit > 0) gaps.push(`⚠️ ${letterSplit} using letter-split sounds (generation failed)`);
+                        addGap({
+                            key: 'images',
+                            test: (w) => {
+                                const choices = w && w.activityItems && w.activityItems.decoding && w.activityItems.decoding.choices;
+                                return Array.isArray(choices) && choices.some((c) => !imageKeys.has(norm(c)));
+                            },
+                            text: () => `🖼️ ${missingDecodingImgs} Read & Match picture${missingDecodingImgs === 1 ? '' : 's'} missing`,
+                            label: t('word_sounds.fix_images') || 'Generate pictures',
+                            needsNetwork: true,
+                            each: onGenerateImage ? ((i) => onGenerateImage(i, preloadedWords[i] && (preloadedWords[i].targetWord || preloadedWords[i].word))) : null,
+                        });
+
+                        // Connected-text boards carry their own audio: the
+                        // completed sentence or story is read back after a
+                        // correct answer from a clip keyed by the full text.
+                        // A rate-limited packing run can land every WORD clip
+                        // and still miss these, and nothing else on this list
+                        // would say so. No fix button for the same reason as
+                        // portable word audio: only the setup compiler can
+                        // write _ttsAssets.
+                        addGap({
+                            key: 'sentence_audio',
+                            test: (w) => {
+                                const b = w && w.activityItems;
+                                if (!b) return false;
+                                const texts = [
+                                    b.read_sentence && b.read_sentence.sentence,
+                                    b.read_passage && b.read_passage.story,
+                                    b.sentence_match && b.sentence_match.sentence,
+                                ].filter(Boolean);
+                                return texts.some((s) => !portableKeys.has(norm(s)));
+                            },
+                            text: (n) => `🔇 ${n} word${n === 1 ? '' : 's'} whose sentence or story read-back audio did not pack. On student devices the read-back will be missing or fall back to a lower-quality voice; re-prepare the pack in setup.`,
+                            each: null,
+                        });
+
+                        // Picture the Sentence reveals its tray only when EVERY
+                        // tile has its picture (a half-loaded tray lets a child
+                        // pick "the one that loaded"), so one missing image
+                        // stalls the whole item on a student device.
+                        const missingTileImgs = preloadedWords.reduce((sum, w) => {
+                            const sm = w && w.activityItems && w.activityItems.sentence_match;
+                            if (!sm) return sum;
+                            const tiles = [...(sm.sequence || []), ...(sm.extras || [])];
+                            return sum + tiles.filter((c) => !imageKeys.has(norm(c))).length;
+                        }, 0);
+                        addGap({
+                            key: 'tile_images',
+                            test: (w) => {
+                                const sm = w && w.activityItems && w.activityItems.sentence_match;
+                                if (!sm) return false;
+                                return [...(sm.sequence || []), ...(sm.extras || [])].some((c) => !imageKeys.has(norm(c)));
+                            },
+                            text: () => `🖼️ ${missingTileImgs} Picture the Sentence tile${missingTileImgs === 1 ? '' : 's'} without a picture. The tray waits for every picture, so these items stall on student devices; re-prepare the pack in setup.`,
+                            each: null,
+                        });
+
+                        // Generated words the app cannot vouch for. Not an
+                        // error: the curated lists are a few hundred words and
+                        // a real vocabulary is far larger, so this is a "worth
+                        // your eye" list, not a verdict. It is how "hon" — an
+                        // informal clipping of "honey", and a flawless CVC that
+                        // no shape rule can catch — reaches a teacher before it
+                        // reaches a child.
+                        addGap({
+                            key: 'unverified',
+                            test: (w) => w && Array.isArray(w._unverifiedWords) && w._unverifiedWords.length > 0,
+                            text: (n) => {
+                                const sample = [...new Set(preloadedWords
+                                    .flatMap((w) => (w && w._unverifiedWords) || []))].slice(0, 6);
+                                return `📖 ${n} word${n === 1 ? '' : 's'} generated rhymes or family members that are not in the K-2 word lists: ${sample.join(', ')}${sample.length < n ? '…' : ''}. Worth a look before teaching them.`;
+                            },
+                            // A judgement call, not a repair: the teacher edits
+                            // or regenerates the word if they disagree.
+                            each: null,
+                        });
+
+                        addGap({
+                            key: 'edited',
+                            test: (w) => w && w._packEdited,
+                            text: (n) => `✏️ ${n} word${n === 1 ? '' : 's'} edited since preparation (boards rebuild from your edits)`,
+                            // Re-packing an edited word is not built yet, so
+                            // there is deliberately no button here rather than
+                            // one that quietly does something else.
+                            each: null,
+                        });
+
+                        addGap({
+                            key: 'phonemes',
+                            test: (w) => w && w._fallbackUsed,
+                            // Generation now tries eSpeak before the spelling
+                            // heuristic, so this means a real G2P engine could
+                            // not do the word either.
+                            text: (n) => `⚠️ ${n} with sounds estimated from spelling`,
+                            label: t('word_sounds.fix_phonemes') || 'Re-check sounds',
+                            needsNetwork: true,
+                            each: onCheckPhonemes,
+                        });
+
                         if (!gaps.length) return null;
+                        const busy = fixingGap !== null;
+                        const fixable = gaps.filter((g) => g.each || g.batch);
+                        const fixableWords = new Set(fixable.flatMap((g) => g.indices)).size;
                         return (
                             <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 text-xs text-amber-900">
-                                <div className="font-bold mb-1">{t('word_sounds.pack_gaps_title') || 'Student-device readiness'}</div>
-                                <ul className="space-y-0.5">{gaps.map((g, i) => <li key={i}>{g}</li>)}</ul>
+                                <div className="flex items-center justify-between gap-3 mb-1">
+                                    <div className="font-bold">{t('word_sounds.pack_gaps_title') || 'Student-device readiness'}</div>
+                                    {fixable.length > 1 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => runGapFixes(fixable)}
+                                            disabled={busy}
+                                            aria-busy={busy}
+                                            className={`shrink-0 px-2 py-0.5 rounded-full font-bold border transition-colors motion-reduce:transition-none ${busy ? 'bg-white/60 text-amber-800 border-amber-200' : 'bg-amber-600 text-white border-amber-600 hover:bg-amber-700'}`}
+                                        >
+                                            {busy
+                                                ? (t('word_sounds.fixing') || 'Fixing…')
+                                                : `${t('word_sounds.fix_all') || 'Fix all'} (${fixableWords})`}
+                                        </button>
+                                    )}
+                                </div>
+                                <ul className="space-y-1">
+                                    {gaps.map((g) => (
+                                        <li key={g.key} className="flex items-center justify-between gap-3">
+                                            <span>{g.text}</span>
+                                            {(g.each || g.batch) && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => runGapFixes(g)}
+                                                    disabled={busy}
+                                                    aria-busy={fixingGap === g.key}
+                                                    className={`shrink-0 px-2 py-0.5 rounded-full font-bold border transition-colors motion-reduce:transition-none ${busy ? 'bg-white/60 text-amber-800 border-amber-200' : 'bg-white text-amber-900 border-amber-400 hover:bg-amber-100'}`}
+                                                    // Not a cost warning. It marks the fixes that
+                                                    // call out, so a teacher on school wifi knows
+                                                    // which ones need a connection to work.
+                                                    title={g.needsNetwork
+                                                        ? (t('word_sounds.fix_needs_connection') || 'Needs an internet connection')
+                                                        : undefined}
+                                                >
+                                                    {fixingGap === g.key
+                                                        ? (t('word_sounds.fixing') || 'Fixing…')
+                                                        : `${g.needsNetwork ? '☁️ ' : ''}${g.label} (${g.indices.length})`}
+                                                </button>
+                                            )}
+                                        </li>
+                                    ))}
+                                </ul>
+                                {/* No confirmation step. These calls are
+                                    environment-provided in Canvas and Kokoro TTS
+                                    is a free on-device voice, so there is no bill
+                                    to warn about; what is actually scarce is the
+                                    rate limit, and a dialog cannot prevent that.
+                                    The runner stops when the service starts
+                                    refusing and says so instead. */}
+                                {/* Outcome is reported only for a fix the teacher
+                                    pressed. Nothing is announced for work the
+                                    pipeline did on its own before they got here. */}
+                                {gapFixResult && (
+                                    <p role="status" aria-live="polite" className="mt-2 font-semibold">{gapFixResult}</p>
+                                )}
                             </div>
                         );
                     })()}
@@ -637,7 +1002,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                     setPlayingWordIndex(null);
                                                 }
                                             }}
-                                            disabled={playingWordIndex !== null || !word.ttsReady}
+                                            disabled={playingWordIndex !== null || !(word.ttsReady || word._runtimeAudioReady)}
                                             className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors motion-reduce:transition-none ${
                                                 word._ttsFailed
                                                     ? 'bg-red-100 hover:bg-red-200 text-red-600 border-2 border-red-300'
@@ -647,9 +1012,9 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                             ? 'bg-pink-50 text-pink-300 cursor-not-allowed'
                                                             : 'bg-pink-100 hover:bg-pink-200 text-pink-600'
                                             }`}
-                                            title={playingWordIndex === idx ? (t('word_sounds.playing') || 'Playing...') : word._ttsFailed ? (t('word_sounds.audio_failed_retry_hint') || 'Audio failed to generate — click Retry audio in header') : !word.ttsReady ? (t('word_sounds.loading_audio') || 'Loading audio...') : (t('word_sounds.play_word') || 'Play word')}
-                                            aria-busy={playingWordIndex === idx || (!word._ttsFailed && !word.ttsReady)}
-                                            aria-label={playingWordIndex === idx ? (t('word_sounds.playing') || 'Playing') : word._ttsFailed ? (t('word_sounds.audio_failed_aria') || 'Audio failed') : !word.ttsReady ? (t('word_sounds.loading_audio') || 'Loading audio') : (t('word_sounds.play_word') || 'Play word')}
+                                            title={playingWordIndex === idx ? (t('word_sounds.playing') || 'Playing...') : word._ttsFailed ? (t('word_sounds.audio_failed_retry_hint') || 'Audio failed to generate — click Retry audio in header') : !(word.ttsReady || word._runtimeAudioReady) ? (t('word_sounds.loading_audio') || 'Loading audio...') : (t('word_sounds.play_word') || 'Play word')}
+                                            aria-busy={playingWordIndex === idx || (!word._ttsFailed && !(word.ttsReady || word._runtimeAudioReady))}
+                                            aria-label={playingWordIndex === idx ? (t('word_sounds.playing') || 'Playing') : word._ttsFailed ? (t('word_sounds.audio_failed_aria') || 'Audio failed') : !(word.ttsReady || word._runtimeAudioReady) ? (t('word_sounds.loading_audio') || 'Loading audio') : (t('word_sounds.play_word') || 'Play word')}
                                         >
                                             {word._ttsFailed ? <span aria-hidden="true">🔇</span> : (playingWordIndex === idx ? <RefreshCw size={18} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> : <Volume2 size={18} aria-hidden="true" />)}
                                         </button>
@@ -764,7 +1129,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                     <div className="flex items-center gap-2">
                                                     <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('word_sounds.phonemes')}</label>
                                                     <button type="button"
-                                                        onClick={() => onRegenerateWord && onRegenerateWord(idx)}
+                                                        onClick={() => (onCheckPhonemes || onRegenerateWord) && (onCheckPhonemes || onRegenerateWord)(idx)}
                                                         disabled={regeneratingIndex === idx}
                                                         aria-busy={regeneratingIndex === idx}
                                                         className={`text-[11px] px-2 py-0.5 rounded-full flex items-center gap-1 font-bold transition-colors motion-reduce:transition-none ${regeneratingIndex === idx ? 'bg-slate-100 text-slate-600' : 'bg-violet-100 text-violet-600 hover:bg-violet-200'}`}
@@ -1037,6 +1402,48 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                     >{t('word_sounds.add_distractor') || '+ Add'}</button>
                                                 </div>
                                             </div>
+                                        {(() => {
+                                            {/* Connected text: the sentences the AI wrote for this word,
+                                                surfaced where the teacher preps — taste lives here, not in
+                                                the player. Read-only (edit = regenerate the word); each line
+                                                has a play button so the teacher hears what students will. */}
+                                            const _ct = word.activityItems || {};
+                                            const _ctWord = word.targetWord || word.word || word.term;
+                                            const _ctLines = [
+                                                _ct.read_sentence && _ct.read_sentence.sentence && { key: 'sent', icon: '💬', label: t('word_sounds.activity_read_sentence') || 'Finish the Sentence', text: _ct.read_sentence.sentence },
+                                                _ct.read_passage && _ct.read_passage.story && { key: 'story', icon: '📚', label: t('word_sounds.activity_read_passage') || 'Read the Story', text: _ct.read_passage.story },
+                                                _ct.sentence_match && _ct.sentence_match.sentence && { key: 'pair', icon: '🖼️', label: t('word_sounds.activity_sentence_match') || 'Picture the Sentence', text: _ct.sentence_match.sentence },
+                                            ].filter(Boolean);
+                                            if (!_ctLines.length) return null;
+                                            return (
+                                                <div>
+                                                    <label className="text-xs font-bold text-sky-600 uppercase tracking-wider mb-2 block">{t('word_sounds.connected_text_label') || 'Connected Text (sentence activities)'}</label>
+                                                    <div className="space-y-1.5 p-3 bg-sky-50 border-2 border-sky-200 rounded-lg">
+                                                        {_ctLines.map((line) => (
+                                                            <div key={line.key} className="flex items-center gap-2 text-sm text-slate-700">
+                                                                <span aria-hidden="true">{line.icon}</span>
+                                                                <span className="sr-only">{line.label}:</span>
+                                                                <span className="flex-1">{wsHighlightTarget(line.text, _ctWord)}</span>
+                                                                <button type="button"
+                                                                    aria-label={(t('common.play_tts') || 'Play') + ' — ' + line.label}
+                                                                    onClick={async (e) => {
+                                                                        e.stopPropagation();
+                                                                        const key = `${idx}-ct-${line.key}`;
+                                                                        if (playingAudioKey) return;
+                                                                        setPlayingAudioKey(key);
+                                                                        try { await onPlayAudio(line.text); } finally { setPlayingAudioKey(null); }
+                                                                    }}
+                                                                    className="p-2 rounded-lg bg-white hover:bg-sky-100 text-slate-600 hover:text-sky-700 transition-colors motion-reduce:transition-none min-w-[32px] flex justify-center"
+                                                                    title={t('common.play_tts') || 'Play'}
+                                                                >
+                                                                    {playingAudioKey === `${idx}-ct-${line.key}` ? <div className="animate-spin motion-reduce:animate-none h-4 w-4 border-2 border-current border-t-transparent rounded-full" /> : '🔊'}
+                                                                </button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })()}
                                         <div>
                                             <div className="flex items-center justify-between mb-2">
                                                 <label className="text-xs font-bold text-amber-600 uppercase tracking-wider block">{t('word_sounds.sound_swap_label') || 'Sound Swap (Manipulation Activity)'}</label>

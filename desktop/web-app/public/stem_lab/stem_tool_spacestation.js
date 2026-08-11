@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════
-// AlloFlow STEM Lab — Space Station (ISS engineering + astronaut life)
+// AlloFlow STEAM Lab — Space Station (ISS engineering + astronaut life)
 //
 // An interactive 3-D map of the International Space Station built from
 // Three.js primitives (every pressurized module clickable), plus:

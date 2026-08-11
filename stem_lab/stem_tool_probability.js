@@ -1,4 +1,4 @@
-// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -2976,7 +2976,7 @@ var d = (labToolData.probability) || {};
                         var matched = mColor !== null;
                         return React.createElement('div', {
                           key: 'p-' + idx,
-                          className: 'flex flex-col items-center p-1 rounded-md text-[8px] font-mono transition',
+                          className: 'flex flex-col items-center p-1 rounded-md text-[10px] font-mono transition',
                           style: {
                             background: matched ? mColor + '33' : (isDark||isContrast?'rgba(255,255,255,0.04)':'#fff'),
                             border: matched ? '2px solid ' + mColor : '1px solid ' + (isDark||isContrast?'rgba(255,255,255,0.1)':'#fde68a'),
@@ -4039,7 +4039,7 @@ var d = (labToolData.probability) || {};
                             h('div', { style: { position: 'absolute', left: 0, right: 0, top: expTop, borderTop: '2px dashed ' + b.color } }),
                             h('div', { style: { position: 'absolute', left: '20%', right: '20%', bottom: 0, height: obsH, background: b.color, borderRadius: '3px 3px 0 0', transition: 'height 140ms ease-out' } })
                           ),
-                          h('div', { className: 'text-[9px] font-mono mt-0.5', style: { color: isDark||isContrast?'#cbd5e1':'#475569' } }, sampleCounts[bi] + '/' + SAMPLE_N),
+                          h('div', { className: 'text-[10px] font-mono mt-0.5', style: { color: isDark||isContrast?'#cbd5e1':'#475569' } }, sampleCounts[bi] + '/' + SAMPLE_N),
                           h('div', { className: 'text-[10px] font-bold', style: { color: isDark||isContrast?'#e2e8f0':b.color } }, b.label)
                         );
                       })
@@ -4049,7 +4049,7 @@ var d = (labToolData.probability) || {};
                         return h('span', { key: 'dw' + di, style: { display: 'inline-block', width: 8, height: 8, borderRadius: 2, background: BUCKETS[bk].color } });
                       })
                     ),
-                    h('p', { className: 'text-[9px] leading-snug mt-1', style: { color: isDark||isContrast?'#94a3b8':'#64748b' } },
+                    h('p', { className: 'text-[10px] leading-snug mt-1', style: { color: isDark||isContrast?'#94a3b8':'#64748b' } },
                       t('stem.probability.dashed_expected_bar_observed', 'Dashed rule = expected. Bar = what these draws actually gave. Each square is one draw. Move a slider and both change together.'))
                   ),
                   h('div', { className: 'grid grid-cols-3 gap-2 mb-2' },

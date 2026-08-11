@@ -98,12 +98,84 @@ test.describe('Geology Explorer learning path', () => {
     await expect(page.getByRole('button', { name: /Explore/ })).toHaveAttribute('aria-pressed', 'true');
     await expect(page.getByRole('button', { name: /Investigate/ })).toBeVisible();
     await expect(page.getByRole('button', { name: /Assess/ })).toBeVisible();
-    await expect(page.getByText('0/3')).toBeVisible();
+    await expect(page.getByText('0/3', { exact: true })).toBeVisible();
     await expect(page.getByText('What to notice')).toBeVisible();
 
     await page.getByRole('button', { name: /Investigate/ }).click();
     await expect(page.getByRole('button', { name: /Investigate/ })).toHaveAttribute('aria-pressed', 'true');
     await expect(page.getByRole('button', { name: /Play history/ })).toBeVisible();
+  });
+
+  test('shows an interactive visual process map', async ({ page }) => {
+    await mount(page);
+
+    const map = page.getByRole('region', { name: 'Interactive process map' });
+    await expect(map).toContainText('See the story in three stages');
+    await expect(map.locator('[data-geology-journey-progress="true"]')).toContainText('0/3 evidenced');
+    await expect(map.locator('[data-geology-journey-step]')).toHaveCount(3);
+    await expect(map.locator('[data-geology-journey-detail="true"]')).toContainText('Read the layers');
+
+    await map.getByRole('button', { name: 'Stage 2: Find what cuts' }).click();
+    await expect(map.getByRole('button', { name: 'Stage 2: Find what cuts' })).toHaveAttribute('aria-pressed', 'true');
+    await expect(map.locator('[data-geology-journey-detail="true"]')).toContainText('cuts across layers');
+    await expect(page.locator('[data-geology-target="core"]')).toBeFocused();
+
+    await page.getByRole('tab', { name: /Crystal cavern/ }).click();
+    const geodeMap = page.getByRole('region', { name: 'Interactive process map' });
+    await expect(geodeMap.getByRole('button', { name: 'Stage 1: Wall rind' })).toBeVisible();
+    await geodeMap.getByRole('button', { name: 'Stage 3: Open-space crystals' }).click();
+    await expect(geodeMap.locator('[data-geology-journey-detail="true"]')).toContainText('large points');
+    await expect(geodeMap.locator('[data-geology-journey-progress="true"]')).toContainText('3/3 evidenced');
+    await expect(page.locator('[data-geology-target="signal"]')).toBeFocused();
+  });
+
+  test('uses evidence beacons to focus a landmark and save notebook evidence', async ({ page }) => {
+    await mount(page);
+    const panel = page.getByRole('region', { name: 'Evidence beacons' });
+    await expect(panel).toContainText('Layer stack');
+    const beacon = panel.getByRole('button', { name: 'Highlight Layer stack' });
+    await beacon.click();
+    await expect(beacon).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByRole('button', { name: /Investigate/ })).toHaveAttribute('aria-pressed', 'true');
+    await expect(panel.locator('[data-geology-beacon-detail=\"true\"]')).toContainText('Sedimentary layers');
+    await page.getByRole('button', { name: /Assess/ }).click();
+    await expect(page.getByRole('region', { name: 'Explain your evidence' })).toContainText('Layer stack');
+  });
+
+  test('guides a beacon tour and carries the evidence trail into CER', async ({ page }) => {
+    await mount(page);
+    const panel = page.getByRole('region', { name: 'Evidence beacons' });
+    await panel.getByRole('button', { name: 'Start beacon tour' }).click();
+    await expect(panel.locator('[data-geology-beacon-tour-status="true"]')).toContainText('Stop 1 of 3');
+    await expect(panel.getByRole('button', { name: 'Highlight Layer stack' })).toHaveAttribute('aria-pressed', 'true');
+    await panel.getByRole('button', { name: 'Next stop →' }).click();
+    await expect(panel.locator('[data-geology-beacon-tour-status="true"]')).toContainText('Stop 2 of 3');
+    await expect(panel.getByRole('button', { name: 'Highlight Cross-cutting pluton' })).toHaveAttribute('aria-pressed', 'true');
+    const trail = page.getByRole('group', { name: 'Evidence trail' });
+    await expect(trail.locator('[data-geology-evidence-trail-step]')).toHaveCount(3);
+    await trail.getByRole('button', { name: 'Carry trail into CER' }).click();
+    await expect(page.getByRole('button', { name: /Assess/ })).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByRole('region', { name: 'Explain your evidence' })).toBeFocused();
+  });
+
+  test('shows process cues and depth shading for the active scene', async ({ page }) => {
+    await mount(page);
+    const cues = page.getByRole('region', { name: 'Process cues' });
+    await expect(cues).toContainText('Relative dating');
+    await expect(cues.locator('[data-geology-process-step]')).toHaveCount(3);
+    await expect(cues.getByRole('img', { name: /Depth shading/ })).toBeVisible();
+    await cues.getByRole('button', { name: 'Show process cue: Cross-cutting' }).click();
+    await expect(cues.getByRole('button', { name: 'Show process cue: Cross-cutting' })).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  test('keeps a camera orientation breadcrumb available outside the 3D view', async ({ page }) => {
+    await mount(page);
+    const orientation = page.getByRole('region', { name: 'Camera orientation' });
+    await expect(orientation.locator('[data-geology-camera-current="true"]')).toContainText('3D overview');
+    const front = orientation.getByRole('button', { name: 'Set camera view: Front cross-section' });
+    await front.click();
+    await expect(front).toHaveAttribute('aria-pressed', 'true');
+    await expect(orientation.locator('[data-geology-camera-current="true"]')).toContainText('Front cross-section');
   });
 
   test('opens the lesson guide and shows CER feedback in Assess mode', async ({ page }) => {
@@ -216,6 +288,39 @@ test.describe('Geology Explorer learning path', () => {
     await expect(items.nth(0).getByRole('button', { name: 'Observation' })).toHaveAttribute('aria-pressed', 'true');
     await expect(map.locator('[data-geology-evidence-map-status="true"]')).toContainText('Map ready');
   });
+  test('drafts CER writing from the Evidence Map and reads the feedback aloud', async ({ page }) => {
+    await mount(page);
+
+    await page.getByRole('button', { name: /Investigate/ }).click();
+    await page.getByRole('button', { name: /Soil/ }).click();
+    await page.getByRole('button', { name: 'Sandstone', exact: true }).click();
+    await page.getByRole('button', { name: 'Shale', exact: true }).click();
+    await page.getByRole('button', { name: /Assess/ }).click();
+
+    const explain = page.getByRole('region', { name: 'Explain your evidence' });
+    const map = explain.getByRole('region', { name: 'Evidence map' });
+    const items = map.locator('[data-geology-evidence-item]');
+    await items.nth(0).getByRole('button', { name: 'Observation' }).click();
+    await items.nth(1).getByRole('button', { name: 'Process' }).click();
+    await items.nth(2).getByRole('button', { name: 'Outcome' }).click();
+    await explain.getByRole('button', { name: 'Draft explanation from map' }).click();
+    await expect(explain.getByLabel('Claim')).not.toHaveValue('');
+    await expect(explain.getByLabel('Explain your evidence')).toHaveValue(/because/);
+    await expect(explain.getByLabel(/Which observation changed your thinking/)).toBeVisible();
+    await expect(explain.locator('[data-geology-read-aloud="cer-crust"]')).toBeVisible();
+  });
+
+  test('provides read-aloud controls for sequencing, process timelines, and comparisons', async ({ page }) => {
+    await mount(page);
+    await page.getByRole('button', { name: /Investigate/ }).click();
+    await expect(page.locator('[data-geology-read-aloud="sequence-crust"]')).toBeVisible();
+
+    await page.getByRole('tab', { name: /Crystal cavern/ }).click();
+    await expect(page.locator('[data-geology-read-aloud="signal-geode"]')).toBeVisible();
+    await page.getByRole('button', { name: /Assess/ }).click();
+    await expect(page.locator('[data-geology-read-aloud^="comparison-geode-"]')).toBeVisible();
+  });
+
   test('shows an all-scene progress summary in the lesson guide', async ({ page }) => {
     await mount(page);
 
@@ -280,6 +385,13 @@ test.describe('Geology Explorer learning path', () => {
     await expect(panel).toContainText('Convergent plate motion');
     await expect(panel).toContainText('cause-and-effect');
     await expect(panel).toContainText('Transfer prompt');
+
+    const visual = panel.getByRole('region', { name: 'Visual story comparison' });
+    await expect(visual.getByRole('group', { name: /Current scene visual story/ })).toBeVisible();
+    await expect(visual.getByRole('group', { name: /Comparison scene visual story/ })).toBeVisible();
+    await visual.getByRole('button', { name: 'Current scene stage 2: Find what cuts' }).click();
+    await expect(visual.getByRole('button', { name: 'Current scene stage 2: Find what cuts' })).toHaveAttribute('aria-pressed', 'true');
+    await expect(visual.locator('[data-geology-comparison-detail="true"]')).toContainText('Find what cuts');
   });
   test('switches scene and compares materials from the active scene palette', async ({ page }) => {
     await mount(page);

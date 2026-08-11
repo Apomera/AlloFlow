@@ -29,7 +29,7 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) - shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) - shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -17703,6 +17703,36 @@ var d = labToolData.cell || {};
 
 
 
+          // Every authored question lists its correct answer FIRST, so the quiz
+          // was answerable without reading it (10/10 at slot 1, slots 2-4 never
+          // correct). Rotate the options by a per-question offset so the answer
+          // lands in a different slot for each question.
+          //
+          // Deterministic on purpose: quizQuestion is re-derived from quizIdx on
+          // EVERY render, so a Math.random() shuffle here would deal the options
+          // a new order under the student's cursor mid-question.
+          //
+          // wrongFeedback is a POSITIONAL array (read as wrongFeedback[selected]),
+          // so it must be rotated by the same offset or the explanation would be
+          // attached to the wrong distractor. Correctness itself compares option
+          // TEXT against `a`, so reordering cannot affect scoring.
+          function cellRotateQuizOptions(question, seedIdx) {
+            if (!question || !Array.isArray(question.options) || question.options.length < 2) return question;
+            var n = question.options.length;
+            var shift = ((seedIdx * 7) + 3) % n;   // coprime-ish stride, never 0 for n=4
+            if (shift === 0) return question;
+            var rotate = function (arr) {
+              if (!Array.isArray(arr) || arr.length !== n) return arr;
+              var out = new Array(n);
+              for (var i = 0; i < n; i++) out[(i + shift) % n] = arr[i];
+              return out;
+            };
+            var rotated = Object.assign({}, question);
+            rotated.options = rotate(question.options);
+            if (Array.isArray(question.wrongFeedback)) rotated.wrongFeedback = rotate(question.wrongFeedback);
+            return rotated;
+          }
+
           // ── Quiz questions (observation-based) ──
 
           var QUIZ_BANK = [
@@ -21106,7 +21136,7 @@ var d = labToolData.cell || {};
 
           // ── Quiz logic ──
 
-          var quizQuestion = d.quizMode && QUIZ_BANK[d.quizIdx || 0] ? QUIZ_BANK[d.quizIdx || 0] : null;
+          var quizQuestion = d.quizMode && QUIZ_BANK[d.quizIdx || 0] ? cellRotateQuizOptions(QUIZ_BANK[d.quizIdx || 0], d.quizIdx || 0) : null;
 
           var activeCellMode = d.mode || 'observe';
           var observedCount = (ext.organismsObserved || []).length;
@@ -24075,7 +24105,7 @@ var d = labToolData.cell || {};
                       h('td', { className: 'px-1 border border-slate-200' }, o.st));
                   }))
                 ),
-                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis (free text): Does permeability matter when concentrations are equal?',
+                h('textarea', { 'aria-label': 'Osmosis hypothesis', value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis (free text): Does permeability matter when concentrations are equal?',
                   className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
                 !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
                 iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
@@ -24087,7 +24117,7 @@ var d = labToolData.cell || {};
                   h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
                     h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                     'I understand — explain in own words'),
-                  iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how concentration gradient and membrane permeability jointly drive osmosis.',
+                  iq.understood && h('textarea', { 'aria-label': 'Osmosis explanation', value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how concentration gradient and membrane permeability jointly drive osmosis.',
                     className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
                 h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 3-state osmosis marker; no membrane-integrity score; no reveal — by design.')
               );

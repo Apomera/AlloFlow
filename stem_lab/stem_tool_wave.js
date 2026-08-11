@@ -11,7 +11,7 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -104,7 +104,9 @@ window.StemLab = window.StemLab || {
             }});
           });
         }
-        return h('div', { className: 'p-8 text-center text-slate-600' }, __alloT('stem.wave.loading', 'Loading Wave Simulator…'));
+        // text-slate-600 on the dark tool shell is ~2:1. Use the theme var so the
+        // placeholder stays readable in light, dark and high-contrast.
+        return h('div', { className: 'p-8 text-center', style: { color: 'var(--allo-stem-text-soft, #475569)' } }, __alloT('stem.wave.loading', 'Loading Wave Simulator…'));
       }
       var __waveMainView = (function() {
 const d = labToolData.wave;
@@ -1948,6 +1950,9 @@ const d = labToolData.wave;
 
               React.createElement("canvas", {
                 role: "application", "aria-label": __alloT('stem.wave.aria_canvas', 'Wave simulator — arrow up/down adjusts amplitude, arrow left/right adjusts frequency, +/- adjusts speed, space pauses or resumes the animation'),
+                // Without tabIndex the canvas cannot take focus, so the onKeyDown
+                // handler below (and the focus ring styling) never fire.
+                tabIndex: 0,
                 ref: canvasRef,
                 className: "focus:outline-none focus:ring-4 focus:ring-cyan-300 focus:ring-inset",
                 "data-wave-canvas": "true",

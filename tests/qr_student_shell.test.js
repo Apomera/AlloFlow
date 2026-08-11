@@ -460,24 +460,33 @@ describe('homework QR hardening', () => {
     expect(sessionModalSource).toContain('Live session readiness');
     expect(sessionModalSource).toContain('Selectable student join link');
     expect(headerSource).toContain('Homework link length');
-    expect(headerSource).toContain('Recent homework links');
+    // The recent-links list lives in the Share & Collect dialog now (ANTI,
+    // @afc130a59) — the header keeps only the link-length control.
+    expect(rootSource).toContain('Recent homework links');
     expect(headerSource).toContain('<option value={1}>1 day</option>');
     expect(headerSource).toContain('<option value={30}>30 days</option>');
     expect(headerPublicModule).toBe(headerModule);
   });
 
   it('keeps shared asynchronous activities opt-in, mailbox-hosted, and visually subordinate to homework sharing', () => {
-    expect(headerSource).toContain('Shared class activity (optional)');
-    expect(headerSource).toContain('Add a shared asynchronous activity');
-    expect(headerSource).toContain('<option value="word_cloud">Word Cloud</option>');
-    expect(headerSource).toContain('<option value="rating">Rating scale (not scored)</option>');
-    expect(headerSource).toContain('After teacher review (safer)');
-    expect(headerSource).toContain('Uses your Class Mailbox so students can contribute while you are offline.');
+    // The activity editor moved to the Share & Collect dialog (ANTI,
+    // @afc130a59) and was simplified. The invariants this test exists for
+    // survive in their current forms:
+    //  - opt-in: no type selected means no activity; choosing a type IS the
+    //    enable, and "None" is the first option.
+    expect(rootSource).toContain('<option value="">None</option>');
+    expect(rootSource).toContain('<option value="word_cloud">Word Cloud</option>');
+    expect(rootSource).toContain('<option value="rating">Rating scale (not scored)</option>');
+    //  - mailbox-hosted, account-free:
+    expect(rootSource).toContain('People answer without an account.');
+    //  - the review-queue radio is gone, but the SAFER DEFAULT it offered is
+    //    now unconditional: word clouds publish only via explicit opt-in.
+    expect(rootSource).toContain("revealPolicy === 'auto_publish' ? 'auto_publish' : 'teacher_review'");
     expect(rootSource).toContain("enabled: false,\n      type: 'word_cloud'");
-    expect(rootSource).toContain('buildAssignmentPackEncoded({ includeSharedActivity: true })');
+    expect(rootSource).toContain('buildAssignmentPackEncoded({ includeSharedActivity: true, resourceIds: selectedResou');
     expect(rootSource).toContain('activities: built.sharedActivities');
     expect(rootSource).toContain('sharedActivity: built.sharedActivities[0] || null');
-    expect(rootSource).toContain('if (sharedAssignmentActivity.enabled) {\n          return hostPackOnMailbox();');
+    expect(rootSource).toContain('if (sharedAssignmentActivity.enabled) {\n          return hostPackOnMailbox(selectedResourceIds);');
     expect(rootSource).toContain('sharedActivities: sharedActivities.length ? sharedActivities : undefined');
     expect(rootSource).toContain("a: 'joinactivity'");
     expect(rootSource).toContain("a: 'activityupsert'");
@@ -485,7 +494,7 @@ describe('homework QR hardening', () => {
     expect(rootSource).toContain("a: 'getactivitysummary', id: packId, aid: activityId");
     expect(rootSource).toContain("a: 'moderateactivity'");
     expect(rootSource).toContain('window.AlloModules?.LivePolling?.renderWordCloudItems');
-    expect(rootSource).toContain("Manage shared {qrShareModal.sharedActivity.type === 'rating' ? 'class rating' : 'class Word Cloud'}");
+    expect(rootSource).toContain("Manage shared {qrShareModal.sharedActivity.type === 'rating' ? 'class rating' : qrShareModal.sharedActivity.type === 'survey' ? 'survey' : 'class Word Cloud'}");
     expect(rootSource).toContain('Only the anonymous distribution appears after the participation threshold.');
     expect(rootSource).toContain('!isTeacherMode && sharedHostedActivity &&');
     expect(rootSource).toContain('Students contribute on their own time.');

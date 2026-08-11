@@ -1,5 +1,5 @@
 // ============================================================
-// stem_tool_gamestudio.js — Game Design Studio (STEM Lab)
+// stem_tool_gamestudio.js — Game Design Studio (STEAM Lab)
 // Standalone CDN plugin — extracted & enhanced
 // ============================================================
 
@@ -27,7 +27,7 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -195,7 +195,7 @@ window.StemLab = window.StemLab || {
         '\u2022 NUMERICAL \u2014 Score popups, damage numbers, combo counters\n' +
         '\u2022 HAPTIC \u2014 Controller vibration, screen pulse\n\n' +
         'Good feedback tells the player: "Your action mattered!" Even our simple Game Studio shows toast messages, XP awards, and score changes as feedback.',
-      funFact: 'The game "Vlambeer\'s Action" became famous for demonstrating "juice" \u2014 adding screen shake, particles, and sound to a boring game made it feel 10x better without changing gameplay!',
+      funFact: 'Game studio Vlambeer\'s famous talk "The Art of Screenshake" demonstrates "juice" live \u2014 adding screen shake, particles, and sound to a plain shooter makes it feel 10x better without changing the gameplay rules at all!',
       realGame: 'When Mario collects a coin, you see it spin upward, hear "bling!", see a +200 score popup, and your coin counter increases. That\'s 4 layers of feedback for one tiny action!',
       quiz: {
         question: 'A player collects a coin but gets no feedback (no sound, no visual, just a silent score increase). What is the likely problem?',
@@ -380,7 +380,9 @@ window.StemLab = window.StemLab || {
       t['12,3']='coin'; t['13,3']='coin'; t['5,2']='coin';
       t['6,10']='spikes'; t['7,10']='spikes';
       t['1,10']='player'; t['4,2']='flag';
-      t['9,5']='enemy'; t['13,3']='enemy';
+      // 9,5 and 13,3 already hold coins — placing enemies there silently
+      // erased 2 of the 7 coins. Neighboring platform-top cells are free.
+      t['10,5']='enemy'; t['14,3']='enemy';
       return t;
     }),
     makeStarter('Puzzle Dungeon', 'puzzle', '\uD83E\uDDE9', 'Find keys to unlock doors!', function() {
@@ -1190,7 +1192,7 @@ window.StemLab = window.StemLab || {
                       (function() {
                         var trig = TRIGGERS.find(function(t) { return t.id === rule.trigger; });
                         if (!trig || !trig.params || trig.params.length === 0) return null;
-                        return h('select', {
+                        return h('select', { 'aria-label': __alloT('stem.gamestudio.trigger_param_label', 'Trigger parameter'),
                           value: rule.param || '',
                           onChange: function(e) {
                             var ne = Object.assign({}, events); var arr = (ne[activeSprite] || []).slice();
@@ -1214,7 +1216,7 @@ window.StemLab = window.StemLab || {
                       (function() {
                         var act = ACTIONS.find(function(a) { return a.id === rule.action; });
                         if (!act || !act.params || act.params.length === 0) return null;
-                        return h('select', {
+                        return h('select', { 'aria-label': __alloT('stem.gamestudio.action_param_label', 'Action parameter'),
                           value: rule.actionParam || '',
                           onChange: function(e) {
                             var ne = Object.assign({}, events); var arr = (ne[activeSprite] || []).slice();
@@ -1817,7 +1819,7 @@ window.StemLab = window.StemLab || {
                 ),
                 // SVG difficulty curve visualization
                 h('div', { className: 'p-2 rounded border border-slate-200 bg-slate-50' },
-                  h('svg', { viewBox: '0 0 360 150', className: 'w-full h-32' },
+                  h('svg', { role: 'img', 'aria-label': __alloT('stem.gamestudio.curve_img', 'Difficulty curve chart'), viewBox: '0 0 360 150', className: 'w-full h-32' },
                     // Axes
                     h('line', { x1: 20, y1: 130, x2: 340, y2: 130, stroke: '#94a3b8', strokeWidth: 1 }),
                     h('line', { x1: 20, y1: 20, x2: 20, y2: 130, stroke: '#94a3b8', strokeWidth: 1 }),
@@ -1881,7 +1883,7 @@ window.StemLab = window.StemLab || {
                   )
                 ),
                 // Hypothesis textarea
-                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.gamestudio.hypothesis_free_text_no_right_answer_w', 'Hypothesis (free text — no right answer): Which slider has the biggest effect on difficulty? Does the curve change shape, or just height?'),
+                h('textarea', { 'aria-label': __alloT('stem.gamestudio.hypothesis_input', 'Difficulty curve hypothesis'), value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.gamestudio.hypothesis_free_text_no_right_answer_w', 'Hypothesis (free text — no right answer): Which slider has the biggest effect on difficulty? Does the curve change shape, or just height?'),
                   className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
                 // Opt-in stuck prompts
                 !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.gamestudio.stuck_show_open_prompts_no_answers', '🤔 Stuck — show open prompts (no answers)')),
@@ -1899,7 +1901,7 @@ window.StemLab = window.StemLab || {
                     h('input', { type: 'checkbox', id: 'dt-und', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                     h('label', { htmlFor: 'dt-und', className: 'text-[12px] font-bold text-emerald-900 cursor-pointer' },
                       __alloT('stem.gamestudio.i_think_i_understand_difficulty_tuning', 'I think I understand difficulty tuning now — let me explain it in my own words'))),
-                  iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.gamestudio.explain_in_your_own_words_how_do_the_5', 'Explain in your own words: how do the 5 parameters jointly determine difficulty? What player-experience metric does each map to?'),
+                  iq.understood && h('textarea', { 'aria-label': __alloT('stem.gamestudio.explanation_input', 'Difficulty curve explanation'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.gamestudio.explain_in_your_own_words_how_do_the_5', 'Explain in your own words: how do the 5 parameters jointly determine difficulty? What player-experience metric does each map to?'),
                     className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug', rows: 4 }),
                   iq.understood && (iq.explanation || '').trim().length >= 40 && h('div', { className: 'mt-2 text-[10px] italic text-emerald-700' },
                     __alloT('stem.gamestudio.saved_notice_nobody_checked_your_answe', '✓ Saved. Notice — nobody checked your answer. That is what learner-driven inquiry looks like.'))

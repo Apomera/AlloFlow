@@ -1031,7 +1031,7 @@ describe('remediation MCP: durability + filesystem boundary', () => {
   const init = { jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 't', version: '0' } } };
   const call = (id, name, args) => ({ jsonrpc: '2.0', id, method: 'tools/call', params: { name, arguments: args } });
 
-  it('a job record written by one server process is readable by the NEXT one, marked interrupted', async () => {
+  it('a legacy schema-2 record is readable by the next process and remains safely interrupted', async () => {
     const stateDir = join(tmp, 'restart-state');
     mkdirSync(stateDir, { recursive: true });
     // Forge the record the crashed process would have left: status 'running', no result. Writing
@@ -1039,9 +1039,11 @@ describe('remediation MCP: durability + filesystem boundary', () => {
     // need a key, a browser, and 20 minutes to reach the same on-disk state.
     const jobId = 'rjob-11111111-2222-3333-4444-555555555555';
     writeFileSync(join(stateDir, jobId + '.json'), JSON.stringify({
-      schema: 1, jobId, kind: 'pdf_batch_audit', input: { dir: 'C:/queue', files: 120, outputDir: 'C:/queue' },
+      schema: 2, jobId, kind: 'pdf_batch_audit', input: { dir: 'C:/queue', files: 120, outputDir: 'C:/queue' },
       status: 'running', createdAt: new Date().toISOString(), startedAt: new Date().toISOString(),
-      finishedAt: null, logLines: ['12:00:00 file 47/120: handbook.pdf'], result: null, error: null,
+      finishedAt: null, logLines: ['12:00:00 file 47/120: handbook.pdf'],
+      progress: { total: 120, done: 47, processed: 47, processedMs: 47 * 60000 },
+      result: null, error: null,
     }));
 
     const env = { ...process.env, ALLOFLOW_MCP_STATE_DIR: stateDir, ALLOFLOW_MCP_NO_KEY_FILES: '1' };
@@ -1052,13 +1054,41 @@ describe('remediation MCP: durability + filesystem boundary', () => {
     expect(status.status).toBe('interrupted');       // not 'running' — nothing is running in a fresh process
     expect(status.restored).toBe(true);
     expect(status.recentLog).toContain('12:00:00 file 47/120: handbook.pdf'); // its progress survived
-    expect(status.interruptedNote).toMatch(/skip_existing/);                  // and it says how to finish the work
+    expect(status.progress).toMatchObject({ filesDone: 47, filesTotal: 120, filesRemaining: 73 });
+    expect(status.interruptedNote).toMatch(/legacy|compatibility-unsafe/);    // and it explains why auto-resume was refused
 
     // No result was ever produced, but the answer points at the partial outputs instead of a shrug.
     const result = replies.find((r) => r.id === 3).result.structuredContent;
     expect(result.ok).toBe(false);
     expect(result.status).toBe('interrupted');
     expect(result.error).toContain('C:/queue');
+  }, 60000);
+
+  it('recovers a flushed temporary job record left just before atomic rename', async () => {
+    const stateDir = join(tmp, 'atomic-temp-state');
+    mkdirSync(stateDir, { recursive: true });
+    const jobId = 'rjob-aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
+    writeFileSync(join(stateDir, jobId + '.json'), JSON.stringify({
+      schema: 2, jobId, kind: 'pdf_remediate', input: { file: 'C:/queue/a.pdf', outputDir: 'C:/queue' },
+      status: 'running', createdAt: new Date().toISOString(), startedAt: new Date().toISOString(),
+      finishedAt: null, logLines: ['11:59:00 still running'], progress: null,
+      result: null, error: null,
+    }));
+    writeFileSync(join(stateDir, jobId + '.json.tmp'), JSON.stringify({
+      schema: 2, jobId, kind: 'pdf_remediate', input: { file: 'C:/queue/a.pdf', outputDir: 'C:/queue' },
+      status: 'completed', createdAt: new Date().toISOString(), startedAt: new Date().toISOString(),
+      finishedAt: new Date().toISOString(), logLines: ['12:00:00 completed'], progress: null,
+      result: { outputPdf: 'C:/queue/a.tagged.pdf' }, error: null,
+    }));
+
+    const env = { ...process.env, ALLOFLOW_MCP_STATE_DIR: stateDir, ALLOFLOW_MCP_NO_KEY_FILES: '1' };
+    delete env.GEMINI_API_KEY;
+    const replies = await talk(env, [init, call(2, 'remediation_job_status', { job_id: jobId }), call(3, 'remediation_job_result', { job_id: jobId })]);
+
+    const status = replies.find((reply) => reply.id === 2).result.structuredContent;
+    expect(status).toMatchObject({ jobId, status: 'completed', restored: true, resultAvailable: true });
+    const result = replies.find((reply) => reply.id === 3).result.structuredContent;
+    expect(result).toMatchObject({ result: { outputPdf: 'C:/queue/a.tagged.pdf' } });
   }, 60000);
 
   it('an unknown job id no longer claims jobs die with the server (that message is now false)', async () => {

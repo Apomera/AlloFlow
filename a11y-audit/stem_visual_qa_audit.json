@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-27T23:57:10.876Z",
+  "generatedAt": "2026-08-10T03:09:16.339Z",
   "source": {
-    "stemToolFileCount": 129,
-    "registeredToolCount": 132,
+    "stemToolFileCount": 137,
+    "registeredToolCount": 140,
     "monitoredMarkerCount": 74
   },
   "summary": {
@@ -13,9 +13,9 @@
     "monitoredErrorCount": 0,
     "monitoredWarningCount": 0,
     "monitoredNoticeCount": 0,
-    "syncDriftCount": 15,
-    "sourcePublicDriftCount": 6,
-    "monitoredSyncDriftCount": 10
+    "syncDriftCount": 10,
+    "sourcePublicDriftCount": 0,
+    "monitoredSyncDriftCount": 8
   },
   "loadErrors": [],
   "markerResults": [
@@ -41,14 +41,14 @@
       "marker": "data-microbiology-focus",
       "label": "Microbiology mission panel",
       "ok": true,
-      "htmlBytes": 43628,
+      "htmlBytes": 43906,
       "issues": [],
       "metrics": {
         "buttons": 14,
         "fields": 0,
         "canvases": 0,
         "headings": 2,
-        "htmlBytes": 43628
+        "htmlBytes": 43906
       }
     },
     {
@@ -57,14 +57,14 @@
       "marker": "data-ecosystem-field-brief",
       "label": "Ecosystem field brief",
       "ok": true,
-      "htmlBytes": 24579,
+      "htmlBytes": 35210,
       "issues": [],
       "metrics": {
-        "buttons": 33,
-        "fields": 8,
+        "buttons": 44,
+        "fields": 10,
         "canvases": 1,
-        "headings": 2,
-        "htmlBytes": 24579
+        "headings": 3,
+        "htmlBytes": 35210
       }
     },
     {
@@ -73,14 +73,14 @@
       "marker": "data-epidemic-triage",
       "label": "Epidemic triage panel",
       "ok": true,
-      "htmlBytes": 89564,
+      "htmlBytes": 95943,
       "issues": [],
       "metrics": {
-        "buttons": 21,
-        "fields": 4,
+        "buttons": 24,
+        "fields": 14,
         "canvases": 1,
         "headings": 2,
-        "htmlBytes": 89564
+        "htmlBytes": 95943
       }
     },
     {
@@ -89,14 +89,14 @@
       "marker": "data-renewables-launch-panel",
       "label": "Renewables launch panel",
       "ok": true,
-      "htmlBytes": 12837,
+      "htmlBytes": 12903,
       "issues": [],
       "metrics": {
         "buttons": 12,
         "fields": 0,
         "canvases": 0,
         "headings": 1,
-        "htmlBytes": 12837
+        "htmlBytes": 12903
       }
     },
     {
@@ -105,14 +105,14 @@
       "marker": "data-climate-mission-panel",
       "label": "Climate mission panel",
       "ok": true,
-      "htmlBytes": 33989,
+      "htmlBytes": 34327,
       "issues": [],
       "metrics": {
-        "buttons": 39,
+        "buttons": 40,
         "fields": 0,
         "canvases": 2,
         "headings": 2,
-        "htmlBytes": 33989
+        "htmlBytes": 34327
       }
     },
     {
@@ -121,14 +121,14 @@
       "marker": "data-bridgelab-design-brief",
       "label": "Bridge design brief",
       "ok": true,
-      "htmlBytes": 41343,
+      "htmlBytes": 42977,
       "issues": [],
       "metrics": {
         "buttons": 24,
         "fields": 9,
         "canvases": 0,
         "headings": 2,
-        "htmlBytes": 41343
+        "htmlBytes": 42977
       }
     },
     {
@@ -201,14 +201,14 @@
       "marker": "data-dna-mission",
       "label": "DNA mission control",
       "ok": true,
-      "htmlBytes": 32932,
+      "htmlBytes": 39991,
       "issues": [],
       "metrics": {
-        "buttons": 88,
+        "buttons": 97,
         "fields": 1,
         "canvases": 1,
-        "headings": 4,
-        "htmlBytes": 32932
+        "headings": 6,
+        "htmlBytes": 39991
       }
     },
     {
@@ -217,14 +217,14 @@
       "marker": "data-alphafold-mission",
       "label": "AlphaFold structural biology mission",
       "ok": true,
-      "htmlBytes": 8915,
+      "htmlBytes": 9423,
       "issues": [],
       "metrics": {
         "buttons": 5,
         "fields": 0,
         "canvases": 0,
-        "headings": 7,
-        "htmlBytes": 8915
+        "headings": 8,
+        "htmlBytes": 9423
       }
     },
     {
@@ -249,14 +249,14 @@
       "marker": "data-firstresponse-readiness",
       "label": "First Response readiness path",
       "ok": true,
-      "htmlBytes": 13659,
+      "htmlBytes": 13732,
       "issues": [],
       "metrics": {
         "buttons": 13,
         "fields": 0,
         "canvases": 0,
         "headings": 2,
-        "htmlBytes": 13659
+        "htmlBytes": 13732
       }
     },
     {
@@ -265,14 +265,14 @@
       "marker": "data-stewardship-mission",
       "label": "Stewardship systems mission",
       "ok": true,
-      "htmlBytes": 38019,
+      "htmlBytes": 38163,
       "issues": [],
       "metrics": {
         "buttons": 21,
         "fields": 6,
         "canvases": 0,
         "headings": 2,
-        "htmlBytes": 38019
+        "htmlBytes": 38163
       }
     },
     {
@@ -281,14 +281,14 @@
       "marker": "data-spacecolony-life-support",
       "label": "Space Colony life-support mission",
       "ok": true,
-      "htmlBytes": 20254,
+      "htmlBytes": 20363,
       "issues": [],
       "metrics": {
         "buttons": 16,
         "fields": 8,
         "canvases": 0,
         "headings": 5,
-        "htmlBytes": 20254
+        "htmlBytes": 20363
       }
     },
     {
@@ -297,14 +297,14 @@
       "marker": "data-fireecology-mission",
       "label": "Fire Ecology stewardship mission",
       "ok": true,
-      "htmlBytes": 25802,
+      "htmlBytes": 25782,
       "issues": [],
       "metrics": {
         "buttons": 29,
         "fields": 1,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 25802
+        "htmlBytes": 25782
       }
     },
     {
@@ -313,14 +313,14 @@
       "marker": "data-behaviorlab-mission",
       "label": "Behavior Lab experiment mission",
       "ok": true,
-      "htmlBytes": 12727,
+      "htmlBytes": 12784,
       "issues": [],
       "metrics": {
         "buttons": 24,
         "fields": 5,
         "canvases": 0,
         "headings": 5,
-        "htmlBytes": 12727
+        "htmlBytes": 12784
       }
     },
     {
@@ -329,14 +329,14 @@
       "marker": "data-beehive-command",
       "label": "Beehive superorganism command deck",
       "ok": true,
-      "htmlBytes": 71922,
+      "htmlBytes": 127627,
       "issues": [],
       "metrics": {
-        "buttons": 76,
-        "fields": 5,
+        "buttons": 86,
+        "fields": 12,
         "canvases": 1,
-        "headings": 10,
-        "htmlBytes": 71922
+        "headings": 11,
+        "htmlBytes": 127627
       }
     },
     {
@@ -345,14 +345,14 @@
       "marker": "data-migration-mission",
       "label": "Migration field mission",
       "ok": true,
-      "htmlBytes": 16925,
+      "htmlBytes": 8749,
       "issues": [],
       "metrics": {
-        "buttons": 10,
-        "fields": 6,
-        "canvases": 1,
-        "headings": 7,
-        "htmlBytes": 16925
+        "buttons": 13,
+        "fields": 4,
+        "canvases": 0,
+        "headings": 3,
+        "htmlBytes": 8749
       }
     },
     {
@@ -361,14 +361,14 @@
       "marker": "data-petslab-mission",
       "label": "Pets Lab science mission",
       "ok": true,
-      "htmlBytes": 32805,
+      "htmlBytes": 45228,
       "issues": [],
       "metrics": {
-        "buttons": 35,
+        "buttons": 36,
         "fields": 7,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 32805
+        "htmlBytes": 45228
       }
     },
     {
@@ -409,14 +409,14 @@
       "marker": "data-dinolab-command",
       "label": "Dino Lab mission deck",
       "ok": true,
-      "htmlBytes": 430038,
+      "htmlBytes": 430846,
       "issues": [],
       "metrics": {
         "buttons": 408,
         "fields": 1,
         "canvases": 0,
         "headings": 1,
-        "htmlBytes": 430038
+        "htmlBytes": 430846
       }
     },
     {
@@ -425,14 +425,14 @@
       "marker": "data-aquaculture-command",
       "label": "Aquaculture operations dashboard",
       "ok": true,
-      "htmlBytes": 101934,
+      "htmlBytes": 112633,
       "issues": [],
       "metrics": {
-        "buttons": 178,
-        "fields": 5,
+        "buttons": 181,
+        "fields": 6,
         "canvases": 0,
-        "headings": 10,
-        "htmlBytes": 101934
+        "headings": 13,
+        "htmlBytes": 112633
       }
     },
     {
@@ -441,14 +441,14 @@
       "marker": "data-music-command",
       "label": "Music Synth studio deck",
       "ok": true,
-      "htmlBytes": 47879,
+      "htmlBytes": 47941,
       "issues": [],
       "metrics": {
         "buttons": 94,
         "fields": 19,
         "canvases": 2,
         "headings": 3,
-        "htmlBytes": 47879
+        "htmlBytes": 47941
       }
     },
     {
@@ -457,14 +457,14 @@
       "marker": "data-molecule-command",
       "label": "Molecule Lab command deck",
       "ok": true,
-      "htmlBytes": 35843,
+      "htmlBytes": 35850,
       "issues": [],
       "metrics": {
         "buttons": 104,
         "fields": 1,
         "canvases": 0,
         "headings": 4,
-        "htmlBytes": 35843
+        "htmlBytes": 35850
       }
     },
     {
@@ -473,14 +473,14 @@
       "marker": "data-printingpress-command",
       "label": "PrintingPress shop dashboard",
       "ok": true,
-      "htmlBytes": 45102,
+      "htmlBytes": 45311,
       "issues": [],
       "metrics": {
         "buttons": 25,
         "fields": 0,
         "canvases": 0,
         "headings": 5,
-        "htmlBytes": 45102
+        "htmlBytes": 45311
       }
     },
     {
@@ -489,14 +489,14 @@
       "marker": "data-fisherlab-command",
       "label": "FisherLab harbor briefing",
       "ok": true,
-      "htmlBytes": 22731,
+      "htmlBytes": 22774,
       "issues": [],
       "metrics": {
         "buttons": 24,
         "fields": 1,
         "canvases": 0,
         "headings": 1,
-        "htmlBytes": 22731
+        "htmlBytes": 22774
       }
     },
     {
@@ -505,14 +505,14 @@
       "marker": "data-raptorhunt-command",
       "label": "Raptor Hunt flight briefing",
       "ok": true,
-      "htmlBytes": 25507,
+      "htmlBytes": 25197,
       "issues": [],
       "metrics": {
         "buttons": 48,
         "fields": 1,
         "canvases": 0,
         "headings": 1,
-        "htmlBytes": 25507
+        "htmlBytes": 25197
       }
     },
     {
@@ -537,14 +537,14 @@
       "marker": "data-atctower-command",
       "label": "ATC Tower command center",
       "ok": true,
-      "htmlBytes": 16103,
+      "htmlBytes": 16569,
       "issues": [],
       "metrics": {
         "buttons": 10,
         "fields": 0,
         "canvases": 0,
         "headings": 1,
-        "htmlBytes": 16103
+        "htmlBytes": 16569
       }
     },
     {
@@ -553,14 +553,14 @@
       "marker": "data-echotrainer-briefing",
       "label": "Echo Navigator sonar briefing",
       "ok": true,
-      "htmlBytes": 26842,
+      "htmlBytes": 26900,
       "issues": [],
       "metrics": {
         "buttons": 26,
         "fields": 5,
         "canvases": 1,
         "headings": 2,
-        "htmlBytes": 26842
+        "htmlBytes": 26900
       }
     },
     {
@@ -569,14 +569,14 @@
       "marker": "data-brainatlas-mission",
       "label": "Brain Atlas mission panel",
       "ok": true,
-      "htmlBytes": 34420,
+      "htmlBytes": 39351,
       "issues": [],
       "metrics": {
-        "buttons": 58,
+        "buttons": 68,
         "fields": 1,
         "canvases": 1,
         "headings": 6,
-        "htmlBytes": 34420
+        "htmlBytes": 39351
       }
     },
     {
@@ -585,14 +585,14 @@
       "marker": "data-anatomy-mission",
       "label": "Anatomy mission panel",
       "ok": true,
-      "htmlBytes": 44212,
+      "htmlBytes": 47656,
       "issues": [],
       "metrics": {
-        "buttons": 87,
+        "buttons": 96,
         "fields": 1,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 44212
+        "htmlBytes": 47656
       }
     },
     {
@@ -601,14 +601,14 @@
       "marker": "data-birdlab-field-station",
       "label": "Bird Lab field station",
       "ok": true,
-      "htmlBytes": 144193,
+      "htmlBytes": 144050,
       "issues": [],
       "metrics": {
         "buttons": 127,
         "fields": 1,
         "canvases": 0,
         "headings": 127,
-        "htmlBytes": 144193
+        "htmlBytes": 144050
       }
     },
     {
@@ -617,14 +617,14 @@
       "marker": "data-watercycle-focus",
       "label": "Water Cycle focus panel",
       "ok": true,
-      "htmlBytes": 21850,
+      "htmlBytes": 34998,
       "issues": [],
       "metrics": {
-        "buttons": 30,
-        "fields": 6,
+        "buttons": 35,
+        "fields": 7,
         "canvases": 1,
         "headings": 7,
-        "htmlBytes": 21850
+        "htmlBytes": 34998
       }
     },
     {
@@ -633,14 +633,14 @@
       "marker": "data-playlab-gameplan",
       "label": "PlayLab game plan",
       "ok": true,
-      "htmlBytes": 17722,
+      "htmlBytes": 18322,
       "issues": [],
       "metrics": {
         "buttons": 31,
         "fields": 5,
         "canvases": 1,
         "headings": 7,
-        "htmlBytes": 17722
+        "htmlBytes": 18322
       }
     },
     {
@@ -649,14 +649,14 @@
       "marker": "data-pt-sim-focus",
       "label": "Plate Tectonics sim focus",
       "ok": true,
-      "htmlBytes": 28920,
+      "htmlBytes": 28969,
       "issues": [],
       "metrics": {
         "buttons": 27,
         "fields": 5,
         "canvases": 6,
         "headings": 6,
-        "htmlBytes": 28920
+        "htmlBytes": 28969
       }
     },
     {
@@ -665,14 +665,14 @@
       "marker": "data-astronomy-command",
       "label": "Astronomy observation command",
       "ok": true,
-      "htmlBytes": 14046,
+      "htmlBytes": 14818,
       "issues": [],
       "metrics": {
         "buttons": 18,
         "fields": 1,
         "canvases": 0,
         "headings": 2,
-        "htmlBytes": 14046
+        "htmlBytes": 14818
       }
     },
     {
@@ -681,14 +681,14 @@
       "marker": "data-geology-command",
       "label": "Geology field investigation command",
       "ok": true,
-      "htmlBytes": 15168,
+      "htmlBytes": 32771,
       "issues": [],
       "metrics": {
-        "buttons": 23,
+        "buttons": 46,
         "fields": 1,
         "canvases": 0,
-        "headings": 1,
-        "htmlBytes": 15168
+        "headings": 4,
+        "htmlBytes": 32771
       }
     },
     {
@@ -697,14 +697,14 @@
       "marker": "data-rockcycle-command",
       "label": "Rock Cycle Earth systems command",
       "ok": true,
-      "htmlBytes": 34340,
+      "htmlBytes": 33485,
       "issues": [],
       "metrics": {
         "buttons": 16,
         "fields": 1,
         "canvases": 1,
         "headings": 2,
-        "htmlBytes": 34340
+        "htmlBytes": 33485
       }
     },
     {
@@ -729,14 +729,14 @@
       "marker": "data-moonmission-control",
       "label": "Moon Mission control panel",
       "ok": true,
-      "htmlBytes": 13357,
+      "htmlBytes": 14228,
       "issues": [],
       "metrics": {
         "buttons": 8,
         "fields": 5,
-        "canvases": 0,
+        "canvases": 1,
         "headings": 3,
-        "htmlBytes": 13357
+        "htmlBytes": 14228
       }
     },
     {
@@ -745,14 +745,14 @@
       "marker": "data-solarsystem-command-center",
       "label": "Solar System command center",
       "ok": true,
-      "htmlBytes": 16650,
+      "htmlBytes": 16115,
       "issues": [],
       "metrics": {
-        "buttons": 25,
+        "buttons": 24,
         "fields": 1,
         "canvases": 1,
         "headings": 2,
-        "htmlBytes": 16650
+        "htmlBytes": 16115
       }
     },
     {
@@ -777,14 +777,14 @@
       "marker": "data-throwlab-run-focus",
       "label": "ThrowLab run focus",
       "ok": true,
-      "htmlBytes": 47676,
+      "htmlBytes": 53377,
       "issues": [],
       "metrics": {
-        "buttons": 53,
+        "buttons": 54,
         "fields": 8,
         "canvases": 1,
-        "headings": 4,
-        "htmlBytes": 47676
+        "headings": 6,
+        "htmlBytes": 53377
       }
     },
     {
@@ -793,14 +793,14 @@
       "marker": "data-echolocation-run-focus",
       "label": "Echolocation run focus",
       "ok": true,
-      "htmlBytes": 22026,
+      "htmlBytes": 22797,
       "issues": [],
       "metrics": {
         "buttons": 16,
         "fields": 0,
         "canvases": 1,
         "headings": 1,
-        "htmlBytes": 22026
+        "htmlBytes": 22797
       }
     },
     {
@@ -809,14 +809,14 @@
       "marker": "data-skatelab-run-focus",
       "label": "SkateLab run focus",
       "ok": true,
-      "htmlBytes": 70525,
+      "htmlBytes": 70535,
       "issues": [],
       "metrics": {
         "buttons": 57,
         "fields": 10,
         "canvases": 1,
         "headings": 3,
-        "htmlBytes": 70525
+        "htmlBytes": 70535
       }
     },
     {
@@ -825,14 +825,14 @@
       "marker": "data-probability-command",
       "label": "Probability Lab command deck",
       "ok": true,
-      "htmlBytes": 29837,
+      "htmlBytes": 29841,
       "issues": [],
       "metrics": {
         "buttons": 39,
         "fields": 5,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 29837
+        "htmlBytes": 29841
       }
     },
     {
@@ -841,14 +841,14 @@
       "marker": "data-statslab-command",
       "label": "Statistics research-analysis command",
       "ok": true,
-      "htmlBytes": 16903,
+      "htmlBytes": 17958,
       "issues": [],
       "metrics": {
         "buttons": 21,
         "fields": 0,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 16903
+        "htmlBytes": 17958
       }
     },
     {
@@ -857,14 +857,14 @@
       "marker": "data-funcgrapher-command",
       "label": "Function Grapher exploration console",
       "ok": true,
-      "htmlBytes": 24624,
+      "htmlBytes": 24789,
       "issues": [],
       "metrics": {
         "buttons": 47,
         "fields": 9,
         "canvases": 1,
         "headings": 3,
-        "htmlBytes": 24624
+        "htmlBytes": 24789
       }
     },
     {
@@ -873,14 +873,14 @@
       "marker": "data-calculus-command",
       "label": "Calculus concept studio",
       "ok": true,
-      "htmlBytes": 24547,
+      "htmlBytes": 25125,
       "issues": [],
       "metrics": {
         "buttons": 29,
         "fields": 9,
         "canvases": 0,
         "headings": 2,
-        "htmlBytes": 24547
+        "htmlBytes": 25125
       }
     },
     {
@@ -889,14 +889,14 @@
       "marker": "data-physics-command",
       "label": "Physics projectile mission",
       "ok": true,
-      "htmlBytes": 20250,
+      "htmlBytes": 20279,
       "issues": [],
       "metrics": {
         "buttons": 36,
         "fields": 10,
         "canvases": 1,
         "headings": 2,
-        "htmlBytes": 20250
+        "htmlBytes": 20279
       }
     },
     {
@@ -905,14 +905,14 @@
       "marker": "data-unitconvert-command",
       "label": "Unit Converter measurement workbench",
       "ok": true,
-      "htmlBytes": 15600,
+      "htmlBytes": 16184,
       "issues": [],
       "metrics": {
         "buttons": 22,
         "fields": 4,
         "canvases": 1,
         "headings": 3,
-        "htmlBytes": 15600
+        "htmlBytes": 16184
       }
     },
     {
@@ -921,14 +921,14 @@
       "marker": "data-punnett-cross-focus",
       "label": "Punnett cross focus board",
       "ok": true,
-      "htmlBytes": 21528,
+      "htmlBytes": 21382,
       "issues": [],
       "metrics": {
         "buttons": 26,
         "fields": 2,
         "canvases": 0,
         "headings": 7,
-        "htmlBytes": 21528
+        "htmlBytes": 21382
       }
     },
     {
@@ -937,14 +937,14 @@
       "marker": "data-circuit-bench",
       "label": "Circuit electronics bench",
       "ok": true,
-      "htmlBytes": 42985,
+      "htmlBytes": 43141,
       "issues": [],
       "metrics": {
         "buttons": 54,
         "fields": 2,
         "canvases": 1,
         "headings": 2,
-        "htmlBytes": 42985
+        "htmlBytes": 43141
       }
     },
     {
@@ -953,14 +953,14 @@
       "marker": "data-chembalance-command",
       "label": "Chemistry Lab bench",
       "ok": true,
-      "htmlBytes": 8754,
+      "htmlBytes": 13392,
       "issues": [],
       "metrics": {
-        "buttons": 12,
+        "buttons": 16,
         "fields": 1,
-        "canvases": 1,
-        "headings": 3,
-        "htmlBytes": 8754
+        "canvases": 0,
+        "headings": 4,
+        "htmlBytes": 13392
       }
     },
     {
@@ -969,14 +969,14 @@
       "marker": "data-titration-command",
       "label": "Titration experiment command",
       "ok": true,
-      "htmlBytes": 34329,
+      "htmlBytes": 36538,
       "issues": [],
       "metrics": {
-        "buttons": 30,
+        "buttons": 31,
         "fields": 1,
         "canvases": 1,
         "headings": 8,
-        "htmlBytes": 34329
+        "htmlBytes": 36538
       }
     },
     {
@@ -985,14 +985,14 @@
       "marker": "data-areamodel-focus",
       "label": "Area Model workshop",
       "ok": true,
-      "htmlBytes": 20095,
+      "htmlBytes": 20688,
       "issues": [],
       "metrics": {
         "buttons": 18,
         "fields": 3,
         "canvases": 0,
         "headings": 4,
-        "htmlBytes": 20095
+        "htmlBytes": 20688
       }
     },
     {
@@ -1017,14 +1017,14 @@
       "marker": "data-protractor-command",
       "label": "Angle investigation studio",
       "ok": true,
-      "htmlBytes": 31536,
+      "htmlBytes": 32242,
       "issues": [],
       "metrics": {
         "buttons": 69,
         "fields": 5,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 31536
+        "htmlBytes": 32242
       }
     },
     {
@@ -1033,14 +1033,14 @@
       "marker": "data-volume-command",
       "label": "Volume design brief",
       "ok": true,
-      "htmlBytes": 37945,
+      "htmlBytes": 41496,
       "issues": [],
       "metrics": {
         "buttons": 33,
         "fields": 8,
         "canvases": 2,
         "headings": 4,
-        "htmlBytes": 37945
+        "htmlBytes": 41496
       }
     },
     {
@@ -1065,14 +1065,14 @@
       "marker": "data-multtable-command",
       "label": "Multiplication fact strategy studio",
       "ok": true,
-      "htmlBytes": 32343,
+      "htmlBytes": 32718,
       "issues": [],
       "metrics": {
         "buttons": 22,
         "fields": 5,
         "canvases": 0,
         "headings": 2,
-        "htmlBytes": 32343
+        "htmlBytes": 32718
       }
     },
     {
@@ -1081,14 +1081,14 @@
       "marker": "data-inequality-command",
       "label": "Inequality solution-set studio",
       "ok": true,
-      "htmlBytes": 18566,
+      "htmlBytes": 18962,
       "issues": [],
       "metrics": {
         "buttons": 30,
         "fields": 8,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 18566
+        "htmlBytes": 18962
       }
     },
     {
@@ -1097,14 +1097,14 @@
       "marker": "data-numberline-focus",
       "label": "Number Line workspace",
       "ok": true,
-      "htmlBytes": 18817,
+      "htmlBytes": 19397,
       "issues": [],
       "metrics": {
         "buttons": 22,
         "fields": 5,
         "canvases": 0,
         "headings": 4,
-        "htmlBytes": 18817
+        "htmlBytes": 19397
       }
     },
     {
@@ -1161,14 +1161,14 @@
       "marker": "data-galaxy-canvas",
       "label": "Galaxy 3D canvas",
       "ok": true,
-      "htmlBytes": 36327,
+      "htmlBytes": 44805,
       "issues": [],
       "metrics": {
-        "buttons": 56,
-        "fields": 1,
+        "buttons": 57,
+        "fields": 2,
         "canvases": 1,
-        "headings": 3,
-        "htmlBytes": 36327
+        "headings": 4,
+        "htmlBytes": 44805
       }
     },
     {
@@ -1177,14 +1177,14 @@
       "marker": "data-semiconductor-command",
       "label": "Semiconductor command bench",
       "ok": true,
-      "htmlBytes": 16752,
+      "htmlBytes": 19590,
       "issues": [],
       "metrics": {
-        "buttons": 37,
-        "fields": 2,
+        "buttons": 17,
+        "fields": 4,
         "canvases": 1,
         "headings": 3,
-        "htmlBytes": 16752
+        "htmlBytes": 19590
       }
     },
     {
@@ -1207,7 +1207,7 @@
   "sync": {
     "drift": [
       {
-        "file": "stem_tool_archstudio.js",
+        "file": "stem_tool_applab.js",
         "monitored": false,
         "exists": {
           "source": true,
@@ -1215,16 +1215,33 @@
           "build": true
         },
         "hashes": {
-          "source": "040C915E4CFC",
-          "public": "040C915E4CFC",
-          "build": "F94F424C62BA"
+          "source": "C8AA03547B6E",
+          "public": "C8AA03547B6E",
+          "build": "845C12A193BD"
         },
         "sourcePublicMatch": true,
         "sourceBuildMatch": false,
         "status": "build-drift"
       },
       {
-        "file": "stem_tool_autorepair.js",
+        "file": "stem_tool_calculus.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "C7D3BE16EBF6",
+          "public": "C7D3BE16EBF6",
+          "build": "49F67C4BE0FE"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_forge.js",
         "monitored": false,
         "exists": {
           "source": true,
@@ -1232,16 +1249,16 @@
           "build": true
         },
         "hashes": {
-          "source": "2E76E0B1712F",
-          "public": "2E76E0B1712F",
-          "build": "C88198A6E896"
+          "source": "D68D49985E30",
+          "public": "D68D49985E30",
+          "build": "0D77471B1BC6"
         },
         "sourcePublicMatch": true,
         "sourceBuildMatch": false,
         "status": "build-drift"
       },
       {
-        "file": "stem_tool_bridgelab.js",
+        "file": "stem_tool_funcgrapher.js",
         "monitored": true,
         "exists": {
           "source": true,
@@ -1249,33 +1266,16 @@
           "build": true
         },
         "hashes": {
-          "source": "03CDE1E369CA",
-          "public": "3280E40D3DFE",
-          "build": "2ED7DB5BD671"
-        },
-        "sourcePublicMatch": false,
-        "sourceBuildMatch": false,
-        "status": "source-public-drift"
-      },
-      {
-        "file": "stem_tool_dissection.js",
-        "monitored": false,
-        "exists": {
-          "source": true,
-          "public": true,
-          "build": true
-        },
-        "hashes": {
-          "source": "8B871AACD8B4",
-          "public": "8B871AACD8B4",
-          "build": "2CB4E0033204"
+          "source": "8EE675EB11EF",
+          "public": "8EE675EB11EF",
+          "build": "EA9E7F963EEF"
         },
         "sourcePublicMatch": true,
         "sourceBuildMatch": false,
         "status": "build-drift"
       },
       {
-        "file": "stem_tool_dna.js",
+        "file": "stem_tool_logiclab.js",
         "monitored": true,
         "exists": {
           "source": true,
@@ -1283,16 +1283,16 @@
           "build": true
         },
         "hashes": {
-          "source": "87BB6B2D9896",
-          "public": "87BB6B2D9896",
-          "build": "20B1A1F2A56C"
+          "source": "989F59D267F9",
+          "public": "989F59D267F9",
+          "build": "96DAE95D9C72"
         },
         "sourcePublicMatch": true,
         "sourceBuildMatch": false,
         "status": "build-drift"
       },
       {
-        "file": "stem_tool_epidemic.js",
+        "file": "stem_tool_music.js",
         "monitored": true,
         "exists": {
           "source": true,
@@ -1300,67 +1300,16 @@
           "build": true
         },
         "hashes": {
-          "source": "720ED09BDFDE",
-          "public": "0318957126DD",
-          "build": "0318957126DD"
-        },
-        "sourcePublicMatch": false,
-        "sourceBuildMatch": false,
-        "status": "source-public-drift"
-      },
-      {
-        "file": "stem_tool_fisherlab.js",
-        "monitored": true,
-        "exists": {
-          "source": true,
-          "public": true,
-          "build": true
-        },
-        "hashes": {
-          "source": "E20CEFD50005",
-          "public": "5ED67AA260FC",
-          "build": "0D2CD051E72B"
-        },
-        "sourcePublicMatch": false,
-        "sourceBuildMatch": false,
-        "status": "source-public-drift"
-      },
-      {
-        "file": "stem_tool_geologyexplorer.js",
-        "monitored": true,
-        "exists": {
-          "source": true,
-          "public": true,
-          "build": true
-        },
-        "hashes": {
-          "source": "C108B66AA703",
-          "public": "185421C4A9D5",
-          "build": "185421C4A9D5"
-        },
-        "sourcePublicMatch": false,
-        "sourceBuildMatch": false,
-        "status": "source-public-drift"
-      },
-      {
-        "file": "stem_tool_geosandbox.js",
-        "monitored": false,
-        "exists": {
-          "source": true,
-          "public": true,
-          "build": true
-        },
-        "hashes": {
-          "source": "689BD521C99E",
-          "public": "689BD521C99E",
-          "build": "5495C9C164EA"
+          "source": "2F03A1777D90",
+          "public": "2F03A1777D90",
+          "build": "75BEA08CC5B0"
         },
         "sourcePublicMatch": true,
         "sourceBuildMatch": false,
         "status": "build-drift"
       },
       {
-        "file": "stem_tool_moonmission.js",
+        "file": "stem_tool_physics.js",
         "monitored": true,
         "exists": {
           "source": true,
@@ -1368,33 +1317,16 @@
           "build": true
         },
         "hashes": {
-          "source": "F13C4DD8DCD2",
-          "public": "F7E54EC9F4C6",
-          "build": "F7E54EC9F4C6"
-        },
-        "sourcePublicMatch": false,
-        "sourceBuildMatch": false,
-        "status": "source-public-drift"
-      },
-      {
-        "file": "stem_tool_optics.js",
-        "monitored": true,
-        "exists": {
-          "source": true,
-          "public": true,
-          "build": true
-        },
-        "hashes": {
-          "source": "D5263444B1A8",
-          "public": "D5263444B1A8",
-          "build": "BAD83A50C505"
+          "source": "6023919873CC",
+          "public": "6023919873CC",
+          "build": "3A1BCC569248"
         },
         "sourcePublicMatch": true,
         "sourceBuildMatch": false,
         "status": "build-drift"
       },
       {
-        "file": "stem_tool_printingpress.js",
+        "file": "stem_tool_semiconductor.js",
         "monitored": true,
         "exists": {
           "source": true,
@@ -1402,33 +1334,16 @@
           "build": true
         },
         "hashes": {
-          "source": "B69ED12745C4",
-          "public": "B69ED12745C4",
-          "build": "677801B28971"
+          "source": "F26FDF2454E7",
+          "public": "F26FDF2454E7",
+          "build": "706171F545D3"
         },
         "sourcePublicMatch": true,
         "sourceBuildMatch": false,
         "status": "build-drift"
       },
       {
-        "file": "stem_tool_roadready.js",
-        "monitored": false,
-        "exists": {
-          "source": true,
-          "public": true,
-          "build": true
-        },
-        "hashes": {
-          "source": "433E6A0745DB",
-          "public": "433E6A0745DB",
-          "build": "CC04A1FFD942"
-        },
-        "sourcePublicMatch": true,
-        "sourceBuildMatch": false,
-        "status": "build-drift"
-      },
-      {
-        "file": "stem_tool_rocks.js",
+        "file": "stem_tool_spacecolony.js",
         "monitored": true,
         "exists": {
           "source": true,
@@ -1436,16 +1351,16 @@
           "build": true
         },
         "hashes": {
-          "source": "103C1349D1E3",
-          "public": "103C1349D1E3",
-          "build": "92A1CA2DB9A8"
+          "source": "BB939C5246A1",
+          "public": "BB939C5246A1",
+          "build": "1B57ABA1386B"
         },
         "sourcePublicMatch": true,
         "sourceBuildMatch": false,
         "status": "build-drift"
       },
       {
-        "file": "stem_tool_solarsystem.js",
+        "file": "stem_tool_wave.js",
         "monitored": true,
         "exists": {
           "source": true,
@@ -1453,122 +1368,19 @@
           "build": true
         },
         "hashes": {
-          "source": "EEDE900F464F",
-          "public": "30F2E6194CF8",
-          "build": "95810FF33B96"
+          "source": "3E394E8438F9",
+          "public": "3E394E8438F9",
+          "build": "B48563F96A1A"
         },
-        "sourcePublicMatch": false,
+        "sourcePublicMatch": true,
         "sourceBuildMatch": false,
-        "status": "source-public-drift"
+        "status": "build-drift"
       }
     ],
-    "sourcePublicDrift": [
-      {
-        "file": "stem_tool_bridgelab.js",
-        "monitored": true,
-        "exists": {
-          "source": true,
-          "public": true,
-          "build": true
-        },
-        "hashes": {
-          "source": "03CDE1E369CA",
-          "public": "3280E40D3DFE",
-          "build": "2ED7DB5BD671"
-        },
-        "sourcePublicMatch": false,
-        "sourceBuildMatch": false,
-        "status": "source-public-drift"
-      },
-      {
-        "file": "stem_tool_epidemic.js",
-        "monitored": true,
-        "exists": {
-          "source": true,
-          "public": true,
-          "build": true
-        },
-        "hashes": {
-          "source": "720ED09BDFDE",
-          "public": "0318957126DD",
-          "build": "0318957126DD"
-        },
-        "sourcePublicMatch": false,
-        "sourceBuildMatch": false,
-        "status": "source-public-drift"
-      },
-      {
-        "file": "stem_tool_fisherlab.js",
-        "monitored": true,
-        "exists": {
-          "source": true,
-          "public": true,
-          "build": true
-        },
-        "hashes": {
-          "source": "E20CEFD50005",
-          "public": "5ED67AA260FC",
-          "build": "0D2CD051E72B"
-        },
-        "sourcePublicMatch": false,
-        "sourceBuildMatch": false,
-        "status": "source-public-drift"
-      },
-      {
-        "file": "stem_tool_geologyexplorer.js",
-        "monitored": true,
-        "exists": {
-          "source": true,
-          "public": true,
-          "build": true
-        },
-        "hashes": {
-          "source": "C108B66AA703",
-          "public": "185421C4A9D5",
-          "build": "185421C4A9D5"
-        },
-        "sourcePublicMatch": false,
-        "sourceBuildMatch": false,
-        "status": "source-public-drift"
-      },
-      {
-        "file": "stem_tool_moonmission.js",
-        "monitored": true,
-        "exists": {
-          "source": true,
-          "public": true,
-          "build": true
-        },
-        "hashes": {
-          "source": "F13C4DD8DCD2",
-          "public": "F7E54EC9F4C6",
-          "build": "F7E54EC9F4C6"
-        },
-        "sourcePublicMatch": false,
-        "sourceBuildMatch": false,
-        "status": "source-public-drift"
-      },
-      {
-        "file": "stem_tool_solarsystem.js",
-        "monitored": true,
-        "exists": {
-          "source": true,
-          "public": true,
-          "build": true
-        },
-        "hashes": {
-          "source": "EEDE900F464F",
-          "public": "30F2E6194CF8",
-          "build": "95810FF33B96"
-        },
-        "sourcePublicMatch": false,
-        "sourceBuildMatch": false,
-        "status": "source-public-drift"
-      }
-    ],
+    "sourcePublicDrift": [],
     "monitoredDrift": [
       {
-        "file": "stem_tool_bridgelab.js",
+        "file": "stem_tool_calculus.js",
         "monitored": true,
         "exists": {
           "source": true,
@@ -1576,33 +1388,16 @@
           "build": true
         },
         "hashes": {
-          "source": "03CDE1E369CA",
-          "public": "3280E40D3DFE",
-          "build": "2ED7DB5BD671"
-        },
-        "sourcePublicMatch": false,
-        "sourceBuildMatch": false,
-        "status": "source-public-drift"
-      },
-      {
-        "file": "stem_tool_dna.js",
-        "monitored": true,
-        "exists": {
-          "source": true,
-          "public": true,
-          "build": true
-        },
-        "hashes": {
-          "source": "87BB6B2D9896",
-          "public": "87BB6B2D9896",
-          "build": "20B1A1F2A56C"
+          "source": "C7D3BE16EBF6",
+          "public": "C7D3BE16EBF6",
+          "build": "49F67C4BE0FE"
         },
         "sourcePublicMatch": true,
         "sourceBuildMatch": false,
         "status": "build-drift"
       },
       {
-        "file": "stem_tool_epidemic.js",
+        "file": "stem_tool_funcgrapher.js",
         "monitored": true,
         "exists": {
           "source": true,
@@ -1610,84 +1405,16 @@
           "build": true
         },
         "hashes": {
-          "source": "720ED09BDFDE",
-          "public": "0318957126DD",
-          "build": "0318957126DD"
-        },
-        "sourcePublicMatch": false,
-        "sourceBuildMatch": false,
-        "status": "source-public-drift"
-      },
-      {
-        "file": "stem_tool_fisherlab.js",
-        "monitored": true,
-        "exists": {
-          "source": true,
-          "public": true,
-          "build": true
-        },
-        "hashes": {
-          "source": "E20CEFD50005",
-          "public": "5ED67AA260FC",
-          "build": "0D2CD051E72B"
-        },
-        "sourcePublicMatch": false,
-        "sourceBuildMatch": false,
-        "status": "source-public-drift"
-      },
-      {
-        "file": "stem_tool_geologyexplorer.js",
-        "monitored": true,
-        "exists": {
-          "source": true,
-          "public": true,
-          "build": true
-        },
-        "hashes": {
-          "source": "C108B66AA703",
-          "public": "185421C4A9D5",
-          "build": "185421C4A9D5"
-        },
-        "sourcePublicMatch": false,
-        "sourceBuildMatch": false,
-        "status": "source-public-drift"
-      },
-      {
-        "file": "stem_tool_moonmission.js",
-        "monitored": true,
-        "exists": {
-          "source": true,
-          "public": true,
-          "build": true
-        },
-        "hashes": {
-          "source": "F13C4DD8DCD2",
-          "public": "F7E54EC9F4C6",
-          "build": "F7E54EC9F4C6"
-        },
-        "sourcePublicMatch": false,
-        "sourceBuildMatch": false,
-        "status": "source-public-drift"
-      },
-      {
-        "file": "stem_tool_optics.js",
-        "monitored": true,
-        "exists": {
-          "source": true,
-          "public": true,
-          "build": true
-        },
-        "hashes": {
-          "source": "D5263444B1A8",
-          "public": "D5263444B1A8",
-          "build": "BAD83A50C505"
+          "source": "8EE675EB11EF",
+          "public": "8EE675EB11EF",
+          "build": "EA9E7F963EEF"
         },
         "sourcePublicMatch": true,
         "sourceBuildMatch": false,
         "status": "build-drift"
       },
       {
-        "file": "stem_tool_printingpress.js",
+        "file": "stem_tool_logiclab.js",
         "monitored": true,
         "exists": {
           "source": true,
@@ -1695,16 +1422,16 @@
           "build": true
         },
         "hashes": {
-          "source": "B69ED12745C4",
-          "public": "B69ED12745C4",
-          "build": "677801B28971"
+          "source": "989F59D267F9",
+          "public": "989F59D267F9",
+          "build": "96DAE95D9C72"
         },
         "sourcePublicMatch": true,
         "sourceBuildMatch": false,
         "status": "build-drift"
       },
       {
-        "file": "stem_tool_rocks.js",
+        "file": "stem_tool_music.js",
         "monitored": true,
         "exists": {
           "source": true,
@@ -1712,16 +1439,16 @@
           "build": true
         },
         "hashes": {
-          "source": "103C1349D1E3",
-          "public": "103C1349D1E3",
-          "build": "92A1CA2DB9A8"
+          "source": "2F03A1777D90",
+          "public": "2F03A1777D90",
+          "build": "75BEA08CC5B0"
         },
         "sourcePublicMatch": true,
         "sourceBuildMatch": false,
         "status": "build-drift"
       },
       {
-        "file": "stem_tool_solarsystem.js",
+        "file": "stem_tool_physics.js",
         "monitored": true,
         "exists": {
           "source": true,
@@ -1729,13 +1456,64 @@
           "build": true
         },
         "hashes": {
-          "source": "EEDE900F464F",
-          "public": "30F2E6194CF8",
-          "build": "95810FF33B96"
+          "source": "6023919873CC",
+          "public": "6023919873CC",
+          "build": "3A1BCC569248"
         },
-        "sourcePublicMatch": false,
+        "sourcePublicMatch": true,
         "sourceBuildMatch": false,
-        "status": "source-public-drift"
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_semiconductor.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "F26FDF2454E7",
+          "public": "F26FDF2454E7",
+          "build": "706171F545D3"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_spacecolony.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "BB939C5246A1",
+          "public": "BB939C5246A1",
+          "build": "1B57ABA1386B"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_wave.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "3E394E8438F9",
+          "public": "3E394E8438F9",
+          "build": "B48563F96A1A"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
       }
     ]
   },

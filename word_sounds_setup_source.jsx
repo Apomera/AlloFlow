@@ -838,7 +838,254 @@
         );
     };
 
-    const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, preloadedWords = [], onShowReview , onMinimize, onExpand, isProbeMode, probeActivity, selectedVoice, setSelectedVoice, isCanvasEnv, ttsSpeed, onRequestKokoroOffer, wordSoundsLanguage}) => {
+    // Decodable filler words. Shared by the board compiler and the rhyme
+    // derivation below so the two cannot drift apart. English only by
+    // construction — every consumer gates on packIsEnglish.
+    const PACK_COMMON_WORDS = ['cat','dog','sun','map','bed','pig','cup','hat','fish','star','tree','frog','duck','book','run','red','sit','fan','hop','moon','pen','top','ring','rock','look','mug'];
+    // Trailing vowel-plus-coda: the rime that has to match for two words to
+    // rhyme. Same rule the board compiler uses, and the non-Latin branch is
+    // there because the [aeiou] scan matches nothing outside Latin script.
+    const packRimeOfWord = (w, isEnglish) => {
+        const v = String(w || '').trim().toLowerCase();
+        if (!v) return '';
+        if (isEnglish) return (v.match(/[aeiou][a-z]*$/) || [''])[0];
+        return v.slice(-2);
+    };
+    // A rhyme answer the pack can carry to a student device. The player can
+    // already derive one at runtime, but a device with AI switched off is
+    // better served by a pack that is complete before it leaves the teacher.
+    // Drawn from the session's own words first (a rhyme the child is also
+    // learning is worth more than a stranger), then the filler pool.
+    const derivePackRhyme = (word, batchWords, isEnglish) => {
+        const w = String(word || '').trim().toLowerCase();
+        if (!w) return '';
+        const rime = packRimeOfWord(w, isEnglish);
+        // A one-letter rime ('a' from 'sofa') matches far too much to be a
+        // rhyme; leave those to the player rather than assert a bad pair.
+        if (!rime || rime.length < 2) return '';
+        const pool = [
+            ...(Array.isArray(batchWords) ? batchWords : []),
+            ...(isEnglish ? PACK_COMMON_WORDS : []),
+        ];
+        const seen = new Set([w]);
+        for (const candidate of pool) {
+            const c = String(candidate || '').trim().toLowerCase();
+            if (!c || seen.has(c)) continue;
+            seen.add(c);
+            if (packRimeOfWord(c, isEnglish) === rime) return c;
+        }
+        return '';
+    };
+
+    // ── Decodability screen for AI-generated words ──────────────────────────
+    // A generated rhyme family arrived with "hon" in it. Structurally it is a
+    // flawless CVC — lowercase, one vowel, three letters — so no shape rule
+    // can catch it. It is a poor K-2 item because it is an informal clipping
+    // of "honey", and only a word list knows that.
+    //
+    // So this does two different jobs and keeps them apart. It REJECTS things
+    // that cannot be phonics items at all, which is safe to do silently. It
+    // FLAGS words that are merely unrecognised, because the curated lists here
+    // are a few hundred words and a real vocabulary is tens of thousands:
+    // dropping everything unfamiliar would gut legitimate content and quietly
+    // narrow what a teacher can teach. Flagged words are surfaced for the
+    // teacher to judge, which is the right place for that decision.
+    let _k2Known = null;
+    const k2KnownWords = () => {
+        if (_k2Known) return _k2Known;
+        const set = new Set(PACK_COMMON_WORDS);
+        const add = (w) => {
+            const v = String(w || '').trim().toLowerCase();
+            if (v) set.add(v);
+        };
+        try {
+            const data = (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.AlloData) || {};
+            (data.SOUND_MATCH_POOL || []).forEach(add);
+            Object.values(data.RIME_FAMILIES || {}).forEach((list) => (list || []).forEach(add));
+            Object.values(data.SIGHT_WORD_PRESETS || {}).forEach((list) => (list || []).forEach(add));
+            Object.values(data.WORD_FAMILY_PRESETS || {}).forEach((list) => {
+                if (Array.isArray(list)) list.forEach(add);
+                else if (list && Array.isArray(list.words)) list.words.forEach(add);
+            });
+        } catch (e) { /* the screen degrades to structure-only */ }
+        _k2Known = set;
+        return set;
+    };
+    // Hard rejects: not a candidate phonics word under any reading.
+    const isUnusableAsPhonicsWord = (w) => {
+        const v = String(w || '').trim();
+        if (!v) return true;
+        if (!/^[a-zA-Z]+$/.test(v)) return true;          // digits, punctuation, spaces
+        if (v.length < 2 || v.length > 10) return true;   // "a" is a sight word, not a family member
+        if (!/[aeiouy]/i.test(v)) return true;            // no vowel = not a word
+        return false;
+    };
+    // Soft flag: real-looking, but not in any list this app can vouch for.
+    const isUnverifiedK2Word = (w, sessionWords) => {
+        const v = String(w || '').trim().toLowerCase();
+        if (!v) return false;
+        if (k2KnownWords().has(v)) return false;
+        // A word the teacher put in this session is vouched for by the teacher.
+        if (sessionWords && sessionWords.has(v)) return false;
+        return true;
+    };
+
+    // ── Decodable sentence assembly (Finish the Sentence) ───────────────────
+    // Connected text, built only from words the pack can vouch for. The AI
+    // sentence is used when every word of it is the target, a word in this
+    // session, or on the K-2 lists the decodability screen trusts — otherwise
+    // the item falls back to a sight-word frame, so a pack still reads
+    // correctly on a device with AI switched off.
+    const READ_SENTENCE_FRAMES = [
+        { before: 'I can see the', after: '.' },
+        { before: 'Look at the', after: '!' },
+        { before: 'Here is the', after: '.' },
+        { before: 'We like the', after: '.' },
+    ];
+    const joinPackSentence = (before, word, after) => {
+        const a = String(after || '');
+        return `${before} ${word}${/^[.,!?]/.test(a) ? '' : ' '}${a}`.trim();
+    };
+    const packSentenceWords = (sentence) => String(sentence || '')
+        .toLowerCase()
+        .replace(/[^a-z\s]/g, ' ')
+        .split(/\s+/)
+        .filter(Boolean);
+    const packSentenceIsUsable = (sentence, word, sessionWords) => {
+        const s = String(sentence || '').trim();
+        const w = String(word || '').trim().toLowerCase();
+        if (!s || !w) return false;
+        // Contractions and anything non-alphabetic hide words the K-2 check
+        // below cannot see; a sentence we cannot fully check is not usable.
+        if (/[^a-zA-Z\s.,!?]/.test(s)) return false;
+        const words = packSentenceWords(s);
+        if (words.length < 3 || words.length > 8) return false;
+        // Exactly one occurrence of the target: a second one would leave the
+        // answer sitting in plain view once the blank is cut.
+        if (words.filter((v) => v === w).length !== 1) return false;
+        return words.every((v) => v === w || v === 'a' || v === 'i'
+            || !isUnverifiedK2Word(v, sessionWords));
+    };
+    // Cut the sentence around its single occurrence of the target word.
+    const splitPackSentence = (sentence, word) => {
+        const s = String(sentence || '').trim();
+        const w = String(word || '').trim();
+        if (!s || !w) return null;
+        const escaped = w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const m = s.match(new RegExp(`(^|[^a-zA-Z])(${escaped})(?=[^a-zA-Z]|$)`, 'i'));
+        if (!m || typeof m.index !== 'number') return null;
+        const start = m.index + m[1].length;
+        return { before: s.slice(0, start).trim(), after: s.slice(start + w.length).trim() };
+    };
+
+    // Two-word frames for Picture the Sentence: a sentence naming TWO pack
+    // words in a fixed order, so placing their pictures in that order proves
+    // the sentence was read left-to-right, not word-spotted. Glue is sight
+    // words only, so the frames are decodable by construction.
+    const SENTENCE_MATCH_FRAMES = [
+        { before: 'The', mid: 'can see the', after: '.' },
+        { before: 'I see the', mid: 'and the', after: '.' },
+        { before: 'Look at the', mid: 'and the', after: '!' },
+        { before: 'The', mid: 'is with the', after: '.' },
+    ];
+    const joinPackPairSentence = (frame, a, b) =>
+        `${frame.before} ${a} ${frame.mid} ${b}${frame.after}`;
+
+    // A micro-story is three sentences about ONE word — the referent carries
+    // across sentences, which is what makes it connected text rather than
+    // three unrelated lines. Each sentence passes the same decodability gate
+    // as a single sentence; a sentence may omit the target (that is normal
+    // prose) but at least two of the three must contain it, or the "story"
+    // is not actually about the word the child is practicing.
+    const packStoryIsUsable = (story, word, sessionWords) => {
+        if (!Array.isArray(story) || story.length !== 3) return false;
+        const w = String(word || '').trim().toLowerCase();
+        if (!w) return false;
+        let withTarget = 0;
+        for (const raw of story) {
+            const s = String(raw || '').trim();
+            if (!s) return false;
+            const words = packSentenceWords(s);
+            const count = words.filter((v) => v === w).length;
+            if (count > 1) return false;
+            if (count === 1) {
+                if (!packSentenceIsUsable(s, w, sessionWords)) return false;
+                withTarget++;
+            } else {
+                // Target-less sentence: same vocabulary and shape rules, just
+                // without the exactly-once requirement.
+                if (/[^a-zA-Z\s.,!?]/.test(s)) return false;
+                if (words.length < 3 || words.length > 8) return false;
+                if (!words.every((v) => v === 'a' || v === 'i' || !isUnverifiedK2Word(v, sessionWords))) return false;
+            }
+        }
+        return withTarget >= 2;
+    };
+
+    // ── eSpeak G2P: the middle rung of the phoneme fallback ladder ──────────
+    // When Gemini returns no phonemes for a word, the pack used to drop
+    // straight to estimatePackPhonemes — a spelling heuristic, which is where
+    // "letter-split sounds (generation failed)" on the readiness panel comes
+    // from. eSpeak NG is a real grapheme-to-phoneme engine and belongs between
+    // the two, so that warning is only ever raised for words a G2P engine
+    // could not do either, rather than for every word Gemini hiccuped on.
+    //
+    // Load once per session, and only when something actually needs it: the
+    // wasm is ~18.5MB per language. `_espeakPackLoad` caches the attempt,
+    // INCLUDING a failed one, so a pack of 40 words cannot serialise 40
+    // six-second timeouts on a school network.
+    let _espeakPackLoad = null;
+    const ensureEspeakLoaded = () => {
+        if (_espeakPackLoad) return _espeakPackLoad;
+        _espeakPackLoad = (async () => {
+            try {
+                if (typeof window === 'undefined') return false;
+                if (window.AlloPhonics && typeof window.AlloPhonics.toPhonemes === 'function') return true;
+                if (typeof window.__alloLoadPlugin !== 'function') return false;
+                await Promise.race([
+                    window.__alloLoadPlugin('phonics_g2p_loader.js'),
+                    new Promise((resolve) => setTimeout(resolve, 6000)),
+                ]);
+                return !!(window.AlloPhonics && typeof window.AlloPhonics.toPhonemes === 'function');
+            } catch (e) {
+                return false;
+            }
+        })();
+        return _espeakPackLoad;
+    };
+    // Returns grapheme clusters in the same shape estimatePackPhonemes produces
+    // (['sh','i','p']), or null to let the caller fall through. Grapheme, not
+    // IPA: the phoneme audio bank is keyed by grapheme, and flatPackPhoneme
+    // reads .grapheme first, so this keeps the pack's existing contract.
+    const espeakPackPhonemes = async (word, language) => {
+        const w = String(word || '').trim();
+        if (!w) return null;
+        try {
+            if (!(await ensureEspeakLoaded())) return null;
+            const espeak = await Promise.race([
+                window.AlloPhonics.toPhonemes(w, { lang: language }),
+                new Promise((resolve) => setTimeout(() => resolve(null), 5000)),
+            ]);
+            // toPhonemes returns null when the language has no eSpeak voice.
+            // Running the English voice on, say, Somali would return
+            // confidently wrong sounds, which is worse than falling through.
+            if (!espeak || !Array.isArray(espeak.ipa) || !espeak.ipa.length) return null;
+            if (typeof window.AlloPhonics.buildPhonemes !== 'function') return null;
+            const built = window.AlloPhonics.buildPhonemes(w, espeak, null);
+            const graphemes = ((built && built.phonemes) || []).map(
+                (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.ipa)) || '')
+            );
+            // A gap in the alignment means the graphemes do not reconstruct the
+            // word, and a blank phoneme has no audio clip. Reject the whole
+            // result rather than ship a hole in the middle of a board.
+            if (!graphemes.length || graphemes.some((g) => !g)) return null;
+            return graphemes;
+        } catch (e) {
+            return null;
+        }
+    };
+
+    const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, preloadedWords = [], onShowReview , onMinimize, onExpand, isProbeMode, probeActivity, selectedVoice, setSelectedVoice, isCanvasEnv, ttsSpeed, onRequestKokoroOffer, wordSoundsLanguage, probeStudentNames = []}) => {
         // t-with-fallback: the host's t(key, params) returns UNDEFINED on a
         // missing key and treats a string second argument as params — so every
         // `tf('word_sounds.x', 'English text')` call below rendered an EMPTY
@@ -897,6 +1144,20 @@
         const [probeActivitySel, setProbeActivitySel] = React.useState(
             probeActivity && probeActivity !== 'orf' ? probeActivity : 'segmentation'
         );
+        // Who this probe is FOR. The host banks a completed probe under
+        // `probeTargetStudent`, which until now was only ever set by the
+        // Assessment Center's Active Student selector and never cleared — so a
+        // probe launched from this screen either banked nowhere (no student
+        // selected) or, worse, banked under whichever child the teacher had
+        // last picked over there. Naming the child here is what makes the host
+        // set the target explicitly, in both directions.
+        //
+        // probeHistory is keyed by a plain name string, so a typo silently
+        // opens a second bucket for the same child. The datalist below offers
+        // the names that already have probe data, which is what makes picking
+        // an existing child a click instead of a re-typing exercise.
+        const [probeStudent, setProbeStudent] = React.useState('');
+        const probeStudentTrimmed = String(probeStudent || '').trim();
         const [includeLessonPlan, setIncludeLessonPlan] = React.useState(false);
         const [lessonPlan, setLessonPlan] = React.useState({
             isolation: { enabled: false, count: 5 },
@@ -916,11 +1177,14 @@
             spelling_bee: { enabled: false, count: 5 },
             missing_letter: { enabled: false, count: 5 },
             decoding: { enabled: false, count: 5 },
+            read_sentence: { enabled: false, count: 5 },
+            read_passage: { enabled: false, count: 5 },
+            sentence_match: { enabled: false, count: 5 },
         });
         const [lessonPlanOrder, setLessonPlanOrder] = React.useState([
             'isolation', 'blending', 'segmentation', 'orthography', 'rhyming',
             'letter_tracing', 'counting', 'mapping', 'sound_sort', 'word_families', 'word_scramble', 'manipulation',
-            'syllable_counting', 'syllable_blending', 'spelling_bee', 'missing_letter', 'decoding'
+            'syllable_counting', 'syllable_blending', 'spelling_bee', 'missing_letter', 'decoding', 'read_sentence', 'read_passage', 'sentence_match'
         ]);
         const [draggedActivity, setDraggedActivity] = React.useState(null);
         const [lessonPlanReorderStatus, setLessonPlanReorderStatus] = React.useState('');
@@ -1166,11 +1430,12 @@
             // English filler words join the pool ONLY for English packs — for
             // any other language the pool is the pack's own words, so every
             // board stays same-language.
-            const commonWords = packIsEnglish
-                ? ['cat','dog','sun','map','bed','pig','cup','hat','fish','star','tree','frog','duck','book','run','red','sit','fan','hop','moon','pen','top','ring','rock','look','mug']
-                : [];
+            const commonWords = packIsEnglish ? PACK_COMMON_WORDS : [];
             const itemWords = items.map((item) => normalizePackKey(item.targetWord || item.word || item.term)).filter(Boolean);
             const wordPool = [...new Set([...itemWords, ...commonWords])];
+            // Session vocabulary for the sentence gate: a word the teacher put
+            // in this pack is vouched for by the teacher.
+            const rsSessionWords = new Set(itemWords);
             // Same-language distractor inventories for non-English packs:
             // phoneme units and letters drawn from the pack's own words.
             const allPackPhonemes = [...new Set(items.flatMap((it) => (it.phonemes || []).map(flatPackPhoneme)).filter(Boolean))];
@@ -1284,6 +1549,108 @@
                 const familyOptions = shuffleForPack(familySource.length ? familySource : wordPool.filter((value) => value !== word && value.endsWith(rime))).slice(0, word.length <= 3 ? 3 : 5);
                 const familyDistractors = shuffleForPack(wordPool.filter((value) => value !== word && !value.endsWith(rime))).slice(0, word.length <= 3 ? 2 : 4);
                 const decodingChoices = boardWithAnswer(word, [...itemWords, ...commonWords].filter((value) => value !== word), 3);
+                // Finish the Sentence: connected decodable text. The AI
+                // sentence is taken only when it survives the decodability
+                // gate; the sight-word frame otherwise. Distractors prefer
+                // same-family look-alikes (cat/bat/hat) — with the picture
+                // anchoring meaning, telling those apart in print IS the
+                // decoding being practiced. English only: the frames and the
+                // sight-word corpus behind the gate are English.
+                let readSentence = null;
+                if (packIsEnglish) {
+                    const rsText = packSentenceIsUsable(item.sentence, word, rsSessionWords)
+                        ? String(item.sentence).trim()
+                        : joinPackSentence(
+                            READ_SENTENCE_FRAMES[seed % READ_SENTENCE_FRAMES.length].before,
+                            word,
+                            READ_SENTENCE_FRAMES[seed % READ_SENTENCE_FRAMES.length].after,
+                        );
+                    const rsSplit = splitPackSentence(rsText, word);
+                    if (rsSplit) {
+                        const rsUsed = new Set(packSentenceWords(rsText));
+                        const rsOptions = boardWithAnswer(word, [
+                            ...(item.sentenceDistractors || []),
+                            ...familySource,
+                            ...(item.blendingDistractors || []),
+                            ...otherWords,
+                        ].map(normalizePackKey).filter((v) => v && v !== word && !rsUsed.has(v) && !isUnusableAsPhonicsWord(v)), 3);
+                        readSentence = { sentence: rsText, before: rsSplit.before, after: rsSplit.after, options: rsOptions };
+                    }
+                }
+                // Read the Story: a three-sentence micro-passage about this
+                // word, every occurrence of the word blanked — one choice
+                // fills them all. AI story when it survives the gate; three
+                // rotated sight-word frames otherwise, so the referent still
+                // repeats across sentences.
+                let readPassage = null;
+                if (packIsEnglish) {
+                    const rpSentences = packStoryIsUsable(item.story, word, rsSessionWords)
+                        ? item.story.map((s) => String(s).trim())
+                        : [0, 1, 2].map((offset) => {
+                            const f = READ_SENTENCE_FRAMES[(seed + offset) % READ_SENTENCE_FRAMES.length];
+                            return joinPackSentence(f.before, word, f.after);
+                        });
+                    const rpParts = rpSentences.map((s) => {
+                        const split = splitPackSentence(s, word);
+                        return split ? { before: split.before, after: split.after } : { text: s };
+                    });
+                    // A story where no sentence could be split has no blank to
+                    // fill and cannot be scored — skip the board entirely.
+                    if (rpParts.some((p) => !p.text)) {
+                        const rpStoryText = rpSentences.join(' ');
+                        const rpUsed = new Set(rpSentences.flatMap((s) => packSentenceWords(s)));
+                        const rpOptions = boardWithAnswer(word, [
+                            ...(item.sentenceDistractors || []),
+                            ...familySource,
+                            ...(item.blendingDistractors || []),
+                            ...otherWords,
+                        ].map(normalizePackKey).filter((v) => v && v !== word && !rpUsed.has(v) && !isUnusableAsPhonicsWord(v)), 3);
+                        readPassage = { story: rpStoryText, parts: rpParts, options: rpOptions };
+                    }
+                }
+                // Picture the Sentence: answer with PICTURES. One board
+                // shape, two tiers — sequence of 2 means place both pictures
+                // in sentence order (forces left-to-right reading); sequence
+                // of 1 is the classic sentence→picture match. Tiles are pack
+                // words only, so they reuse the exact images Read & Match
+                // already packs — no new generation. A distractor picture
+                // whose word appears in the sentence would be a second right
+                // answer, so extras are filtered against the sentence text.
+                let sentenceMatch = null;
+                if (packIsEnglish) {
+                    const smOthers = itemWords.filter((v) => v !== word);
+                    if (smOthers.length >= 1) {
+                        if (seed % 2 === 0) {
+                            const partner = smOthers[seed % smOthers.length];
+                            const f = SENTENCE_MATCH_FRAMES[seed % SENTENCE_MATCH_FRAMES.length];
+                            const first = seed % 3 === 0 ? partner : word;
+                            const second = first === word ? partner : word;
+                            const smSentence = joinPackPairSentence(f, first, second);
+                            sentenceMatch = {
+                                sentence: smSentence,
+                                sequence: [first, second],
+                                extras: shuffleForPack(smOthers.filter((v) => v !== partner)).slice(0, 2),
+                            };
+                        } else {
+                            const smText = packSentenceIsUsable(item.sentence, word, rsSessionWords)
+                                ? String(item.sentence).trim()
+                                : joinPackSentence(
+                                    READ_SENTENCE_FRAMES[seed % READ_SENTENCE_FRAMES.length].before,
+                                    word,
+                                    READ_SENTENCE_FRAMES[seed % READ_SENTENCE_FRAMES.length].after,
+                                );
+                            const smUsed = new Set(packSentenceWords(smText));
+                            sentenceMatch = {
+                                sentence: smText,
+                                sequence: [word],
+                                extras: shuffleForPack(smOthers.filter((v) => !smUsed.has(v))).slice(0, 3),
+                            };
+                        }
+                        // A one-tile board is unwinnable-proof but also
+                        // unmeasurable — never ship fewer than two pictures.
+                        if (sentenceMatch.sequence.length + sentenceMatch.extras.length < 2) sentenceMatch = null;
+                    }
+                }
                 item.activityItems = {
                     counting: { options: [1,2,3,4,5,6,7,8,9,10,'11+'], answer: item.phonemeCount || phonemes.length },
                     isolation: { position, correctSound, options: isolationOptions },
@@ -1302,6 +1669,9 @@
                     letter_tracing: { letter: word[0] || '' },
                     word_families: { rime, options: familyOptions, distractors: familyDistractors },
                     decoding: { choices: decodingChoices },
+                    ...(readSentence ? { read_sentence: readSentence } : {}),
+                    ...(readPassage ? { read_passage: readPassage } : {}),
+                    ...(sentenceMatch ? { sentence_match: sentenceMatch } : {}),
                 };
             });
             return items;
@@ -1316,10 +1686,19 @@
              setGeneratedCount(0);
              setPrewarmCount(0);
              setPrewarmTotal(0);
-             // Flag that stops TTS prewarm after a 429 is seen; reset per preload run so
-             // subsequent sessions start fresh. The Kokoro offer also resets so a user who
-             // declined last time still gets a fresh chance when a new 429 occurs.
-             let prewarmAborted = false;
+             // Rate-limit handling for the TTS prewarm, reset per preload run.
+             //
+             // This used to be a one-way switch: the first 429 anywhere set it
+             // and every remaining word packed NOTHING. A pack was found in the
+             // wild with six clips for five words — word one's options, then
+             // silence — because the limiter tripped early and the run gave up
+             // on everything after it. The limit is a ~60 second cooldown, not
+             // a permanent failure, so wait it out and carry on. Two cooldowns
+             // is the cap: past that the quota is genuinely gone and stalling a
+             // teacher for minutes helps nobody.
+             const ttsGate = { aborted: false, cooldowns: 0, rateLimited: false };
+             const TTS_COOLDOWN_MS = 15000;
+             const TTS_MAX_COOLDOWNS = 2;
              if (typeof window !== 'undefined') window.__kokoroOfferedThisPreload = false;
              const processed = [];
 
@@ -1406,6 +1785,8 @@
                          • "rain" → ["r", "ā", "n"] (3 phonemes, ai = long a)
                          ORTHOGRAPHY DISTRACTORS: Also return 3 plausible misspellings of the target word — letter substitutions or omissions a K-2 student might reasonably make (e.g. for "corn": ["korn", "cron", "cor"]). These are used for a spelling-choice activity so they should look visually similar to the correct word.
                          MANIPULATION TASK (Sound Swap activity): Return a phoneme deletion OR substitution task. Pick whichever yields a common English answer word. Include a child-friendly instruction line, the target phoneme in plain text (no slashes), the resulting answer word, and 3 distractor words that are also real common English words similar in length to the answer but NOT correct.
+                         DECODABLE SENTENCE (Finish the Sentence activity): Return a short, sensible, concrete sentence of 3 to 7 words that uses "${rawWord}" exactly once and otherwise uses ONLY very common K-2 sight words (the, a, I, can, see, is, in, on, my, we, like, look, here, has, and). No contractions, no proper nouns, no commas. Also return "sentenceDistractors": 3 real words that LOOK similar to "${rawWord}" (same word family, or one letter different) but do NOT make sense in that sentence.
+                         DECODABLE STORY (Read the Story activity): Return "story": an array of EXACTLY 3 short connected sentences (3 to 7 words each) that form a tiny story about "${rawWord}". At least 2 of the 3 sentences use "${rawWord}" (never twice in one sentence). Same vocabulary rule: only "${rawWord}" plus very common K-2 sight words. No contractions, no proper nouns, no commas.
                          Return ONLY JSON:
                          {
                              "word": "${rawWord}",
@@ -1418,6 +1799,9 @@
                              "rhymeDistractors": ["dog", "sun", "bed", "leg", "cup"],
                              "blendingDistractors": ["cord", "core", "born", "worn", "torn"],
                              "orthographyDistractors": ["korn", "cron", "cor"],
+                             "sentence": "I can see the corn.",
+                             "sentenceDistractors": ["core", "cord", "torn"],
+                             "story": ["Look at the corn.", "The corn is hot.", "We like the corn."],
                              "wordFamily": "-orn",
                              "familyEnding": "-orn",
                              "familyMembers": ["horn", "born", "worn", "torn", "morn"],
@@ -1451,9 +1835,23 @@
                      // letter-split here shipped 'car' as [c,a,r] with no
                      // teacher-visible warning.
                      const _phonemesMissing = !(data.phonemes && data.phonemes.length > 0);
-                     const validatedPhonemes = _phonemesMissing
-                         ? estimatePackPhonemes(data.word)
-                         : data.phonemes;
+                     // Gemini, then eSpeak, then the spelling heuristic. Only
+                     // the last rung is a guess, so only the last rung earns
+                     // the "estimated sounds" flag the teacher sees.
+                     let _espeakPhonemes = null;
+                     if (_phonemesMissing) {
+                         _espeakPhonemes = await espeakPackPhonemes(data.word, wordSoundsLanguage);
+                     }
+                     const validatedPhonemes = !_phonemesMissing
+                         ? data.phonemes
+                         : (_espeakPhonemes || estimatePackPhonemes(data.word));
+                     const _phonemeSource = !_phonemesMissing
+                         ? 'gemini'
+                         : (_espeakPhonemes ? 'espeak' : 'estimated');
+                     const _hasAiRhyme = !!(data.rhymeWord || (data.rhymes && data.rhymes[0]));
+                     const _derivedRhyme = _hasAiRhyme
+                         ? ''
+                         : derivePackRhyme(data.word, wordsToProcess, packIsEnglish);
                      // Validate manipulationTask — Gemini sometimes skips it or
                      // returns partial data; null-it-out so the activity's
                      // on-demand fallback kicks in rather than shipping a
@@ -1484,22 +1882,46 @@
                          syllableBlendingOptions: data.syllableBlendingOptions || [],
                          graphemes: data.graphemes || [],
                          rhymes: data.rhymes || [data.rhymeWord],
-                         rhymeWord: data.rhymeWord || (data.rhymes && data.rhymes[0]) || '',
-                         rhymeDistractors: data.rhymeDistractors || [],
-                         blendingDistractors: data.blendingDistractors || [],
+                         // Fall back to a derived rhyme rather than shipping an
+                         // empty answer for the player to improvise, so the pack
+                         // is complete on a student device with AI switched off.
+                         rhymeWord: data.rhymeWord
+                             || (data.rhymes && data.rhymes[0])
+                             || _derivedRhyme
+                             || '',
+                         _rhymeSource: (data.rhymeWord || (data.rhymes && data.rhymes[0]))
+                             ? 'gemini'
+                             : (_derivedRhyme ? 'derived' : undefined),
+                         rhymeDistractors: (data.rhymeDistractors || []).filter((w) => !isUnusableAsPhonicsWord(w)),
+                         blendingDistractors: (data.blendingDistractors || []).filter((w) => !isUnusableAsPhonicsWord(w)),
                          orthographyDistractors: data.orthographyDistractors || [],
+                         // Raw AI sentence; compileActivityItems applies the
+                         // decodability gate before anything trusts it.
+                         sentence: typeof data.sentence === 'string' ? data.sentence.trim() : '',
+                         sentenceDistractors: (data.sentenceDistractors || []).filter((w) => !isUnusableAsPhonicsWord(w)),
+                         story: Array.isArray(data.story) ? data.story : [],
                          familyEnding: data.familyEnding || '',
-                         familyMembers: data.familyMembers || [],
+                         familyMembers: (data.familyMembers || []).filter((w) => !isUnusableAsPhonicsWord(w)),
                          firstSound: data.firstSound || validatedPhonemes[0] || '',
                          lastSound: data.lastSound || validatedPhonemes[validatedPhonemes.length - 1] || '',
                          definition: data.definition,
                          image: imageUrl,
                          manipulationTask: manipTask,
-                         _fallbackUsed: _phonemesMissing || undefined
+                         // Only a spelling guess is "estimated". An eSpeak
+                         // result is a real G2P answer and must not raise the
+                         // teacher-facing warning, but its provenance is still
+                         // recorded so the review panel can say where the
+                         // sounds came from.
+                         _fallbackUsed: (_phonemeSource === 'estimated') || undefined,
+                         _phonemeSource
                      });
                  } catch (e) {
                      warnLog("Word processing failed for:", rawWord, e.message);
-                     const fallbackPhonemes = estimatePackPhonemes(rawWord);
+                     // The word threw, so there is no Gemini answer at all —
+                     // but a G2P engine does not need one. Try eSpeak before
+                     // giving the child sounds derived from spelling.
+                     const _espeakRescue = await espeakPackPhonemes(rawWord, wordSoundsLanguage);
+                     const fallbackPhonemes = _espeakRescue || estimatePackPhonemes(rawWord);
                      processed.push({
                          term: rawWord,
                          word: rawWord,
@@ -1509,10 +1931,37 @@
                          firstSound: fallbackPhonemes[0] || rawWord[0],
                          lastSound: fallbackPhonemes[fallbackPhonemes.length - 1] || rawWord[rawWord.length - 1],
                          image: null,
-                         _fallbackUsed: true
+                         _fallbackUsed: !_espeakRescue,
+                         _phonemeSource: _espeakRescue ? 'espeak' : 'estimated'
                      });
                  }
                      setGeneratedCount(prev => prev + 1);
+             }
+             // Flag generated words this app cannot vouch for. Done here, after
+             // every word is processed, so the session's own vocabulary counts
+             // as vouched for: a teacher who typed a word has already made the
+             // judgement this screen is asking for.
+             {
+                 const sessionWords = new Set(
+                     processed
+                         .map((it) => String(it.targetWord || it.word || it.term || '').trim().toLowerCase())
+                         .filter(Boolean)
+                 );
+                 processed.forEach((item) => {
+                     const candidates = [
+                         item.rhymeWord,
+                         ...(item.rhymes || []),
+                         ...(item.familyMembers || []),
+                         ...(item.rhymeDistractors || []),
+                         ...(item.sentenceDistractors || []),
+                     ].filter(Boolean);
+                     const unverified = [...new Set(
+                         candidates
+                             .map((w) => String(w).trim().toLowerCase())
+                             .filter((w) => isUnverifiedK2Word(w, sessionWords))
+                     )];
+                     if (unverified.length) item._unverifiedWords = unverified;
+                 });
              }
              compileActivityItems(processed);
 
@@ -1529,7 +1978,14 @@
                  delete item._aacAssets;
              });
              if (typeof callImagen === 'function') {
-                 const decodingWords = [...new Set(processed.flatMap((item) => item.activityItems?.decoding?.choices || []))];
+                 // Picture the Sentence tiles ride the same manifest — its
+                 // sequence/extras are pack words, so most already have
+                 // images; this backfills any that do not.
+                 const decodingWords = [...new Set(processed.flatMap((item) => [
+                     ...(item.activityItems?.decoding?.choices || []),
+                     ...(item.activityItems?.sentence_match?.sequence || []),
+                     ...(item.activityItems?.sentence_match?.extras || []),
+                 ]))];
                  for (const word of decodingWords) {
                      if (decodingAssets[word]) continue;
                      try {
@@ -1615,8 +2071,40 @@
                      ...(boards.sound_sort?.distractors || []),
                      ...(boards.word_families?.options || []),
                      ...(boards.word_families?.distractors || []),
+                     ...(boards.read_sentence?.options || []),
+                     ...(boards.read_passage?.options || []),
                  ].forEach((value) => value && tasks.add(String(value)));
                  addInstructionParts(tasks, boards.manipulation?.task?.instruction);
+                 if (boards.read_sentence?.sentence) {
+                     // The completed sentence is read back after a correct
+                     // answer — connected text needs its own clip. The
+                     // instruction string must match the player's
+                     // word_sounds.read_sentence_prompt EXACTLY or the packed
+                     // clip will never be looked up.
+                     tasks.add(boards.read_sentence.sentence);
+                     tasks.add('Read the sentence. Which word finishes it?');
+                 }
+                 if (boards.read_passage?.story) {
+                     // Same contract as the sentence clip: the instruction
+                     // string must byte-match word_sounds.read_passage_prompt.
+                     tasks.add(boards.read_passage.story);
+                     // Per-sentence clips too: the player reads the completed
+                     // story back line by line with a follow-along highlight,
+                     // and each line needs its own clip to stay in sync.
+                     String(boards.read_passage.story)
+                         .split(/(?<=[.!?])\s+/)
+                         .map((s) => s.trim())
+                         .filter(Boolean)
+                         .forEach((s) => tasks.add(s));
+                     tasks.add('Read the story. Which word finishes it?');
+                 }
+                 if (boards.sentence_match?.sentence) {
+                     // Byte-match contract with word_sounds.sentence_match_prompt.
+                     tasks.add(boards.sentence_match.sentence);
+                     tasks.add('Read the sentence. Match the pictures to it.');
+                     [...(boards.sentence_match.sequence || []), ...(boards.sentence_match.extras || [])]
+                         .forEach((value) => value && tasks.add(String(value)));
+                 }
                  tasks.add('Which word did you hear?');
                  tasks.add('Which word rhymes with');
                  tasks.add('Find words that start with the sound');
@@ -1633,14 +2121,14 @@
                  });
                  const taskList = [...tasks].filter(Boolean);
                  setPrewarmTotal((prev) => prev + taskList.length);
-                 const results = await Promise.allSettled(taskList.map(async (text) => {
+                 const runTasks = async (list) => Promise.allSettled(list.map(async (text) => {
                      const key = normalizePackKey(text);
                      if (packedTtsAssets[key]) {
                          setPrewarmCount((prev) => prev + 1);
                          return packedTtsAssets[key];
                      }
                      try {
-                         if (prewarmAborted || typeof callTTS !== 'function') throw new Error('TTS unavailable');
+                         if (ttsGate.aborted || typeof callTTS !== 'function') throw new Error('TTS unavailable');
                          const src = await callTTS(text, voiceForTts, speedForTts);
                          const asset = await packTtsSource(src);
                          if (!asset) throw new Error('TTS returned no portable audio');
@@ -1650,12 +2138,25 @@
                          setPrewarmCount((prev) => prev + 1);
                      }
                  }));
-                 const hit429 = results.some((result) => result.status === 'rejected' && /429|Rate Limit/i.test(result.reason?.message || ''));
-                 if (hit429) {
-                     prewarmAborted = true;
+                 const was429 = (results) => results.some((r) => r.status === 'rejected' && /429|Rate Limit/i.test(r.reason?.message || ''));
+                 let results = await runTasks(taskList);
+                 if (was429(results)) {
+                     ttsGate.rateLimited = true;
                      if (typeof window !== 'undefined' && !window.__kokoroOfferDeclined && onRequestKokoroOffer && !window.__kokoroOfferedThisPreload) {
                          window.__kokoroOfferedThisPreload = true;
                          try { onRequestKokoroOffer('word_sounds'); } catch (_) {}
+                     }
+                     if (ttsGate.cooldowns < TTS_MAX_COOLDOWNS) {
+                         // Wait out the cooldown and retry only what is still
+                         // missing, so the words after this one still get audio.
+                         ttsGate.cooldowns += 1;
+                         await new Promise((r) => setTimeout(r, TTS_COOLDOWN_MS * ttsGate.cooldowns));
+                         const stillMissing = taskList.filter((text) => !packedTtsAssets[normalizePackKey(text)]);
+                         setPrewarmTotal((prev) => prev + stillMissing.length);
+                         results = await runTasks(stillMissing);
+                         if (was429(results) && ttsGate.cooldowns >= TTS_MAX_COOLDOWNS) ttsGate.aborted = true;
+                     } else {
+                         ttsGate.aborted = true;
                      }
                  }
                  item.ttsReady = !!packedTtsAssets[normalizePackKey(word)];
@@ -1663,6 +2164,17 @@
              }
              if (processed[0]) {
                  processed[0]._studentPackVersion = 2;
+                 // What the packing run actually managed, recorded at the point
+                 // of truth. A pack that lost its audio to a rate limit looks
+                 // identical to a complete one from the outside, and the only
+                 // place that difference is knowable is here.
+                 processed[0]._ttsCoverage = {
+                     clips: Object.keys(packedTtsAssets).length,
+                     wordsWithAudio: processed.filter((it) => it.ttsReady).length,
+                     words: processed.length,
+                     rateLimited: ttsGate.rateLimited,
+                     gaveUp: ttsGate.aborted,
+                 };
                  processed[0]._ttsAssets = packedTtsAssets;
                  processed[0]._decodingAssets = decodingAssets;
                  if (Object.keys(aacAssets).length) processed[0]._aacAssets = aacAssets;
@@ -1690,11 +2202,16 @@
                  totalItems: sequence.length,
                  estimatedMinutes: Math.ceil(sequence.length * 0.5)
              } : null;
+             // `student` is deliberately sent even when blank: the host reads it
+             // as "no student", which is what clears a target left over from an
+             // Assessment Center run instead of misfiling this child's probe
+             // under that one.
              const probeOptions = isAssessment
-                 ? { isProbe: true, activity: probeActivitySel }
+                 ? { isProbe: true, activity: probeActivitySel, student: probeStudentTrimmed || null }
                  : { isProbe: false };
              const configSummary = isAssessment
-                 ? `📊 Assessment · ${String(probeActivitySel).replace(/_/g, ' ')} probe (timed, no hints)`
+                 ? `📊 Assessment · ${String(probeActivitySel).replace(/_/g, ' ')} probe (timed, no hints)` +
+                   (probeStudentTrimmed ? ` · ${probeStudentTrimmed}` : '')
                  : (lessonPlanConfig
                      ? `Mastery: ${lessonPlanConfig.masteryThreshold} consecutive • ` +
                        enabledActivities.map(a => `${a.id.replace('_', ' ')} (${a.count})`).join(' → ') +
@@ -1890,6 +2407,30 @@
                                             <option value="rhyming">{tf('word_sounds.act_rhyming', 'Rhyming')}</option>
                                             <option value="counting">{tf('word_sounds.act_counting', 'Sound Counting')}</option>
                                         </select>
+                                        <label className="block text-xs font-bold text-amber-900" htmlFor="ws-probe-student">
+                                            {tf('word_sounds.probe_student', 'Student (for records)')}
+                                        </label>
+                                        <input id="ws-probe-student" type="text"
+                                            list={probeStudentNames.length > 0 ? 'ws-probe-student-names' : undefined}
+                                            value={probeStudent}
+                                            onChange={(e) => setProbeStudent(e.target.value)}
+                                            placeholder={tf('word_sounds.probe_student_placeholder', 'Name or nickname')}
+                                            autoComplete="off"
+                                            className="w-full px-2 py-1.5 rounded-lg border border-amber-300 bg-white text-sm font-semibold text-slate-700" />
+                                        {probeStudentNames.length > 0 && (
+                                            <datalist id="ws-probe-student-names">
+                                                {probeStudentNames.map((n) => <option key={n} value={n} />)}
+                                            </datalist>
+                                        )}
+                                        {/* Say plainly where the result goes. A probe that banks
+                                            nowhere still looks identical while the child takes it,
+                                            so the only honest place to tell the teacher is here,
+                                            before they start. */}
+                                        <p className="text-[11px] font-semibold text-amber-800 leading-snug" role="note">
+                                            {probeStudentTrimmed
+                                                ? tf('word_sounds.probe_student_saved', 'Saved to the progress-monitoring record for {name}.', { name: probeStudentTrimmed })
+                                                : tf('word_sounds.probe_student_unsaved', 'No student named. This run is scored on screen only, and is NOT saved to any record.')}
+                                        </p>
                                     </div>
                                 )}
                             </div>
@@ -2208,6 +2749,9 @@
                                                     spelling_bee: { id: 'spelling_bee', label: 'Spelling Bee', icon: Type },
                                                     missing_letter: { id: 'missing_letter', label: 'Missing Letter', icon: Type },
                                                     decoding: { id: 'decoding', label: 'Read & Match', icon: BookOpen },
+                                                    read_sentence: { id: 'read_sentence', label: 'Finish the Sentence', icon: BookOpen },
+                                                    read_passage: { id: 'read_passage', label: 'Read the Story', icon: BookOpen },
+                                                    sentence_match: { id: 'sentence_match', label: 'Picture the Sentence', icon: BookOpen },
                                                 };
                                                 const activity = activityDefs[actId];
                                                 return (

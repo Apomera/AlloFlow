@@ -19,7 +19,7 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -305,7 +305,16 @@ window.StemLab = window.StemLab || {
 
               var op = tok;
 
-              var right = parseExpr(tokens, left.pos + 1, prec + 1);
+              // Implication is RIGHT-associative by standard convention:
+              // P → Q → R means P → (Q → R). Recursing at the same precedence
+              // (not prec+1) lets the right side absorb further arrows first.
+              // With prec+1 the chain parsed as (P → Q) → R, which genuinely
+              // differs (P=F, Q=T, R=F: standard reading true, left-assoc
+              // reading false). All other connectives stay left-associative;
+              // for ∧, ∨, ⊕, ↔ the grouping cannot change the truth table.
+              var nextMin = op === '→' ? prec : prec + 1;
+
+              var right = parseExpr(tokens, left.pos + 1, nextMin);
 
               left = { node: { type: 'bin', op: op, left: left.node, right: right.node }, pos: right.pos };
 
@@ -523,6 +532,27 @@ window.StemLab = window.StemLab || {
             return null;
           };
 
+          // Strip balanced outer parentheses so rule matching compares the
+          // formula, not its punctuation. Without this, Proof Challenge 5 was
+          // unsolvable: its premise reads "(P ∧ Q) → R", Conjunction produces
+          // the string "P ∧ Q", and Modus Ponens compared the two literally —
+          // '(P ∧ Q)' never equalled 'P ∧ Q', so the taught conj-then-MP proof
+          // could not complete. Only BALANCED outer parens are stripped:
+          // "(P) ∧ (Q)" is left alone because its first paren closes early.
+          var stripOuterParens = function(s) {
+            s = s.trim();
+            while (s.length > 1 && s[0] === '(' && s[s.length - 1] === ')') {
+              var depth = 0, closesEarly = false;
+              for (var i = 0; i < s.length - 1; i++) {
+                if (s[i] === '(') depth++;
+                else if (s[i] === ')') { depth--; if (depth === 0) { closesEarly = true; break; } }
+              }
+              if (closesEarly) break;
+              s = s.slice(1, -1).trim();
+            }
+            return s;
+          };
+
           var RULES = [
 
             { id: 'mp', name: t('stem.logiclab.modus_ponens', 'Modus Ponens'), form: 'P→Q, P ∴ Q', eng: 'If you study, you pass. You studied. ∴ You pass.', needs: 2,
@@ -535,7 +565,7 @@ window.StemLab = window.StemLab || {
 
                   var m = sel[i].match(/^(.+)\s*→\s*(.+)$/);
 
-                  if (m && m[1].trim() === sel[j].trim()) return m[2].trim();
+                  if (m && stripOuterParens(m[1]) === stripOuterParens(sel[j])) return m[2].trim();
 
                 }
 
@@ -555,9 +585,9 @@ window.StemLab = window.StemLab || {
 
                   var m = sel[i].match(/^(.+)\s*→\s*(.+)$/);
 
-                  if (m && sel[j].trim() === '¬' + m[2].trim()) return '¬' + m[1].trim();
+                  if (m && stripOuterParens(sel[j]) === '¬' + stripOuterParens(m[2])) return '¬' + m[1].trim();
 
-                  if (m && sel[j].trim() === '¬(' + m[2].trim() + ')') return '¬' + m[1].trim();
+                  if (m && stripOuterParens(sel[j]) === '¬(' + stripOuterParens(m[2]) + ')') return '¬' + m[1].trim();
 
                 }
 
@@ -579,7 +609,7 @@ window.StemLab = window.StemLab || {
 
                   var m2 = sel[j].match(/^(.+)\s*→\s*(.+)$/);
 
-                  if (m1 && m2 && m1[2].trim() === m2[1].trim()) return m1[1].trim() + ' → ' + m2[2].trim();
+                  if (m1 && m2 && stripOuterParens(m1[2]) === stripOuterParens(m2[1])) return m1[1].trim() + ' → ' + m2[2].trim();
 
                 }
 
@@ -599,9 +629,9 @@ window.StemLab = window.StemLab || {
 
                   var m = sel[i].match(/^(.+)\s*∨\s*(.+)$/);
 
-                  if (m && sel[j].trim() === '¬' + m[1].trim()) return m[2].trim();
+                  if (m && stripOuterParens(sel[j]) === '¬' + stripOuterParens(m[1])) return m[2].trim();
 
-                  if (m && sel[j].trim() === '¬' + m[2].trim()) return m[1].trim();
+                  if (m && stripOuterParens(sel[j]) === '¬' + stripOuterParens(m[2])) return m[1].trim();
 
                 }
 
@@ -1051,6 +1081,9 @@ window.StemLab = window.StemLab || {
                       return React.createElement("div", { 
                         key: v, draggable: true,
                         onDragStart: function(e) { _drag.sym = v; e.dataTransfer.effectAllowed='copy'; },
+                        role: 'button', tabIndex: 0,
+                        'aria-label': 'Insert variable ' + v,
+                        onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd({ expression: expr + v }); } },
                         onClick: function() { upd({ expression: expr + v }); },
                         className: "w-10 h-10 flex items-center justify-center font-black text-white text-base rounded-xl cursor-grab hover:scale-110 shadow-md select-none transition-transform",
                         style: { background: _symColor[v] }
@@ -1063,6 +1096,9 @@ window.StemLab = window.StemLab || {
                       return React.createElement("div", { 
                         key: sym, draggable: true,
                         onDragStart: function(e) { _drag.sym = ' '+sym+' '; e.dataTransfer.effectAllowed='copy'; },
+                        role: 'button', tabIndex: 0,
+                        'aria-label': 'Insert ' + (CONN[sym] ? CONN[sym].eng : sym),
+                        onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd({ expression: expr+' '+sym+' ' }); } },
                         onClick: function() { upd({ expression: expr+' '+sym+' ' }); },
                         className: "px-3 h-10 flex items-center justify-center font-black text-white text-sm rounded-xl cursor-grab hover:scale-110 shadow-md select-none transition-transform",
                         title: CONN[sym] ? CONN[sym].eng : sym,
@@ -1073,6 +1109,9 @@ window.StemLab = window.StemLab || {
                       return React.createElement("div", { 
                         key: v, draggable: true,
                         onDragStart: function(e) { _drag.sym = v; e.dataTransfer.effectAllowed='copy'; },
+                        role: 'button', tabIndex: 0,
+                        'aria-label': 'Insert ' + v,
+                        onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd({ expression: expr+v }); } },
                         onClick: function() { upd({ expression: expr+v }); },
                         className: "w-10 h-10 flex items-center justify-center font-black text-slate-600 text-base rounded-xl cursor-grab hover:scale-110 shadow-md select-none transition-transform bg-slate-100 hover:bg-slate-200"
                       }, v);
@@ -1273,7 +1312,9 @@ window.StemLab = window.StemLab || {
 
                 var table = genTable(expr);
 
-                if (!table) return React.createElement("div", { className: "p-8 text-center text-slate-600 text-sm" }, t('stem.logiclab.enter_an_expression_above_to_generate_', "Enter an expression above to generate a truth table"));
+                // text-slate-600 on the dark tool shell is ~2:1. Use the theme var so the
+                // empty state stays readable in light, dark and high-contrast.
+                if (!table) return React.createElement("div", { className: "p-8 text-center text-sm", style: { color: 'var(--allo-stem-text-soft, #475569)' } }, t('stem.logiclab.enter_an_expression_above_to_generate_', "Enter an expression above to generate a truth table"));
 
                 var typeBadge = table.type === 'tautology' ? { bg: 'bg-emerald-100', text: 'text-emerald-700', border: 'border-emerald-300', label: t('stem.logiclab.tautology_always_true', '\u2705 Tautology (always true)'), glow: '0 0 20px rgba(16,185,129,0.3)' }
 
@@ -2345,7 +2386,7 @@ window.StemLab = window.StemLab || {
                     })
                   ),
                   // Gate SVG
-                  React.createElement("svg", { width: "120", height: "80", viewBox: "0 0 120 80" },
+                  React.createElement("svg", { role: 'img', 'aria-label': t('stem.logiclab.gate_img', 'Logic gate diagram showing the current input states'), width: "120", height: "80", viewBox: "0 0 120 80" },
                     React.createElement("line", { x1:"0",y1:isUnaryGate?"40":"25",x2:"35",y2:isUnaryGate?"40":"25",stroke:gateInputs.A?"#059669":"#dc2626",strokeWidth:"3" }),
                     !isUnaryGate && React.createElement("line", { x1:"0",y1:"55",x2:"35",y2:"55",stroke:gateInputs.B?"#059669":"#dc2626",strokeWidth:"3" }),
                     (function() {

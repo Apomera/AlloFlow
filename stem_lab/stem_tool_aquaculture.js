@@ -6961,6 +6961,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       explain: 'Spat fall = wild larvae settling on substrate (cultch). Hatcheries induce this with control; growers can also catch wild spat by deploying clean substrate at the right time.' }
   ];
 
+  // The authored bank put 77% of correct answers in slot 2 (measured
+  // 2/53/12/2) — passable by position. Rotate each question ONCE here: the
+  // checkpoint quiz re-reads checkpointQuestions[quizState.idx] (a slice of
+  // this bank) on every render, so a random shuffle would deal new options
+  // mid-question, while a fixed per-question rotation is stable. Grading is
+  // by index (picked === question.correct) and review reads a[correct], so
+  // `correct` is remapped with the options; `explain` is one string.
+  (function () {
+    for (var qi = 0; qi < QUIZ_QUESTIONS.length; qi++) {
+      var q = QUIZ_QUESTIONS[qi];
+      if (!q || !Array.isArray(q.a) || q.a.length < 2 || typeof q.correct !== 'number') continue;
+      var n = q.a.length;
+      var shift = ((qi * 7) + 3) % n;
+      if (shift === 0) continue;
+      var moved = new Array(n);
+      for (var i = 0; i < n; i++) moved[(i + shift) % n] = q.a[i];
+      q.a = moved;
+      q.correct = (q.correct + shift) % n;
+    }
+  })();
+
   // ───────────────────────────────────────────────────────────
   // DATA: MISSIONS
   // ───────────────────────────────────────────────────────────
@@ -7927,6 +7948,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
   });
 
   function _renderAquacultureLab(ctx) {
+    // Guarded i18n alias. pondSvg() below calls __alloT for its SVG aria-label;
+    // without this declaration that call throws ReferenceError the moment the
+    // pond renders. Falls back to the literal, so no pack entry is required.
+    var __alloT = function (k, fb) {
+      var v;
+      try { v = (ctx && typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; }
+      return (v == null) ? (fb != null ? fb : k) : v;
+    };
     var React = window.React || (ctx && ctx.React);
     var h = React ? React.createElement : null;
     var useState = React.useState, useEffect = React.useEffect, useRef = React.useRef;
@@ -18997,7 +19026,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       },
       {
         section: 'Connection to Other AlloFlow Tools',
-        content: 'AquacultureLab connects to: WeldLab (skilled trades pathway); StatsLab (data analysis); NutritionLab (seafood nutrition); ClimateExplorer (climate science); SEL Hub (career planning + community); other STEM Lab tools (BehaviorLab, PetsLab, BirdLab, etc.).'
+        content: 'AquacultureLab connects to: WeldLab (skilled trades pathway); StatsLab (data analysis); NutritionLab (seafood nutrition); ClimateExplorer (climate science); SEL Hub (career planning + community); other STEAM Lab tools (BehaviorLab, PetsLab, BirdLab, etc.).'
       },
       {
         section: 'For Educators',
@@ -22246,7 +22275,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         for (var r = 0; r < rippleN; r++) {
           ripples.push(h('path', { key: 'r' + r, d: 'M 10 ' + (115 + r * 4) + ' Q 50 ' + (110 + r * 4) + ' 100 ' + (115 + r * 4) + ' T 200 ' + (115 + r * 4) + ' T 310 ' + (115 + r * 4), stroke: '#67e8f9', strokeWidth: 1, fill: 'none', opacity: 0.5 }));
         }
-        return h('svg', { viewBox: '0 0 320 140', style: { width: '100%', height: 160, display: 'block' } },
+        return h('svg', { role: 'img', 'aria-label': __alloT('stem.aquaculture.pond_img', 'Pond simulation view'), viewBox: '0 0 320 140', style: { width: '100%', height: 160, display: 'block' } },
           h('rect', { x: 0, y: 0, width: 320, height: 140, fill: '#0f1c2f' }),
           h('rect', { x: 0, y: 20, width: 320, height: 100, fill: '#1e3a5f', opacity: 0.7 }),
           ripples,
@@ -22333,7 +22362,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
             h('input', { type: 'checkbox', id: 'sh-und', checked: !!sh.understood, onChange: function(e) { setSH({ understood: e.target.checked }); }, style: { width: 14, height: 14 } }),
             h('label', { htmlFor: 'sh-und', style: { fontSize: 12, fontWeight: 700, color: '#86efac', cursor: 'pointer' } },
               'I think I understand the trade-offs — let me explain them in my own words')),
-          sh.understood && h('textarea', { value: sh.explanation || '',
+          sh.understood && h('textarea', { 'aria-label': 'Pond oxygen explanation', value: sh.explanation || '',
             onChange: function(e) { setSH({ explanation: e.target.value }); },
             placeholder: 'Explain in your own words: what drives oxygen consumption? What replenishes it? Why does feed rate matter even at constant density? What is the trade-off a real fish farmer faces?',
             style: { width: '100%', minHeight: 80, padding: 6, background: '#0f1c2f', color: '#e2e8f0', border: '1px solid rgba(134,239,172,0.4)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace' }, rows: 4 }),

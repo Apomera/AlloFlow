@@ -1,0 +1,7513 @@
+{
+ "module": "C:/Users/cabba/AppData/Local/Temp/claude/C--Users-cabba/aefc1e38-6677-43ac-b1d1-09a9cd0b5164/scratchpad/doc_pipeline_module.round10.js",
+ "results": {
+  "ed-parent-guide-idea": [
+   {
+    "page": 1,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.98321,
+    "csBigrams": 417
+   },
+   {
+    "page": 2,
+    "cols": 1,
+    "applied": false,
+    "agree": 1,
+    "csBigrams": 444
+   }
+  ],
+  "irs-i1040-instructions": [
+   {
+    "page": 1,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.6131,
+    "csBigrams": 168
+   },
+   {
+    "page": 2,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.80214,
+    "csBigrams": 187
+   },
+   {
+    "page": 3,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.84488,
+    "csBigrams": 361
+   },
+   {
+    "page": 4,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.94534,
+    "csBigrams": 622
+   },
+   {
+    "page": 5,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.90799,
+    "csBigrams": 413
+   },
+   {
+    "page": 6,
+    "cols": 5,
+    "applied": true,
+    "agree": 0.96595,
+    "csBigrams": 1116
+   },
+   {
+    "page": 7,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.95355,
+    "csBigrams": 732
+   },
+   {
+    "page": 8,
+    "cols": 5,
+    "applied": true,
+    "agree": 0.9512,
+    "csBigrams": 1004
+   },
+   {
+    "page": 9,
+    "cols": 4,
+    "applied": true,
+    "agree": 0.90975,
+    "csBigrams": 687
+   },
+   {
+    "page": 10,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.92255,
+    "csBigrams": 439
+   },
+   {
+    "page": 11,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.90286,
+    "csBigrams": 350
+   },
+   {
+    "page": 12,
+    "cols": 5,
+    "applied": true,
+    "agree": 0.95562,
+    "csBigrams": 969
+   },
+   {
+    "page": 13,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.9633,
+    "csBigrams": 1090
+   },
+   {
+    "page": 14,
+    "cols": 4,
+    "applied": true,
+    "agree": 0.96245,
+    "csBigrams": 1145
+   },
+   {
+    "page": 15,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.96461,
+    "csBigrams": 1102
+   },
+   {
+    "page": 16,
+    "cols": 4,
+    "applied": true,
+    "agree": 0.93115,
+    "csBigrams": 581
+   },
+   {
+    "page": 17,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.93153,
+    "csBigrams": 628
+   },
+   {
+    "page": 18,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.89965,
+    "csBigrams": 578
+   },
+   {
+    "page": 19,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.9235,
+    "csBigrams": 732
+   },
+   {
+    "page": 20,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.95261,
+    "csBigrams": 1055
+   },
+   {
+    "page": 21,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.96896,
+    "csBigrams": 1192
+   },
+   {
+    "page": 22,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.94692,
+    "csBigrams": 697
+   },
+   {
+    "page": 23,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.95863,
+    "csBigrams": 991
+   },
+   {
+    "page": 24,
+    "cols": 4,
+    "applied": true,
+    "agree": 0.9491,
+    "csBigrams": 943
+   },
+   {
+    "page": 25,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.95837,
+    "csBigrams": 1033
+   },
+   {
+    "page": 26,
+    "cols": 4,
+    "applied": true,
+    "agree": 0.96057,
+    "csBigrams": 1116
+   },
+   {
+    "page": 27,
+    "cols": 5,
+    "applied": true,
+    "agree": 0.95674,
+    "csBigrams": 1179
+   },
+   {
+    "page": 28,
+    "cols": 4,
+    "applied": true,
+    "agree": 0.96296,
+    "csBigrams": 1107
+   },
+   {
+    "page": 29,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.87778,
+    "csBigrams": 630
+   },
+   {
+    "page": 30,
+    "cols": 4,
+    "applied": true,
+    "agree": 0.96108,
+    "csBigrams": 1079
+   },
+   {
+    "page": 31,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.96223,
+    "csBigrams": 1112
+   },
+   {
+    "page": 32,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.92508,
+    "csBigrams": 614
+   },
+   {
+    "page": 33,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.96123,
+    "csBigrams": 1006
+   },
+   {
+    "page": 34,
+    "cols": 6,
+    "applied": true,
+    "agree": 0.95538,
+    "csBigrams": 986
+   },
+   {
+    "page": 35,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.83918,
+    "csBigrams": 485
+   },
+   {
+    "page": 36,
+    "cols": 4,
+    "applied": true,
+    "agree": 0.95138,
+    "csBigrams": 761
+   },
+   {
+    "page": 37,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.94646,
+    "csBigrams": 635
+   },
+   {
+    "page": 38,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.93065,
+    "csBigrams": 620
+   },
+   {
+    "page": 39,
+    "cols": 4,
+    "applied": true,
+    "agree": 0.95872,
+    "csBigrams": 1066
+   },
+   {
+    "page": 40,
+    "cols": 5,
+    "applied": true,
+    "agree": 0.92744,
+    "csBigrams": 758
+   },
+   {
+    "page": 41,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.93614,
+    "csBigrams": 830
+   },
+   {
+    "page": 42,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.93247,
+    "csBigrams": 770
+   },
+   {
+    "page": 43,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.9608,
+    "csBigrams": 1097
+   },
+   {
+    "page": 44,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.9672,
+    "csBigrams": 1189
+   },
+   {
+    "page": 45,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.90909,
+    "csBigrams": 407
+   },
+   {
+    "page": 46,
+    "cols": 6,
+    "applied": true,
+    "agree": 0.8119,
+    "csBigrams": 420
+   },
+   {
+    "page": 47,
+    "cols": 10,
+    "applied": true,
+    "agree": 0.83224,
+    "csBigrams": 608
+   },
+   {
+    "page": 48,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.77296,
+    "csBigrams": 392
+   },
+   {
+    "page": 49,
+    "cols": 5,
+    "applied": true,
+    "agree": 0.89576,
+    "csBigrams": 2005
+   },
+   {
+    "page": 50,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.92564,
+    "csBigrams": 2488
+   },
+   {
+    "page": 51,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.92564,
+    "csBigrams": 2488
+   },
+   {
+    "page": 52,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.97688,
+    "csBigrams": 2552
+   },
+   {
+    "page": 53,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.96669,
+    "csBigrams": 2552
+   },
+   {
+    "page": 54,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.92564,
+    "csBigrams": 2488
+   },
+   {
+    "page": 55,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.92564,
+    "csBigrams": 2488
+   },
+   {
+    "page": 56,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.92174,
+    "csBigrams": 2364
+   },
+   {
+    "page": 57,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.91708,
+    "csBigrams": 2231
+   },
+   {
+    "page": 58,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.90914,
+    "csBigrams": 1684
+   },
+   {
+    "page": 59,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.89896,
+    "csBigrams": 1831
+   },
+   {
+    "page": 60,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.85542,
+    "csBigrams": 415
+   },
+   {
+    "page": 61,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.95644,
+    "csBigrams": 1056
+   },
+   {
+    "page": 62,
+    "cols": 4,
+    "applied": true,
+    "agree": 0.96064,
+    "csBigrams": 1118
+   },
+   {
+    "page": 63,
+    "cols": 6,
+    "applied": true,
+    "agree": 0.91049,
+    "csBigrams": 782
+   },
+   {
+    "page": 64,
+    "cols": 4,
+    "applied": true,
+    "agree": 0.95867,
+    "csBigrams": 992
+   },
+   {
+    "page": 65,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.96367,
+    "csBigrams": 1101
+   },
+   {
+    "page": 66,
+    "cols": 4,
+    "applied": true,
+    "agree": 0.95989,
+    "csBigrams": 1097
+   },
+   {
+    "page": 67,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.86447,
+    "csBigrams": 273
+   },
+   {
+    "page": 68,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.76108,
+    "csBigrams": 1218
+   },
+   {
+    "page": 69,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.82768,
+    "csBigrams": 1799
+   },
+   {
+    "page": 70,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.86859,
+    "csBigrams": 2359
+   },
+   {
+    "page": 71,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.86859,
+    "csBigrams": 2359
+   },
+   {
+    "page": 72,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.86859,
+    "csBigrams": 2359
+   },
+   {
+    "page": 73,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.86859,
+    "csBigrams": 2359
+   },
+   {
+    "page": 74,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.86859,
+    "csBigrams": 2359
+   },
+   {
+    "page": 75,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.86859,
+    "csBigrams": 2359
+   },
+   {
+    "page": 76,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.86859,
+    "csBigrams": 2359
+   },
+   {
+    "page": 77,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.86859,
+    "csBigrams": 2359
+   },
+   {
+    "page": 78,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.86859,
+    "csBigrams": 2359
+   },
+   {
+    "page": 79,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.85343,
+    "csBigrams": 1883
+   },
+   {
+    "page": 80,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.85303,
+    "csBigrams": 660
+   },
+   {
+    "page": 81,
+    "cols": 5,
+    "applied": true,
+    "agree": 0.963,
+    "csBigrams": 1027
+   },
+   {
+    "page": 82,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.95922,
+    "csBigrams": 1030
+   },
+   {
+    "page": 83,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.96822,
+    "csBigrams": 1070
+   },
+   {
+    "page": 84,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.962,
+    "csBigrams": 1000
+   },
+   {
+    "page": 85,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.96201,
+    "csBigrams": 1053
+   },
+   {
+    "page": 86,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.93467,
+    "csBigrams": 597
+   },
+   {
+    "page": 87,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.90186,
+    "csBigrams": 377
+   },
+   {
+    "page": 88,
+    "cols": 4,
+    "applied": true,
+    "agree": 0.95751,
+    "csBigrams": 1012
+   },
+   {
+    "page": 89,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.9553,
+    "csBigrams": 962
+   },
+   {
+    "page": 90,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.90661,
+    "csBigrams": 514
+   },
+   {
+    "page": 91,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.95011,
+    "csBigrams": 902
+   },
+   {
+    "page": 92,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.96325,
+    "csBigrams": 1034
+   },
+   {
+    "page": 93,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.95187,
+    "csBigrams": 831
+   },
+   {
+    "page": 94,
+    "cols": 4,
+    "applied": true,
+    "agree": 0.95602,
+    "csBigrams": 955
+   },
+   {
+    "page": 95,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.96176,
+    "csBigrams": 1020
+   },
+   {
+    "page": 96,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.86667,
+    "csBigrams": 285
+   },
+   {
+    "page": 97,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.92683,
+    "csBigrams": 574
+   },
+   {
+    "page": 98,
+    "cols": 4,
+    "applied": true,
+    "agree": 0.93719,
+    "csBigrams": 796
+   },
+   {
+    "page": 99,
+    "cols": 4,
+    "applied": true,
+    "agree": 0.93481,
+    "csBigrams": 675
+   },
+   {
+    "page": 100,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.80435,
+    "csBigrams": 184
+   },
+   {
+    "page": 101,
+    "cols": 6,
+    "applied": true,
+    "agree": 0.94719,
+    "csBigrams": 871
+   },
+   {
+    "page": 102,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.96582,
+    "csBigrams": 1141
+   },
+   {
+    "page": 103,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.9674,
+    "csBigrams": 1135
+   },
+   {
+    "page": 104,
+    "cols": 4,
+    "applied": true,
+    "agree": 0.95124,
+    "csBigrams": 964
+   },
+   {
+    "page": 105,
+    "cols": 4,
+    "applied": true,
+    "agree": 0.85832,
+    "csBigrams": 847
+   },
+   {
+    "page": 106,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.95486,
+    "csBigrams": 1019
+   },
+   {
+    "page": 107,
+    "cols": 5,
+    "applied": true,
+    "agree": 0.96623,
+    "csBigrams": 1155
+   },
+   {
+    "page": 108,
+    "cols": 5,
+    "applied": true,
+    "agree": 0.94795,
+    "csBigrams": 730
+   },
+   {
+    "page": 109,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.96886,
+    "csBigrams": 1092
+   },
+   {
+    "page": 110,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.94703,
+    "csBigrams": 774
+   },
+   {
+    "page": 111,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.9641,
+    "csBigrams": 947
+   },
+   {
+    "page": 112,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.95953,
+    "csBigrams": 1013
+   },
+   {
+    "page": 113,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.96114,
+    "csBigrams": 875
+   },
+   {
+    "page": 114,
+    "cols": 4,
+    "applied": true,
+    "agree": 0.95805,
+    "csBigrams": 882
+   },
+   {
+    "page": 115,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.95703,
+    "csBigrams": 861
+   },
+   {
+    "page": 116,
+    "cols": 4,
+    "applied": true,
+    "agree": 0.95254,
+    "csBigrams": 885
+   },
+   {
+    "page": 117,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.95387,
+    "csBigrams": 737
+   },
+   {
+    "page": 118,
+    "cols": 4,
+    "applied": true,
+    "agree": 0.95021,
+    "csBigrams": 723
+   },
+   {
+    "page": 119,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.82677,
+    "csBigrams": 254
+   },
+   {
+    "page": 120,
+    "cols": 4,
+    "applied": true,
+    "agree": 0.96867,
+    "csBigrams": 1149
+   },
+   {
+    "page": 121,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.74286,
+    "csBigrams": 245
+   },
+   {
+    "page": 122,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.80658,
+    "csBigrams": 517
+   },
+   {
+    "page": 123,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.94774,
+    "csBigrams": 708
+   },
+   {
+    "page": 124,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.67717,
+    "csBigrams": 381
+   },
+   {
+    "page": 125,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.8209,
+    "csBigrams": 603
+   },
+   {
+    "page": 126,
+    "cols": 5,
+    "applied": true,
+    "agree": 0.80808,
+    "csBigrams": 396
+   }
+  ],
+  "nasa-artemis-plan": [
+   {
+    "page": 1,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.84615,
+    "csBigrams": 13
+   },
+   {
+    "page": 2,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 3,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 4,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 5,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.9901,
+    "csBigrams": 101
+   },
+   {
+    "page": 6,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.9899,
+    "csBigrams": 99
+   },
+   {
+    "page": 7,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.99725,
+    "csBigrams": 363
+   },
+   {
+    "page": 8,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.9901,
+    "csBigrams": 303
+   },
+   {
+    "page": 9,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.9981,
+    "csBigrams": 525
+   },
+   {
+    "page": 10,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.99772,
+    "csBigrams": 438
+   },
+   {
+    "page": 11,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.99559,
+    "csBigrams": 227
+   },
+   {
+    "page": 12,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.94423,
+    "csBigrams": 520
+   },
+   {
+    "page": 13,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.99754,
+    "csBigrams": 406
+   },
+   {
+    "page": 14,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.99029,
+    "csBigrams": 103
+   },
+   {
+    "page": 15,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.95567,
+    "csBigrams": 564
+   },
+   {
+    "page": 16,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.99446,
+    "csBigrams": 361
+   },
+   {
+    "page": 17,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.98819,
+    "csBigrams": 254
+   },
+   {
+    "page": 18,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.94659,
+    "csBigrams": 543
+   },
+   {
+    "page": 19,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.95666,
+    "csBigrams": 623
+   },
+   {
+    "page": 20,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.95504,
+    "csBigrams": 556
+   },
+   {
+    "page": 21,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.9567,
+    "csBigrams": 485
+   },
+   {
+    "page": 22,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.99057,
+    "csBigrams": 318
+   },
+   {
+    "page": 23,
+    "cols": 5,
+    "applied": true,
+    "agree": 0.99483,
+    "csBigrams": 580
+   },
+   {
+    "page": 24,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.99673,
+    "csBigrams": 306
+   },
+   {
+    "page": 25,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.99737,
+    "csBigrams": 380
+   },
+   {
+    "page": 26,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.99772,
+    "csBigrams": 439
+   },
+   {
+    "page": 27,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.99306,
+    "csBigrams": 288
+   },
+   {
+    "page": 28,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.91391,
+    "csBigrams": 453
+   },
+   {
+    "page": 29,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.98355,
+    "csBigrams": 304
+   },
+   {
+    "page": 30,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.99806,
+    "csBigrams": 515
+   },
+   {
+    "page": 31,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.97619,
+    "csBigrams": 42
+   },
+   {
+    "page": 32,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.8,
+    "csBigrams": 5
+   },
+   {
+    "page": 33,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.99712,
+    "csBigrams": 347
+   },
+   {
+    "page": 34,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.81818,
+    "csBigrams": 11
+   },
+   {
+    "page": 35,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.99317,
+    "csBigrams": 439
+   },
+   {
+    "page": 36,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.97619,
+    "csBigrams": 42
+   },
+   {
+    "page": 37,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 38,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 39,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 40,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 41,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 42,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.8,
+    "csBigrams": 5
+   },
+   {
+    "page": 43,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.99793,
+    "csBigrams": 484
+   },
+   {
+    "page": 44,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.99843,
+    "csBigrams": 635
+   },
+   {
+    "page": 45,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.99757,
+    "csBigrams": 412
+   },
+   {
+    "page": 46,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.99802,
+    "csBigrams": 505
+   },
+   {
+    "page": 47,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.99785,
+    "csBigrams": 466
+   },
+   {
+    "page": 48,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.99819,
+    "csBigrams": 551
+   },
+   {
+    "page": 49,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.99817,
+    "csBigrams": 547
+   },
+   {
+    "page": 50,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.99585,
+    "csBigrams": 241
+   },
+   {
+    "page": 51,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 52,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.83333,
+    "csBigrams": 6
+   },
+   {
+    "page": 53,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.99867,
+    "csBigrams": 754
+   },
+   {
+    "page": 54,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.98881,
+    "csBigrams": 268
+   },
+   {
+    "page": 55,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 56,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.80952,
+    "csBigrams": 21
+   },
+   {
+    "page": 57,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 58,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 59,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 60,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 61,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 62,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 63,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 64,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 65,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 66,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 67,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 68,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 69,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 70,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.8,
+    "csBigrams": 5
+   },
+   {
+    "page": 71,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.99663,
+    "csBigrams": 297
+   },
+   {
+    "page": 72,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.99561,
+    "csBigrams": 228
+   },
+   {
+    "page": 73,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.99576,
+    "csBigrams": 236
+   },
+   {
+    "page": 74,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.875,
+    "csBigrams": 8
+   }
+  ],
+  "nist-hb44-excerpt": [
+   {
+    "page": 1,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 2,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 3,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 4,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 5,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 6,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 7,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 8,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 9,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 10,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 11,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 12,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 13,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 14,
+    "cols": 3,
+    "applied": true,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 15,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 16,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 17,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 18,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 19,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 20,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 21,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 22,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 23,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 24,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 25,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 26,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 27,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 28,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 29,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 30,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 31,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 32,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 33,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 34,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 35,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 36,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 37,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 38,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 39,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 40,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 41,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 42,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 43,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 44,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 45,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 46,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 47,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 48,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 49,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 50,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 51,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 52,
+    "cols": 3,
+    "applied": true,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 53,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 54,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 55,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 56,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 57,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 58,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 59,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 60,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 61,
+    "cols": 4,
+    "applied": true,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 62,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 63,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 64,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 65,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 66,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 67,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 68,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 69,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 70,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 71,
+    "cols": 5,
+    "applied": true,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 72,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 73,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 74,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 75,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 76,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 77,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 78,
+    "cols": 2,
+    "applied": true,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 79,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 80,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 81,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 82,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 83,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 84,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 85,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 86,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 87,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 88,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 89,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 90,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 91,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 92,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 93,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 94,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 95,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 96,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 97,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 98,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 99,
+    "cols": 3,
+    "applied": true,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 100,
+    "cols": 3,
+    "applied": true,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 101,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 102,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 103,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 104,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 105,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 106,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 107,
+    "cols": 4,
+    "applied": true,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 108,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 109,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 110,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 111,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 112,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 113,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 114,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 115,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 116,
+    "cols": 5,
+    "applied": true,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 117,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 118,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 119,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 120,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 121,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 122,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 123,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 124,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 125,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 126,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 127,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 128,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 129,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 130,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 131,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 132,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 133,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 134,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 135,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 136,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 137,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 138,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 139,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 140,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 141,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 142,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 143,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 144,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 145,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 146,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 147,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 148,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 149,
+    "cols": 3,
+    "applied": true,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 150,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 151,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 152,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 153,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 154,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 155,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 156,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 157,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 158,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 159,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 160,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 161,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 162,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 163,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 164,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 165,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 166,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 167,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 168,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 169,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 170,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 171,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 172,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 173,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 174,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 175,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 176,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 177,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 178,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 179,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 180,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 181,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 182,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 183,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 184,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 185,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 186,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 187,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 188,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 189,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 190,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 191,
+    "cols": 2,
+    "applied": true,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 192,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 193,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 194,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 195,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 196,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 197,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 198,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 199,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 200,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 201,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 202,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 203,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 204,
+    "cols": 5,
+    "applied": true,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 205,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 206,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 207,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 208,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 209,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 210,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 211,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 212,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 213,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 214,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 215,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 216,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 217,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 218,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 219,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 220,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 221,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 222,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 223,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 224,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 225,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 226,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 227,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 228,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 229,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 230,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 231,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 232,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 233,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 234,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 235,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 236,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 237,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 238,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 239,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 240,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 241,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 242,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 243,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 244,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 245,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 246,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 247,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 248,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 249,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 250,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 251,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 252,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 253,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 254,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 255,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 256,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 257,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 258,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 259,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 260,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 261,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 262,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 263,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 264,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 265,
+    "cols": 5,
+    "applied": true,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 266,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 267,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 268,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 269,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 270,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 271,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 272,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 273,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 274,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 275,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 276,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 277,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 278,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 279,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 280,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 281,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 282,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 283,
+    "cols": 3,
+    "applied": true,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 284,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 285,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 286,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 287,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 288,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 289,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 290,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 291,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 292,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 293,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 294,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 295,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 296,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 297,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 298,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 299,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 300,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 301,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 302,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 303,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 304,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 305,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 306,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 307,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 308,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 309,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 310,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 311,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 312,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 313,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 314,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 315,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 316,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 317,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 318,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 319,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 320,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 321,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 322,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 323,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 324,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 325,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 326,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 327,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 328,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 329,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 330,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 331,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 332,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 333,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 334,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 335,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 336,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 337,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 338,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 339,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 340,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 341,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 342,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 343,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 344,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 345,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 346,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 347,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 348,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 349,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 350,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 351,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 352,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 353,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 354,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 355,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 356,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 357,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 358,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 359,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 360,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 361,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 362,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 363,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 364,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 365,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 366,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 367,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 368,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 369,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 370,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 371,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 372,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 373,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 374,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 375,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 376,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 377,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 378,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 379,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 380,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 381,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 382,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 383,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 384,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 385,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 386,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 387,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 388,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 389,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 390,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 391,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 392,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 393,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 394,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 395,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 396,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 397,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 398,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 399,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 400,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 401,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 402,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 403,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 404,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 405,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 406,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 407,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 408,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 409,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 410,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 411,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 412,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 413,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 414,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 415,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 416,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 417,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 418,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 419,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 420,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 421,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 422,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 423,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 424,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 425,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 426,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 427,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 428,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 429,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 430,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 431,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 432,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 433,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 434,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 435,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 436,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 437,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 438,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 439,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 440,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 441,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 442,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 443,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 444,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 445,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 446,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 447,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 448,
+    "cols": 6,
+    "applied": true,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 449,
+    "cols": 4,
+    "applied": true,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 450,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 451,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 452,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 453,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 454,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 455,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 456,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 457,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 458,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 459,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 460,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 461,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 462,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 463,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 464,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 465,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 466,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 467,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 468,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 469,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 470,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 471,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 472,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 473,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 474,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 475,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 476,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 477,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 478,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 479,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 480,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 481,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 482,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 483,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 484,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 485,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 486,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 487,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 488,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 489,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 490,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 491,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 492,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 493,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 494,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 495,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 496,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 497,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 498,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 499,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 500,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 501,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 502,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 503,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 504,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 505,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 506,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 507,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 508,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 509,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 510,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 511,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 512,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 513,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 514,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 515,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 516,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 517,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 518,
+    "cols": 7,
+    "applied": true,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 519,
+    "cols": 3,
+    "applied": true,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 520,
+    "cols": 8,
+    "applied": true,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 521,
+    "cols": 2,
+    "applied": true,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 522,
+    "cols": 2,
+    "applied": true,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 523,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 524,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 525,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 526,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 527,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 528,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 529,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 530,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 531,
+    "cols": 8,
+    "applied": true,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 532,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 533,
+    "cols": 2,
+    "applied": true,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 534,
+    "cols": 3,
+    "applied": true,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 535,
+    "cols": 3,
+    "applied": true,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 536,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 537,
+    "cols": 3,
+    "applied": true,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 538,
+    "cols": 3,
+    "applied": true,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 539,
+    "cols": 3,
+    "applied": true,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 540,
+    "cols": 3,
+    "applied": true,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 541,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 542,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 543,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 544,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 545,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 546,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 547,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 548,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 549,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 550,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 551,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 552,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 553,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 554,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 555,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 556,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 557,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 558,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 559,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 560,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 561,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 562,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 563,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 564,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 565,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 566,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 567,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 568,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 569,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 570,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 571,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 572,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 573,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   }
+  ],
+  "nist-sp800-63-3-digital-identity": [
+   {
+    "page": 1,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.97826,
+    "csBigrams": 184
+   },
+   {
+    "page": 2,
+    "cols": 1,
+    "applied": false,
+    "agree": 1,
+    "csBigrams": 35
+   },
+   {
+    "page": 3,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.89655,
+    "csBigrams": 87
+   },
+   {
+    "page": 4,
+    "cols": 1,
+    "applied": false,
+    "agree": 1,
+    "csBigrams": 444
+   },
+   {
+    "page": 5,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.96689,
+    "csBigrams": 151
+   },
+   {
+    "page": 6,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.96237,
+    "csBigrams": 372
+   },
+   {
+    "page": 7,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.97287,
+    "csBigrams": 516
+   },
+   {
+    "page": 8,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.97233,
+    "csBigrams": 506
+   },
+   {
+    "page": 9,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.97077,
+    "csBigrams": 479
+   },
+   {
+    "page": 10,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.96522,
+    "csBigrams": 460
+   },
+   {
+    "page": 11,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.92523,
+    "csBigrams": 214
+   },
+   {
+    "page": 12,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.93478,
+    "csBigrams": 184
+   },
+   {
+    "page": 13,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.83432,
+    "csBigrams": 169
+   },
+   {
+    "page": 14,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.93548,
+    "csBigrams": 62
+   },
+   {
+    "page": 15,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.97113,
+    "csBigrams": 485
+   },
+   {
+    "page": 16,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.97276,
+    "csBigrams": 514
+   },
+   {
+    "page": 17,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.9472,
+    "csBigrams": 322
+   },
+   {
+    "page": 18,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.96794,
+    "csBigrams": 499
+   },
+   {
+    "page": 19,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.97015,
+    "csBigrams": 469
+   },
+   {
+    "page": 20,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.94681,
+    "csBigrams": 94
+   },
+   {
+    "page": 21,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.92857,
+    "csBigrams": 42
+   },
+   {
+    "page": 22,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.97232,
+    "csBigrams": 542
+   },
+   {
+    "page": 23,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.97297,
+    "csBigrams": 296
+   },
+   {
+    "page": 24,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.96813,
+    "csBigrams": 502
+   },
+   {
+    "page": 25,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.9726,
+    "csBigrams": 438
+   },
+   {
+    "page": 26,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.9759,
+    "csBigrams": 581
+   },
+   {
+    "page": 27,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.96761,
+    "csBigrams": 494
+   },
+   {
+    "page": 28,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.96522,
+    "csBigrams": 460
+   },
+   {
+    "page": 29,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.96957,
+    "csBigrams": 230
+   },
+   {
+    "page": 30,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.96401,
+    "csBigrams": 389
+   },
+   {
+    "page": 31,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.95963,
+    "csBigrams": 322
+   },
+   {
+    "page": 32,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.95522,
+    "csBigrams": 335
+   },
+   {
+    "page": 33,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.97484,
+    "csBigrams": 477
+   },
+   {
+    "page": 34,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.96617,
+    "csBigrams": 473
+   },
+   {
+    "page": 35,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.96465,
+    "csBigrams": 396
+   },
+   {
+    "page": 36,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.96279,
+    "csBigrams": 430
+   },
+   {
+    "page": 37,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.96622,
+    "csBigrams": 148
+   },
+   {
+    "page": 38,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.93732,
+    "csBigrams": 351
+   },
+   {
+    "page": 39,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.9716,
+    "csBigrams": 493
+   },
+   {
+    "page": 40,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.8125,
+    "csBigrams": 32
+   },
+   {
+    "page": 41,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.96985,
+    "csBigrams": 398
+   },
+   {
+    "page": 42,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.95469,
+    "csBigrams": 309
+   },
+   {
+    "page": 43,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.89109,
+    "csBigrams": 101
+   },
+   {
+    "page": 44,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.95431,
+    "csBigrams": 197
+   },
+   {
+    "page": 45,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.90678,
+    "csBigrams": 118
+   },
+   {
+    "page": 46,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.96098,
+    "csBigrams": 410
+   },
+   {
+    "page": 47,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.94839,
+    "csBigrams": 155
+   },
+   {
+    "page": 48,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.96358,
+    "csBigrams": 302
+   },
+   {
+    "page": 49,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.92857,
+    "csBigrams": 294
+   },
+   {
+    "page": 50,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.95719,
+    "csBigrams": 327
+   },
+   {
+    "page": 51,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.875,
+    "csBigrams": 48
+   },
+   {
+    "page": 52,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.94553,
+    "csBigrams": 257
+   },
+   {
+    "page": 53,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.95254,
+    "csBigrams": 295
+   },
+   {
+    "page": 54,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.9645,
+    "csBigrams": 338
+   },
+   {
+    "page": 55,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.94719,
+    "csBigrams": 303
+   },
+   {
+    "page": 56,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.95611,
+    "csBigrams": 319
+   },
+   {
+    "page": 57,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.95894,
+    "csBigrams": 341
+   },
+   {
+    "page": 58,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.95205,
+    "csBigrams": 292
+   },
+   {
+    "page": 59,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.95666,
+    "csBigrams": 323
+   },
+   {
+    "page": 60,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.95222,
+    "csBigrams": 293
+   },
+   {
+    "page": 61,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.95584,
+    "csBigrams": 317
+   },
+   {
+    "page": 62,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.96418,
+    "csBigrams": 335
+   },
+   {
+    "page": 63,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.92032,
+    "csBigrams": 251
+   },
+   {
+    "page": 64,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.94386,
+    "csBigrams": 285
+   },
+   {
+    "page": 65,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.95364,
+    "csBigrams": 302
+   },
+   {
+    "page": 66,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.95918,
+    "csBigrams": 294
+   },
+   {
+    "page": 67,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.95318,
+    "csBigrams": 299
+   },
+   {
+    "page": 68,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.93469,
+    "csBigrams": 245
+   },
+   {
+    "page": 69,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.96273,
+    "csBigrams": 322
+   },
+   {
+    "page": 70,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.91803,
+    "csBigrams": 61
+   },
+   {
+    "page": 71,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.87755,
+    "csBigrams": 98
+   },
+   {
+    "page": 72,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.85542,
+    "csBigrams": 83
+   },
+   {
+    "page": 73,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.87179,
+    "csBigrams": 78
+   },
+   {
+    "page": 74,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.86842,
+    "csBigrams": 76
+   },
+   {
+    "page": 75,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.86842,
+    "csBigrams": 76
+   },
+   {
+    "page": 76,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.9434,
+    "csBigrams": 53
+   }
+  ],
+  "ohchr-udhr-english": [
+   {
+    "page": 1,
+    "cols": 1,
+    "applied": false,
+    "agree": 1,
+    "csBigrams": 281
+   },
+   {
+    "page": 2,
+    "cols": 1,
+    "applied": false,
+    "agree": 1,
+    "csBigrams": 212
+   },
+   {
+    "page": 3,
+    "cols": 1,
+    "applied": false,
+    "agree": 1,
+    "csBigrams": 211
+   },
+   {
+    "page": 4,
+    "cols": 1,
+    "applied": false,
+    "agree": 1,
+    "csBigrams": 172
+   },
+   {
+    "page": 5,
+    "cols": 1,
+    "applied": false,
+    "agree": 1,
+    "csBigrams": 220
+   },
+   {
+    "page": 6,
+    "cols": 1,
+    "applied": false,
+    "agree": 1,
+    "csBigrams": 247
+   },
+   {
+    "page": 7,
+    "cols": 1,
+    "applied": false,
+    "agree": 1,
+    "csBigrams": 237
+   },
+   {
+    "page": 8,
+    "cols": 1,
+    "applied": false,
+    "agree": 1,
+    "csBigrams": 196
+   }
+  ],
+  "ohchr-udhr-spanish": [
+   {
+    "page": 1,
+    "cols": 1,
+    "applied": false,
+    "agree": 1,
+    "csBigrams": 309
+   },
+   {
+    "page": 2,
+    "cols": 1,
+    "applied": false,
+    "agree": 1,
+    "csBigrams": 257
+   },
+   {
+    "page": 3,
+    "cols": 1,
+    "applied": false,
+    "agree": 1,
+    "csBigrams": 181
+   },
+   {
+    "page": 4,
+    "cols": 1,
+    "applied": false,
+    "agree": 1,
+    "csBigrams": 224
+   },
+   {
+    "page": 5,
+    "cols": 1,
+    "applied": false,
+    "agree": 1,
+    "csBigrams": 242
+   },
+   {
+    "page": 6,
+    "cols": 1,
+    "applied": false,
+    "agree": 1,
+    "csBigrams": 239
+   },
+   {
+    "page": 7,
+    "cols": 1,
+    "applied": false,
+    "agree": 1,
+    "csBigrams": 247
+   },
+   {
+    "page": 8,
+    "cols": 1,
+    "applied": false,
+    "agree": 1,
+    "csBigrams": 259
+   },
+   {
+    "page": 9,
+    "cols": 1,
+    "applied": false,
+    "agree": 1,
+    "csBigrams": 169
+   }
+  ],
+  "uscis-civics-100q": [
+   {
+    "page": 1,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.8915,
+    "csBigrams": 341
+   },
+   {
+    "page": 2,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.95745,
+    "csBigrams": 235
+   },
+   {
+    "page": 3,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.96471,
+    "csBigrams": 340
+   },
+   {
+    "page": 4,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.96124,
+    "csBigrams": 258
+   },
+   {
+    "page": 5,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.96581,
+    "csBigrams": 351
+   },
+   {
+    "page": 6,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.95833,
+    "csBigrams": 240
+   },
+   {
+    "page": 7,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.94737,
+    "csBigrams": 190
+   },
+   {
+    "page": 8,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.95918,
+    "csBigrams": 245
+   },
+   {
+    "page": 9,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.94444,
+    "csBigrams": 180
+   },
+   {
+    "page": 10,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.93939,
+    "csBigrams": 165
+   },
+   {
+    "page": 11,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.93056,
+    "csBigrams": 144
+   }
+  ],
+  "fda-nexium-prea-letter": [
+   {
+    "page": 1,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.53472,
+    "csBigrams": 144
+   },
+   {
+    "page": 2,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.88989,
+    "csBigrams": 445
+   },
+   {
+    "page": 3,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.85238,
+    "csBigrams": 420
+   },
+   {
+    "page": 4,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.878,
+    "csBigrams": 459
+   },
+   {
+    "page": 5,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.90226,
+    "csBigrams": 266
+   },
+   {
+    "page": 6,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.83893,
+    "csBigrams": 298
+   },
+   {
+    "page": 7,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.8,
+    "csBigrams": 70
+   }
+  ],
+  "nsf-science-indicators-brief": [
+   {
+    "page": 1,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.47222,
+    "csBigrams": 36
+   },
+   {
+    "page": 2,
+    "cols": 2,
+    "applied": true,
+    "agree": 1,
+    "csBigrams": 297
+   },
+   {
+    "page": 3,
+    "cols": 1,
+    "applied": false,
+    "agree": 1,
+    "csBigrams": 20
+   },
+   {
+    "page": 4,
+    "cols": 2,
+    "applied": true,
+    "agree": 1,
+    "csBigrams": 228
+   },
+   {
+    "page": 5,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.832,
+    "csBigrams": 125
+   },
+   {
+    "page": 6,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.99729,
+    "csBigrams": 739
+   },
+   {
+    "page": 7,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.99703,
+    "csBigrams": 673
+   },
+   {
+    "page": 8,
+    "cols": 2,
+    "applied": true,
+    "agree": 1,
+    "csBigrams": 568
+   },
+   {
+    "page": 9,
+    "cols": 5,
+    "applied": true,
+    "agree": 0.96529,
+    "csBigrams": 461
+   },
+   {
+    "page": 10,
+    "cols": 4,
+    "applied": true,
+    "agree": 0.97982,
+    "csBigrams": 446
+   },
+   {
+    "page": 11,
+    "cols": 4,
+    "applied": true,
+    "agree": 0.968,
+    "csBigrams": 375
+   },
+   {
+    "page": 12,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.9709,
+    "csBigrams": 378
+   },
+   {
+    "page": 13,
+    "cols": 6,
+    "applied": true,
+    "agree": 0.95031,
+    "csBigrams": 322
+   },
+   {
+    "page": 14,
+    "cols": 3,
+    "applied": true,
+    "agree": 1,
+    "csBigrams": 316
+   },
+   {
+    "page": 15,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.95455,
+    "csBigrams": 242
+   },
+   {
+    "page": 16,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.96919,
+    "csBigrams": 357
+   },
+   {
+    "page": 17,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.98373,
+    "csBigrams": 553
+   },
+   {
+    "page": 18,
+    "cols": 4,
+    "applied": true,
+    "agree": 0.97889,
+    "csBigrams": 379
+   },
+   {
+    "page": 19,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.98502,
+    "csBigrams": 267
+   },
+   {
+    "page": 20,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.98491,
+    "csBigrams": 530
+   },
+   {
+    "page": 21,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.97774,
+    "csBigrams": 584
+   },
+   {
+    "page": 22,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.97101,
+    "csBigrams": 207
+   },
+   {
+    "page": 23,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.98101,
+    "csBigrams": 474
+   },
+   {
+    "page": 24,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.90909,
+    "csBigrams": 33
+   },
+   {
+    "page": 25,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.99642,
+    "csBigrams": 558
+   },
+   {
+    "page": 26,
+    "cols": 1,
+    "applied": false,
+    "agree": 1,
+    "csBigrams": 342
+   },
+   {
+    "page": 27,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.97652,
+    "csBigrams": 511
+   },
+   {
+    "page": 28,
+    "cols": 4,
+    "applied": true,
+    "agree": 0.97059,
+    "csBigrams": 272
+   },
+   {
+    "page": 29,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.97504,
+    "csBigrams": 601
+   },
+   {
+    "page": 30,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.98305,
+    "csBigrams": 354
+   },
+   {
+    "page": 31,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.8821,
+    "csBigrams": 229
+   },
+   {
+    "page": 32,
+    "cols": 4,
+    "applied": true,
+    "agree": 0.98621,
+    "csBigrams": 435
+   },
+   {
+    "page": 33,
+    "cols": 1,
+    "applied": false,
+    "agree": 1,
+    "csBigrams": 86
+   },
+   {
+    "page": 34,
+    "cols": 2,
+    "applied": true,
+    "agree": 1,
+    "csBigrams": 698
+   },
+   {
+    "page": 35,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.99677,
+    "csBigrams": 620
+   },
+   {
+    "page": 36,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.99573,
+    "csBigrams": 702
+   },
+   {
+    "page": 37,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.99094,
+    "csBigrams": 552
+   },
+   {
+    "page": 38,
+    "cols": 2,
+    "applied": true,
+    "agree": 1,
+    "csBigrams": 129
+   },
+   {
+    "page": 39,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.99643,
+    "csBigrams": 560
+   },
+   {
+    "page": 40,
+    "cols": 2,
+    "applied": true,
+    "agree": 1,
+    "csBigrams": 525
+   },
+   {
+    "page": 41,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.99717,
+    "csBigrams": 707
+   },
+   {
+    "page": 42,
+    "cols": 2,
+    "applied": true,
+    "agree": 1,
+    "csBigrams": 731
+   },
+   {
+    "page": 43,
+    "cols": 1,
+    "applied": false,
+    "agree": 1,
+    "csBigrams": 408
+   },
+   {
+    "page": 44,
+    "cols": 1,
+    "applied": false,
+    "agree": 1,
+    "csBigrams": 148
+   },
+   {
+    "page": 45,
+    "cols": 1,
+    "applied": false,
+    "agree": 1,
+    "csBigrams": 4
+   },
+   {
+    "page": 46,
+    "cols": 1,
+    "applied": false,
+    "agree": 1,
+    "csBigrams": 2
+   }
+  ],
+  "usgs-water-cycle": [
+   {
+    "page": 1,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.96667,
+    "csBigrams": 30
+   },
+   {
+    "page": 2,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.97368,
+    "csBigrams": 38
+   },
+   {
+    "page": 3,
+    "cols": 1,
+    "applied": false,
+    "agree": 1,
+    "csBigrams": 279
+   },
+   {
+    "page": 4,
+    "cols": 1,
+    "applied": false,
+    "agree": 1,
+    "csBigrams": 244
+   },
+   {
+    "page": 5,
+    "cols": 1,
+    "applied": false,
+    "agree": 1,
+    "csBigrams": 93
+   },
+   {
+    "page": 6,
+    "cols": 1,
+    "applied": false,
+    "agree": 1,
+    "csBigrams": 158
+   },
+   {
+    "page": 7,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.99676,
+    "csBigrams": 618
+   },
+   {
+    "page": 8,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.99318,
+    "csBigrams": 440
+   },
+   {
+    "page": 9,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.98945,
+    "csBigrams": 379
+   },
+   {
+    "page": 10,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.99548,
+    "csBigrams": 663
+   },
+   {
+    "page": 11,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.99683,
+    "csBigrams": 630
+   },
+   {
+    "page": 12,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.99771,
+    "csBigrams": 437
+   },
+   {
+    "page": 13,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.98482,
+    "csBigrams": 461
+   },
+   {
+    "page": 14,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.91416,
+    "csBigrams": 233
+   },
+   {
+    "page": 15,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.99613,
+    "csBigrams": 517
+   },
+   {
+    "page": 16,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.99597,
+    "csBigrams": 745
+   },
+   {
+    "page": 17,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.97552,
+    "csBigrams": 572
+   },
+   {
+    "page": 18,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.90476,
+    "csBigrams": 21
+   },
+   {
+    "page": 19,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.99693,
+    "csBigrams": 652
+   },
+   {
+    "page": 20,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.97911,
+    "csBigrams": 718
+   },
+   {
+    "page": 21,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.98819,
+    "csBigrams": 508
+   },
+   {
+    "page": 22,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.93642,
+    "csBigrams": 173
+   },
+   {
+    "page": 23,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.9839,
+    "csBigrams": 621
+   },
+   {
+    "page": 24,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.99569,
+    "csBigrams": 464
+   },
+   {
+    "page": 25,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.98755,
+    "csBigrams": 482
+   },
+   {
+    "page": 26,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.98473,
+    "csBigrams": 131
+   },
+   {
+    "page": 27,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.99659,
+    "csBigrams": 293
+   },
+   {
+    "page": 28,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.99719,
+    "csBigrams": 711
+   },
+   {
+    "page": 29,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.99544,
+    "csBigrams": 439
+   },
+   {
+    "page": 30,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.9,
+    "csBigrams": 20
+   },
+   {
+    "page": 31,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.83333,
+    "csBigrams": 12
+   },
+   {
+    "page": 32,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.95,
+    "csBigrams": 20
+   },
+   {
+    "page": 33,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.99343,
+    "csBigrams": 761
+   },
+   {
+    "page": 34,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.99154,
+    "csBigrams": 473
+   },
+   {
+    "page": 35,
+    "cols": 1,
+    "applied": false,
+    "agree": 1,
+    "csBigrams": 2
+   },
+   {
+    "page": 36,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.99876,
+    "csBigrams": 806
+   },
+   {
+    "page": 37,
+    "cols": 2,
+    "applied": true,
+    "agree": 1,
+    "csBigrams": 410
+   },
+   {
+    "page": 38,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.98359,
+    "csBigrams": 853
+   },
+   {
+    "page": 39,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.9698,
+    "csBigrams": 861
+   },
+   {
+    "page": 40,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.99862,
+    "csBigrams": 726
+   }
+  ],
+  "irs-f1040": [
+   {
+    "page": 1,
+    "cols": 7,
+    "applied": true,
+    "agree": 0.83061,
+    "csBigrams": 856
+   },
+   {
+    "page": 2,
+    "cols": 9,
+    "applied": true,
+    "agree": 0.81583,
+    "csBigrams": 695
+   }
+  ],
+  "irs-f1040-1913-scan": [
+   {
+    "page": 1,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.73028,
+    "csBigrams": 393
+   },
+   {
+    "page": 2,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.69136,
+    "csBigrams": 405
+   },
+   {
+    "page": 3,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.73902,
+    "csBigrams": 410
+   },
+   {
+    "page": 4,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.81291,
+    "csBigrams": 1224
+   }
+  ],
+  "irs-f1040-1954-scan": [
+   {
+    "page": 1,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 2,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 3,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   },
+   {
+    "page": 4,
+    "cols": 1,
+    "applied": false,
+    "agree": null,
+    "csBigrams": 0
+   }
+  ],
+  "nces-condition-of-education": [
+   {
+    "page": 1,
+    "cols": 1,
+    "applied": false,
+    "agree": 1,
+    "csBigrams": 25
+   },
+   {
+    "page": 2,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.57447,
+    "csBigrams": 47
+   },
+   {
+    "page": 3,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.93985,
+    "csBigrams": 399
+   },
+   {
+    "page": 4,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.98889,
+    "csBigrams": 540
+   },
+   {
+    "page": 5,
+    "cols": 1,
+    "applied": false,
+    "agree": 1,
+    "csBigrams": 674
+   },
+   {
+    "page": 6,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.97714,
+    "csBigrams": 175
+   },
+   {
+    "page": 7,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.98333,
+    "csBigrams": 120
+   },
+   {
+    "page": 8,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.64286,
+    "csBigrams": 56
+   },
+   {
+    "page": 9,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.90728,
+    "csBigrams": 604
+   },
+   {
+    "page": 10,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.98425,
+    "csBigrams": 254
+   },
+   {
+    "page": 11,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.97908,
+    "csBigrams": 765
+   },
+   {
+    "page": 12,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.9745,
+    "csBigrams": 941
+   },
+   {
+    "page": 13,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.98044,
+    "csBigrams": 409
+   },
+   {
+    "page": 14,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.84314,
+    "csBigrams": 459
+   },
+   {
+    "page": 15,
+    "cols": 8,
+    "applied": true,
+    "agree": 0.95878,
+    "csBigrams": 558
+   },
+   {
+    "page": 16,
+    "cols": 7,
+    "applied": true,
+    "agree": 0.84856,
+    "csBigrams": 383
+   },
+   {
+    "page": 17,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.93333,
+    "csBigrams": 330
+   },
+   {
+    "page": 18,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.90799,
+    "csBigrams": 413
+   },
+   {
+    "page": 19,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.99649,
+    "csBigrams": 569
+   },
+   {
+    "page": 20,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.92577,
+    "csBigrams": 485
+   },
+   {
+    "page": 21,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.90894,
+    "csBigrams": 604
+   },
+   {
+    "page": 22,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.8913,
+    "csBigrams": 506
+   },
+   {
+    "page": 23,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.94708,
+    "csBigrams": 359
+   },
+   {
+    "page": 24,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.92609,
+    "csBigrams": 663
+   },
+   {
+    "page": 25,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.89748,
+    "csBigrams": 595
+   },
+   {
+    "page": 26,
+    "cols": 5,
+    "applied": true,
+    "agree": 0.94444,
+    "csBigrams": 684
+   },
+   {
+    "page": 27,
+    "cols": 7,
+    "applied": true,
+    "agree": 0.90744,
+    "csBigrams": 551
+   },
+   {
+    "page": 28,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.98252,
+    "csBigrams": 572
+   },
+   {
+    "page": 29,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.91304,
+    "csBigrams": 644
+   },
+   {
+    "page": 30,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.90966,
+    "csBigrams": 476
+   },
+   {
+    "page": 31,
+    "cols": 5,
+    "applied": true,
+    "agree": 0.9446,
+    "csBigrams": 722
+   },
+   {
+    "page": 32,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.92653,
+    "csBigrams": 490
+   },
+   {
+    "page": 33,
+    "cols": 4,
+    "applied": true,
+    "agree": 0.94102,
+    "csBigrams": 763
+   },
+   {
+    "page": 34,
+    "cols": 6,
+    "applied": true,
+    "agree": 0.75092,
+    "csBigrams": 546
+   },
+   {
+    "page": 35,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.98283,
+    "csBigrams": 233
+   },
+   {
+    "page": 36,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.99558,
+    "csBigrams": 453
+   },
+   {
+    "page": 37,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.97561,
+    "csBigrams": 369
+   },
+   {
+    "page": 38,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.96402,
+    "csBigrams": 528
+   },
+   {
+    "page": 39,
+    "cols": 8,
+    "applied": true,
+    "agree": 0.93306,
+    "csBigrams": 493
+   },
+   {
+    "page": 40,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.94986,
+    "csBigrams": 359
+   },
+   {
+    "page": 41,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.87448,
+    "csBigrams": 478
+   },
+   {
+    "page": 42,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.92688,
+    "csBigrams": 465
+   },
+   {
+    "page": 43,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.9443,
+    "csBigrams": 772
+   },
+   {
+    "page": 44,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.91771,
+    "csBigrams": 401
+   },
+   {
+    "page": 45,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.95595,
+    "csBigrams": 454
+   },
+   {
+    "page": 46,
+    "cols": 6,
+    "applied": true,
+    "agree": 0.93112,
+    "csBigrams": 392
+   },
+   {
+    "page": 47,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.97619,
+    "csBigrams": 420
+   },
+   {
+    "page": 48,
+    "cols": 7,
+    "applied": true,
+    "agree": 0.95721,
+    "csBigrams": 631
+   },
+   {
+    "page": 49,
+    "cols": 3,
+    "applied": true,
+    "agree": 0.97071,
+    "csBigrams": 239
+   },
+   {
+    "page": 50,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.97756,
+    "csBigrams": 401
+   },
+   {
+    "page": 51,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.9697,
+    "csBigrams": 429
+   },
+   {
+    "page": 52,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.83463,
+    "csBigrams": 387
+   },
+   {
+    "page": 53,
+    "cols": 2,
+    "applied": true,
+    "agree": 0.97131,
+    "csBigrams": 244
+   },
+   {
+    "page": 54,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.5,
+    "csBigrams": 4
+   }
+  ],
+  "nist-cyber-framework-quickstart": [
+   {
+    "page": 1,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.96774,
+    "csBigrams": 31
+   },
+   {
+    "page": 2,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.98738,
+    "csBigrams": 317
+   },
+   {
+    "page": 3,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.97619,
+    "csBigrams": 84
+   },
+   {
+    "page": 4,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.984,
+    "csBigrams": 125
+   },
+   {
+    "page": 5,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.99606,
+    "csBigrams": 507
+   },
+   {
+    "page": 6,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.99751,
+    "csBigrams": 402
+   },
+   {
+    "page": 7,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.99401,
+    "csBigrams": 334
+   },
+   {
+    "page": 8,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.96918,
+    "csBigrams": 292
+   },
+   {
+    "page": 9,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.96659,
+    "csBigrams": 419
+   },
+   {
+    "page": 10,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.95,
+    "csBigrams": 200
+   },
+   {
+    "page": 11,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.9932,
+    "csBigrams": 294
+   },
+   {
+    "page": 12,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.99351,
+    "csBigrams": 462
+   },
+   {
+    "page": 13,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.96273,
+    "csBigrams": 161
+   },
+   {
+    "page": 14,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.98747,
+    "csBigrams": 399
+   },
+   {
+    "page": 15,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.99353,
+    "csBigrams": 309
+   },
+   {
+    "page": 16,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.99598,
+    "csBigrams": 498
+   },
+   {
+    "page": 17,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.97765,
+    "csBigrams": 358
+   },
+   {
+    "page": 18,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.96562,
+    "csBigrams": 349
+   },
+   {
+    "page": 19,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.94969,
+    "csBigrams": 159
+   },
+   {
+    "page": 20,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.96711,
+    "csBigrams": 304
+   },
+   {
+    "page": 21,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.99346,
+    "csBigrams": 306
+   },
+   {
+    "page": 22,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.99427,
+    "csBigrams": 349
+   },
+   {
+    "page": 23,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.98634,
+    "csBigrams": 366
+   },
+   {
+    "page": 24,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.98529,
+    "csBigrams": 340
+   },
+   {
+    "page": 25,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.94103,
+    "csBigrams": 390
+   },
+   {
+    "page": 26,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.98182,
+    "csBigrams": 275
+   },
+   {
+    "page": 27,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.96584,
+    "csBigrams": 322
+   },
+   {
+    "page": 28,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.94904,
+    "csBigrams": 157
+   },
+   {
+    "page": 29,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.8427,
+    "csBigrams": 445
+   },
+   {
+    "page": 30,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.8972,
+    "csBigrams": 321
+   },
+   {
+    "page": 31,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.99417,
+    "csBigrams": 343
+   },
+   {
+    "page": 32,
+    "cols": 1,
+    "applied": false,
+    "agree": 0.98837,
+    "csBigrams": 172
+   }
+  ]
+ }
+}

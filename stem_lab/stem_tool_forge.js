@@ -1,4 +1,4 @@
-/* stem_tool_forge.js — the Tool Forge: a plugin-authoring harness for STEM Lab /
+/* stem_tool_forge.js — the Tool Forge: a plugin-authoring harness for STEAM Lab /
  * SEL Hub tools, in-app and teacher-gated.
  *
  * Two doors over one backend:
@@ -27,6 +27,29 @@
  */
 
 // ==FORGE_CONTRACT_CORE_BEGIN== (vendored from dev-tools/forge_contract_core.js — kept in sync by dev-tools/check_forge_contract_sync.cjs; DO NOT edit here, edit the source)
+/* forge_contract_core.js — the PLUGIN CONTRACT, as one portable module.
+ *
+ * Single source of truth for "what is a conformant STEAM Lab / SEL Hub tool":
+ *   - CONTRACT: the manifest (required fields, theme colors, categories, the ctx
+ *     surface the host actually injects, the quest-key rule).
+ *   - validateSource(src, acornParse): a BROWSER-PORTABLE structural validator
+ *     used by the Tool Forge's Tier-1 (in-browser) loop. It hand-walks an acorn
+ *     AST (no eslint-scope, no fs) so it runs identically in Node and the browser.
+ *
+ * Consumers:
+ *   - dev-tools/check_tool_contract.cjs  — the Node gate of record. Imports
+ *     CONTRACT for the manifest, and layers an eslint-scope ctx-surface pass on
+ *     top (precise shadow resolution that the browser cannot do).
+ *   - stem_lab/stem_tool_forge.js (Tier-1) — loads acorn UMD + this file, calls
+ *     validateSource() for instant author feedback before the iframe render-smoke.
+ *
+ * The ctx surface is the EXACT union the host injects, derived from the stub ctx
+ * in dev-tools/check_stem_render.cjs + check_sel_render.cjs (those stubs mirror
+ * the live host ctx). Keeping these in sync means Tier-1 (browser) and Tier-2
+ * (Node SSR smoke) agree on what `ctx` provides.
+ *
+ * UMD: module.exports in Node, window.ForgeContract in the browser.
+ */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
   else root.ForgeContract = factory();
@@ -124,7 +147,7 @@
   // surface check (returns null) rather than emit false positives — the Node gate
   // (Tier-2) resolves shadows precisely.
   function collectCtxMembers(fnNode, ctxName) {
-    var shadowed = false, members = {};
+    var shadowed = false, members = Object.create(null);
     // ObjectPattern param: function render({ React, t }) {...}
     var p0 = fnNode.params && fnNode.params[0];
     if (p0 && p0.type === 'ObjectPattern') {
@@ -174,9 +197,9 @@
     });
     if (!calls.length) { out.errors.push('no window.StemLab/SelHub.registerTool(id, config) call found'); return out; }
 
-    var ctxSet = {};
+    var ctxSet = Object.create(null);
     for (var c = 0; c < CONTRACT.ctxSurface.length; c++) ctxSet[CONTRACT.ctxSurface[c]] = true;
-    var colorSet = {};
+    var colorSet = Object.create(null);
     for (var d = 0; d < CONTRACT.themeColors.length; d++) colorSet[CONTRACT.themeColors[d]] = true;
 
     for (var ci = 0; ci < calls.length; ci++) {
@@ -200,7 +223,7 @@
       if (cfg.type === 'Identifier') { t.warns.push('config is a variable reference (fields not statically checked)'); out.tools.push(t); continue; }
       if (cfg.type !== 'ObjectExpression') { t.errors.push('config (arg 2) is not an object literal or variable'); out.tools.push(t); continue; }
 
-      var props = {}, kinds = {}, hasSpread = false;
+      var props = Object.create(null), kinds = Object.create(null), hasSpread = false;
       for (var pi = 0; pi < cfg.properties.length; pi++) {
         var p = cfg.properties[pi];
         if (p.type === 'SpreadElement' || p.type === 'ExperimentalSpreadProperty') { hasSpread = true; continue; }
@@ -253,8 +276,18 @@
       out.tools.push(t);
     }
 
+    // Multi-registration is legal and shipped (stem_tool_rocks.js registers
+    // rocks + rockCycle; stem_tool_geo.js registers geoQuiz + geometryProver;
+    // stem_tool_fractions.js aliases one config under two ids). Tier-2
+    // (check_tool_contract.cjs) already WARNS rather than errors on this, so
+    // mirror it here — and say which tool the downstream steps actually use,
+    // since the render-smoke and the submission metadata both take the first.
+    if (out.tools.length > 1 && out.tools[0]) {
+      out.tools[0].warns.push(out.tools.length + ' registerTool calls (expected 1) — only the first (' + (out.tools[0].id || '?') + ') is render-smoked and submitted');
+    }
+
     // id uniqueness within this source
-    var seen = {};
+    var seen = Object.create(null);
     for (var ti = 0; ti < out.tools.length; ti++) {
       var tid = out.tools[ti].id;
       if (tid) { if (seen[tid]) out.tools[ti].warns.push('duplicate tool id "' + tid + '" in this source (alias?)'); else seen[tid] = true; }
@@ -419,7 +452,20 @@
   // code cannot exfiltrate over the network either (sandbox alone does NOT block egress).
   // script-src is pinned to jsDelivr (for React) + inline (the harness). Together these
   // are the author-time data/key firewall. Tier-2 (Node) remains the gate of record.
-  function buildSmokeDoc(src) {
+  // theme = { isDark, isContrast } from the host. The stub ctx used to hardcode
+  // isDark:false / isContrast:false and the body was always white, so the
+  // preview could never show a tool in the theme it was being authored for —
+  // even though the contract REQUIRES candidates to honor both flags. Passing
+  // the real theme through is what makes the preview able to check that rule.
+  function buildSmokeDoc(src, theme) {
+    var th = theme || {};
+    var tDark = !!th.isDark, tHc = !!th.isContrast;
+    var pageBg = tHc ? '#000000' : (tDark ? '#0f172a' : '#ffffff');
+    var pageFg = tHc ? '#ffff00' : (tDark ? '#e5e7eb' : '#111111');
+    var fatalFg = tHc ? '#ffff00' : (tDark ? '#fca5a5' : '#b91c1c');
+    var fatalBg = tHc ? '#000000' : (tDark ? '#450a0a' : '#fef2f2');
+    var fatalBd = tHc ? '#ffff00' : (tDark ? '#7f1d1d' : '#fecaca');
+    var themeName = tHc ? 'contrast' : (tDark ? 'dark' : 'default');
     // Neutralize a literal "</script" so the candidate cannot close the harness <script>.
     // "<\/script" is NOT recognized as an end tag by the HTML parser (the byte after "<"
     // is "\", not "/"), and "<\/" is a valid escaped "/" inside JS strings/regex/comments
@@ -432,9 +478,9 @@
     var head = [
       '<!doctype html><html><head><meta charset="utf-8">',
       '<meta http-equiv="Content-Security-Policy" content="' + CSP + '">',
-      '<style>html,body{margin:0}body{font:14px system-ui,-apple-system,sans-serif;padding:12px;background:#fff;color:#111}',
-      '#root{min-height:40px}.forge-fatal{color:#b91c1c;font:12px ui-monospace,SFMono-Regular,Menlo,monospace;',
-      'white-space:pre-wrap;padding:10px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px}</style></head>',
+      '<style>html,body{margin:0}body{font:14px system-ui,-apple-system,sans-serif;padding:12px;background:' + pageBg + ';color:' + pageFg + '}',
+      '#root{min-height:40px}.forge-fatal{color:' + fatalFg + ';font:12px ui-monospace,SFMono-Regular,Menlo,monospace;',
+      'white-space:pre-wrap;padding:10px;background:' + fatalBg + ';border:1px solid ' + fatalBd + ';border-radius:8px}</style></head>',
       '<body><div id="root"></div>',
       '<script crossorigin src="' + REACT_URL + '"></sc' + 'ript>',
       '<script crossorigin src="' + REACTDOM_URL + '"></sc' + 'ript>'
@@ -473,7 +519,7 @@
       '    a11yClick:function(hh){return {onClick:hh,onKeyDown:function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();hh(e);}},role:"button",tabIndex:0};},',
       '    canvasA11yDesc:function(dd){return {role:"img","aria-label":dd};}, props:{},',
       '    activeSessionCode:null, studentNickname:null, isTeacherMode:true,',
-      '    isDark:false, isContrast:false, reduceMotion:false, theme:"default", pal:pal,',
+      '    isDark:' + tDark + ', isContrast:' + tHc + ', reduceMotion:false, theme:"' + themeName + '", pal:pal,',
       '    labToolData:{}, setLabToolData:noop, selectedVoice:null, studentCodename:null, onSafetyFlag:noop,',
       '    selHubTab:"", selHubTool:"", setSelHubTool:noop, setSelHubTab:noop };',
       '    return new Proxy(base,{get:function(o,p){return (p in o)?o[p]:noop;}});',
@@ -496,10 +542,10 @@
       '    EB.prototype.constructor=EB;',
       '    EB.prototype.componentDidCatch=function(err){ send({type:"smoke",ok:false,error:String((err&&err.stack)||err)}); this.setState({err:err}); };',
       '    EB.prototype.render=function(){ if(this.state.err) return React.createElement("div",{className:"forge-fatal"}, "Render crashed:\\n"+String((this.state.err&&this.state.err.message)||this.state.err)); return this.props.children; };',
-      '    var toolEl = React.createElement(function ForgeSmoke(){ return window.StemLab.renderTool(ids[ids.length-1], ctx); });',
+      '    var toolEl = React.createElement(function ForgeSmoke(){ return window.StemLab.renderTool(ids[0], ctx); });',
       '    var root = ReactDOM.createRoot(document.getElementById("root"));',
       '    root.render(React.createElement(EB, null, toolEl));',
-      '    setTimeout(function(){ send({type:"smoke", ok:true, ids:ids, target:(window.SelHub===window.StemLab && false)?"sel":"stem"}); }, 350);',
+      '    setTimeout(function(){ send({type:"smoke", ok:true, ids:ids, target:"unknown"}); }, 1200);',
       '  } catch(e){ send({type:"smoke", ok:false, error:String((e&&e.stack)||e)}); }',
       '})();</sc' + 'ript>'
     ].join('\n');
@@ -513,7 +559,7 @@
   window.StemLab.registerTool('forge', {
     icon: '🛠️',
     label: 'Tool Forge',
-    desc: 'Author, validate, and preview new STEM Lab / SEL Hub plugins — describe one in plain language (AI builds a conforming plugin) or hand-code against the contract, with a live in-sandbox render-smoke and the same contract gate the deploy pipeline runs. Teacher / developer tool.',
+    desc: 'Author, validate, and preview new STEAM Lab / SEL Hub plugins — describe one in plain language (AI builds a conforming plugin) or hand-code against the contract, with a live in-sandbox render-smoke and the same contract gate the deploy pipeline runs. Teacher / developer tool.',
     color: 'indigo',
     category: 'coding',
     render: function (ctx) {
@@ -546,6 +592,7 @@
     var s_submitting = useState(false); var submitting = s_submitting[0], setSubmitting = s_submitting[1];
 
     var iframeRef = useRef(null);
+    var cancelRef = useRef(false);
 
     // lazy-load acorn for the static contract check
     useEffect(function () {
@@ -583,45 +630,114 @@
       return function () { clearTimeout(id); };
     }, [src, acornReady, runStatic]);
 
+    // A render-smoke result belongs to the exact source it ran against. Without
+    // this, editing after a green preview left smoke.ok true, so the submit gate
+    // (and the render_smoke:true it puts in the payload) vouched for code that
+    // was never rendered — while the affirmation checkbox says it was.
+    var smokeSrcRef = useRef(null);
+    useEffect(function () {
+      if (smokeSrcRef.current === null || smokeSrcRef.current === src) return;
+      setSmoke(null);
+      setSmokeDoc('');
+      smokeSrcRef.current = null;
+    }, [src]);
+
+    // The Code door is the DEFAULT door, and its source was never persisted:
+    // ctx.update('forge','src') only ran on the AI path's success branch, while
+    // the editor seeds from ctx.toolData.forge.src — so hand-authored work
+    // looked saved and was silently lost on navigate-away. Debounced so a
+    // keystroke does not write on every character.
+    var seededRef = useRef(false);
+    useEffect(function () {
+      if (!seededRef.current) { seededRef.current = true; return; }  // skip the initial seed
+      if (!ctx.update) return;
+      var id = setTimeout(function () { ctx.update('forge', 'src', src); }, 600);
+      return function () { clearTimeout(id); };
+    }, [src, ctx]);
+
+    useEffect(function () {
+      if (!smokeSrcRef.current) return;
+      setSmokeDoc(buildSmokeDoc(smokeSrcRef.current, { isDark: dark, isContrast: hc }));
+    }, [dark, hc]);
+
     var runPreview = useCallback(function () {
       setSmoke(null);
       runStatic(src);
-      setSmokeDoc(buildSmokeDoc(src));
-    }, [src, runStatic]);
+      // Remember WHICH source this smoke run covers, so the effect above can
+      // invalidate the result the moment the source moves off it.
+      smokeSrcRef.current = src;
+      setSmokeDoc(buildSmokeDoc(src, { isDark: dark, isContrast: hc }));
+    }, [src, runStatic, dark, hc]);
+
+    // Model context budget. Every destructive round-trip used to slice the
+    // source and then replace the WHOLE draft with the reply, so a plugin over
+    // the slice was amputated — and then persisted. Refuse instead of truncate.
+    var MAX_MODEL_CHARS = 60000;
+    var MAX_REVIEW_CHARS = 40000;
 
     var generate = useCallback(function () {
       var cg = ctx.callGemini;
       if (typeof cg !== 'function') { ctx.addToast && ctx.addToast(t('stem.forge.no_ai', 'AI is not available here.'), 'error'); return; }
       if (!desc.trim()) { ctx.addToast && ctx.addToast(t('stem.forge.need_desc', 'Describe the tool first.'), 'info'); return; }
+      cancelRef.current = false;
       setBusy(true); setSmoke(null);
       var hub = target === 'sel' ? 'window.SelHub' : 'window.StemLab';
       var grade = ctx.gradeLevel || 'middle school';
       var cp = contractPrompt();
+      // Whatever is in the editor right now, so a failed run can restore it.
+      var prevSrc = src;
+
+      function stage(id, label) {
+        setPhase(id);
+        ctx.announceToSR && ctx.announceToSR(label);
+      }
+      function cancelled() { return cancelRef.current; }
 
       (function () {
         var plan = null, source = '', issues = [];
-        setPhase('architect');
-        var archPrompt = 'Plan an AlloFlow ' + (target === 'sel' ? 'SEL Hub' : 'STEM Lab') + ' plugin for this request:\n"' + desc.replace(/"/g, "'") + '"\nGrade level: ' + grade + '.\nReturn ONLY JSON: {"id":"camelCaseId","label":"...","desc":"...","icon":"single emoji","color":"theme name","category":"...","concept":"the core concept students explore","interactions":["the 2-4 concrete things the student does"],"stateShape":"the fields kept in toolData"}';
+        stage('architect', t('stem.forge.sr_architect', 'Architect: planning the tool'));
+        var archPrompt = 'Plan an AlloFlow ' + (target === 'sel' ? 'SEL Hub' : 'STEAM Lab') + ' plugin for this request:\n"' + desc.replace(/"/g, "'") + '"\nGrade level: ' + grade + '.\nReturn ONLY JSON: {"id":"camelCaseId","label":"...","desc":"...","icon":"single emoji","color":"theme name","category":"...","concept":"the core concept students explore","interactions":["the 2-4 concrete things the student does"],"stateShape":"the fields kept in toolData"}';
         Promise.resolve(cg(archPrompt, true)).then(function (p) {
+          if (cancelled()) throw new Error('__forge_cancelled__');
           plan = p && typeof p === 'object' ? p : null;
-          setPhase('builder');
+          stage('builder', t('stem.forge.sr_builder', 'Builder: writing the plugin'));
           var planStr = plan ? JSON.stringify(plan) : '(no plan — infer a sensible one)';
           var buildPrompt = cp + '\n\nUse ' + hub + '.registerTool. PLAN:\n' + planStr + '\n\nUser request: "' + desc.replace(/"/g, "'") + '"\nGrade: ' + grade + '.\nReturn the COMPLETE plugin .js file only.';
           return cg(buildPrompt, false);
         }).then(function (code) {
-          source = cleanCode(code);
+          if (cancelled()) throw new Error('__forge_cancelled__');
+          var built = cleanCode(code);
+          // An empty/near-empty build used to be written straight into the
+          // editor (and persisted), wiping whatever the author already had.
+          if (!built || built.length < 40) throw new Error('the builder returned no usable code');
+          source = built;
           setSrc(source);
-          setPhase('reviewer');
-          var reviewPrompt = 'Review this AlloFlow plugin against the contract. Find: contract violations (missing required fields, hooks in render() body, throwing on stub ctx, ctx members outside the allowed surface), accessibility gaps, and bugs.\n\nCONTRACT SUMMARY:\n' + cp + '\n\nCODE:\n```js\n' + source.substring(0, 14000) + '\n```\n\nReturn ONLY a JSON array: [{"severity":"error|warning","description":"...","fix":"..."}]. If perfect, return [].';
+          stage('reviewer', t('stem.forge.sr_reviewer', 'Reviewer: checking against the contract'));
+          var reviewSrc = source.length > MAX_REVIEW_CHARS ? source.substring(0, MAX_REVIEW_CHARS) : source;
+          var reviewPrompt = 'Review this AlloFlow plugin against the contract. Find: contract violations (missing required fields, hooks in render() body, throwing on stub ctx, ctx members outside the allowed surface), accessibility gaps, and bugs.\n\nCONTRACT SUMMARY:\n' + cp + '\n\nCODE:\n```js\n' + reviewSrc + '\n```\n\nReturn ONLY a JSON array: [{"severity":"error|warning","description":"...","fix":"..."}]. If perfect, return [].';
           return cg(reviewPrompt, true);
         }).then(function (rev) {
+          if (cancelled()) throw new Error('__forge_cancelled__');
           issues = Array.isArray(rev) ? rev : (rev && Array.isArray(rev.issues) ? rev.issues : []);
           if (!issues.length) return source;
-          setPhase('fixer');
+          if (source.length > MAX_MODEL_CHARS) {
+            // Sending a slice and keeping the reply would delete the tail.
+            ctx.addToast && ctx.addToast(t('stem.forge.too_large_to_fix', 'Draft is too large to auto-fix without truncating it — the reviewer notes are listed, fix them by hand.'), 'info');
+            return source;
+          }
+          stage('fixer', t('stem.forge.sr_fixer', 'Fixer: applying the review notes'));
           var fixList = issues.map(function (x, i) { return (i + 1) + '. [' + (x.severity || 'issue') + '] ' + (x.description || '') + ' -> ' + (x.fix || ''); }).join('\n');
-          var fixPrompt = 'Apply these fixes to the plugin. Keep it a single conforming file that still satisfies the contract.\n\nISSUES:\n' + fixList + '\n\nCODE:\n```js\n' + source.substring(0, 16000) + '\n```\n\nReturn the COMPLETE fixed plugin .js file only.';
-          return cg(fixPrompt, false).then(function (fx) { return cleanCode(fx); });
+          var fixPrompt = 'Apply these fixes to the plugin. Keep it a single conforming file that still satisfies the contract.\n\nISSUES:\n' + fixList + '\n\nCODE:\n```js\n' + source + '\n```\n\nReturn the COMPLETE fixed plugin .js file only.';
+          return cg(fixPrompt, false).then(function (fx) {
+            var fixed = cleanCode(fx);
+            // A reply that lost most of the file is a truncated generation;
+            // keeping the reviewed draft beats "fixing" it into a stub.
+            if (fixed && fixed.length > source.length * 0.5) return fixed;
+            ctx.addToast && ctx.addToast(t('stem.forge.fix_incomplete', 'The fixer returned an incomplete file — kept the reviewed draft instead.'), 'info');
+            return source;
+          });
         }).then(function (finalSrc) {
+          if (cancelled()) throw new Error('__forge_cancelled__');
           source = finalSrc || source;
           setSrc(source);
           setDoor('code');
@@ -629,29 +745,54 @@
           setBusy(false);
           ctx.update && ctx.update('forge', 'src', source);
           runStatic(source);
-          setSmokeDoc(buildSmokeDoc(source));
+          smokeSrcRef.current = source;
+          setSmokeDoc(buildSmokeDoc(source, { isDark: dark, isContrast: hc }));
           ctx.addToast && ctx.addToast(t('stem.forge.generated', 'Draft generated — review the validator + preview.'), 'success');
           ctx.announceToSR && ctx.announceToSR('Plugin draft generated.');
         }).catch(function (err) {
           setBusy(false); setPhase('');
+          if (err && err.message === '__forge_cancelled__') {
+            // Put back exactly what the author had before the run started.
+            setSrc(prevSrc);
+            ctx.addToast && ctx.addToast(t('stem.forge.gen_cancelled', 'Generation cancelled.'), 'info');
+            ctx.announceToSR && ctx.announceToSR('Generation cancelled.');
+            return;
+          }
+          setSrc(prevSrc);
           ctx.addToast && ctx.addToast(t('stem.forge.gen_failed', 'Generation failed: ') + (err && err.message || err), 'error');
+          ctx.announceToSR && ctx.announceToSR('Generation failed.');
         });
       })();
-    }, [ctx, desc, target, t, runStatic]);
+    }, [ctx, desc, target, t, runStatic, src, dark, hc]);
 
     var allAffirmed = AFFIRMATIONS.every(function (a) { return affirm[a.key] === true; });
-    var canSubmit = !!(report && report.ok && smoke && smoke.ok && allAffirmed && !submitting && window.acorn);
+    // smokeSrcRef pins the result to the source it covered; the [src] effect
+    // clears the smoke result on edit, and this makes the dependency explicit.
+    var smokeCurrent = !!(smoke && smoke.ok && smokeSrcRef.current === src);
+    var canSubmit = !!(report && report.ok && smokeCurrent && allAffirmed && !submitting && window.acorn);
 
     var submitPlugin = useCallback(function () {
-      if (!report || !report.ok) { ctx.addToast && ctx.addToast(t('stem.forge.fix_first', 'Fix the structural problems before submitting.'), 'error'); return; }
-      if (!smoke || !smoke.ok) { ctx.addToast && ctx.addToast(t('stem.forge.preview_first', 'Run “Validate + preview” — it must render without crashing.'), 'error'); return; }
+      // `report` trails the source by a 400ms debounce, and the smoke result is
+      // only as current as the last preview. Re-validate the EXACT bytes being
+      // submitted before vouching for them in the payload.
+      var live = null;
+      if (window.acorn && ForgeContract) {
+        try { live = ForgeContract.validateSource(src, window.acorn.parse); }
+        catch (err) { live = { ok: false, errors: ['validator error: ' + (err && err.message || err)], tools: [] }; }
+        setReport(live);
+      }
+      if (!live || !live.ok) { ctx.addToast && ctx.addToast(t('stem.forge.fix_first', 'Fix the structural problems before submitting.'), 'error'); return; }
+      if (!smoke || !smoke.ok || smokeSrcRef.current !== src) {
+        ctx.addToast && ctx.addToast(t('stem.forge.preview_stale', 'Run “Validate + preview” on the current source — it must render without crashing.'), 'error');
+        return;
+      }
       var meta = extractMeta(src);
       if (!meta.id) { ctx.addToast && ctx.addToast(t('stem.forge.no_id', 'Could not read the tool id from the source.'), 'error'); return; }
       setSubmitting(true);
       var payload = {
         plugin: { id: meta.id, label: meta.label || meta.id, desc: meta.desc, target: meta.target, category: meta.category, color: meta.color, icon: meta.icon, source: src },
         metadata: { author: (author || '').slice(0, 80), license: license },
-        validator_report: { tier1: report, render_smoke: { ok: !!(smoke && smoke.ok) } },
+        validator_report: { tier1: live, render_smoke: { ok: true } },
         affirmations: AFFIRMATIONS.reduce(function (o, a) { o[a.key] = affirm[a.key] === true; return o; }, {})
       };
       fetch(WORKER_BASE + '/submitPlugin', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
@@ -670,26 +811,51 @@
     }, [ctx, report, smoke, src, author, license, affirm, t]);
 
     // ── styling helpers ──
-    var fg = dark ? '#e5e7eb' : '#0f172a';
-    var sub = dark ? '#94a3b8' : '#475569';
-    var panelBg = dark ? '#0f172a' : '#ffffff';
-    var border = hc ? '#000' : (dark ? '#1e293b' : '#e2e8f0');
-    var accent = '#6366f1';
+    // High-contrast previously reached exactly one property (border). The rest
+    // of the chrome stayed mid-slate, so .theme-contrast users got a normal
+    // low-contrast panel with one black outline — while this is the tool that
+    // instructs generated plugins to "honor ctx.isDark / ctx.isContrast".
+    // Palette mirrors the host's .theme-contrast block (AlloFlowANTI /
+    // App.jsx): black surfaces, yellow text + borders, green on black for
+    // controls. Pure binary — no soft variants, same as the host.
+    var HC_BG = '#000000', HC_FG = '#ffff00', HC_BTN = '#00ff00';
+    var fg = hc ? HC_FG : (dark ? '#e5e7eb' : '#0f172a');
+    var sub = hc ? HC_FG : (dark ? '#94a3b8' : '#475569');
+    var panelBg = hc ? HC_BG : (dark ? '#0f172a' : '#ffffff');
+    var editorBg = hc ? HC_BG : (dark ? '#0b1220' : '#f8fafc');
+    var border = hc ? HC_FG : (dark ? '#1e293b' : '#e2e8f0');
+    // In high contrast the ✔/✖ glyph and the wording carry the verdict; the
+    // host palette deliberately has no green/amber/red tier to borrow.
+    var okFg   = hc ? HC_FG : (dark ? '#4ade80' : '#15803d');
+    var errFg  = hc ? HC_FG : (dark ? '#f87171' : '#b91c1c');
+    var warnFg = hc ? HC_FG : (dark ? '#fbbf24' : '#92400e');
+    var accent = '#4f46e5';
     function btn(primary) {
+      if (hc) {
+        return { padding: '8px 14px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13,
+          border: '2px solid ' + HC_BTN, background: HC_BG, color: HC_BTN };
+      }
       return { padding: '8px 14px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13,
         border: '1px solid ' + (primary ? accent : border), background: primary ? accent : (dark ? '#1e293b' : '#f8fafc'), color: primary ? '#fff' : fg };
     }
     function tab(active) {
       return { padding: '8px 16px', borderRadius: '8px 8px 0 0', cursor: 'pointer', fontWeight: 600, fontSize: 13,
-        border: '1px solid ' + border, borderBottom: active ? '1px solid ' + panelBg : '1px solid ' + border,
-        background: active ? panelBg : (dark ? '#0b1220' : '#f1f5f9'), color: active ? fg : sub, marginRight: 4 };
+        border: (hc ? '2px solid ' : '1px solid ') + border,
+        borderBottom: active ? '1px solid ' + panelBg : (hc ? '2px solid ' : '1px solid ') + border,
+        background: hc ? HC_BG : (active ? panelBg : (dark ? '#0b1220' : '#f1f5f9')),
+        color: hc ? (active ? HC_BTN : HC_FG) : (active ? fg : sub), marginRight: 4 };
+    }
+    // Verdict banners: tinted in the normal themes, plain black/yellow in HC.
+    function verdictBox(ok) {
+      if (hc) return { border: '2px solid ' + HC_FG, background: HC_BG };
+      return { border: '1px solid ' + (ok ? '#86efac' : '#fecaca'), background: ok ? (dark ? '#052e16' : '#f0fdf4') : (dark ? '#450a0a' : '#fef2f2') };
     }
 
     if (!ctx.isTeacherMode) {
       return h('div', { style: { padding: 24, color: fg, maxWidth: 640 } },
         h('h2', { style: { marginTop: 0 } }, '🛠️ ' + t('stem.forge.label', 'Tool Forge')),
         h('p', { style: { color: sub, lineHeight: 1.6 } },
-          t('stem.forge.teacher_only', 'The Tool Forge is a teacher / developer workspace for authoring new STEM Lab and SEL Hub tools. Switch on Teacher Mode to open it.'))
+          t('stem.forge.teacher_only', 'The Tool Forge is a teacher / developer workspace for authoring new STEAM Lab and SEL Hub tools. Switch on Teacher Mode to open it.'))
       );
     }
 
@@ -735,11 +901,19 @@
                 h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
                   h('label', { style: { fontSize: 13 } }, t('stem.forge.target', 'Target') + ':'),
                   h('select', { value: target, onChange: function (e) { setTarget(e.target.value); }, 'aria-label': t('stem.forge.target', 'Target'), style: { padding: '6px 8px', borderRadius: 6, border: '1px solid ' + border, background: panelBg, color: fg } },
-                    h('option', { value: 'stem' }, 'STEM Lab'),
+                    h('option', { value: 'stem' }, 'STEAM Lab'),
                     h('option', { value: 'sel' }, 'SEL Hub')),
-                  h('button', { onClick: generate, disabled: busy, style: btn(true) }, busy ? t('stem.forge.working', 'Working…') : t('stem.forge.generate', 'Generate plugin'))
+                  h('button', { onClick: generate, disabled: busy, 'aria-busy': busy, style: btn(true) }, busy ? t('stem.forge.working', 'Working…') : t('stem.forge.generate', 'Generate plugin')),
+                  // Four sequential model calls with no way out until now.
+                  busy ? h('button', {
+                    onClick: function () { cancelRef.current = true; ctx.announceToSR && ctx.announceToSR('Cancelling after the current step.'); },
+                    style: btn(false),
+                    'aria-label': t('stem.forge.cancel', 'Cancel generation')
+                  }, '✕ ' + t('stem.forge.cancel_short', 'Cancel')) : null
                 ),
-                busy ? h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 4 } },
+                // Phase chips mirror what stage() already sends to
+                // ctx.announceToSR, so they are decorative to a screen reader.
+                busy ? h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 4 }, 'aria-hidden': true },
                   PHASES.map(function (p) {
                     var active = phase === p.id;
                     return h('span', { key: p.id, style: { fontSize: 12, padding: '3px 8px', borderRadius: 999, border: '1px solid ' + border, background: active ? accent : 'transparent', color: active ? '#fff' : sub } }, p.label);
@@ -755,7 +929,7 @@
                 h('textarea', {
                   value: src, onChange: function (e) { setSrc(e.target.value); }, spellCheck: false,
                   'aria-label': t('stem.forge.source', 'Plugin source'),
-                  style: { width: '100%', boxSizing: 'border-box', minHeight: 360, padding: 10, borderRadius: 8, border: '1px solid ' + border, background: dark ? '#0b1220' : '#f8fafc', color: fg, font: '12.5px ui-monospace, SFMono-Regular, Menlo, monospace', lineHeight: 1.5, whiteSpace: 'pre', overflowWrap: 'normal', resize: 'vertical' }
+                  style: { width: '100%', boxSizing: 'border-box', minHeight: 360, padding: 10, borderRadius: 8, border: '1px solid ' + border, background: editorBg, color: fg, font: '12.5px ui-monospace, SFMono-Regular, Menlo, monospace', lineHeight: 1.5, whiteSpace: 'pre', overflowWrap: 'normal', resize: 'vertical' }
                 })
               )
         ),
@@ -763,7 +937,7 @@
         // RIGHT — validator + preview
         h('div', { style: { flex: '1 1 380px', minWidth: 300, display: 'flex', flexDirection: 'column', gap: 10 } },
           // validator
-          h('div', { style: { border: '1px solid ' + border, borderRadius: 10, padding: 10, background: panelBg } },
+          h('div', { role: 'status', 'aria-live': 'polite', style: { border: '1px solid ' + border, borderRadius: 10, padding: 10, background: panelBg } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 } },
               h('strong', { style: { fontSize: 13 } }, t('stem.forge.validator', 'Contract validator')),
               h('button', { onClick: runPreview, style: btn(true) }, t('stem.forge.run', 'Validate + preview'))
@@ -771,22 +945,22 @@
             !report
               ? h('div', { style: { fontSize: 12, color: sub } }, acornReady ? t('stem.forge.edit_to_validate', 'Edit the source to validate.') : t('stem.forge.gate_loading', 'loading validator…'))
               : h('div', { style: { fontSize: 12.5 } },
-                  h('div', { style: { fontWeight: 700, color: structOk ? '#16a34a' : '#dc2626', marginBottom: 4 } },
+                  h('div', { style: { fontWeight: 700, color: structOk ? okFg : errFg, marginBottom: 4 } },
                     structOk ? '✔ ' + t('stem.forge.struct_ok', 'Structurally conformant') : '✖ ' + t('stem.forge.struct_fail', 'Structural problems')),
-                  errs.length ? h('ul', { style: { margin: '4px 0', paddingLeft: 18, color: '#dc2626' } }, errs.map(function (e, i) { return h('li', { key: 'e' + i }, e); })) : null,
+                  errs.length ? h('ul', { style: { margin: '4px 0', paddingLeft: 18, color: errFg } }, errs.map(function (e, i) { return h('li', { key: 'e' + i }, e); })) : null,
                   warns.length ? h('details', { style: { marginTop: 4 } },
-                    h('summary', { style: { cursor: 'pointer', color: '#b45309' } }, warns.length + ' ' + t('stem.forge.warnings', 'warning(s)')),
-                    h('ul', { style: { margin: '4px 0', paddingLeft: 18, color: '#b45309' } }, warns.map(function (w, i) { return h('li', { key: 'w' + i }, w); }))
+                    h('summary', { style: { cursor: 'pointer', color: warnFg } }, warns.length + ' ' + t('stem.forge.warnings', 'warning(s)')),
+                    h('ul', { style: { margin: '4px 0', paddingLeft: 18, color: warnFg } }, warns.map(function (w, i) { return h('li', { key: 'w' + i }, w); }))
                   ) : (errs.length ? null : h('div', { style: { color: sub } }, t('stem.forge.no_warns', 'No contract warnings.')))
                 )
           ),
           // render-smoke result
-          smoke ? h('div', { style: { border: '1px solid ' + (smoke.ok ? '#86efac' : '#fecaca'), borderRadius: 10, padding: 8, background: smoke.ok ? (dark ? '#052e16' : '#f0fdf4') : (dark ? '#450a0a' : '#fef2f2'), fontSize: 12.5 } },
+          smoke ? h('div', { role: 'status', 'aria-live': 'polite', style: Object.assign({ borderRadius: 10, padding: 8, fontSize: 12.5 }, verdictBox(smoke.ok)) },
             smoke.ok
-              ? h('span', { style: { color: '#16a34a', fontWeight: 600 } }, '✔ ' + t('stem.forge.renders', 'Renders without crashing') + (smoke.ids && smoke.ids.length ? ' · id: ' + smoke.ids[smoke.ids.length - 1] : ''))
+              ? h('span', { style: { color: okFg, fontWeight: 600 } }, '✔ ' + t('stem.forge.renders', 'Mounted without an immediate crash') + (smoke.ids && smoke.ids.length ? ' · id: ' + smoke.ids[0] : ''))
               : h('div', null,
-                  h('div', { style: { color: '#dc2626', fontWeight: 600, marginBottom: 4 } }, '✖ ' + t('stem.forge.render_crash', 'Render-smoke failed')),
-                  h('pre', { style: { margin: 0, whiteSpace: 'pre-wrap', font: '11.5px ui-monospace, monospace', color: dark ? '#fca5a5' : '#991b1b' } }, String(smoke.error || '').slice(0, 800)))
+                  h('div', { style: { color: errFg, fontWeight: 600, marginBottom: 4 } }, '✖ ' + t('stem.forge.render_crash', 'Render-smoke failed')),
+                  h('pre', { style: { margin: 0, whiteSpace: 'pre-wrap', font: '11.5px ui-monospace, monospace', color: hc ? HC_FG : (dark ? '#fca5a5' : '#991b1b') } }, String(smoke.error || '').slice(0, 800)))
           ) : null,
           // live preview iframe (sandboxed: allow-scripts only)
           h('div', { style: { border: '1px solid ' + border, borderRadius: 10, overflow: 'hidden', background: '#fff', minHeight: 220, flex: 1 } },
@@ -802,7 +976,7 @@
               h('p', { style: { fontSize: 11.5, color: sub, margin: '4px 0', lineHeight: 1.5 } },
                 t('stem.forge.submit_note', 'Submitting stages this tool in a private review queue — it never goes live until a maintainer reviews the source + validator report + preview and publishes it. Requires a green validator and a clean render.')),
               h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
-                h('input', { value: author, onChange: function (e) { setAuthor(e.target.value); }, placeholder: t('stem.forge.author', 'Your name / credit (optional)'), style: { flex: '1 1 180px', padding: '6px 8px', borderRadius: 6, border: '1px solid ' + border, background: panelBg, color: fg } }),
+                h('input', { value: author, onChange: function (e) { setAuthor(e.target.value); }, 'aria-label': t('stem.forge.author', 'Your name / credit (optional)'), placeholder: t('stem.forge.author', 'Your name / credit (optional)'), style: { flex: '1 1 180px', padding: '6px 8px', borderRadius: 6, border: '1px solid ' + border, background: panelBg, color: fg } }),
                 h('select', { value: license, onChange: function (e) { setLicense(e.target.value); }, 'aria-label': t('stem.forge.license', 'License'), style: { padding: '6px 8px', borderRadius: 6, border: '1px solid ' + border, background: panelBg, color: fg } },
                   LICENSES.map(function (l) { return h('option', { key: l, value: l }, l); }))
               ),

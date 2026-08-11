@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { React, ReactDOMClient, loadTool, makeCtx, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+import { React, ReactDOMClient, loadTool, makeCtx, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 const { act } = React;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -230,13 +230,12 @@ describe('Drone Flight visible WebGL runtime', () => {
     expect(warn).toHaveBeenCalled();
   });
 
-  it('ships aligned camera/control conventions and one accessible renderer surface', () => {
-    const html = renderTool('beehive', {
-      beehive: { viewMode: 'drone', drone: { active: true, paused: true, difficulty: 'easy' } },
-    });
+  it('ships aligned camera/control conventions and one accessible renderer surface', async () => {
+    await mountAndStart();
+    const html = host.innerHTML;
 
     expect(html).toContain('data-flight-renderer-badge="true"');
-    expect(html).toContain('Preparing 3D');
+    expect(host.querySelector('[data-flight-renderer-badge="true"]').textContent).toContain('3D scene');
     expect((html.match(/data-beehive-drone-canvas="true"/g) || [])).toHaveLength(1);
     expect(source).toContain("t.camera.rotation.set((ds.pitch || 0) - cameraBob, -(ds.yaw || 0), (ds.roll || 0) * (cameraStabilized ? 0.35 : 1))");
     expect(source).toContain("if (keys.ArrowLeft || keys.a) turnInput = -1");

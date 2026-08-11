@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════
-// AlloFlow STEM Lab — Circuit Shelf (Falstad CircuitJS1 + Predict-Explore-Explain coach)
+// AlloFlow STEAM Lab — Circuit Shelf (Falstad CircuitJS1 + Predict-Explore-Explain coach)
 //
 // The shelf itself is a COMPANION WINDOW (circuit_shelf/circuit_shelf.html):
 // Paul Falstad & Iain Sharp's CircuitJS1 — the browser electronic-circuit
@@ -61,7 +61,8 @@
     label: 'Circuit Shelf',
     desc: 'Build and run real electronic circuits in CircuitJS — Paul Falstad’s open-source simulator — wrapped in a Predict → Explore → Explain coach. Pick a challenge, lock in a guess before you wire anything, build it, then let the coach compare what you predicted with what the meters actually read.',
     color: 'amber',
-    category: 'general',
+    category: 'engineering',
+    aliases: ['circuits', 'CircuitJS', 'electronics', 'Ohm law'],
     questHooks: [
       { id: 'cc_open', label: 'Open the circuit simulator', icon: '🔌',
         check: function (d) { return !!(d && d.opened); } },
@@ -155,17 +156,17 @@
       function returnToLab() {
         if (typeof setStemLabTool !== 'function') return;
         setStemLabTool(returnTool || null);
-        if (announceToSR) announceToSR(returnTool ? t('stem.circuitShelf.returned_sr', 'Returned to Circuit Builder.') : t('stem.circuitShelf.returned_catalog_sr', 'Returned to the STEM Lab tools.'));
+        if (announceToSR) announceToSR(returnTool ? t('stem.circuitShelf.returned_sr', 'Returned to Circuit Builder.') : t('stem.circuitShelf.returned_catalog_sr', 'Returned to the STEAM Lab tools.'));
       }
 
       return h('div', { className: 'flex flex-col gap-4 animate-in fade-in duration-300 max-w-2xl' },
         typeof setStemLabTool === 'function' && h('button', {
           onClick: returnToLab,
           className: 'inline-flex w-fit items-center gap-2 rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-xs font-bold text-slate-200 transition-colors hover:bg-slate-800 active:scale-[0.97]',
-          'aria-label': returnTool ? t('stem.circuitShelf.back_to_builder', 'Back to Circuit Builder') : t('stem.circuitShelf.back_to_tools', 'Back to STEM Lab tools')
+          'aria-label': returnTool ? t('stem.circuitShelf.back_to_builder', 'Back to Circuit Builder') : t('stem.circuitShelf.back_to_tools', 'Back to STEAM Lab tools')
         },
           ArrowLeft ? h(ArrowLeft, { size: 16 }) : null,
-          h('span', null, returnTool ? t('stem.circuitShelf.back_to_builder', 'Back to Circuit Builder') : t('stem.circuitShelf.back_to_tools', 'Back to STEM Lab tools'))
+          h('span', null, returnTool ? t('stem.circuitShelf.back_to_builder', 'Back to Circuit Builder') : t('stem.circuitShelf.back_to_tools', 'Back to STEAM Lab tools'))
         ),
         h('h2', { className: 'text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-400' },
           t('stem.circuitShelf.title', '🔌 Circuit Shelf — predict first, then wire it up')),

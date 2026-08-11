@@ -32,7 +32,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -194,6 +194,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
       )
     );
   }
+
+  // Cosmic quiz bank. Options are deliberately length-matched and the runtime
+  // shuffles both question order and option order from a per-attempt seed, so
+  // neither answer position nor answer length carries any signal.
+  var COSMIC_QUIZ = [
+    { q: 'How old is the universe?', options: ['4.5 billion years', '13.8 billion years', '100 billion years', '1 trillion years'], correct: 1, why: 'Measurements of the cosmic microwave background by the Planck mission give 13.8 billion years, and the oldest stars agree.' },
+    { q: 'What makes up most of the energy content of the universe?', options: ['Ordinary matter', 'Dark energy', 'Dark matter', 'Radiation'], correct: 1, why: 'Dark energy is roughly 68 percent, dark matter about 27 percent, and everything made of atoms only about 5 percent.' },
+    { q: 'What is the cosmic microwave background?', options: ['Light from the first stars', 'Oldest light we can see', 'Glow of dark matter clumps', 'Haze of interstellar dust'], correct: 1, why: 'It is light released about 380,000 years after the Big Bang, when the universe first became transparent.' },
+    { q: 'Where are heavy elements like gold mostly made?', options: ['Inside the Sun', 'During the Big Bang', 'Neutron star mergers', 'Inside planet cores'], correct: 2, why: 'Neutron star mergers, confirmed by the 2017 event GW170817, build elements heavier than iron through rapid neutron capture.' },
+    { q: 'Which instrument first detected gravitational waves?', options: ['Hubble', 'Webb', 'LIGO', 'Chandra'], correct: 2, why: 'LIGO detected the merger of two black holes in September 2015, a century after Einstein predicted the waves.' },
+    { q: 'What fraction of the universe is ordinary matter?', options: ['5%', '27%', '50%', '68%'], correct: 0, why: 'Everything made of atoms, including every star and planet, is only about 5 percent of the total energy content.' },
+    { q: 'What will happen to the Sun in about 5 billion years?', options: ['Explode as a supernova', 'Collapse to a black hole', 'Swell into a red giant', 'Switch off quite suddenly'], correct: 2, why: 'The Sun is far too light to explode. It will expand into a red giant, then shed its layers and leave a white dwarf.' },
+    { q: 'What is the fastest anything can travel?', options: ['The speed of sound', 'The speed of light', 'The speed of gravity', 'There is no limit'], correct: 1, why: 'Light in a vacuum travels 299,792 km per second, and nothing carrying information can beat it. Gravitational waves travel at the same speed.' },
+    { q: 'Which elements formed in the first minutes after the Big Bang?', options: ['Carbon, oxygen and neon', 'Hydrogen and helium', 'Silicon, iron and nickel', 'Nitrogen and argon'], correct: 1, why: 'Big Bang nucleosynthesis made hydrogen, helium and a trace of lithium. Everything heavier was built later inside stars.' },
+    { q: 'About how many galaxies are in the observable universe?', options: ['Around 100 million or so', 'Hundreds of billions', 'Around 10 thousand only', 'Just the Milky Way itself'], correct: 1, why: 'Deep field surveys imply hundreds of billions, and some estimates that count faint galaxies run to two trillion.' },
+    { q: 'What does a redshifted spectrum tell you about a distant galaxy?', options: ['It is moving away', 'It moves closer', 'It is very hot', 'It is massive'], correct: 0, why: 'Its light is stretched to longer wavelengths. For distant galaxies this stretching comes from the expansion of space itself.' },
+    { q: 'What is the event horizon of a black hole?', options: ['Its solid outer surface', 'The point of no return', 'A ring of hot debris', 'Its magnetic boundary'], correct: 1, why: 'It is not a surface at all but the boundary where escape would require travelling faster than light.' },
+    { q: 'Why can we not see anything from the first 380,000 years?', options: ['The universe was opaque', 'No matter existed back then', 'Telescopes are far too weak', 'That light has moved away'], correct: 0, why: 'Free electrons scattered light constantly, like fog. Only when atoms formed did the universe become transparent.' },
+    { q: 'What is a light-year a measure of?', options: ['A span of time', 'A unit of distance', 'A rate of travel', 'A stellar brightness'], correct: 1, why: 'It is how far light travels in one year, about 9.46 trillion kilometres. It measures distance, not time.' },
+    { q: 'What holds galaxies together despite their rotation speeds?', options: ['Ordinary matter alone', 'Extra unseen dark matter', 'Magnetic field pressure', 'Pressure from radiation'], correct: 1, why: 'Rotation curves stay flat far from the centre, which visible matter cannot explain. Dark matter supplies the missing gravity.' },
+    { q: 'What is the Hubble constant used to measure?', options: ['The size of a spiral galaxy', 'The expansion rate today', 'The age of a single lone star', 'The mass of a gas nebula'], correct: 1, why: 'It is about 70 km/s per megaparsec, though different methods disagree slightly, a puzzle called the Hubble tension.' },
+    { q: 'What is our galaxy expected to do in 4 to 5 billion years?', options: ['Collapse inward', 'Merge with Andromeda', 'Break apart completely', 'Stop forming new stars'], correct: 1, why: 'Andromeda is approaching us. Recent studies put the odds of a merger near 50/50, and even then stars would rarely collide.' },
+    { q: 'What kind of star is our Sun?', options: ['A red supergiant', 'A main sequence star', 'A white dwarf star', 'A neutron star core'], correct: 1, why: 'It is a G2V main sequence star, fusing hydrogen into helium in its core and roughly halfway through that phase.' },
+    { q: 'What causes gravitational lensing?', options: ['Light bouncing off gas', 'Mass curving spacetime', 'Dust scattering the light', 'Strong magnetic fields'], correct: 1, why: 'Mass curves spacetime, so light following the straightest available path appears bent, sometimes into rings or multiple images.' },
+    { q: 'What is dark energy thought to be doing?', options: ['Slowing the expansion', 'Speeding the expansion', 'Pulling galaxies inward', 'Heating the empty space'], correct: 1, why: 'Type Ia supernova measurements in 1998 showed the expansion is accelerating. What dark energy actually is remains unknown.' }
+  ];
+
+  // Deterministic shuffling. Both the 10-question draw and the option order come
+  // from the attempt seed, so they are stable across re-renders (a Math.random()
+  // here would reshuffle the answers under the student's cursor) while every
+  // retry deals a different hand.
+  var QUIZ_PER_ATTEMPT = 10;
+  function quizRng(seed) {
+    var a = (seed >>> 0) + 0x6D2B79F5;
+    return function () {
+      a = Math.imul(a ^ (a >>> 15), 1 | a);
+      a = (a + Math.imul(a ^ (a >>> 7), 61 | a)) ^ a;
+      return ((a ^ (a >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function quizShuffle(arr, seed) {
+    var r = quizRng(seed), out = arr.slice();
+    for (var i = out.length - 1; i > 0; i--) {
+      var j = Math.floor(r() * (i + 1));
+      var t = out[i]; out[i] = out[j]; out[j] = t;
+    }
+    return out;
+  }
+  function quizDeck(seed) {
+    var idx = COSMIC_QUIZ.map(function (q, i) { return i; });
+    return quizShuffle(idx, seed).slice(0, Math.min(QUIZ_PER_ATTEMPT, COSMIC_QUIZ.length));
+  }
+  function quizView(seed, qi) {
+    var deck = quizDeck(seed);
+    var q = COSMIC_QUIZ[deck[qi]];
+    var order = quizShuffle([0, 1, 2, 3], (seed * 131 + qi * 17 + 7) >>> 0);
+    return { q: q, order: order, correctPos: order.indexOf(q.correct) };
+  }
+
+  try { window.__universePure = { COSMIC_QUIZ: COSMIC_QUIZ, QUIZ_PER_ATTEMPT: QUIZ_PER_ATTEMPT, quizRng: quizRng, quizShuffle: quizShuffle, quizDeck: quizDeck, quizView: quizView }; } catch (_e) {}
 
   window.StemLab.registerTool('universe', {
     icon: "🌌",
@@ -425,7 +485,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             { name: 'Main Sequence', icon: '\u2600\uFE0F', color: '#fbbf24', desc: 'Hydrogen fusion ignites! The star enters a stable equilibrium between gravity (pulling in) and radiation pressure (pushing out). Our Sun is here.', temp: '3,000-50,000 K', size: '0.1-10x Sun', duration: 'Millions to trillions of years' },
             { name: 'Red Giant', icon: '\uD83D\uDD34', color: '#ef4444', desc: 'Hydrogen fuel runs out in the core. The star swells enormously as it fuses helium. Could engulf inner planets.', temp: '3,000-5,000 K', size: '10-100x Sun', duration: 'Millions of years' },
             { name: 'Planetary Nebula', icon: '\uD83C\uDF00', color: '#a78bfa', desc: 'Low-mass stars gently shed their outer layers into beautiful expanding gas shells, enriching space with heavier elements.', temp: '10,000-200,000 K (central star)', size: '~1 light-year', duration: '~10,000 years' },
-            { name: 'White Dwarf', icon: '\u26AA', color: 'var(--allo-stem-text, #e2e8f0)', desc: 'The Earth-sized remnant core. No fusion. Slowly cools over billions of years. Will eventually become a black dwarf (none exist yet).', temp: '8,000-40,000 K (cooling)', size: 'Earth-sized', duration: 'Trillions of years to cool' },
+            { name: 'White Dwarf', icon: '\u26AA', color: '#cbd5e1', desc: 'The Earth-sized remnant core. No fusion. Slowly cools over billions of years. Will eventually become a black dwarf (none exist yet).', temp: '8,000-40,000 K (cooling)', size: 'Earth-sized', duration: 'Trillions of years to cool' },
             { name: 'Supernova', icon: '\uD83D\uDCA5', color: '#f97316', desc: 'Massive stars (8+ solar masses) die in spectacular explosions brighter than entire galaxies! Creates elements heavier than iron (gold, platinum, uranium).', temp: '10 billion K (briefly)', size: 'Visible across galaxies', duration: 'Weeks to months' },
             { name: 'Neutron Star', icon: '\uD83D\uDCAB', color: '#67e8f9', desc: 'A city-sized ball of neutrons that can spin up to ~700 rotations/second. A teaspoon weighs 6 billion tons. Pulsars are spinning neutron stars.', temp: '~1 million K', size: '~20 km diameter', duration: 'Effectively forever' },
             { name: 'Black Hole', icon: '\uD83D\uDD73', color: '#1a1a2a', desc: 'If the star is massive enough (25+ solar masses), the core collapses past neutron star density into a singularity. Nothing escapes the event horizon.', temp: 'N/A (Hawking radiation: ~nanokelvin)', size: 'Event horizon: ~60 km across for 10 solar masses', duration: '10\u00B9\u2070\u2070 years (Hawking evaporation)' }
@@ -461,7 +521,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             { name: 'Super-Earth', icon: '\uD83C\uDF0D', size: '1.2-2x Earth', orbit: 'Varies', temp: 'Varies', desc: 'Rocky planets larger than Earth but smaller than Neptune. No equivalent in our Solar System. Some may be habitable with thick atmospheres.', example: 'LHS 1140 b, 55 Cancri e', habitable: 'Possible', color: '#22c55e' },
             { name: 'Mini-Neptune', icon: '\uD83D\uDD35', size: '2-4x Earth', orbit: 'Varies', temp: '200-600 K', desc: 'Small gas/ice planets with thick hydrogen-helium atmospheres. The most common type of exoplanet discovered! No equivalent in our Solar System.', example: 'Kepler-11f, GJ 1214 b', habitable: false, color: '#3b82f6' },
             { name: 'Earth Analog', icon: '\u2B50', size: '0.8-1.5x Earth', orbit: 'Habitable zone', temp: '200-320 K', desc: 'Rocky planets in the habitable zone where liquid water could exist. The holy grail of exoplanet research. Very hard to detect.', example: 'Kepler-442b, TRAPPIST-1e', habitable: 'Best candidate', color: '#fbbf24' },
-            { name: 'Rogue Planet', icon: '\uD83C\uDF11', size: 'Varies', orbit: 'None (free-floating)', temp: 'Near absolute zero', desc: 'Planets ejected from their star system, wandering through interstellar space. Estimated billions in the Milky Way alone. Could have subsurface oceans heated by radioactive decay.', example: 'CFBDSIR 2149-0403', habitable: 'Unlikely but possible', color: 'var(--allo-stem-text-soft, #94a3b8)' },
+            { name: 'Rogue Planet', icon: '\uD83C\uDF11', size: 'Varies', orbit: 'None (free-floating)', temp: 'Near absolute zero', desc: 'Planets ejected from their star system, wandering through interstellar space. Estimated billions in the Milky Way alone. Could have subsurface oceans heated by radioactive decay.', example: 'CFBDSIR 2149-0403', habitable: 'Unlikely but possible', color: '#94a3b8' },
             { name: 'Lava World', icon: '\uD83C\uDF0B', size: '0.5-2x Earth', orbit: 'Ultra-short', temp: '2,000+ K', desc: 'Rocky worlds so close to their star that the surface is molten rock. May have magma oceans and silicate vapor atmospheres. Rock literally rains from the sky.', example: 'CoRoT-7b, Kepler-78b', habitable: false, color: '#f97316' }
           ];
 
@@ -541,7 +601,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             { name: 'Carina Nebula', dist: '8,500 ly', size: '300+ ly across', desc: 'One of the largest nebulae in the sky. Contains Eta Carinae, a massive unstable star 100x the Sun\'s mass that could explode as a supernova any time.', features: 'Eta Carinae, Keyhole Nebula, Mystic Mountain, young massive stars', icon: '\uD83C\uDF1F', color: '#f472b6' },
             { name: 'Tarantula Nebula (30 Doradus)', dist: '160,000 ly (LMC)', size: '600 ly across', desc: 'The most active star-forming region in the Local Group. If it were as close as the Orion Nebula, it would cast shadows on Earth. Contains the most massive known stars.', features: 'R136 cluster with stars 200+ solar masses, extreme UV radiation', icon: '\uD83D\uDD25', color: '#fb923c' },
             { name: 'Rosette Nebula', dist: '5,000 ly', size: '130 ly across', desc: 'A beautiful flower-shaped emission nebula. Stellar winds from the central star cluster have carved a cavity in the gas, creating the rose pattern.', features: 'Central cavity, elephant trunk structures, NGC 2244 cluster', icon: '\uD83C\uDF39', color: '#f87171' },
-            { name: 'Horsehead Nebula (Barnard 33)', dist: '1,500 ly', size: '3.5 ly tall', desc: 'An iconic dark nebula shaped like a horse\'s head. A dense cloud of dust blocking light from the red emission nebula behind it. Active low-mass star formation inside.', features: 'Dark molecular cloud, infrared-bright protostars, IC 434 background', icon: '\uD83D\uDC0E', color: 'var(--allo-stem-text-soft, #94a3b8)' }
+            { name: 'Horsehead Nebula (Barnard 33)', dist: '1,500 ly', size: '3.5 ly tall', desc: 'An iconic dark nebula shaped like a horse\'s head. A dense cloud of dust blocking light from the red emission nebula behind it. Active low-mass star formation inside.', features: 'Dark molecular cloud, infrared-bright protostars, IC 434 background', icon: '\uD83D\uDC0E', color: '#94a3b8' }
           ];
 
           // Planetary nebulae gallery
@@ -838,9 +898,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
           var ELEMENT_ORIGINS = [
             { name: 'Hydrogen (H)', origin: 'Big Bang', pct: '73%', note: 'Created in the first 3 minutes. Most abundant element.', color: '#fbbf24' },
             { name: 'Helium (He)', origin: 'Big Bang + Stars', pct: '25%', note: 'Mostly from Big Bang nucleosynthesis. Also made in stellar fusion.', color: '#fde68a' },
-            { name: 'Carbon (C)', origin: 'Stellar fusion', pct: 'Trace', note: 'Made in red giant cores via triple-alpha process. Basis of all life.', color: 'var(--allo-stem-text-soft, #94a3b8)' },
+            { name: 'Carbon (C)', origin: 'Stellar fusion', pct: 'Trace', note: 'Made in red giant cores via triple-alpha process. Basis of all life.', color: '#64748b' },
             { name: 'Oxygen (O)', origin: 'Massive star fusion', pct: 'Trace', note: 'Made in massive star cores. Third most abundant element in universe.', color: '#3b82f6' },
-            { name: 'Iron (Fe)', origin: 'Stellar core collapse', pct: 'Trace', note: 'The heaviest element made by normal fusion. Making heavier elements costs energy.', color: 'var(--allo-stem-text-soft, #94a3b8)' },
+            { name: 'Iron (Fe)', origin: 'Stellar core collapse', pct: 'Trace', note: 'The heaviest element made by normal fusion. Making heavier elements costs energy.', color: '#94a3b8' },
             { name: 'Gold (Au)', origin: 'Neutron star mergers', pct: 'Ultra-trace', note: 'Created when two neutron stars collide! That\'s why gold is so rare.', color: '#f59e0b' },
             { name: 'Uranium (U)', origin: 'Supernovae + mergers', pct: 'Ultra-trace', note: 'Heaviest natural element. Powers nuclear reactors and heats Earth\'s core.', color: '#10b981' },
             { name: 'Lithium (Li)', origin: 'Big Bang + cosmic rays', pct: 'Trace', note: 'Tiny amount from Big Bang. Also made when cosmic rays hit atoms in space.', color: '#ef4444' }
@@ -1063,66 +1123,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             { name: 'A horizon, not a wall', fact: 'A limit in time, not a boundary in space', desc: 'Nothing is physically special at the edge. An observer out there would see their own sphere of the same size, with us sitting near their horizon instead.', icon: '\uD83D\uDEA7' },
             { name: 'It grows, then it shrinks', fact: 'More becomes visible, and later less', desc: 'Light from further away keeps arriving, so the horizon grows. But accelerating expansion means distant galaxies will eventually recede faster than their light can close the gap, and they will fade from view for good.', icon: '\u23F3' }
           ];
-          // Cosmic quiz bank. Options are deliberately length-matched and the runtime
-          // shuffles both question order and option order from a per-attempt seed, so
-          // neither answer position nor answer length carries any signal.
-          var COSMIC_QUIZ = [
-            { q: 'How old is the universe?', options: ['4.5 billion years', '13.8 billion years', '100 billion years', '1 trillion years'], correct: 1, why: 'Measurements of the cosmic microwave background by the Planck mission give 13.8 billion years, and the oldest stars agree.' },
-            { q: 'What makes up most of the energy content of the universe?', options: ['Ordinary matter', 'Dark energy', 'Dark matter', 'Radiation'], correct: 1, why: 'Dark energy is roughly 68 percent, dark matter about 27 percent, and everything made of atoms only about 5 percent.' },
-            { q: 'What is the cosmic microwave background?', options: ['Light from the first stars', 'Oldest light we can see', 'Glow of dark matter clumps', 'Haze of interstellar dust'], correct: 1, why: 'It is light released about 380,000 years after the Big Bang, when the universe first became transparent.' },
-            { q: 'Where are heavy elements like gold mostly made?', options: ['Inside the Sun', 'During the Big Bang', 'Neutron star mergers', 'Inside planet cores'], correct: 2, why: 'Neutron star mergers, confirmed by the 2017 event GW170817, build elements heavier than iron through rapid neutron capture.' },
-            { q: 'Which instrument first detected gravitational waves?', options: ['Hubble', 'Webb', 'LIGO', 'Chandra'], correct: 2, why: 'LIGO detected the merger of two black holes in September 2015, a century after Einstein predicted the waves.' },
-            { q: 'What fraction of the universe is ordinary matter?', options: ['5%', '27%', '50%', '68%'], correct: 0, why: 'Everything made of atoms, including every star and planet, is only about 5 percent of the total energy content.' },
-            { q: 'What will happen to the Sun in about 5 billion years?', options: ['Explode as a supernova', 'Collapse to a black hole', 'Swell into a red giant', 'Switch off quite suddenly'], correct: 2, why: 'The Sun is far too light to explode. It will expand into a red giant, then shed its layers and leave a white dwarf.' },
-            { q: 'What is the fastest anything can travel?', options: ['The speed of sound', 'The speed of light', 'The speed of gravity', 'There is no limit'], correct: 1, why: 'Light in a vacuum travels 299,792 km per second, and nothing carrying information can beat it. Gravitational waves travel at the same speed.' },
-            { q: 'Which elements formed in the first minutes after the Big Bang?', options: ['Carbon, oxygen and neon', 'Hydrogen and helium', 'Silicon, iron and nickel', 'Nitrogen and argon'], correct: 1, why: 'Big Bang nucleosynthesis made hydrogen, helium and a trace of lithium. Everything heavier was built later inside stars.' },
-            { q: 'About how many galaxies are in the observable universe?', options: ['Around 100 million or so', 'Hundreds of billions', 'Around 10 thousand only', 'Just the Milky Way itself'], correct: 1, why: 'Deep field surveys imply hundreds of billions, and some estimates that count faint galaxies run to two trillion.' },
-            { q: 'What does a redshifted spectrum tell you about a distant galaxy?', options: ['It is moving away', 'It moves closer', 'It is very hot', 'It is massive'], correct: 0, why: 'Its light is stretched to longer wavelengths. For distant galaxies this stretching comes from the expansion of space itself.' },
-            { q: 'What is the event horizon of a black hole?', options: ['Its solid outer surface', 'The point of no return', 'A ring of hot debris', 'Its magnetic boundary'], correct: 1, why: 'It is not a surface at all but the boundary where escape would require travelling faster than light.' },
-            { q: 'Why can we not see anything from the first 380,000 years?', options: ['The universe was opaque', 'No matter existed back then', 'Telescopes are far too weak', 'That light has moved away'], correct: 0, why: 'Free electrons scattered light constantly, like fog. Only when atoms formed did the universe become transparent.' },
-            { q: 'What is a light-year a measure of?', options: ['A span of time', 'A unit of distance', 'A rate of travel', 'A stellar brightness'], correct: 1, why: 'It is how far light travels in one year, about 9.46 trillion kilometres. It measures distance, not time.' },
-            { q: 'What holds galaxies together despite their rotation speeds?', options: ['Ordinary matter alone', 'Extra unseen dark matter', 'Magnetic field pressure', 'Pressure from radiation'], correct: 1, why: 'Rotation curves stay flat far from the centre, which visible matter cannot explain. Dark matter supplies the missing gravity.' },
-            { q: 'What is the Hubble constant used to measure?', options: ['The size of a spiral galaxy', 'The expansion rate today', 'The age of a single lone star', 'The mass of a gas nebula'], correct: 1, why: 'It is about 70 km/s per megaparsec, though different methods disagree slightly, a puzzle called the Hubble tension.' },
-            { q: 'What is our galaxy expected to do in 4 to 5 billion years?', options: ['Collapse inward', 'Merge with Andromeda', 'Break apart completely', 'Stop forming new stars'], correct: 1, why: 'Andromeda is approaching us. Recent studies put the odds of a merger near 50/50, and even then stars would rarely collide.' },
-            { q: 'What kind of star is our Sun?', options: ['A red supergiant', 'A main sequence star', 'A white dwarf star', 'A neutron star core'], correct: 1, why: 'It is a G2V main sequence star, fusing hydrogen into helium in its core and roughly halfway through that phase.' },
-            { q: 'What causes gravitational lensing?', options: ['Light bouncing off gas', 'Mass curving spacetime', 'Dust scattering the light', 'Strong magnetic fields'], correct: 1, why: 'Mass curves spacetime, so light following the straightest available path appears bent, sometimes into rings or multiple images.' },
-            { q: 'What is dark energy thought to be doing?', options: ['Slowing the expansion', 'Speeding the expansion', 'Pulling galaxies inward', 'Heating the empty space'], correct: 1, why: 'Type Ia supernova measurements in 1998 showed the expansion is accelerating. What dark energy actually is remains unknown.' }
-          ];
-
-          // Deterministic shuffling. Both the 10-question draw and the option order come
-          // from the attempt seed, so they are stable across re-renders (a Math.random()
-          // here would reshuffle the answers under the student's cursor) while every
-          // retry deals a different hand.
-          var QUIZ_PER_ATTEMPT = 10;
-          function quizRng(seed) {
-            var a = (seed >>> 0) + 0x6D2B79F5;
-            return function () {
-              a = Math.imul(a ^ (a >>> 15), 1 | a);
-              a = (a + Math.imul(a ^ (a >>> 7), 61 | a)) ^ a;
-              return ((a ^ (a >>> 14)) >>> 0) / 4294967296;
-            };
-          }
-          function quizShuffle(arr, seed) {
-            var r = quizRng(seed), out = arr.slice();
-            for (var i = out.length - 1; i > 0; i--) {
-              var j = Math.floor(r() * (i + 1));
-              var t = out[i]; out[i] = out[j]; out[j] = t;
-            }
-            return out;
-          }
-          function quizDeck(seed) {
-            var idx = COSMIC_QUIZ.map(function (q, i) { return i; });
-            return quizShuffle(idx, seed).slice(0, Math.min(QUIZ_PER_ATTEMPT, COSMIC_QUIZ.length));
-          }
-          function quizView(seed, qi) {
-            var deck = quizDeck(seed);
-            var q = COSMIC_QUIZ[deck[qi]];
-            var order = quizShuffle([0, 1, 2, 3], (seed * 131 + qi * 17 + 7) >>> 0);
-            return { q: q, order: order, correctPos: order.indexOf(q.correct) };
-          }
-
-
-
+          // Cosmic quiz bank + seeded shuffle live at module scope (pure,
+          // test-exposed via window.__universePure).
           var cosmicTime = d.cosmicTime !== undefined ? d.cosmicTime : 0;
 
           var isPlaying = d.isPlaying || false;
@@ -3699,7 +3701,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                       { name: 'Sun', x: 0.55, y: 0.6, color: '#fbbf24', r: 4 },
                       { name: 'Betelgeuse', x: 0.8, y: 0.05, color: '#ef4444', r: 6 },
                       { name: 'Proxima Centauri', x: 0.85, y: 0.85, color: '#f87171', r: 2 },
-                      { name: 'White Dwarfs', x: 0.2, y: 0.82, color: 'var(--allo-stem-text, #e2e8f0)', r: 2 },
+                      { name: 'White Dwarfs', x: 0.2, y: 0.82, color: '#e2e8f0', r: 2 },
                       { name: 'Aldebaran', x: 0.7, y: 0.2, color: '#fb923c', r: 5 }
                     ];
                     stars.forEach(function(s) {

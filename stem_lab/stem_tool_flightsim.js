@@ -1,4 +1,4 @@
-// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -10240,6 +10240,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           group.userData.navLights.push({ obj: lightObj, phase: phase || 0, mode: mode || 'steady' });
         };
 
+        // A turning propeller has to be drawn as TWO things, not one, because a
+        // single spinning bar cannot survive a 60 Hz frame rate. A blade set with
+        // rotational symmetry period P looks the same every P radians, so once the
+        // per-frame advance passes P/2 the eye reads the shorter way round and the
+        // blade appears to slow, stop, then run backwards — the wagon-wheel effect
+        // from film. That was happening here at ordinary power settings: the drone's
+        // rotors (advance 4.5 rad/frame at full throttle, P = pi) sat visually FROZEN
+        // at ~64% throttle, which is right in the middle of the hover band, and the
+        // Cessna's prop ran backwards above ~75%. A quadcopter hovering on four
+        // motionless rotors is not a stylistic quibble; it teaches the wrong thing.
+        //
+        // So the blade mesh keeps a slow, always-forward turn it can actually show,
+        // and a translucent disc carries the real RPM by fading in over it. That is
+        // also simply what a prop at operating speed looks like to an eye or a
+        // camera: a disc, not a blade. Registered on userData.rotors, which the
+        // builder already declared and nothing had ever filled.
+        var addRotorDisc = function(propEntry, x, y, z, radius, axis, blades) {
+          var discMat = new THREE.MeshBasicMaterial({
+            color: 0xcbd5e1, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false
+          });
+          var disc = new THREE.Mesh(new THREE.CircleGeometry(radius, 24), discMat);
+          disc.position.set(x, y, z);
+          // CircleGeometry is born in the XY plane facing +Z, which is already right
+          // for a tractor propeller spinning about the model's +Z nose axis. A main
+          // rotor or a quad motor spins about +Y, so its disc lies flat; a tail rotor
+          // spins about +X, so its disc stands on edge facing sideways.
+          if (axis === 'y') disc.rotation.x = -Math.PI / 2;
+          else if (axis === 'x') disc.rotation.y = Math.PI / 2;
+          group.add(disc);
+          // Blade materials are cloned by the caller: the shared grayMat/darkGrayMat
+          // dress wings, skids and spinners too, and fading the shared instance would
+          // dissolve half the airframe along with the prop.
+          var rotor = {
+            disc: disc, blades: blades || [],
+            // Two bars 90 degrees apart repeat every quarter turn; one bar repeats
+            // every half turn. Getting this wrong is what sets the freeze point.
+            period: (blades && blades.length > 1) ? Math.PI / 2 : Math.PI
+          };
+          // Carried on the prop entry rather than matched up by array index, so the
+          // frame loop cannot drift out of step with the builder if an airframe ever
+          // adds a rotor without a disc.
+          if (propEntry) propEntry.rotor = rotor;
+          group.userData.rotors.push(rotor);
+        };
+
         var whiteMat = new THREE.MeshLambertMaterial({ color: 0xffffff, flatShading: true });
         var grayMat = new THREE.MeshLambertMaterial({ color: 0x94a3b8, flatShading: true });
         var darkGrayMat = new THREE.MeshLambertMaterial({ color: 0x475569, flatShading: true });
@@ -10286,9 +10331,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           group.add(propGroup);
 
           var bladeGeo = new THREE.BoxGeometry(4, 0.3, 0.05);
-          var blade = new THREE.Mesh(bladeGeo, grayMat);
+          var propBladeMat = grayMat.clone();
+          propBladeMat.transparent = true;
+          var blade = new THREE.Mesh(bladeGeo, propBladeMat);
           propGroup.add(blade);
-          group.userData.props.push({ obj: propGroup, speed: 2.0 });
+          var cessnaProp = { obj: propGroup, speed: 2.0 };
+          group.userData.props.push(cessnaProp);
+          addRotorDisc(cessnaProp, 0, 0, 7.56, 2.0, 'z', [blade]);
 
           var wheelGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.3, 6);
           wheelGeo.rotateZ(Math.PI / 2);
@@ -10473,22 +10522,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           group.add(mainRotorGroup);
 
           var bladeGeo = new THREE.BoxGeometry(18, 0.1, 0.6);
-          var blade1 = new THREE.Mesh(bladeGeo, darkGrayMat);
+          var mainBladeMat = darkGrayMat.clone();
+          mainBladeMat.transparent = true;
+          var blade1 = new THREE.Mesh(bladeGeo, mainBladeMat);
           mainRotorGroup.add(blade1);
-          
+
+          // Object3D.clone shares the material instance, so both blades already fade
+          // together off the one clone above.
           var blade2 = blade1.clone();
           blade2.rotation.y = Math.PI / 2;
           mainRotorGroup.add(blade2);
-          group.userData.props.push({ obj: mainRotorGroup, speed: 2.5, axis: 'y' });
+          var heliMainProp = { obj: mainRotorGroup, speed: 2.5, axis: 'y' };
+          group.userData.props.push(heliMainProp);
+          addRotorDisc(heliMainProp, 0, 2.94, 0, 9, 'y', [blade1, blade2]);
 
           var tailRotorGroup = new THREE.Group();
           tailRotorGroup.position.set(0.9, 1.6, -13.5);
           group.add(tailRotorGroup);
 
           var tBladeGeo = new THREE.BoxGeometry(0.1, 4, 0.2);
-          var tBlade = new THREE.Mesh(tBladeGeo, darkGrayMat);
+          var tailBladeMat = darkGrayMat.clone();
+          tailBladeMat.transparent = true;
+          var tBlade = new THREE.Mesh(tBladeGeo, tailBladeMat);
           tailRotorGroup.add(tBlade);
-          group.userData.props.push({ obj: tailRotorGroup, speed: 3.5, axis: 'x' });
+          var heliTailProp = { obj: tailRotorGroup, speed: 3.5, axis: 'x' };
+          group.userData.props.push(heliTailProp);
+          addRotorDisc(heliTailProp, 0.94, 1.6, -13.5, 2.0, 'x', [tBlade]);
 
           var skidGeo = new THREE.BoxGeometry(0.2, 0.2, 12);
           var skidL = new THREE.Mesh(skidGeo, darkGrayMat);
@@ -10562,10 +10621,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             rGroup.position.set(pos.x, 0.35, pos.z);
             group.add(rGroup);
 
-            var blade = new THREE.Mesh(pBladeGeo, grayMat);
+            var pBladeMat = grayMat.clone();
+            pBladeMat.transparent = true;
+            var blade = new THREE.Mesh(pBladeGeo, pBladeMat);
             rGroup.add(blade);
-            group.userData.props.push({ obj: rGroup, speed: 4.5 * pos.dir, axis: 'y' });
+            // pos.dir alternates sign: a quadcopter's diagonal pairs turn opposite
+            // ways so their torques cancel, which is why it does not spin on its own
+            // axis. That was already modelled here and the disc keeps the sign.
+            var quadProp = { obj: rGroup, speed: 4.5 * pos.dir, axis: 'y' };
+            group.userData.props.push(quadProp);
+            addRotorDisc(quadProp, pos.x, 0.36, pos.z, 0.8, 'y', [blade]);
           });
+
+          // ── Gimbal camera ──
+          // The payload is the entire point of a Part 107 aircraft, and the model
+          // had no camera on it at all. It hangs under the nose on a cradle that
+          // counter-rotates against the airframe in the frame loop, so a student who
+          // pitches forward to accelerate can watch the lens stay level. That is the
+          // whole reason drone footage looks smooth while the aircraft is tilting,
+          // and it is invisible in the instrument readouts.
+          var gimbalMount = new THREE.Group();
+          gimbalMount.position.set(0, -0.35, 0.85);
+          group.add(gimbalMount);
+
+          var gimbalYoke = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.12, 0.12), darkGrayMat);
+          gimbalYoke.position.set(0, 0.1, 0);
+          gimbalMount.add(gimbalYoke);
+
+          var gimbalCradle = new THREE.Group();
+          gimbalMount.add(gimbalCradle);
+
+          var gimbalBody = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.3, 0.34), blackMat);
+          gimbalCradle.add(gimbalBody);
+
+          var lensGeo = new THREE.CylinderGeometry(0.11, 0.13, 0.16, 10);
+          lensGeo.rotateX(Math.PI / 2);
+          var gimbalLens = new THREE.Mesh(lensGeo, darkGrayMat);
+          gimbalLens.position.set(0, 0, 0.22);
+          gimbalCradle.add(gimbalLens);
+
+          // A cold glass catch-light, so the lens reads as glass rather than as
+          // another gray cylinder at chase-camera distance.
+          var glassMat = new THREE.MeshBasicMaterial({ color: 0x7dd3fc, transparent: true, opacity: 0.75 });
+          var gimbalGlass = new THREE.Mesh(new THREE.CircleGeometry(0.1, 12), glassMat);
+          gimbalGlass.position.set(0, 0, 0.305);
+          gimbalCradle.add(gimbalGlass);
+
+          group.userData.gimbal = gimbalCradle;
         }
 
         var navDefs = type === 'cessna172'
@@ -10884,8 +10986,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var throttle = ctrl.throttle != null ? ctrl.throttle : 0;
           acMesh.userData.props.forEach(function(prop) {
             var axis = prop.axis || 'z';
-            prop.obj.rotation[axis] += prop.speed * (0.15 + throttle * 0.85);
+            var demand = prop.speed * (0.15 + throttle * 0.85);
+            var rotor = prop.rotor;
+            if (!rotor) { prop.obj.rotation[axis] += demand; return; }
+            // Stay strictly inside the sampling limit. A blade set that repeats every
+            // `period` radians can only be shown turning forwards while it advances
+            // less than half that per frame; 0.34 of a period leaves margin so a
+            // dropped frame does not tip it over the edge into running backwards.
+            var ceiling = rotor.period * 0.34;
+            var shown = Math.max(-ceiling, Math.min(ceiling, demand));
+            prop.obj.rotation[axis] += shown;
+            // Everything the clamp had to throw away becomes blur instead of a lie:
+            // the disc fades in exactly as fast as the blade stops being showable.
+            var blur = Math.max(0, Math.min(1, (Math.abs(demand) / ceiling - 1) / 1.6));
+            rotor.disc.material.opacity = blur * 0.5;
+            rotor.disc.visible = blur > 0.02;
+            for (var bi = 0; bi < rotor.blades.length; bi++) {
+              rotor.blades[bi].material.opacity = 1 - blur * 0.72;
+            }
           });
+        }
+
+        // Gimbal: hold the lens level while the airframe tilts. The cradle is a child
+        // of the aircraft group, so undoing the parent's pitch and bank in local space
+        // is all a real 2-axis gimbal is doing. Clamped to +/-35 degrees because the
+        // hardware runs out of travel too, and a lens that stays level through any
+        // attitude would teach students that gimbals have no limits.
+        if (acMesh.userData.gimbal) {
+          var gLimit = 0.61;
+          acMesh.userData.gimbal.rotation.x = Math.max(-gLimit, Math.min(gLimit, pitchRad));
+          acMesh.userData.gimbal.rotation.z = Math.max(-gLimit, Math.min(gLimit, -bankRad));
         }
 
         if (acMesh.userData.flames) {
@@ -10904,6 +11034,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             nav.obj.material.opacity = pulse;
             nav.obj.scale.setScalar(0.75 + pulse * 0.3);
           });
+        }
+
+        // ── The Part 107 ceiling, made visible ──
+        // 400 ft AGL is already enforced as a hard clamp in the physics (see
+        // Physics.AGL_CEILING): past it the drone simply stops climbing. A limit
+        // that is enforced but invisible reads as a broken control — the student
+        // holds throttle and nothing happens — and it throws away the best chance
+        // this sim has to turn a regulation into a PLACE. So draw the rule at
+        // exactly the altitude the clamp bites, fading in over the approach so it
+        // announces itself before it is hit rather than after.
+        //
+        // World units are feet here (geodeticToLocal returns y = alt), so the
+        // grid sits at field elevation + the ceiling with no conversion. It rides
+        // the aircraft's x/z so a finite grid always surrounds you.
+        if (Physics.AGL_CEILING) {
+          if (!resources.aglCeiling) {
+            var ceilGrid = new THREE.GridHelper(4000, 40, 0xf59e0b, 0xf59e0b);
+            ceilGrid.material.transparent = true;
+            ceilGrid.material.opacity = 0;
+            ceilGrid.material.depthWrite = false;
+            ceilGrid.renderOrder = 2;
+            scene.add(ceilGrid);
+            resources.aglCeiling = ceilGrid;
+          }
+          var aglNow = state.altitude - (state.fieldElev || 0);
+          var ceilFade = Math.max(0, Math.min(1, (aglNow - (Physics.AGL_CEILING - 180)) / 180));
+          resources.aglCeiling.position.set(playerLoc.x, (state.fieldElev || 0) + Physics.AGL_CEILING, playerLoc.z);
+          resources.aglCeiling.material.opacity = ceilFade * 0.5;
+          resources.aglCeiling.visible = ceilFade > 0.01;
+        } else if (resources.aglCeiling) {
+          // Crewed aircraft have no such ceiling; hide rather than rebuild on
+          // every aircraft swap.
+          resources.aglCeiling.visible = false;
         }
 
         if (d.thirdPerson) {
@@ -22701,9 +22864,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           h('div', { style: { padding: '12px 16px 0', display: 'flex', alignItems: 'center', gap: '8px' } },
             h('button', {
               onClick: function() { if (ctx.setStemLabTool) ctx.setStemLabTool(null); },
-              'aria-label': __alloT('stem.flightsim.back_to_stem_lab', 'Back to STEM Lab'),
+              'aria-label': __alloT('stem.flightsim.back_to_stem_lab', 'Back to STEAM Lab'),
               style: { background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', padding: '6px 12px', color: '#94a3b8', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }
-            }, __alloT('stem.flightsim.stem_lab', '\u2190 STEM Lab'))
+            }, __alloT('stem.flightsim.stem_lab', '\u2190 STEAM Lab'))
           ),
           // Cockpit briefing
           (function() {
@@ -23136,6 +23299,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           h('style', null, '#skyschool-flight-container .skyschool-command-rail button{transition:transform .14s ease,filter .14s ease}#skyschool-flight-container .skyschool-command-rail button:hover{transform:translateX(2px);filter:brightness(1.1)}#skyschool-flight-container .skyschool-command-rail button:focus-visible{outline:3px solid #f8fafc;outline-offset:2px}@media(max-width:820px){#skyschool-flight-container{min-height:620px!important;border-radius:10px!important}.skyschool-command-rail{top:8px!important;left:8px!important;right:8px!important;max-width:none!important;flex-direction:row!important;flex-wrap:wrap!important}.skyschool-command-rail .skyschool-rail-label{width:100%}.skyschool-command-rail button{flex:1 1 110px;justify-content:center}.skyschool-status-rail{top:auto!important;left:8px!important;right:8px!important;bottom:8px!important;flex-direction:row!important;justify-content:space-between!important;align-items:center!important}.skyschool-tutorial-card{top:auto!important;left:8px!important;right:8px!important;bottom:58px!important;transform:none!important;max-width:none!important;max-height:42vh!important;overflow:auto!important}}'),
           threeLoaded && h('canvas', {
             ref: webglCanvasRef,
+            // Purely the WebGL paint layer stacked under the labelled
+            // role="application" canvas below; exposing it would put a second,
+            // nameless canvas node in the tree for the same content.
+            'aria-hidden': 'true',
             style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1, display: 'block' }
           }),
           h('canvas', {
@@ -23443,7 +23610,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // Flight Path Map (from black box data)
           blackBoxRef.current.length > 3 ? h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #1e293b', marginBottom: '16px' } },
             h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#60a5fa', textTransform: 'uppercase', marginBottom: '8px' } }, __alloT('stem.flightsim.flight_path', '🗺️ Flight Path')),
-            h('canvas', { 'aria-label': __alloT('stem.flightsim.flightsim_interactive_visualization', 'Flightsim interactive visualization'),
+            h('canvas', { role: 'img', 'aria-label': __alloT('stem.flightsim.flightsim_interactive_visualization', 'Flightsim interactive visualization'),
               ref: function(canvas) {
                 if (!canvas) return;
                 var g = canvas.getContext('2d');
@@ -23514,7 +23681,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               style: { width: '100%', height: '120px', borderRadius: '6px', display: 'block' }
             }),
             // Altitude + Speed profile chart
-            h('canvas', { 'aria-label': __alloT('stem.flightsim.flightsim_visualization', 'Flightsim visualization'), 
+            h('canvas', { role: 'img', 'aria-label': __alloT('stem.flightsim.flightsim_visualization', 'Flightsim visualization'),
               ref: function(canvas) {
                 if (!canvas) return;
                 var g = canvas.getContext('2d');
@@ -24307,7 +24474,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                   h('td', { style: { padding: '4px 6px' } }, o.st));
               }))
             ),
-            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
+            h('textarea', { 'aria-label': __alloT('stem.flightsim.hypothesis_input', 'Stall factors hypothesis'), value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
               placeholder: __alloT('stem.flightsim.hypothesis_free_text_no_right_answer_w', 'Hypothesis (free text — no right answer): Which slider matters most for stall? Is airspeed alone sufficient to prevent it?'),
               style: { width: '100%', minHeight: '60px', padding: '6px', background: '#0f1c2f', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.4)', borderRadius: '4px', fontSize: '12px', fontFamily: 'monospace', marginBottom: '10px' }, rows: 3 }),
             !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
@@ -24323,7 +24490,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               h('label', { style: { display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 'bold', color: '#34d399', cursor: 'pointer' } },
                 h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
                 __alloT('stem.flightsim.i_think_i_understand_explain_in_own_wo', 'I think I understand — explain in own words')),
-              iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); },
+              iq.understood && h('textarea', { 'aria-label': __alloT('stem.flightsim.explanation_input', 'Stall factors explanation'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); },
                 placeholder: __alloT('stem.flightsim.explain_in_your_own_words_what_role_do', 'Explain in your own words: what role do airspeed, altitude, and AoA each play?'),
                 style: { width: '100%', minHeight: '80px', padding: '6px', background: '#0f1c2f', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '4px', fontSize: '12px', fontFamily: 'monospace', marginTop: '6px' }, rows: 4 })
             ),

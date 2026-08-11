@@ -14,7 +14,7 @@
 //   • Learn    — what cellular automata are, Conway's rules, Wolfram's four
 //                classes, the "edge of chaos", and where this shows up for real.
 //
-// Architecture notes (matches the STEM Lab plugin contract):
+// Architecture notes (matches the STEAM Lab plugin contract):
 //   - registerTool('cellularLab', { … , render(ctx) })
 //   - render returns a React component element; the component owns all
 //     transient sim state via React hooks (ctx.React.useState/useEffect).
@@ -1197,7 +1197,7 @@
     return h('div', { 'data-cellularlab-tool': 'true', style: { display: 'flex', flexDirection: 'column', gap: '14px', color: C.text, fontFamily: 'inherit' } },
       // header
       h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' } },
-        (ctx.setStemLabTool ? h('button', { type: 'button', onClick: function () { ctx.setStemLabTool(''); }, 'aria-label': 'Back to STEM Lab',
+        (ctx.setStemLabTool ? h('button', { type: 'button', onClick: function () { ctx.setStemLabTool(''); }, 'aria-label': 'Back to STEAM Lab',
           style: { padding: '6px 10px', borderRadius: '8px', border: '1px solid ' + C.border, background: C.panel, color: C.text, cursor: 'pointer', fontSize: '12px', fontWeight: 700 } }, '← Back') : null),
         h('div', { style: { fontSize: '22px' }, 'aria-hidden': 'true' }, '🧫'),
         h('div', null,

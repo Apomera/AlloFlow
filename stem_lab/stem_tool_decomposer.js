@@ -4,7 +4,7 @@
 //   AI tutor, TTS read-aloud, grade-band content, 15 materials
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -2752,8 +2752,7 @@
 
             /* Canvas */
             h('div', { className: 'bg-white rounded-xl border-2 border-indigo-200 overflow-hidden mb-3' },
-              h('canvas', { role: 'img', 'aria-label': 'Decomposer visualization',
-                ref: canvasRef,
+              h('canvas', { role: 'img',                 ref: canvasRef,
                 className: 'w-full cursor-pointer',
                 style: { height: '280px', display: 'block' },
                 'aria-label': 'Molecular visualization of ' + sel.name

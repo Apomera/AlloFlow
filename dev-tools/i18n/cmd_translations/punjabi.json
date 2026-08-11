@@ -320,5 +320,8 @@
   "cmd.run_lesson_blueprint": "ਪਾਠ ਯੋਜਨਾ ਬਣਾਓ",
   "cmd.run_lesson_blueprint_done": "ਯੋਜਨਾ ਬਣ ਰਹੀ ਹੈ — ਤੁਸੀਂ ਕਾਰਡ ਉੱਤੇ ਹਰ ਕਦਮ ਦੇਖ ਸਕਦੇ ਹੋ।",
   "cmd.run_lesson_blueprint_hint": "ਮੌਜੂਦਾ ਯੋਜਨਾ ਦੇ ਸਾਰੇ ਸਰੋਤ ਬਣਾਉਂਦਾ ਹੈ",
-  "cmd.cancelled": "ਰੱਦ ਕਰਨ ਦੀ ਬੇਨਤੀ ਕੀਤੀ ਗਈ ਹੈ। ਪ੍ਰਦਾਤਾ ਇਸਨੂੰ ਸਮਰਥਨ ਦੇਣ ’ਤੇ ਮੌਜੂਦਾ ਕਾਰਵਾਈ ਰੁਕ ਜਾਵੇਗੀ।"
+  "cmd.cancelled": "ਰੱਦ ਕਰਨ ਦੀ ਬੇਨਤੀ ਕੀਤੀ ਗਈ ਹੈ। ਪ੍ਰਦਾਤਾ ਇਸਨੂੰ ਸਮਰਥਨ ਦੇਣ ’ਤੇ ਮੌਜੂਦਾ ਕਾਰਵਾਈ ਰੁਕ ਜਾਵੇਗੀ।",
+  "cmd.open_share_collect": "Share & Collect ਖੋਲ੍ਹੋ",
+  "cmd.open_share_collect_hint": "ਪੋਲ, ਸਾਈਨ-ਅੱਪ, ਸਰਵੇਖਣ ਅਤੇ ਉਹਨਾਂ ਦੇ ਨਤੀਜੇ",
+  "cmd.open_share_collect_done": "Share & Collect ਖੁੱਲ੍ਹ ਗਿਆ।"
 }

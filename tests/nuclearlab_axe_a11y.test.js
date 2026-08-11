@@ -53,11 +53,11 @@ const SURFACES = [
   ['light theme', {}, { theme: 'light' }],
   ['decay curve mid-run', { isoId: 'cs137', halves: 3.25 }],
   ['carbon date revealed', { c14Frac: 12, datedOnce: true }],
-  ['chain step open', { chainIdx: 6, chainSeen: ['U-238', 'Rn-222'] }],
-  ['enrichment level open', { enrIdx: 5 }],
+  ['chain step open', { chainPick: 6, chainSeen: ['U-238', 'Rn-222'] }],
+  ['enrichment level open', { enrPick: 5 }],
   ['shielding — neutron through lead', { radId: 'neutron', shieldId: 'lead', thick: 12 }],
   ['criticality supercritical', { rods: 10 }],
-  ['binding reaction open', { reactionId: 'dt' }],
+  ['binding reaction open', { bePick: 'dt' }],
   ['weighting — alpha to lung', { wrId: 'alpha', wtId: 'lung', absorbedMGy: 4.5 }],
   ['weighting — whole body', { wrId: 'gamma', wtId: 'whole', absorbedMGy: 1 }],
   ['biohalf — caesium', { bioId: 'cs137', bioSeen: ['cs137'] }],
@@ -71,9 +71,9 @@ const SURFACES = [
   }],
   ['detector — below detection limit', { cdSrc: 'kcl', cdDist: 40, cdTime: 10, cdRuns: [{ g: 5, b: 4, t: 10, d: 40, s: 'kcl' }] }],
   ['detector — background only, negative net', { cdSrc: 'none', cdTime: 30, cdRuns: [{ g: 10, b: 14, t: 30, d: 10, s: 'none' }] }],
-  ['accident open', { incidentId: 'chernobyl', incidentsRead: ['chernobyl'] }],
-  ['reactor design open', { reactorId: 'smr', reactorsSeen: ['smr'] }],
-  ['waste card open', { wasteIdx: 4, wasteSeen: ['How much there is'] }],
+  ['accident open', { incPick: 'chernobyl', incidentsRead: ['chernobyl'] }],
+  ['reactor design open', { reactorPick: 'smr', reactorsSeen: ['smr'] }],
+  ['waste card open', { wastePick: 4, wasteSeen: ['How much there is'] }],
   ['topic index filtered', { nkQuery: 'radon', nkGroup: 'radiation' }],
   // jsdom reports a 1024 px viewport, so the index defaults to OPEN in every
   // surface above and the collapsed state went unaudited — including whether
@@ -107,11 +107,16 @@ describe('nuclearLab — axe audit of every reachable surface', () => {
     it(name + ' has no axe violations', async () => {
       const violations = await auditState(state, ctx);
       expect(violations, name + report(violations)).toEqual([]);
-    // Renders nineteen sections and runs a full axe scan over them. Roughly a
+    // Renders twenty sections and runs a full axe scan over them. Roughly a
     // second each in isolation, but vitest runs test FILES in parallel, and
     // under that contention the 5 s default started timing out fifteen of these
     // at once — which reads like a real accessibility failure and is not one.
-    }, 30000);
+    // Raised again from 30 s when the low-dose-risk section took the document
+    // from nineteen sections to twenty: every surface here re-renders the WHOLE
+    // document before scanning it, so each new section lengthens all 41 of
+    // them. If this starts timing out again the answer is not a bigger number
+    // — it is to render once per surface and share the tree.
+    }, 90000);
   }
 });
 
@@ -135,7 +140,7 @@ describe('nuclearLab — checks axe cannot make for us', () => {
         expect(Boolean(named), `${name}: unnamed ${el.tagName} — ${el.outerHTML.slice(0, 140)}`).toBe(true);
       }
     }
-  }, 60000);
+  }, 150000);
 
   it('no id is emitted twice on any surface', () => {
     for (const [name, state, ctx] of SURFACES) {
@@ -144,7 +149,7 @@ describe('nuclearLab — checks axe cannot make for us', () => {
       const dupes = ids.filter((v, i) => ids.indexOf(v) !== i);
       expect(dupes, `${name}: duplicate ids ${dupes.join(', ')}`).toEqual([]);
     }
-  }, 60000);
+  }, 150000);
 
   // Seventeen sections used to share exactly one heading element between them
   // (the tool title), so heading navigation — the primary way a screen reader
@@ -211,7 +216,40 @@ describe('nuclearLab — checks axe cannot make for us', () => {
         expect(label, `${name}: canvas label leaks a bad number`).not.toMatch(/NaN|Infinity|undefined/);
       }
     }
-  }, 60000);
+  }, 150000);
+
+  it('exposes reactor telemetry as semantic text linked from the canvas', () => {
+    host.innerHTML = renderTool('nuclearLab', {});
+    const readings = host.querySelector('#rx-live-readings');
+    expect(readings, 'semantic reactor readings are missing').toBeTruthy();
+    expect(readings.tagName).toBe('DL');
+    expect(readings.getAttribute('aria-label')).toBe('Live reactor readings');
+    for (const id of ['rx-live-power', 'rx-live-temperature', 'rx-live-reactivity', 'rx-live-xenon', 'rx-live-state']) {
+      const output = readings.querySelector('#' + id);
+      expect(output, id + ' is missing').toBeTruthy();
+      expect(output.tagName).toBe('OUTPUT');
+      expect((output.textContent || '').trim(), id + ' is empty').not.toBe('');
+    }
+    const canvas = host.querySelector('canvas[aria-label^="Reactor control panel"]');
+    expect(canvas, 'reactor canvas is missing').toBeTruthy();
+    expect(canvas.getAttribute('aria-describedby')).toBe('rx-live-readings');
+  });
+
+  it('renders reactor details as a disclosure with content outside the button', () => {
+    host.innerHTML = renderTool('nuclearLab', {
+      _nuclearLab: { reactorPick: 'smr', reactorsSeen: ['smr'] },
+    });
+    const button = host.querySelector('button[aria-label^="Hide details for Small modular (SMR)"]');
+    expect(button, 'open SMR disclosure button is missing').toBeTruthy();
+    expect(button.getAttribute('aria-expanded')).toBe('true');
+    expect(button.hasAttribute('aria-pressed')).toBe(false);
+    const bodyId = button.getAttribute('aria-controls');
+    expect(bodyId).toBeTruthy();
+    const body = host.querySelector('#' + bodyId);
+    expect(body, 'disclosure body is missing').toBeTruthy();
+    expect(button.contains(body), 'revealed prose is still swallowed by the button').toBe(false);
+    expect(body.textContent).toMatch(/Safety:|The catch:/);
+  });
 });
 
 // ── The collapsible index ──────────────────────────────────────────────────
@@ -260,8 +298,21 @@ describe('nuclearLab — the index folds without stranding anyone', () => {
 
   it('still renders every section while the index is collapsed', () => {
     // Folding is navigation only. Nothing may become unreachable by scrolling.
-    const html = renderTool('nuclearLab', { _nuclearLab: { nkOpen: false, nkPath: 'know' } });
+    // No route here: a route is separately allowed to narrow the document to
+    // its own steps, and the original fixture set one, so this was really
+    // asserting that a route shows everything — which stopped being true when
+    // routes became progressive disclosure. Folding alone must hide nothing.
+    const html = renderTool('nuclearLab', { _nuclearLab: { nkOpen: false } });
     const ids = [...SRC.matchAll(/\{ id: '([a-z0-9]+)', grp: '[a-z]+', icon:/g)].map((m) => m[1]);
     for (const id of ids) expect(html, id + ' unreachable').toContain('id="nksec-' + id + '"');
+  });
+
+  it('still renders the route steps while the index is collapsed', () => {
+    // The same guarantee inside a route: folding must not cost the reader the
+    // steps the route is made of.
+    const html = renderTool('nuclearLab', { _nuclearLab: { nkOpen: false, nkPath: 'know' } });
+    for (const id of ['detect', 'dating', 'chain']) {
+      expect(html, id + ' unreachable while folded').toContain('id="nksec-' + id + '"');
+    }
   });
 });

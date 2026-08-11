@@ -1595,6 +1595,38 @@ function _collectMoSegments(html) {
   } catch (_) { bodyHtml = root.innerHTML; }
   return { segments, bodyHtml, lang: (doc.documentElement.getAttribute('lang') || 'en') };
 }
+// The shared artifact-audio service serializes vetted clips as base64 so an
+// export can consume the exact bytes without keeping a live object URL alive.
+// PDF Audit still needs a Blob for EPUB packaging, duration measurement, and
+// the resumable downloadable-audio job.
+function _pdfAuditArtifactAudioEntryToBlob(entry) {
+  if (!entry || typeof Blob === 'undefined' || typeof atob !== 'function') return null;
+  const encoded = String(entry.base64 || entry.b64 || entry.audio || '')
+    .replace(/^data:[^,]*,/, '')
+    .replace(/\s+/g, '');
+  if (!encoded) return null;
+  try {
+    const binary = atob(encoded);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+    return new Blob([bytes], { type: String(entry.mime || 'audio/mpeg') });
+  } catch (_) { return null; }
+}
+
+function _pdfAuditAudioLanguage(html, fallback) {
+  const match = String(html || '').match(/<html\b[^>]*\blang\s*=\s*["']([^"']+)["']/i);
+  const raw = (match && match[1] ? match[1] : (fallback || 'English')).trim() || 'English';
+  const primary = raw.toLowerCase().split(/[-_]/)[0];
+  const languageNames = {
+    en: 'English', es: 'Spanish', fr: 'French', de: 'German', it: 'Italian', pt: 'Portuguese',
+    zh: 'Chinese', ja: 'Japanese', ko: 'Korean', ar: 'Arabic', hi: 'Hindi', bn: 'Bengali',
+    pa: 'Punjabi', gu: 'Gujarati', ta: 'Tamil', te: 'Telugu', mr: 'Marathi', ur: 'Urdu',
+    ru: 'Russian', uk: 'Ukrainian', pl: 'Polish', nl: 'Dutch', tr: 'Turkish', vi: 'Vietnamese',
+    th: 'Thai', id: 'Indonesian', ms: 'Malay', sw: 'Swahili', so: 'Somali', am: 'Amharic',
+    he: 'Hebrew', fa: 'Farsi', ps: 'Pashto', km: 'Khmer', my: 'Burmese', tl: 'Tagalog',
+  };
+  return languageNames[primary] || raw;
+}
 // SMIL overlay: one <par> per segment. Per-segment audio files, so each clip is
 // 0..duration of its own file. `ext` is the audio extension (mp3 by default;
 // the TTS service may return wav, which we pass through honestly rather than
@@ -2168,27 +2200,64 @@ async function _buildDocxBlobFromSpec(spec, d, mode) {
 
 // ── Writing check (Harper) ── (2026-06-13: ported from the export builder so
 // grammar checking is reachable in the MAIN document builder, not only the
-// export view). Open-source grammar checker (Rust→WASM, Apache-2.0, Automattic)
+// export view). Open-source spelling and grammar checker (Rust→WASM,
+// Apache-2.0, Automattic)
 // that runs ENTIRELY in the browser — no document text ever leaves the device
-// (FERPA posture). English-only; first run downloads ~10 MB WASM (browser-cached
-// after). Spelling stays with the browser's native checker (spellcheck=true is
-// already on in the editable preview). Function-wrapped dynamic import so
-// esbuild doesn't resolve the remote URL at build time.
+// (FERPA posture). English-only; first run downloads ~18 MB WASM (browser-cached
+// after). Harper's SpellCheck rule is kept explicitly on so corrections remain
+// available in AlloFlow when a host iframe does not expose the browser's native
+// spelling menu. The pinned ESM + WASM runtime is served as versioned static
+// assets from AlloFlow's Pages CDN; the function-wrapped import keeps esbuild
+// from resolving it.
 let _pdfHarperPromise = null;
 function _ensurePdfHarper() {
   if (_pdfHarperPromise) return _pdfHarperPromise;
   _pdfHarperPromise = (async () => {
     const _imp = new Function('u', 'return import(u)');
-    const mod = await _imp('https://cdn.jsdelivr.net/npm/harper.js@2.4.0/+esm');
-    const binary = await mod.createBinaryModuleFromUrl('https://cdn.jsdelivr.net/npm/harper.js@2.4.0/dist/harper_wasm_bg.wasm');
+    const assetRoot = 'https://alloflow-cdn.pages.dev/vendor/harper/2.4.0';
+    const mod = await _imp(assetRoot + '/index.js');
+    const binary = await mod.createBinaryModuleFromUrl(assetRoot + '/harper_wasm_full_bg.wasm', 'full');
     const linter = new mod.LocalLinter({ binary });
     if (linter.setup) await linter.setup();
+    if (linter.getLintConfig && linter.setLintConfig) {
+      const config = await linter.getLintConfig();
+      if (!config || config.SpellCheck !== true) {
+        await linter.setLintConfig({ ...(config || {}), SpellCheck: true });
+      }
+    }
     return linter;
   })();
   _pdfHarperPromise.catch(() => { _pdfHarperPromise = null; }); // failed load → allow retry
   return _pdfHarperPromise;
 }
 // end _ensurePdfHarper
+
+// Keep this helper byte-for-byte aligned with the export-preview copy. Both
+// panels apply suggestions inside an editable iframe and need the same undoable
+// insertText path plus a safe direct-write fallback.
+function _applyHarperTextReplacement(doc, textNode, localStart, badLength, replacement) {
+  if (!doc || !textNode || textNode.nodeType !== 3 || !Number.isInteger(localStart) || !Number.isInteger(badLength)) return false;
+  const raw = textNode.textContent || '';
+  if (localStart < 0 || badLength < 0 || localStart + badLength > raw.length) return false;
+  let applied = false;
+  try {
+    const range = doc.createRange();
+    range.setStart(textNode, localStart);
+    range.setEnd(textNode, localStart + badLength);
+    const selection = doc.getSelection ? doc.getSelection() : doc.defaultView?.getSelection?.();
+    if (selection) {
+      selection.removeAllRanges();
+      selection.addRange(range);
+      applied = Boolean(doc.execCommand?.('insertText', false, String(replacement)));
+    }
+  } catch (_) { applied = false; }
+  if (!applied) {
+    textNode.textContent = raw.slice(0, localStart) + String(replacement) + raw.slice(localStart + badLength);
+  }
+  try { doc.body?.setAttribute('data-allo-user-edited', '1'); } catch (_) {}
+  return true;
+}
+// end _applyHarperTextReplacement
 
 // ── Accessible PowerPoint (.pptx) export ────────────────────────────────────
 // _ensurePptxLib: lazy-load the pptxgenjs bundle (window.PptxGenJS). Two
@@ -4796,6 +4865,52 @@ function PdfAuditView(props) {
 
   // ── New-format export handlers (2026-06-14): ODT, DAISY, read-along EPUB3 ──
   // ODT (OpenDocument Text) — opens natively in LibreOffice / Google Docs / Word.
+  // Resolve the shared artifact-audio service at call time because PDF Audit
+  // can mount while CDN modules are still finishing their load sequence.
+  // Every caller here is behind an explicit owner action (export or audio
+  // download), so the service's owner-approved artifact boundary is correct.
+  const _preparePdfArtifactAudio = async (segments, options = {}) => {
+    const modules = typeof window !== 'undefined' && window.AlloModules ? window.AlloModules : null;
+    const artifactModule = modules && modules.ReadAloudArtifactAudio;
+    const factory = artifactModule && typeof artifactModule.create === 'function'
+      ? artifactModule.create
+      : modules && typeof modules.createReadAloudArtifactAudio === 'function'
+        ? modules.createReadAloudArtifactAudio
+        : null;
+    if (typeof factory !== 'function') {
+      const error = new Error('The shared read-aloud artifact audio service is not loaded.');
+      error.code = 'audio-service-unavailable';
+      throw error;
+    }
+    const service = factory({
+      callTTS,
+      fetch: typeof window !== 'undefined' && typeof window.fetch === 'function'
+        ? window.fetch.bind(window)
+        : undefined,
+    });
+    if (!service || typeof service.prepare !== 'function') {
+      const error = new Error('The shared read-aloud artifact audio service is unavailable.');
+      error.code = 'audio-service-unavailable';
+      throw error;
+    }
+    const requestedSpeed = Number(options.speed);
+    const maxRetries = Number(options.maxRetries);
+    return service.prepare({
+      ownerApproved: true,
+      resourceId: String(options.resourceId || 'pdf-audit-read-aloud').slice(0, 240),
+      resourceType: String(options.resourceType || 'pdf-audit-read-aloud').slice(0, 160),
+      adapterId: String(options.adapterId || 'pdf-audit-read-aloud').slice(0, 160),
+      scopeId: String(options.scopeId || 'document').slice(0, 240),
+      source: String(options.source || 'pdf-audit-owner-export').slice(0, 80),
+      defaultVoice: String(options.defaultVoice || selectedVoice || 'Puck').slice(0, 160),
+      language: String(options.language || 'English').slice(0, 100),
+      speed: Number.isFinite(requestedSpeed) && requestedSpeed > 0 && requestedSpeed <= 4 ? requestedSpeed : 1,
+      maxRetries: Number.isFinite(maxRetries) && maxRetries >= 0 ? maxRetries : 2,
+      segments: Array.isArray(segments) ? segments : [],
+      signal: options.signal,
+      onProgress: options.onProgress,
+    });
+  };
   const _dlOdt = async () => {
     let html = pdfFixResult?.accessibleHtml;
     if (!html) return;
@@ -4870,29 +4985,87 @@ function PdfAuditView(props) {
     const title = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '');
     const epubLang = lang || 'en';
     setMoExport({ total: segments.length, done: 0, status: 'running' });
-    const measure = (url) => new Promise((res) => { try { const au = new Audio(); au.preload = 'metadata'; au.onloadedmetadata = () => res(au.duration || 0); au.onerror = () => res(0); au.src = url; } catch (_) { res(0); } });
+    // Audio bytes now come from the shared artifact service rather than a
+    // second raw callTTS/fetch loop. The service gives every clip a stable
+    // identity and returns an explicit, owner-approved artifact payload.
+    const measure = (url) => new Promise((res) => {
+      let finished = false;
+      let timer = null;
+      let audio = null;
+      const done = (value) => {
+        if (finished) return;
+        finished = true;
+        if (timer) clearTimeout(timer);
+        res(typeof value === 'number' && isFinite(value) && value > 0 ? value : 0);
+      };
+      try {
+        audio = new Audio();
+        audio.preload = 'metadata';
+        audio.onloadedmetadata = () => done(audio.duration || 0);
+        audio.onerror = () => done(0);
+        timer = setTimeout(() => done(0), 10000);
+        audio.src = url;
+      } catch (_) { done(0); }
+    });
     try {
-      const audioBlobs = []; const durations = [];
-      for (let i = 0; i < segments.length; i++) {
-        let blob = null, dur = 0;
-        try {
-          const url = await callTTS(segments[i].text, selectedVoice || 'Puck', 1, 2);
-          if (url && (url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('http'))) {
-            dur = await measure(url);
-            const response = await _withTimeout(fetch(url), 20000, 'TTS audio fetch');
-            if (!response.ok) throw new Error('TTS audio fetch failed (' + response.status + ')');
-            const rawBlob = await response.blob();
-            blob = await _epubCoreAudioBlob(rawBlob);
-            // Recover duration from WAV header bytes when measure() gave 0/Infinity, so the
-            // clip's clipEnd isn't 0s (block would speak nothing / never highlight). (exp-clip-duration)
-            if (!(typeof dur === 'number' && isFinite(dur) && dur > 0) && blob) { try { dur = _wavDurationFromBytes(new Uint8Array(await blob.arrayBuffer())); } catch (_) {} }
-            try { if (url.startsWith('blob:')) URL.revokeObjectURL(url); } catch (_) {} // free the TTS object URL (review perf fix)
+    const narrationVoice = String(selectedVoice || 'Puck');
+    const narrationLanguage = String(lang || _pdfAuditAudioLanguage(html, 'English'));
+    const artifactSegments = segments.map((segment, index) => ({
+      segmentId: String(segment.id || ('mo' + (index + 1))),
+      text: segment.text,
+      voice: narrationVoice,
+      language: narrationLanguage,
+      speed: 1,
+    }));
+    const resourceSlug = String(title).replace(/[^a-zA-Z0-9_-]+/g, '-').slice(0, 120) || 'document';
+    const prepared = await _preparePdfArtifactAudio(artifactSegments, {
+      resourceId: 'pdf-audit-readalong-' + resourceSlug,
+      resourceType: 'pdf-audit-read-along-epub',
+      adapterId: 'pdf-audit-read-along-epub',
+      scopeId: epubLang,
+      source: 'pdf-audit-owner-read-along-export',
+      defaultVoice: narrationVoice,
+      language: narrationLanguage,
+      speed: 1,
+      maxRetries: 2,
+      onProgress: (progress) => {
+        const update = progress && typeof progress === 'object' ? progress : {};
+        const completed = Number(update.completed);
+        setMoExport({
+          total: segments.length,
+          done: Number.isFinite(completed) ? Math.max(0, Math.min(segments.length, completed)) : 0,
+          status: 'running',
+        });
+      },
+    });
+    const audioBySegmentId = prepared && prepared.audioBySegmentId && typeof prepared.audioBySegmentId === 'object'
+      ? prepared.audioBySegmentId
+      : {};
+    const audioBlobs = [];
+    const durations = [];
+    for (let i = 0; i < segments.length; i++) {
+      let blob = null;
+      let dur = 0;
+      try {
+        const segmentId = artifactSegments[i].segmentId;
+        const rawBlob = _pdfAuditArtifactAudioEntryToBlob(audioBySegmentId[segmentId]);
+        const normalizedBlob = await _epubCoreAudioBlob(rawBlob);
+        if (normalizedBlob) {
+          const objectUrl = URL.createObjectURL(normalizedBlob);
+          try { dur = await measure(objectUrl); }
+          finally { try { URL.revokeObjectURL(objectUrl); } catch (_) {} }
+          blob = normalizedBlob;
+          // Recover duration from WAV header bytes when metadata could not be
+          // read. This keeps Media Overlay clipEnd non-zero where possible.
+          if (!(typeof dur === 'number' && isFinite(dur) && dur > 0)) {
+            try { dur = _wavDurationFromBytes(new Uint8Array(await normalizedBlob.arrayBuffer())); } catch (_) {}
           }
-        } catch (_) { /* keep going — a missing clip degrades to text-only for that block */ }
-        audioBlobs.push(blob); durations.push(dur);
-        setMoExport({ total: segments.length, done: i + 1, status: 'running' });
-      }
-      const ext = 'mp3';
+        }
+      } catch (_) { /* keep going — a missing clip becomes text-only for that block */ }
+      audioBlobs.push(blob);
+      durations.push(dur);
+    }
+    const ext = 'mp3';
       const mime = 'audio/mpeg';
       const totalSec = durations.reduce((a, b) => a + (b || 0), 0);
       const withAudio = audioBlobs.filter(Boolean).length;
@@ -4960,30 +5133,53 @@ function PdfAuditView(props) {
           if (!_saveAudioMeta(j, false, operationTicket)) _cancelRemediationOperation(operationTicket);
           return;
         }
-        let url = '';
+        let audioBlob = null;
         try {
-          url = await callTTS(j.segments[j.nextIdx], selectedVoice || 'Puck', 1, 2);
-          if (!_audioOperationIsCurrent(operationTicket, j)) {
-            try { if (url && url.startsWith('blob:')) URL.revokeObjectURL(url); } catch (_) {}
-            _cancelRemediationOperation(operationTicket);
-            return;
+          const segmentIndex = j.nextIdx;
+          const segmentId = 'pdf-audio-' + String(j.variant || 'main') + '-segment-' + (segmentIndex + 1);
+          const fallbackLanguage = j.variant === 'translation'
+            && pdfFixResult && pdfFixResult._translation && pdfFixResult._translation.lang
+            ? pdfFixResult._translation.lang
+            : 'English';
+          const prepared = await _preparePdfArtifactAudio([{
+            segmentId,
+            text: j.segments[segmentIndex],
+            voice: String(selectedVoice || 'Puck'),
+            language: _pdfAuditAudioLanguage(j.sourceHtml, fallbackLanguage),
+            speed: 1,
+          }], {
+            resourceId: 'pdf-audit-audio-' + String(j.variant || 'main') + '-' + String(j.companionAt || 'main'),
+            resourceType: 'pdf-audit-audio-job',
+            adapterId: 'pdf-audit-audio-job',
+            scopeId: String(j.variant || 'main'),
+            source: 'pdf-audit-owner-audio-download',
+            defaultVoice: String(selectedVoice || 'Puck'),
+            language: _pdfAuditAudioLanguage(j.sourceHtml, fallbackLanguage),
+            speed: 1,
+            maxRetries: 2,
+            signal: operationTicket.controller && operationTicket.controller.signal,
+          });
+          if (!_audioOperationIsCurrent(operationTicket, j)) { _cancelRemediationOperation(operationTicket); return; }
+          const entry = prepared && prepared.audioBySegmentId && prepared.audioBySegmentId[segmentId];
+          audioBlob = _pdfAuditArtifactAudioEntryToBlob(entry);
+          if (!audioBlob || !audioBlob.size) {
+            const failure = prepared && Array.isArray(prepared.errors) ? prepared.errors[0] : null;
+            const error = new Error(failure && failure.message ? failure.message : 'The shared narration service returned no audio for this section.');
+            if (failure && failure.code) error.code = failure.code;
+            throw error;
           }
-          if (url && (url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('http'))) {
-            const resp = await _withTimeout(fetch(url, { signal: operationTicket.controller && operationTicket.controller.signal }), 20000, 'TTS audio fetch');
-            if (!_audioOperationIsCurrent(operationTicket, j)) { try { if (url.startsWith('blob:')) URL.revokeObjectURL(url); } catch (_) {} _cancelRemediationOperation(operationTicket); return; }
-            if (!resp.ok) throw new Error('TTS audio fetch failed (' + resp.status + ')');
-            const audioBlob = await resp.blob();
-            if (!_audioOperationIsCurrent(operationTicket, j)) { try { if (url.startsWith('blob:')) URL.revokeObjectURL(url); } catch (_) {} _cancelRemediationOperation(operationTicket); return; }
-            if (!audioBlob.size) throw new Error('TTS audio fetch returned an empty payload');
-            j.blobs.push(audioBlob);
-            try { if (url.startsWith('blob:')) URL.revokeObjectURL(url); } catch (_) {}
-            j.nextIdx++;
-            consecutiveNull = 0;
-          } else { j.failed++; consecutiveNull++; j.nextIdx++; }
+          j.blobs.push(audioBlob);
+          j.nextIdx++;
+          consecutiveNull = 0;
         } catch (e) {
-          try { if (url && url.startsWith('blob:')) URL.revokeObjectURL(url); } catch (_) {}
           if (!_audioOperationIsCurrent(operationTicket, j)) { _cancelRemediationOperation(operationTicket); return; }
           warnLog('[Audio Job] segment ' + (j.nextIdx + 1) + ' failed:', e?.message || e);
+          if (e && e.code === 'audio-service-unavailable') {
+            publish('stalled');
+            if (!_saveAudioMeta(j, false, operationTicket)) { _cancelRemediationOperation(operationTicket); return; }
+            _toastForRemediationOperation(operationTicket, '⏸ ' + (t('toasts.audio_stalled') || 'The shared narration service is still loading — your progress is saved. Retry in a moment.'), 'info');
+            return;
+          }
           j.failed++; consecutiveNull++;
           if (e?.message?.includes('429') || e?.message?.includes('Rate')) {
             publish('stalled');
@@ -8794,7 +8990,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                 <div className="p-4 bg-white space-y-3">
                   <p className="text-xs text-slate-600 text-center">{t('pdf_audit.unavailable.retry_hint') || 'A completed baseline audit is required before remediation. Retry the audit, or cancel and re-export the source document before trying again.'}</p>
                   <div className="flex gap-2 justify-center">
-                    <button disabled={pdfAuditLoading || !_auditInputReady} onClick={async () => { if (!_requireAuditReady()) return; const _auditSnapshot = pdfAuditResult; const _auditEpoch = typeof capturePdfDocumentIntakeEpoch === 'function' ? capturePdfDocumentIntakeEpoch() : null; const _auditCurrent = () => _auditEpoch == null || typeof isPdfDocumentIntakeCurrent !== 'function' || isPdfDocumentIntakeCurrent(_auditEpoch); setPdfAuditResult(null); addToast(t('toasts.retrying_audit'), 'info'); try { const _result = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name, mimeType: _inputMimeType }); if (!_auditCurrent()) return; if (!_result) { setPdfAuditResult(_viewAuditFallbackResult(_auditSnapshot, pendingPdfFile)); addToast(t('toasts.audit_retryable_error') || 'The audit retry did not complete. Please try again.', 'error'); } else if (_result?.score === -1) { addToast(t('toasts.audit_retryable_error') || 'The audit retry could not complete. Please try again.', 'error'); } } catch (error) { if (!_auditCurrent()) return; setPdfAuditResult(_viewAuditFallbackResult(_auditSnapshot, pendingPdfFile)); addToast('Audit retry failed: ' + ((error && error.message) || error), 'error'); } }} className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">🔄 Retry Audit</button>
+                    <button disabled={pdfAuditLoading || !_auditInputReady} onClick={async () => { if (!_requireAuditReady()) return; const _auditSnapshot = pdfAuditResult; const _auditEpoch = typeof capturePdfDocumentIntakeEpoch === 'function' ? capturePdfDocumentIntakeEpoch() : null; const _auditCurrent = () => _auditEpoch == null || typeof isPdfDocumentIntakeCurrent !== 'function' || isPdfDocumentIntakeCurrent(_auditEpoch); setPdfAuditResult(null); addToast(t('toasts.retrying_audit'), 'info'); try { /* Retry means RETRY: a user pressing this after a cached replay wants a fresh audit, and the content-hash cache would otherwise hand back the identical result instantly (2026-08-10). */ const _result = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name, mimeType: _inputMimeType, skipCache: true }); if (!_auditCurrent()) return; if (!_result) { setPdfAuditResult(_viewAuditFallbackResult(_auditSnapshot, pendingPdfFile)); addToast(t('toasts.audit_retryable_error') || 'The audit retry did not complete. Please try again.', 'error'); } else if (_result?.score === -1) { addToast(t('toasts.audit_retryable_error') || 'The audit retry could not complete. Please try again.', 'error'); } } catch (error) { if (!_auditCurrent()) return; setPdfAuditResult(_viewAuditFallbackResult(_auditSnapshot, pendingPdfFile)); addToast('Audit retry failed: ' + ((error && error.message) || error), 'error'); } }} className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">🔄 Retry Audit</button>
                     <button onClick={() => { _closePdfAuditModal(); }} className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors">Cancel</button>
                   </div>
                 </div>
@@ -8830,6 +9026,30 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   {pdfAuditResult._isWebAudit && <p className="text-xs mt-1 bg-black/20 inline-block px-2 py-0.5 rounded-full font-bold">Verification: {pdfAuditResult.verificationState || 'partial'} · AI + axe-core + IBM Equal Access</p>}
                   {!_auditScoreKnown && <p className="text-xs mt-1 bg-black/20 inline-block px-3 py-1 rounded-full font-bold">Coverage incomplete - no numeric baseline was assigned</p>}
                   {pdfAuditResult._slicedAudit && <p className="text-[11px] mt-1 bg-white/20 inline-block px-2 py-0.5 rounded-full font-bold" title="Merged from page-slices because a single whole-document pass exceeded the model; cross-page checks (reading order, heading continuity) are approximate. Not cached.">🧩 Approximate — audited in {pdfAuditResult._sliceCount || 'multiple'} page-slices</p>}
+                  {/* Cache provenance + escape hatch (2026-08-10): a content-hash cache hit replays this
+                      audit instantly, which looked like "nothing ran". Say so, and offer the two fresh
+                      paths right where the replay is noticed: Retry Audit (now cache-skipping) and a
+                      full cache clear via the pipeline's clearPdfDocumentCaches export. */}
+                  {pdfAuditResult._fromAuditCache && (
+                    <p className="text-[11px] mt-1 bg-white/20 inline-block px-2 py-0.5 rounded-full font-bold">
+                      ♻️ {(t('pdf_audit.cached_result_pill') || 'Cached audit') + (pdfAuditResult._auditCachedAt ? ' · ' + new Date(pdfAuditResult._auditCachedAt).toLocaleString() : '')} — {t('pdf_audit.cached_result_hint') || 'Retry Audit runs fresh'}
+                      <button
+                        type="button"
+                        className="underline ml-2 font-bold"
+                        disabled={_modalWorkBusy}
+                        title={t('pdf_audit.clear_cache_title') || 'Forget every cached audit/remediation result so all documents run fresh'}
+                        onClick={async () => {
+                          try {
+                            const _pipe = (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.DocPipelineModule) || null;
+                            if (!_pipe || typeof _pipe.clearPdfDocumentCaches !== 'function') { addToast(t('pdf_audit.clear_cache_unavailable') || 'Cache clearing is unavailable on this host version.', 'warning'); return; }
+                            const _res = await _pipe.clearPdfDocumentCaches();
+                            if (_res && _res.ok) addToast((t('pdf_audit.clear_cache_done') || 'Cleared cached results') + ' (' + (_res.removed || 0) + ')', 'success');
+                            else addToast((t('pdf_audit.clear_cache_failed') || 'Could not clear the cache') + ((_res && _res.reason) ? ': ' + _res.reason : ''), 'error');
+                          } catch (_e) { addToast((t('pdf_audit.clear_cache_failed') || 'Could not clear the cache') + (_e && _e.message ? ': ' + _e.message : ''), 'error'); }
+                        }}
+                      >{t('pdf_audit.clear_cache_btn') || 'Clear cache'}</button>
+                    </p>
+                  )}
                   {pdfAuditResult._slicedAudit
                     ? <p className="text-xs opacity-70 mt-0.5">One pass per page-slice (same model) · approximate cross-page coverage</p>
                     : (pdfAuditResult.scores && pdfAuditResult.scores.length > 1 && <p className="text-xs opacity-70 mt-0.5">{pdfAuditResult.auditorCount || pdfAuditResult.scores.length} AI audit passes (varied persona prompts, same model) · scores: {pdfAuditResult.scores.join(', ')} · SD: {pdfAuditResult.scoreSD ?? '?'}</p>)}
@@ -12218,7 +12438,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               })}
                             </div>
                           )}
-                          {(pdfFixResult.verificationAudit.passes || []).length > 0 && (
+                          {(pdfFixResult.verificationAudit?.passes || []).length > 0 && (
                             <div className="bg-green-50 rounded-lg p-2 border border-green-200">
                               <div className="text-[11px] font-bold text-green-600 uppercase mb-1">{t('pdf_audit.results.ai_reported_passing') || 'Reported passing (AI rubric — not independently verified)'}</div>
                               {pdfFixResult.verificationAudit.passes.map((pass, i) => (
@@ -15778,9 +15998,9 @@ Return ONLY the plain-language summary.`, false));
                 📄 {t('pdf_audit.preview.tag_now') || 'Generate Tagged PDF'}
               </button>
 
-              {/* ── Writing check (Harper — local grammar, suggestions-only) ──
-                  Top of the editor controls so it's easy to find; browser native
-                  spellcheck (red squiggles) is already on in the preview. */}
+              {/* ── Writing check (Harper — local spelling + grammar) ──
+                  Top of the editor controls so corrections stay reachable even
+                  when the browser's native menu is hidden by a host iframe. */}
               {(() => {
                 const wc = writingCheck;
                 const _leafBlocks = () => {
@@ -15795,13 +16015,13 @@ Return ONLY the plain-language summary.`, false));
                 const runWritingCheck = async () => {
                   // Harper is English-only (2026-06-14). If the document declares a
                   // non-English language, don't lint it — and don't download the
-                  // ~10 MB WASM — because every word would come back as a false
+                  // ~18 MB WASM — because every word would come back as a false
                   // "error", flooding the panel and eroding trust on exactly the
                   // multilingual surface AlloFlow leans on. An empty/missing lang
                   // is treated as English (conservative; no false block).
                   const _docLang = (() => { try { const d = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument; return (d && d.documentElement && (d.documentElement.getAttribute('lang') || '').toLowerCase()) || ''; } catch (_) { return ''; } })();
                   if (_docLang && _docLang.split('-')[0] !== 'en') {
-                    setWritingCheck({ status: 'error', error: (t('export_preview.writing.non_english') || ('Writing Check is English-only — this document is set to language "' + _docLang + '". Your browser still underlines spelling as you type.')) });
+                    setWritingCheck({ status: 'error', error: (t('export_preview.writing.non_english') || ('Writing Check is English-only — this document is set to language "' + _docLang + '".')) });
                     return;
                   }
                   setWritingCheck({ status: 'loading' });
@@ -15814,11 +16034,11 @@ Return ONLY the plain-language summary.`, false));
                       if (items.length >= 150) { capped = true; break; }
                       const text = blocks[bi].textContent || '';
                       let lints = [];
-                      try { lints = await linter.lint(text); } catch (_) { continue; }
+                      try { lints = await linter.lint(text, { language: 'plaintext' }); } catch (_) { continue; }
                       for (const l of lints) {
                         try {
                           const span = l.span();
-                          const sugg = (l.suggestions ? l.suggestions() : []).map((s) => (s.get_replacement_text ? s.get_replacement_text() : '')).filter(Boolean).slice(0, 3);
+                          const sugg = (l.suggestions ? l.suggestions() : []).map((s) => (s && s.get_replacement_text ? s.get_replacement_text() : null)).filter((value, index, all) => value != null && all.indexOf(value) === index).slice(0, 3);
                           items.push({ blockIndex: bi, message: l.message ? l.message() : 'Possible issue', start: span.start, end: span.end, bad: text.slice(span.start, span.end), snippet: (span.start > 20 ? '…' : '') + text.slice(Math.max(0, span.start - 20), Math.min(text.length, span.end + 24)) + (span.end + 24 < text.length ? '…' : ''), suggestions: sugg });
                         } catch (_) {}
                         if (items.length >= 150) { capped = true; break; }
@@ -15846,20 +16066,9 @@ Return ONLY the plain-language summary.`, false));
                     while ((node = walker.nextNode())) { const len = node.textContent.length; if (item.start >= off && item.end <= off + len) { hit = { node, local: item.start - off }; break; } off += len; }
                     if (!hit) { _locate(item, true); addToast(t('toasts.writing_spans_markup') || 'This suggestion spans formatting (a link or bold text) — fix it by hand at the highlighted spot.', 'info'); return; }
                     const _badLen = item.end - item.start;
-                    // Apply via the editable doc's insertText so the browser's NATIVE undo stack (and
-                    // the toolbar Undo) can reverse it — a raw textContent assignment is not recorded,
-                    // which is why Undo didn't work. Fall back to a direct write if execCommand can't run.
-                    let _ok = false;
-                    try {
-                      const _range = doc.createRange();
-                      _range.setStart(hit.node, hit.local);
-                      _range.setEnd(hit.node, hit.local + _badLen);
-                      const _sel = (doc.defaultView || window).getSelection();
-                      _sel.removeAllRanges(); _sel.addRange(_range);
-                      _ok = doc.execCommand('insertText', false, replacement);
-                    } catch (_) { _ok = false; }
-                    if (!_ok) { const raw = hit.node.textContent; hit.node.textContent = raw.slice(0, hit.local) + replacement + raw.slice(hit.local + _badLen); }
-                    try { if (doc.body) doc.body.setAttribute('data-allo-user-edited', '1'); } catch (_) {}
+                    if (!_applyHarperTextReplacement(doc, hit.node, hit.local, _badLen, replacement)) {
+                      throw new Error('The correction could not be applied.');
+                    }
                     try { if (typeof window.__alloflowOnPdfPreviewMutated === 'function') window.__alloflowOnPdfPreviewMutated(); } catch (_) {}
                     // Drop the applied card AND keep the OTHER suggestions valid: the edit shifts every
                     // later offset in the SAME block by (replacement − bad) length and invalidates any
@@ -15883,13 +16092,13 @@ Return ONLY the plain-language summary.`, false));
                   <div className="bg-teal-50/60 border border-teal-300 rounded-lg p-2">
                     <div className="text-[11px] font-bold text-teal-800 uppercase mb-1.5">📝 {t('export_preview.writing.heading') || 'Writing Check'}</div>
                     <button onClick={runWritingCheck} data-help-key="pdf_audit_writing_check_btn" disabled={wc && wc.status === 'loading'} aria-busy={!!(wc && wc.status === 'loading')} className="w-full px-3 py-2 bg-teal-100 text-teal-800 rounded-lg text-xs font-bold hover:bg-teal-200 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5">
-                      {wc && wc.status === 'loading' ? (t('export_preview.writing.checking') || '⏳ Checking… (first run downloads the checker)') : (t('export_preview.writing.run') || '📝 Check grammar (English)')}
+                      {wc && wc.status === 'loading' ? (t('export_preview.writing.checking') || '⏳ Checking… (first run downloads the checker)') : (t('export_preview.writing.run') || '📝 Check spelling & grammar (English)')}
                     </button>
-                    <p className="text-[10px] text-slate-500 mt-1">{t('export_preview.writing.disclosure') || 'Runs entirely on this device — no text leaves the browser. English only; the checker is a ~10 MB download on first use (instant once loaded). Spelling is underlined by your browser as you type.'}</p>
-                    <p className="text-[10px] text-amber-700 mt-1">{t('export_preview.writing.remediation_caution') || '⚠ This wording comes from the source document — apply grammar changes thoughtfully; the original author’s phrasing may be intentional.'}</p>
-                    <p className="text-[10px] text-slate-500 mt-1">{t('export_preview.writing.spell_hint') || '💡 To fix a spelling underline, right-click the word in the preview — your browser lists corrections.'}</p>
+                    <p className="text-[10px] text-slate-500 mt-1">{t('export_preview.writing.disclosure') || 'Runs entirely on this device — no text leaves the browser. English only; the ~18 MB checker downloads on first use, then checks both spelling and grammar.'}</p>
+                    <p className="text-[10px] text-amber-700 mt-1">{t('export_preview.writing.remediation_caution') || '⚠ This wording comes from the source document — apply spelling or grammar changes thoughtfully; the original author’s phrasing may be intentional.'}</p>
+                    <p className="text-[10px] text-slate-500 mt-1">{t('export_preview.writing.spell_hint') || '💡 Browser correction menus can be limited in embedded previews. Run Writing Check to see spelling corrections here as Apply buttons.'}</p>
                     {wc && wc.status === 'error' && <div className="mt-1.5 text-[11px] text-red-700 bg-red-50 border border-red-200 rounded p-1.5">{wc.error}</div>}
-                    {wc && wc.status === 'done' && wc.items.length === 0 && <div className="mt-1.5 text-[11px] text-green-700 bg-green-50 border border-green-200 rounded p-1.5">✓ {t('export_preview.writing.clean') || 'No grammar suggestions found.'}</div>}
+                    {wc && wc.status === 'done' && wc.items.length === 0 && <div className="mt-1.5 text-[11px] text-green-700 bg-green-50 border border-green-200 rounded p-1.5">✓ {t('export_preview.writing.clean') || 'No spelling or grammar suggestions found.'}</div>}
                     {wc && wc.status === 'done' && wc.items.length > 0 && (
                       <div className="mt-1.5 space-y-1.5 max-h-64 overflow-y-auto">
                         <div className="text-[10px] font-bold text-slate-600">{wc.items.length} {t('export_preview.writing.suggestions') || 'suggestion(s)'}{wc.capped ? ' (first 150 shown)' : ''} — {t('export_preview.writing.suggestions_note') || 'nothing is changed unless you Apply it'}:</div>
@@ -15901,7 +16110,7 @@ Return ONLY the plain-language summary.`, false));
                             </button>
                             <div className="flex gap-1 mt-1 flex-wrap items-center">
                               {item.suggestions.map((s, si) => (
-                                <button key={si} onClick={() => _apply(item, s)} className="px-1.5 py-0.5 bg-teal-50 border border-teal-300 text-teal-800 rounded text-[10px] font-bold hover:bg-teal-100" title={(t('export_preview.writing.apply_title') || 'Replace') + ' "' + item.bad + '"'}>→ {s || '(remove)'}</button>
+                                <button key={si} onClick={() => _apply(item, s)} className="px-1.5 py-0.5 bg-teal-50 border border-teal-300 text-teal-800 rounded text-[10px] font-bold hover:bg-teal-100" title={(t('export_preview.writing.apply_title') || 'Replace') + ' "' + item.bad + '"'}>→ {s || (t('export_preview.writing.remove') || '(remove)')}</button>
                               ))}
                               <button onClick={() => _dismiss(item)} className="px-1.5 py-0.5 bg-slate-50 border border-slate-300 text-slate-600 rounded text-[10px] font-bold hover:bg-slate-100 ml-auto" title={t('export_preview.writing.keep_title') || 'Keep the original wording and dismiss this suggestion'}>✓ {t('export_preview.writing.keep') || 'Keep as-is'}</button>
                             </div>
@@ -18468,17 +18677,36 @@ Return ONLY the plain-language summary.`, false));
                   let stoppedEarly = false;
                   for (let si = 0; si < segments.length; si++) {
                     if (btn) btn.textContent = '⏳ ' + (si + 1) + '/' + segments.length;
-                    try {
-                      const url = await callTTS(segments[si], selectedVoice || 'Puck', 1, 2);
-                      if (url && (url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('http'))) {
-                        const r = await _withTimeout(fetch(url), 20000, 'TTS audio fetch');
-                        if (!r.ok) throw new Error('TTS audio fetch failed (' + r.status + ')');
-                        const audioBlob = await r.blob();
-                        if (!audioBlob.size) throw new Error('TTS audio fetch returned an empty payload');
-                        blobs.push(audioBlob);
-                        try { if (url.startsWith('blob:')) URL.revokeObjectURL(url); } catch (_) {} // free the TTS object URL (review perf fix)
-                        consecutiveNull = 0;
-                      } else { failed++; consecutiveNull++; }
+                   try {
+                      const segmentId = 'pdf-audit-preview-segment-' + (si + 1);
+                      const narrationLanguage = _pdfAuditAudioLanguage(pdfFixResult?.accessibleHtml || '', 'English');
+                      const prepared = await _preparePdfArtifactAudio([{
+                        segmentId,
+                        text: segments[si],
+                        voice: String(selectedVoice || 'Puck'),
+                        language: narrationLanguage,
+                        speed: 1,
+                      }], {
+                        resourceId: 'pdf-audit-preview-audio',
+                        resourceType: 'pdf-audit-preview-audio',
+                        adapterId: 'pdf-audit-preview-audio',
+                        scopeId: 'preview',
+                        source: 'pdf-audit-owner-preview-download',
+                        defaultVoice: String(selectedVoice || 'Puck'),
+                        language: narrationLanguage,
+                        speed: 1,
+                        maxRetries: 2,
+                      });
+                      const entry = prepared && prepared.audioBySegmentId && prepared.audioBySegmentId[segmentId];
+                      const audioBlob = _pdfAuditArtifactAudioEntryToBlob(entry);
+                      if (!audioBlob || !audioBlob.size) {
+                        const failure = prepared && Array.isArray(prepared.errors) ? prepared.errors[0] : null;
+                        const error = new Error(failure && failure.message ? failure.message : 'The shared narration service returned no audio for this section.');
+                        if (failure && failure.code) error.code = failure.code;
+                        throw error;
+                      }
+                      blobs.push(audioBlob);
+                      consecutiveNull = 0;
                     } catch(e) {
                       warnLog('[Audio] Seg ' + si + ' failed:', e?.message);
                       failed++; consecutiveNull++;

@@ -7,6 +7,13 @@
         console.log("[CDN] BehaviorLens already loaded, skipping duplicate");
         return;
     }
+    function getBehaviorLensWorkspaceRuntime() {
+        return window.AlloModules && window.AlloModules.BehaviorLensWorkspace;
+    }
+    if (!getBehaviorLensWorkspaceRuntime()) {
+        console.error('[CDN] BehaviorLens requires BehaviorLensWorkspace; registration deferred');
+        return;
+    }
 
     // Read the ACTIVE student's per-profile-scoped Symbol Studio familiarity. Symbol Studio
     // migrated familiarity onto a namespaced key (alloSymbolFamiliarity__<pid>) and deleted the
@@ -19,6 +26,16 @@
             var pid = (saved && profs.find(function (p) { return p.id === saved; })) ? saved : (profs[0] ? profs[0].id : 'default');
             var scoped = localStorage.getItem('alloSymbolFamiliarity__' + pid);
             return scoped != null ? scoped : localStorage.getItem('alloSymbolFamiliarity');
+        } catch (e) { return null; }
+    }
+
+    function _blGalleryRaw() {
+        try {
+            var profs = []; try { profs = JSON.parse(localStorage.getItem('alloStudentProfiles') || '[]') || []; } catch (e) {}
+            var saved = null; try { saved = JSON.parse(localStorage.getItem('alloActiveProfileId') || 'null'); } catch (e) {}
+            var pid = (saved && profs.find(function (p) { return p.id === saved; })) ? saved : (profs[0] ? profs[0].id : 'default');
+            var scoped = localStorage.getItem('alloSymbolGallery__' + pid);
+            return scoped != null ? scoped : localStorage.getItem('alloSymbolGallery');
         } catch (e) { return null; }
     }
 
@@ -1467,6 +1484,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
         const [durations, setDurations] = useState([]);
         const [latencyStart, setLatencyStart] = useState(null);
         const [latencyEnd, setLatencyEnd] = useState(null);
+        const [latencyMs, setLatencyMs] = useState(null);
         const [notes, setNotes] = useState('');
         const timerRef = useRef(null);
         const intervalTimerRef = useRef(null);
@@ -1483,6 +1501,11 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 setIsRunning(false);
                 if (timerRef.current) clearInterval(timerRef.current);
                 if (intervalTimerRef.current) clearInterval(intervalTimerRef.current);
+                if (method === 'duration' && durationStart) {
+                    const dur = Math.max(0, Math.round((Date.now() - durationStart) / 1000));
+                    setDurations(prev => [...prev, dur]);
+                    setDurationStart(null);
+                }
             } else {
                 setIsRunning(true);
                 const start = Date.now() - timer * 1000;
@@ -1491,13 +1514,13 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 }, 100);
                 // Start interval recording if applicable
                 if (method === 'interval') {
-                    const first = { start: Date.now(), occurred: false };
+                    const first = { start: Date.now(), occurred: false, intervalLength, complete: false };
                     currentIntervalRef.current = first;
                     setCurrentInterval(first);
                     intervalTimerRef.current = setInterval(() => {
                         const finished = currentIntervalRef.current;
-                        if (finished) setIntervals(prev => [...prev, { ...finished, end: Date.now() }]);
-                        const next = { start: Date.now(), occurred: false };
+                        if (finished) setIntervals(prev => [...prev, { ...finished, end: Date.now(), durationSeconds: intervalLength, complete: true }]);
+                        const next = { start: Date.now(), occurred: false, intervalLength, complete: false };
                         currentIntervalRef.current = next;
                         setCurrentInterval(next);
                     }, intervalLength * 1000);
@@ -1520,24 +1543,39 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
         const dialogRef = useRef(null);
         useEffect(() => { try { dialogRef.current && dialogRef.current.focus(); } catch (e) {} }, []);
 
+        const activeDuration = method === 'duration' && durationStart
+            ? Math.max(0, Math.round((Date.now() - durationStart) / 1000)) : null;
+        const durationsToSave = activeDuration !== null ? [...durations, activeDuration] : durations;
+        const activeInterval = method === 'interval' && currentInterval
+            ? { ...currentInterval, end: Date.now(), durationSeconds: Math.max(0, (Date.now() - currentInterval.start) / 1000), complete: false } : null;
+        const intervalsToSave = activeInterval ? [...intervals, activeInterval] : intervals;
+        const canSave = method === 'frequency' ? timer > 0
+            : method === 'duration' ? durationsToSave.length > 0
+                : method === 'interval' ? intervalsToSave.length > 0
+                    : latencyMs !== null;
+
         const handleSave = () => {
+            if (!canSave) return;
             const sessionData = {
                 id: uid(),
                 method,
+                measurementVersion: 2,
                 duration: timer,
                 timestamp: new Date().toISOString(),
                 notes,
                 data: {}
             };
             if (method === 'frequency') sessionData.data = { count: frequency, rate: timer > 0 ? (frequency / (timer / 60)).toFixed(2) : 0 };
-            if (method === 'duration') sessionData.data = { durations, totalDuration: durations.reduce((s, d) => s + d, 0) };
-            if (method === 'interval') sessionData.data = { intervals, totalIntervals: intervals.length, occurredCount: intervals.filter(i => i.occurred).length };
-            if (method === 'latency') sessionData.data = { latencyMs: latencyEnd && latencyStart ? latencyEnd - latencyStart : null };
+            if (method === 'duration') sessionData.data = { durations: durationsToSave, totalDuration: durationsToSave.reduce((s, d) => s + d, 0), episodeCount: durationsToSave.length };
+            if (method === 'interval') {
+                const occurredCount = intervalsToSave.filter(i => i.occurred).length;
+                sessionData.data = { intervalLength, intervals: intervalsToSave, totalIntervals: intervalsToSave.length, occurredCount, percentage: intervalsToSave.length ? (occurredCount / intervalsToSave.length) * 100 : 0, complete: !activeInterval };
+            }
+            if (method === 'latency') sessionData.data = { latencyMs: latencyMs !== null ? latencyMs : 0, latencySeconds: latencyMs !== null ? latencyMs / 1000 : 0 };
             onSaveSession(sessionData);
-            if (addToast) addToast(tt('behavior_lens.obs.saved', 'Observation session saved ✅'), 'success');
+            if (addToast) addToast(tt('behavior_lens.obs.saved', 'Observation session saved ?'), 'success');
             onClose();
         };
-
         return h('div', { ref: dialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-label': (tt('behavior_lens.obs.title', 'Live Observation')) + (studentName ? ' — ' + studentName : ''), tabIndex: -1, className: 'fixed inset-0 z-[400] bg-slate-900 flex flex-col text-white animate-in fade-in duration-300' },
             // Top bar
             h('div', { className: 'flex items-center justify-between px-6 py-4 bg-black/30' },
@@ -1550,7 +1588,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 ),
                 h('div', { className: 'flex items-center gap-3' },
                     h('button', { onClick: handleSave,
-                        disabled: timer === 0,
+                        disabled: !canSave,
                         className: 'text-xs font-bold px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 transition-colors disabled:opacity-40 flex items-center gap-1.5'
                     }, h(Save, { size: 14 }), tt('behavior_lens.obs.save_session', 'Save Session')),
                     h('button', { "aria-label": "On Close",
@@ -1667,11 +1705,12 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                                 : (tt('behavior_lens.obs.start_to_begin', 'Start timer to begin latency measurement'))
                     ),
                     latencyStart && !latencyEnd && h('button', { "aria-label": "Toggle latency end",
-                        onClick: () => setLatencyEnd(Date.now()),
-                        className: 'w-20 h-20 rounded-full bg-amber-600 hover:bg-amber-700 text-lg font-black shadow-lg transition-all active:scale-90'
+                        onClick: () => { setLatencyEnd(Date.now()); setLatencyMs(Math.max(0, timer * 1000)); },
+                        disabled: !isRunning,
+                        className: 'w-20 h-20 rounded-full bg-amber-600 hover:bg-amber-700 text-lg font-black shadow-lg transition-all active:scale-90 disabled:opacity-40'
                     }, '🎯'),
-                    latencyEnd && latencyStart && h('div', { className: 'text-3xl font-black text-amber-700' },
-                        `${((latencyEnd - latencyStart) / 1000).toFixed(1)}s`
+                    latencyMs !== null && h('div', { className: 'text-3xl font-black text-amber-700' },
+                        (latencyMs / 1000).toFixed(1) + 's'
                     )
                 )
             ),
@@ -1698,6 +1737,10 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             const now = new Date();
             const cutoff = dateRange > 0 ? new Date(now - dateRange * 24 * 60 * 60 * 1000) : new Date(0);
             const filtered = abcEntries.filter(e => new Date(e.timestamp) >= cutoff);
+            const intensityStats = (entries) => {
+                const rated = entries.map(e => Number(e.intensity)).filter(v => Number.isFinite(v) && v >= 1 && v <= 5);
+                return { mean: rated.length > 0 ? rated.reduce((sum, value) => sum + value, 0) / rated.length : null, n: rated.length };
+            };
             const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
             const thisWeek = abcEntries.filter(e => new Date(e.timestamp) >= weekAgo);
             const antecedentCounts = {};
@@ -1727,9 +1770,8 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                     const ts = new Date(e.timestamp);
                     return ts >= dayStart && ts < dayEnd;
                 });
-                const avgI = dayEntries.length > 0
-                    ? dayEntries.reduce((s, e) => s + (e.intensity || 0), 0) / dayEntries.length
-                    : 0;
+                const dayIntensity = intensityStats(dayEntries);
+                const avgI = dayIntensity.mean;
                 trendData.push({
                     date: dayStart,
                     count: dayEntries.length,
@@ -1748,16 +1790,19 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             const topAntecedents = Object.entries(antecedentCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
             const topConsequences = Object.entries(consequenceCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
             const topSettings = Object.entries(settingCounts).sort((a, b) => b[1] - a[1]).slice(0, 3);
-            const avgIntensity = filtered.length > 0 ? (filtered.reduce((s, e) => s + (e.intensity || 0), 0) / filtered.length).toFixed(1) : '—';
+            const filteredIntensity = intensityStats(filtered);
+            const avgIntensity = filteredIntensity.mean === null ? 'No ratings' : filteredIntensity.mean.toFixed(1);
 
             // Week-over-week comparison
             const twoWeeksAgo = new Date(now - 14 * 24 * 60 * 60 * 1000);
             const lastWeek = abcEntries.filter(e => { const d = new Date(e.timestamp); return d >= twoWeeksAgo && d < weekAgo; });
             const wowCountChange = thisWeek.length - lastWeek.length;
             const wowCountPct = lastWeek.length > 0 ? Math.round(((thisWeek.length - lastWeek.length) / lastWeek.length) * 100) : null;
-            const thisWeekAvgI = thisWeek.length > 0 ? thisWeek.reduce((s, e) => s + (e.intensity || 0), 0) / thisWeek.length : 0;
-            const lastWeekAvgI = lastWeek.length > 0 ? lastWeek.reduce((s, e) => s + (e.intensity || 0), 0) / lastWeek.length : 0;
-            const wowIntensityChange = thisWeekAvgI - lastWeekAvgI;
+            const thisWeekIntensity = intensityStats(thisWeek);
+            const lastWeekIntensity = intensityStats(lastWeek);
+            const thisWeekAvgI = thisWeekIntensity.mean;
+            const lastWeekAvgI = lastWeekIntensity.mean;
+            const wowIntensityChange = thisWeekAvgI !== null && lastWeekAvgI !== null ? thisWeekAvgI - lastWeekAvgI : null;
 
             // Antecedent → Behavior correlation matrix
             const topBehaviors = Object.entries(filtered.reduce((m, e) => { if (e.behavior) m[e.behavior] = (m[e.behavior] || 0) + 1; return m; }, {})).sort((a, b) => b[1] - a[1]).slice(0, 5).map(x => x[0]);
@@ -1793,9 +1838,9 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
 
             return {
                 filtered, thisWeek, lastWeek, topAntecedents, topConsequences, topSettings, intensities,
-                dayMap, avgIntensity, totalAbc: filtered.length, totalObs: observationSessions.length,
+                dayMap, avgIntensity, intensityN: filteredIntensity.n, totalAbc: filtered.length, totalObs: observationSessions.length,
                 trendData, hourMap, allAbc: abcEntries.length,
-                wowCountChange, wowCountPct, thisWeekAvgI, lastWeekAvgI, wowIntensityChange,
+                wowCountChange, wowCountPct, thisWeekAvgI, lastWeekAvgI, thisWeekIntensityN: thisWeekIntensity.n, lastWeekIntensityN: lastWeekIntensity.n, wowIntensityChange,
                 topBehaviors, corrMatrix, corrMax,
                 topChain, peakRisk
             };
@@ -1856,6 +1901,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 renderStatCard('📅', tt('behavior_lens.stat_this_week', 'This Week'), stats.thisWeek.length, 'sky'),
                 renderStatCard('⚡', tt('behavior_lens.stat_avg_intensity', 'Avg Intensity'), stats.avgIntensity, 'amber')
             ),
+            h('p', { className: 'text-[11px] text-slate-600 -mt-3' }, 'Counts represent logged ABC entries. Average intensity uses rated entries only; n = ' + stats.intensityN + '.'),
             // Week-over-week comparison strip
             (stats.thisWeek.length > 0 || stats.lastWeek.length > 0) && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
                 h('h3', { className: 'text-xs font-black text-slate-600 uppercase mb-3' }, '📊 ' + (tt('behavior_lens.week_comparison', 'Week-over-Week Comparison'))),
@@ -1881,14 +1927,14 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                     h('div', { className: 'flex items-center gap-3 p-3 rounded-lg bg-slate-50' },
                         h('div', { className: 'text-center' },
                             h('div', { className: 'text-[11px] text-slate-600 uppercase font-bold' }, tt('behavior_lens.avg_intensity', 'Avg Intensity')),
-                            h('div', { className: 'text-xl font-black text-slate-600' }, stats.lastWeekAvgI.toFixed(1))
+                            h('div', { className: 'text-xl font-black text-slate-600' }, stats.lastWeekAvgI === null ? 'No ratings' : stats.lastWeekAvgI.toFixed(1) + ' (n=' + stats.lastWeekIntensityN + ')')
                         ),
                         h('div', { className: 'text-lg font-black text-slate-600' }, '→'),
                         h('div', { className: 'text-center' },
                             h('div', { className: 'text-[11px] text-slate-600 uppercase font-bold' }, tt('behavior_lens.now', 'Now')),
-                            h('div', { className: 'text-xl font-black text-slate-700' }, stats.thisWeekAvgI.toFixed(1))
+                            h('div', { className: 'text-xl font-black text-slate-700' }, stats.thisWeekAvgI === null ? 'No ratings' : stats.thisWeekAvgI.toFixed(1) + ' (n=' + stats.thisWeekIntensityN + ')')
                         ),
-                        stats.wowIntensityChange !== 0 && h('div', { className: `text-center px-2.5 py-1 rounded-full text-xs font-black ${stats.wowIntensityChange <= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}` },
+                        stats.wowIntensityChange !== null && stats.wowIntensityChange !== 0 && h('div', { className: `text-center px-2.5 py-1 rounded-full text-xs font-black ${stats.wowIntensityChange <= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}` },
                             stats.wowIntensityChange <= 0 ? '↓ Improving' : '↑ Rising'
                         )
                     )
@@ -1900,7 +1946,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 h('div', { className: 'flex items-end gap-1', style: { height: '120px' } },
                     stats.trendData.map((day, i) => {
                         const barH = maxTrend > 0 ? (day.count / maxTrend) * 100 : 0;
-                        const intensityColor = day.avgIntensity <= 2 ? '#86efac'
+                        const intensityColor = day.avgIntensity === null ? '#cbd5e1' : day.avgIntensity <= 2 ? '#86efac'
                             : day.avgIntensity <= 3 ? '#fde047'
                                 : day.avgIntensity <= 4 ? '#fb923c' : '#f87171';
                         return h('div', { key: day.date || day.timestamp || i, className: 'flex-1 flex flex-col items-center gap-0.5', style: { minWidth: 0 } },
@@ -1912,7 +1958,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                                     background: day.count > 0 ? intensityColor : 'transparent',
                                     minHeight: day.count > 0 ? '4px' : '0px'
                                 },
-                                title: `${day.label}: ${day.count} entries, avg intensity ${day.avgIntensity.toFixed(1)}`
+                                title: day.label + ': ' + day.count + ' entries, ' + (day.avgIntensity === null ? 'no intensity ratings' : 'avg intensity ' + day.avgIntensity.toFixed(1))
                             }),
                             (i % Math.ceil(stats.trendData.length / 7) === 0 || i === stats.trendData.length - 1) &&
                             h('div', { className: 'text-[11px] text-slate-600 mt-1 truncate w-full text-center' }, day.label)
@@ -2095,6 +2141,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
         const [elapsed, setElapsed] = useState(0);
         const [newLabel, setNewLabel] = useState('');
         const timerRef = useRef(null);
+        const startedAtRef = useRef(null);
         const dialogRef = useRef(null);
         useEffect(() => { try { dialogRef.current && dialogRef.current.focus(); } catch (e) {} }, []);
 
@@ -2102,9 +2149,13 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
 
         useEffect(() => {
             if (running) {
-                timerRef.current = setInterval(() => setElapsed(p => p + 1), 1000);
-            } else if (timerRef.current) {
-                clearInterval(timerRef.current);
+                if (startedAtRef.current === null) startedAtRef.current = Date.now() - (elapsed * 1000);
+                timerRef.current = setInterval(() => {
+                    setElapsed(Math.floor((Date.now() - startedAtRef.current) / 1000));
+                }, 100);
+            } else {
+                if (timerRef.current) clearInterval(timerRef.current);
+                startedAtRef.current = null;
             }
             return () => { if (timerRef.current) clearInterval(timerRef.current); };
         }, [running]);
@@ -2112,9 +2163,18 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
         const totalCount = counters.reduce((s, c) => s + c.count, 0);
         const totalRate = elapsed > 0 ? (totalCount / (elapsed / 60)).toFixed(1) : '0.0';
 
+        const toggleRunning = () => {
+            if (running && startedAtRef.current !== null) {
+                setElapsed(Math.floor((Date.now() - startedAtRef.current) / 1000));
+            } else if (!running) {
+                startedAtRef.current = Date.now() - (elapsed * 1000);
+            }
+            setRunning(prev => !prev);
+        };
+
         const incrementCounter = (id) => {
             setCounters(prev => prev.map(c => c.id === id ? { ...c, count: c.count + 1 } : c));
-            if (!running) setRunning(true);
+            if (!running) toggleRunning();
         };
 
         const decrementCounter = (id) => {
@@ -2142,18 +2202,20 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
 
         const handleSave = () => {
             if (totalCount === 0) return;
+            const saveElapsed = startedAtRef.current !== null ? Math.floor((Date.now() - startedAtRef.current) / 1000) : elapsed;
+            const saveRate = saveElapsed > 0 ? (totalCount / (saveElapsed / 60)).toFixed(1) : '0.0';
             onSaveSession({
                 id: uid(),
                 method: 'frequency',
                 timestamp: new Date().toISOString(),
-                duration: elapsed,
+                duration: saveElapsed,
                 data: {
                     count: totalCount,
-                    rate: parseFloat(totalRate),
+                    rate: parseFloat(saveRate),
                     counters: counters.map(c => ({
                         label: c.label || 'Unlabeled',
                         count: c.count,
-                        rate: elapsed > 0 ? parseFloat((c.count / (elapsed / 60)).toFixed(2)) : 0
+                        rate: saveElapsed > 0 ? parseFloat((c.count / (saveElapsed / 60)).toFixed(2)) : 0
                     }))
                 }
             });
@@ -2251,7 +2313,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             // Controls
             h('div', { className: 'flex gap-4 mt-6' },
                 h('button', { 'aria-pressed': String(running), "aria-label": running ? 'Pause recording' : 'Start recording',
-                    onClick: () => setRunning(!running),
+                    onClick: toggleRunning,
                     className: `px-5 py-2 rounded-full text-sm font-bold transition-colors ${running ? 'bg-amber-500 hover:bg-amber-400' : 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300'}`
                 }, running ? '⏸ Pause' : '▶ Start'),
                 h('button', { "aria-label": "Reset all counts and timer",
@@ -2262,7 +2324,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                         const hasData = elapsed > 0 || counters.some(c => (c.count || 0) > 0);
                         const msg = (t && t('behavior_lens.confirm.reset_counts')) || 'Reset all counts and the timer? This cannot be undone.';
                         if (hasData && !await askBehaviorLensConfirmation(msg, { title: 'Reset frequency data', confirmText: 'Reset counts' })) return;
-                        setCounters(prev => prev.map(c => ({ ...c, count: 0 }))); setElapsed(0); setRunning(false);
+                        setCounters(prev => prev.map(c => ({ ...c, count: 0 }))); setElapsed(0); startedAtRef.current = null; setRunning(false);
                     },
                     className: 'px-5 py-2 rounded-full bg-white/10 hover:bg-white/20 text-sm font-bold transition-colors'
                 }, '↺ Reset')
@@ -3101,17 +3163,17 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
 
         const csvEscape = (val) => {
             if (val == null) return '';
-            const str = String(val);
-            if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-                return '"' + str.replace(/"/g, '""') + '"';
-            }
+            const raw = String(val);
+            const numeric = /^[-+]?\d+(?:\.\d+)?$/.test(raw);
+            const str = typeof val === 'string' && /^[-+=@]/.test(raw) && !numeric ? "'" + raw : raw;
+            if (/[",\r\n]/.test(str)) return '"' + str.replace(/"/g, '""') + '"';
             return str;
         };
 
         const handleExport = () => {
             let content, filename, type;
             const dateSuffix = new Date().toISOString().split('T')[0];
-            const safeName = (studentName || 'student').replace(/\s/g, '_');
+            const safeName = String(studentName || 'student').replace(/[^A-Za-z0-9._-]+/g, '_').replace(/^\.+|\.+$/g, '') || 'student';
 
             if (format === 'json') {
                 const data = {
@@ -3140,7 +3202,7 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                     csvEscape(e.phase),
                     csvEscape(e.notes)
                 ].join(','));
-                content = [headers.join(','), ...rows].join('\n');
+                content = String.fromCharCode(0xFEFF) + [headers.join(','), ...rows].join('\n');
 
                 // Append observation sessions as a second section
                 if (filteredObs.length > 0) {
@@ -3760,7 +3822,7 @@ Create a hypothesis diagram and return ONLY valid JSON:
                 try { const raw = _blFamiliarityRaw(); if (raw) famData = JSON.parse(raw); } catch(e) {}
                 // Read gallery for image availability
                 let galleryLabels = {};
-                try { const raw = localStorage.getItem('alloSymbolGallery'); if (raw) { JSON.parse(raw).forEach(g => { galleryLabels[g.label.toLowerCase().trim()] = true; }); } } catch(e) {}
+                try { const raw = _blGalleryRaw(); if (raw) { JSON.parse(raw).forEach(g => { galleryLabels[g.label.toLowerCase().trim()] = true; }); } } catch(e) {}
                 const ready = []; const growing = []; const missing = [];
                 fctData.words.forEach(w => {
                     const k = w.toLowerCase().trim();
@@ -7977,7 +8039,7 @@ Write 2-3 sentences that are professional, warm, and collaborative. Focus on par
             {
                 id: 'storage',
                 title: (tt('behavior_lens.raw.data_storage_security', 'Data Storage & Security')),
-                content: 'All behavioral data is stored locally on the device where it was created (browser localStorage). No student data is stored on AlloFlow servers. Data only moves between parties when a human explicitly exports a snapshot file and shares it.\n\nThe Student Snapshot Exchange system uses a "sneakernet" model — data travels as a file you physically or digitally hand to the other party, not through a shared database or cloud sync.',
+                content: 'BehaviorLens is local-first: ABC data and workspace records are stored in browser localStorage. In standalone deployments, when authenticated cloud sync is available, a copy may also be stored in the signed-in account\'s private app-scoped workspace; the cloud status indicator shows whether sync is active. The Student Snapshot Exchange system remains an explicit file-transfer workflow and does not write back automatically.',
                 required: true,
             },
             {
@@ -10573,8 +10635,7 @@ Keep it concise and encouraging. Use plain language.`;
 
     // ─── TeamNotes ──────────────────────────────────────────────────────
     // Multi-role timestamped collaboration thread
-    const TeamNotes = ({ studentName, t, addToast }) => {
-        const [notes, setNotes] = useState([]);
+    const TeamNotes = ({ studentName, notes, setNotes, announce, t, addToast }) => {
         const [newNote, setNewNote] = useState('');
         const [role, setRole] = useState('teacher');
 
@@ -10587,6 +10648,8 @@ Keep it concise and encouraging. Use plain language.`;
             { id: 'slp', label: '🗣️ SLP', color: 'sky' },
             { id: 'bcba', label: '📋 BCBA', color: 'rose' },
         ];
+
+        const noteItems = Array.isArray(notes) ? notes : [];
 
         const roleColors = {
             indigo: 'bg-indigo-100 text-indigo-700 border-indigo-200',
@@ -10610,6 +10673,7 @@ Keep it concise and encouraging. Use plain language.`;
                 timestamp: new Date().toISOString(),
             }, ...prev]);
             setNewNote('');
+            if (announce) announce('Team note added');
             if (addToast) addToast(tt('behavior_lens.toast.note_added', 'Note added'), 'success');
         };
 
@@ -10622,7 +10686,7 @@ Keep it concise and encouraging. Use plain language.`;
             // Add note
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
                 h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
-                    roles.map(r => h('button', { "aria-label": "Toggle role",
+                    roles.map(r => h('button', { "aria-label": "Toggle role", "aria-pressed": role === r.id ? "true" : "false",
                         key: r.id,
                         onClick: () => setRole(r.id),
                         className: `px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all ${role === r.id ? roleColors[r.color] + ' shadow-sm' : 'bg-white border-slate-100 text-slate-600 hover:border-slate-200'}`
@@ -10635,23 +10699,27 @@ Keep it concise and encouraging. Use plain language.`;
                         onKeyDown: e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleAdd(); } },
                         placeholder: tt('behavior_lens.ph.add_a_team_note_shiftenter_for_new_line', 'Add a team note... (Shift+Enter for new line)'),
                         'aria-label': 'Add a team note',
+                        'aria-describedby': 'bl-team-notes-persistence',
+                        maxLength: 2000,
                         rows: 2,
                         className: 'flex-1 px-3 py-2 border border-slate-400 rounded-lg text-sm resize-none outline-none focus:ring-2 focus:ring-indigo-300'
                     }),
-                    h('button', { onClick: handleAdd,
+                    h('button', { type: 'button', onClick: handleAdd,
+                        'aria-label': 'Add team note',
                         disabled: !newNote.trim(),
                         className: 'px-4 py-2 bg-indigo-500 text-white rounded-lg text-sm font-bold hover:bg-indigo-600 disabled:opacity-40 transition-all self-end'
                     }, '📤')
-                )
+                ),
+                h('p', { id: 'bl-team-notes-persistence', className: 'text-[11px] text-slate-600 mt-2' }, 'Notes are stored per student in the workspace. They remain local when cloud sync is offline.')
             ),
             // Notes thread
-            notes.length === 0
+            noteItems.length === 0
                 ? h('div', { className: 'text-center py-8 bg-white rounded-xl border border-slate-400' },
                     h('div', { className: 'text-3xl mb-2' }, '💬'),
                     h('p', { className: 'text-sm text-slate-600' }, tt('behavior_lens.ui.no_team_notes_yet_start_the_conversation', 'No team notes yet. Start the conversation!'))
                 )
                 : h('div', { className: 'space-y-3' },
-                    notes.map(note => {
+                    noteItems.map(note => {
                         const colors = roleColors[note.roleColor] || roleColors.slate;
                         return h('div', { key: note.id, className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
                             h('div', { className: 'flex items-center justify-between mb-2' },
@@ -10662,8 +10730,9 @@ Keep it concise and encouraging. Use plain language.`;
                                         new Date(note.timestamp).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
                                     ),
                                     h('button', {
-                                        onClick: () => setNotes(prev => prev.filter(n => n.id !== note.id)),
-                                        'aria-label': 'Close', className: 'text-[11px] text-slate-600 hover:text-red-400 transition-colors'
+                                        type: 'button',
+                                        onClick: () => { setNotes(prev => (Array.isArray(prev) ? prev : []).filter(n => n.id !== note.id)); if (announce) announce('Team note deleted'); },
+                                        'aria-label': 'Delete ' + (note.roleLabel || 'team') + ' note', className: 'text-[11px] text-slate-600 hover:text-red-400 transition-colors'
                                     }, '✕')
                                 )
                             ),
@@ -25187,6 +25256,7 @@ IMPORTANT rules for expert keys:
         firestore,
         firebaseAuth,
         isCanvasEnv,
+        appId: hostAppId,
         onOpenAlloSheet
     }) => {
 
@@ -25239,6 +25309,35 @@ IMPORTANT rules for expert keys:
         const _fb = window.__alloFirebase || {};
         const [_syncStatus, _setSyncStatus] = useState(isCanvasEnv ? 'disabled' : 'idle');
         const [_cloudUserId, _setCloudUserId] = useState(null);
+        const [cloudConflict, setCloudConflict] = useState(null);
+        const [browserOnline, setBrowserOnline] = useState(() => typeof navigator === 'undefined' || navigator.onLine !== false);
+        const [localPersistenceError, setLocalPersistenceError] = useState(null);
+        const [localTabConflict, setLocalTabConflict] = useState(null);
+        const [pendingLocalSync, setPendingLocalSync] = useState(false);
+        const localPersistenceToastRef = useRef(false);
+        const _reportLocalPersistenceError = useCallback((err) => {
+            const isQuota = !!(err && (err.name === 'QuotaExceededError' || err.code === 22 || err.code === 1014));
+            const message = isQuota
+                ? 'Browser storage is full. Export this workspace now to keep a durable backup.'
+                : 'Browser storage is unavailable. Export this workspace now to keep a durable backup.';
+            setLocalPersistenceError({ message, kind: isQuota ? 'quota' : 'unavailable' });
+            if (!localPersistenceToastRef.current && addToast) {
+                addToast('Local workspace backup failed. Export your workspace now.', 'error');
+                localPersistenceToastRef.current = true;
+            }
+        }, [addToast]);
+        const _clearLocalPersistenceError = useCallback(() => {
+            localPersistenceToastRef.current = false;
+            setLocalPersistenceError(null);
+        }, []);
+        const _cloudRevisionsRef = useRef({});
+        const _cloudSaveQueueRef = useRef({});
+        const _pendingCloudSavesRef = useRef({});
+        const _isRetryableCloudFailure = useCallback((err) => {
+            const code = String(err && err.code || '').toLowerCase().split('/').pop();
+            return (typeof navigator !== 'undefined' && navigator.onLine === false) ||
+                ['unavailable', 'deadline-exceeded', 'resource-exhausted', 'aborted'].includes(code);
+        }, []);
         const _authAttempted = useRef(false);
 
         // Attempt anonymous sign-in on mount
@@ -25269,48 +25368,146 @@ IMPORTANT rules for expert keys:
             return () => unsub();
         }, [firestore, firebaseAuth, isCanvasEnv]);
 
-        const _cloudDocPath = useCallback((studentName) => {
-            if (!_cloudUserId || !studentName) return null;
-            const safeName = studentName.replace(/[\/\.#$\[\]]/g, '_');
-            return `behaviorLens_users/${_cloudUserId}/workspaces/${safeName}`;
-        }, [_cloudUserId]);
+        useEffect(() => {
+            if (typeof window === 'undefined') return undefined;
+            const onOffline = () => { setBrowserOnline(false); if (!isCanvasEnv) _setSyncStatus('offline'); };
+            const onOnline = () => { setBrowserOnline(true); if (!isCanvasEnv && _syncStatus === 'offline') _setSyncStatus('idle'); };
+            window.addEventListener('offline', onOffline);
+            window.addEventListener('online', onOnline);
+            return () => { window.removeEventListener('offline', onOffline); window.removeEventListener('online', onOnline); };
+        }, [isCanvasEnv, _syncStatus]);
 
-        const _saveToCloud = useCallback(async (studentName, data) => {
-            if (isCanvasEnv || !firestore || !_cloudUserId || !studentName) return false;
-            if (!_fb.doc || !_fb.setDoc) return false;
-            const path = _cloudDocPath(studentName);
-            if (!path) return false;
-            try {
-                _setSyncStatus('syncing');
-                const pathParts = path.split('/');
-                const docRef = _fb.doc(firestore, ...pathParts);
-                await _fb.setDoc(docRef, {
-                    ...data,
-                    updatedAt: new Date().toISOString(),
-                    _uid: _cloudUserId
-                }, { merge: true });
-                _setSyncStatus('synced');
-                debugLog('CloudSync: saved', studentName);
-                return true;
-            } catch (err) {
-                warnLog('CloudSync: save failed', err);
+        // Keep BehaviorLens data inside the app-scoped user namespace guarded by
+        // firestore.rules. The previous top-level behaviorLens_users path had
+        // no matching rule and keyed documents by mutable codenames.
+        const _cloudAppId = useMemo(() => {
+            const globalAppId = typeof window !== 'undefined' && (window.__alloRuntimeAppId || window.__app_id);
+            return String(hostAppId || globalAppId || 'default-app-id').replace(/[^A-Za-z0-9_-]/g, '_');
+        }, [hostAppId]);
+        const _cloudDocPath = useCallback((studentId) => {
+            if (!_cloudUserId || !studentId) return null;
+            const safeId = String(studentId).replace(/[^A-Za-z0-9_-]/g, '_');
+            return `artifacts/${_cloudAppId}/users/${_cloudUserId}/behaviorLens/workspaces/${safeId}`;
+        }, [_cloudUserId, _cloudAppId]);
+
+        const _performCloudSave = useCallback(async (studentId, data, options = {}) => {
+            if (isCanvasEnv || !firestore || !_cloudUserId || !studentId) return false;
+            if (!_fb.doc || !_fb.runTransaction) {
+                warnLog('CloudSync: Firestore transactions unavailable; refusing a non-atomic workspace write');
                 _setSyncStatus('offline');
                 return false;
             }
-        }, [firestore, _cloudUserId, isCanvasEnv, _cloudDocPath]);
-
-        const _loadFromCloud = useCallback(async (studentName) => {
-            if (isCanvasEnv || !firestore || !_cloudUserId || !studentName) return null;
+            const path = _cloudDocPath(studentId);
+            if (!path) return false;
+            try {
+                if (studentId !== '__roster__') _setSyncStatus('syncing');
+                const pathParts = path.split('/');
+                const docRef = _fb.doc(firestore, ...pathParts);
+                const trackedRevision = _cloudRevisionsRef.current[studentId];
+                const expectedRevision = Number.isInteger(trackedRevision)
+                    ? trackedRevision : getBehaviorLensWorkspaceRuntime().workspaceRevision(data);
+                const result = await getBehaviorLensWorkspaceRuntime().commitCloudWorkspace({
+                    firestore,
+                    runTransaction: _fb.runTransaction,
+                    docRef,
+                    data,
+                    userId: _cloudUserId,
+                    expectedRevision,
+                    force: !!options.force,
+                    isRoster: studentId === '__roster__'
+                });
+                if (!result || !result.ok) {
+                    delete _pendingCloudSavesRef.current[studentId];
+                    const conflict = result && result.conflict ? result.conflict : {};
+                    const alreadyReported = cloudConflict && cloudConflict.studentId === studentId &&
+                        cloudConflict.remoteRevision === conflict.remoteRevision;
+                    setCloudConflict({
+                        studentId,
+                        localSavedAt: data && data.savedAt,
+                        remoteSavedAt: conflict.remoteSavedAt,
+                        localRevision: expectedRevision,
+                        remoteRevision: conflict.remoteRevision
+                    });
+                    _setSyncStatus('conflict');
+                    setPendingLocalSync(true);
+                    if (!alreadyReported && addToast) addToast('A newer cloud copy exists. Local changes remain in this browser until you choose a copy.', 'warning');
+                    return false;
+                }
+                _cloudRevisionsRef.current[studentId] = result.revision;
+                delete _pendingCloudSavesRef.current[studentId];
+                if (studentId !== '__roster__') {
+                    try {
+                        const safeLocalId = String(studentId).replace(/[^A-Za-z0-9_-]/g, '_');
+                        localStorage.setItem('behaviorLens_workspace_' + safeLocalId, JSON.stringify({
+                            ...(data || {}),
+                            revision: result.revision,
+                            updatedAt: result.updatedAt
+                        }));
+                        const dirtyKey = 'behaviorLens_workspace_dirty_' + safeLocalId;
+                        const dirtyRaw = localStorage.getItem(dirtyKey);
+                        let shouldClearDirty = true;
+                        if (dirtyRaw) {
+                            try {
+                                const dirty = JSON.parse(dirtyRaw);
+                                shouldClearDirty = !dirty.savedAt || dirty.savedAt === (data && data.savedAt);
+                            } catch (_) {}
+                        }
+                        if (shouldClearDirty) {
+                            localStorage.removeItem(dirtyKey);
+                            setPendingLocalSync(false);
+                        }
+                        _clearLocalPersistenceError();
+                    } catch (storageError) {
+                        _reportLocalPersistenceError(storageError);
+                    }
+                }
+                if (studentId !== '__roster__') {
+                    setCloudConflict((current) => current && current.studentId !== studentId ? current : null);
+                    _setSyncStatus('synced');
+                }
+                debugLog('CloudSync: transaction committed', studentId, 'revision', result.revision);
+                return true;
+            } catch (err) {
+                warnLog('CloudSync: transactional save failed', err);
+                if (_isRetryableCloudFailure(err)) {
+                    _pendingCloudSavesRef.current[studentId] = {
+                        data,
+                        options: Object.assign({}, options)
+                    };
+                }
+                _setSyncStatus('offline');
+                setPendingLocalSync(true);
+                return false;
+            }
+        }, [firestore, _cloudUserId, isCanvasEnv, _cloudDocPath, cloudConflict, addToast, _isRetryableCloudFailure, _clearLocalPersistenceError, _reportLocalPersistenceError]);
+        const _saveToCloud = useCallback((studentId, data, options = {}) => {
+            if (!studentId) return Promise.resolve(false);
+            const previous = _cloudSaveQueueRef.current[studentId] || Promise.resolve();
+            const pending = previous.catch(() => false).then(() => _performCloudSave(studentId, data, options));
+            _cloudSaveQueueRef.current[studentId] = pending;
+            pending.finally(() => {
+                if (_cloudSaveQueueRef.current[studentId] === pending) delete _cloudSaveQueueRef.current[studentId];
+            });
+            return pending;
+        }, [_performCloudSave]);
+        const _loadFromCloud = useCallback(async (studentId, options = {}) => {
+            if (isCanvasEnv || !firestore || !_cloudUserId || !studentId) return null;
             if (!_fb.doc || !_fb.getDoc) return null;
-            const path = _cloudDocPath(studentName);
+            const path = _cloudDocPath(studentId);
             if (!path) return null;
             try {
                 _setSyncStatus('syncing');
                 const pathParts = path.split('/');
                 const docRef = _fb.doc(firestore, ...pathParts);
                 const snap = await _fb.getDoc(docRef);
-                _setSyncStatus(snap.exists() ? 'synced' : 'idle');
-                return snap.exists() ? snap.data() : null;
+                const exists = snap.exists();
+                const remote = exists ? snap.data() : null;
+                if (exists) {
+                    _cloudRevisionsRef.current[studentId] = getBehaviorLensWorkspaceRuntime().workspaceRevision(remote);
+                    if (!options.reconcile) setCloudConflict(null);
+                }
+                if (!options.reconcile) _setSyncStatus(exists ? 'synced' : 'idle');
+                return remote;
             } catch (err) {
                 warnLog('CloudSync: load failed', err);
                 _setSyncStatus('offline');
@@ -25318,8 +25515,26 @@ IMPORTANT rules for expert keys:
             }
         }, [firestore, _cloudUserId, isCanvasEnv, _cloudDocPath]);
 
+        // Retry the newest local snapshot for each student after connectivity returns.
+        // Conflicts are removed from this queue so an explicit copy choice remains required.
+        useEffect(() => {
+            if (!browserOnline || isCanvasEnv || !_cloudUserId) return undefined;
+            const pending = _pendingCloudSavesRef.current;
+            const queued = Object.keys(pending).map((studentId) => ({
+                studentId,
+                data: pending[studentId].data,
+                options: pending[studentId].options || {}
+            }));
+            queued.forEach(({ studentId, data, options }) => {
+                delete pending[studentId];
+                _saveToCloud(studentId, data, options).catch(() => {});
+            });
+            return undefined;
+        }, [browserOnline, _cloudUserId, isCanvasEnv, _saveToCloud]);
+
         // Assemble the cloudSync object (same interface as before)
-        const cloudSync = { saveToCloud: _saveToCloud, loadFromCloud: _loadFromCloud, syncStatus: _syncStatus, setSyncStatus: _setSyncStatus, userId: _cloudUserId };
+        const pendingCloudSaveCount = Object.keys(_pendingCloudSavesRef.current).length;
+        const cloudSync = { saveToCloud: _saveToCloud, overwriteCloud: (studentId, data) => _saveToCloud(studentId, data, { force: true }), loadFromCloud: _loadFromCloud, syncStatus: _syncStatus, setSyncStatus: _setSyncStatus, userId: _cloudUserId, cloudConflict, browserOnline, pendingSaveCount: pendingCloudSaveCount };
         const [activePanel, setActivePanel] = useState('hub');
         const [selectedStudent, setSelectedStudent] = useState(studentNickname || '');
         const behaviorLensDialogRef = useRef(null);
@@ -25462,6 +25677,7 @@ IMPORTANT rules for expert keys:
         // Persist favorites to localStorage (works in Firebase deploy; resets in Canvas)
         useEffect(() => { try { localStorage.setItem('bl_favorites', JSON.stringify(favorites)); } catch(e) {} }, [favorites]);
         const [sessionNotes, setSessionNotes] = useState([]);
+        const [teamNotes, setTeamNotes] = useState([]);
 
         // ─── WCAG: Screen reader announcements ─────────────────────────
         const [_blAnnouncement, _setBlAnnouncement] = useState('');
@@ -25474,6 +25690,13 @@ IMPORTANT rules for expert keys:
         useEffect(() => () => {
             if (blAnnouncementTimerRef.current) window.clearTimeout(blAnnouncementTimerRef.current);
         }, []);
+        const previousOnlineRef = useRef(browserOnline);
+        useEffect(() => {
+            if (previousOnlineRef.current !== browserOnline) {
+                blAnnounceToSR(browserOnline ? 'Cloud connectivity restored; local changes will sync when available' : 'Cloud connectivity lost; changes are saved locally');
+                previousOnlineRef.current = browserOnline;
+            }
+        }, [browserOnline, blAnnounceToSR]);
         const [searchQuery, setSearchQuery] = useState('');
         // Derive parent mode from role
         useEffect(() => { setIsParentMode(userRole === 'parent'); }, [userRole]);
@@ -25505,6 +25728,59 @@ IMPORTANT rules for expert keys:
             } catch { return []; }
         });
         const [showRosterDropdown, setShowRosterDropdown] = useState(false);
+            const emptyStudentProfile = getBehaviorLensWorkspaceRuntime().emptyStudentProfile;
+        const resetStudentScopedState = useCallback(() => {
+            setAbcEntries([]);
+            setObservationSessions([]);
+            setAiAnalysis(null);
+            setAnalyzing(false);
+            setSessionNotes([]);
+            setTeamNotes([]);
+            setStudentProfile(emptyStudentProfile());
+            setSessionHistory([]);
+            setActivityRegistry({});
+            setDesignPhases([]);
+            setActiveDesign(null);
+            setWorkflowTrack(null);
+            setWorkflowSubSteps({});
+            setGraphExport(null);
+            setEffectSizeResults(null);
+            setFullSummary('');
+            setSummaryLoading(false);
+            setDismissedAlerts(new Set());
+            setVisitedPanels(new Set());
+            setLastSavedAt(null);
+            setDataChangedSinceSave(false);
+            setShowLiveObs(false);
+            setShowFreqCounter(false);
+            setShowIntervalGrid(false);
+            setShowChoiceBoard(false);
+            setActivePanel('hub');
+        }, []);
+        const applyStudentWorkspace = useCallback((data) => {
+            const workspace = getBehaviorLensWorkspaceRuntime().normalizeWorkspace(data);
+            setAbcEntries(workspace.abcEntries);
+            setObservationSessions(workspace.observationSessions);
+            setSessionNotes(workspace.sessionNotes);
+            setTeamNotes(workspace.teamNotes);
+            setStudentProfile(workspace.studentProfile);
+            setSessionHistory(workspace.sessionHistory);
+            setDesignPhases(workspace.designPhases);
+            setActivityRegistry(workspace.activityRegistry);
+            setActiveDesign(workspace.activeDesign);
+            setWorkflowTrack(workspace.workflowTrack);
+            setWorkflowSubSteps(workspace.workflowSubSteps);
+            setGraphExport(workspace.graphExport);
+            setEffectSizeResults(workspace.effectSizeResults);
+            setAiAnalysis(workspace.aiAnalysis);
+            setFullSummary(workspace.fullSummary);
+            setDismissedAlerts(new Set(workspace.dismissedAlerts));
+            setVisitedPanels(new Set(workspace.visitedPanels));
+            if (workspace.favorites) setFavorites(workspace.favorites);
+            if (workspace.userRole) setUserRole(workspace.userRole);
+            setLastSavedAt(workspace.savedAt);
+            setDataChangedSinceSave(false);
+        }, []);
 
         // Persist roster to localStorage + cloud write-through
         useEffect(() => {
@@ -25630,14 +25906,16 @@ IMPORTANT rules for expert keys:
             const sessions = data.sessionHistory || [];
             const behaviorCounts = {};
             entries.forEach(e => { const b = (e.behavior || '').trim(); if (b) behaviorCounts[b] = (behaviorCounts[b] || 0) + 1; });
-            const avgIntensity = entries.length > 0 ? entries.reduce((s, e) => s + (e.intensity || 3), 0) / entries.length : 0;
-            const lastEntry = entries.length > 0 ? entries[entries.length - 1].timestamp : null;
+            const ratedIntensities = entries.map(e => Number(e.intensity)).filter(v => Number.isFinite(v) && v >= 1 && v <= 5);
+            const avgIntensity = ratedIntensities.length > 0 ? ratedIntensities.reduce((sum, value) => sum + value, 0) / ratedIntensities.length : 0;
+            const lastEntry = entries.length > 0 ? entries.reduce((latest, entry) => new Date(entry.timestamp || entry.date || 0) > new Date(latest.timestamp || latest.date || 0) ? entry : latest, entries[0]).timestamp : null;
             const topBehaviors = Object.entries(behaviorCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
             return {
                 student: data.student || data.selectedStudent || 'Unknown',
                 abcCount: entries.length,
                 sessionCount: sessions.length,
                 avgIntensity: parseFloat(avgIntensity.toFixed(1)),
+                            avgIntensityN: ratedIntensities.length,
                 topBehaviors,
                 lastEntry,
                 savedAt: data.savedAt || new Date().toISOString(),
@@ -25653,7 +25931,7 @@ IMPORTANT rules for expert keys:
             if (!selectedStudent) return;
             const currentData = {
                 version: 2, savedAt: new Date().toISOString(), student: selectedStudent,
-                abcEntries, observationSessions, favorites, sessionNotes, studentProfile,
+                abcEntries, observationSessions, favorites, sessionNotes, teamNotes, studentProfile,
                 userRole, activityRegistry, sessionHistory, designPhases, activeDesign,
                 workflowTrack, workflowSubSteps, graphExport, effectSizeResults,
                 aiAnalysis: aiAnalysis || null,
@@ -25667,7 +25945,7 @@ IMPORTANT rules for expert keys:
                 if (idx >= 0) { const copy = [...prev]; copy[idx] = summary; return copy; }
                 return [...prev, summary];
             });
-        }, [selectedStudent, abcEntries, observationSessions, favorites, sessionNotes,
+        }, [selectedStudent, abcEntries, observationSessions, favorites, sessionNotes, teamNotes,
             studentProfile, userRole, activityRegistry, sessionHistory, designPhases,
             activeDesign, workflowTrack, workflowSubSteps, graphExport, effectSizeResults,
             aiAnalysis, dismissedAlerts, visitedPanels, buildWorkspaceSummary]);
@@ -25681,45 +25959,17 @@ IMPORTANT rules for expert keys:
             if (!target) {
                 // Student is in roster but has no loaded workspace — just switch the name
                 setSelectedStudent(studentName);
-                setAbcEntries([]);
-                setObservationSessions([]);
-                setSessionNotes([]);
-                setStudentProfile({ interests: '', strengths: '', triggers: '', goals: '', accommodations: '', notes: '' });
-                setSessionHistory([]);
-                setAiAnalysis(null);
+                resetStudentScopedState();
                 if (addToast) addToast(t('behavior_lens.toast.switched_to_n_no_data_loaded') || `Switched to ${studentName} (no data loaded)`, 'info');
                 return;
             }
             // 3. Load data from _fullData if available, otherwise use summary
             const data = target._fullData || target;
-            if (data.abcEntries) setAbcEntries(data.abcEntries);
-            else setAbcEntries([]);
-            if (data.observationSessions) setObservationSessions(data.observationSessions);
-            else setObservationSessions([]);
-            if (data.favorites) setFavorites(data.favorites);
-            if (data.sessionNotes) setSessionNotes(data.sessionNotes);
-            else setSessionNotes([]);
-            if (data.studentProfile) setStudentProfile(data.studentProfile);
-            else setStudentProfile({ interests: '', strengths: '', triggers: '', goals: '', accommodations: '', notes: '' });
+            applyStudentWorkspace(data);
             setSelectedStudent(data.student || studentName);
-            if (data.userRole) setUserRole(data.userRole);
-            if (data.activityRegistry) setActivityRegistry(data.activityRegistry);
-            if (data.sessionHistory) setSessionHistory(data.sessionHistory);
-            else setSessionHistory([]);
-            if (data.designPhases) setDesignPhases(data.designPhases);
-            if (data.activeDesign) setActiveDesign(data.activeDesign);
-            if (data.workflowTrack) setWorkflowTrack(data.workflowTrack);
-            if (data.workflowSubSteps) setWorkflowSubSteps(data.workflowSubSteps);
-            if (data.graphExport) setGraphExport(data.graphExport);
-            if (data.effectSizeResults) setEffectSizeResults(data.effectSizeResults);
-            if (data.aiAnalysis) setAiAnalysis(data.aiAnalysis); else setAiAnalysis(null);
-            if (data.dismissedAlerts) setDismissedAlerts(new Set(data.dismissedAlerts));
-            if (data.visitedPanels) setVisitedPanels(new Set(data.visitedPanels));
-            setLastSavedAt(data.savedAt || null);
-            setDataChangedSinceSave(false);
             setShowRosterDropdown(false);
             if (addToast) addToast(t('behavior_lens.toast.switched_to_n') || `Switched to ${studentName} ✅`, 'success');
-        }, [saveCurrentToRoster, comparisonWorkspaces, addToast]);
+        }, [saveCurrentToRoster, comparisonWorkspaces, addToast, resetStudentScopedState, applyStudentWorkspace]);
 
         // ─── useBotCoach — context-aware Allobot tips ─────────────────────
         const botCoachFired = useRef({});
@@ -25826,28 +26076,7 @@ IMPORTANT rules for expert keys:
         // ── JSON Workspace Save/Load ──
         const handleSaveWorkspace = () => {
             const now = new Date().toISOString();
-            const workspace = {
-                version: 2,
-                savedAt: now,
-                student: selectedStudent,
-                abcEntries,
-                observationSessions,
-                favorites,
-                sessionNotes,
-                studentProfile,
-                userRole,
-                activityRegistry,
-                sessionHistory,
-                designPhases,
-                activeDesign,
-                workflowTrack,
-                workflowSubSteps,
-                graphExport,
-                effectSizeResults,
-                aiAnalysis: aiAnalysis || null,
-                dismissedAlerts: Array.from(dismissedAlerts),
-                visitedPanels: Array.from(visitedPanels),
-            };
+            const workspace = { ...buildWorkspaceSnapshot(), savedAt: now };
             const json = JSON.stringify(workspace, null, 2);
             const blob = new Blob([json], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
@@ -25862,7 +26091,7 @@ IMPORTANT rules for expert keys:
             setDataChangedSinceSave(false);
             // Cloud write-through on manual save
             if (cloudSync.userId && !isCanvasEnv && selectedStudent) {
-                cloudSync.saveToCloud(selectedStudent, workspace).then(ok => {
+                cloudSync.saveToCloud(activeStudentId || selectedStudent, workspace).then(ok => {
                     if (ok && addToast) addToast(tt('behavior_lens.toast.also_synced_to_cloud', '☁️ Also synced to cloud!'), 'success');
                 }).catch(() => {});
             }
@@ -25876,30 +26105,24 @@ IMPORTANT rules for expert keys:
             reader.onload = (ev) => {
                 try {
                     const data = JSON.parse(ev.target.result);
-                    if (data.abcEntries) setAbcEntries(data.abcEntries);
-                    if (data.observationSessions) setObservationSessions(data.observationSessions);
-                    if (data.favorites) setFavorites(data.favorites);
-                    if (data.sessionNotes) setSessionNotes(data.sessionNotes);
-                    if (data.studentProfile) setStudentProfile(data.studentProfile);
-                    if (data.student) setSelectedStudent(data.student);
-                    if (data.userRole) setUserRole(data.userRole);
-                    if (data.activityRegistry) setActivityRegistry(data.activityRegistry);
-                    if (data.sessionHistory) setSessionHistory(data.sessionHistory);
-                    if (data.designPhases) setDesignPhases(data.designPhases);
-                    if (data.activeDesign) setActiveDesign(data.activeDesign);
-                    if (data.workflowTrack) setWorkflowTrack(data.workflowTrack);
-                    if (data.workflowSubSteps) setWorkflowSubSteps(data.workflowSubSteps);
-                    if (data.graphExport) setGraphExport(data.graphExport);
-                    if (data.effectSizeResults) setEffectSizeResults(data.effectSizeResults);
-                    if (data.aiAnalysis) setAiAnalysis(data.aiAnalysis); else setAiAnalysis(null);
-                    if (data.dismissedAlerts) setDismissedAlerts(new Set(data.dismissedAlerts));
-                    if (data.visitedPanels) setVisitedPanels(new Set(data.visitedPanels));
-                    setLastSavedAt(data.savedAt || null);
-                    setDataChangedSinceSave(false);
-                    if (addToast) addToast(t('behavior_lens.toast.workspace_loaded_n_entries_n_notes') || `Workspace loaded (${(data.abcEntries || []).length} entries, ${(data.sessionNotes || []).length} notes) 📂`, 'success');
+                    const validWorkspace = data && typeof data === 'object' && (
+                        Array.isArray(data.abcEntries) || Array.isArray(data.observationSessions) ||
+                        Array.isArray(data.sessionHistory) || Array.isArray(data.sessionNotes) ||
+                        !!data.studentProfile
+                    );
+                    if (!validWorkspace) throw new Error('Invalid BehaviorLens workspace shape');
+                    if (data.student && data.student !== selectedStudent) {
+                        pendingWorkspaceRef.current = { student: data.student, data };
+                        setSelectedStudent(data.student);
+                    } else {
+                        applyStudentWorkspace(data);
+                    }
+                    if (addToast) addToast(t('behavior_lens.toast.workspace_loaded_n_entries_n_notes') || 'Workspace loaded (' +
+                        (Array.isArray(data.abcEntries) ? data.abcEntries.length : 0) + ' entries, ' +
+                        (Array.isArray(data.sessionNotes) ? data.sessionNotes.length : 0) + ' notes) ??', 'success');
                 } catch (err) {
                     warnLog('Failed to parse workspace file:', err);
-                    if (addToast) addToast(tt('behavior_lens.toast_invalid_file', 'Invalid workspace file — must be BehaviorLens JSON'), 'error');
+                    if (addToast) addToast(tt('behavior_lens.toast_invalid_file', 'Invalid workspace file ? must be BehaviorLens JSON'), 'error');
                 }
             };
             reader.readAsText(file);
@@ -25926,7 +26149,7 @@ IMPORTANT rules for expert keys:
                         // Calculate avg intensity
                         const avgIntensity = entries.length > 0 ? entries.reduce((s, e) => s + (e.intensity || 3), 0) / entries.length : 0;
                         // Last entry date
-                        const lastEntry = entries.length > 0 ? entries[entries.length - 1].timestamp : null;
+                        const lastEntry = entries.length > 0 ? entries.reduce((latest, entry) => new Date(entry.timestamp || entry.date || 0) > new Date(latest.timestamp || latest.date || 0) ? entry : latest, entries[0]).timestamp : null;
                         const topBehaviors = Object.entries(behaviorCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
                         loaded.push({
                             student: data.student || file.name.replace('.json', ''),
@@ -25961,6 +26184,13 @@ IMPORTANT rules for expert keys:
 
         // Track visited panels for recommendations
         const openPanel = (panelId) => {
+            // AI analysis is a command that renders in the hub, not a separate panel.
+            if (panelId === 'analysis') {
+                setVisitedPanels(prev => new Set(prev).add(panelId));
+                blAnnounceToSR('Running AI analysis');
+                handleAiAnalyze();
+                return;
+            }
             setActivePanel(panelId);
             setVisitedPanels(prev => new Set(prev).add(panelId));
             setActivityRegistry(prev => ({
@@ -25971,7 +26201,7 @@ IMPORTANT rules for expert keys:
             blAnnounceToSR('Opened ' + panelId.replace(/([A-Z])/g, ' $1').trim() + ' panel');
             requestAnimationFrame(() => {
                 const heading = document.querySelector('h2, h3');
-                if (heading) heading.focus();
+                if (heading) { if (!heading.hasAttribute('tabindex')) heading.setAttribute('tabindex', '-1'); heading.focus(); }
             });
         };
 
@@ -25993,7 +26223,7 @@ IMPORTANT rules for expert keys:
                     ctx += `- [${(n.timestamp || '').slice(0, 10)}] ${n.text}\n`;
                 });
             }
-            return ctx;
+            return ctx.slice(0, 4000);
         }, [studentProfile, sessionNotes]);
 
         // ── Consent-gated AI call ──
@@ -26147,7 +26377,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                 const animal = animals[Math.floor(Math.random() * animals.length)];
                 setSelectedAdj(adj);
                 setSelectedAnimal(animal);
-                setSelectedStudent(`${adj} ${animal}`);
+                switchToStudent(`${adj} ${animal}`);
             }
         }, [adjectives, animals]);
 
@@ -26171,143 +26401,353 @@ Use professional language. Refer to "the student" (not the codename).`;
         }, [adjectives, animals]);
 
         // Load data — cloud first (if available), then localStorage fallback
+        // Student-scoped workspace persistence. Every read/write is guarded by
+        // an immutable identity when available and by a generation token so a
+        // slower response from a previous student cannot hydrate the new one.
+        const buildWorkspaceSnapshot = useCallback(() => ({
+            version: 3,
+            savedAt: new Date().toISOString(),
+            student: selectedStudent,
+            studentId: activeStudentId || null,
+            revision: selectedStudent ? (_cloudRevisionsRef.current[activeStudentId || selectedStudent] || 0) : 0,
+            abcEntries, observationSessions, sessionNotes, teamNotes, studentProfile,
+            userRole, activityRegistry, sessionHistory, designPhases, activeDesign,
+            workflowTrack, workflowSubSteps, graphExport, effectSizeResults,
+            aiAnalysis, fullSummary, favorites,
+            dismissedAlerts: Array.from(dismissedAlerts),
+            visitedPanels: Array.from(visitedPanels)
+        }), [selectedStudent, activeStudentId, abcEntries, observationSessions, sessionNotes, teamNotes,
+            studentProfile, userRole, activityRegistry, sessionHistory, designPhases,
+            activeDesign, workflowTrack, workflowSubSteps, graphExport, effectSizeResults,
+            aiAnalysis, fullSummary, favorites, dismissedAlerts, visitedPanels]);
         const cloudLoadAttempted = useRef({});
-        // Guards the auto-save effects: they must not write until the current
-        // student's data has been hydrated from storage. Without this, an
-        // emptied array (from a full delete) could not be persisted — the save
-        // effect skipped length-0 to avoid clobbering unloaded data — so
-        // deleted entries reappeared on reload. Now: block saves pre-hydration,
-        // allow saving an empty array once hydrated.
         const abcHydratedRef = useRef(false);
-        // Tracks the last student we loaded, to detect a genuine switch. Some
-        // paths (Caseload "View", Batch import, name pickers) change
-        // selectedStudent WITHOUT going through switchToStudent (which clears
-        // data) — those left the previous student's entries in memory, so the
-        // new student showed the wrong data and could save it under the new key.
-        const loadedStudentRef = useRef(null);
-        useEffect(() => {
-            if (!selectedStudent) return;
-            abcHydratedRef.current = false;
-            const isStudentChange = loadedStudentRef.current !== null && loadedStudentRef.current !== selectedStudent;
-            loadedStudentRef.current = selectedStudent;
-            if (isStudentChange) {
-                // Clear the previous student's in-memory data up front so the
-                // load below repopulates fresh (and, if the new student has no
-                // saved data, nothing stale lingers to be re-saved).
-                setAbcEntries([]);
-                setObservationSessions([]);
-                setAiAnalysis(null);
+        const hydrationRef = useRef(null);
+        if (!hydrationRef.current) hydrationRef.current = getBehaviorLensWorkspaceRuntime().createHydrationGuard();
+        const hydrationCleanIdentityRef = useRef(null);
+        const pendingWorkspaceRef = useRef(null);
+        const suppressNextDirtyMarkRef = useRef(false);
+        const suppressNextWorkspacePersistRef = useRef(false);
+        const latestLocalSnapshotRef = useRef(null);
+        const localTabConflictRef = useRef(null);
+        const localTabIdRef = useRef(null);
+        if (!localTabIdRef.current) localTabIdRef.current = uid();
+        const handleUseCloudCopy = useCallback(async () => {
+            if (!selectedStudent || !cloudSync.userId) return;
+            const remote = await cloudSync.loadFromCloud(activeStudentId || selectedStudent);
+            if (!remote) {
+                if (addToast) addToast('The cloud copy could not be loaded. Your local copy is still available.', 'warning');
+                return;
             }
-            const loadData = async () => {
-                // Try cloud first (once per student)
-                if (cloudSync.userId && !isCanvasEnv && !cloudLoadAttempted.current[selectedStudent]) {
-                    cloudLoadAttempted.current[selectedStudent] = true;
-                    try {
-                        const cloudData = await cloudSync.loadFromCloud(selectedStudent);
-                        if (cloudData && cloudData.abcEntries && cloudData.abcEntries.length > 0) {
-                            setAbcEntries(cloudData.abcEntries);
-                            if (cloudData.observationSessions) setObservationSessions(cloudData.observationSessions);
-                            if (cloudData.sessionNotes) setSessionNotes(cloudData.sessionNotes);
-                            if (cloudData.studentProfile) setStudentProfile(cloudData.studentProfile);
-                            if (cloudData.sessionHistory) setSessionHistory(cloudData.sessionHistory);
-                            if (cloudData.designPhases) setDesignPhases(cloudData.designPhases);
-                            if (cloudData.favorites) setFavorites(cloudData.favorites);
-                            debugLog('BehaviorLens: loaded data from cloud for', selectedStudent);
-                            if (addToast) addToast(tt('behavior_lens.toast.data_loaded_from_cloud', '☁️ Data loaded from cloud'), 'success');
-                            return; // Cloud data loaded, skip localStorage
-                        }
-                    } catch (e) {
-                        debugLog('CloudSync: cloud load failed, falling back to localStorage');
-                    }
-                }
-                // localStorage fallback — prefer the studentId-scoped key; fall
-                // back to the raw codename key for users whose legacy data
-                // hasn't been migrated yet (multi-tab race or migration flag
-                // pre-set without the data move actually happening).
-                try {
-                    const idKey = studentKey('behaviorLens_abc_');
-                    const legacyKey = `behaviorLens_abc_${selectedStudent}`;
-                    const saved = localStorage.getItem(idKey) || (idKey !== legacyKey ? localStorage.getItem(legacyKey) : null);
-                    // On a student change, load unconditionally (the length
-                    // guard reads a stale closure of the previous student's
-                    // entries). Otherwise keep the "don't clobber in-memory
-                    // work" guard for cloud-auth-driven effect re-runs.
-                    if (saved && (isStudentChange || abcEntries.length === 0)) {
-                        setAbcEntries(JSON.parse(saved));
-                        debugLog('BehaviorLens: loaded legacy ABC data from localStorage');
-                    }
-                    const idObsKey = studentKey('behaviorLens_obs_');
-                    const legacyObsKey = `behaviorLens_obs_${selectedStudent}`;
-                    const savedObs = localStorage.getItem(idObsKey) || (idObsKey !== legacyObsKey ? localStorage.getItem(legacyObsKey) : null);
-                    if (savedObs && (isStudentChange || observationSessions.length === 0)) {
-                        setObservationSessions(JSON.parse(savedObs));
-                        debugLog('BehaviorLens: loaded legacy obs data from localStorage');
-                    }
-                } catch (e) {
-                    debugLog('localStorage unavailable — use workspace JSON save/load instead');
-                }
-            };
-            loadData().finally(() => { abcHydratedRef.current = true; });
-        }, [selectedStudent, cloudSync.userId, activeStudentId]);
+            suppressNextDirtyMarkRef.current = true;
+            applyStudentWorkspace(remote);
+            setCloudConflict(null);
+            if (blAnnounceToSR) blAnnounceToSR('Loaded the newer cloud copy');
+            if (addToast) addToast('Loaded the newer cloud copy.', 'success');
+        }, [selectedStudent, activeStudentId, cloudSync, applyStudentWorkspace, addToast, blAnnounceToSR]);
 
-        // Auto-save ABC entries (localStorage + cloud write-through)
+        const handleKeepLocalCopy = useCallback(() => {
+            if (!selectedStudent || !cloudSync.userId) return;
+            askBehaviorLensConfirmation('Replace the newer cloud copy with the local workspace for this student?', { title: 'Keep local workspace', confirmText: 'Replace cloud copy' }).then(async (confirmed) => {
+                if (!confirmed) return;
+                const now = new Date().toISOString();
+                const workspace = { ...buildWorkspaceSnapshot(), savedAt: now };
+                const ok = await cloudSync.overwriteCloud(activeStudentId || selectedStudent, workspace);
+                if (!ok) return;
+                setCloudConflict(null);
+                setLastSavedAt(now);
+                setDataChangedSinceSave(false);
+                if (blAnnounceToSR) blAnnounceToSR('Replaced the cloud copy with the local workspace');
+                if (addToast) addToast('Cloud copy replaced with the local workspace.', 'success');
+            });
+        }, [selectedStudent, activeStudentId, cloudSync, buildWorkspaceSnapshot, addToast, blAnnounceToSR]);
+
+        const clearLocalTabConflict = useCallback((draftKey) => {
+            if (draftKey) {
+                try { localStorage.removeItem(draftKey); } catch (storageError) { _reportLocalPersistenceError(storageError); }
+            }
+            localTabConflictRef.current = null;
+            setLocalTabConflict(null);
+        }, [_reportLocalPersistenceError]);
+
+        const handleKeepThisTabWorkspace = useCallback(() => {
+            const conflict = localTabConflictRef.current;
+            if (!conflict || !selectedStudent) return;
+            askBehaviorLensConfirmation("Keep this tab's workspace and replace the shared browser copy?", {
+                title: 'Keep this tab workspace',
+                confirmText: 'Keep this tab'
+            }).then(async (confirmed) => {
+                if (!confirmed) return;
+                const workspace = latestLocalSnapshotRef.current || conflict.currentWorkspace;
+                if (!workspace) return;
+                try {
+                    getBehaviorLensWorkspaceRuntime().persistLocalWorkspace({
+                        storage: localStorage,
+                        workspaceKey: studentKey('behaviorLens_workspace_'),
+                        dirtyKey: studentKey('behaviorLens_workspace_dirty_'),
+                        abcKey: studentKey('behaviorLens_abc_'),
+                        observationKey: studentKey('behaviorLens_obs_'),
+                        workspace,
+                        abcEntries: workspace.abcEntries,
+                        observationSessions: workspace.observationSessions
+                    });
+                    clearLocalTabConflict(conflict.draftKey);
+                    setPendingLocalSync(!isCanvasEnv);
+                    _clearLocalPersistenceError();
+                } catch (storageError) {
+                    _reportLocalPersistenceError(storageError);
+                    return;
+                }
+                if (cloudSync.userId && !isCanvasEnv) {
+                    cloudSync.saveToCloud(activeStudentId || selectedStudent, workspace).catch(() => {});
+                }
+                if (blAnnounceToSR) blAnnounceToSR('Kept this tab workspace');
+                if (addToast) addToast("This tab's workspace is now the shared browser copy.", 'success');
+            });
+        }, [selectedStudent, activeStudentId, studentKey, cloudSync, isCanvasEnv, clearLocalTabConflict, _clearLocalPersistenceError, _reportLocalPersistenceError, addToast, blAnnounceToSR]);
+
+        const handleLoadOtherTabWorkspace = useCallback(() => {
+            const conflict = localTabConflictRef.current;
+            if (!conflict || !conflict.otherWorkspace) return;
+            const otherWorkspace = conflict.otherWorkspace;
+            suppressNextWorkspacePersistRef.current = true;
+            latestLocalSnapshotRef.current = otherWorkspace;
+            clearLocalTabConflict(conflict.draftKey);
+            setPendingLocalSync(false);
+            applyStudentWorkspace(otherWorkspace);
+            if (blAnnounceToSR) blAnnounceToSR('Loaded the workspace from the other tab');
+            if (addToast) addToast('Loaded the workspace saved by the other tab.', 'success');
+        }, [applyStudentWorkspace, clearLocalTabConflict, addToast, blAnnounceToSR]);
+
+        useEffect(() => {
+            if (!selectedStudent) {
+                abcHydratedRef.current = true;
+                return undefined;
+            }
+            const identity = activeStudentId || 'name:' + selectedStudent;
+            const hydrationToken = hydrationRef.current.begin(identity);
+            abcHydratedRef.current = false;
+            const isCurrent = () => hydrationRef.current.isCurrent(hydrationToken);
+            if (hydrationToken.changed) {
+                resetStudentScopedState();
+                localTabConflictRef.current = null;
+                setLocalTabConflict(null);
+                latestLocalSnapshotRef.current = null;
+                setPendingLocalSync(false);
+            }
+            const pendingWorkspace = pendingWorkspaceRef.current && pendingWorkspaceRef.current.student === selectedStudent
+                ? pendingWorkspaceRef.current.data : null;
+            if (pendingWorkspace) {
+                pendingWorkspaceRef.current = null;
+                applyStudentWorkspace(pendingWorkspace);
+                abcHydratedRef.current = true;
+                hydrationCleanIdentityRef.current = identity;
+                return undefined;
+            }
+
+            const loadKey = activeStudentId || selectedStudent;
+            const shouldLoadCloud = !!(cloudSync.userId && !isCanvasEnv && !cloudLoadAttempted.current[loadKey]);
+            if (shouldLoadCloud) cloudLoadAttempted.current[loadKey] = true;
+            const workspaceKey = studentKey('behaviorLens_workspace_');
+            const dirtyKey = studentKey('behaviorLens_workspace_dirty_');
+            const abcKey = studentKey('behaviorLens_abc_');
+            const observationKey = studentKey('behaviorLens_obs_');
+            const loadPromise = getBehaviorLensWorkspaceRuntime().loadStudentWorkspace({
+                guard: hydrationRef.current,
+                token: hydrationToken,
+                shouldLoadCloud,
+                loadFromCloud: (studentId) => cloudSync.loadFromCloud(studentId, { reconcile: true }),
+                loadKey,
+                storage: localStorage,
+                workspaceKey,
+                dirtyKey,
+                tabDraftPrefix: studentKey('behaviorLens_workspace_tabdraft_') + '_',
+                abcKey,
+                legacyAbcKey: 'behaviorLens_abc_' + selectedStudent,
+                observationKey,
+                legacyObservationKey: 'behaviorLens_obs_' + selectedStudent
+            });
+            loadPromise.then((result) => {
+                if (!result || result.stale || !isCurrent()) {
+                    if (shouldLoadCloud) delete cloudLoadAttempted.current[loadKey];
+                    return;
+                }
+                if (result.workspace) {
+                    latestLocalSnapshotRef.current = result.workspace;
+                    if (result.source === 'local-workspace' || result.source === 'local-cloud-conflict' || result.source === 'local-tab-conflict') {
+                        _cloudRevisionsRef.current[loadKey] = getBehaviorLensWorkspaceRuntime().workspaceRevision(result.workspace);
+                    }
+                    applyStudentWorkspace(result.workspace);
+                    if (result.source === 'local-tab-conflict') {
+                        const recoveredConflict = {
+                            studentId: loadKey,
+                            currentWorkspace: result.workspace,
+                            otherWorkspace: result.otherWorkspace,
+                            currentSavedAt: result.conflict && result.conflict.currentSavedAt,
+                            otherSavedAt: result.conflict && result.conflict.otherSavedAt,
+                            draftKey: result.tabDraftKey,
+                            recovered: true
+                        };
+                        localTabConflictRef.current = recoveredConflict;
+                        setLocalTabConflict(recoveredConflict);
+                        setPendingLocalSync(true);
+                        if (addToast) addToast('Recovered a workspace draft from another tab session. Choose which browser copy to keep.', 'warning');
+                    } else if (result.source === 'local-cloud-conflict' && result.conflict) {
+                        delete _pendingCloudSavesRef.current[loadKey];
+                        setCloudConflict({
+                            studentId: loadKey,
+                            reason: 'recovery',
+                            localSavedAt: result.conflict.localSavedAt,
+                            remoteSavedAt: result.conflict.remoteSavedAt,
+                            localRevision: result.conflict.localRevision,
+                            remoteRevision: result.conflict.remoteRevision
+                        });
+                        cloudSync.setSyncStatus('conflict');
+                        if (addToast) addToast('Unsynced local work was recovered. Choose whether to keep it or use the cloud copy.', 'warning');
+                    } else if (result.pendingCloudSync && cloudSync.userId && !isCanvasEnv) {
+                        setPendingLocalSync(true);
+                        if (browserOnline) {
+                            cloudSync.saveToCloud(loadKey, result.workspace).catch(() => {});
+                        } else {
+                            _pendingCloudSavesRef.current[loadKey] = { data: result.workspace, options: {} };
+                        }
+                    }
+                } else {
+                    setAbcEntries(result.abcEntries || []);
+                    setObservationSessions(result.observationSessions || []);
+                }
+                hydrationCleanIdentityRef.current = identity;
+                if (result.source === 'cloud') {
+                    setCloudConflict(null);
+                    setPendingLocalSync(false);
+                    cloudSync.setSyncStatus('synced');
+                    debugLog('BehaviorLens: loaded complete workspace from cloud for', loadKey);
+                    if (addToast) addToast(tt('behavior_lens.toast.data_loaded_from_cloud', '☁️ Data loaded from cloud'), 'success');
+                }
+                if (result.error) _reportLocalPersistenceError(result.error);            }).finally(() => {
+                if (isCurrent()) {
+                    abcHydratedRef.current = true;
+                    hydrationCleanIdentityRef.current = identity;
+                }
+            });
+            return () => {
+                if (hydrationRef.current.isCurrent(hydrationToken)) abcHydratedRef.current = false;
+            };
+        }, [selectedStudent, activeStudentId, cloudSync.userId, resetStudentScopedState, applyStudentWorkspace, studentKey, _reportLocalPersistenceError]);
+
+        // Persist the complete workspace locally and, when enabled, to the
+        // authenticated app-scoped cloud document. This covers profile, notes,
+        // history, design state, and summaries in addition to ABC/observation data.
         const cloudSaveTimer = useRef(null);
         useEffect(() => {
-            if (!selectedStudent || !abcHydratedRef.current) return;
-            try {
-                localStorage.setItem(studentKey('behaviorLens_abc_'), JSON.stringify(abcEntries));
-            } catch (e) {
-                // Silently fail — Canvas/iframe may block localStorage
+            if (typeof window === 'undefined' || !selectedStudent) return undefined;
+            const workspaceKey = studentKey('behaviorLens_workspace_');
+            const identity = activeStudentId || selectedStudent;
+            const onStorage = (event) => {
+                if (event.key !== workspaceKey || !event.newValue) return;
+                let otherWorkspace = null;
+                try { otherWorkspace = JSON.parse(event.newValue); } catch (_) { return; }
+                const runtime = getBehaviorLensWorkspaceRuntime();
+                const currentWorkspace = latestLocalSnapshotRef.current;
+                if (!runtime.hasWorkspaceData(otherWorkspace) || !currentWorkspace || runtime.sameWorkspaceSnapshot(currentWorkspace, otherWorkspace)) return;
+                const existing = localTabConflictRef.current;
+                if (existing && runtime.sameWorkspaceSnapshot(existing.otherWorkspace, otherWorkspace)) return;
+                if (cloudSaveTimer.current) clearTimeout(cloudSaveTimer.current);
+                const draftKey = existing && existing.draftKey
+                    ? existing.draftKey
+                    : studentKey('behaviorLens_workspace_tabdraft_') + '_' + localTabIdRef.current;
+                try {
+                    localStorage.setItem(draftKey, JSON.stringify(currentWorkspace));
+                    _clearLocalPersistenceError();
+                } catch (storageError) {
+                    _reportLocalPersistenceError(storageError);
+                }
+                const conflict = {
+                    studentId: identity,
+                    currentWorkspace,
+                    otherWorkspace,
+                    currentSavedAt: currentWorkspace.savedAt || null,
+                    otherSavedAt: otherWorkspace.savedAt || null,
+                    draftKey
+                };
+                localTabConflictRef.current = conflict;
+                setLocalTabConflict(conflict);
+                setPendingLocalSync(true);
+                if (!existing && addToast) addToast("Another tab changed this student's workspace. This tab's draft has been preserved.", 'warning');
+                if (!existing && blAnnounceToSR) blAnnounceToSR('Workspace conflict detected with another tab');
+            };
+            window.addEventListener('storage', onStorage);
+            return () => window.removeEventListener('storage', onStorage);
+        }, [selectedStudent, activeStudentId, studentKey, addToast, blAnnounceToSR, _clearLocalPersistenceError, _reportLocalPersistenceError]);
+
+        useEffect(() => {
+            if (!selectedStudent || !abcHydratedRef.current) return undefined;
+            const snapshot = buildWorkspaceSnapshot();
+            if (suppressNextWorkspacePersistRef.current) {
+                suppressNextWorkspacePersistRef.current = false;
+                return undefined;
             }
-            // Debounced cloud write-through (2s debounce to avoid excessive writes)
-            if (cloudSync.userId && !isCanvasEnv) {
+            latestLocalSnapshotRef.current = snapshot;
+            const saveKey = activeStudentId || selectedStudent;
+            const activeTabConflict = localTabConflictRef.current;
+            if (activeTabConflict && activeTabConflict.studentId === saveKey) {
+                try {
+                    localStorage.setItem(activeTabConflict.draftKey, JSON.stringify(snapshot));
+                    const updatedConflict = Object.assign({}, activeTabConflict, {
+                        currentWorkspace: snapshot,
+                        currentSavedAt: snapshot.savedAt
+                    });
+                    localTabConflictRef.current = updatedConflict;
+                    setLocalTabConflict(updatedConflict);
+                    setPendingLocalSync(true);
+                    _clearLocalPersistenceError();
+                } catch (storageError) {
+                    _reportLocalPersistenceError(storageError);
+                }
+                return undefined;
+            }
+            const suppressDirtyMark = suppressNextDirtyMarkRef.current;
+            suppressNextDirtyMarkRef.current = false;
+            try {
+                getBehaviorLensWorkspaceRuntime().persistLocalWorkspace({
+                    storage: localStorage,
+                    workspaceKey: studentKey('behaviorLens_workspace_'),
+                    dirtyKey: studentKey('behaviorLens_workspace_dirty_'),
+                    abcKey: studentKey('behaviorLens_abc_'),
+                    observationKey: studentKey('behaviorLens_obs_'),
+                    workspace: snapshot,
+                    abcEntries,
+                    observationSessions,
+                    suppressDirtyMark
+                });
+                setPendingLocalSync(!suppressDirtyMark && !isCanvasEnv);
+                _clearLocalPersistenceError();
+            } catch (storageError) {
+                setPendingLocalSync(!isCanvasEnv);
+                _reportLocalPersistenceError(storageError);
+            }
+            if (cloudSync.userId && !isCanvasEnv && !suppressDirtyMark) {
                 if (cloudSaveTimer.current) clearTimeout(cloudSaveTimer.current);
                 cloudSaveTimer.current = setTimeout(() => {
-                    cloudSync.saveToCloud(selectedStudent, {
-                        abcEntries,
-                        observationSessions,
-                        sessionNotes,
-                        studentProfile,
-                        sessionHistory,
-                        designPhases,
-                        favorites,
-                        userRole,
-                        savedAt: new Date().toISOString()
-                    }).catch(() => {});
+                    cloudSync.saveToCloud(saveKey, snapshot).catch(() => {});
                 }, 2000);
             }
             return () => { if (cloudSaveTimer.current) clearTimeout(cloudSaveTimer.current); };
-        }, [abcEntries, selectedStudent, activeStudentId]);
+        }, [buildWorkspaceSnapshot, selectedStudent, activeStudentId, cloudSync.userId, isCanvasEnv,
+            studentKey, abcEntries, observationSessions, _clearLocalPersistenceError, _reportLocalPersistenceError]);
 
-        // Auto-save observation sessions (localStorage + cloud write-through)
+                // Track data changes for save reminder
         useEffect(() => {
-            if (!selectedStudent || !abcHydratedRef.current) return;
-            try {
-                localStorage.setItem(studentKey('behaviorLens_obs_'), JSON.stringify(observationSessions));
-            } catch (e) {
-                // Silently fail — Canvas/iframe may block localStorage
+            if (!abcHydratedRef.current) return;
+            const identity = activeStudentId || 'name:' + selectedStudent;
+            if (hydrationCleanIdentityRef.current === identity) {
+                hydrationCleanIdentityRef.current = null;
+                return;
             }
-            // Cloud write-through (piggybacks on the debounced ABC save)
-            if (cloudSync.userId && !isCanvasEnv) {
-                if (cloudSaveTimer.current) clearTimeout(cloudSaveTimer.current);
-                cloudSaveTimer.current = setTimeout(() => {
-                    cloudSync.saveToCloud(selectedStudent, {
-                        abcEntries,
-                        observationSessions,
-                        sessionNotes,
-                        studentProfile,
-                        sessionHistory,
-                        designPhases,
-                        favorites,
-                        userRole,
-                        savedAt: new Date().toISOString()
-                    }).catch(() => {});
-                }, 2000);
-            }
-        }, [observationSessions, selectedStudent, activeStudentId]);
-
-        // Track data changes for save reminder
-        useEffect(() => { setDataChangedSinceSave(true); }, [abcEntries, observationSessions, sessionHistory, sessionNotes, designPhases]);
+            setDataChangedSinceSave(true);
+        }, [abcEntries, observationSessions, sessionHistory, sessionNotes, teamNotes, designPhases, studentProfile,
+            activeDesign, workflowTrack, workflowSubSteps, graphExport, effectSizeResults, aiAnalysis,
+            fullSummary, activeStudentId, selectedStudent]);
 
         // Auto-save reminder toast (every 10 min if unsaved changes exist)
         useEffect(() => {
@@ -26360,7 +26800,7 @@ ${dataStr}
 Analyze this data and return ONLY valid JSON:
 {
   "summary": "2-3 sentence high-level summary of behavioral patterns observed",
-  "hypothesizedFunction": "Attention" | "Escape" | "Tangible" | "Sensory",
+  "hypothesizedFunction": "Attention" | "Escape" | "Tangible" | "Sensory" | "Multiple" | "Unknown",
   "confidence": <0-100>,
   "patterns": [
     { "pattern": "description of pattern", "frequency": "how often", "evidence": "which entries support this" }
@@ -26381,7 +26821,19 @@ Analyze this data and return ONLY valid JSON:
                     if (obj) parsed = obj;
                     else throw new Error('Could not parse AI response');
                 }
-                setAiAnalysis(parsed);
+                const normalizedAnalysis = parsed && typeof parsed === 'object' ? {
+                    summary: typeof parsed.summary === 'string' ? parsed.summary.slice(0, 4000) : '',
+                    hypothesizedFunction: typeof parsed.hypothesizedFunction === 'string' ? parsed.hypothesizedFunction : 'Unknown',
+                    confidence: Math.max(0, Math.min(100, Number(parsed.confidence) || 0)),
+                    patterns: Array.isArray(parsed.patterns) ? parsed.patterns.filter(p => p && typeof p === 'object').slice(0, 20).map(p => ({
+                        pattern: typeof p.pattern === 'string' ? p.pattern.slice(0, 500) : '',
+                        frequency: typeof p.frequency === 'string' ? p.frequency.slice(0, 200) : '',
+                        evidence: typeof p.evidence === 'string' ? p.evidence.slice(0, 500) : ''
+                    })) : [],
+                    recommendations: Array.isArray(parsed.recommendations) ? parsed.recommendations.filter(r => typeof r === 'string').slice(0, 20).map(r => r.slice(0, 500)) : [],
+                    notes: typeof parsed.notes === 'string' ? parsed.notes.slice(0, 2000) : ''
+                } : { summary: '', hypothesizedFunction: 'Unknown', confidence: 0, patterns: [], recommendations: [], notes: '' };
+                setAiAnalysis(normalizedAnalysis);
                 if (addToast) addToast(tt('behavior_lens.abc.analysis_complete', 'Analysis complete ✨'), 'success');
             } catch (err) {
                 warnLog("AI Analysis failed:", err);
@@ -26434,7 +26886,29 @@ Analyze this data and return ONLY valid JSON:
                 return;
             }
 
-            // Generic fallback for other observation types (live obs, duration, etc.)
+            // Duration and latency are scalar measurements, not frequency counts.
+            // Preserve their units explicitly so downstream graphs do not silently drop them.
+            if (sessionData.method === 'duration') {
+                const totalDuration = Number(d.totalDuration ?? 0);
+                setSessionHistory(prev => [{
+                    date: dateStr, behavior: sessionData.behavior || 'Duration',
+                    count: totalDuration, rate: 0, value: totalDuration, unit: 'seconds',
+                    measurementType: 'duration', phase: 'Observation', duration: durStr,
+                    source: 'observation-duration'
+                }, ...prev]);
+                return;
+            }
+            if (sessionData.method === 'latency') {
+                const latencySeconds = Number(d.latencySeconds ?? (Number(d.latencyMs || 0) / 1000));
+                setSessionHistory(prev => [{
+                    date: dateStr, behavior: sessionData.behavior || 'Latency',
+                    count: latencySeconds, rate: latencySeconds, value: latencySeconds, unit: 'seconds',
+                    measurementType: 'latency', phase: 'Observation', duration: durStr,
+                    source: 'observation-latency'
+                }, ...prev]);
+                return;
+            }
+            // Generic fallback for other observation types (live obs, and any remaining observation types)
             const count = d.count ?? d.occurredCount ?? d.totalCount ?? null;
             const rate = d.rate ?? d.percentage ?? null;
             if (count !== null || rate !== null) {
@@ -27556,7 +28030,7 @@ Analyze this data and return ONLY valid JSON:
                 // the next render.
                 const existingDemoEntry = studentRoster.find(r => r.name === demoName);
                 const demoId = (existingDemoEntry && existingDemoEntry.id) || uid();
-                setSelectedStudent(demoName);
+                switchToStudent(demoName);
                 if (addToast) addToast(`Sandbox loaded with ${sandboxDays} days / ${sandboxEntries} entries of mock data!`, 'success');
                 
                 // 1. Generate mock ABC data using sandbox config
@@ -27638,7 +28112,7 @@ Analyze this data and return ONLY valid JSON:
                         ? h('div', { className: 'flex gap-3 items-center' },
                             h('select', {
                                 value: selectedStudent,
-                                onChange: (e) => setSelectedStudent(e.target.value),
+                                onChange: (e) => switchToStudent(e.target.value),
                                 'aria-label': 'Choose a student',
                                 className: 'flex-1 text-sm border border-slate-400 rounded-lg px-3 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 font-medium'
                             },
@@ -27657,7 +28131,7 @@ Analyze this data and return ONLY valid JSON:
                                     value: selectedAdj,
                                     onChange: (e) => {
                                         setSelectedAdj(e.target.value);
-                                        if (e.target.value && selectedAnimal) setSelectedStudent(`${e.target.value} ${selectedAnimal}`);
+                                        if (e.target.value && selectedAnimal) switchToStudent(`${e.target.value} ${selectedAnimal}`);
                                     },
                                     'aria-label': 'Pick codename adjective',
                                     className: 'w-1/2 p-2 rounded-lg border border-indigo-600 text-indigo-900 font-bold text-sm focus:ring-2 focus:ring-indigo-400 outline-none cursor-pointer bg-white'
@@ -27669,7 +28143,7 @@ Analyze this data and return ONLY valid JSON:
                                     value: selectedAnimal,
                                     onChange: (e) => {
                                         setSelectedAnimal(e.target.value);
-                                        if (selectedAdj && e.target.value) setSelectedStudent(`${selectedAdj} ${e.target.value}`);
+                                        if (selectedAdj && e.target.value) switchToStudent(`${selectedAdj} ${e.target.value}`);
                                     },
                                     'aria-label': 'Pick codename animal',
                                     className: 'w-1/2 p-2 rounded-lg border border-indigo-600 text-indigo-900 font-bold text-sm focus:ring-2 focus:ring-indigo-400 outline-none cursor-pointer bg-white'
@@ -28419,22 +28893,39 @@ Analyze this data and return ONLY valid JSON:
                     h('div', { className: 'flex items-center gap-2' },
                         // Data Quality Badge
                         selectedStudent && abcEntries.length > 0 && h(DataQualityBadge, { abcEntries, t }),
+                        localTabConflict && h('div', {
+                            role: 'status',
+                            'aria-label': 'Workspace conflict with another browser tab',
+                            className: 'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border bg-violet-50 border-violet-300 text-violet-800',
+                            title: 'Another tab changed this workspace; choose which browser copy to keep'
+                        }, 'Tab conflict'),
+                        pendingLocalSync && !localTabConflict && !cloudSync.cloudConflict && h('div', {
+                            role: 'status',
+                            'aria-label': 'Local changes pending cloud synchronization',
+                            className: 'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border bg-amber-50 border-amber-300 text-amber-800',
+                            title: 'Local workspace changes are waiting for cloud synchronization'
+                        }, 'Local changes pending'),
                         // Cloud Sync Status Badge
                         !isCanvasEnv && h('div', {
+                            role: 'status',
+                            'aria-label': cloudSync.syncStatus === 'conflict' ? 'Cloud sync conflict' : cloudSync.syncStatus === 'offline' ? (cloudSync.pendingSaveCount > 0 ? 'Cloud offline; local changes queued for retry' : 'Cloud offline; local storage active') : 'Cloud sync status',
                             className: `flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border transition-all ${
                                 cloudSync.syncStatus === 'synced' ? 'bg-sky-50 border-sky-200 text-sky-700' :
                                 cloudSync.syncStatus === 'syncing' ? 'bg-amber-50 border-amber-200 text-amber-700 animate-pulse motion-reduce:animate-none' :
+                                cloudSync.syncStatus === 'conflict' ? 'bg-orange-50 border-orange-300 text-orange-700' :
                                 cloudSync.syncStatus === 'offline' ? 'bg-red-50 border-red-200 text-red-600' :
                                 'bg-slate-50 border-slate-200 text-slate-600'
                             }`,
                             title: cloudSync.syncStatus === 'synced' ? 'Data synced to cloud' :
                                    cloudSync.syncStatus === 'syncing' ? 'Syncing...' :
-                                   cloudSync.syncStatus === 'offline' ? 'Cloud offline — using local storage' :
+                                   cloudSync.syncStatus === 'conflict' ? 'A newer cloud copy exists; choose which copy to keep' :
+                                   cloudSync.syncStatus === 'offline' ? (cloudSync.pendingSaveCount > 0 ? 'Cloud offline — local changes queued for retry' : 'Cloud offline — using local storage') :
                                    cloudSync.syncStatus === 'disabled' ? 'Cloud sync disabled' : 'Cloud sync idle'
                         },
                             cloudSync.syncStatus === 'synced' ? '☁️ Synced' :
-                            cloudSync.syncStatus === 'syncing' ? '⏳ Syncing' :
-                            cloudSync.syncStatus === 'offline' ? '⚡ Offline' :
+                            cloudSync.syncStatus === 'syncing' ? 'Syncing' :
+                            cloudSync.syncStatus === 'conflict' ? 'Conflict' :
+                            cloudSync.syncStatus === 'offline' ? (cloudSync.pendingSaveCount > 0 ? '⚡ Queued' : '⚡ Offline') :
                             '💾 Local'
                         ),
                         isCanvasEnv && h('div', {
@@ -28505,6 +28996,31 @@ Analyze this data and return ONLY valid JSON:
                         }, h(X, { size: 24, 'aria-hidden': 'true' }))
                     )
                 )
+            ),
+            localTabConflict && h('div', { role: 'alert', 'aria-live': 'assertive', className: 'mx-6 mt-3 rounded-xl border border-violet-300 bg-violet-50 p-4 text-sm text-violet-950 shadow-sm' },
+                h('p', { className: 'font-bold' }, localTabConflict.recovered ? 'Recovered an unresolved workspace draft.' : 'Another tab changed this workspace.'),
+                h('p', { className: 'mt-1' }, "This tab's work is preserved in a separate browser draft. Automatic shared and cloud writes are paused until you choose a copy."),
+                localTabConflict.currentSavedAt && localTabConflict.otherSavedAt &&
+                    h('p', { className: 'mt-1 text-xs font-bold' }, 'This tab: ' + localTabConflict.currentSavedAt + '; other tab: ' + localTabConflict.otherSavedAt + '.'),
+                h('div', { className: 'mt-3 flex flex-wrap gap-2' },
+                    h('button', { type: 'button', onClick: handleLoadOtherTabWorkspace, className: 'min-h-[44px] rounded-lg border border-violet-400 bg-white px-3 py-2 text-xs font-bold text-violet-900 hover:bg-violet-100' }, 'Load other tab copy'),
+                    h('button', { type: 'button', onClick: handleKeepThisTabWorkspace, className: 'min-h-[44px] rounded-lg bg-violet-700 px-3 py-2 text-xs font-bold text-white hover:bg-violet-800' }, 'Keep this tab copy')
+                )
+            ),
+            cloudSync.cloudConflict && h('div', { role: 'alert', 'aria-live': 'assertive', className: 'mx-6 mt-3 rounded-xl border border-orange-300 bg-orange-50 p-4 text-sm text-orange-900 shadow-sm' },
+                h('p', { className: 'font-bold' }, cloudSync.cloudConflict.reason === 'recovery' ? 'Unsynced local work and the cloud copy differ.' : 'A newer cloud copy exists for this student.'),
+                h('p', { className: 'mt-1' }, 'Your local changes are still available in this browser. Choose which copy to keep.'),
+                Number.isInteger(cloudSync.cloudConflict.localRevision) && Number.isInteger(cloudSync.cloudConflict.remoteRevision) &&
+                    h('p', { className: 'mt-1 text-xs font-bold' }, `Local revision ${cloudSync.cloudConflict.localRevision}; cloud revision ${cloudSync.cloudConflict.remoteRevision}.`),
+                h('div', { className: 'mt-3 flex flex-wrap gap-2' },
+                    h('button', { type: 'button', onClick: handleUseCloudCopy, className: 'min-h-[44px] rounded-lg border border-orange-400 bg-white px-3 py-2 text-xs font-bold text-orange-800 hover:bg-orange-100' }, 'Use cloud copy'),
+                    h('button', { type: 'button', onClick: handleKeepLocalCopy, className: 'min-h-[44px] rounded-lg bg-orange-700 px-3 py-2 text-xs font-bold text-white hover:bg-orange-800' }, 'Replace cloud with local')
+                )
+            ),
+            localPersistenceError && h('div', { role: 'alert', 'aria-live': 'assertive', className: 'mx-6 mt-3 rounded-xl border border-red-300 bg-red-50 p-4 text-sm text-red-900 shadow-sm' },
+                h('p', { className: 'font-bold' }, 'Local workspace backup needs attention.'),
+                h('p', { className: 'mt-1' }, localPersistenceError.message),
+                h('button', { type: 'button', onClick: handleSaveWorkspace, className: 'mt-3 min-h-[44px] rounded-lg bg-red-700 px-3 py-2 text-xs font-bold text-white hover:bg-red-800' }, 'Export workspace now')
             ),
             // Content area
             h('div', { className: 'flex-1 overflow-y-auto p-6' },
@@ -28777,6 +29293,9 @@ Analyze this data and return ONLY valid JSON:
                 }),
                 activePanel === 'teamnotes' && h(TeamNotes, {
                     studentName: selectedStudent,
+                    notes: teamNotes,
+                    setNotes: setTeamNotes,
+                    announce: blAnnounceToSR,
                     t,
                     addToast
                 }),
@@ -28991,11 +29510,7 @@ Analyze this data and return ONLY valid JSON:
                     t,
                     addToast
                 }),
-                activePanel === 'progressreport' && h(ProgressReportGenerator, {
-                    abcEntries, observationSessions, sessionHistory,
-                    studentName: selectedStudent, studentProfile,
-                    callGemini: callGeminiWithContext, t, addToast
-                }),
+
                 activePanel === 'effectsize' && h(EffectSizeCalculator, {
                     sessionHistory, designPhases,
                     graphExport, abcEntries,
@@ -29009,7 +29524,7 @@ Analyze this data and return ONLY valid JSON:
                 }),
                 activePanel === 'caseload' && h(CaseloadDashboard, {
                     abcEntries, dashboardData, callGemini: callGeminiWithContext,
-                    t, addToast, selectedStudent, setSelectedStudent, openPanel
+                    t, addToast, selectedStudent, setSelectedStudent: switchToStudent, openPanel
                 }),
                 activePanel === 'compare' && h(ComparisonDashboard, {
                     comparisonWorkspaces, setComparisonWorkspaces,
@@ -29031,7 +29546,7 @@ Analyze this data and return ONLY valid JSON:
                 }),
                 activePanel === 'taskanalysis' && h(TaskAnalysisTool, { studentName: selectedStudent, callGemini: callGeminiWithContext, t, addToast }),
                 activePanel === 'dtt' && h(DTTDataSheet, { studentName: selectedStudent, t, addToast }),
-                activePanel === 'prefassess' && h(PreferenceAssessment, { studentName: selectedStudent, t, addToast }),
+
                 activePanel === 'scatterplot' && h(ScatterplotAnalysis, { abcEntries, t, addToast }),
                 activePanel === 'latency' && h(LatencyRecorder, { t, addToast, onSaveSession: (s) => setSessionHistory(prev => [s, ...prev]) }),
                 activePanel === 'socialvalidity' && h(SocialValidityMeasures, { studentName: selectedStudent, callGemini: callGeminiWithContext, t, addToast }),
@@ -29040,7 +29555,8 @@ Analyze this data and return ONLY valid JSON:
                 activePanel === 'condprob' && h(ConditionalProbability, { abcEntries, t, addToast }),
                 activePanel === 'treatintegrity' && h(TreatmentIntegrityTracker, { t, addToast }),
                 activePanel === 'batchimport' && h(BatchImportPanel, {
-                    abcEntries, setAbcEntries, addToast, t
+                    abcEntries, setAbcEntries, studentRoster, setStudentRoster,
+                    setSelectedStudent: switchToStudent, addToast, t
                 }),
                 activePanel === 'progressmonitor' && h(ProgressMonitorDashboard, {
                     abcEntries, observationSessions, sessionHistory, t, addToast

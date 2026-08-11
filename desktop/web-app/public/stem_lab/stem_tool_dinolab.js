@@ -40,7 +40,7 @@ window.StemLab = window.StemLab || {
 (function () {
   'use strict';
 
-  // ── Theme tokens (STEM Lab CSS custom properties, dark fallbacks) ──
+  // ── Theme tokens (STEAM Lab CSS custom properties, dark fallbacks) ──
   var T = {
     canvas: 'var(--allo-stem-canvas, #0f172a)',
     panel: 'var(--allo-stem-panel, #1e293b)',
@@ -6022,7 +6022,9 @@ window.StemLab = window.StemLab || {
   window.StemLab.registerTool('dinoLab', {
     name: 'Dino Lab',
     icon: '🦕',
-    category: 'explore',
+    desc: 'Explore dinosaurs across deep time, compare species, dig fossils, build food webs, and connect birds to dinosaurs.',
+    category: 'biology',
+    aliases: ['dinosaurs', 'paleontology', 'fossils', 'food webs'],
     questHooks: [
       { id: 'meet_5', label: 'Open 5 different dinosaur cards', icon: '🦕', check: function (d) { return Object.keys(d.seen || {}).length >= 5; }, progress: function (d) { return Object.keys(d.seen || {}).length + '/5 met'; } },
       { id: 'dig_one', label: 'Excavate a fossil at the Dig Site', icon: '⛏️', check: function (d) { return (d.digsSolved || 0) >= 1; }, progress: function (d) { return (d.digsSolved || 0) + '/1 dig'; } },
@@ -6236,7 +6238,7 @@ window.StemLab = window.StemLab || {
           '<h3>Standout traits</h3><ul>' + dn.traits.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' +
           '<div class="box know"><b>🔎 How we know:</b> ' + esc(dn.howKnow) + '</div>' +
           '<div class="box unc"><b>⚖️ What we are not sure about:</b> ' + esc(dn.uncertain) + '</div>' +
-          '<div class="foot">Dino Lab · STEM Lab — lengths, weights, and speeds are widely-cited estimates, not exact measurements.</div>' +
+          '<div class="foot">Dino Lab · STEAM Lab — lengths, weights, and speeds are widely-cited estimates, not exact measurements.</div>' +
           '</div></body></html>';
         try {
           var w = window.open('', '_blank', 'width=620,height=900');

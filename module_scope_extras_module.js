@@ -324,6 +324,129 @@ const stripUnsafeLiveSessionFields = (value, keyName = "") => {
   }
   return value;
 };
+const AAC_SESSION_MAX_PAGES = 12;
+const AAC_SESSION_MAX_CELLS_PER_PAGE = 64;
+const AAC_SESSION_MAX_CELLS = 256;
+const AAC_SESSION_MAX_IMAGE_CHARS = 2 * 1024 * 1024;
+const AAC_SESSION_MAX_IMAGE_CHARS_TOTAL = 4 * 1024 * 1024;
+const AAC_SESSION_MAX_AUDIO_CHARS = 1024 * 1024;
+const AAC_SESSION_MAX_AUDIO_CHARS_TOTAL = 1024 * 1024;
+const sanitizeAacSessionText = (value, max = 240) => String(value == null ? String() : value).replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
+const isSafeAacSessionDataImage = (value) => {
+  if (typeof value !== 'string' || value.length > AAC_SESSION_MAX_IMAGE_CHARS) return false;
+  if (/^data:image\/(?:png|jpe?g|webp|gif|avif);base64,[A-Za-z0-9+/]*={0,2}$/i.test(value)) return true;
+  const match = value.match(/^data:image\/svg\+xml;base64,([A-Za-z0-9+/]*={0,2})$/i);
+  if (!match || typeof atob !== 'function') return false;
+  try {
+    const svg = atob(match[1]);
+    if (svg.length > AAC_SESSION_MAX_IMAGE_CHARS || !/<svg(?:\s|>)/i.test(svg)) return false;
+    return !/<\s*(?:script|foreignObject|iframe|object|embed|link|style|image|audio|video)\b/i.test(svg)
+      && !/<!\s*(?:DOCTYPE|ENTITY)\b|<\?xml-stylesheet\b/i.test(svg)
+      && !/\son[a-z]+\s*=/i.test(svg)
+      && !/(?:href|xlink:href)\s*=\s*['"]\s*(?:https?:|\/\/|blob:|data:|javascript:)/i.test(svg)
+      && !/(?:url\s*\(|@import|javascript:|expression\s*\()/i.test(svg);
+  } catch (_) {
+    return false;
+  }
+};
+const isSafeAacSessionDataAudio = (value) => typeof value === 'string' && value.length <= AAC_SESSION_MAX_AUDIO_CHARS && /^data:audio\/(?:mpeg|mp3|mp4|aac|ogg|wav|webm|flac|x-wav);base64,[A-Za-z0-9+/]*={0,2}$/i.test(value);
+const sanitizeAacSessionAudioProfile = (value) => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return void 0;
+  const out = {};
+  ['voice', 'language', 'provider', 'engine', 'model', 'voiceResolverVersion'].forEach((key) => {
+    const clean = sanitizeAacSessionText(value[key], 80);
+    if (clean) out[key] = clean;
+  });
+  const rate = Number(value.synthesisRate);
+  if (Number.isFinite(rate)) out.synthesisRate = Math.max(0.25, Math.min(4, rate));
+  return Object.keys(out).length ? out : void 0;
+};
+const sanitizeAacBoardForSessionAsset = (item) => {
+  const source = item && item.data;
+  if (!source || source.format !== 'alloflow.aac-board' || Number(source.version) !== 1 || !source.board || !Array.isArray(source.pages)) return null;
+  let imageChars = 0;
+  let audioChars = 0;
+  let cellCount = 0;
+  let omittedImages = Math.max(0, Math.round(Number(source.metadata && source.metadata.omittedNonportableImages) || 0));
+  let omittedCustomAudio = Math.max(0, Math.round(Number(source.metadata && source.metadata.omittedCustomAudio) || 0));
+  let omittedPreparedAudio = Math.max(0, Math.round(Number(source.metadata && source.metadata.omittedPreparedAudio) || 0));
+  const sourceAllowsPreparedAudio = !!(source.metadata && source.metadata.privacy && source.metadata.privacy.preparedAudioIncluded === true);
+  let preparedAudioIncluded = false;
+  const pages = source.pages.slice(0, AAC_SESSION_MAX_PAGES).map((page, pageIndex) => {
+    const cells = (Array.isArray(page && page.cells) ? page.cells : []).slice(0, AAC_SESSION_MAX_CELLS_PER_PAGE).flatMap((cell, cellIndex) => {
+      if (!cell || typeof cell !== 'object' || cellCount >= AAC_SESSION_MAX_CELLS) return [];
+      cellCount += 1;
+      const clean = {
+        id: sanitizeAacSessionText(cell.id, 96) || 'cell-' + (pageIndex + 1) + '-' + (cellIndex + 1),
+        index: Math.max(0, Math.min(999, Math.round(Number(cell.index) || cellIndex))),
+        row: Math.max(0, Math.min(99, Math.round(Number(cell.row) || 0))),
+        col: Math.max(0, Math.min(99, Math.round(Number(cell.col) || 0))),
+        displayLabel: sanitizeAacSessionText(cell.displayLabel, 160),
+        vocalLabel: sanitizeAacSessionText(cell.vocalLabel, 240),
+        originalLabel: sanitizeAacSessionText(cell.originalLabel, 160),
+        description: sanitizeAacSessionText(cell.description, 400),
+        category: sanitizeAacSessionText(cell.category, 80),
+        image: null
+      };
+      if (isSafeAacSessionDataImage(cell.image) && imageChars + cell.image.length <= AAC_SESSION_MAX_IMAGE_CHARS_TOTAL) {
+        clean.image = cell.image;
+        imageChars += cell.image.length;
+      } else if (cell.image) {
+        omittedImages += 1;
+      }
+      if (cell.audio && cell.audio.kind === 'custom') omittedCustomAudio += 1;
+      if (cell.audio && cell.audio.kind === 'prepared') {
+        const audioData = cell.audio.data;
+        const mime = sanitizeAacSessionText(cell.audio.mime, 80).toLowerCase();
+        if (sourceAllowsPreparedAudio && isSafeAacSessionDataAudio(audioData) && /^audio\/(?:mpeg|mp3|mp4|aac|ogg|wav|webm|flac|x-wav)$/i.test(mime) && audioChars + audioData.length <= AAC_SESSION_MAX_AUDIO_CHARS_TOTAL) {
+          clean.audio = { kind: 'prepared', mime, data: audioData };
+          const profile = sanitizeAacSessionAudioProfile(cell.audio.profile);
+          if (profile) clean.audio.profile = profile;
+          audioChars += audioData.length;
+          preparedAudioIncluded = true;
+        } else {
+          omittedPreparedAudio += 1;
+        }
+      }
+      return [clean];
+    });
+    return {
+      id: sanitizeAacSessionText(page && page.id, 96) || 'page-' + (pageIndex + 1),
+      title: sanitizeAacSessionText(page && page.title, 160) || 'Page ' + (pageIndex + 1),
+      cols: Math.max(1, Math.min(12, Math.round(Number(page && page.cols) || 4))),
+      cells
+    };
+  }).filter((page) => page.cells.length);
+  if (!pages.length) return null;
+  const warnings = (Array.isArray(source.metadata && source.metadata.warnings) ? source.metadata.warnings : []).slice(0, 20).map((warning) => sanitizeAacSessionText(warning, 240)).filter(Boolean);
+  return stripUndefinedForFirestore({
+    id: sanitizeAacSessionText(item.id, 120) || 'aac-board-' + Date.now(),
+    type: 'aac-board',
+    title: sanitizeAacSessionText(item.title || source.board.title, 160) || 'AAC Board',
+    data: {
+      format: 'alloflow.aac-board',
+      version: 1,
+      exportedAt: sanitizeAacSessionText(source.exportedAt, 80),
+      board: {
+        id: sanitizeAacSessionText(source.board.id, 96) || 'board',
+        title: sanitizeAacSessionText(source.board.title, 160) || 'AAC Board',
+        locale: sanitizeAacSessionText(source.board.locale, 40) || 'en-US',
+        direction: source.board.direction === 'rtl' ? 'rtl' : 'ltr'
+      },
+      pages,
+      metadata: {
+        privacy: { customAudioIncluded: false, preparedAudioIncluded },
+        omittedNonportableImages: omittedImages,
+        omittedCustomAudio,
+        omittedPreparedAudio,
+        warnings
+      }
+    },
+    meta: sanitizeAacSessionText(item.meta, 240),
+    timestamp: Number.isFinite(Number(item.timestamp)) ? Number(item.timestamp) : void 0,
+    source: item.source === 'symbol-studio' ? 'symbol-studio' : void 0
+  });
+};
 const compactLargeSessionResources = (appId, resources, writeTasks, options = {}) => {
   let resourcesJson = "";
   try {
@@ -435,7 +558,7 @@ const uploadSessionAssets = async (appId, resources, sessionCode) => {
     console.error("[SESSION DEBUG] Pre-check error:", preCheckErr);
   }
   const securityMetadata = getSessionAssetSecurityMetadata(sessionCode);
-  const safeResources = structuredClone(stripUnsafeLiveSessionFields(resources));
+  const safeResources = structuredClone(resources.map((item) => item && item.type === 'aac-board' ? sanitizeAacBoardForSessionAsset(item) : stripUnsafeLiveSessionFields(item)).filter(Boolean));
   const writeTasks = [];
   const processField = (obj, key, assetSeed) => {
     const val = obj[key];
@@ -485,6 +608,13 @@ const uploadSessionAssets = async (appId, resources, sessionCode) => {
         processJsonField(wordItem, "_ttsAssets", "wsaudio", sessionCode || "session");
         processJsonField(wordItem, "_decodingAssets", "wsimg", sessionCode || "session");
         processJsonField(wordItem, "_aacAssets", "wsaac", sessionCode || "session");
+      });
+    }
+    if (item.type === 'aac-board' && item.data && Array.isArray(item.data.pages)) {
+      item.data.pages.forEach((page, pageIndex) => {
+        (Array.isArray(page.cells) ? page.cells : []).forEach((cell, cellIndex) => {
+          processField(cell, 'image', seed.concat(['page', pageIndex, 'cell', cellIndex]));
+        });
       });
     }
   });
@@ -628,6 +758,11 @@ const hydrateSessionAssets = async (appId, resources) => {
         restoreJsonField(wordItem, "_ttsAssets");
         restoreJsonField(wordItem, "_decodingAssets");
         restoreJsonField(wordItem, "_aacAssets");
+      });
+    }
+    if (item.type === 'aac-board' && item.data && Array.isArray(item.data.pages)) {
+      item.data.pages.forEach((page) => {
+        (Array.isArray(page.cells) ? page.cells : []).forEach((cell) => restoreField(cell, 'image'));
       });
     }
   });

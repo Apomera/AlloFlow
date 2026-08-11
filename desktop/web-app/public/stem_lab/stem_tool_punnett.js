@@ -14,7 +14,7 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) - shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) - shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -170,8 +170,8 @@ window.StemLab = window.StemLab || {
       { label: '\uD83D\uDC04 Roan Cattle (Rr \u00D7 Rr)', p1: ['R', 'r'], p2: ['R', 'r'], trait: 'Coat pattern', domEmoji: '\uD83D\uDD34', recEmoji: '\u26AA', blendEmoji: '\uD83D\uDD35', domLabel: 'Red', recLabel: 'White', blendLabel: 'Roan (mixed)', tip: 'Roan cattle show both red and white hairs together' }
     ],
     sexLinked: [
-      { label: '\uD83D\uDC41 Color Vision (Cc \u00D7 cY)', p1: ['C', 'c'], p2: ['C', 'Y'], trait: 'Color vision', domEmoji: '\uD83D\uDC41', recEmoji: '\uD83D\uDE36\u200D\uD83C\uDF2B\uFE0F', domLabel: 'Normal', recLabel: 'Colorblind', tip: 'Carrier mother \u00D7 normal father: 50% sons affected' },
-      { label: '\uD83E\uDE78 Hemophilia (Hh \u00D7 hY)', p1: ['H', 'h'], p2: ['H', 'Y'], trait: 'Blood clotting', domEmoji: '\uD83E\uDE78', recEmoji: '\uD83E\uDE79', domLabel: 'Normal', recLabel: 'Hemophilia', tip: 'X-linked recessive: carrier mother can produce affected sons' }
+      { label: '\uD83D\uDC41 Color Vision (Cc \u00D7 CY)', p1: ['C', 'c'], p2: ['C', 'Y'], trait: 'Color vision', domEmoji: '\uD83D\uDC41', recEmoji: '\uD83D\uDE36\u200D\uD83C\uDF2B\uFE0F', domLabel: 'Normal', recLabel: 'Colorblind', tip: 'Carrier mother \u00D7 normal father: 50% sons affected' },
+      { label: '\uD83E\uDE78 Hemophilia (Hh \u00D7 HY)', p1: ['H', 'h'], p2: ['H', 'Y'], trait: 'Blood clotting', domEmoji: '\uD83E\uDE78', recEmoji: '\uD83E\uDE79', domLabel: 'Normal', recLabel: 'Hemophilia', tip: 'X-linked recessive: carrier mother can produce affected sons' }
     ]
   };
 
@@ -363,6 +363,44 @@ window.StemLab = window.StemLab || {
 
   // ── Challenge questions (3 tiers × 8) ──
   // ── Challenge questions (3 tiers x 12) ──
+  // The authored banks list the correct answer first far too often (measured
+  // 3/36/16/0 across the challenge + battle banks: 65% in slot 2 and slot 4
+  // NEVER correct), which let a student score by position instead of genetics.
+  // Rotate each question by a per-question offset so the answer moves.
+  //
+  // Deterministic, applied ONCE to the bank at module scope: questions are
+  // re-read from the bank on every render (chalQuestions[chalIdx]), so a
+  // render-time Math.random() would deal new options mid-question.
+  //
+  // All three fields must move together: correctness is `i === q.correct`,
+  // the answer text is read as `q.a[q.correct]`, and wrongFeedback is indexed
+  // positionally by the selected option.
+  function punnettRotateQuestion(q, seedIdx) {
+    if (!q || !Array.isArray(q.a) || q.a.length < 2) return q;
+    var n = q.a.length;
+    var shift = ((seedIdx * 7) + 3) % n;
+    if (shift === 0) return q;
+    var rotate = function (arr) {
+      if (!Array.isArray(arr) || arr.length !== n) return arr;
+      var out = new Array(n);
+      for (var i = 0; i < n; i++) out[(i + shift) % n] = arr[i];
+      return out;
+    };
+    var next = Object.assign({}, q);
+    next.a = rotate(q.a);
+    if (Array.isArray(q.wrongFeedback)) next.wrongFeedback = rotate(q.wrongFeedback);
+    if (typeof q.correct === "number") next.correct = (q.correct + shift) % n;
+    return next;
+  }
+  function punnettRotateBank(bank) {
+    var seed = 0;
+    if (Array.isArray(bank)) return bank.map(function (q) { return punnettRotateQuestion(q, seed++); });
+    var out = {};
+    Object.keys(bank).forEach(function (k) {
+      out[k] = bank[k].map(function (q) { return punnettRotateQuestion(q, seed++); });
+    });
+    return out;
+  }
   var CHALLENGE_QS = {
     easy: [
       {
@@ -1105,6 +1143,14 @@ window.StemLab = window.StemLab || {
   // ═══════════════════════════════════════════════════
   // REGISTER TOOL
   // ═══════════════════════════════════════════════════
+  // Applied here, not next to the bank literals: the engine test extracts each
+  // literal by slicing to the following landmark, so a statement in between
+  // lands inside that slice.
+  CHALLENGE_QS = punnettRotateBank(CHALLENGE_QS);
+  BATTLE_QS = punnettRotateBank(BATTLE_QS);
+
+  try { window.__punnettPure = { CHALLENGE_QS: CHALLENGE_QS, BATTLE_QS: BATTLE_QS, punnettRotateQuestion: punnettRotateQuestion }; } catch (_e) {}
+
   window.StemLab.registerTool('punnett', {
     icon: '\uD83E\uDDEC', label: 'Punnett Square Lab',
     desc: 'Genetics lab: crosses, pedigrees, population genetics, DNA translation',
@@ -1646,10 +1692,12 @@ window.StemLab = window.StemLab || {
               if (popMutation > 0) {
                 p = p * (1 - popMutation) + (1 - p) * popMutation;
               }
-              // Genetic drift (binomial sampling)
+              // Genetic drift (binomial sampling). Sample the full 2N allele pool:
+              // the slider allows N up to 1000 and a silent cap at 500 would double
+              // the drift variance students observe for the largest populations.
               if (popDrift) {
                 var count = 0;
-                var n2 = 2 * Math.min(popSize, 500);
+                var n2 = 2 * popSize;
                 for (var i = 0; i < n2; i++) {
                   if (Math.random() < p) count++;
                 }

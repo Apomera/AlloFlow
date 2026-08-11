@@ -29,7 +29,7 @@ function LaunchPadView(props) {
   var guidedTitle = copy('launch_pad.guided_title', 'Guided Mode');
   var guidedDesc = copy('launch_pad.guided_desc', 'Follow a recommended path with step-by-step support.');
   var learningToolsTitle = copy('launch_pad.learning_tools_title', 'Learning Tools');
-  var learningToolsDesc = copy('launch_pad.learning_tools_desc', 'STEM Lab, StoryForge, SEL Hub, Research Hub & more - explore, create, investigate, and grow.');
+  var learningToolsDesc = copy('launch_pad.learning_tools_desc', 'STEAM Lab, StoryForge, SEL Hub, Research Hub & more - explore, create, investigate, and grow.');
   var educatorToolsTitle = copy('launch_pad.educator_tools_title', 'Educator Tools');
   var educatorToolsDesc = copy('launch_pad.educator_tools_desc_open', 'BehaviorLens, Report Writer, and other professional educator tools.');
   var switchHint = copy('launch_pad.switch_hint', 'You can switch modes later.');
@@ -52,17 +52,82 @@ function LaunchPadView(props) {
     }
   };
   // Dynamically loaded from the language pack manifest so the list stays in
-  // sync with what's actually deployed. Falls back to a curated default if the
-  // manifest is unreachable. Mirrors the pattern in ui_language_selector_module.js.
-  var _deployedLangs = useState([
-    'English', 'Spanish (Latin America)', 'French', 'Arabic', 'Chinese (Simplified)',
-    'Hebrew', 'Portuguese (Brazil)', 'Somali', 'Vietnamese', 'Haitian Creole'
-  ]);
+  // sync with what's actually deployed. The local copy comes first so the
+  // bundled app does not lose languages when it is offline or the CDN is down.
+  // Mirrors the pattern in ui_language_selector_module.js.
+  var FALLBACK_LANGUAGE_OPTIONS = [
+  { value: "English", endonym: "English" },
+  { value: "Acholi", endonym: "Leb Acholi", provenance: "english-passthrough" },
+  { value: "Amharic", endonym: "\u12a0\u121b\u122d\u129b", provenance: "ai-drafted" },
+  { value: "Arabic", endonym: "\u0627\u0644\u0639\u0631\u0628\u064a\u0629", provenance: "ai-drafted" },
+  { value: "Bengali", endonym: "\u09ac\u09be\u0982\u09b2\u09be", provenance: "ai-drafted" },
+  { value: "Burmese", endonym: "\u1019\u103c\u1014\u103a\u1019\u102c", provenance: "ai-drafted" },
+  { value: "Chin (Falam)", endonym: "Laiholh (Falam)", provenance: "english-passthrough" },
+  { value: "Chin (Hakha)", endonym: "Laiholh (Hakha)", provenance: "english-passthrough" },
+  { value: "Chinese (Simplified)", endonym: "\u7b80\u4f53\u4e2d\u6587", provenance: "ai-drafted" },
+  { value: "Chinese (Traditional)", endonym: "\u7e41\u9ad4\u4e2d\u6587", provenance: "ai-drafted" },
+  { value: "Dari", endonym: "\u062f\u0631\u06cc", provenance: "ai-drafted" },
+  { value: "Dutch", endonym: "Nederlands", provenance: "ai-drafted" },
+  { value: "Esperanto", endonym: "Esperanto", provenance: "ai-drafted" },
+  { value: "Farsi", endonym: "\u0641\u0627\u0631\u0633\u06cc", provenance: "ai-drafted" },
+  { value: "French", endonym: "Fran\u00e7ais", provenance: "ai-drafted" },
+  { value: "French (Canadian)", endonym: "Fran\u00e7ais (Canada)", provenance: "ai-drafted" },
+  { value: "German", endonym: "Deutsch", provenance: "ai-drafted" },
+  { value: "Greek", endonym: "\u0395\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac", provenance: "ai-drafted" },
+  { value: "Gujarati", endonym: "\u0a97\u0ac1\u0a9c\u0ab0\u0abe\u0aa4\u0ac0", provenance: "ai-drafted" },
+  { value: "Haitian Creole", endonym: "Krey\u00f2l Ayisyen", provenance: "ai-drafted" },
+  { value: "Hausa", endonym: "Hausa", provenance: "ai-drafted" },
+  { value: "Hebrew", endonym: "\u05e2\u05d1\u05e8\u05d9\u05ea", provenance: "ai-drafted" },
+  { value: "Hindi", endonym: "\u0939\u093f\u0928\u094d\u0926\u0940", provenance: "ai-drafted" },
+  { value: "Hmong", endonym: "Hmoob", provenance: "ai-drafted" },
+  { value: "Igbo", endonym: "Igbo", provenance: "ai-drafted" },
+  { value: "Indonesian", endonym: "Bahasa Indonesia", provenance: "ai-drafted" },
+  { value: "Italian", endonym: "Italiano", provenance: "ai-drafted" },
+  { value: "Japanese", endonym: "\u65e5\u672c\u8a9e", provenance: "ai-drafted" },
+  { value: "Kannada", endonym: "\u0c95\u0ca8\u0ccd\u0ca8\u0ca1", provenance: "ai-drafted" },
+  { value: "Karen", endonym: "\u1000\u100a\u102e\u1000\u103b\u102d\u102c\u103a", provenance: "partial-draft" },
+  { value: "Khmer", endonym: "\u1797\u17b6\u179f\u17b6\u1781\u17d2\u1798\u17c2\u179a", provenance: "ai-drafted" },
+  { value: "Kinyarwanda", endonym: "Ikinyarwanda", provenance: "ai-drafted" },
+  { value: "Kirundi", endonym: "Ikirundi", provenance: "ai-drafted" },
+  { value: "Korean", endonym: "\ud55c\uad6d\uc5b4", provenance: "ai-drafted" },
+  { value: "Lao", endonym: "\u0e9e\u0eb2\u0eaa\u0eb2\u0ea5\u0eb2\u0ea7", provenance: "ai-drafted" },
+  { value: "Latin", endonym: "Latina", provenance: "ai-drafted" },
+  { value: "Lingala", endonym: "Ling\u00e1la", provenance: "ai-drafted" },
+  { value: "Maay Maay", endonym: "Af-Maay", provenance: "english-passthrough" },
+  { value: "Malayalam", endonym: "\u0d2e\u0d32\u0d2f\u0d3e\u0d33\u0d02", provenance: "ai-drafted" },
+  { value: "Marathi", endonym: "\u092e\u0930\u093e\u0920\u0940", provenance: "ai-drafted" },
+  { value: "Marshallese", endonym: "Kajin \u1e42aje\u1e37", provenance: "partial-draft" },
+  { value: "Nepali", endonym: "\u0928\u0947\u092a\u093e\u0932\u0940", provenance: "ai-drafted" },
+  { value: "Pashto", endonym: "\u067e\u069a\u062a\u0648", provenance: "ai-drafted" },
+  { value: "Polish", endonym: "Polski", provenance: "ai-drafted" },
+  { value: "Portuguese (Angola)", endonym: "Portugu\u00eas (Angola)", provenance: "needs-repair" },
+  { value: "Portuguese (Brazil)", endonym: "Portugu\u00eas (Brasil)", provenance: "ai-drafted" },
+  { value: "Portuguese (Portugal)", endonym: "Portugu\u00eas (Portugal)", provenance: "ai-drafted" },
+  { value: "Punjabi", endonym: "\u0a2a\u0a70\u0a1c\u0a3e\u0a2c\u0a40", provenance: "ai-drafted" },
+  { value: "Romanian", endonym: "Rom\u00e2n\u0103", provenance: "ai-drafted" },
+  { value: "Russian", endonym: "\u0420\u0443\u0441\u0441\u043a\u0438\u0439", provenance: "ai-drafted" },
+  { value: "Somali", endonym: "Soomaali", provenance: "ai-drafted" },
+  { value: "Spanish (Castilian)", endonym: "Espa\u00f1ol (Espa\u00f1a)", provenance: "ai-drafted" },
+  { value: "Spanish (Latin America)", endonym: "Espa\u00f1ol (Latinoam\u00e9rica)", provenance: "ai-drafted" },
+  { value: "Swahili", endonym: "Kiswahili", provenance: "ai-drafted" },
+  { value: "Tagalog", endonym: "Tagalog", provenance: "ai-drafted" },
+  { value: "Tamil", endonym: "\u0ba4\u0bae\u0bbf\u0bb4\u0bcd", provenance: "ai-drafted" },
+  { value: "Telugu", endonym: "\u0c24\u0c46\u0c32\u0c41\u0c17\u0c41", provenance: "ai-drafted" },
+  { value: "Thai", endonym: "\u0e20\u0e32\u0e29\u0e32\u0e44\u0e17\u0e22", provenance: "ai-drafted" },
+  { value: "Tigrinya", endonym: "\u1275\u130d\u122d\u129b", provenance: "ai-drafted" },
+  { value: "Turkish", endonym: "T\u00fcrk\u00e7e", provenance: "ai-drafted" },
+  { value: "Ukrainian", endonym: "\u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430", provenance: "ai-drafted" },
+  { value: "Urdu", endonym: "\u0627\u0631\u062f\u0648", provenance: "ai-drafted" },
+  { value: "Vietnamese", endonym: "Ti\u1ebfng Vi\u1ec7t", provenance: "ai-drafted" },
+  { value: "Yoruba", endonym: "Yor\u00f9b\u00e1", provenance: "ai-drafted" },
+];
+  var _deployedLangs = useState(FALLBACK_LANGUAGE_OPTIONS);
   var LAUNCH_PAD_LANGS = _deployedLangs[0];
   var setLaunchPadLangs = _deployedLangs[1];
   React.useEffect(function() {
     var cancelled = false;
     var urls = [
+      './lang/manifest.json',
       'https://alloflow-cdn.pages.dev/lang/manifest.json',
       'https://raw.githubusercontent.com/Apomera/AlloFlow/main/lang/manifest.json'
     ];
@@ -77,7 +142,11 @@ function LaunchPadView(props) {
             // setUiLanguage stays the English name; only the label changes.
             var displays = m.available
               .filter(function(e) { return e && e.display; })
-              .map(function(e) { return { value: e.display, endonym: e.endonym || e.display }; })
+              .map(function(e) { return {
+                value: e.display,
+                endonym: e.endonym || e.display,
+                provenance: e.provenance || 'ai-drafted'
+              }; })
               .sort(function(a, b) { return a.value.localeCompare(b.value); });
             // English first, then alphabetical
             var ordered = [{ value: 'English', endonym: 'English' }]
@@ -90,17 +159,19 @@ function LaunchPadView(props) {
     })();
     return function() { cancelled = true; };
   }, []);
-  // Label a language in ITSELF, matching the header picker. Same rule in both
-  // places so the two surfaces cannot drift: endonym first, English appended
-  // only when the endonym is non-Latin AND the English name has no
-  // parentheses of its own.
-  var LP_NON_LATIN = /[^\u0020-\u024F\u1E00-\u1EFF\s().,'\u2019-]/;
+  // Always show both names when they differ, matching the header picker. The
+  // separator avoids nested parentheses for regional language variants.
+  var LP_PROVENANCE_SUFFIX = {
+    'english-passthrough': ' [English text, not yet translated]',
+    'partial-draft': ' [partial draft, needs a native reviewer]',
+    'needs-repair': ' [known errors, needs a native reviewer]'
+  };
   function lpLangLabel(entry) {
     if (!entry) return '';
     var endonym = entry.endonym || entry.value;
-    if (endonym === entry.value) return entry.value;
-    var needsGloss = LP_NON_LATIN.test(endonym) && !/[()]/.test(entry.value);
-    return needsGloss ? endonym + ' (' + entry.value + ')' : endonym;
+    var suffix = LP_PROVENANCE_SUFFIX[entry.provenance] || '';
+    if (endonym === entry.value) return entry.value + suffix;
+    return endonym + ' — ' + entry.value + suffix;
   }
   function lpCurrentLabel() {
     for (var i = 0; i < LAUNCH_PAD_LANGS.length; i++) {

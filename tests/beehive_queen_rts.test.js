@@ -245,11 +245,14 @@ describe('Beehive Queen mode - real-time RTS behavior', () => {
 
   it('pauses and resumes Drone Flight from the visible control panel', async () => {
     const Component = () => {
-      const [toolData, setToolData] = React.useState({ beehive: { viewMode: 'drone', drone: { active: true, paused: false, difficulty: 'easy' } } });
+      const [toolData, setToolData] = React.useState({ beehive: { viewMode: 'drone', drone: { active: false, difficulty: 'easy' } } });
       latest = toolData;
       return config.render(makeCtx({ toolData, setToolData }));
     };
     await act(async () => { root.render(React.createElement(Component)); await Promise.resolve(); });
+    const launch = host.querySelector('[data-mobile-rail="drone-difficulty"] button');
+    expect(launch).toBeTruthy();
+    await act(async () => { launch.click(); await Promise.resolve(); await Promise.resolve(); });
     const pauseButton = Array.from(host.querySelectorAll('button')).find((button) => button.textContent.includes('Pause flight'));
     expect(pauseButton).toBeTruthy();
     await act(async () => { pauseButton.click(); await Promise.resolve(); });
@@ -288,7 +291,7 @@ describe('Beehive Queen mode - real-time RTS behavior', () => {
     await act(async () => { expertButton.click(); await Promise.resolve(); });
     expect(latest.beehive.queen.difficulty).toBe('expert');
 
-    const beginButton = Array.from(host.querySelectorAll('button')).find((button) => button.textContent.includes('Begin Your Reign'));
+    const beginButton = Array.from(host.querySelectorAll('button')).find((button) => button.textContent.includes('Begin Strategy Model'));
     await act(async () => { beginButton.click(); await Promise.resolve(); });
     expect(latest.beehive.queen.active).toBe(true);
     expect(latest.beehive.queen.difficulty).toBe('expert');
@@ -336,10 +339,13 @@ describe('Beehive Queen mode - real-time RTS behavior', () => {
     globalThis.requestAnimationFrame = window.requestAnimationFrame = vi.fn((cb) => { frameCallback = cb; return 1; });
 
     const Component = () => {
-      const [toolData, setToolData] = React.useState({ beehive: { viewMode: 'drone', drone: { active: true, paused: false, difficulty: 'easy' } } });
+      const [toolData, setToolData] = React.useState({ beehive: { viewMode: 'drone', drone: { active: false, difficulty: 'easy' } } });
       return config.render(makeCtx({ toolData, setToolData }));
     };
     await act(async () => { root.render(React.createElement(Component)); await Promise.resolve(); });
+    const launch = host.querySelector('[data-mobile-rail="drone-difficulty"] button');
+    expect(launch).toBeTruthy();
+    await act(async () => { launch.click(); await Promise.resolve(); await Promise.resolve(); });
     expect(frameCallback).toBeTypeOf('function');
     const flightStart = performance.now();
     await act(async () => { frameCallback(flightStart + 300); await Promise.resolve(); });
@@ -348,7 +354,7 @@ describe('Beehive Queen mode - real-time RTS behavior', () => {
     expect(route.querySelectorAll('[data-flight-checkpoint]')).toHaveLength(3);
     const envelope = host.querySelector('[data-beehive-flight-envelope="true"]');
     expect(envelope.querySelectorAll('[data-flight-envelope-item]')).toHaveLength(5);
-    expect(envelope.getAttribute('data-envelope-overall')).toBe('caution');
+    expect(envelope.getAttribute('data-envelope-overall')).toBe('good');
     expect(envelope.querySelector('[data-flight-envelope-item="energy"] [data-envelope-value]').textContent).toContain('%');
     expect(envelope.querySelector('[data-flight-envelope-item="bearing"] [data-envelope-status]').textContent).toBe('Aligned');
     expect(envelope.querySelector('[data-flight-envelope-item="hazard"] [data-envelope-status]').textContent).toBe('Clear');
@@ -364,9 +370,9 @@ describe('Beehive Queen mode - real-time RTS behavior', () => {
     expect(host.querySelector('[data-flight-maneuver="action"]').textContent).toContain('Thrust');
     expect(host.querySelector('[data-flight-maneuver="impact"]').textContent).toContain('Distance');
     expect(host.querySelector('[data-flight-maneuver="impact"]').textContent).toContain('Energy');
-    expect(host.querySelector('[data-beehive-flight-instruments="true"]').getAttribute('aria-label')).toContain('Flight envelope Adjust');
+    expect(host.querySelector('[data-beehive-flight-instruments="true"]').getAttribute('aria-label')).toContain('Flight envelope Route viable');
     expect(host.querySelector('[data-beehive-flight-instruments="true"]').getAttribute('aria-label')).toContain('Current maneuver Thrust');
-    expect(envelope.querySelector('[data-flight-envelope-item="speed"] [data-envelope-advice]').textContent).toContain('momentum');
+    expect(envelope.querySelector('[data-flight-envelope-item="speed"] [data-envelope-advice]').textContent).toContain('conserving energy');
     await act(async () => {
       thrust.dispatchEvent(new Event('pointerup', { bubbles: true, cancelable: true }));
       frameCallback(flightStart + 1100);

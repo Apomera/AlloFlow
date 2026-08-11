@@ -164,10 +164,149 @@ describe('every quest can actually be earned', () => {
     expect(dead, 'unearnable quests:\n  ' + dead.join('\n  ')).toEqual([]);
   });
 
+  it('marks the annual-dose quest from every kind of estimator input', () => {
+    const start = SRC.indexOf("slider('ds-alt'");
+    const end = SRC.indexOf("sec('doseladder'", start);
+    const estimator = SRC.slice(start, end);
+    expect(estimator).toMatch(/upd\(\{ dsAlt:[^}]*doseEstimated: true/);
+    expect(estimator).toMatch(/upd\(\{ dsFlights:[^}]*doseEstimated: true/);
+    expect(estimator).toMatch(/upd\(\{ dsRadon:[^}]*doseEstimated: true/);
+    const scanUpdates = estimator.match(/upd\(\{ dsScans: nx, doseEstimated: true \}\)/g) || [];
+    expect(scanUpdates, 'both fewer and more scan controls must count as estimating').toHaveLength(2);
+  });
+
   it('gives each section that has a quest a matching anchor', () => {
     // Weak but useful: a quest whose section was deleted would survive here.
     const sections = [...SRC.matchAll(/sec\('([a-z0-9]+)'/g)].map((m) => m[1]);
     expect(sections.length).toBeGreaterThanOrEqual(19);
     expect(quests.length).toBeLessThanOrEqual(sections.length + 2);
+  });
+});
+
+describe('no quest is granted for free', () => {
+  // The mirror image of the block above, and the failure it was written for.
+  // "Hold a chain reaction critical" was awarded on MOUNT: the rod slider
+  // defaulted to 50% inserted, k = 1.30 - 0.006 x 50 is exactly 1.000, that
+  // lands inside the critical band, and the effect wrote heldCritical with no
+  // interaction at all. The section also opened on a green tick, so the one
+  // thing it teaches — that holding k at 1 is a thing you do — was handed over
+  // before the reader touched anything. Every check here is on the arithmetic
+  // rather than on a remembered number, so retuning the model cannot quietly
+  // restore the free pass.
+  const num = (re, label) => {
+    const m = re.exec(SRC);
+    expect(m, 'not found: ' + label).toBeTruthy();
+    return parseFloat(m[1]);
+  };
+  const rodDefault = num(/typeof d\.rods === 'number' \? d\.rods : (\d+)/, 'rod default');
+  const kIntercept = num(/var kEff = ([\d.]+) - [\d.]+ \* rods/, 'k intercept');
+  const kSlope = num(/var kEff = [\d.]+ - ([\d.]+) \* rods/, 'k slope');
+  const kAt = (rods) => kIntercept - kSlope * rods;
+  const isCritical = (k) => k >= 0.995 && k <= 1.005;
+
+  it('does not open the chain-reaction section already critical', () => {
+    expect(isCritical(kAt(rodDefault)), `rods default ${rodDefault}% gives k=${kAt(rodDefault)}`).toBe(false);
+  });
+
+  it('still leaves criticality reachable, or the quest becomes impossible', () => {
+    // Over-correcting is the other way to break this.
+    const reachable = [];
+    for (let r = 0; r <= 100; r++) if (isCritical(kAt(r))) reachable.push(r);
+    expect(reachable.length, 'no rod position produces k = 1').toBeGreaterThan(0);
+  });
+
+  it('requires a rod movement before crediting the quest, whatever the default is', () => {
+    const effect = /if \(kState === 'critical'([^)]*)\) upd\(\{ heldCritical: true \}\)/.exec(SRC);
+    expect(effect, 'the heldCritical effect changed shape').toBeTruthy();
+    expect(effect[1], 'heldCritical is written without an interaction guard').toMatch(/d\.rodsMoved/);
+  });
+
+  it('sets that interaction flag from the control the learner actually moves', () => {
+    expect(SRC).toMatch(/upd\(\{ rods: v, rodsMoved: true \}\)/);
+  });
+
+  it('pays each XP award at most once', () => {
+    // The same class of bug one layer down, and the general form of it. The
+    // carbon-dating award sat behind an accuracy test but no PERSISTED flag,
+    // so "Reveal" with a good guess still in the box paid out on every press
+    // and the button became an XP tap. Two of the three awards in the file
+    // were already guarded correctly, which is the pattern this enforces on
+    // all of them rather than on the one that broke.
+    const calls = [...SRC.matchAll(/awardXP\(\s*'([^']+)'/g)];
+    expect(calls.length, 'no awardXP calls found — did the API change?').toBeGreaterThanOrEqual(3);
+    for (const c of calls) {
+      const before = SRC.slice(Math.max(0, c.index - 320), c.index);
+      expect(before, `awardXP('${c[1]}') has no "!d.<flag>" re-award guard above it`)
+        .toMatch(/!\s*d\.[A-Za-z0-9_]+/);
+    }
+  });
+});
+
+describe('the tool does not contradict itself in the headline', () => {
+  // Both of these are the same failure: someone fixed the careful case and
+  // left the summary sentence stating the thing they had just disproved.
+  it('does not promise "the shorter clock wins" when its own verdict denies it', () => {
+    // The biological half-life section opened by asserting the shorter of the
+    // two clocks wins, and then, four elements down the page, told the reader
+    // "Neither clock is running this one" for strontium-90 — where the two are
+    // a factor of 1.6 apart and the effective half-life lands 38% below even
+    // the shorter. The branching verdict was written specifically to handle
+    // that case; the intro was never updated to match it.
+    expect(SRC).not.toMatch(/The shorter clock wins/);
+    expect(SRC).toMatch(/shorter than EITHER of them/);
+    expect(SRC).toMatch(/Neither clock is running this one/);
+  });
+
+  it('keeps the effective half-life below both inputs, which is what the intro now claims', () => {
+    const BIO = table('var BIO_NUCLIDES = [');
+    for (const b of BIO) {
+      const eff = (b.tp * b.tb) / (b.tp + b.tb);
+      expect(eff, b.name + ' effective vs physical').toBeLessThan(b.tp);
+      expect(eff, b.name + ' effective vs biological').toBeLessThan(b.tb);
+    }
+  });
+
+  it('only sends the reader to tools that exist', () => {
+    // sec('next') offers four cross-links, and setStemLabTool on a renamed id
+    // fails silently — the button just does nothing.
+    const closing = SRC.slice(SRC.indexOf("sec('next'"));
+    const ids = [...closing.matchAll(/\{ id: '([A-Za-z0-9_]+)', icon:/g)].map((m) => m[1]);
+    expect(ids.length, 'cross-links not found — did sec(next) change shape?').toBeGreaterThanOrEqual(4);
+    const all = fs.readdirSync('stem_lab')
+      .filter((f) => f.startsWith('stem_tool_') && f.endsWith('.js'))
+      .map((f) => fs.readFileSync('stem_lab/' + f, 'utf8'))
+      .join('\n');
+    for (const id of ids) {
+      expect(all.includes("registerTool('" + id + "'"), `"${id}" is linked but no tool registers it`).toBe(true);
+    }
+  });
+});
+
+describe('safety, provenance, and mobile reading safeguards', () => {
+  it('keeps official-instructions warnings beside every actionable model', () => {
+    expect(SRC).toContain('Educational model — not emergency or medical instructions');
+    expect(SRC).toContain(`safetyNotice('ki')`);
+    expect(SRC).toContain(`safetyNotice('dose')`);
+    expect(SRC).toContain(`safetyNotice('medical')`);
+    expect(SRC).toContain(`safetyNotice('emergency')`);
+    expect(SRC).toContain('follow state and local officials');
+  });
+
+  it('links reviewed primary sources and protects phone text size', () => {
+    expect(SRC).toContain(`var NK_REVIEWED = '2026-08'`);
+    expect(SRC).toContain('https://www.nrc.gov/about-nrc/emerg-preparedness/in-radiological-emerg');
+    expect(SRC).toContain('https://www.nndc.bnl.gov/nudat3/');
+    expect(SRC).toContain('https://physics.nist.gov/PhysRefData/Xcom/html/xcom1.html');
+    expect(SRC).toContain('full magnetic energy in 2036');
+    expect(SRC).toContain('deuterium-tritium operation in 2039');
+    expect(SRC).toContain('.nk-readable .text-\\\\[11px\\\\]');
+  });
+});
+
+describe('route progressive disclosure', () => {
+  it('filters rendered sections when a question route is active', () => {
+    expect(SRC).toContain('nkPath.steps.indexOf(id) === -1');
+    expect(SRC).toContain('var nkVisible = nkPath');
+    expect(SRC).toContain('showing all');
   });
 });

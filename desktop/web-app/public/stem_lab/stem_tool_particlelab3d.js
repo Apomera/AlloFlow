@@ -1,4 +1,4 @@
-// AlloFlow STEM Lab — Particle Lab 3D
+// AlloFlow STEAM Lab — Particle Lab 3D
 // Deterministic, educational particle sandbox for states of matter, gas laws,
 // diffusion, collisions, and intermolecular attraction.
 (function () {

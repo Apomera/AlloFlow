@@ -1521,7 +1521,7 @@
         } catch (eEmptyBeacon) {}
       }
       // Item label under the frame ('?' while its answer is unearned in recall).
-      var lab = makeLabelSprite(THREE, recall ? '?' : l.label, color, 24, true);
+      var lab = makeLabelSprite(THREE, recall ? '?' : l.label, color, 24, false);
       lab.position.set(0, -(FRAME_H / 2 + 34), 10);
       g2.add(lab);
       // Route-number badge on the frame's top-left corner (order stays visible
@@ -1919,7 +1919,8 @@
         if (old && old.material) {
           try { if (old.material.map) old.material.map.dispose(); old.material.dispose(); } catch (eD) {}
         }
-        ref.label = makeLabelSprite(THREE, text, ref.baseColor, 24, true);
+        var overlay = !!(ref.locus && ref.locus.roomIdx === _activeRoomIdx);
+        ref.label = makeLabelSprite(THREE, text, ref.baseColor, 24, overlay);
         ref.label.position.set(0, -(FRAME_H / 2 + 38), 11);
         if (ref.label.material) ref.label.material.opacity = 1;
         ref.captionText = text;
@@ -2532,6 +2533,18 @@
     // student always sees WHICH locus the walk is on (reduced motion ⇒ steady glow).
     var _activeRoomIdx = -1;
     var _freeStopRef = null;
+    function _setFrameCaptionOcclusionState() {
+      Object.keys(frameRefs).forEach(function (key) {
+        var ref = frameRefs[key], label = ref && ref.label;
+        if (!label || !label.material) return;
+        var overlay = !!(ref.locus && ref.locus.roomIdx === _activeRoomIdx);
+        try {
+          label.material.depthTest = !overlay;
+          label.renderOrder = overlay ? 24 : 12;
+          label.userData.occlusionSafe = overlay;
+        } catch (eCaptionDepth) {}
+      });
+    }
     var freeNavCue = null, freeNavText = null, freeReturnBtn = null, freeNavCompass = null, freeNavCompassArrow = null, roomBadge = null, roomBadgeText = null, roomBadgeDot = null, focusCard = null, focusCardKicker = null, focusCardTitle = null, focusCardMeta = null, focusCardCue = null, completionCard = null, completionCardTitle = null, completionCardMeta = null, completionCardDismiss = null, completionWalkBtn = null, completionOverviewBtn = null, completionCardDismissed = false, _freeCueKey = '', _freeCueHeading = -99;
     function _setRingActive(ref, active) {
       var ring = ref && ref.stopRing;
@@ -2646,6 +2659,7 @@
     }
     function _setActiveRoom(roomIdx) {
       _activeRoomIdx = typeof roomIdx === 'number' ? roomIdx : -1;
+      _setFrameCaptionOcclusionState();
       Object.keys(_roomLights).forEach(function (key) {
         var light = _roomLights[key];
         try { light.intensity = Number(key) === _activeRoomIdx ? 0.78 : 0.42; } catch (e) {}

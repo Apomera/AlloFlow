@@ -123,7 +123,7 @@
   "aria_predation_coeff_a": "predation coefficient a",
   "pred_conversion_b": "Predator conversion (b)",
   "aria_pred_conversion_b": "predator conversion coefficient b",
-  "teaching_model_note": "Teaching model: one-step Euler updates with rounded counts. It omits age structure, space, seasons, stochasticity, handling time, disease, and changing K; parameter values are illustrative rather than fitted to rabbits and foxes.",
+  "teaching_model_note": "Teaching model: Euler updates use a 0.1 time step; populations stay continuous internally and are rounded for display. It omits age structure, space, seasons, stochasticity, handling time, disease, and changing K; parameter values are illustrative rather than fitted to rabbits and foxes.",
   "run_graph_sim": "Run Graph Simulation",
   "logistic_pp_approx": "Logistic Predator-Prey Approximation",
   "steps_label": "Steps",

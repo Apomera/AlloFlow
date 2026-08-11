@@ -598,6 +598,49 @@ describe('callTTS urlCache ownership + bounded eviction', () => {
     expect(global.fetch).toHaveBeenCalledTimes(1);
   });
 
+  it('force-refreshes only the exact callTTS cache key and replaces it once', async () => {
+    const state = { queue: Promise.resolve(), botQueue: Promise.resolve(), urlCache: new Map(), rateLimitedUntil: 0 };
+    const urls = ['blob:first-clip', 'blob:refreshed-clip'];
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true,
+      writable: true,
+      value: vi.fn(() => urls.shift()),
+    });
+    const revoke = vi.fn();
+    Object.defineProperty(URL, 'revokeObjectURL', {
+      configurable: true,
+      writable: true,
+      value: revoke,
+    });
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        candidates: [{ content: { parts: [{ inlineData: { data: Buffer.from('pcm').toString('base64') } }] } }],
+      }),
+    })));
+    const { callTTS } = makeTTS(state);
+    const text = 'Refresh this exact sentence.';
+    const opts = { language: 'English', maxRetries: 0, priority: 'interactive' };
+
+    const first = await callTTS(text, 'Kore', 1, opts);
+    const cached = await callTTS(text, 'Kore', 1, { ...opts, force: 'true' });
+    const refreshed = await callTTS(text, 'Kore', 1, { ...opts, force: true });
+    const replay = await callTTS(text, 'Kore', 1, opts);
+
+    const key = JSON.stringify([text, 'Kore', 'English', 'natural-rate-v1']);
+    expect(first).toBe('blob:first-clip');
+    expect(cached).toBe(first);
+    expect(refreshed).toBe('blob:refreshed-clip');
+    expect(replay).toBe(refreshed);
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+    expect(state.urlCache.size).toBe(1);
+    expect(state.urlCache.get(key)).toBe(refreshed);
+    expect(revoke).toHaveBeenCalledTimes(1);
+    expect(revoke).toHaveBeenCalledWith(first);
+    expect(window.__alloTtsCacheOwnsUrl(first)).toBe(false);
+    expect(window.__alloTtsCacheOwnsUrl(refreshed)).toBe(true);
+  });
+
   it('keys non-Canvas cloud audio by the resolved Gemini voice', async () => {
     const state = { queue: Promise.resolve(), botQueue: Promise.resolve(), urlCache: new Map(), rateLimitedUntil: 0 };
     stubSynthesis();

@@ -41,6 +41,8 @@ const harness = createTestHarness({
           GEMINI_API_KEY:
             "0123456789abcdef0123456789abcdef",
           GEMINI_MODEL: "gemini-approved-model",
+          RELEASE_CANARY_SECRET:
+            "0123456789abcdef0123456789abcdef0123456789abcdef",
           RUNNER_AUTH_SECRET:
             "0123456789abcdef0123456789abcdef0123456789abcdef",
         },

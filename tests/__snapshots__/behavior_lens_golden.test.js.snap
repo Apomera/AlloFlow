@@ -1530,7 +1530,7 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: standa
 </div>
 </div>
 <div class="flex items-center gap-2">
-<div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border transition-all bg-slate-50 border-slate-200 text-slate-600" title="Cloud sync idle">💾 Local</div>
+<div role="status" aria-label="Cloud sync status" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border transition-all bg-slate-50 border-slate-200 text-slate-600" title="Cloud sync idle">💾 Local</div>
 <button aria-label="AI is off — click to enable" aria-pressed="false" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border-2 transition-all bg-slate-50 border-slate-300 text-slate-600 hover:bg-slate-100" title="AI OFF — no student data leaves this browser. Click to enable.">🤖 AI: OFF</button>
 <button aria-label="Toggle is parent mode" class="px-3 py-1.5 rounded-full text-xs font-bold transition-all border bg-white text-slate-600 border-slate-200 hover:border-blue-600 hover:text-blue-500">👨‍👩‍👧 Family</button>
 <button aria-label="Close BehaviorLens" class="p-2 rounded-full text-slate-600 hover:bg-slate-100 transition-colors">
@@ -3043,7 +3043,7 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: teache
 </div>
 </div>
 <div class="flex items-center gap-2">
-<div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border transition-all bg-slate-50 border-slate-200 text-slate-600" title="Cloud sync idle">💾 Local</div>
+<div role="status" aria-label="Cloud sync status" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border transition-all bg-slate-50 border-slate-200 text-slate-600" title="Cloud sync idle">💾 Local</div>
 <button aria-label="AI is off — click to enable" aria-pressed="false" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border-2 transition-all bg-slate-50 border-slate-300 text-slate-600 hover:bg-slate-100" title="AI OFF — no student data leaves this browser. Click to enable.">🤖 AI: OFF</button>
 <button aria-label="Toggle is parent mode" class="px-3 py-1.5 rounded-full text-xs font-bold transition-all border bg-white text-slate-600 border-slate-200 hover:border-blue-600 hover:text-blue-500">👨‍👩‍👧 Family</button>
 <button aria-label="Close BehaviorLens" class="p-2 rounded-full text-slate-600 hover:bg-slate-100 transition-colors">

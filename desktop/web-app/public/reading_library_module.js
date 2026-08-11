@@ -1609,7 +1609,7 @@
       var onSpeechState = function (ev) {
         if (!autoReadRef.current) return;
         var st = ev && ev.detail;
-        if (!st || st.isPlaying) return; // only act on a genuine finish
+        if (!st || st.isPlaying || (st.status && st.status !== 'idle')) return; // only act on a genuine finish
         var next = pageIdxRef.current + 1;
         var max = sourcePages.length - 1;
         while (next <= max) {

@@ -163,6 +163,7 @@ test_extract_query.js
 # Playwright e2e artifacts
 test-results/
 playwright-report/
+playwright-report-mobile/
 playwright/.cache/
 
 # Reading Library scraper cache — 9.4 MB / 200+ downloaded source HTML files,
@@ -221,3 +222,7 @@ desktop/web-app/firestore-debug.log
 /mcp-testing/corpus/office/*
 /mcp-testing/corpus/figures/*.pdf
 /mcp-testing/corpus/tables/*.pdf
+/mcp-testing/source-corpus/w3c-bad/before/
+/mcp-testing/source-corpus/w3c-bad/after/
+/mcp-testing/source-corpus/w3c-bad/css/
+/mcp-testing/source-corpus/w3c-bad/img/

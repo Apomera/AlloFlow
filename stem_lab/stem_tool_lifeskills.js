@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════
 // stem_tool_lifeskills.js — Life Skills Lab  v5.23
-// Enhanced STEM Lab tool — 33 sub-tools
+// Enhanced STEAM Lab tool — 33 sub-tools
 // Start Here · Paycheck · Data Literacy · Decisions · Contracts
 // Records · Transportation · Job Readiness · Resume Builder · Proof Locker · Interview Studio · Communication · Time Management · Insurance · Applied Science · Car Care · Home Repair
 // Home Systems · Budget · Credit · Cooking · Laundry Lab
@@ -33,7 +33,7 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -3612,9 +3612,9 @@ window.StemLab = window.StemLab || {
                 var pathCompleted = Math.max(0, Math.min(pathTotal, Number(pathRecord.completed) || 0));
                 var pathDone = !!pathRecord.complete || pathCompleted >= pathTotal;
                 return h('div', { key: lab.id, className: 'min-w-0 text-center' },
-                  h('span', { className: 'mx-auto flex h-8 w-8 items-center justify-center rounded-full text-sm shadow-sm', style: { background: pathDone ? '#059669' : '#f1f5f9', color: pathDone ? '#ffffff' : lab.accent, border: '2px solid ' + (pathDone ? '#059669' : lab.accent + '66') } }, lab.icon),
-                  h('span', { className: 'mt-1 block truncate text-[9px] font-bold text-slate-600' }, lab.title),
-                  h('span', { className: 'block text-[9px] font-black ' + (pathDone ? 'text-emerald-700' : 'text-slate-500') }, pathDone ? 'DONE' : pathCompleted + '/' + pathTotal)
+                  h('span', { className: 'mx-auto flex h-8 w-8 items-center justify-center rounded-full text-sm shadow-sm', style: { background: pathDone ? '#059669' : '#f1f5f9', color: pathDone ? '#ffffff' : (lab.id === 'safety' ? '#b91c1c' : lab.id === 'kitchen' ? '#c2410c' : lab.accent), border: '2px solid ' + (pathDone ? '#059669' : lab.accent + '66') } }, lab.icon),
+                  h('span', { className: 'mt-1 block truncate text-[10px] font-bold text-slate-600' }, lab.title),
+                  h('span', { className: 'block text-[10px] font-black ' + (pathDone ? 'text-emerald-700' : 'text-slate-500') }, pathDone ? 'DONE' : pathCompleted + '/' + pathTotal)
                 );
               })
             ),
@@ -3831,8 +3831,8 @@ window.StemLab = window.StemLab || {
                     h('text', { x: padL + 69, y: H - 4, fontSize: 7, fill: INK, textAnchor: 'middle' }, '2024'));
                 };
                 return h('div', { className: 'grid grid-cols-2 gap-3 my-3' },
-                  h('div', null, h('div', { className: 'text-[10px] font-bold text-red-600 mb-1' }, __alloT('stem.lifeskills.y_axis_starts_at_950', '😱 Y-axis starts at 950')), mkBars(950, 1000), h('div', { className: 'text-[9px] text-slate-500 text-center mt-0.5' }, __alloT('stem.lifeskills.looks_like_a_huge_jump', 'Looks like a HUGE jump'))),
-                  h('div', null, h('div', { className: 'text-[10px] font-bold text-emerald-600 mb-1' }, __alloT('stem.lifeskills.y_axis_starts_at_0', '✅ Y-axis starts at 0')), mkBars(0, 1000), h('div', { className: 'text-[9px] text-slate-500 text-center mt-0.5' }, __alloT('stem.lifeskills.same_data_barely_2', 'Same data — barely +2%'))));
+                  h('div', null, h('div', { className: 'text-[10px] font-bold text-red-600 mb-1' }, __alloT('stem.lifeskills.y_axis_starts_at_950', '😱 Y-axis starts at 950')), mkBars(950, 1000), h('div', { className: 'text-[10px] text-slate-500 text-center mt-0.5' }, __alloT('stem.lifeskills.looks_like_a_huge_jump', 'Looks like a HUGE jump'))),
+                  h('div', null, h('div', { className: 'text-[10px] font-bold text-emerald-600 mb-1' }, __alloT('stem.lifeskills.y_axis_starts_at_0', '✅ Y-axis starts at 0')), mkBars(0, 1000), h('div', { className: 'text-[10px] text-slate-500 text-center mt-0.5' }, __alloT('stem.lifeskills.same_data_barely_2', 'Same data — barely +2%'))));
               }
               if (dlScenario === 2) { // Vanishing baseline: $3M(2022) -> $1M(2023) -> $2M(2024)
                 var mkLine = function(pts) {
@@ -3847,8 +3847,8 @@ window.StemLab = window.StemLab || {
                     pts.map(function(p, i) { return h('text', { key: 't' + i, x: px(i), y: H - 4, fontSize: 7, fill: INK, textAnchor: 'middle' }, p[0]); }));
                 };
                 return h('div', { className: 'grid grid-cols-2 gap-3 my-3' },
-                  h('div', null, h('div', { className: 'text-[10px] font-bold text-red-600 mb-1' }, __alloT('stem.lifeskills.cherry_picked_window', '😱 Cherry-picked window')), mkLine([['2023', 1], ['2024', 2]]), h('div', { className: 'text-[9px] text-slate-500 text-center mt-0.5' }, __alloT('stem.lifeskills.revenue_doubled', '"Revenue DOUBLED!"'))),
-                  h('div', null, h('div', { className: 'text-[10px] font-bold text-emerald-600 mb-1' }, __alloT('stem.lifeskills.full_history', '✅ Full history')), mkLine([['2022', 3], ['2023', 1], ['2024', 2]]), h('div', { className: 'text-[9px] text-slate-500 text-center mt-0.5' }, __alloT('stem.lifeskills.down_from_3m_not_doubled', 'Down from $3M — not "doubled"'))));
+                  h('div', null, h('div', { className: 'text-[10px] font-bold text-red-600 mb-1' }, __alloT('stem.lifeskills.cherry_picked_window', '😱 Cherry-picked window')), mkLine([['2023', 1], ['2024', 2]]), h('div', { className: 'text-[10px] text-slate-500 text-center mt-0.5' }, __alloT('stem.lifeskills.revenue_doubled', '"Revenue DOUBLED!"'))),
+                  h('div', null, h('div', { className: 'text-[10px] font-bold text-emerald-600 mb-1' }, __alloT('stem.lifeskills.full_history', '✅ Full history')), mkLine([['2022', 3], ['2023', 1], ['2024', 2]]), h('div', { className: 'text-[10px] text-slate-500 text-center mt-0.5' }, __alloT('stem.lifeskills.down_from_3m_not_doubled', 'Down from $3M — not "doubled"'))));
               }
               if (dlScenario === 5) { // 3D pie distortion: same data, but a 3D tilt makes the front 30% slice look bigger than the back 35% ones
                 var slices = [{ v: 30, c: '#6366f1' }, { v: 35, c: '#10b981' }, { v: 35, c: '#f59e0b' }];
@@ -3869,11 +3869,11 @@ window.StemLab = window.StemLab || {
                     h('div', { className: 'text-[10px] font-bold text-red-600 mb-2' }, __alloT('stem.lifeskills.same_pie_3d_tilted', '😱 Same pie, 3D-tilted')),
                     h('div', { style: { perspective: '240px', display: 'flex', justifyContent: 'center', height: 80 } },
                       h('div', { style: { transform: 'rotateX(58deg)', transformOrigin: 'center bottom' } }, pie())),
-                    h('div', { className: 'text-[9px] text-slate-500 mt-1' }, __alloT('stem.lifeskills.front_30_slice_looks_the_biggest', 'front 30% slice looks the biggest'))),
+                    h('div', { className: 'text-[10px] text-slate-500 mt-1' }, __alloT('stem.lifeskills.front_30_slice_looks_the_biggest', 'front 30% slice looks the biggest'))),
                   h('div', { className: 'text-center' },
                     h('div', { className: 'text-[10px] font-bold text-emerald-600 mb-2' }, __alloT('stem.lifeskills.flat_2d', '✅ Flat 2D')),
                     h('div', { style: { display: 'flex', justifyContent: 'center' } }, pie()),
-                    h('div', { className: 'text-[9px] text-slate-500 mt-1' }, __alloT('stem.lifeskills.the_two_35_slices_are_actually_biggest', 'the two 35% slices are actually biggest'))));
+                    h('div', { className: 'text-[10px] text-slate-500 mt-1' }, __alloT('stem.lifeskills.the_two_35_slices_are_actually_biggest', 'the two 35% slices are actually biggest'))));
               }
               return null;
             })(),
@@ -3919,7 +3919,7 @@ window.StemLab = window.StemLab || {
                     dmOptions.map(function(opt, oi) {
                       var key = oi + '-' + ci;
                       return h('td', { key: oi, className: 'px-2 py-1 text-center' },
-                        h('input', { type: 'range', 'aria-label': __alloT('stem.lifeskills.dm_scores', 'dm scores'), 'aria-valuetext': (dmScores[key] || 3) + ' of 5', min: 1, max: 5, value: dmScores[key] || 3, onChange: function(e) {
+                        h('input', { type: 'range', 'aria-valuetext': (dmScores[key] || 3) + ' of 5', min: 1, max: 5, value: dmScores[key] || 3, onChange: function(e) {
                           var s = Object.assign({}, dmScores); s[key] = parseInt(e.target.value); upd('dmScores', s); checkBadge('decisionPro');
                         }, className: 'w-full', 'aria-label': opt + ' ' + c.name }),
                         h('span', { className: 'text-[11px] font-mono' }, dmScores[key] || 3)
@@ -6482,7 +6482,7 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2' }, __alloT('stem.lifeskills.ai_home_advisor', '\uD83E\uDDE0 AI Home Advisor')),
             h('p', { className: 'text-xs text-slate-600 mb-2' }, __alloT('stem.lifeskills.ask_ai_about_any_home_system_question', 'Ask AI about any home system question:')),
             h('div', { className: 'flex gap-2' },
-              h('input', { type: 'text', value: d.homeQ || '', onChange: function(e) { upd('homeQ', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter' && d.homeQ) {
+              h('input', { 'aria-label': __alloT('stem.lifeskills.home_question_label', 'Ask a home maintenance question'), type: 'text', value: d.homeQ || '', onChange: function(e) { upd('homeQ', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter' && d.homeQ) {
                 upd('homeALoading', true);
                 callGemini('Answer this home maintenance question for a ' + gradeBand + ' student in 2-3 sentences: ' + d.homeQ).then(function(r) { updMulti({ homeA: r, homeALoading: false }); }).catch(function() { upd('homeALoading', false); });
               }}, placeholder: __alloT('stem.lifeskills.e_g_why_does_my_furnace_make_a_clickin', 'e.g. "Why does my furnace make a clicking sound?"'), className: 'flex-1 px-3 py-2 border border-slate-400 rounded-xl text-xs' }),
@@ -6629,7 +6629,7 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'text-[10px] text-slate-600 font-mono mt-1' }, 'Total ' + total + '% allocated')
               ),
               h('div', { className: 'p-2 bg-slate-50 rounded border border-slate-200' },
-                h('svg', { viewBox: '0 0 320 60', className: 'w-full h-16' },
+                h('svg', { role: 'img', 'aria-label': __alloT('stem.lifeskills.bar_img', 'Budget proportion bar'), viewBox: '0 0 320 60', className: 'w-full h-16' },
                   h('rect', { x: 10, y: 20, width: 300, height: 25, fill: '#e2e8f0' }),
                   h('rect', { x: 10, y: 20, width: Math.min(300, iq.needsPct * 3), height: 25, fill: '#dc2626' }),
                   h('rect', { x: 10 + Math.min(300, iq.needsPct * 3), y: 20, width: Math.max(0, Math.min(300 - iq.needsPct * 3, iq.wantsPct * 3)), height: 25, fill: '#f59e0b' }),
@@ -6655,7 +6655,7 @@ window.StemLab = window.StemLab || {
                 h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ i: iq.income, n: iq.needsPct, w: iq.wantsPct, s: iq.savesPct, t: total, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.lifeskills.log', '\uD83D\uDCCB Log')),
                 h('button', { onClick: function() { setIQ({ income: 4000, needsPct: 50, wantsPct: 30, savesPct: 20, monthlySave: 500, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.lifeskills.reset', '\u21BA Reset'))
               ),
-              h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.lifeskills.hypothesis_at_what_income_does_50_30_2', 'Hypothesis: At what income does 50/30/20 become hard?'),
+              h('textarea', { 'aria-label': __alloT('stem.lifeskills.hypothesis_input', 'Budget feasibility hypothesis'), value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.lifeskills.hypothesis_at_what_income_does_50_30_2', 'Hypothesis: At what income does 50/30/20 become hard?'),
                 className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
               !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.lifeskills.stuck_show_open_prompts', '\uD83E\uDD14 Stuck \u2014 show open prompts')),
               iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700' },
@@ -6665,7 +6665,7 @@ window.StemLab = window.StemLab || {
               h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
                 h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                 __alloT('stem.lifeskills.i_understand_explain', 'I understand \u2014 explain')),
-              iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.lifeskills.explain_how_income_level_affects_budge', 'Explain how income level affects budget feasibility.'),
+              iq.understood && h('textarea', { 'aria-label': __alloT('stem.lifeskills.explanation_input', 'Budget feasibility explanation'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.lifeskills.explain_how_income_level_affects_budge', 'Explain how income level affects budget feasibility.'),
                 className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
               h('div', { className: 'text-[10px] italic text-slate-500' }, __alloT('stem.lifeskills.design_note_discrete_5_state_budget_ma', 'Design note: discrete 5-state budget marker; SVG stacked bar; no allocation score \u2014 by design.'))
             );

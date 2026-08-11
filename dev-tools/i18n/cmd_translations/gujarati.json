@@ -42,5 +42,8 @@
   "cmd.run_lesson_blueprint": "પાઠ યોજના બનાવો",
   "cmd.run_lesson_blueprint_done": "યોજના બની રહી છે — તમે કાર્ડ પર દરેક પગલું જોઈ શકો છો.",
   "cmd.run_lesson_blueprint_hint": "વર્તમાન યોજનાના બધા સંસાધનો બનાવે છે",
-  "cmd.cancelled": "રદ કરવાની વિનંતી કરવામાં આવી છે. પ્રદાતા તેને સમર્થન આપે ત્યારે વર્તમાન કામગીરી અટકી જશે."
+  "cmd.cancelled": "રદ કરવાની વિનંતી કરવામાં આવી છે. પ્રદાતા તેને સમર્થન આપે ત્યારે વર્તમાન કામગીરી અટકી જશે.",
+  "cmd.open_share_collect": "Share & Collect ખોલો",
+  "cmd.open_share_collect_hint": "મતદાન, સાઇન-અપ, સર્વેક્ષણો અને તેમનાં પરિણામો",
+  "cmd.open_share_collect_done": "Share & Collect ખૂલ્યું."
 }

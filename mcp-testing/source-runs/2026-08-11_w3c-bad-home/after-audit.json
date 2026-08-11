@@ -1,0 +1,85 @@
+{
+  "ok": true,
+  "page": "home.html",
+  "audit": {
+    "axe": {
+      "available": true,
+      "violations": [
+        {
+          "id": "image-alt",
+          "impact": "critical",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/image-alt?application=axeAPI",
+          "wcag": [
+            "wcag111"
+          ],
+          "nodes": 14,
+          "targets": [
+            "td[width=\"155px\"][background=\"./img/marker2_w.gif\"] > img[src$=\"marker2_w.gif\"][width=\"78px\"][height=\"1px\"]",
+            "img[width=\"1\"]",
+            "tr[height=\"1px\"]:nth-child(3) > td[width=\"154px\"][background=\"./img/marker2_w.gif\"] > img[src$=\"marker2_w.gif\"][width=\"78px\"][height=\"1px\"]",
+            "tr[height=\"1px\"]:nth-child(5) > td[width=\"154px\"][background=\"./img/marker2_w.gif\"] > img[src$=\"marker2_w.gif\"][width=\"78px\"][height=\"1px\"]",
+            "tr[height=\"1px\"]:nth-child(7) > td[width=\"154px\"][background=\"./img/marker2_w.gif\"] > img[src$=\"marker2_w.gif\"][width=\"78px\"][height=\"1px\"]",
+            "tr[height=\"1px\"]:nth-child(9) > td[width=\"154px\"][background=\"./img/marker2_w.gif\"] > img[src$=\"marker2_w.gif\"][width=\"78px\"][height=\"1px\"]",
+            "td[width=\"20px\"]:nth-child(2) > img[src$=\"blank_5x5.gif\"][height=\"5px\"][width=\"20px\"]",
+            ".newsheadline:nth-child(1) > img[src$=\"headline_middle.gif\"][width=\"23\"][height=\"24\"]"
+          ]
+        },
+        {
+          "id": "region",
+          "impact": "moderate",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/region?application=axeAPI",
+          "wcag": [],
+          "nodes": 12,
+          "targets": [
+            "#logos",
+            "h1",
+            ".subline",
+            "#mnav",
+            "#startcontent",
+            "table[height=\"144px\"]",
+            "td[bgcolor=\"#E4E4E4\"]",
+            "td[width=\"20px\"]:nth-child(2)"
+          ]
+        }
+      ],
+      "incomplete": 1
+    },
+    "keyboard": {
+      "interactiveElements": 56,
+      "reached": 56,
+      "unreachable": [],
+      "suspectedTrap": false
+    },
+    "outline": {
+      "title": "Welcome to CityLights! [Inaccessible Home Page]",
+      "lang": "en",
+      "headings": [
+        {
+          "level": 1,
+          "text": "Inaccessible Home Page - Before and After Demonstration"
+        },
+        {
+          "level": 2,
+          "text": "Welcome to CityLights"
+        },
+        {
+          "level": 3,
+          "text": "Elsewhere on the Web"
+        }
+      ],
+      "landmarks": [
+        "td[main]"
+      ],
+      "imagesWithoutAlt": 14,
+      "unlabeledControls": 0
+    },
+    "text": {
+      "sha256": "9040da0d6fe882710e2a2449f5819ed193006cc4d523d8d2cabbc3c1c923b389",
+      "chars": 2576
+    }
+  },
+  "blockedNetworkRequests": 0,
+  "networkPolicy": "deny",
+  "note": "axe automates only part of WCAG; keyboard reachability is evidence, not usability judgement. A person must still operate the page.",
+  "createdAt": "2026-08-11T16:50:30Z"
+}

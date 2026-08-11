@@ -37,10 +37,11 @@ describe('SSR render smoke — dialog shell, start screen, active phase, summary
     RDS = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react-dom/server'));
     DA = window.AlloModules.DynamicAssessment;
   });
-  const renderWith = (state) => {
+  const renderWith = (state, startScreenView) => {
     if (state === null) window.localStorage.removeItem(STORAGE_KEY);
     else window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    window.localStorage.removeItem('alloflow_da_session_state_v1');
+    if (startScreenView) window.localStorage.setItem('alloflow_da_session_state_v1', JSON.stringify({ startScreenView }));
+    else window.localStorage.removeItem('alloflow_da_session_state_v1');
     const React = window.React;
     return RDS.renderToStaticMarkup(React.createElement(DA, {
       React, onClose: () => {}, addToast: () => {}, t: (k) => k, studentNickname: '', outputLanguage: 'English'
@@ -72,6 +73,26 @@ describe('SSR render smoke — dialog shell, start screen, active phase, summary
     expect(html).toContain('Scaffold ladder');
     expect(html).toContain('Mediation quality reminders');
   });
+
+  it('uses a matched posttest snapshot instead of repeating the baseline prompt', () => {
+    const s = Object.assign(baseSession(), {
+      currentPhase: 'posttest',
+      posttestForm: 'matched-parallel',
+      posttestItemSnapshot: [{
+        id: 'math-e-01',
+        prompt: 'Novel posttest prompt',
+        correctAnswer: '8',
+        acceptableAnswers: ['8'],
+        promptLadder: [],
+        construct: 'Subtraction word problem',
+        difficulty: 'easy',
+        gradeBand: '2-3'
+      }]
+    });
+    const html = renderWith({ sessions: [], activeSession: s, onboardingSeen: true, savedProbeTemplates: [] });
+    expect(html).toContain('Novel posttest prompt');
+  });
+
   it('summary renders MI gauge + learning-zone snapshot with correct band counts', () => {
     const mk = (itemId, phase, finalCorrect, lvl) => ({
       itemId, phase, promptLevelReached: lvl || 0, studentResponseText: '', examinerObservation: '',
@@ -80,6 +101,7 @@ describe('SSR render smoke — dialog shell, start screen, active phase, summary
     });
     const s = Object.assign(baseSession(), {
       currentPhase: 'summary',
+      posttestForm: 'same-item',
       itemResults: [
         mk('math-e-01', 'pretest', true, 0), mk('math-e-02', 'pretest', false, 0), mk('math-e-03', 'pretest', false, 0),
         mk('math-e-01', 'mediation', true, 0), mk('math-e-02', 'mediation', true, 2), mk('math-e-03', 'mediation', true, 4),
@@ -88,6 +110,7 @@ describe('SSR render smoke — dialog shell, start screen, active phase, summary
     });
     const html = renderWith({ sessions: [], activeSession: s, onboardingSeen: true, savedProbeTemplates: [] });
     expect(html).toContain('Modifiability Index gauge');
+    expect(html).toContain('Evidence coverage');
     expect(html).toContain('Learning-zone snapshot');
     expect(html).toContain('Teachable band (ZPD)');
     expect(html).toContain('interpretation conventions of this tool');
@@ -97,6 +120,17 @@ describe('SSR render smoke — dialog shell, start screen, active phase, summary
     expect(html).toContain('Sensitivity:');
     expect(html).toContain('Reopen last item');
   });
+  it('renders an incomplete saved record without a fake zero Modifiability Index', () => {
+    const incomplete = M.buildIncompleteRecord(Object.assign(baseSession(), {
+      itemResults: [{ itemId: 'math-e-01', phase: 'pretest', finalCorrect: true, responseStatus: 'correct', scoreAwarded: 5 }]
+    }), 'fatigue', '2026-07-12T10:10:00.000Z');
+    const html = renderWith({ sessions: [incomplete], activeSession: null, onboardingSeen: true, savedProbeTemplates: [] }, 'sessions');
+    expect(html).toContain('Record');
+    expect(html).toContain('Incomplete');
+    expect(html).toContain('no interpretation');
+    expect(html).not.toContain('+0.00');
+  });
+
   it('active phase with a recorded result shows the Undo item button', () => {
     const s = Object.assign(baseSession(), {
       itemResults: [{
@@ -140,6 +174,224 @@ describe('scoreForLevel — 4-level scaffold scoring', () => {
   });
 });
 
+describe('codename and built-in selection helpers', () => {
+  it('parses canonical adjective + animal codenames case-insensitively', () => {
+    expect(M.parseCodename('bright fox', ['Bright'], ['Fox'])).toEqual({ adjective: 'Bright', animal: 'Fox' });
+    expect(M.parseCodename('real student', ['Bright'], ['Fox'])).toEqual({ adjective: '', animal: '' });
+  });
+
+  it('prefers fresh built-in items and stays deterministic for a seed', () => {
+    const pool = ['a', 'b', 'c', 'd'].map((id) => ({ id }));
+    const first = M.selectBuiltInSessionItems(pool, 2, ['a', 'b'], 42).map((item) => item.id);
+    const second = M.selectBuiltInSessionItems(pool, 2, ['a', 'b'], 42).map((item) => item.id);
+    expect(first).toEqual(second);
+    expect(first).not.toContain('a');
+    expect(first).not.toContain('b');
+  });
+});
+
+
+describe('posttest, evidence, and privacy helpers', () => {
+  it('builds a matched parallel posttest from a transfer twin', () => {
+    const item = {
+      id: 'math-e-01',
+      prompt: 'Original prompt',
+      correctAnswer: '7',
+      acceptableAnswers: ['seven'],
+      transferTwin: { prompt: 'Novel prompt', correctAnswer: '8', acceptableAnswers: ['eight'] }
+    };
+    const parallel = M.buildParallelPosttestItem(item);
+    expect(parallel).toMatchObject({
+      id: 'math-e-01',
+      prompt: 'Novel prompt',
+      correctAnswer: '8',
+      acceptableAnswers: ['eight'],
+      _isParallelPosttest: true
+    });
+  });
+
+  it('marks complete sessions as sufficient and identifies missing phases', () => {
+    const results = ['pretest', 'mediation', 'posttest'].flatMap((phase) =>
+      ['a', 'b', 'c'].map((itemId) => ({ phase, itemId }))
+    );
+    expect(M.evidenceStatus({
+      sessionItemIds: ['a', 'b', 'c'],
+      posttestForm: 'matched-parallel',
+      itemResults: results
+    }).sufficient).toBe(true);
+    expect(M.evidenceStatus({
+      sessionItemIds: ['a', 'b', 'c'],
+      posttestForm: 'matched-parallel',
+      itemResults: results.filter((result) => result.phase !== 'posttest')
+    }).missingPhases).toEqual(['posttest']);
+  });
+
+  it('prunes completed sessions according to the retention window', () => {
+    const now = Date.now();
+    const kept = { id: 'new', dateCompleted: new Date(now - 2 * 86400000).toISOString() };
+    const expired = { id: 'old', dateCompleted: new Date(now - 40 * 86400000).toISOString() };
+    const pruned = M.applyRetention({ privacy: { retentionDays: 30 }, sessions: [kept, expired] });
+    expect(pruned.sessions.map((session) => session.id)).toEqual(['new']);
+  });
+});
+
+
+
+describe('evidence integrity, response statuses, and redacted exports', () => {
+  it('distinguishes non-scorable outcomes from incorrect answers', () => {
+    expect(M.normalizeResponseStatus(undefined, false, 'skipped')).toBe('skipped');
+    expect(M.normalizeResponseStatus(undefined, false, 'refused')).toBe('refused');
+    expect(M.isScorableResponse({ responseStatus: 'skipped', finalCorrect: false })).toBe(false);
+    expect(M.isScorableResponse({ responseStatus: 'incorrect', finalCorrect: false })).toBe(true);
+  });
+
+  it('requires unique item coverage and flags duplicate or unscored records', () => {
+    const phases = ['pretest', 'mediation', 'posttest'];
+    const results = phases.flatMap((phase) =>
+      ['a', 'b', 'c'].map((itemId) => ({
+        phase, itemId,
+        finalCorrect: !(phase === 'posttest' && itemId === 'c'),
+        responseStatus: phase === 'posttest' && itemId === 'c' ? 'skipped' : 'correct',
+        supportType: phase === 'posttest' && itemId === 'c' ? 'skipped' : undefined
+      }))
+    );    results.push({ phase: 'pretest', itemId: 'a', finalCorrect: true, responseStatus: 'correct' });
+    const evidence = M.evidenceStatus({
+      sessionItemIds: ['a', 'b', 'c'],
+      posttestForm: 'matched-parallel',
+      itemResults: results
+    });
+    expect(evidence.counts.pretest).toBe(3);
+    expect(evidence.rawCounts.pretest).toBe(4);
+    expect(evidence.dataQualityIssues).toContain('pretest contains duplicate item records');
+    expect(evidence.unscoredItemCount).toBe(1);
+    expect(evidence.sufficient).toBe(false);
+  });
+
+  it('accepts only complete, scorable finalized sessions for restore', () => {
+    const itemResults = ['pretest', 'mediation', 'posttest'].flatMap((phase) =>
+      ['a', 'b', 'c'].map((itemId) => ({
+        phase, itemId, finalCorrect: true, responseStatus: 'correct'
+      }))
+    );
+    const session = {
+      id: 'restore-ok',
+      modifiabilityIndex: 0.5,
+      sessionItemIds: ['a', 'b', 'c'],
+      posttestForm: 'matched-parallel',
+      itemResults
+    };
+    expect(M.validateImportedSession(session).valid).toBe(true);
+    expect(M.validateImportedSession(Object.assign({}, session, {
+      itemResults: itemResults.concat([{ phase: 'posttest', itemId: 'a', finalCorrect: true, responseStatus: 'correct' }])
+    })).valid).toBe(false);
+  });
+
+  it('archives incomplete evidence without interpretation and accepts it for restore', () => {
+    const record = M.buildIncompleteRecord({
+      id: 'archive-partial',
+      dateStarted: '2026-07-12T10:00:00.000Z',
+      currentPhase: 'mediation',
+      sessionItemIds: ['a', 'b', 'c'],
+      posttestForm: 'matched-parallel',
+      itemResults: [
+        { itemId: 'a', phase: 'pretest', finalCorrect: true, responseStatus: 'correct', scoreAwarded: 5 },
+        { itemId: 'b', phase: 'pretest', finalCorrect: false, responseStatus: 'refused', scoreAwarded: null }
+      ]
+    }, 'fatigue', '2026-07-12T10:10:00.000Z');
+    expect(record).toMatchObject({
+      recordStatus: 'incomplete',
+      interpretationStatus: 'not-generated',
+      incompleteReason: 'fatigue',
+      modifiabilityIndex: null,
+      pretestSum: null,
+      posttestSum: null
+    });
+    expect(record.modifiabilityTier.label).toBe('Incomplete?no interpretation');
+    expect(record.incompleteReasons).toEqual(['fatigue', 'refusal']);
+    expect(record.dateCompleted).toBeUndefined();
+    expect(M.validateImportedSession(record)).toMatchObject({ valid: true, recordStatus: 'incomplete' });
+    expect(M.isSufficientSession(record)).toBe(false);
+    expect(M.aggregateItemStatistics([record], 1)).toEqual([]);
+    expect(M.buildIncompleteRecord(Object.assign({}, record, { recordStatus: undefined, modifiabilityIndex: 0.4 }), 'other')).not.toBeNull();
+  });
+
+  it('stores second-rater agreement and preserves original review timestamps across revisions', () => {
+    const first = M.buildSecondRaterReview({
+      reviewerCodename: 'Reviewer B', reviewerRole: 'school-psychologist', agreementStatus: 'disagree',
+      independentModifiabilityIndex: '0.35', itemDisagreementNotes: 'Item b was scored incorrect by the second rater.',
+      resolutionStatus: 'open'
+    }, null, '2026-07-12T10:10:00.000Z');
+    expect(first.valid).toBe(true);
+    expect(first.review).toMatchObject({ reviewerCodename: 'Reviewer B', agreementStatus: 'disagree', independentModifiabilityIndex: 0.35, revision: 1 });
+    expect(M.validateSecondRaterReview(first.review)).toMatchObject({ valid: true });
+    const revised = M.buildSecondRaterReview({
+      reviewerCodename: 'Reviewer B', reviewerRole: 'school-psychologist', agreementStatus: 'disagree',
+      independentModifiabilityIndex: '0.4', itemDisagreementNotes: 'Resolved after item-level discussion.',
+      resolutionStatus: 'resolved', resolutionRationale: 'Both raters reviewed the item rubric together.'
+    }, first.review, '2026-07-12T10:20:00.000Z');
+    expect(revised.valid).toBe(true);
+    expect(revised.review.startedAt).toBe(first.review.startedAt);
+    expect(revised.review.completedAt).toBe(first.review.completedAt);
+    expect(revised.review.resolvedAt).toBe('2026-07-12T10:20:00.000Z');
+    expect(revised.review.revision).toBe(2);
+    expect(M.buildSecondRaterReview({ reviewerCodename: 'Reviewer B', reviewerRole: 'teacher', agreementStatus: 'disagree' }, null, '2026-07-12T10:30:00.000Z').valid).toBe(false);
+  });
+
+  it('redacts free text and item prompts while retaining scored summary data', () => {
+    const redacted = M.redactSessionForExport({
+      id: 'redact-1',
+      studentNickname: 'Bright Fox',
+      sessionNote: 'Sensitive note',
+      intake: { referralReason: 'Sensitive referral' },
+      customBankSnapshot: [{ prompt: 'Private prompt' }],
+      secondRaterReview: { reviewerCodename: 'Reviewer B', reviewerRole: 'teacher', agreementStatus: 'disagree', independentModifiabilityIndex: 0.35, itemDisagreementNotes: 'Private scoring note', resolutionStatus: 'open', resolutionRationale: '' },
+      itemResults: [{
+        itemId: 'a',
+        phase: 'pretest',
+        studentResponseText: 'Private response',
+        examinerObservation: 'Private observation',
+        responseStatus: 'correct',
+        finalCorrect: true,
+        scoreAwarded: 5
+      }]
+    });
+    expect(redacted.studentNickname).toBe('redacted');
+    expect(redacted.sessionNote).toBeUndefined();
+    expect(redacted.intake).toBeUndefined();
+    expect(redacted.customBankSnapshot).toBeUndefined();
+    expect(redacted.secondRaterReview).toMatchObject({ agreementStatus: 'disagree', independentModifiabilityIndex: 0.35, resolutionStatus: 'open' });
+    expect(redacted.secondRaterReview.reviewerCodename).toBeUndefined();
+    expect(redacted.secondRaterReview.itemDisagreementNotes).toBeUndefined();
+    expect(redacted.itemResults[0].studentResponseText).toBeUndefined();
+    expect(redacted.itemResults[0].examinerObservation).toBeUndefined();
+    expect(redacted.itemResults[0].scoreAwarded).toBe(5);
+    expect(redacted._redacted).toBe(true);
+  });
+});
+describe('quality-aware longitudinal helpers', () => {
+  it('excludes explicitly insufficient sessions from longitudinal trend calculations', () => {
+    expect(M.isSufficientSession({ modifiabilityIndex: 0.4 })).toBe(true);
+    expect(M.isSufficientSession({ modifiabilityIndex: 0.1, evidenceStatus: { sufficient: false } })).toBe(false);
+    const trend = M.computeLongitudinalTrend([
+      { modifiabilityIndex: 0.4 },
+      { modifiabilityIndex: 0.1, evidenceStatus: { sufficient: false } },
+      { modifiabilityIndex: 0.6 }
+    ]);
+    expect(trend.label).toBe('Upward modifiability trajectory');
+  });
+
+  it('builds phase rows with recorded and scorable counts', () => {
+    const evidence = M.evidenceStatus({
+      sessionItemIds: ['a', 'b', 'c'],
+      posttestForm: 'matched-parallel',
+      itemResults: ['pretest', 'mediation', 'posttest'].flatMap((phase) =>
+        ['a', 'b', 'c'].map((itemId) => ({ phase, itemId, finalCorrect: true }))
+      )
+    });
+    expect(M.evidencePhaseRows(evidence).map((row) => row.id)).toEqual(['pretest', 'mediation', 'posttest']);
+    expect(M.evidencePhaseRows(evidence)[0]).toMatchObject({ recorded: 3, scorable: 3, needsAttention: false });
+  });
+});
 describe('computeModifiabilityIndex — (post-pre)/(max-pre)', () => {
   it('full growth from zero → 1', () => { expect(M.computeModifiabilityIndex(0, 20, 4)).toBe(1); });
   it('half the available headroom → 0.5', () => { expect(M.computeModifiabilityIndex(10, 15, 4)).toBe(0.5); });
@@ -404,5 +656,40 @@ describe('aggregateItemStatistics — psychometric quality flags', () => {
     const it = find(stats, 'ok');
     expect(it.pretestPassRate).toBeCloseTo(2 / 3, 6);
     expect(it.flags).toHaveLength(0);
+  });
+});
+
+describe('probe and form version metadata', () => {
+  const customItem = {
+    id: 'custom-version-1', construct: 'Quantity comparison', difficulty: 'custom', gradeBand: '2-3',
+    prompt: 'Which amount is greater?', correctAnswer: '8', acceptableAnswers: ['8'], promptLadder: [],
+    transferTwin: { prompt: 'Which amount is larger now?', correctAnswer: '9', acceptableAnswers: ['9'] }
+  };
+
+  it('records exact item and answer-key fingerprints while flagging legacy manifests', () => {
+    const session = {
+      isCustomBank: true, customBankSnapshot: [customItem], sessionItemIds: [customItem.id],
+      posttestForm: 'matched-parallel', posttestItemSnapshot: [Object.assign({}, customItem, { prompt: 'Novel prompt', correctAnswer: '9', acceptableAnswers: ['9'] })]
+    };
+    const metadata = M.buildSessionVersionMetadata(session);
+    expect(metadata.probeVersion).toBe('custom-1.0.0');
+    expect(metadata.posttestFormVersion).toBe('matched-parallel-1.0.0');
+    expect(metadata.legacy).toBe(true);
+    expect(metadata.itemManifest[0]).toMatchObject({ itemId: customItem.id, itemVersion: 'custom-1.0.0', posttestItemId: customItem.id });
+    const tracked = M.buildSessionVersionMetadata(Object.assign({}, session, { itemVersionManifest: metadata.itemManifest }));
+    expect(tracked.legacy).toBe(false);
+    expect(M.itemVersionFingerprint(customItem)).not.toBe(M.itemVersionFingerprint(Object.assign({}, customItem, { correctAnswer: '10' })));
+  });
+
+  it('flags probe/form revision changes but ignores expected item-set changes', () => {
+    const manifest = [{ itemId: 'a', itemVersion: 'built-in-1.0.0', itemFingerprint: 'item-a', posttestItemId: 'a', posttestItemVersion: 'built-in-1.0.0', posttestItemFingerprint: 'item-a-post' }];
+    const base = {
+      recordStatus: 'complete', modifiabilityIndex: 0.4, evidenceStatus: { sufficient: true },
+      sessionItemIds: ['a'], posttestForm: 'matched-parallel', probeVersion: 'built-in-1.0.0',
+      posttestFormVersion: 'matched-parallel-1.0.0', itemVersionManifest: manifest
+    };
+    expect(M.compareSessionVersions([base, Object.assign({}, base, { sessionItemIds: ["b"], itemVersionManifest: [Object.assign({}, manifest[0], { itemId: "b", itemFingerprint: "item-b" })] })])).toMatchObject({ comparable: true, mismatch: false });
+    expect(M.compareSessionVersions([base, Object.assign({}, base, { probeVersion: 'built-in-2.0.0' })])).toMatchObject({ comparable: false, mismatch: true });
+    expect(M.compareSessionVersions([base, Object.assign({}, base, { itemVersionManifest: undefined })])).toMatchObject({ comparable: false, legacy: true, mismatch: true });
   });
 });

@@ -1515,6 +1515,214 @@ function searchSafeHttpUrl(value) {
   }
 }
 
+const SOURCE_METADATA_MAX_BYTES = 65536;
+const SOURCE_METADATA_MAX_REDIRECTS = 2;
+const SOURCE_METADATA_CACHE_SECONDS = 3600;
+
+function sourceMetadataSafeUrl(value) {
+  const safe = searchSafeHttpUrl(value);
+  if (!safe) return '';
+  try {
+    const parsed = new URL(safe);
+    const hostname = parsed.hostname.toLowerCase();
+    if (parsed.username || parsed.password || (parsed.port && parsed.port !== '80' && parsed.port !== '443')) return '';
+    if (hostname === 'localhost' || hostname.endsWith('.local') || hostname.endsWith('.internal')) return '';
+    if (/^(127|10|0)\./.test(hostname) || /^192\.168\./.test(hostname) || /^169\.254\./.test(hostname)) return '';
+    const octets = hostname.match(/^172\.(\d{1,2})\./);
+    if (octets && Number(octets[1]) >= 16 && Number(octets[1]) <= 31) return '';
+    if (hostname === '::1' || hostname.startsWith('fc') || hostname.startsWith('fd')) return '';
+    return parsed.toString();
+  } catch (_) {
+    return '';
+  }
+}
+
+function decodeSourceMetadata(value) {
+  return String(value || '')
+    .replace(/&amp;/gi, '&')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&#(\d+);/g, (_, code) => String.fromCodePoint(Number(code)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, code) => String.fromCodePoint(parseInt(code, 16)))
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function sourceMetadataAttributes(tag) {
+  const attrs = {};
+  const pattern = /([A-Za-z_:][A-Za-z0-9:._-]*)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/g;
+  let match;
+  while ((match = pattern.exec(tag))) attrs[match[1].toLowerCase()] = decodeSourceMetadata(match[2] ?? match[3] ?? match[4]);
+  return attrs;
+}
+
+function sourceMetadataScalar(value) {
+  if (Array.isArray(value)) return sourceMetadataScalar(value[0]);
+  if (value && typeof value === 'object') return value.name || value.value || value['@id'] || '';
+  return value == null ? '' : String(value);
+}
+
+function sourceMetadataIdentifier(value, type) {
+  const raw = decodeSourceMetadata(sourceMetadataScalar(value));
+  if (type === 'doi') {
+    const match = raw.match(/10\.\d{4,9}\/[\-._;()/:A-Z0-9]+/i);
+    return match ? match[0].replace(/[.,;)]+$/, '') : '';
+  }
+  const candidates = raw.match(/(?:97[89][\s-]?)?(?:\d[\s-]?){9}[\dX]/gi) || [];
+  for (const candidate of candidates) {
+    const compact = candidate.replace(/[^0-9X]/gi, '').toUpperCase();
+    if (compact.length === 10 || compact.length === 13) return compact;
+  }
+  return '';
+}
+
+function sourceMetadataJsonLd(html) {
+  const items = [];
+  const pattern = /<script\b[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
+  let match;
+  while ((match = pattern.exec(String(html || '')))) {
+    try {
+      const parsed = JSON.parse(match[1].trim());
+      const values = Array.isArray(parsed) ? parsed : [parsed];
+      values.forEach((value) => {
+        if (value && Array.isArray(value['@graph'])) items.push(...value['@graph']);
+        else if (value && typeof value === 'object') items.push(value);
+      });
+    } catch (_) { /* malformed JSON-LD is ignored */ }
+  }
+  return items;
+}
+
+function sourceMetadataFromHtml(html, fallbackUrl) {
+  const found = {};
+  for (const tag of String(html || '').match(/<meta\b[^>]*>/gi) || []) {
+    const attrs = sourceMetadataAttributes(tag);
+    const key = String(attrs.property || attrs.name || attrs.itemprop || '').toLowerCase();
+    const content = attrs.content || '';
+    if (key && content && !found[key]) found[key] = content;
+  }
+  const jsonLd = sourceMetadataJsonLd(html);
+  const ldValue = (...keys) => {
+    for (const item of jsonLd) {
+      for (const key of keys) if (item && item[key] != null) return sourceMetadataScalar(item[key]);
+    }
+    return '';
+  };
+  const titleMatch = String(html || '').match(/<title\b[^>]*>([\s\S]*?)<\/title>/i);
+  const title = decodeSourceMetadata(ldValue('name', 'headline') || found['og:title'] || found['citation_title'] || found['dc.title'] || (titleMatch && titleMatch[1]) || '');
+  const creator = decodeSourceMetadata(ldValue('author', 'creator', 'byline') || found['citation_author'] || found['dc.creator'] || found.author || found['article:author'] || found['og:author'] || '');
+  const date = decodeSourceMetadata(ldValue('datePublished', 'dateCreated', 'dateIssued', 'copyrightYear') || found['citation_publication_date'] || found['article:published_time'] || found['dc.date'] || found.date || '');
+  const description = decodeSourceMetadata(ldValue('description') || found['og:description'] || found.description || '');
+  const publisher = decodeSourceMetadata(ldValue('publisher') || found.publisher || found['dc.publisher'] || '');
+  const type = decodeSourceMetadata(ldValue('@type') || found['og:type'] || '');
+  let canonicalUrl = '';
+  for (const tag of String(html || '').match(/<link\b[^>]*>/gi) || []) {
+    const attrs = sourceMetadataAttributes(tag);
+    if (String(attrs.rel || '').toLowerCase().split(/\s+/).includes('canonical')) {
+      canonicalUrl = sourceMetadataSafeUrl(attrs.href);
+      if (canonicalUrl) break;
+    }
+  }
+  canonicalUrl = canonicalUrl || fallbackUrl;
+  const identifierValues = [ldValue('identifier'), found['citation_doi'], found['dc.identifier'], found.doi, found['citation_isbn'], found.isbn, found['book:isbn'], canonicalUrl];
+  const doi = identifierValues.map((value) => sourceMetadataIdentifier(value, 'doi')).find(Boolean) || '';
+  const isbn = identifierValues.map((value) => sourceMetadataIdentifier(value, 'isbn')).find(Boolean) || '';
+  return {
+    title,
+    creator,
+    date,
+    description,
+    canonicalUrl,
+    publisher,
+    type,
+    doi,
+    isbn,
+    signals: {
+      jsonLd: jsonLd.length > 0,
+      citationMeta: Boolean(found.citation_title || found.citation_author || found.citation_doi || found.citation_isbn),
+      canonical: Boolean(canonicalUrl),
+      doi: Boolean(doi),
+      isbn: Boolean(isbn),
+    },
+  };
+}
+
+async function sourceMetadataText(response) {
+  const declared = Number.parseInt(response.headers.get('Content-Length') || '', 10);
+  if (Number.isFinite(declared) && declared > SOURCE_METADATA_MAX_BYTES) return null;
+  if (!response.body) return (await response.text()).slice(0, SOURCE_METADATA_MAX_BYTES);
+  const reader = response.body.getReader();
+  const chunks = [];
+  let total = 0;
+  while (true) {
+    const item = await reader.read();
+    if (item.done) break;
+    total += item.value.byteLength;
+    if (total > SOURCE_METADATA_MAX_BYTES) {
+      await reader.cancel();
+      return null;
+    }
+    chunks.push(item.value);
+  }
+  const bytes = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
+  return new TextDecoder().decode(bytes);
+}
+
+async function fetchSourceMetadataResponse(target) {
+  let current = target;
+  const seen = new Set([current]);
+  for (let attempt = 0; attempt <= SOURCE_METADATA_MAX_REDIRECTS; attempt += 1) {
+    let upstream;
+    try {
+      upstream = await fetch(current, {
+        method: 'GET',
+        redirect: 'manual',
+        headers: { Accept: 'text/html,application/xhtml+xml,text/plain;q=0.8', 'User-Agent': 'AlloFlow-Lumen/1.0 (educational source metadata)' },
+        signal: AbortSignal.timeout(7000),
+      });
+    } catch (_) {
+      return { error: 'metadata-upstream-unreachable' };
+    }
+    if (upstream.status < 300 || upstream.status >= 400) return { response: upstream, finalUrl: current };
+    const location = upstream.headers.get('Location');
+    let next = '';
+    try { next = sourceMetadataSafeUrl(new URL(location || '', current).toString()); } catch (_) { next = ''; }
+    if (!next || seen.has(next)) return { error: 'metadata-redirect-invalid' };
+    seen.add(next);
+    current = next;
+  }
+  return { error: 'metadata-too-many-redirects' };
+}
+
+async function handleSourceMetadata(request, env, url) {
+  if (env.DISABLE_SEARCH_PROXY === 'true' || env.DISABLE_SEARCH_PROXY === true) return jsonResponse({ ok: false, error: 'metadata-disabled' }, 503);
+  const target = sourceMetadataSafeUrl(url.searchParams.get('url'));
+  if (!target) return jsonResponse({ ok: false, error: 'invalid-source-url' }, 400);
+  const cacheKey = new Request(`https://source-metadata-cache.alloflow.invalid/?url=${encodeURIComponent(target)}`, { method: 'GET' });
+  const cache = caches.default;
+  const cached = await cache.match(cacheKey);
+  if (cached) return jsonResponse({ ...(await cached.json()), cached: true });
+
+  const fetched = await fetchSourceMetadataResponse(target);
+  if (fetched.error) return jsonResponse({ ok: false, error: fetched.error }, 502);
+  const upstream = fetched.response;
+  const finalUrl = fetched.finalUrl;
+  if (!upstream.ok) return jsonResponse({ ok: false, error: 'metadata-upstream-error', status: upstream.status }, 502);
+  const contentType = String(upstream.headers.get('Content-Type') || '').toLowerCase();
+  if (contentType && !/(html|xhtml|text\/plain)/.test(contentType)) return jsonResponse({ ok: false, error: 'metadata-unsupported-content' }, 415);
+  const html = await sourceMetadataText(upstream);
+  if (html == null) return jsonResponse({ ok: false, error: 'metadata-response-too-large' }, 413);
+  const payload = { ok: true, accessible: true, finalUrl, metadata: sourceMetadataFromHtml(html, finalUrl), source: 'Source metadata fetch' };
+  try {
+    await cache.put(cacheKey, new Response(JSON.stringify(payload), { headers: { 'Content-Type': 'application/json', 'Cache-Control': `max-age=${SOURCE_METADATA_CACHE_SECONDS}` } }));
+  } catch (_) { /* caching is best-effort */ }
+  return jsonResponse(payload);
+}
+
 function searchClientKey(request) {
   const ip = request.headers.get('CF-Connecting-IP')
     || request.headers.get('X-Forwarded-For')
@@ -1666,6 +1874,10 @@ export default {
     // so WebSearchProvider's canvas-compat-get path works unchanged.
     if (request.method === 'GET' && url.pathname === '/search') {
       return handleSearch(request, env, url);
+    }
+
+    if (request.method === 'GET' && url.pathname === '/source-metadata') {
+      return handleSourceMetadata(request, env, url);
     }
 
     if (request.method === 'POST' && url.pathname === '/submitTranslation') {

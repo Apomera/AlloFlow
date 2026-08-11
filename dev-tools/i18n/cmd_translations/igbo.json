@@ -320,5 +320,8 @@
   "cmd.run_lesson_blueprint": "Mepụta atụmatụ nkuzi",
   "cmd.run_lesson_blueprint_done": "A na-emepụta atụmatụ — ị nwere ike ilele nzọụkwụ ọ bụla na kaadị ahụ.",
   "cmd.run_lesson_blueprint_hint": "Na-emepụta akụrụngwa niile dị na atụmatụ ugbu a",
-  "cmd.cancelled": "Arịrịọ ịkagbu ka e zigara. Ọrụ dị ugbu a ga-akwụsị mgbe onye na-enye ya kwadoro ya."
+  "cmd.cancelled": "Arịrịọ ịkagbu ka e zigara. Ọrụ dị ugbu a ga-akwụsị mgbe onye na-enye ya kwadoro ya.",
+  "cmd.open_share_collect": "Mepee Share & Collect",
+  "cmd.open_share_collect_hint": "Ntuli aka, ndebanye aha, nyocha na nsonaazụ ha",
+  "cmd.open_share_collect_done": "Emepela Share & Collect."
 }

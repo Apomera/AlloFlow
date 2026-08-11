@@ -42,5 +42,8 @@
   "cmd.run_lesson_blueprint": "Ders planını oluştur",
   "cmd.run_lesson_blueprint_done": "Plan oluşturuluyor — kartta her adımı izleyebilirsin.",
   "cmd.run_lesson_blueprint_hint": "Geçerli plandaki tüm kaynakları oluşturur",
-  "cmd.cancelled": "İptal istendi. Sağlayıcısı desteklediğinde mevcut işlem duracak."
+  "cmd.cancelled": "İptal istendi. Sağlayıcısı desteklediğinde mevcut işlem duracak.",
+  "cmd.open_share_collect": "Share & Collect’i aç",
+  "cmd.open_share_collect_hint": "Anketler, kayıtlar, soru formları ve sonuçları",
+  "cmd.open_share_collect_done": "Share & Collect açıldı."
 }

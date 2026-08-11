@@ -1,4 +1,4 @@
-// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -47,7 +47,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
     migrationStyle.textContent = [
       '.migration-tool-shell{--mg-sky:#0ea5e9;--mg-green:#16a34a;--mg-text:var(--allo-stem-text,#e2e8f0);--mg-muted:var(--allo-stem-text-soft,#94a3b8);--mg-panel:var(--allo-stem-panel,#1e293b);--mg-canvas:var(--allo-stem-canvas,#0f172a);--mg-border:var(--allo-stem-border,#334155);max-width:1120px;margin:0 auto;padding:4px!important;color:var(--mg-text);}',
       '.migration-tool-shell *{box-sizing:border-box;}',
-      '.migration-tool-shell button:focus-visible,.migration-tool-shell input:focus-visible,.migration-tool-shell select:focus-visible,.migration-tool-shell textarea:focus-visible,.migration-tool-shell canvas:focus-visible{outline:3px solid #38bdf8;outline-offset:3px;}',
+      '.migration-tool-shell button:focus-visible,.migration-tool-shell input:focus-visible,.migration-tool-shell select:focus-visible,.migration-tool-shell textarea:focus-visible,.migration-tool-shell canvas:focus-visible,.migration-flight-stage:focus-visible{outline:3px solid #38bdf8;outline-offset:3px;}',
       '.migration-command{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:17px 18px;border:1px solid rgba(14,165,233,.38);border-radius:18px;background:radial-gradient(circle at 88% 12%,rgba(14,165,233,.2),transparent 34%),linear-gradient(135deg,rgba(8,47,73,.94),rgba(15,23,42,.97));box-shadow:0 18px 42px rgba(15,23,42,.2);}',
       '.migration-command-main{display:flex;align-items:center;gap:12px;min-width:0;}',
       '.migration-command-copy{min-width:0;}',
@@ -59,7 +59,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       '.migration-metric{min-width:0;border:1px solid var(--mg-border);border-radius:12px;padding:10px 12px;background:linear-gradient(180deg,var(--mg-canvas),var(--mg-panel));}',
       '.migration-metric-label{display:block;color:var(--mg-muted);font-size:9px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;}',
       '.migration-metric-value{display:block;margin-top:3px;color:var(--mg-text);font-size:13px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
-      '.migration-route-board{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px!important;padding:10px;border:1px solid var(--mg-border);border-radius:14px;background:var(--mg-canvas);}',
+      '.migration-route-board{display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px!important;padding:10px;border:1px solid var(--mg-border);border-radius:14px;background:var(--mg-canvas);}',
       '.migration-route-tab{display:flex!important;align-items:center;justify-content:flex-start;min-width:0;min-height:46px;padding:8px 9px!important;text-align:left;line-height:1.25;border:1px solid transparent!important;border-radius:10px!important;}',
       '.migration-route-tab[aria-selected="true"]{border-color:#38bdf8!important;background:linear-gradient(135deg,#0369a1,#0e7490)!important;box-shadow:0 8px 20px rgba(14,165,233,.2);}',
       '.migration-route-label{min-width:0;font-size:10px;font-weight:900;}',
@@ -67,11 +67,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       '.migration-workspace{min-width:0;}',
       '.migration-workspace canvas{display:block;max-width:100%!important;border-radius:14px;box-shadow:0 12px 30px rgba(15,23,42,.2);}',
       '.migration-workspace [style*="grid-template-columns:repeat(3"]{min-width:0;}',
+      '.migration-flight-deck{display:grid;grid-template-columns:minmax(0,1fr) 250px;min-height:560px;border:1px solid #075985;border-radius:18px;background:#020617;box-shadow:0 24px 58px rgba(2,6,23,.34);overflow:hidden;isolation:isolate;}',
+      '.migration-flight-stage{position:relative;min-width:0;min-height:560px;background:radial-gradient(circle at 50% 22%,#1d4ed8 0,#075985 34%,#082f49 66%,#020617 100%);overflow:hidden;}',
+      '.migration-flight-stage canvas{width:100%!important;height:100%!important;max-width:none!important;border-radius:0!important;box-shadow:none!important;touch-action:none;}',
+      '.migration-flight-stage-status{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:28px;color:#e0f2fe;font-size:13px;font-weight:800;text-align:center;background:radial-gradient(circle at 50% 30%,rgba(14,116,144,.76),rgba(2,6,23,.96));}',
+      '.migration-flight-stage[data-flight-ready="true"] .migration-flight-stage-status{display:none;}',
+      '.migration-flight-overlay{position:absolute;inset:0;pointer-events:none;display:flex;flex-direction:column;justify-content:space-between;padding:14px;}',
+      '.migration-flight-badge{align-self:flex-start;display:inline-flex;align-items:center;gap:7px;max-width:min(92%,420px);border:1px solid rgba(186,230,253,.58);border-radius:999px;background:rgba(2,6,23,.82);color:#f0f9ff;padding:7px 10px;font-size:10px;font-weight:900;letter-spacing:.04em;box-shadow:0 8px 24px rgba(2,6,23,.32);backdrop-filter:blur(8px);}',
+      '.migration-flight-heading{align-self:center;border:1px solid rgba(125,211,252,.48);border-radius:10px;background:rgba(2,6,23,.82);color:#e0f2fe;padding:7px 10px;font-size:10px;font-weight:850;text-align:center;box-shadow:0 8px 24px rgba(2,6,23,.3);backdrop-filter:blur(8px);}',
+      '.migration-flight-controls{display:flex;flex-direction:column;gap:14px;padding:16px;background:linear-gradient(180deg,#0f172a,#082f49);color:#f8fafc;overflow:auto;}',
+      '.migration-flight-controls h3{margin:0;color:#fff;font-size:17px;line-height:1.2;}',
+      '.migration-flight-controls p{margin:4px 0 0;color:#cbd5e1;font-size:11px;line-height:1.5;}',
+      '.migration-flight-control{display:flex;flex-direction:column;gap:5px;color:#e2e8f0;font-size:10px;font-weight:900;letter-spacing:.03em;}',
+      '.migration-flight-control select,.migration-flight-control input{width:100%;accent-color:#38bdf8;}',
+      '.migration-flight-control select{min-height:40px;border:1px solid #64748b;border-radius:9px;background:#020617;color:#f8fafc;padding:8px;font-size:11px;font-weight:800;}',
+      '.migration-flight-value{display:flex;justify-content:space-between;gap:8px;color:#e2e8f0;font-size:10px;font-weight:850;}',
+      '.migration-flight-value strong{color:#7dd3fc;}',
+      '.migration-flight-camera{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;}',
+      '.migration-flight-camera button,.migration-flight-actions button{min-height:38px;border:1px solid #64748b;border-radius:8px;background:#0f172a;color:#f8fafc;padding:7px 6px;font-size:10px;font-weight:900;cursor:pointer;}',
+      '.migration-flight-camera button[aria-pressed="true"]{border-color:#7dd3fc;background:#0369a1;color:#fff;box-shadow:0 0 0 2px rgba(125,211,252,.18);}',
+      '.migration-flight-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;}',
+      '.migration-flight-actions button:first-child{border-color:#38bdf8;background:#075985;}',
+      '.migration-flight-stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}',
+      '.migration-flight-stat{border:1px solid #475569;border-radius:9px;background:#020617;padding:8px;}',
+      '.migration-flight-stat span{display:block;color:#cbd5e1;font-size:8px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;}',
+      '.migration-flight-stat strong{display:block;margin-top:3px;color:#f8fafc;font-size:11px;}',
+      '.migration-monarch-note{border:1px solid #f59e0b;border-radius:10px;background:#451a03;color:#fffbeb;padding:10px;font-size:10px;line-height:1.45;}',
+      '.migration-flight-deck:fullscreen,.migration-flight-deck:-webkit-full-screen,.migration-flight-deck[data-allo-fullscreen-active="true"]{width:100vw;height:100vh;grid-template-columns:minmax(0,1fr) minmax(250px,22vw);border:0;border-radius:0;}',
+      '.migration-flight-deck:fullscreen .migration-flight-stage,.migration-flight-deck:-webkit-full-screen .migration-flight-stage,.migration-flight-deck[data-allo-fullscreen-active="true"] .migration-flight-stage{min-height:0;height:100vh;}',
+      '.migration-flight-deck:fullscreen .migration-flight-controls,.migration-flight-deck:-webkit-full-screen .migration-flight-controls,.migration-flight-deck[data-allo-fullscreen-active="true"] .migration-flight-controls{padding-top:calc(16px + env(safe-area-inset-top));padding-bottom:calc(16px + env(safe-area-inset-bottom));}',
       '@media (max-width:900px){.migration-route-board{grid-template-columns:repeat(3,minmax(0,1fr));}}',
+      '@media (max-width:760px){.migration-flight-deck{grid-template-columns:1fr;min-height:0;}.migration-flight-stage{min-height:430px;}.migration-flight-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));max-height:none;}.migration-flight-controls>div:first-child,.migration-monarch-note,.migration-flight-actions{grid-column:1/-1;}.migration-flight-deck:fullscreen,.migration-flight-deck:-webkit-full-screen,.migration-flight-deck[data-allo-fullscreen-active="true"]{display:flex;flex-direction:column;height:100vh;overflow:auto;}.migration-flight-deck:fullscreen .migration-flight-stage,.migration-flight-deck:-webkit-full-screen .migration-flight-stage,.migration-flight-deck[data-allo-fullscreen-active="true"] .migration-flight-stage{flex:1 0 58vh;min-height:58vh;height:auto;}.migration-flight-deck:fullscreen .migration-flight-controls,.migration-flight-deck:-webkit-full-screen .migration-flight-controls,.migration-flight-deck[data-allo-fullscreen-active="true"] .migration-flight-controls{flex:0 0 auto;}}',
       '@media (max-width:700px){.migration-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}.migration-command{align-items:flex-start;}.migration-command-icon{display:none;}}',
       '@media (max-width:520px){.migration-tool-shell{padding:0!important;}.migration-command{padding:13px;border-radius:14px;}.migration-command p{font-size:11px;}.migration-route-board{grid-template-columns:repeat(2,minmax(0,1fr));padding:7px;}.migration-route-tab{min-height:44px;}.migration-workspace [style*="grid-template-columns: repeat(3"],.migration-workspace [style*="grid-template-columns: repeat(2"]{grid-template-columns:1fr!important;}}',
+      '@media (max-width:520px){.migration-flight-stage{min-height:360px;}.migration-flight-controls{grid-template-columns:1fr;}.migration-flight-controls>*{grid-column:1!important;}.migration-flight-badge{border-radius:9px;}.migration-flight-heading{display:none;}}',
       '@media (prefers-reduced-motion:reduce){.migration-route-tab{transition:none!important;}}',
-      '.theme-contrast .migration-command,.theme-contrast .migration-active-band,.theme-contrast .migration-workspace canvas{box-shadow:none;}'
+      '.theme-contrast .migration-command,.theme-contrast .migration-active-band,.theme-contrast .migration-workspace canvas,.theme-contrast .migration-flight-deck{box-shadow:none;}.theme-contrast .migration-flight-controls{background:#000;}.theme-contrast .migration-flight-control select,.theme-contrast .migration-flight-camera button,.theme-contrast .migration-flight-actions button,.theme-contrast .migration-flight-stat{border-color:#fff;background:#000;color:#fff;}'
     ].join('\n');
     document.head.appendChild(migrationStyle);
   }
@@ -269,9 +300,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
   // REGISTER TOOL
   // ════════════════════════════════════════════
   window.StemLab.registerTool('migration', {
-    icon: '\uD83E\uDEBF',
+    icon: '\uD83E\uDDED',
     label: 'Migration & Wind Lab',
-    desc: 'V-formation aerodynamics, wind currents, bird migration routes & flight physics',
+    desc: '3D migration flight, Monarch journeys, V-formation aerodynamics, wind currents & flyways',
     color: 'sky',
     category: 'science',
     questHooks: [
@@ -305,8 +336,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft;
 
       // ── Tab state ──
-      var tab = d.tab || 'vformation';
+      var tab = d.tab || 'flight3d';
       var TABS = [
+        { id: 'flight3d', label: '3D Flight', icon: '\uD83C\uDF10' },
         { id: 'vformation', label: 'V-Formation', icon: '\uD83E\uDEBF' },
         { id: 'wind', label: t('stem.migration.wind_currents', 'Wind Currents'), icon: '\uD83C\uDF2C\uFE0F' },
         { id: 'routes', label: t('stem.migration.migration_routes', 'Migration Routes'), icon: '\uD83D\uDDFA\uFE0F' },
@@ -352,6 +384,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       // Synchronous gate for "perfect V" XP award \u2014 prevents animation frames from
       // re-firing awardXP while the async toolData write propagates.
       var _vfPerfectRef = useRef(false);
+      var _f3dHostRef = useRef(null);
+      var _f3dEngineRef = useRef(null);
+      var _f3dBootRef = useRef(0);
       // Tab 2: Wind Currents refs
       var _wcCanvasRef = useRef(null);
       var _wcAnimRef = useRef(null);
@@ -378,12 +413,708 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         windDir: d.windDir || 0, windSpeed: d.windSpeed || 15,
         showStreamlines: d.showStreamlines, placingObj: d.placingObj,
         selectedSpecies: d.selectedSpecies, aoa: d.aoa || 5,
+        flightSpecies: d.flightSpecies || d.selectedSpecies || 'canada_goose',
+        flightCamera: d.flightCamera || 'chase',
+        flightFormation: d.flightFormation || 'natural',
+        flightWind: d.flightWind == null ? 8 : d.flightWind,
+        flightPaused: !!d.flightPaused,
+        flightSeason: d.flightSeason || 'fall',
         selectedWing: d.selectedWing || 'goose', isDark: isDark, tab: tab
       };
 
       // ══════════════════════════════════════════
       // TAB 1: V-FORMATION SIMULATOR
       // ══════════════════════════════════════════
+      function findMigrationSpecies(id) {
+        for (var i = 0; i < SPECIES.length; i++) {
+          if (SPECIES[i].id === id) return SPECIES[i];
+        }
+        return SPECIES[0];
+      }
+
+      function flightFormationName(species, override) {
+        if (override && override !== 'natural') return override;
+        if (species.id === 'monarch') return 'swarm';
+        if (species.formation === 'V-formation') return 'v';
+        if (species.formation === 'Solo') return 'solo';
+        return 'loose';
+      }
+
+      function disposeMigrationObject(root) {
+        if (!root || !root.traverse) return;
+        root.traverse(function(obj) {
+          if (obj.geometry && obj.geometry.dispose) obj.geometry.dispose();
+          if (obj.material) {
+            var mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+            mats.forEach(function(mat) {
+              if (mat.map && mat.map.dispose) mat.map.dispose();
+              if (mat.dispose) mat.dispose();
+            });
+          }
+        });
+      }
+
+      function destroyMigrationFlightEngine() {
+        var engine = _f3dEngineRef.current;
+        _f3dBootRef.current += 1;
+        if (!engine) {
+          _f3dHostRef.current = null;
+          return;
+        }
+        engine.disposed = true;
+        if (engine.raf) cancelAnimationFrame(engine.raf);
+        if (engine.resizeObserver) engine.resizeObserver.disconnect();
+        if (engine.resizeHandler) window.removeEventListener('resize', engine.resizeHandler);
+        if (engine.scene) disposeMigrationObject(engine.scene);
+        if (engine.renderer) {
+          try { engine.renderer.dispose(); } catch (ignore) {}
+          try { engine.renderer.forceContextLoss(); } catch (ignore2) {}
+          if (engine.renderer.domElement && engine.renderer.domElement.parentNode) {
+            engine.renderer.domElement.parentNode.removeChild(engine.renderer.domElement);
+          }
+        }
+        if (engine.host) {
+          engine.host.removeAttribute('data-flight-ready');
+          engine.host.removeAttribute('data-flight-error');
+        }
+        _f3dEngineRef.current = null;
+        _f3dHostRef.current = null;
+      }
+
+      function createMigrationWingGeometry(THREE, side, reach, sweep) {
+        var geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array([
+          0, 0, 0,
+          side * reach, 0, sweep * 0.35,
+          side * reach * 0.42, 0, -sweep
+        ]), 3));
+        geometry.setIndex([0, 1, 2]);
+        geometry.computeVertexNormals();
+        return geometry;
+      }
+
+      function createMigrationFlyer(THREE, species, index) {
+        var flyer = new THREE.Group();
+        var isMonarch = species.id === 'monarch';
+        var palette = {
+          canada_goose: 0x64748b,
+          snow_goose: 0xf1f5f9,
+          arctic_tern: 0xe2e8f0,
+          ruby_hummingbird: 0x16a34a,
+          peregrine: 0x475569,
+          sandhill_crane: 0xa16207,
+          bartailed_godwit: 0x92400e
+        };
+        var bodyColor = palette[species.id] || 0x64748b;
+        var bodyMat = new THREE.MeshStandardMaterial({
+          color: isMonarch ? 0x111827 : bodyColor,
+          roughness: 0.68,
+          metalness: 0.04
+        });
+        var body = new THREE.Mesh(
+          isMonarch ? new THREE.CylinderGeometry(0.08, 0.12, 0.72, 10) : new THREE.CylinderGeometry(0.18, 0.29, 1.25, 12),
+          bodyMat
+        );
+        body.rotation.x = Math.PI / 2;
+        body.castShadow = true;
+        flyer.add(body);
+
+        var head = new THREE.Mesh(
+          new THREE.SphereGeometry(isMonarch ? 0.13 : 0.24, 12, 8),
+          bodyMat
+        );
+        head.position.z = isMonarch ? -0.39 : -0.72;
+        head.castShadow = true;
+        flyer.add(head);
+
+        if (!isMonarch) {
+          var beak = new THREE.Mesh(
+            new THREE.ConeGeometry(0.11, 0.34, 10),
+            new THREE.MeshStandardMaterial({ color: 0xfbbf24, roughness: 0.6 })
+          );
+          beak.rotation.x = -Math.PI / 2;
+          beak.position.z = -0.98;
+          flyer.add(beak);
+        }
+
+        var leftPivot = new THREE.Group();
+        var rightPivot = new THREE.Group();
+        var reach = isMonarch ? 0.82 : 1.38;
+        var sweep = isMonarch ? 0.62 : 0.86;
+        var outerMat = new THREE.MeshStandardMaterial({
+          color: isMonarch ? 0x111827 : bodyColor,
+          roughness: 0.72,
+          side: THREE.DoubleSide
+        });
+        var leftOuter = new THREE.Mesh(createMigrationWingGeometry(THREE, -1, reach, sweep), outerMat);
+        var rightOuter = new THREE.Mesh(createMigrationWingGeometry(THREE, 1, reach, sweep), outerMat);
+        leftOuter.castShadow = true;
+        rightOuter.castShadow = true;
+        leftPivot.add(leftOuter);
+        rightPivot.add(rightOuter);
+
+        if (isMonarch) {
+          var orangeMat = new THREE.MeshStandardMaterial({
+            color: 0xf97316,
+            emissive: 0x431407,
+            emissiveIntensity: 0.18,
+            roughness: 0.64,
+            side: THREE.DoubleSide
+          });
+          var leftInner = new THREE.Mesh(createMigrationWingGeometry(THREE, -1, reach * 0.78, sweep * 0.76), orangeMat);
+          var rightInner = new THREE.Mesh(createMigrationWingGeometry(THREE, 1, reach * 0.78, sweep * 0.76), orangeMat);
+          leftInner.position.y = 0.012;
+          rightInner.position.y = 0.012;
+          leftPivot.add(leftInner);
+          rightPivot.add(rightInner);
+        }
+
+        flyer.add(leftPivot);
+        flyer.add(rightPivot);
+        flyer.userData.wings = [leftPivot, rightPivot];
+        flyer.userData.phase = index * 0.71;
+        flyer.userData.flapRate = isMonarch ? 8.5 : (species.id === 'ruby_hummingbird' ? 12 : 3.2);
+        flyer.userData.flapAmount = isMonarch ? 0.92 : 0.48;
+        flyer.scale.setScalar(isMonarch ? 0.68 : (species.id === 'ruby_hummingbird' ? 0.62 : 0.82));
+        return flyer;
+      }
+
+      function migrationFormationPositions(species, mode) {
+        var positions = [];
+        var i;
+        var natural = flightFormationName(species, mode);
+        if (natural === 'solo') return [[0, 0, -4]];
+        if (natural === 'v') {
+          positions.push([0, 0.5, -5]);
+          for (i = 1; i < 11; i++) {
+            var row = Math.ceil(i / 2);
+            var side = i % 2 ? -1 : 1;
+            positions.push([side * row * 1.65, -row * 0.08, -5 + row * 1.9]);
+          }
+          return positions;
+        }
+        if (natural === 'swarm') {
+          for (i = 0; i < 18; i++) {
+            positions.push([
+              Math.sin(i * 2.17) * (2.2 + (i % 4) * 0.7),
+              Math.cos(i * 1.31) * 1.4,
+              -4 + (i % 6) * 1.5
+            ]);
+          }
+          return positions;
+        }
+        for (i = 0; i < 9; i++) {
+          positions.push([
+            Math.sin(i * 1.8) * 3.4,
+            Math.cos(i * 1.27) * 0.8,
+            -5 + i * 1.15
+          ]);
+        }
+        return positions;
+      }
+      function initMigrationFlightScene(host, THREE, token) {
+        if (!host || !THREE || token !== _f3dBootRef.current || !host.isConnected) return;
+        var statusNode = host.querySelector('.migration-flight-stage-status');
+        try {
+          var renderer = new THREE.WebGLRenderer({
+            antialias: true,
+            alpha: false,
+            powerPreference: 'high-performance'
+          });
+          renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+          renderer.shadowMap.enabled = true;
+          renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+          if (renderer.outputEncoding != null && THREE.sRGBEncoding != null) renderer.outputEncoding = THREE.sRGBEncoding;
+          renderer.domElement.setAttribute('aria-hidden', 'true');
+          renderer.domElement.setAttribute('role', 'presentation');
+          host.insertBefore(renderer.domElement, host.firstChild);
+
+          var scene = new THREE.Scene();
+          scene.background = new THREE.Color(0x075985);
+          scene.fog = new THREE.FogExp2(0x0c4a6e, 0.0125);
+          var camera = new THREE.PerspectiveCamera(54, 1, 0.1, 500);
+          camera.position.set(0, 5, 18);
+
+          var engine = {
+            host: host,
+            THREE: THREE,
+            renderer: renderer,
+            scene: scene,
+            camera: camera,
+            raf: 0,
+            disposed: false,
+            time: 0,
+            lastFrame: 0,
+            movers: [],
+            flyers: [],
+            speciesId: '',
+            formationMode: '',
+            season: ''
+          };
+          _f3dEngineRef.current = engine;
+          _f3dHostRef.current = host;
+
+          var hemi = new THREE.HemisphereLight(0xdbeafe, 0x14532d, 1.28);
+          scene.add(hemi);
+          var sun = new THREE.DirectionalLight(0xfff7d6, 1.55);
+          sun.position.set(-28, 34, 18);
+          sun.castShadow = true;
+          sun.shadow.mapSize.set(1024, 1024);
+          sun.shadow.camera.left = -35;
+          sun.shadow.camera.right = 35;
+          sun.shadow.camera.top = 35;
+          sun.shadow.camera.bottom = -35;
+          scene.add(sun);
+
+          var sunDisc = new THREE.Mesh(
+            new THREE.SphereGeometry(3.2, 24, 16),
+            new THREE.MeshBasicMaterial({ color: 0xfef3c7 })
+          );
+          sunDisc.position.set(-38, 34, -115);
+          scene.add(sunDisc);
+
+          var ground = new THREE.Mesh(
+            new THREE.PlaneGeometry(180, 360, 1, 1),
+            new THREE.MeshStandardMaterial({ color: 0x315f3b, roughness: 0.96 })
+          );
+          ground.rotation.x = -Math.PI / 2;
+          ground.position.set(0, -6, -125);
+          ground.receiveShadow = true;
+          scene.add(ground);
+
+          var routeRibbon = new THREE.Mesh(
+            new THREE.PlaneGeometry(4.6, 310),
+            new THREE.MeshStandardMaterial({
+              color: 0x38bdf8,
+              emissive: 0x082f49,
+              emissiveIntensity: 0.42,
+              transparent: true,
+              opacity: 0.58,
+              roughness: 0.7
+            })
+          );
+          routeRibbon.rotation.x = -Math.PI / 2;
+          routeRibbon.position.set(0, -5.88, -126);
+          scene.add(routeRibbon);
+          engine.routeRibbon = routeRibbon;
+
+          var river = new THREE.Mesh(
+            new THREE.PlaneGeometry(18, 300),
+            new THREE.MeshStandardMaterial({
+              color: 0x0ea5e9,
+              roughness: 0.32,
+              metalness: 0.08,
+              transparent: true,
+              opacity: 0.72
+            })
+          );
+          river.rotation.x = -Math.PI / 2;
+          river.rotation.z = -0.08;
+          river.position.set(31, -5.82, -125);
+          scene.add(river);
+
+          var mountainMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.92 });
+          for (var mi = 0; mi < 18; mi++) {
+            var height = 7 + (mi % 5) * 2.8;
+            var mountain = new THREE.Mesh(
+              new THREE.ConeGeometry(5.5 + (mi % 3) * 1.7, height, 7),
+              mountainMat
+            );
+            var side = mi % 2 ? -1 : 1;
+            mountain.position.set(side * (24 + (mi % 4) * 7), -6 + height / 2, -25 - mi * 12);
+            mountain.rotation.y = mi * 0.61;
+            mountain.castShadow = true;
+            mountain.receiveShadow = true;
+            scene.add(mountain);
+          }
+
+          var cloudMat = new THREE.MeshStandardMaterial({
+            color: 0xf8fafc,
+            transparent: true,
+            opacity: 0.78,
+            roughness: 1,
+            depthWrite: false
+          });
+          for (var ci = 0; ci < 12; ci++) {
+            var cloud = new THREE.Group();
+            for (var puff = 0; puff < 4; puff++) {
+              var ball = new THREE.Mesh(
+                new THREE.SphereGeometry(1.6 + (puff % 2) * 0.7, 12, 8),
+                cloudMat
+              );
+              ball.position.set((puff - 1.5) * 1.8, Math.sin(puff) * 0.55, Math.cos(puff) * 0.7);
+              cloud.add(ball);
+            }
+            cloud.position.set(
+              Math.sin(ci * 2.1) * (18 + (ci % 3) * 6),
+              4 + (ci % 4) * 3.2,
+              -18 - ci * 14
+            );
+            cloud.userData.baseZ = cloud.position.z;
+            cloud.userData.drift = 0.32 + (ci % 4) * 0.08;
+            scene.add(cloud);
+            engine.movers.push(cloud);
+          }
+
+          var beaconMat = new THREE.MeshBasicMaterial({ color: 0x7dd3fc, transparent: true, opacity: 0.84 });
+          for (var bi = 0; bi < 10; bi++) {
+            var beacon = new THREE.Mesh(new THREE.TorusGeometry(2.1, 0.12, 8, 32), beaconMat);
+            beacon.rotation.x = Math.PI / 2;
+            beacon.position.set(0, -5.35, -20 - bi * 18);
+            beacon.userData.baseZ = beacon.position.z;
+            beacon.userData.drift = 1;
+            scene.add(beacon);
+            engine.movers.push(beacon);
+          }
+
+          var streakData = [];
+          for (var si = 0; si < 44; si++) {
+            var sx = Math.sin(si * 12.47) * 22;
+            var sy = -2 + (si % 8) * 1.8;
+            var sz = -8 - (si % 22) * 7;
+            streakData.push(sx, sy, sz, sx, sy, sz - 2.4);
+          }
+          var streakGeometry = new THREE.BufferGeometry();
+          streakGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(streakData), 3));
+          var streaks = new THREE.LineSegments(
+            streakGeometry,
+            new THREE.LineBasicMaterial({ color: 0xbae6fd, transparent: true, opacity: 0.34 })
+          );
+          scene.add(streaks);
+          engine.streaks = streaks;
+
+          var flockRoot = new THREE.Group();
+          flockRoot.position.y = 1.2;
+          scene.add(flockRoot);
+          engine.flockRoot = flockRoot;
+
+          engine.rebuildFlock = function(speciesId, formationMode, season) {
+            while (flockRoot.children.length) {
+              var old = flockRoot.children.pop();
+              disposeMigrationObject(old);
+            }
+            engine.flyers = [];
+            var species = findMigrationSpecies(speciesId);
+            var positions = migrationFormationPositions(species, formationMode);
+            for (var fi = 0; fi < positions.length; fi++) {
+              var flyer = createMigrationFlyer(THREE, species, fi);
+              flyer.position.set(positions[fi][0], positions[fi][1], positions[fi][2]);
+              flyer.rotation.y = 0;
+              flockRoot.add(flyer);
+              engine.flyers.push(flyer);
+            }
+            engine.speciesId = species.id;
+            engine.formationMode = formationMode;
+            engine.season = season;
+            routeRibbon.material.color.setHex(season === 'spring' ? 0x4ade80 : 0x38bdf8);
+          };
+
+          engine.resizeHandler = function() {
+            if (engine.disposed || !host.isConnected) return;
+            var width = Math.max(320, host.clientWidth || 720);
+            var height = Math.max(320, host.clientHeight || 560);
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height, false);
+          };
+          if (typeof ResizeObserver !== 'undefined') {
+            engine.resizeObserver = new ResizeObserver(engine.resizeHandler);
+            engine.resizeObserver.observe(host);
+          } else {
+            window.addEventListener('resize', engine.resizeHandler);
+          }
+          engine.resizeHandler();
+
+          renderer.domElement.addEventListener('webglcontextlost', function(event) {
+            event.preventDefault();
+            host.setAttribute('data-flight-error', 'true');
+            if (statusNode) statusNode.textContent = 'The 3D context paused. Switch tabs and return to restart the flight view.';
+          });
+
+          host.setAttribute('data-flight-ready', 'true');
+          host.removeAttribute('data-flight-error');
+        } catch (error) {
+          host.setAttribute('data-flight-error', 'true');
+          if (statusNode) statusNode.textContent = '3D flight is unavailable on this device. The V-Formation and Routes tabs remain fully usable.';
+          return;
+        }
+
+        var engineNow = _f3dEngineRef.current;
+        if (!engineNow || engineNow.host !== host) return;
+        engineNow.animate = function(timestamp) {
+          if (engineNow.disposed || token !== _f3dBootRef.current || !host.isConnected) return;
+          var delta = engineNow.lastFrame ? Math.min(0.05, (timestamp - engineNow.lastFrame) / 1000) : 0.016;
+          engineNow.lastFrame = timestamp;
+          var live = _liveVals.current;
+          var species = findMigrationSpecies(live.flightSpecies);
+          if (engineNow.speciesId !== species.id || engineNow.formationMode !== live.flightFormation || engineNow.season !== live.flightSeason) {
+            engineNow.rebuildFlock(species.id, live.flightFormation, live.flightSeason);
+          }
+
+          var moving = !live.flightPaused && !reducedMotionRef.current;
+          var visualSpeed = Math.max(4, species.speed + live.flightWind * 2.237) * 0.075;
+          if (moving) {
+            engineNow.time += delta;
+            for (var mv = 0; mv < engineNow.movers.length; mv++) {
+              var mover = engineNow.movers[mv];
+              mover.position.z += visualSpeed * delta * 5.2 * mover.userData.drift;
+              if (mover.position.z > 24) mover.position.z -= 176;
+            }
+            var streakPositions = engineNow.streaks.geometry.attributes.position.array;
+            for (var pi = 0; pi < streakPositions.length; pi += 6) {
+              var nextZ = streakPositions[pi + 2] + visualSpeed * delta * 8.4;
+              if (nextZ > 18) nextZ -= 160;
+              streakPositions[pi + 2] = nextZ;
+              streakPositions[pi + 5] = nextZ - 2.4;
+            }
+            engineNow.streaks.geometry.attributes.position.needsUpdate = true;
+          }
+
+          for (var fl = 0; fl < engineNow.flyers.length; fl++) {
+            var activeFlyer = engineNow.flyers[fl];
+            var phase = engineNow.time * activeFlyer.userData.flapRate + activeFlyer.userData.phase;
+            var flap = Math.sin(phase) * activeFlyer.userData.flapAmount;
+            activeFlyer.userData.wings[0].rotation.z = flap;
+            activeFlyer.userData.wings[1].rotation.z = -flap;
+            activeFlyer.position.y += (Math.sin(phase * 0.43) * 0.004);
+            activeFlyer.rotation.z = Math.sin(engineNow.time * 0.55 + fl) * 0.025;
+          }
+          engineNow.flockRoot.position.x = moving ? Math.sin(engineNow.time * 0.24) * 0.7 : 0;
+          engineNow.flockRoot.rotation.y = Math.sin(engineNow.time * 0.18) * 0.045;
+
+          var cameraTargets = {
+            chase: [0, 5.5, 18],
+            aerial: [0, 27, 12],
+            side: [25, 5, 4]
+          };
+          var target = cameraTargets[live.flightCamera] || cameraTargets.chase;
+          var desired = new THREE.Vector3(target[0], target[1], target[2]);
+          engineNow.camera.position.lerp(desired, reducedMotionRef.current ? 1 : 0.075);
+          engineNow.camera.lookAt(0, 0, -5);
+          engineNow.renderer.render(engineNow.scene, engineNow.camera);
+          engineNow.raf = requestAnimationFrame(engineNow.animate);
+        };
+
+        var initial = _liveVals.current;
+        engineNow.rebuildFlock(initial.flightSpecies, initial.flightFormation, initial.flightSeason);
+        engineNow.raf = requestAnimationFrame(engineNow.animate);
+      }
+      var setMigrationFlightHost = useCallback(function(host) {
+        if (!host) {
+          destroyMigrationFlightEngine();
+          return;
+        }
+        if (_f3dHostRef.current === host && _f3dEngineRef.current) return;
+        destroyMigrationFlightEngine();
+        _f3dHostRef.current = host;
+        var token = ++_f3dBootRef.current;
+        var statusNode = host.querySelector('.migration-flight-stage-status');
+        if (statusNode) statusNode.textContent = 'Preparing the 3D migration corridor...';
+
+        function start(THREE) {
+          if (token !== _f3dBootRef.current || !host.isConnected) return;
+          initMigrationFlightScene(host, THREE || window.THREE, token);
+        }
+
+        if (window.THREE) {
+          start(window.THREE);
+          return;
+        }
+        if (window.StemLab && typeof window.StemLab.ensureThree === 'function') {
+          window.StemLab.ensureThree({
+            orbit: false,
+            failMessage: 'The 3D migration view could not load. The 2D formation and route investigations remain available.'
+          }).then(start).catch(function() {
+            if (token !== _f3dBootRef.current || !host.isConnected) return;
+            host.setAttribute('data-flight-error', 'true');
+            if (statusNode) statusNode.textContent = '3D flight could not load. Use the V-Formation or Migration Routes tab for the complete 2D investigations.';
+          });
+          return;
+        }
+        host.setAttribute('data-flight-error', 'true');
+        if (statusNode) statusNode.textContent = 'The shared 3D engine is unavailable. Use the V-Formation or Migration Routes tab.';
+      }, []);
+
+      useEffect(function() {
+        return function() { destroyMigrationFlightEngine(); };
+      }, []);
+
+      function renderFlight3D() {
+        var speciesId = d.flightSpecies || d.selectedSpecies || 'canada_goose';
+        var species = findMigrationSpecies(speciesId);
+        var formationMode = d.flightFormation || 'natural';
+        var resolvedFormation = flightFormationName(species, formationMode);
+        var flightWind = d.flightWind == null ? 8 : d.flightWind;
+        var cameraMode = d.flightCamera || 'chase';
+        var season = d.flightSeason || 'fall';
+        var groundSpeed = Math.max(1, Math.round(species.speed + flightWind * 2.237));
+        var benefit = resolvedFormation === 'v' ? 22 : (resolvedFormation === 'loose' ? 7 : (resolvedFormation === 'swarm' && species.id !== 'monarch' ? 5 : 0));
+        var direction = season === 'fall'
+          ? species.breedingRange + ' to ' + species.winterRange
+          : species.winterRange + ' to ' + species.breedingRange;
+        var formationLabel = resolvedFormation === 'v' ? 'V formation' : (resolvedFormation === 'swarm' ? 'Swarm' : (resolvedFormation === 'solo' ? 'Solo' : 'Loose flock'));
+        var stageLabel = 'Interactive 3D migration flight for ' + species.name + '. ' + formationLabel + ', ' + groundSpeed + ' miles per hour ground speed, traveling ' + direction + '. Press 1 for chase camera, 2 for aerial camera, 3 for side camera, or Space to pause.';
+
+        function chooseCamera(next) {
+          upd('flightCamera', next);
+          if (announceToSR) announceToSR(next + ' camera selected');
+        }
+
+        function toggleFlightPause() {
+          upd('flightPaused', !d.flightPaused);
+          if (announceToSR) announceToSR(d.flightPaused ? '3D migration resumed' : '3D migration paused');
+        }
+
+        return h('div', {
+          id: 'migration-flight-deck',
+          className: 'migration-flight-deck',
+          'data-migration-3d-flight': 'true',
+          'data-monarch-simulation': species.id === 'monarch' ? 'active' : 'available'
+        },
+          h('div', {
+            className: 'migration-flight-stage',
+            ref: setMigrationFlightHost,
+            role: 'img',
+            tabIndex: 0,
+            'aria-label': stageLabel,
+            onKeyDown: function(event) {
+              if (event.key === '1') { event.preventDefault(); chooseCamera('chase'); }
+              else if (event.key === '2') { event.preventDefault(); chooseCamera('aerial'); }
+              else if (event.key === '3') { event.preventDefault(); chooseCamera('side'); }
+              else if (event.key === ' ') { event.preventDefault(); toggleFlightPause(); }
+            }
+          },
+            h('div', { className: 'migration-flight-stage-status', role: 'status', 'aria-live': 'polite' }, 'Preparing the 3D migration corridor...'),
+            h('div', { className: 'migration-flight-overlay', 'aria-hidden': 'true' },
+              h('div', { className: 'migration-flight-badge' },
+                h('span', null, species.emoji),
+                h('span', null, species.name + ' - ' + formationLabel)
+              ),
+              h('div', { className: 'migration-flight-heading' }, (season === 'fall' ? 'Fall southbound' : 'Spring northbound') + ' - ' + groundSpeed + ' mph over ground')
+            )
+          ),
+          h('aside', { className: 'migration-flight-controls', 'aria-label': '3D migration flight controls' },
+            h('div', null,
+              h('h3', null, 'Migration Flight Deck'),
+              h('p', null, 'Fly a scientifically grounded corridor in three dimensions. Clouds, terrain, route beacons, wind streaks, flock spacing, and wing motion provide depth cues.')
+            ),
+            h('label', { className: 'migration-flight-control' },
+              h('span', null, 'Focus species'),
+              h('select', {
+                value: species.id,
+                'aria-label': '3D migration focus species',
+                onChange: function(event) {
+                  var nextId = event.target.value;
+                  updMulti({ flightSpecies: nextId, selectedSpecies: nextId });
+                  if (announceToSR) announceToSR(findMigrationSpecies(nextId).name + ' selected for the 3D flight');
+                }
+              },
+                SPECIES.map(function(item) {
+                  return h('option', { key: item.id, value: item.id }, item.name);
+                })
+              )
+            ),
+            h('label', { className: 'migration-flight-control' },
+              h('span', null, 'Flight pattern'),
+              h('select', {
+                value: formationMode,
+                'aria-label': '3D migration flight pattern',
+                onChange: function(event) { upd('flightFormation', event.target.value); }
+              },
+                h('option', { value: 'natural' }, 'Natural for this species (' + species.formation + ')'),
+                h('option', { value: 'v' }, 'V formation'),
+                h('option', { value: 'loose' }, 'Loose flock'),
+                h('option', { value: 'swarm' }, 'Swarm'),
+                h('option', { value: 'solo' }, 'Solo')
+              )
+            ),
+            h('label', { className: 'migration-flight-control' },
+              h('span', { className: 'migration-flight-value' },
+                h('span', null, 'Along-route wind'),
+                h('strong', null, (flightWind >= 0 ? '+' : '') + flightWind + ' m/s')
+              ),
+              h('input', {
+                type: 'range',
+                min: -15,
+                max: 25,
+                step: 1,
+                value: flightWind,
+                'aria-label': 'Along-route wind in meters per second. Negative is headwind and positive is tailwind.',
+                onChange: function(event) { upd('flightWind', parseInt(event.target.value, 10)); }
+              })
+            ),
+            h('label', { className: 'migration-flight-control' },
+              h('span', null, 'Season and direction'),
+              h('select', {
+                value: season,
+                'aria-label': 'Migration season and direction',
+                onChange: function(event) { upd('flightSeason', event.target.value); }
+              },
+                h('option', { value: 'fall' }, 'Fall - toward winter range'),
+                h('option', { value: 'spring' }, 'Spring - toward breeding range')
+              )
+            ),
+            h('div', { className: 'migration-flight-control' },
+              h('span', null, 'Camera'),
+              h('div', { className: 'migration-flight-camera' },
+                [
+                  { id: 'chase', label: 'Chase' },
+                  { id: 'aerial', label: 'Aerial' },
+                  { id: 'side', label: 'Side' }
+                ].map(function(view) {
+                  return h('button', {
+                    key: view.id,
+                    type: 'button',
+                    'aria-pressed': cameraMode === view.id ? 'true' : 'false',
+                    onClick: function() { chooseCamera(view.id); }
+                  }, view.label);
+                })
+              )
+            ),
+            h('div', { className: 'migration-flight-stat-grid', 'aria-label': 'Current flight metrics' },
+              [
+                { label: 'Ground speed', value: groundSpeed + ' mph' },
+                { label: 'Pattern benefit', value: benefit ? '~' + benefit + '% less drag' : 'No drafting credit' },
+                { label: 'Typical altitude', value: fmtNum(species.altitude) + ' ft' },
+                { label: 'Route distance', value: fmtNum(species.distance) + ' mi' }
+              ].map(function(metric) {
+                return h('div', { className: 'migration-flight-stat', key: metric.label },
+                  h('span', null, metric.label),
+                  h('strong', null, metric.value)
+                );
+              })
+            ),
+            species.id === 'monarch' && h('div', { className: 'migration-monarch-note', role: 'note' },
+              h('strong', null, 'Monarch relay migration: '),
+              'The fall super generation reaches central Mexico in one journey. Spring return unfolds across multiple generations, so the simulation uses a swarm rather than bird-style drafting.'
+            ),
+            h('div', { className: 'migration-flight-actions' },
+              h('button', { type: 'button', onClick: toggleFlightPause, 'aria-pressed': d.flightPaused ? 'true' : 'false' }, d.flightPaused ? 'Resume flight' : 'Pause flight'),
+              h('button', {
+                type: 'button',
+                onClick: function() {
+                  var deck = document.getElementById('migration-flight-deck');
+                  if (!deck) return;
+                  if (typeof window.__alloStemFS === 'function') {
+                    window.__alloStemFS(deck);
+                    return;
+                  }
+                  var active = document.fullscreenElement || document.webkitFullscreenElement;
+                  if (active) {
+                    var exit = document.exitFullscreen || document.webkitExitFullscreen;
+                    if (exit) exit.call(document);
+                  } else {
+                    var enter = deck.requestFullscreen || deck.webkitRequestFullscreen;
+                    if (enter) enter.call(deck);
+                  }
+                },
+                'aria-label': 'Toggle fullscreen for the 3D migration flight deck'
+              }, 'Fullscreen')
+            ),
+            h('p', { role: 'note' }, direction + '. ' + species.funFact)
+          )
+        );
+      }
       function renderVFormation() {
         var canvasRef = _vfCanvasRef;
         var animRef = _vfAnimRef;
@@ -3333,7 +4064,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       // Back button
       var backButton = h('button', {
         className: 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + btnSecondary,
-        'aria-label': t('stem.migration.back_to_stem_lab_tool_list', 'Back to STEM Lab tool list'),
+        'aria-label': t('stem.migration.back_to_stem_lab_tool_list', 'Back to STEAM Lab tool list'),
         onClick: function() { if (setStemLabTool) setStemLabTool(null); }
       },
         ArrowLeft && h(ArrowLeft, { size: 14, 'aria-hidden': 'true' }),
@@ -3375,7 +4106,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
       // Tab content
       var tabContent = null;
-      if (tab === 'vformation') tabContent = renderVFormation();
+      if (tab === 'flight3d') tabContent = renderFlight3D();
+      else if (tab === 'vformation') tabContent = renderVFormation();
       else if (tab === 'wind') tabContent = renderWindCurrents();
       else if (tab === 'routes') tabContent = renderRoutes();
       else if (tab === 'aero') tabContent = renderAero();
@@ -3484,6 +4216,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
       // Topic-accent hero band per tab
       var TAB_META = {
+        flight3d:  { accent: '#38bdf8', soft: 'rgba(14,116,144,0.16)', icon: '\uD83C\uDF10', title: t('stem.migration.flight_3d_title', '3D migration flight'), hint: t('stem.migration.flight_3d_hint', 'Fly through a dimensional migration corridor with species-specific flocking, terrain, route beacons, wind, camera views, and an explicit Monarch relay simulation.') },
         vformation: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)',  icon: '\uD83E\uDEBF', title: t('stem.migration.v_formation_flying', 'V-formation flying'),         hint: t('stem.migration.trailing_birds_catch_the_upwash_from_t', 'Trailing birds catch the upwash from the bird ahead \u2014 20\u201330% energy savings. Lead position rotates because the front bird does the most work.') },
         wind:       { accent: '#06b6d4', soft: 'rgba(6,182,212,0.10)',   icon: '\uD83C\uDF2C\uFE0F', title: t('stem.migration.wind_currents_thermals', 'Wind currents + thermals'),   hint: t('stem.migration.birds_read_pressure_gradients_we_canno', 'Birds read pressure gradients we cannot feel. Updrafts, ridge lift, and thermal columns are how raptors fly hundreds of miles burning almost no calories.') },
         routes:     { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',   icon: '\uD83D\uDDFA\uFE0F', title: t('stem.migration.migration_routes_flyways', 'Migration routes + flyways'),  hint: t('stem.migration.four_major_north_american_flyways_paci', 'Four major North American flyways (Pacific, Central, Mississippi, Atlantic) channel billions of birds twice yearly. Maine sits at the top of the Atlantic Flyway.') },
@@ -3491,7 +4224,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         navigate:   { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)',  icon: '\uD83E\uDDED', title: t('stem.migration.weather_navigation', 'Weather + navigation'),       hint: t('stem.migration.birds_use_multiple_cues_simultaneously', 'Birds use multiple cues simultaneously \u2014 sun compass, magnetic field via cryptochrome in the eye, star patterns, and learned landmarks. Robust against losing any single cue.') },
         inquiry:    { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)', icon: '\uD83D\uDD2C', title: t('stem.migration.energy_inquiry', 'Energy inquiry'), hint: t('stem.migration.energy_inquiry_hint', 'Test how wingspan, body mass, wind, formation, and distance combine to determine whether a migration leg is feasible.') }
       };
-      var meta = TAB_META[tab] || TAB_META.vformation;
+      var meta = TAB_META[tab] || TAB_META.flight3d;
       var tabHero = h('div', {
         className: 'migration-active-band', 'data-migration-route': tab,
         style: {
@@ -3511,7 +4244,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       );
 
       var activeTab = TABS.filter(function(item) { return item.id === tab; })[0] || TABS[0];
-      var species = SPECIES.filter(function(item) { return item.id === (d.selectedSpecies || 'canada_goose'); })[0] || SPECIES[0];
+      var species = SPECIES.filter(function(item) { return item.id === (d.flightSpecies || d.selectedSpecies || 'canada_goose'); })[0] || SPECIES[0];
       return h('main', { className: 'migration-tool-shell space-y-3 ' + bg, 'data-migration-tool': 'true' },
         h('header', { className: 'migration-command', 'data-migration-mission': 'true' },
           h('div', { className: 'migration-command-main' },
@@ -3519,16 +4252,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('div', { className: 'migration-command-copy' },
               h('p', { className: 'migration-eyebrow' }, t('stem.migration.field_station', 'Migration field station')),
               h('h2', null, t('stem.migration.title', 'Migration & Wind Lab')),
-              h('p', null, t('stem.migration.v_formation_wind_currents_flyways_aero', 'V-formation - Wind currents - Flyways - Aerodynamics - Navigation'))
+              h('p', null, t('stem.migration.v_formation_wind_currents_flyways_aero', '3D flight - Monarch migration - V-formation - Wind currents - Flyways - Aerodynamics - Navigation'))
             )
           ),
-          h('span', { className: 'migration-command-icon', 'aria-hidden': 'true' }, '\uD83E\uDEBF')
+          h('span', { className: 'migration-command-icon', 'aria-hidden': 'true' }, '\uD83E\uDDED')
         ),
         h('section', { className: 'migration-metrics', 'aria-label': t('stem.migration.field_status', 'Migration field status') },
           [
             { label: t('stem.migration.active_activity', 'Active activity'), value: activeTab.label },
             { label: t('stem.migration.focus_species', 'Focus species'), value: species.name },
-            { label: t('stem.migration.formation_status', 'Formation status'), value: d.perfectVFormed ? 'Perfect V formed' : 'Formation in progress' },
+            { label: t('stem.migration.formation_status', 'Formation status'), value: tab === 'flight3d' ? flightFormationName(species, d.flightFormation || 'natural') + ' flight' : (d.perfectVFormed ? 'Perfect V formed' : 'Formation in progress') },
             { label: t('stem.migration.routes_planned', 'Routes planned'), value: String(d.routesPlanned || 0) }
           ].map(function(metric) {
             return h('div', { key: metric.label, className: 'migration-metric' },

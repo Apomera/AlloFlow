@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Accessibility remediation evidence: source.pdf</title>
+<style>
+:root { color-scheme: light; }
+html { background: #f5f6f8; color: #16202b; font: 15px/1.55 Arial, Helvetica, sans-serif; }
+body { margin: 0 auto; max-width: 52rem; padding: 1.2rem; }
+main { background: #ffffff; border: 1px solid #c9d1da; border-radius: 10px; padding: 1.4rem 1.7rem 1.7rem; }
+h1 { font-size: 1.45rem; line-height: 1.25; border-bottom: 3px solid #1d4ed8; padding-bottom: .4rem; }
+h2 { font-size: 1.12rem; margin-top: 1.7rem; }
+table { border-collapse: collapse; width: 100%; margin: .8rem 0; }
+th, td { border: 1px solid #64748b; padding: .5rem .6rem; text-align: left; vertical-align: top; }
+thead th { background: #e8edf3; }
+tbody th { background: #f2f5f8; font-weight: 600; width: 40%; }
+.verdict { border: 2px solid #1d4ed8; border-radius: 8px; background: #eef3ff; padding: .8rem 1rem; margin: 1rem 0; }
+.limits { border-top: 2px solid #64748b; margin-top: 2rem; padding-top: .9rem; font-size: .92rem; }
+details { margin: .6rem 0; }
+code { background: #f2f5f8; padding: 0 .25rem; }
+footer { margin-top: 1rem; font-size: .85rem; color: #3d4b5c; }
+@media print { html { background: #ffffff; } main { border: 0; padding: 0; } }
+</style>
+</head>
+<body>
+<main>
+<h1>Accessibility remediation evidence<br>source.pdf</h1>
+<p>Prepared 2026-08-11T02:45:31Z by the AlloFlow portable remediation workflow, engine 0.2.6.
+Every figure on this page is read from the run's stamped evidence files; nothing is added or estimated.</p>
+
+<div class="verdict"><strong>Outcome:</strong> A tagged PDF was generated and local veraPDF validation passed every PDF/UA-1 rule. A person must still compare meaning and fidelity with the source before distribution.</div>
+
+<h2>Before and after</h2>
+<table>
+<caption>Independent, deterministic measurements (no AI judgement involved)</caption>
+<thead><tr><th scope="col">Measure</th><th scope="col">Original file</th><th scope="col">Accessible rebuild</th></tr></thead>
+<tbody>
+<tr><th scope="row">PDF/UA-1 validation (veraPDF, ISO 14289-1)</th><td>FAILED: 5 rules, 18 checks</td><td>PASSED: 0 failed rules</td></tr>
+<tr><th scope="row">Source text carried into the rebuild</th><td>reference</td><td>100.0% (0 of 863 words missing)</td></tr><tr><th scope="row">Rebuild text carried into the tagged PDF</th><td>&#8212;</td><td>100.0%</td></tr>
+<tr><th scope="row">Structural audit of the rebuilt HTML</th><td>&#8212;</td><td>0 errors, 0 warnings (3 headings, 8 links, 0 tables, 1 images)</td></tr>
+</tbody>
+</table>
+<details><summary>What the original file failed (rule by rule)</summary><ul><li><strong>7.21.4.1</strong> (2 occurrence(s)): The font programs for all fonts used for rendering within a conforming file shall be embedded within that file, as defined in ISO 32000-1:2008, 9.9</li><li><strong>7.18.1</strong> (7 occurrence(s)): An annotation (except Widget annotations or hidden annotations, or those having rectangle outside the crop-box) shall have either Contents key or an Alt entry in the enclosing structure element</li><li><strong>5</strong> (1 occurrence(s)): The PDF/UA version and conformance level of a file shall be specified using the PDF/UA Identification extension schema</li><li><strong>7.9</strong> (1 occurrence(s)): Note tag shall have ID entry</li><li><strong>7.18.5</strong> (7 occurrence(s)): Links shall contain an alternate description via their Contents key as described in ISO 32000-1:2008, 14.9.3</li></ul></details>
+<p>"Words missing" counts every word of the original file's own text layer that does not appear in the rebuild; a scanned
+original has no text layer, so that measure is honestly reported as not measurable rather than invented.</p>
+
+<h2>Independent verification (second reader)</h2>
+<p><strong>Result: verified.</strong> 19 of 19 checks attested by an independent reader who did not build the rebuild (0 discrepancies, 0 unreadable).</p><p>Reader attestation: I read source.pdf directly via the alloflow_portable extract-text (ordered) and extract-annotations channels plus a second pdfjs-based text/position channel, dumped the font faces per page to confirm the three italic runs on page 1 and roman-only page 2, read the PDF metadata (Title, Language) and checked StructTreeRoot/MarkInfo bytes, viewed both extracted images with my own vision, then read alloflow-output-v2/source-accessible.html in full including its rendered Remediation notes. sha256 of the HTML and PDF match this worksheet&#x27;s binding. I did not read repair-plan.json or any earlier worksheet or report, and I did not author the repair plan.</p>
+
+<h2>Disclosures and items needing human review</h2>
+<ol><li>The letter has no visible headline, so the level-1 heading was taken verbatim from the PDF’s embedded document Title metadata with only the trailing “ (PDF)” removed. Note the metadata title itself abbreviates the case as “R. v. The School District Philadelphia” (with a doubled space) while the body text gives “T.R. v. The School District of Philadelphia”; the metadata wording was preserved unaltered rather than corrected.</li><li>Footnote markers appear in the source text layer as bracketed superscripts [1], [2], [3]; they are carried inline at their source positions, and the three footnotes (printed at the foot of page 1) are collected under a synthesized “Notes” heading at the end of the rebuild. The source links each marker to its footnote with an internal (GoTo) annotation; the rebuild preserves that navigation — each marker is an in-document link to its footnote paragraph (#note-1/2/3).</li><li>The paragraph beginning “Whether a document is ‘vital written material’…” continues across the page 1→2 break in the source. It is kept as a single paragraph assigned to page 1, and the page-2 break marker is placed after it, so the sentence is never split.</li><li>The letterhead is a raster banner; its alt text carries every label embedded in the raster (the Department of Education seal text, “OSEP”, and “Office of Special Education Programs”). A second image object in the PDF is a blank white rectangle (background/mask artifact) and was omitted as decorative.</li><li>The closing appears in the text layer as “Best” on its own line followed by “Ruth” (a typed signature line), then “Ruth E. Ryder / Acting Director / Office of Special Education Programs”; all lines are preserved verbatim. Any punctuation rendered only in the signature graphic (e.g., a comma after “Best”) could not be confirmed without page rendering and was not invented.</li><li>Italic (emphasis) runs were confirmed against the source’s font usage (Times New Roman Italic): the case name “T.R. v. The School District of Philadelphia” and the phrase “available at” in footnote 3. Footnote 1’s “available at” is set in roman type in the source and is deliberately left unstyled.</li><li>Hyperlink destinations were added only where the source carries them: two written-out URLs in the footnotes (kept with the exact scheme the source’s link annotations carry — the lep.gov link is http://, the justice.gov link https://), two written-out @ed.gov email addresses in the closing paragraph (as mailto links, matching the source’s mailto annotations), and the three internal footnote-marker links described above. No other destinations were invented.</li><li>The source PDF is born-digital and already tagged with a declared language and title; this rebuild was requested as a corpus evidence run of the portable pathway rather than a rescue of an untagged scan.</li><li>Compare every page of the rebuild with the source; automated checks cannot verify meaning.</li></ol>
+
+<h2>Privacy</h2>
+<ul><li>Network policy while processing the document: <strong>deny</strong>; requests blocked by the renderer: 0.</li><li>AlloFlow service called by the scripts: no; model API called by the scripts: no; document text logged by the scripts: no.</li><li>Scope: AlloFlow packaged scripts only; excludes the host AI provider, operating system, filesystem synchronization, and resolved local executables.</li></ul>
+
+<h2>Files in this evidence set</h2>
+<ul><li>accessibilityReport: <code>source-accessibility-report.json</code></li><li>accessibleHtml: <code>source-accessible.html</code></li><li>privacyReceipt: <code>source-privacy-receipt.json</code></li><li>taggedPdf: <code>source-alloflow-accessible.pdf</code></li></ul>
+
+<div class="limits">
+<h2>What this page is not</h2>
+<p>This workflow never determines legal compliance. "Validation passed" means the generated PDF passed every
+machine-checkable PDF/UA-1 rule in a local veraPDF run; meaning, fidelity, and the final call about distribution
+belong to a person. Interactive forms, signed records, and legal records are refused by design rather than rebuilt.</p>
+</div>
+<footer>Generated offline by alloflow_portable.py summary-report; the page is self-contained and safe to email or file.</footer>
+</main>
+</body>
+</html>

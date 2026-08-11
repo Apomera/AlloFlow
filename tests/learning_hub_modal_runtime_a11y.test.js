@@ -76,11 +76,13 @@ describe('Learning Hub modal runtime accessibility', () => {
 
     const dialog = host.querySelector('[role="dialog"]');
     const buttons = Array.from(dialog.querySelectorAll('button'));
-    expect(buttons).toHaveLength(16);
+    expect(dialog.querySelectorAll('button[data-hub-launch="true"]')).toHaveLength(15);
+    expect(dialog.querySelectorAll('button[data-hub-favorite="true"]')).toHaveLength(15);
+    expect(buttons.length).toBeGreaterThan(16);
     expect(document.activeElement).toBe(buttons[0]);
     expect(dialog.getAttribute('aria-labelledby')).toBe('learning-hub-title');
     expect(dialog.getAttribute('aria-describedby')).toBe('learning-hub-subtitle');
-    expect(buttons.find((button) => button.textContent.includes('STEM Lab')).querySelector('span[aria-hidden="true"]')).toBeTruthy();
+    expect(Array.from(dialog.querySelectorAll('button[data-hub-launch="true"]')).find((button) => button.textContent.includes('STEM Lab')).querySelector('span[aria-hidden="true"]')).toBeTruthy();
 
     const results = await axe.run(dialog, { rules: { 'color-contrast': { enabled: false }, region: { enabled: false } } });
     expect(results.violations.filter((item) => item.impact === 'serious' || item.impact === 'critical')).toEqual([]);

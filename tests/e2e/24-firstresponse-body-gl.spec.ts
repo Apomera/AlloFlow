@@ -133,6 +133,78 @@ test.describe('First Response — body position on real WebGL', () => {
       'the body never rolled — the recovery position is the one thing this view exists to show').not.toBe(0);
   });
 
+  test('the 30:2 coach reaches breaths, resumes, and keeps one WebGL canvas', async ({ page }) => {
+    await harness.mount(page, seed({ b3dTab: 'coach', b3dCoachCycles: 1 }));
+    await page.evaluate(() => { (window as any).__coachCanvas = document.querySelector('#wrap canvas'); });
+
+    await page.getByRole('button', { name: 'Start 30:2 practice' }).click();
+    await page.evaluate(async () => {
+      const intervalMs = 60_000 / 110;
+      const startedAt = performance.now();
+      for (let i = 0; i < 30; i += 1) {
+        const delay = startedAt + i * intervalMs - performance.now();
+        if (delay > 0) await new Promise((resolve) => setTimeout(resolve, delay));
+        const button = document.querySelector('button[aria-label^="Record compression"]') as HTMLButtonElement | null;
+        if (!button) throw new Error('compression control disappeared before count 30');
+        button.click();
+      }
+    });
+
+    const firstBreath = page.getByRole('button', { name: 'Give simulated breath 1 of 2' });
+    await expect(firstBreath).toBeEnabled();
+    await firstBreath.click();
+    const secondBreath = page.getByRole('button', { name: 'Give simulated breath 2 of 2' });
+    await expect(secondBreath).toBeEnabled({ timeout: 3_000 });
+    await secondBreath.click();
+
+    await page.getByRole('button', { name: 'Resume compressions now' }).click();
+    await expect(page.getByText('TIMING + 30:2 SEQUENCE SCORE')).toBeVisible();
+
+    const result = await page.evaluate(() => ({
+      stableCanvas: (window as any).__coachCanvas === document.querySelector('#wrap canvas'),
+      summary: (window as any).__toolData.firstResponse.b3dCoachBest,
+      rawTaps: (window as any).__toolData.firstResponse.b3dCoachTaps,
+    }));
+    expect(result.stableCanvas, 'coach interactions rebuilt the WebGL canvas').toBe(true);
+    expect(result.summary).toMatchObject({ mode: 'trained', cycles: 1 });
+    expect(result.summary.medianBpm).toBeGreaterThanOrEqual(100);
+    expect(result.summary.medianBpm).toBeLessThanOrEqual(120);
+    expect(result.rawTaps, 'raw practice taps leaked into persisted data').toBeUndefined();
+  });
+  test('the full arrest run coaches assessment, call, press/release, breaths, AED, and resume', async ({ page }) => {
+    await harness.mount(page, seed({ b3dTab: 'coach', b3dCoachCycles: 2, b3dCoachMode: 'scenario' }));
+    await page.getByRole('button', { name: 'Start full arrest scenario' }).click();
+    await page.getByRole('button', { name: 'Check response and breathing' }).click();
+    await page.getByRole('button', { name: 'Call 911 on speaker' }).click();
+
+    await page.evaluate(async () => {
+      const intervalMs = 60_000 / 110;
+      const startedAt = performance.now();
+      for (let i = 0; i < 30; i += 1) {
+        const delay = startedAt + i * intervalMs - performance.now();
+        if (delay > 0) await new Promise((resolve) => setTimeout(resolve, delay));
+        const button = document.querySelector('button[aria-label^="Press and release compression"]') as HTMLButtonElement | null;
+        if (!button) throw new Error('press/release control disappeared before count 30');
+        button.click();
+      }
+    });
+
+    await page.getByRole('button', { name: 'Give simulated breath 1 of 2' }).click();
+    const secondBreath = page.getByRole('button', { name: 'Give simulated breath 2 of 2' });
+    await expect(secondBreath).toBeEnabled({ timeout: 5_000 });
+    await secondBreath.click();
+    const aed = page.getByRole('button', { name: 'Apply AED and follow prompts' });
+    await expect(aed).toBeVisible({ timeout: 6_000 });
+    await aed.click();
+    await page.getByRole('button', { name: 'Resume compressions now' }).click();
+    await expect(page.getByText('FULL ARREST SCENARIO SCORE')).toBeVisible();
+
+    const result = await page.evaluate(() => (window as any).__toolData.firstResponse.b3dCoachBest);
+    expect(result).toMatchObject({ mode: 'scenario', cycles: 1 });
+    expect(result.scenarioSteps).toEqual(['assessment', 'call', 'compressions', 'breaths', 'aed', 'resume']);
+    expect(result).toHaveProperty('releaseTimingPct');
+  });
+
   test('leaving the module releases the context', async ({ page }) => {
     await harness.mount(page, seed({ b3dTab: 'place' }));
     expect(await page.evaluate(() => (window as any).__canvasCount())).toBe(1);

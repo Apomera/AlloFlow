@@ -45,19 +45,19 @@ walk(ast, (node) => {
 
 describe('Dynamic Assessment form and table accessibility', () => {
   it('gives every rendered native form control an explicit accessible name', () => {
-    expect(formControls).toHaveLength(72);
+    expect(formControls).toHaveLength(85);
     for (const control of formControls) {
       const names = propertiesFor(control).map(propertyName);
       expect(names.some((name) => name === 'aria-label' || name === 'aria-labelledby')).toBe(true);
     }
   });
 
-  it('gives every generated table header an explicit column scope', () => {
-    expect(tableHeaders).toHaveLength(37);
+  it('gives every generated table header an explicit scope', () => {
+    expect(tableHeaders).toHaveLength(42);
     for (const header of tableHeaders) {
       const scope = propertiesFor(header).find((property) => propertyName(property) === 'scope');
       expect(scope?.value?.type).toBe('StringLiteral');
-      expect(scope?.value?.value).toBe('col');
+      expect(['col', 'row']).toContain(scope?.value?.value);
     }
   });
 

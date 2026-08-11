@@ -320,5 +320,8 @@
   "cmd.run_lesson_blueprint": "授業プランを生成",
   "cmd.run_lesson_blueprint_done": "プランを生成中です — カードで各ステップを確認できます。",
   "cmd.run_lesson_blueprint_hint": "現在のプランのすべてのリソースを生成します",
-  "cmd.cancelled": "キャンセルが要求されました。提供元が対応すると、現在の操作は停止します。"
+  "cmd.cancelled": "キャンセルが要求されました。提供元が対応すると、現在の操作は停止します。",
+  "cmd.open_share_collect": "Share & Collect を開く",
+  "cmd.open_share_collect_hint": "投票・参加登録・アンケートとその結果",
+  "cmd.open_share_collect_done": "Share & Collect を開きました。"
 }

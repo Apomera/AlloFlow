@@ -23,6 +23,9 @@ const ROOT = process.cwd();
 const MIME: Record<string, string> = {
   '.js': 'text/javascript; charset=utf-8',
   '.html': 'text/html; charset=utf-8',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.png': 'image/png',
 };
 
 const HARNESS = `<!doctype html>
@@ -125,8 +128,10 @@ test.afterAll(async () => {
 
 type Pg = import('@playwright/test').Page;
 
-// MOON_PHASES indices: 0 new, 2 first quarter, 4 full, 6 last quarter.
-const NEW = 0, FIRST_Q = 2, FULL = 4;
+const SYNODIC = 29.53059;
+const NEW = 0;
+const FIRST_Q = SYNODIC / 4;
+const FULL = SYNODIC / 2;
 
 async function mount(page: Pg, bucket: Record<string, unknown> = {}) {
   await page.goto(`${base}/__harness`);
@@ -137,6 +142,89 @@ async function mount(page: Pg, bucket: Record<string, unknown> = {}) {
   await page.waitForTimeout(400);
 }
 
+type CanvasLightMetrics = {
+  leftMean: number;
+  rightMean: number;
+  outerBrightPixels: number;
+  outerPixels: number;
+};
+
+async function moonCanvasLightMetrics(page: Pg): Promise<CanvasLightMetrics> {
+  return page.evaluate(() => new Promise<CanvasLightMetrics>((resolve, reject) => {
+    requestAnimationFrame(() => {
+      const source = document.querySelector('canvas[data-astro-moon-gl="true"]') as HTMLCanvasElement | null;
+      if (!source) { reject(new Error('Moon WebGL canvas is missing')); return; }
+      const probe = document.createElement('canvas');
+      probe.width = source.width;
+      probe.height = source.height;
+      const context = probe.getContext('2d', { willReadFrequently: true });
+      if (!context) { reject(new Error('2D canvas context is unavailable')); return; }
+      context.drawImage(source, 0, 0);
+      const { data, width, height } = context.getImageData(0, 0, probe.width, probe.height);
+      const luma = (x: number, y: number) => {
+        const i = (y * width + x) * 4;
+        return data[i] * 0.2126 + data[i + 1] * 0.7152 + data[i + 2] * 0.0722;
+      };
+      const mean = (x0: number, x1: number, y0: number, y1: number) => {
+        let sum = 0;
+        let count = 0;
+        for (let y = Math.floor(height * y0); y < Math.floor(height * y1); y += 2) {
+          for (let x = Math.floor(width * x0); x < Math.floor(width * x1); x += 2) {
+            sum += luma(x, y);
+            count++;
+          }
+        }
+        return count ? sum / count : 0;
+      };
+      let outerBrightPixels = 0;
+      let outerPixels = 0;
+      for (let y = Math.floor(height * 0.12); y < Math.floor(height * 0.88); y++) {
+        for (let x = Math.floor(width * 0.82); x < Math.floor(width * 0.98); x++) {
+          outerPixels++;
+          if (luma(x, y) > 55) outerBrightPixels++;
+        }
+      }
+      resolve({
+        leftMean: mean(0.32, 0.48, 0.23, 0.77),
+        rightMean: mean(0.52, 0.68, 0.23, 0.77),
+        outerBrightPixels,
+        outerPixels,
+      });
+    });
+  }));
+}
+
+type Rgba = { r: number; g: number; b: number; a: number };
+
+function parseCssColor(value: string): Rgba {
+  const parts = value.match(/[\d.]+/g)?.map(Number) || [];
+  if (parts.length < 3) throw new Error('Unsupported CSS color: ' + value);
+  return { r: parts[0], g: parts[1], b: parts[2], a: parts[3] ?? 1 };
+}
+
+function relativeLuminance(color: Rgba) {
+  const channel = (value: number) => {
+    const c = value / 255;
+    return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  };
+  return channel(color.r) * 0.2126 + channel(color.g) * 0.7152 + channel(color.b) * 0.0722;
+}
+
+function contrastOverBrightScene(foreground: string, overlay: string) {
+  const fg = parseCssColor(foreground);
+  const bg = parseCssColor(overlay);
+  // A bright lunar surface is the hardest backdrop for these translucent dark HUDs.
+  const composed: Rgba = {
+    r: bg.r * bg.a + 255 * (1 - bg.a),
+    g: bg.g * bg.a + 255 * (1 - bg.a),
+    b: bg.b * bg.a + 255 * (1 - bg.a),
+    a: 1,
+  };
+  const lighter = Math.max(relativeLuminance(fg), relativeLuminance(composed));
+  const darker = Math.min(relativeLuminance(fg), relativeLuminance(composed));
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
 test.describe.configure({ timeout: 180_000 });
 
 test.describe('Astronomy moon geometry — real WebGL', () => {
@@ -145,7 +233,7 @@ test.describe('Astronomy moon geometry — real WebGL', () => {
   });
 
   test('mounts the Sun-Earth-Moon geometry', async ({ page }) => {
-    await mount(page, { moonPhaseIdx: FIRST_Q });
+    await mount(page, { moonAgeDays: FIRST_Q });
     const gl = await page.evaluate(() => (window as any).__gl());
     expect(gl.state).toBe('ready');
     expect(gl.contextLost).toBe(false);
@@ -156,7 +244,7 @@ test.describe('Astronomy moon geometry — real WebGL', () => {
   test('★ New Moon puts the Moon between Earth and Sun, not in shadow', async ({ page }) => {
     // The misconception the quiz names: students think New Moon is Earth's
     // shadow. It is not — the Moon is on the SUNWARD side, nowhere near it.
-    await mount(page, { moonPhaseIdx: NEW });
+    await mount(page, { moonAgeDays: NEW });
     const gl = await page.evaluate(() => (window as any).__gl());
     expect(gl.moonPos.x).toBeGreaterThan(6);   // sunward (+X), between us and the Sun
     expect(gl.inShadow).toBe(false);
@@ -167,7 +255,7 @@ test.describe('Astronomy moon geometry — real WebGL', () => {
   test('★ Full Moon is opposite the Sun and still misses the shadow', async ({ page }) => {
     // Why there is not a lunar eclipse every month. With the nodes tilted away
     // the Moon rides clear of the umbra even at Full.
-    await mount(page, { moonPhaseIdx: FULL, moonNodeDeg: 72 });
+    await mount(page, { moonAgeDays: FULL, moonNodeDeg: 72 });
     const gl = await page.evaluate(() => (window as any).__gl());
     expect(gl.moonPos.x).toBeLessThan(-6);     // anti-sunward
     expect(gl.litFractionSeen).toBeGreaterThan(0.98);
@@ -176,7 +264,7 @@ test.describe('Astronomy moon geometry — real WebGL', () => {
   });
 
   test('★ pointing the nodes at the Sun produces the eclipse', async ({ page }) => {
-    await mount(page, { moonPhaseIdx: FULL, moonNodeDeg: 72 });
+    await mount(page, { moonAgeDays: FULL, moonNodeDeg: 72 });
     expect(await page.evaluate(() => (window as any).__gl().inShadow)).toBe(false);
     await page.evaluate(() => (window as any).__set({ moonNodeDeg: 0 }));
     await page.waitForTimeout(450);
@@ -188,13 +276,17 @@ test.describe('Astronomy moon geometry — real WebGL', () => {
     expect(gl.shadowMissRadii).toBeLessThan(gl.umbraRadiusAtMoon);
     expect(gl.umbraRadiusAtMoon).toBeGreaterThan(0.2);
     expect(gl.umbraRadiusAtMoon).toBeLessThan(0.5);
+    expect(gl.umbraTapersAwayFromEarth).toBe(true);
+    expect(gl.umbraBaseX).toBeCloseTo(0, 5);
+    expect(gl.umbraTipX).toBeLessThan(-10);
+    expect(gl.umbraTipX).toBeLessThan(gl.umbraBaseX);
   });
 
   test('★ eclipses happen in a SEASON, not only at one exact angle', async ({ page }) => {
     // The node line sweeps slowly; eclipses are possible for a window of
     // alignments, not a single instant. A model that only ever eclipsed at
     // exactly 0 would teach that wrong.
-    await mount(page, { moonPhaseIdx: FULL, moonNodeDeg: 20 });
+    await mount(page, { moonAgeDays: FULL, moonNodeDeg: 20 });
     expect(await page.evaluate(() => (window as any).__gl().inShadow)).toBe(true);
     await page.evaluate(() => (window as any).__set({ moonNodeDeg: 60 }));
     await page.waitForTimeout(450);
@@ -204,14 +296,62 @@ test.describe('Astronomy moon geometry — real WebGL', () => {
   test('★ the lit fraction follows the geometry, not a lookup table', async ({ page }) => {
     // First Quarter must be half lit as SEEN, by the elongation relation, with
     // no phase painted by hand anywhere.
-    await mount(page, { moonPhaseIdx: FIRST_Q });
+    await mount(page, { moonAgeDays: FIRST_Q });
     const q = await page.evaluate(() => (window as any).__gl().litFractionSeen);
     expect(q).toBeGreaterThan(0.45);
     expect(q).toBeLessThan(0.55);
   });
 
+  test('First Quarter Telescope view is right-lit, uncluttered, and keeps the dark side subtle', async ({ page }) => {
+    await mount(page, {
+      moonAgeDays: FIRST_Q,
+      moonViewMode: 'telescope',
+      moonNorthUp: true,
+    });
+    await page.waitForFunction(() => {
+      const gl = (window as any).__gl();
+      return gl?.surfaceTextureReady && gl?.reliefTextureReady;
+    }, null, { timeout: 30_000 });
+    await page.waitForTimeout(180);
+
+    const gl = await page.evaluate(() => (window as any).__gl());
+    const light = await moonCanvasLightMetrics(page);
+
+    expect(gl.mode).toBe('telescope');
+    expect(gl.starsVisible).toBe(false);
+    expect(gl.ambientIntensity).toBeLessThanOrEqual(0.003);
+    expect(gl.earthshineIntensity).toBeLessThanOrEqual(0.026);
+    // With north up, a waxing First Quarter Moon is illuminated on the right.
+    expect(light.rightMean).toBeGreaterThan(light.leftMean * 2.2);
+    expect(light.leftMean).toBeLessThan(light.rightMean * 0.45);
+    // The far-right sky is outside the lunar disc: no decorative stars in telescope mode.
+    expect(light.outerBrightPixels / light.outerPixels).toBeLessThan(0.0002);
+  });
+
+  test('Telescope HUD labels retain readable contrast over the bright lunar surface', async ({ page }) => {
+    await mount(page, { moonAgeDays: FIRST_Q, moonViewMode: 'telescope', moonNorthUp: true });
+    const styles = await page.evaluate(() => {
+      const exact = (text: string) => Array.from(document.querySelectorAll<HTMLElement>('div'))
+        .find((el) => el.textContent?.trim() === text);
+      const observer = exact('Earth observer');
+      const north = exact('N' + String.fromCharCode(0x2191) + 'NASA LRO surface');
+      const hint = exact('Scroll to magnify - same physical sunlight');
+      if (!observer?.parentElement || !north || !hint) throw new Error('Moon HUD labels are missing');
+      return [
+        { fg: getComputedStyle(observer).color, bg: getComputedStyle(observer.parentElement).backgroundColor },
+        { fg: getComputedStyle(north).color, bg: getComputedStyle(north).backgroundColor },
+        { fg: getComputedStyle(hint).color, bg: getComputedStyle(hint).backgroundColor },
+      ];
+    });
+
+    for (const style of styles) {
+      expect(parseCssColor(style.bg).a).toBeGreaterThanOrEqual(0.75);
+      expect(contrastOverBrightScene(style.fg, style.bg)).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
   test('the orbit really is inclined, so most months are not eclipse months', async ({ page }) => {
-    await mount(page, { moonPhaseIdx: FULL, moonNodeDeg: 90 });
+    await mount(page, { moonAgeDays: FULL, moonNodeDeg: 90 });
     const gl = await page.evaluate(() => (window as any).__gl());
     // 7.2 * sin(5.145 deg) = 0.646 Earth radii off the ecliptic at maximum.
     expect(Math.abs(gl.moonY)).toBeGreaterThan(0.6);
@@ -219,17 +359,17 @@ test.describe('Astronomy moon geometry — real WebGL', () => {
   });
 
   test('the phase disc survives as the guaranteed floor', async ({ page }) => {
-    await mount(page, { moonPhaseIdx: FIRST_Q });
+    await mount(page, { moonAgeDays: FIRST_Q });
     expect(await page.evaluate(() => document.querySelectorAll('svg').length)).toBeGreaterThan(0);
   });
 
   test('the loading overlay actually goes away', async ({ page }) => {
-    await mount(page, { moonPhaseIdx: FIRST_Q });
+    await mount(page, { moonAgeDays: FIRST_Q });
     expect(await page.evaluate(() => (window as any).__text())).not.toContain('Loading 3D view');
   });
 
   test('drag orbits the camera', async ({ page }) => {
-    await mount(page, { moonPhaseIdx: FIRST_Q });
+    await mount(page, { moonAgeDays: FIRST_Q, moonViewMode: 'orbit' });
     const before = await page.evaluate(() => (window as any).__bucket().moonRot);
     await page.evaluate(() => {
       const c = document.querySelector('canvas[data-astro-moon-gl="true"]') as HTMLCanvasElement;
@@ -246,18 +386,153 @@ test.describe('Astronomy moon geometry — real WebGL', () => {
     expect(after.rotY).toBeGreaterThan((before?.rotY ?? 18) + 10);
   });
 
-  test('stepping through the cycle does not remount the canvas', async ({ page }) => {
-    await mount(page, { moonPhaseIdx: NEW });
-    for (const i of [1, 2, 3, 4, 5]) {
-      await page.evaluate((v) => (window as any).__set({ moonPhaseIdx: v }), i);
-      await page.waitForTimeout(160);
+  test('continuous scrubbing updates phase without remounting or leaking WebGL resources', async ({ page }) => {
+    await mount(page, { moonAgeDays: NEW, moonViewMode: 'orbit' });
+    await page.waitForFunction(() => {
+      const gl = (window as any).__gl();
+      return gl?.surfaceTextureReady && gl?.reliefTextureReady;
+    }, null, { timeout: 30_000 });
+
+    const baseline = await page.evaluate(() => {
+      (window as any).__moonCanvas = document.querySelector('canvas[data-astro-moon-gl="true"]');
+      return (window as any).__gl();
+    });
+
+    const ages = Array.from({ length: 33 }, (_, i) => (SYNODIC * i) / 32);
+    for (const age of ages) {
+      await page.evaluate((v) => (window as any).__set({ moonAgeDays: v }), age);
+      await page.waitForTimeout(35);
     }
+    await page.waitForFunction(
+      (age) => Math.abs((window as any).__gl().ageDays - age) < 0.002,
+      SYNODIC
+    );
+    await page.waitForTimeout(160);
+
+    const after = await page.evaluate(() => ({
+      gl: (window as any).__gl(),
+      sameCanvas: (window as any).__moonCanvas
+        === document.querySelector('canvas[data-astro-moon-gl="true"]'),
+      canvasCount: (window as any).__canvasCount(),
+      errors: (window as any).__events.errors,
+    }));
+    expect(after.sameCanvas).toBe(true);
+    expect(after.canvasCount).toBe(1);
+    expect(after.gl.state).toBe('ready');
+    expect(after.gl.ageDays).toBeCloseTo(SYNODIC, 3);
+    expect(after.gl.litFractionSeen).toBeLessThan(0.02);
+    expect(after.gl.modelChildren).toBe(baseline.modelChildren);
+    expect(after.gl.rendererMemory.geometries)
+      .toBeLessThanOrEqual(baseline.rendererMemory.geometries + 1);
+    expect(after.gl.rendererMemory.textures)
+      .toBeLessThanOrEqual(baseline.rendererMemory.textures + 1);
+    expect(after.errors).toEqual([]);
+  });
+
+  test('switches Telescope and Orbit views on one NASA-textured canvas', async ({ page }) => {
+    await mount(page, { moonAgeDays: FIRST_Q, moonViewMode: 'orbit' });
+    await page.waitForFunction(() => {
+      const gl = (window as any).__gl();
+      return gl?.surfaceTextureReady && gl?.reliefTextureReady;
+    }, null, { timeout: 30_000 });
+    await page.evaluate(() => {
+      (window as any).__moonCanvas = document.querySelector('canvas[data-astro-moon-gl="true"]');
+    });
+
+    const viewGroup = page.getByRole('group', { name: 'Moon visualizer view' });
+    await viewGroup.getByRole('button', { name: /Telescope view/ }).click();
+    await page.waitForFunction(() => (window as any).__gl()?.mode === 'telescope');
+    const telescope = await page.evaluate(() => ({
+      gl: (window as any).__gl(),
+      bucket: (window as any).__bucket(),
+      sameCanvas: (window as any).__moonCanvas
+        === document.querySelector('canvas[data-astro-moon-gl="true"]'),
+    }));
+    expect(telescope.sameCanvas).toBe(true);
+    expect(telescope.bucket.moonViewMode).toBe('telescope');
+    expect(telescope.gl.earthVisible).toBe(false);
+    expect(telescope.gl.surfaceTextureReady).toBe(true);
+    expect(telescope.gl.reliefTextureReady).toBe(true);
+    await expect(page.getByRole('img', {
+      name: /Telescope view of the NASA LRO-textured Moon/,
+    })).toBeVisible();
+
+    await viewGroup.getByRole('button', { name: /Orbit view/ }).click();
+    await page.waitForFunction(() => (window as any).__gl()?.mode === 'orbit');
+    const orbit = await page.evaluate(() => ({
+      gl: (window as any).__gl(),
+      bucket: (window as any).__bucket(),
+      sameCanvas: (window as any).__moonCanvas
+        === document.querySelector('canvas[data-astro-moon-gl="true"]'),
+    }));
+    expect(orbit.sameCanvas).toBe(true);
+    expect(orbit.bucket.moonViewMode).toBe('orbit');
+    expect(orbit.bucket.moonAgeDays).toBeCloseTo(FIRST_Q, 3);
+    expect(orbit.gl.earthVisible).toBe(true);
+
+
     expect(await page.evaluate(() => (window as any).__canvasCount())).toBe(1);
-    expect(await page.evaluate(() => (window as any).__gl().state)).toBe('ready');
+  });
+
+  test('overlay and true-scale controls agree with debug state and keep resources bounded', async ({ page }) => {
+    await mount(page, {
+      moonAgeDays: FIRST_Q,
+      moonViewMode: 'orbit',
+      moonScaleMode: 'teaching',
+    });
+    await page.waitForFunction(() => {
+      const gl = (window as any).__gl();
+      return gl?.surfaceTextureReady && gl?.reliefTextureReady;
+    }, null, { timeout: 30_000 });
+    const baseline = await page.evaluate(() => (window as any).__gl());
+
+    const overlays = page.getByRole('group', { name: 'Diagram overlays' });
+    for (const name of ['Orbit path', 'Sunlight', "Earth's shadow", 'Labels', 'Tidal-lock marker']) {
+      await overlays.getByRole('button', { name }).click();
+    }
+    await page.waitForFunction(() => {
+      const o = (window as any).__gl()?.overlays;
+      return o && !o.orbit && !o.sunlight && !o.shadow && !o.labels && !o.tidalLock;
+    });
+    const overlayState = await page.evaluate(() => ({
+      gl: (window as any).__gl(),
+      bucket: (window as any).__bucket(),
+    }));
+    expect(overlayState.bucket.moonOverlays).toEqual({
+      orbit: false,
+      sunlight: false,
+      shadow: false,
+      labels: false,
+      tidalLock: false,
+    });
+    expect(overlayState.gl.modelChildren).toBe(baseline.modelChildren);
+
+    await page.getByRole('group', { name: 'Moon diagram scale' })
+      .getByRole('button', { name: 'True scale' }).click();
+    await page.waitForFunction(() => (window as any).__gl()?.scaleMode === 'true');
+    await page.waitForTimeout(220);
+    const scaled = await page.evaluate(() => ({
+      gl: (window as any).__gl(),
+      bucket: (window as any).__bucket(),
+      canvasCount: (window as any).__canvasCount(),
+    }));
+    const radius = Math.hypot(
+      scaled.gl.moonPos.x,
+      scaled.gl.moonPos.y,
+      scaled.gl.moonPos.z
+    );
+    expect(scaled.bucket.moonScaleMode).toBe('true');
+    expect(radius).toBeGreaterThan(59);
+    expect(radius).toBeLessThan(61);
+    expect(scaled.canvasCount).toBe(1);
+    expect(scaled.gl.rendererMemory.geometries)
+      .toBeLessThanOrEqual(baseline.rendererMemory.geometries + 2);
+    expect(scaled.gl.rendererMemory.textures)
+      .toBeLessThanOrEqual(baseline.rendererMemory.textures + 1);
   });
 
   test('tears the renderer down on unmount', async ({ page }) => {
-    await mount(page, { moonPhaseIdx: FIRST_Q });
+    await mount(page, { moonAgeDays: FIRST_Q });
     await page.evaluate(() => (window as any).__destroy());
     await page.waitForTimeout(400);
     expect(await page.evaluate(() => (window as any).__gl().state)).toBe('idle');

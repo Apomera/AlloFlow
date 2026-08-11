@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════
-// AlloFlow STEM Lab — Timeline Studio (TimelineJS + AI document→timeline)
+// AlloFlow STEAM Lab — Timeline Studio (TimelineJS + AI document→timeline)
 //
 // The renderer is a COMPANION WINDOW (timeline_studio/timeline_studio.html)
 // that embeds TimelineJS3 by Northwestern University Knight Lab
@@ -89,7 +89,8 @@
     label: 'Timeline Studio',
     desc: 'Turn any reading — history, a biography, a science-discovery passage — into an interactive TimelineJS timeline. Paste or drop in text and the AI pulls out the dated events; scroll, zoom, and step through them. You can also build a timeline event by event yourself.',
     color: 'rose',
-    category: 'general',
+    category: 'history',
+    aliases: ['timeline', 'TimelineJS', 'history', 'dated events'],
     questHooks: [
       { id: 'tl_open', label: 'Open a timeline', icon: '🕰️',
         check: function (d) { return !!(d && d.opened); } },

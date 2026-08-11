@@ -31,7 +31,7 @@
 //     every analysis is user-initiated, nothing auto-fires.
 //   - UI reminds students to photograph things, not people.
 //
-// Architecture matches the STEM Lab plugin contract (see stem_tool_cellular.js):
+// Architecture matches the STEAM Lab plugin contract (see stem_tool_cellular.js):
 // registerTool + render(ctx) + hooks-only state + SSR-safe first render (no
 // effects, no navigator/document access during render).
 (function () {
@@ -537,7 +537,7 @@
     // ════════════════════ mode panels ════════════════════
     function analyzeButton(m, label) {
       var offMsg = !aiOn
-        ? _t('stem.accessLens.ai_off', 'AI is turned off. Ask your teacher to switch on AI features in the STEM Lab header.')
+        ? _t('stem.accessLens.ai_off', 'AI is turned off. Ask your teacher to switch on AI features in the STEAM Lab header.')
         : (!vision ? _t('stem.accessLens.ai_unavailable', 'AI vision is not available in this setup.') : '');
       return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
         h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' } },
@@ -714,7 +714,7 @@
       h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' } },
         (ctx.setStemLabTool ? h('button', {
           type: 'button', onClick: function () { ctx.setStemLabTool(''); },
-          'aria-label': _t('stem.accessLens.back', 'Back to STEM Lab'),
+          'aria-label': _t('stem.accessLens.back', 'Back to STEAM Lab'),
           style: { padding: '6px 10px', borderRadius: '8px', border: '1px solid ' + C.border, background: C.panel, color: C.text, cursor: 'pointer', fontSize: '12px', fontWeight: 700 }
         }, '← ' + _t('stem.accessLens.back_short', 'Back')) : null),
         h('div', { style: { fontSize: '22px' }, 'aria-hidden': 'true' }, '📷'),
@@ -752,7 +752,8 @@
     label: 'Access Lens',
     desc: 'Point your camera at the world: get a scene description read aloud (built for students who are blind or have low vision), re-read any text in large print, translate signs and handouts into your language, or investigate an object Socratic-style with an AI that asks questions instead of pronouncing answers.',
     color: 'sky',
-    category: 'general',
+    category: 'accessibility',
+    aliases: ['camera', 'photo description', 'OCR', 'low vision'],
     questHooks: [
       { id: 'lens_photo', label: 'Capture or choose a photo', icon: '📷',
         check: function (d) { return !!(d && d.captured); },

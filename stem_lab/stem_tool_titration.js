@@ -1,4 +1,4 @@
-// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -469,6 +469,7 @@ function bur3dSegment(THREE, parent, a, b, hex, thick, opacity) {
 // of the slider.
 function bur3dLabel(THREE, S, parent, text, pos, hex, size) {
   var cvs = document.createElement('canvas');
+  cvs.setAttribute('aria-hidden', 'true');
   cvs.width = 256; cvs.height = 96;
   var g = cvs.getContext('2d');
   if (!g) return null;
@@ -503,14 +504,40 @@ function bur3dLabel(THREE, S, parent, text, pos, hex, size) {
   return sp;
 }
 
-// A flat band across the front of the scale, marking one reading.
-function bur3dBand(THREE, parent, y, hex, emphatic) {
-  var geo = new THREE.BoxGeometry(BUR3D.R * 2.9, emphatic ? 0.045 : 0.03, 0.03);
-  var mat = new THREE.MeshLambertMaterial({ color: hex });
+// A mark ON the glass rather than on a flat plate in front of it.
+//
+// Every graduation used to be a BoxGeometry sitting at z = R. A box spans the
+// full CHORD, so at the default 34 degrees of orbit its corners project outside
+// the barrel's silhouette: the scale read as a comb floating beside the tube,
+// overhanging on one side and stopping short of the glass on the other. An
+// open-ended cylinder arc is the same mark wrapped onto the surface it is
+// actually etched on, so it stays on the glass from every angle.
+//
+// Angle convention: three.js builds a cylinder with x = r sin(theta),
+// z = r cos(theta), so theta = 0 is the +z face — the scale face, the plane the
+// student reads against. Marks stay centred on it and the parallax geometry is
+// untouched: near theta = 0 the arc still sits at z = R.
+function bur3dArc(THREE, parent, y, centerRad, halfArc, hex, thick, opts) {
+  opts = opts || {};
+  var r = opts.radius == null ? BUR3D.R + 0.014 : opts.radius;
+  var geo = new THREE.CylinderGeometry(r, r, thick, 30, 1, true,
+    centerRad - halfArc, halfArc * 2);
+  var mat = new THREE.MeshLambertMaterial({
+    color: hex, side: THREE.DoubleSide,
+    transparent: opts.opacity != null && opts.opacity < 1,
+    opacity: opts.opacity == null ? 1 : opts.opacity
+  });
   var m = new THREE.Mesh(geo, mat);
-  m.position.set(0, y, BUR3D.R + 0.02);
+  m.position.y = y;
   parent.add(m);
   return m;
+}
+
+// A reading band: the same arc, run most of the way round the front so it reads
+// as a line drawn across the scale rather than as one more graduation.
+function bur3dBand(THREE, parent, y, hex, emphatic) {
+  return bur3dArc(THREE, parent, y, 0, 1.16, hex, emphatic ? 0.045 : 0.03,
+    { radius: BUR3D.R + 0.026 });
 }
 
 function buildBuretteScene(THREE, S, m) {
@@ -529,19 +556,53 @@ function buildBuretteScene(THREE, S, m) {
   // Glass barrel. Rendered from inside as well so the meniscus stays visible
   // through the front wall instead of being culled behind it.
   var glass = new THREE.Mesh(
-    new THREE.CylinderGeometry(R, R, H, 28, 1, true),
+    new THREE.CylinderGeometry(R, R, H, 40, 1, true),
     new THREE.MeshPhongMaterial({
       color: m.contrast ? 0xffffff : 0x93c5fd, transparent: true,
-      opacity: m.contrast ? 0.30 : 0.16, side: THREE.DoubleSide, shininess: 60
+      opacity: m.contrast ? 0.30 : 0.16, side: THREE.DoubleSide, shininess: 90,
+      specular: m.contrast ? 0x888888 : 0x2b4a72,
+      // Glass must not occupy the depth buffer. Writing depth from a 16%-opaque
+      // wall let the near side of the barrel hide the meniscus, the titrant and
+      // the graduations behind it depending on orbit angle — the contents are the
+      // whole point of looking into a burette.
+      depthWrite: false
     })
   );
   glass.position.y = yM - H / 2 + H * 0.62;
   S.model.add(glass);
+  var glassTop = glass.position.y + H / 2, glassBot = glass.position.y - H / 2;
 
-  // Titrant column below the meniscus.
-  var colH = H * 0.62;
+  // Silhouette shell — see benchVessel for why lighting cannot do this job at this
+  // opacity. Shares the barrel geometry.
+  var barrelShell = new THREE.Mesh(glass.geometry, new THREE.MeshBasicMaterial({
+    color: m.contrast ? 0xffffff : 0xbfdbfe,
+    transparent: true, opacity: 0.26, side: THREE.BackSide, depthWrite: false
+  }));
+  barrelShell.position.copy(glass.position);
+  barrelShell.scale.setScalar(1.035);
+  S.model.add(barrelShell);
+
+  // Lip at the mouth. An open-ended cylinder ends on nothing, so without it the
+  // barrel reads as a tube cropped by the top of the frame rather than as the
+  // top of an instrument.
+  var lip = new THREE.Mesh(
+    new THREE.TorusGeometry(R, 0.016, 8, 36),
+    new THREE.MeshPhongMaterial({
+      color: m.contrast ? 0xffffff : 0xbfdbfe, shininess: 80,
+      transparent: true, opacity: 0.75
+    })
+  );
+  lip.rotation.x = Math.PI / 2;
+  lip.position.y = glassTop;
+  S.model.add(lip);
+
+  // Titrant column below the meniscus. The height is DERIVED from the barrel,
+  // not typed: a fixed 0.62 H centred on the meniscus put the bottom of the
+  // column 0.77 units BELOW the bottom of the glass, so a slab of titrant hung
+  // in mid-air under the burette and ran off the bottom of the frame.
+  var colH = Math.max(0.05, yM - glassBot - 0.02);
   var liquid = new THREE.Mesh(
-    new THREE.CylinderGeometry(R * 0.93, R * 0.93, colH, 24),
+    new THREE.CylinderGeometry(R * 0.93, R * 0.93, colH, 32),
     new THREE.MeshLambertMaterial({
       color: m.contrast ? 0x888888 : (m.liquidHex || 0x38bdf8), transparent: true, opacity: 0.55
     })
@@ -553,7 +614,7 @@ function buildBuretteScene(THREE, S, m) {
   // shallow inverted dome on the tube axis — i.e. a full bore-radius BEHIND the
   // scale face, which is the entire cause of the error.
   var men = new THREE.Mesh(
-    new THREE.SphereGeometry(R * 0.93, 20, 8, 0, Math.PI * 2, 0, Math.PI * 0.42),
+    new THREE.SphereGeometry(R * 0.93, 36, 14, 0, Math.PI * 2, 0, Math.PI * 0.42),
     new THREE.MeshPhongMaterial({ color: m.contrast ? 0xffffff : 0x22d3ee, shininess: 90, side: THREE.DoubleSide })
   );
   men.position.y = yM + R * 0.30;
@@ -563,13 +624,17 @@ function buildBuretteScene(THREE, S, m) {
 
   // Front scale face, carrying the graduations. This is the plane the student
   // reads against, and it sits a bore-radius in FRONT of the meniscus.
+  // Curved to the glass for the same reason the graduations are: a flat card
+  // R * 3.0 wide overhangs a barrel of radius R at any orbit angle, and its
+  // corners were the brightest thing in the scene.
   var face = new THREE.Mesh(
-    new THREE.BoxGeometry(R * 3.0, H, 0.02),
+    new THREE.CylinderGeometry(R + 0.006, R + 0.006, H, 40, 1, true, -1.22, 2.44),
     new THREE.MeshLambertMaterial({
-      color: m.contrast ? 0x000000 : 0x0f172a, transparent: true, opacity: 0.55
+      color: m.contrast ? 0x000000 : 0x0f172a, transparent: true, opacity: 0.5,
+      side: THREE.DoubleSide, depthWrite: false
     })
   );
-  face.position.set(0, glass.position.y, R + 0.01);
+  face.position.set(0, glass.position.y, 0);
   S.model.add(face);
 
   var tickMat = new THREE.MeshLambertMaterial({ color: m.contrast ? 0xffffff : 0xcbd5e1 });
@@ -594,13 +659,16 @@ function buildBuretteScene(THREE, S, m) {
     if (v < 0 || v > 50) continue;                  // past either end of the barrel
     var ty = yForMl(v);
     var major = Math.abs(v - Math.round(v)) < 1e-9;
-    var tk = new THREE.Mesh(new THREE.BoxGeometry(major ? R * 2.0 : R * 1.1, 0.018, 0.022), tickMat);
-    tk.position.set(major ? 0 : -R * 0.45, ty, R + 0.025);
-    S.model.add(tk);
+    // Majors run right across the face; minors are the short marks on one side,
+    // as on a real burette. Both are arcs on the glass — see bur3dArc.
+    bur3dArc(THREE, S.model, ty, major ? 0 : -0.40, major ? 0.95 : 0.42,
+      tickMat.color.getHex(), major ? 0.020 : 0.016);
     if (major) {
+      // Close enough to the barrel to belong to it, far enough not to sit on the
+      // graduations. At -2.0 R they floated in the void with nothing to attach to.
       bur3dLabel(THREE, S, S.model, v.toFixed(0),
-        new THREE.Vector3(-R * 2.0, ty, R + 0.04),
-        m.contrast ? '#ffffff' : '#94a3b8', 0.46);
+        new THREE.Vector3(-R * 1.62, ty, R + 0.04),
+        m.contrast ? '#ffffff' : '#cbd5e1', 0.44);
     }
   }
 
@@ -618,24 +686,55 @@ function buildBuretteScene(THREE, S, m) {
   // The two numbers, side by side on the scale they are read from. This is the
   // payload of the whole station: not "your eye is crooked" but "your eye being
   // crooked made you write 21.08 where the liquid says 21.25".
+  // The numbers hang at the heights they are read at, but a 0.62 sprite is 0.23
+  // tall and a small parallax error puts the two readings closer together than
+  // that — they overlapped and NEITHER was legible, which is the one failure this
+  // station cannot afford. Push the SPRITES apart to a legible gap when they
+  // would collide; the BANDS never move, because their positions carry the
+  // meaning and the labels only annotate them.
+  var LABEL_GAP = 0.30;
+  var trueLabelY = yM, readLabelY = crossY;
+  if (!level && Math.abs(crossY - yM) < LABEL_GAP) {
+    var mid = (yM + crossY) / 2, up = crossY >= yM ? 1 : -1;
+    trueLabelY = mid - up * LABEL_GAP / 2;
+    readLabelY = mid + up * LABEL_GAP / 2;
+  }
   if (m.trueMl != null) {
     bur3dLabel(THREE, S, S.model, m.trueMl.toFixed(2),
-      new THREE.Vector3(R * 2.35, yM, R + 0.05), m.contrast ? '#ffffff' : '#4ade80', 0.62);
+      new THREE.Vector3(R * 2.35, trueLabelY, R + 0.05), m.contrast ? '#ffffff' : '#4ade80', 0.62);
     if (!level && m.readMl != null) {
       bur3dLabel(THREE, S, S.model, m.readMl.toFixed(2),
-        new THREE.Vector3(R * 2.35, crossY, R + 0.05),
+        new THREE.Vector3(R * 2.35, readLabelY, R + 0.05),
         m.contrast ? '#ffffff' : (m.withinTolerance ? '#fbbf24' : '#f87171'), 0.62);
     }
   }
 
   // The eye, and the sight line through the scale to the meniscus.
   var eye = new THREE.Mesh(
-    new THREE.SphereGeometry(0.11, 16, 12),
+    new THREE.SphereGeometry(0.11, 28, 20),
     new THREE.MeshPhongMaterial({ color: m.contrast ? 0xffffff : 0xf1f5f9, shininess: 70 })
   );
   var eyePos = new THREE.Vector3(0, eyeY, BUR3D.VIEW);
   eye.position.copy(eyePos);
   S.model.add(eye);
+
+  var menPt = new THREE.Vector3(0, yM, 0);
+  var sightDir = new THREE.Vector3().subVectors(menPt, eyePos).normalize();
+
+  // A marking round the eye, on the plane PERPENDICULAR to the sight line, so the
+  // ball reads as an optic aimed somewhere rather than as a golf ball.
+  //
+  // A disc placed where an iris really goes is invisible here and always will be:
+  // the eye looks down the barrel, i.e. away from the camera, so its front face
+  // sits on the hidden hemisphere at every orbit angle the station allows. The
+  // ring runs through the visible hemisphere by construction.
+  var iris = new THREE.Mesh(
+    new THREE.TorusGeometry(0.104, 0.011, 8, 32),
+    new THREE.MeshBasicMaterial({ color: m.contrast ? 0x000000 : 0x1e3a8a })
+  );
+  iris.position.copy(eyePos);
+  iris.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), sightDir);
+  S.model.add(iris);
   bur3dSegment(THREE, S.model, eyePos, new THREE.Vector3(0, yM, 0), offHex, 0.012, 0.95);
 
   // Faint guide at true eye level, so "get your eye level with the meniscus"
@@ -643,13 +742,38 @@ function buildBuretteScene(THREE, S, m) {
   bur3dSegment(THREE, S.model, new THREE.Vector3(0, yM, 0),
     new THREE.Vector3(0, yM, BUR3D.VIEW + 0.35), m.contrast ? 0xffffff : 0x4ade80, 0.004, 0.5);
 
+  // ...and the place the eye has to GET to, at the end of that guide. The line on
+  // its own ran out into empty space, so it read as a stray diagonal instead of as
+  // a target; a ring at the eye's own distance turns "level with the meniscus"
+  // into a gap the student can see themselves closing.
+  var mark = new THREE.Mesh(
+    new THREE.TorusGeometry(0.115, 0.010, 8, 28),
+    new THREE.MeshBasicMaterial({
+      color: m.contrast ? 0xffffff : 0x4ade80,
+      transparent: true, opacity: level ? 0.9 : 0.55
+    })
+  );
+  mark.position.set(0, yM, BUR3D.VIEW);
+  mark.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1),
+    new THREE.Vector3().subVectors(menPt, mark.position).normalize());
+  S.model.add(mark);
+
   S.target = new THREE.Vector3(0, yM + 0.1, 0);
   // The scale numbers hang off both flanks of the face, so the fit has to allow for
   // them or the camera crops the very digits the station exists to show.
+  // Sampled from what the scene actually contains, including the bottom of the
+  // titrant column and the lip — the old list sampled the barrel only, so
+  // anything drawn past either end of it was framed straight off the canvas.
   S.fitPts = [
     new THREE.Vector3(0, top, 0), new THREE.Vector3(0, bot, 0),
-    new THREE.Vector3(R * 2.7, yM, R), new THREE.Vector3(-R * 2.3, yM, R),
-    eyePos.clone(), new THREE.Vector3(0, yM - 0.4, BUR3D.VIEW + 0.4)
+    new THREE.Vector3(0, yM - colH, 0),
+    new THREE.Vector3(R * 2.7, Math.max(yM, trueLabelY, readLabelY), R),
+    new THREE.Vector3(-R * 2.3, Math.min(yM, trueLabelY, readLabelY), R),
+    // The eye is a SPHERE, so sample its extremes and not just its centre: at the
+    // ends of the eye-height slider the fit cropped the bottom of it.
+    new THREE.Vector3(0, eyeY - 0.13, BUR3D.VIEW),
+    new THREE.Vector3(0, eyeY + 0.13, BUR3D.VIEW),
+    new THREE.Vector3(0, yM - 0.4, BUR3D.VIEW + 0.4)
   ];
 }
 
@@ -672,48 +796,82 @@ function benchVessel(THREE, S, m, g, x, selected) {
   var H = BENCH.H;
   var glassMat = new THREE.MeshPhongMaterial({
     color: m.contrast ? 0xffffff : (selected ? 0x7dd3fc : 0x93c5fd),
-    transparent: true, opacity: selected ? 0.34 : 0.16,
-    side: THREE.DoubleSide, shininess: 70
+    // The selection ring below carries "this one" now, so the selected vessel no
+    // longer has to shout it with opacity — at 0.34 the beaker went nearly solid
+    // and buried its own 1 mL slice.
+    transparent: true, opacity: selected ? 0.25 : 0.16,
+    side: THREE.DoubleSide, shininess: 95,
+    specular: m.contrast ? 0x888888 : 0x2b4a72,
+    // The 1 mL slice is the entire content of this bench and it lives INSIDE the
+    // vessel. A 16%-opaque wall that writes depth hid it behind the near glass on
+    // the wide vessels, which are exactly the ones whose slice is thinnest and
+    // hardest to see.
+    depthWrite: false
   });
 
   // Body profile. Only the READING bore has to be right; the reservoir below it is
   // shaped for recognition.
+  // Base radius per vessel, because the foot below is drawn from it. A flat
+  // max(r, 0.18) disc sat a long way INSIDE the conical flask and the volumetric
+  // flask, so both stood on a pale ellipse floating in their own middle.
+  var baseR = Math.max(r, 0.17);
   if (g.kind === 'volflask' || g.kind === 'conical') {
     var bulbR = Math.max(r * 2.2, 0.30);
+    baseR = g.kind === 'conical' ? bulbR : Math.max(r, bulbR * 0.62);
     var neckH = H * 0.55, bulbH = H - neckH;
-    grp.add(new THREE.Mesh(new THREE.CylinderGeometry(r, r, neckH, 20, 1, true), glassMat));
+    grp.add(new THREE.Mesh(new THREE.CylinderGeometry(r, r, neckH, 32, 1, true), glassMat));
     grp.children[0].position.y = bulbH + neckH / 2;
     var body;
     if (g.kind === 'conical') {
-      body = new THREE.Mesh(new THREE.CylinderGeometry(r, bulbR, bulbH, 24, 1, true), glassMat);
+      body = new THREE.Mesh(new THREE.CylinderGeometry(r, bulbR, bulbH, 40, 1, true), glassMat);
       body.position.y = bulbH / 2;
     } else {
       // The bulb has to MEET the neck. Sized and centred so the top of the squashed
       // sphere lands exactly at bulbH — otherwise the flask renders as a ball with a
       // tube floating above it, which is what it did.
       var squash = 0.85;
-      body = new THREE.Mesh(new THREE.SphereGeometry(bulbR, 20, 14), glassMat);
+      body = new THREE.Mesh(new THREE.SphereGeometry(bulbR, 40, 26), glassMat);
       body.scale.y = squash;
       body.position.y = bulbH - bulbR * squash;
     }
     grp.add(body);
   } else if (g.kind === 'pipette') {
     var bulbR2 = Math.max(r * 3.0, 0.16);
-    grp.add(new THREE.Mesh(new THREE.CylinderGeometry(r, r, H, 18, 1, true), glassMat));
+    grp.add(new THREE.Mesh(new THREE.CylinderGeometry(r, r, H, 28, 1, true), glassMat));
     grp.children[0].position.y = H / 2;
-    var bulb = new THREE.Mesh(new THREE.SphereGeometry(bulbR2, 18, 12), glassMat);
+    var bulb = new THREE.Mesh(new THREE.SphereGeometry(bulbR2, 36, 22), glassMat);
     bulb.position.y = H * 0.42; bulb.scale.y = 2.0;
     grp.add(bulb);
   } else {
-    var tube = new THREE.Mesh(new THREE.CylinderGeometry(r, r, H, 24, 1, true), glassMat);
+    var tube = new THREE.Mesh(new THREE.CylinderGeometry(r, r, H, 40, 1, true), glassMat);
     tube.position.y = H / 2;
     grp.add(tube);
+  }
+
+  // Rim shells, one per glass body. See the note at the top of this pass: at 16%
+  // opacity there is no shading to light, so the 250 mL beaker read as a pale
+  // rectangle and the row had no silhouettes at all. Back faces of a slightly
+  // larger copy are visible only around the edge.
+  //
+  // Geometry is SHARED with the body rather than rebuilt — disposeGroup collects
+  // geometries into a de-duplicated list, so the shared buffer is released once.
+  var rimMat = new THREE.MeshBasicMaterial({
+    color: m.contrast ? 0xffffff : (selected ? 0x67e8f9 : 0x7dd3fc),
+    transparent: true, opacity: selected ? 0.34 : 0.22,
+    side: THREE.BackSide, depthWrite: false
+  });
+  var bodies = grp.children.slice();
+  for (var bi = 0; bi < bodies.length; bi++) {
+    var shell = new THREE.Mesh(bodies[bi].geometry, rimMat);
+    shell.position.copy(bodies[bi].position);
+    shell.scale.copy(bodies[bi].scale).multiplyScalar(1.04);
+    grp.add(shell);
   }
 
   // The 1 mL slice, at true scale against this bore.
   var bandH = Math.max(BENCH.MIN_BAND, mlHeightMm(g.boreMm) / BENCH.MM_PER_UNIT);
   var band = new THREE.Mesh(
-    new THREE.CylinderGeometry(r * 0.97, r * 0.97, bandH, 24),
+    new THREE.CylinderGeometry(r * 0.97, r * 0.97, bandH, 40),
     new THREE.MeshLambertMaterial({
       color: m.contrast ? 0xffffff : (selected ? 0x22d3ee : 0x38bdf8),
       transparent: true, opacity: 0.92
@@ -722,13 +880,32 @@ function benchVessel(THREE, S, m, g, x, selected) {
   band.position.y = H * 0.45;
   grp.add(band);
 
-  // Base disc, so the row reads as a bench rather than floating tubes.
+  // Base disc, sized to the vessel it belongs to (see baseR above).
   var foot = new THREE.Mesh(
-    new THREE.CylinderGeometry(Math.max(r, 0.16), Math.max(r, 0.18), 0.03, 20),
+    new THREE.CylinderGeometry(baseR * 0.96, baseR, 0.03, 40),
     new THREE.MeshLambertMaterial({ color: m.contrast ? 0xffffff : (selected ? 0x0ea5e9 : 0x334155) })
   );
   foot.position.y = 0.015;
   grp.add(foot);
+
+  // Which vessel the mm-per-mL figure and the table below are talking about. The
+  // selected vessel was distinguished only by a slightly lighter glass, which is
+  // not a difference you can find in a row of six at this size.
+  if (selected) {
+    // A CONSTANT margin outside the foot. Scaled 1.2-1.52x it was proportional to
+    // a base that ranges from 0.17 to 0.76 units, so on the 250 mL beaker the ring
+    // grew wider than the bench it stood on and was cropped by the frame.
+    var ring = new THREE.Mesh(
+      new THREE.RingGeometry(baseR + 0.055, baseR + 0.155, 64),
+      new THREE.MeshBasicMaterial({
+        color: m.contrast ? 0xffffff : 0x22d3ee,
+        transparent: true, opacity: 0.6, side: THREE.DoubleSide
+      })
+    );
+    ring.rotation.x = -Math.PI / 2;
+    ring.position.y = 0.034;
+    grp.add(ring);
+  }
 
   grp.position.x = x;
   S.model.add(grp);
@@ -736,8 +913,12 @@ function benchVessel(THREE, S, m, g, x, selected) {
   // Bore under every vessel; the mm-per-mL figure only on the selected one. Labelling
   // all six put two lines of text over each of the narrow vessels, which sit closest
   // together — the full set is in the table below, where it can be read properly.
+  // Below the FOOT, not below the origin. At -0.26 the wide vessels — whose feet
+  // are the widest things in the scene and tilt toward the viewer — carried their
+  // own label inside themselves; the 250 mL beaker's sat in the middle of it.
   bur3dLabel(THREE, S, S.model, g.boreMm + ' mm',
-    new THREE.Vector3(x, -0.26, 0), m.contrast ? '#ffffff' : (selected ? '#22d3ee' : '#94a3b8'), 0.52);
+    new THREE.Vector3(x, -0.30 - baseR * 0.22, 0),
+    m.contrast ? '#ffffff' : (selected ? '#22d3ee' : '#94a3b8'), 0.52);
   if (selected) {
     bur3dLabel(THREE, S, S.model, mlHeightMm(g.boreMm).toFixed(1) + ' mm per mL',
       new THREE.Vector3(x, BENCH.H + 0.26, 0), m.contrast ? '#ffffff' : '#67e8f9', 0.92);
@@ -760,25 +941,72 @@ function buildBenchScene(THREE, S, m) {
   S._texes = [];
   var n = GLASSWARE.length;
   // Lay the row out by accumulating each vessel's own footprint plus a margin.
-  var xs = [], cursor = 0;
+  var hws = [], xs = [], cursor = 0;
   for (var i = 0; i < n; i++) {
     var hw = benchHalfWidth(GLASSWARE[i]);
+    hws.push(hw);
     if (i > 0) cursor += hw;
     xs.push(cursor);
     cursor += hw + BENCH.GAP;
   }
-  var total = xs[n - 1];
+  // Centre on the row's true EXTENT, not on the last vessel's CENTRE. The vessels
+  // differ more than fourfold in half-width — a 250 mL beaker against a pipette —
+  // so subtracting xs[n-1]/2 shifted the whole row right by half a beaker and left
+  // a third of the canvas empty on the left while the beaker ran off the right.
+  var left = xs[0] - hws[0], right = xs[n - 1] + hws[n - 1];
+  var mid = (left + right) / 2, halfSpan = (right - left) / 2;
   for (var j = 0; j < n; j++) {
-    benchVessel(THREE, S, m, GLASSWARE[j], xs[j] - total / 2, GLASSWARE[j].id === m.selected);
+    benchVessel(THREE, S, m, GLASSWARE[j], xs[j] - mid, GLASSWARE[j].id === m.selected);
   }
+
+  // A bench, so six vessels stand on something. Without it the feet read as
+  // unattached ellipses and the row floats in the void.
+  var deepest = 0;
+  for (var hi = 0; hi < hws.length; hi++) if (hws[hi] > deepest) deepest = hws[hi];
+  // Margin wide enough to carry the selection ring of whichever vessel is picked,
+  // including the widest one at either end of the row.
+  var slabDepth = deepest * 1.5 + 0.42;
+  var slab = new THREE.Mesh(
+    new THREE.BoxGeometry(halfSpan * 2 + 0.52, 0.055, slabDepth),
+    new THREE.MeshLambertMaterial({ color: m.contrast ? 0x000000 : 0x16233a })
+  );
+  slab.position.y = -0.0285;
+  S.model.add(slab);
+  // A lit front edge, so the slab has a top surface rather than reading as a hole.
+  var lipEdge = new THREE.Mesh(
+    new THREE.BoxGeometry(halfSpan * 2 + 0.52, 0.012, 0.012),
+    new THREE.MeshBasicMaterial({
+      color: m.contrast ? 0xffffff : 0x475569, transparent: true, opacity: 0.7
+    })
+  );
+  lipEdge.position.set(0, 0.004, slabDepth / 2);
+  S.model.add(lipEdge);
+
   S.benchCount = n;
-  S.target = new THREE.Vector3(0, BENCH.H * 0.45, 0);
-  var edge = total / 2 + benchHalfWidth(GLASSWARE[n - 1]) + 0.3;
-  S.fitPts = [
-    new THREE.Vector3(-edge, 0, 0), new THREE.Vector3(edge, 0, 0),
-    new THREE.Vector3(0, BENCH.H + 0.5, 0), new THREE.Vector3(0, -0.45, 0),
-    new THREE.Vector3(0, BENCH.H * 0.5, 0.8), new THREE.Vector3(0, BENCH.H * 0.5, -0.8)
-  ];
+  S.target = new THREE.Vector3(0, BENCH.H * 0.44, 0);
+  var edge = halfSpan + 0.26;
+  // Corners of what is actually drawn, not four points on the centre lines: the old
+  // list never sampled (±edge, below zero), so the outermost vessel's foot and its
+  // bore label — which tilt toward the viewer and sit lowest on screen — were the
+  // two things the fit could not see, and the beaker was cropped along the bottom.
+  //
+  // Sampled tightly, because this bay is roughly 4:1 and the row is roughly 2:1:
+  // the VERTICAL extent sets the camera distance, so every unit of slack above or
+  // below the glassware is paid for twice over in horizontal emptiness. The solid
+  // is sampled at its real depth; the labels are sprites on the z = 0 plane and are
+  // sampled there, at their own half-height rather than at a guessed margin.
+  var zHalf = slabDepth / 2;
+  var labelLow = -0.30 - deepest * 0.22 - 0.11;   // bore label centre, minus half its height
+  var labelHigh = BENCH.H + 0.26 + 0.18;          // the mm-per-mL caption over the selection
+  S.fitPts = [];
+  for (var sx = -1; sx <= 1; sx += 2) {
+    for (var sz = -1; sz <= 1; sz += 2) {
+      S.fitPts.push(new THREE.Vector3(sx * edge, BENCH.H, sz * zHalf));
+      S.fitPts.push(new THREE.Vector3(sx * edge, 0, sz * zHalf));
+    }
+    S.fitPts.push(new THREE.Vector3(sx * edge, labelLow, 0));
+  }
+  S.fitPts.push(new THREE.Vector3(0, labelHigh, 0));
 }
 
 var BENCH_GL = (typeof window !== 'undefined' && window.StemLab && typeof window.StemLab.makeOrbitViewer === 'function')
@@ -789,14 +1017,21 @@ var BENCH_GL = (typeof window !== 'undefined' && window.StemLab && typeof window
       rot: { y: 18, x: 10 },
       fitSlack: 1.08,
       failMessage: '3D bench unavailable — the table of tolerances below carries the same comparison.',
+      // See the note on relighting at the top of pass 4 in the burette lights below:
+      // ambient down, key and rim up, total DOWN. Glass needs a direction to catch.
       lights: function (THREE, scene) {
-        scene.add(new THREE.AmbientLight(0xffffff, 0.74));
-        var key = new THREE.DirectionalLight(0xffffff, 0.55);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.42));
+        var key = new THREE.DirectionalLight(0xffffff, 0.80);
         key.position.set(0.4, 1, 0.8);
         scene.add(key);
-        var rim = new THREE.DirectionalLight(0x93c5fd, 0.24);
+        var rim = new THREE.DirectionalLight(0xbfdbfe, 0.62);
         rim.position.set(-0.6, 0.35, -0.5);
         scene.add(rim);
+        // Behind and low, so the far wall of a wide vessel separates from the near
+        // one. Without it the 250 mL beaker had no interior at all.
+        var back = new THREE.DirectionalLight(0x7dd3fc, 0.34);
+        back.position.set(0.15, -0.25, -1);
+        scene.add(back);
       },
       debug: function (S) {
         return { vessels: S.benchCount || 0, labelTextures: S._texes ? S._texes.length : 0 };
@@ -828,13 +1063,16 @@ var BURETTE_GL = (typeof window !== 'undefined' && window.StemLab && typeof wind
       fitSlack: 1.10,
       failMessage: '3D burette view unavailable — the eye-height control and readings below still work.',
       lights: function (THREE, scene) {
-        scene.add(new THREE.AmbientLight(0xffffff, 0.70));
-        var key = new THREE.DirectionalLight(0xffffff, 0.58);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.44));
+        var key = new THREE.DirectionalLight(0xffffff, 0.82);
         key.position.set(0.5, 0.9, 0.8);
         scene.add(key);
-        var rim = new THREE.DirectionalLight(0x93c5fd, 0.26);
+        var rim = new THREE.DirectionalLight(0xbfdbfe, 0.60);
         rim.position.set(-0.6, 0.3, -0.5);
         scene.add(rim);
+        var back = new THREE.DirectionalLight(0x7dd3fc, 0.30);
+        back.position.set(0.15, -0.2, -1);
+        scene.add(back);
       },
       debug: function (S) {
         return {
@@ -1057,7 +1295,7 @@ function titrAnimCanvasRef(cvEl) {
               c2.fillStyle = 'rgba(0,0,0,0.85)';
               c2.fillRect(8, H - 18, W - 16, 16);
               c2.font = 'bold 9px sans-serif'; c2.fillStyle = '#fde047'; c2.textAlign = 'center';
-              c2.fillText('pH = ' + pH.toFixed(1) + '  \u00B7  At equivalence point: moles acid = moles base, pH jumps from 4 \u2192 10', W / 2, H - 7);
+              c2.fillText('pH = ' + pH.toFixed(1) + '  \u00B7  At equivalence: balanced stoichiometric ratio; endpoint colour is only an indicator signal', W / 2, H - 7);
               scheduleTitrationFrame();
             }
             drawTt();
@@ -1199,35 +1437,35 @@ var chemHazards = {
   'HCl': { name: __alloT('stem.titration.hydrochloric_acid', 'Hydrochloric Acid'), ghs: ['\u2620\uFE0F GHS05 Corrosive', '\u26A0\uFE0F GHS07 Irritant'], signal: 'Danger', color: '#ef4444',
     hazards: ['H290: May be corrosive to metals', 'H314: Causes severe skin burns and eye damage', 'H335: May cause respiratory irritation'],
     firstAid: 'Skin: Remove clothing, wash 15+ min. Eyes: Rinse 15+ min, seek medical attention. Inhalation: Move to fresh air.',
-    disposal: 'Neutralize with sodium bicarbonate, dilute, pour down drain with excess water.' },
+    disposal: 'Follow the instructor\'s SDS and local waste plan. Do not pour laboratory chemicals down a drain or attempt neutralization unless trained personnel and the approved plan explicitly require it.' },
   'NaOH': { name: __alloT('stem.titration.sodium_hydroxide', 'Sodium Hydroxide'), ghs: ['\u2620\uFE0F GHS05 Corrosive'], signal: 'Danger', color: '#3b82f6',
     hazards: ['H290: May be corrosive to metals', 'H314: Causes severe skin burns and eye damage'],
     firstAid: 'Skin: Remove clothing, wash 15+ min. Eyes: Rinse 15+ min, remove contacts. Ingestion: Rinse mouth, do NOT induce vomiting.',
-    disposal: 'Neutralize with dilute acid, dilute, pour down drain with excess water.' },
+    disposal: 'Follow the instructor\'s SDS and local waste plan. Do not pour laboratory chemicals down a drain or attempt neutralization unless trained personnel and the approved plan explicitly require it.' },
   'CH\u2083COOH': { name: __alloT('stem.titration.acetic_acid', 'Acetic Acid'), ghs: ['\uD83D\uDD25 GHS02 Flammable', '\u26A0\uFE0F GHS07 Irritant'], signal: 'Warning', color: '#f59e0b',
     hazards: ['H226: Flammable liquid and vapor', 'H302: Harmful if swallowed', 'H312: Harmful in contact with skin', 'H332: Harmful if inhaled'],
     firstAid: 'Skin: Wash with soap and water. Eyes: Rinse 15+ min. Inhalation: Move to fresh air. Keep away from ignition sources.',
-    disposal: 'Dilute with water, neutralize, pour down drain.' },
+    disposal: 'Follow the instructor\'s SDS and local waste plan. Do not pour laboratory chemicals down a drain or attempt neutralization unless trained personnel and the approved plan explicitly require it.' },
   'NH\u2083': { name: __alloT('stem.titration.ammonia', 'Ammonia'), ghs: ['\u2620\uFE0F GHS05 Corrosive', '\u2623\uFE0F GHS06 Toxic', '\uD83C\uDF0D GHS09 Environment'], signal: 'Danger', color: '#a855f7',
     hazards: ['H221: Flammable gas', 'H314: Causes severe skin burns and eye damage', 'H331: Toxic if inhaled', 'H400: Very toxic to aquatic life'],
     firstAid: 'Inhalation: Move to fresh air IMMEDIATELY. Skin: Flush with water 15+ min. Eyes: Rinse 15+ min. Call Poison Control.',
-    disposal: 'Neutralize with dilute acid in fume hood. Never mix with bleach!' },
+    disposal: 'Follow the instructor\'s SDS and local waste plan. Keep ammonia waste separate from bleach and other incompatible chemicals; do not attempt neutralization or drain disposal.' },
   'H\u2083PO\u2084': { name: __alloT('stem.titration.phosphoric_acid', 'Phosphoric Acid'), ghs: ['\u2620\uFE0F GHS05 Corrosive'], signal: 'Danger', color: '#06b6d4',
     hazards: ['H290: May be corrosive to metals', 'H314: Causes severe skin burns and eye damage'],
     firstAid: 'Skin: Flush with water 15+ min. Eyes: Rinse 15+ min, remove contacts. Ingestion: Rinse mouth, do NOT induce vomiting.',
-    disposal: 'Neutralize with sodium bicarbonate, dilute, pour down drain with excess water.' },
+    disposal: 'Follow the instructor\'s SDS and local waste plan. Do not pour laboratory chemicals down a drain or attempt neutralization unless trained personnel and the approved plan explicitly require it.' },
   'KMnO\u2084': { name: __alloT('stem.titration.potassium_permanganate', 'Potassium Permanganate'), ghs: ['\uD83D\uDD25 GHS03 Oxidizer', '\u2620\uFE0F GHS05 Corrosive', '\u2623\uFE0F GHS06 Toxic', '\uD83C\uDF0D GHS09 Environment'], signal: 'Danger', color: '#c026d3',
     hazards: ['H272: May intensify fire; oxidizer', 'H302: Harmful if swallowed', 'H314: Causes severe skin burns', 'H410: Very toxic to aquatic life'],
-    firstAid: 'Skin: Stains brown \u2014 wash with dilute H\u2082SO\u2083 then water. Eyes: Rinse 15+ min. NEVER use with flammable organics!',
-    disposal: 'Reduce with sodium bisulfite, then neutralize. Do NOT pour down drain \u2014 heavy metal waste.' },
+    firstAid: 'Skin: Rinse with plenty of water; the brown MnO\u2082 stain is harmless and fades on its own \u2014 never treat skin with another chemical to remove it. Eyes: Rinse 15+ min. NEVER use with flammable organics!',
+    disposal: 'Collect as oxidizer/heavy-metal waste under the instructor\'s SDS and local waste plan. Do not reduce, neutralize, or pour down a drain unless trained personnel and the approved plan explicitly require it.' },
   'FeSO\u2084': { name: __alloT('stem.titration.ferrous_sulfate', 'Ferrous Sulfate'), ghs: ['\u26A0\uFE0F GHS07 Irritant'], signal: 'Warning', color: '#65a30d',
     hazards: ['H302: Harmful if swallowed', 'H315: Causes skin irritation', 'H319: Causes serious eye irritation'],
     firstAid: 'Skin: Wash with soap and water. Eyes: Rinse 10+ min. Ingestion: Rinse mouth.',
-    disposal: 'Dissolve in water, precipitate as Fe(OH)\u2083 with NaOH, filter, dispose of solid as chemical waste.' },
+    disposal: 'Collect and label as chemical waste under the instructor\'s SDS and local waste plan. Do not precipitate, neutralize, or pour down a drain unless trained personnel and the approved plan explicitly require it.' },
   'Antacid': { name: __alloT('stem.titration.antacid_tablet_caco_mg_oh', 'Antacid Tablet (CaCO\u2083/Mg(OH)\u2082)'), ghs: ['\u26A0\uFE0F GHS07 Irritant'], signal: 'Warning', color: '#f472b6',
     hazards: ['H319: Causes eye irritation in powder form', 'Generally safe but excess may cause alkalosis'],
     firstAid: 'Eyes: Rinse with water. Low toxicity but handle dissolved solution with normal lab precautions.',
-    disposal: 'Neutralized solution is safe for drain disposal with excess water.' }
+    disposal: 'Follow the instructor\'s SDS and local waste plan. Even low-hazard solutions should not enter a drain unless the approved procedure explicitly allows it.' }
 };
 
 var presetHazardKeys = {
@@ -1268,7 +1506,7 @@ var safetyTips = {
 var incidentScenarios = [
   { id: 'acid_splash', title: __alloT('stem.titration.acid_splash_on_skin', 'Acid Splash on Skin!'), icon: '\uD83D\uDCA6', desc: __alloT('stem.titration.while_pouring_hcl_some_splashes_on_you', 'While pouring HCl, some splashes on your forearm.'), urgency: 'high',
     correct: 'rinse', options: [
-      { id: 'rinse', label: __alloT('stem.titration.remove_clothing_rinse_under_running_wa', 'Remove clothing, rinse under running water for 15+ minutes'), icon: '\uD83D\uDEB0', correct: true, feedback: __alloT('stem.titration.correct_immediate_and_prolonged_rinsin', 'Correct! Immediate and prolonged rinsing is critical. The 15-minute rule saves tissue damage.') },
+      { id: 'rinse', label: __alloT('stem.titration.remove_clothing_rinse_under_running_wa', 'Immediately rinse under running water for at least 15 minutes and alert the teacher'), icon: '\uD83D\uDEB0', correct: true, feedback: __alloT('stem.titration.correct_immediate_and_prolonged_rinsin', 'Correct! Immediate and prolonged rinsing for at least 15 minutes is critical. Alert the teacher, follow the local emergency plan, and do not try to neutralize a chemical on the body.') },
       { id: 'wipe', label: __alloT('stem.titration.wipe_it_off_with_a_paper_towel', 'Wipe it off with a paper towel'), icon: '\uD83E\uDDF4', correct: false, feedback: __alloT('stem.titration.wrong_wiping_can_spread_the_acid_and_p', 'WRONG! Wiping can spread the acid and push it into your skin. You need running water immediately.') },
       { id: 'neutralize', label: __alloT('stem.titration.apply_baking_soda_paste_directly_to_sk', 'Apply baking soda paste directly to skin'), icon: '\uD83E\uDDEA', correct: false, feedback: __alloT('stem.titration.not_recommended_the_neutralization_rea', 'Not recommended! The neutralization reaction generates heat (exothermic) which can cause additional burns. Water is always the first response.') },
       { id: 'ignore', label: __alloT('stem.titration.it_s_dilute_just_keep_working', 'It\'s dilute, just keep working'), icon: '\uD83E\uDD37', correct: false, feedback: __alloT('stem.titration.dangerous_even_dilute_acids_can_cause_', 'DANGEROUS! Even dilute acids can cause burns over time. Always treat chemical contact immediately.') }
@@ -1276,7 +1514,7 @@ var incidentScenarios = [
   },
   { id: 'eye_contact', title: __alloT('stem.titration.chemical_splash_in_eyes', 'Chemical Splash in Eyes!'), icon: '\uD83D\uDC41\uFE0F', desc: __alloT('stem.titration.naoh_solution_splashes_into_your_eyes_', 'NaOH solution splashes into your eyes while swirling the flask.'), urgency: 'critical',
     correct: 'eyewash', options: [
-      { id: 'eyewash', label: __alloT('stem.titration.go_to_eyewash_station_immediately_rins', 'Go to eyewash station immediately, rinse 15+ min, hold eyelids open'), icon: '\uD83D\uDEBF', correct: true, feedback: __alloT('stem.titration.correct_speed_is_everything_you_have_a', 'Correct! Speed is everything \u2014 you have about 10 seconds before serious damage starts. Hold eyelids open and tilt head to prevent cross-contamination to the other eye.') },
+      { id: 'eyewash', label: __alloT('stem.titration.go_to_eyewash_station_immediately_rins', 'Use the eyewash immediately, flush for at least 15 minutes, hold eyelids open, and alert the teacher'), icon: '\uD83D\uDEBF', correct: true, feedback: __alloT('stem.titration.correct_speed_is_everything_you_have_a', 'Correct! Speed is everything \u2014 you have about 10 seconds before serious damage starts. Hold eyelids open and tilt head to prevent cross-contamination to the other eye.') },
       { id: 'rub', label: __alloT('stem.titration.rub_your_eyes_and_blink_rapidly', 'Rub your eyes and blink rapidly'), icon: '\uD83D\uDE23', correct: false, feedback: __alloT('stem.titration.never_rub_this_spreads_the_chemical_ac', 'NEVER rub! This spreads the chemical across more of the eye surface and can scratch the cornea.') },
       { id: 'drops', label: __alloT('stem.titration.use_eye_drops_from_the_first_aid_kit', 'Use eye drops from the first aid kit'), icon: '\uD83D\uDC8A', correct: false, feedback: __alloT('stem.titration.eye_drops_are_insufficient_you_need_hi', 'Eye drops are insufficient! You need high-volume flushing for 15+ minutes. Eye drops cannot provide that.') },
       { id: 'wait', label: __alloT('stem.titration.finish_the_experiment_first_then_wash', 'Finish the experiment first, then wash'), icon: '\u23F0', correct: false, feedback: __alloT('stem.titration.extremely_dangerous_naoh_causes_alkali', 'EXTREMELY DANGEROUS! NaOH causes alkali burns that penetrate deeper over time. Every second counts. Chemical eye injuries are the #1 cause of lab blindness.') }
@@ -1284,23 +1522,23 @@ var incidentScenarios = [
   },
   { id: 'spill_bench', title: __alloT('stem.titration.large_acid_spill_on_bench', 'Large Acid Spill on Bench!'), icon: '\uD83E\uDDEA', desc: __alloT('stem.titration.you_knock_over_the_beaker_of_0_1m_hcl_', 'You knock over the beaker of 0.1M HCl, spilling ~200 mL across the bench.'), urgency: 'medium',
     correct: 'contain', options: [
-      { id: 'contain', label: __alloT('stem.titration.alert_others_contain_with_absorbent_ne', 'Alert others, contain with absorbent, neutralize with NaHCO\u2083, clean with water'), icon: '\u2705', correct: true, feedback: __alloT('stem.titration.perfect_procedure_1_alert_nearby_stude', 'Perfect procedure! (1) Alert nearby students, (2) contain the spread with absorbent pads, (3) sprinkle sodium bicarbonate to neutralize, (4) clean with water, (5) dispose of waste properly.') },
-      { id: 'water', label: __alloT('stem.titration.just_flood_it_with_lots_of_water', 'Just flood it with lots of water'), icon: '\uD83D\uDCA7', correct: false, feedback: __alloT('stem.titration.partially_right_but_incomplete_floodin', 'Partially right but incomplete. Flooding spreads the acid further and doesn\'t neutralize it. Always contain first, then neutralize, then rinse.') },
-      { id: 'leave', label: __alloT('stem.titration.tell_the_teacher_and_don_t_touch_it', 'Tell the teacher and don\'t touch it'), icon: '\uD83D\uDDE3\uFE0F', correct: false, feedback: __alloT('stem.titration.telling_the_teacher_is_good_but_at_0_1', 'Telling the teacher is good, but at 0.1M this is manageable. You should start containment immediately while someone alerts the instructor. Don\'t let it reach the edge of the bench.') },
+      { id: 'contain', label: __alloT('stem.titration.alert_others_contain_with_absorbent_ne', 'Alert the teacher, keep others away, and follow the approved spill-response plan'), icon: '\u2705', correct: true, feedback: __alloT('stem.titration.perfect_procedure_1_alert_nearby_stude', 'Correct first response: alert the teacher, isolate the area, consult the SDS/local plan, and let trained personnel choose any compatible spill kit or cleanup method. Students should not neutralize or clean an unknown spill.') },
+      { id: 'water', label: __alloT('stem.titration.just_flood_it_with_lots_of_water', 'Just flood it with lots of water'), icon: '\uD83D\uDCA7', correct: false, feedback: __alloT('stem.titration.partially_right_but_incomplete_floodin', 'Do not flood the spill. Alert the teacher, keep others away, and follow the approved spill-response plan.') },
+      { id: 'leave', label: __alloT('stem.titration.tell_the_teacher_and_don_t_touch_it', 'Ask whether the experiment can continue after the teacher assesses the spill'), icon: '\uD83D\uDDE3\uFE0F', correct: false, feedback: __alloT('stem.titration.telling_the_teacher_is_good_but_at_0_1', 'The teacher must assess the chemical, concentration, and amount before deciding whether the experiment can continue. Alert the teacher and keep people away.') },
       { id: 'paper', label: __alloT('stem.titration.soak_it_up_with_paper_towels', 'Soak it up with paper towels'), icon: '\uD83E\uDDF4', correct: false, feedback: __alloT('stem.titration.paper_towels_are_not_appropriate_for_a', 'Paper towels are not appropriate for acid spills! They don\'t neutralize the acid and you\'ll be handling acid-soaked material. Use proper spill kits.') }
     ]
   },
   { id: 'gas_release', title: __alloT('stem.titration.mysterious_fumes_rising', 'Mysterious Fumes Rising!'), icon: '\uD83C\uDF2B\uFE0F', desc: __alloT('stem.titration.while_working_with_ammonia_nh_you_noti', 'While working with ammonia (NH\u2083), you notice a strong smell and your eyes start watering.'), urgency: 'high',
-    correct: 'fume_hood', options: [
-      { id: 'fume_hood', label: __alloT('stem.titration.move_the_experiment_to_the_fume_hood_i', 'Move the experiment to the fume hood immediately, ventilate the area'), icon: '\uD83C\uDF2C\uFE0F', correct: true, feedback: __alloT('stem.titration.correct_volatile_chemicals_like_nh_mus', 'Correct! Volatile chemicals like NH\u2083 must be handled in a fume hood. If you smell it, you\'re breathing it. Open windows and move to fresh air if the fume hood is far away.') },
+    correct: 'evacuate', options: [
+      { id: 'evacuate', label: __alloT('stem.titration.move_the_experiment_to_the_fume_hood_i', 'Move away, warn others, alert the teacher, and follow evacuation instructions'), icon: '\uD83C\uDF2C\uFE0F', correct: true, feedback: __alloT('stem.titration.correct_volatile_chemicals_like_nh_mus', 'Correct first response: move away, warn others, alert the teacher, and follow evacuation instructions. Do not move an actively fuming reaction; the teacher or emergency responder decides whether to shut down, ventilate, or evacuate.') },
       { id: 'mask', label: __alloT('stem.titration.put_on_a_face_mask_and_continue', 'Put on a face mask and continue'), icon: '\uD83D\uDE37', correct: false, feedback: __alloT('stem.titration.a_regular_face_mask_does_not_protect_a', 'A regular face mask does NOT protect against chemical fumes! You need proper respiratory protection (not available in most teaching labs) or a fume hood.') },
-      { id: 'fan', label: __alloT('stem.titration.fan_the_fumes_away_with_your_hand', 'Fan the fumes away with your hand'), icon: '\uD83D\uDC4B', correct: false, feedback: __alloT('stem.titration.fanning_is_for_wafting_to_detect_odors', 'Fanning is for WAFTING to detect odors (gently directing air toward your nose). It does NOT remove hazardous fumes from the area. You need ventilation!') },
+      { id: 'fan', label: __alloT('stem.titration.fan_the_fumes_away_with_your_hand', 'Fan the fumes away with your hand'), icon: '\uD83D\uDC4B', correct: false, feedback: __alloT('stem.titration.fanning_is_for_wafting_to_detect_odors', 'Do not fan, sniff, or waft an irritating vapor. Move away, warn others, alert the teacher, and follow the local emergency plan.') },
       { id: 'continue', label: __alloT('stem.titration.it_s_just_a_little_smell_keep_going', 'It\'s just a little smell, keep going'), icon: '\uD83E\uDD37', correct: false, feedback: __alloT('stem.titration.dangerous_if_you_can_smell_nh_the_conc', 'DANGEROUS! If you can smell NH\u2083, the concentration may exceed safe limits (25 ppm). Prolonged exposure causes chemical burns to airways. NH\u2083 at >300 ppm can be fatal.') }
     ]
   },
   { id: 'mix_bleach', title: __alloT('stem.titration.someone_brought_bleach', 'Someone Brought Bleach!'), icon: '\u2623\uFE0F', desc: __alloT('stem.titration.a_classmate_suggests_cleaning_the_benc', 'A classmate suggests cleaning the bench with bleach while you still have ammonia solution open.'), urgency: 'critical',
     correct: 'stop', options: [
-      { id: 'stop', label: __alloT('stem.titration.stop_them_immediately_bleach_ammonia_t', 'STOP them immediately! Bleach + ammonia = toxic chloramine gas'), icon: '\uD83D\uDED1', correct: true, feedback: __alloT('stem.titration.life_saving_action_naocl_2nh_2nh_cl_ch', 'LIFE-SAVING action! NaOCl + 2NH\u2083 \u2192 2NH\u2082Cl (chloramine) \u2014 a toxic gas that causes severe respiratory damage. This is one of the most dangerous accidental mixings in a lab. Always neutralize and remove all chemicals before using any cleaning agents.') },
+      { id: 'stop', label: __alloT('stem.titration.stop_them_immediately_bleach_ammonia_t', 'STOP them immediately! Bleach + ammonia = toxic chloramine gas'), icon: '\uD83D\uDED1', correct: true, feedback: __alloT('stem.titration.life_saving_action_naocl_2nh_2nh_cl_ch', 'Correct: stop the mixing, move away to fresh air, warn others, and alert the teacher. Do not add chemicals or attempt neutralization; responders decide how to isolate and ventilate the area.') },
       { id: 'ok', label: __alloT('stem.titration.sure_bleach_is_a_disinfectant_it_shoul', 'Sure, bleach is a disinfectant, it should be fine'), icon: '\uD83D\uDC4D', correct: false, feedback: __alloT('stem.titration.extremely_dangerous_mixing_bleach_naoc', 'EXTREMELY DANGEROUS! Mixing bleach (NaOCl) with ammonia produces toxic chloramine gas. This has caused deaths in laboratories and homes. NEVER mix bleach with any other chemical.') },
       { id: 'dilute', label: __alloT('stem.titration.it_should_be_fine_if_the_ammonia_is_di', 'It should be fine if the ammonia is diluted'), icon: '\uD83E\uDDEA', correct: false, feedback: __alloT('stem.titration.wrong_even_dilute_ammonia_reacts_with_', 'WRONG! Even dilute ammonia reacts with bleach to produce toxic chloramine gas. The reaction occurs at ANY concentration. There is no safe dilution for mixing these chemicals.') },
       { id: 'outside', label: __alloT('stem.titration.just_open_a_window_and_it_will_be_fine', 'Just open a window and it will be fine'), icon: '\uD83C\uDF2C\uFE0F', correct: false, feedback: __alloT('stem.titration.ventilation_does_not_make_it_safe_to_g', 'Ventilation does NOT make it safe to generate toxic gas! Chloramine causes immediate respiratory distress. Prevention is the only acceptable approach.') }
@@ -1338,7 +1576,7 @@ var challengeQuestions = [
     feedback: __alloT('stem.titration.all_three_are_mandatory_goggles_protec', 'All three are mandatory: goggles protect eyes from splashes, gloves protect hands from corrosives, and the lab coat protects clothing and skin.') },
   { q: 'You spill acid on your skin. What is your FIRST action?', opts: ['Apply baking soda', 'Rinse with running water for 15+ min', 'Wipe with a dry cloth', 'Apply burn cream'], answer: __alloT('stem.titration.rinse_with_running_water_for_15_min', 'Rinse with running water for 15+ min'), xp: 15, category: 'safety',
     feedback: __alloT('stem.titration.water_first_always_the_15_minute_rinse', 'Water first, always! The 15-minute rinse is critical. Neutralizers can cause exothermic reactions on skin.') },
-  { q: 'What is the equivalence point?', opts: ['Where the indicator changes color', 'Where moles of acid = moles of base', 'Where pH = 7', 'Where you stop adding titrant'], answer: __alloT('stem.titration.where_moles_of_acid_moles_of_base', 'Where moles of acid = moles of base'), xp: 10, category: 'theory',
+  { q: 'What is the equivalence point?', opts: ['Where the indicator changes color', 'Where titrant and analyte have been mixed in the stoichiometric ratio from the balanced reaction', 'Where pH = 7', 'Where you stop adding titrant'], answer: __alloT('stem.titration.where_moles_of_acid_moles_of_base', 'Where titrant and analyte have been mixed in the stoichiometric ratio from the balanced reaction'), xp: 10, category: 'theory',
     feedback: __alloT('stem.titration.the_equivalence_point_is_the_stoichiom', 'The equivalence point is the stoichiometric point. The pH at equivalence depends on acid/base strength \u2014 it\'s only pH 7 for strong acid + strong base.') },
   { q: 'Why do we add acid TO water, never water to acid?', opts: ['It\'s just tradition', 'Water is denser than acid', 'The exothermic reaction can cause violent boiling and splashing', 'It doesn\'t matter with dilute solutions'], answer: __alloT('stem.titration.the_exothermic_reaction_can_cause_viol', 'The exothermic reaction can cause violent boiling and splashing'), xp: 15, category: 'safety',
     feedback: __alloT('stem.titration.when_water_hits_concentrated_acid_the_', 'When water hits concentrated acid, the heat released can boil the water instantly, causing a violent splash of hot acid. Adding acid to water spreads the heat through a larger water volume.') },
@@ -1914,9 +2152,26 @@ var zoneH = zoneY2 - zoneY1;
 
 var buretteH = 260, buretteW = 36;
 
-var liquidPct = Math.max(0, (maxVol - volumeAdded) / maxVol);
+// Where the meniscus sits, in pixels from the top of the barrel: the SAME mapping the
+// scale markings use (yPos = ml / maxVol * buretteH), so the line lands exactly on the
+// graduation it is meant to read.
+var meniscusTop = Math.round(Math.min(maxVol, Math.max(0, volumeAdded)) / maxVol * buretteH);
+// Titrant left in the barrel: everything BELOW the meniscus, down to the stopcock.
+var liquidH = buretteH - meniscusTop;
 
-var liquidH = Math.round(liquidPct * buretteH);
+// Flask level. The drawn cone runs from y = 25 (neck, full) to y = 72 (base, empty) in
+// the flask SVG below. What is IN the flask is the aliquot plus everything delivered so
+// far, so the surface has to climb as the burette drains — it used to be pinned at the
+// neck, which showed 50 mL of titrant going into a flask that never gained a drop.
+var FLASK_Y_FULL = 25, FLASK_Y_EMPTY = 72;
+var flaskFillFrac = Math.max(0, Math.min(1,
+  (preset.volAcid + Math.min(maxVol, Math.max(0, volumeAdded))) / (preset.volAcid + maxVol)));
+var flaskSurfaceY = FLASK_Y_EMPTY - flaskFillFrac * (FLASK_Y_EMPTY - FLASK_Y_FULL);
+// Half-widths of the INNER wall at the surface, interpolated down the cone, so the
+// liquid always meets the glass instead of floating inside it.
+var _flaskT = (flaskSurfaceY - FLASK_Y_FULL) / (FLASK_Y_EMPTY - FLASK_Y_FULL);
+var flaskSurfaceL = (buretteW / 2 + 10) + (4 - (buretteW / 2 + 10)) * _flaskT;
+var flaskSurfaceR = (buretteW / 2 + 14) + ((buretteW + 32) - (buretteW / 2 + 14)) * _flaskT;
 
 
 
@@ -2802,7 +3057,7 @@ if (!safetyChecked) {
   );
 }
 
-// ── Keyboard shortcuts (WCAG 2.1.1): 1-5 switch tabs, E explain, Esc back ──
+// ── Keyboard shortcuts (WCAG 2.1.1): 1-6 switch tabs, E explain, Esc back ──
 var _TITR_TABS = ['titrate', 'challenge', 'incidents', 'equipment', 'molarity', 'buffers'];
 var _TITR_TAB_LABELS = { titrate: 'Titrate', challenge: 'Challenge', incidents: 'Safety Drills', equipment: 'Equipment', molarity: 'Dilution Calc', buffers: 'Buffers' };
 function onTitrKey(e) {
@@ -2839,7 +3094,7 @@ return React.createElement("div", {
   className: "space-y-4 max-w-5xl mx-auto",
   style: { animation:'safetyFadeUp 0.4s ease' },
   role: "region",
-  "aria-label": __alloT('stem.titration.titration_lab_keyboard_shortcuts_1_thr', "Titration Lab. Keyboard shortcuts: 1 through 5 switch tabs."),
+  "aria-label": __alloT('stem.titration.titration_lab_keyboard_shortcuts_1_thr', "Titration Lab. Keyboard shortcuts: 1 through 6 switch tabs."),
   tabIndex: 0,
   onKeyDown: onTitrKey
 },
@@ -2967,8 +3222,11 @@ return React.createElement("div", {
 
   ),
 
-  // ── Tab Navigation ──
-  React.createElement("section", { "data-titration-command": true, className: "relative overflow-hidden rounded-2xl border border-cyan-500/30 bg-gradient-to-br from-cyan-950/70 via-slate-900 to-indigo-950/60 p-4 sm:p-5", "aria-labelledby": "titration-command-title" },
+  // ── Experiment command (Titrate only) ──
+  // Everything in here is the Titrate experiment's live state. See the note in pass 11:
+  // on Challenge it contradicted the graded mode's "no pH readout" rule, and on the
+  // other tabs it was stale. The per-tab hero band below carries the correct heading.
+  labTab === 'titrate' && React.createElement("section", { "data-titration-command": true, className: "relative overflow-hidden rounded-2xl border border-cyan-500/30 bg-gradient-to-br from-cyan-950/70 via-slate-900 to-indigo-950/60 p-4 sm:p-5", "aria-labelledby": "titration-command-title" },
     React.createElement("div", { className: "absolute -right-5 -top-8 text-8xl opacity-[0.06]", "aria-hidden": true }, "🧪"),
     React.createElement("div", { className: "relative grid gap-4 lg:grid-cols-[1.1fr_.9fr]" },
       React.createElement("div", null,
@@ -2976,8 +3234,17 @@ return React.createElement("div", {
         React.createElement("h2", { id: "titration-command-title", className: "mt-2 text-xl sm:text-2xl font-black text-white" }, volumeAdded === 0 ? "Prepare a controlled first addition" : pastEquivalence ? "Endpoint passed — evaluate error" : Math.abs(volumeAdded - Veq) <= 2 ? "Approach equivalence drop by drop" : "Build the titration curve"),
         React.createElement("p", { className: "mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed" }, volumeAdded === 0 ? (isPotentiometric ? "Confirm the preset, then add titrant while watching both the colour and the electrode potential." : "Confirm the preset and indicator, then add titrant while watching both color and pH.") : pastEquivalence ? "Compare the observed endpoint with the stoichiometric equivalence volume before resetting." : Math.abs(volumeAdded - Veq) <= 2 ? "The curve is steep here. Use the smallest additions and swirl after every drop." : "Add measured volumes, observe the response, and predict where the sharp change will occur."),
         React.createElement("div", { className: "mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4", "aria-label": "Live titration metrics" },
-          [[volumeAdded.toFixed(1) + ' mL', 'Titrant'], [yAxis.readout(currentY) + yAxis.unit, isPotentiometric ? 'Cell potential' : 'Current pH'], [Veq.toFixed(1) + ' mL', 'Equivalence'], [indicatorStatus, isPotentiometric ? 'MnO₄⁻ colour' : 'Indicator']].map(function(metric) {
-            return React.createElement("div", { key: metric[1], className: "rounded-xl border border-white/10 bg-white/5 p-3" }, React.createElement("div", { className: "text-base font-black text-white truncate" }, metric[0]), React.createElement("div", { className: "mt-1 text-[10px] font-bold text-slate-400" }, metric[1]));
+          [[volumeAdded.toFixed(1) + ' mL', 'Titrant'], [yAxis.readout(currentY) + yAxis.unit, isPotentiometric ? 'Cell potential' : 'Current pH'], [Veq.toFixed(1) + ' mL', 'Equivalence'], [indicatorStatus, isPotentiometric ? 'MnO₄⁻ colour' : 'Indicator', true]].map(function(metric) {
+            // metric[2] marks a value that is a PHRASE rather than a number. Numbers are
+            // short and truncating them is safe; "Before endpoint" is not, and it clipped
+            // to "Before e..." in the tool's opening state.
+            var wordy = !!metric[2];
+            return React.createElement("div", { key: metric[1], className: "rounded-xl border border-white/10 bg-white/5 p-3" },
+              React.createElement("div", {
+                className: "font-black text-white leading-tight " +
+                  (wordy ? "text-sm break-words" : "text-base truncate")
+              }, metric[0]),
+              React.createElement("div", { className: "mt-1 text-[10px] font-bold text-slate-400" }, metric[1]));
           })
         )
       ),
@@ -3006,7 +3273,7 @@ return React.createElement("div", {
       { id: 'buffers', label: __alloT('stem.titration.buffers', '\uD83D\uDEE1\uFE0F Buffers'), color: '#0891b2' }
     ].map(function(tab) {
       var active = labTab === tab.id;
-      return React.createElement("button", { "aria-label": "Switch to " + tab.label + " tab",
+      return React.createElement("button", { type: "button", "aria-label": "Switch to " + tab.label + " tab",
         key: tab.id,
         id: 'titration-tab-' + tab.id,
         role: "tab",
@@ -3015,7 +3282,7 @@ return React.createElement("div", {
         tabIndex: active ? 0 : -1,
         onKeyDown: function(e) { onTitrTabKey(e, _TITR_TABS.indexOf(tab.id)); },
         onClick: function() { upd('labTab', tab.id); },
-        className: "px-3 py-1.5 rounded-full text-[11px] font-bold transition-all " +
+        className: "min-h-[44px] px-3 py-2 rounded-full text-xs font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 " +
           (active ? "shadow-lg scale-105" : "transition-colors text-slate-200 hover:text-white bg-slate-800/50 hover:bg-slate-700/60 border border-slate-700 active:scale-[0.97]"),
         style: active ? { background: tab.color, color: titrOnColor(tab.color), boxShadow: '0 0 12px ' + tab.color + '40' } : {}
       }, tab.label);
@@ -3286,17 +3553,18 @@ return React.createElement("div", {
             border: '2px solid rgba(148,163,184,0.4)', borderRadius: '4px 4px 2px 2px',
             background: 'rgba(15,23,42,0.5)', overflow: 'hidden' }
         },
-          // Liquid fill (from top down)
+          // Titrant remaining, hanging BELOW the meniscus — see meniscusTop.
           React.createElement("div", {
-            style: { position: 'absolute', top: '0px', left: '0px', right: '0px', height: liquidH + 'px',
-              background: 'linear-gradient(180deg, rgba(56,189,248,0.6) 0%, rgba(56,189,248,0.3) 100%)',
-              borderBottom: '2px solid rgba(56,189,248,0.5)', transition: 'height 0.3s ease' }
+            style: { position: 'absolute', top: meniscusTop + 'px', left: '0px', right: '0px',
+              height: liquidH + 'px',
+              background: 'linear-gradient(180deg, rgba(56,189,248,0.55) 0%, rgba(56,189,248,0.28) 100%)',
+              transition: 'top 0.3s ease, height 0.3s ease' }
           }),
-          // Meniscus line
+          // Meniscus: the concave surface of what is left, on the mark it reads.
           React.createElement("div", {
-            style: { position: 'absolute', top: liquidH + 'px', left: '2px', right: '2px', height: '3px',
-              background: 'rgba(56,189,248,0.8)', borderRadius: '0 0 50% 50%', transition: 'top 0.3s ease',
-              boxShadow: '0 0 4px rgba(56,189,248,0.6)' }
+            style: { position: 'absolute', top: meniscusTop + 'px', left: '2px', right: '2px', height: '4px',
+              background: 'rgba(56,189,248,0.85)', borderRadius: '50% 50% 0 0 / 100% 100% 0 0',
+              transition: 'top 0.3s ease', boxShadow: '0 0 5px rgba(56,189,248,0.55)' }
           }),
           // Glass shine
           React.createElement("div", {
@@ -3363,14 +3631,39 @@ return React.createElement("div", {
             )
           ),
           React.createElement("path", {
-            d: 'M' + (buretteW / 2 + 14) + ' 25 L' + (buretteW + 32) + ' 72 L' + (buretteW + 32) + ' 78 Q' + (buretteW + 32) + ' 80 ' + (buretteW + 28) + ' 80 L8 80 Q4 80 4 78 L4 72 L' + (buretteW / 2 + 10) + ' 25 Z',
-            fill: 'url(#flaskLiquid)', style: { transition: 'fill 0.5s ease' }
+            d: 'M' + flaskSurfaceR.toFixed(1) + ' ' + flaskSurfaceY.toFixed(1) +
+               ' L' + (buretteW + 32) + ' 72 L' + (buretteW + 32) + ' 78 Q' + (buretteW + 32) + ' 80 ' + (buretteW + 28) + ' 80' +
+               ' L8 80 Q4 80 4 78 L4 72 L' + flaskSurfaceL.toFixed(1) + ' ' + flaskSurfaceY.toFixed(1) + ' Z',
+            fill: 'url(#flaskLiquid)', style: { transition: 'fill 0.5s ease, d 0.4s ease' }
+          }),
+
+          // The surface. This is what makes a COLOURLESS solution read as liquid at all:
+          // the tint alone is ~0.2 alpha on a near-black panel and disappears, but every
+          // real liquid shows its surface, so drawing one claims nothing about colour.
+          React.createElement("line", {
+            x1: flaskSurfaceL.toFixed(1), y1: flaskSurfaceY.toFixed(1),
+            x2: flaskSurfaceR.toFixed(1), y2: flaskSurfaceY.toFixed(1),
+            stroke: currentColor, strokeWidth: '2.5', strokeLinecap: 'round',
+            style: { transition: 'stroke 0.5s ease' }, opacity: 0.95
+          }),
+          React.createElement("line", {
+            x1: flaskSurfaceL.toFixed(1), y1: flaskSurfaceY.toFixed(1),
+            x2: flaskSurfaceR.toFixed(1), y2: flaskSurfaceY.toFixed(1),
+            stroke: 'rgba(255,255,255,0.45)', strokeWidth: '0.8', strokeLinecap: 'round'
           }),
 
           // Glass shine on flask
           React.createElement("path", {
             d: 'M' + (buretteW / 2 + 11) + ' 5 L' + (buretteW / 2 + 12) + ' 20 L8 72',
             fill: 'none', stroke: 'rgba(255,255,255,0.12)', strokeWidth: '1.5'
+          }),
+
+          // A pool at the base. The gradient fill fades out toward the bottom, which on a
+          // colourless solution left the widest part of the flask indistinguishable from
+          // the panel behind it.
+          React.createElement("path", {
+            d: 'M6 70 L' + (buretteW + 30) + ' 70 L' + (buretteW + 32) + ' 78 Q' + (buretteW + 32) + ' 80 ' + (buretteW + 28) + ' 80 L8 80 Q4 80 4 78 Z',
+            fill: currentColor, opacity: 0.55, style: { transition: 'fill 0.5s ease' }
           }),
 
           // Stir bar at bottom
@@ -3512,7 +3805,14 @@ return React.createElement("div", {
 
         // pH 7 label
 
-        yAxis.mode === 'pH' && React.createElement("text", { x: pad.left + chartW + 4, y: yScale(7) + 3, fill: '#4ade80', fontSize: '9', fontWeight: 'bold' }, __alloT('stem.titration.ph_7', 'pH 7')),
+        // Inside the plot and right-anchored: the 20px gutter cannot hold a 9px bold
+        // "pH 7", so left-anchoring it past the axis clipped the 7 off. Lifted clear of
+        // its own line; at the right-hand edge the curve is far above pH 7 in every
+        // preset, so nothing collides.
+        yAxis.mode === 'pH' && React.createElement("text", {
+          x: pad.left + chartW - 4, y: yScale(7) - 4, textAnchor: 'end',
+          fill: '#4ade80', fontSize: '9', fontWeight: 'bold'
+        }, __alloT('stem.titration.ph_7', 'pH 7')),
 
 
 
@@ -3670,6 +3970,10 @@ return React.createElement("div", {
           style: { textShadow: '0 0 4px rgba(15,23,42,0.9)' }
         }, '½ Vₑ → E=E°(Fe) (' + REDOX.E0_FE.toFixed(3) + ' V)')
 
+      ),
+
+      React.createElement("p", { id: "titration-curve-caption", className: "mt-2 text-xs text-slate-300 leading-relaxed" },
+        "Equivalence is the balanced stoichiometric ratio, not simply a colour change or a single pH value. The endpoint is the indicator signal used to estimate it."
       )
 
     )
@@ -3864,7 +4168,7 @@ return React.createElement("div", {
 
         React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed mb-1" },
 
-          React.createElement("span", { className: "font-bold text-cyan-400" }, __alloT('stem.titration.equivalence_point_2', "Equivalence Point")), __alloT('stem.titration.where_moles_of_acid_moles_of_base_the_', " \u2014 Where moles of acid = moles of base. The pH at this point depends on the acid/base strength.")
+          React.createElement("span", { className: "font-bold text-cyan-400" }, __alloT('stem.titration.equivalence_point_2', "Equivalence Point")), __alloT('stem.titration.where_moles_of_acid_moles_of_base_the_', " \u2014 Where titrant and analyte have been mixed in the stoichiometric ratio from the balanced reaction. The pH at this point depends on the acid/base strength.")
 
         ),
 
@@ -3895,7 +4199,7 @@ return React.createElement("div", {
         React.createElement("h5", { className: "text-xs font-bold text-red-400 mb-2" }, __alloT('stem.titration.lab_safety_best_practices', "\u26A0\uFE0F Lab Safety Best Practices")),
 
         React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed mb-1" },
-          React.createElement("span", { className: "font-bold text-red-400" }, __alloT('stem.titration.spill_response', "\uD83E\uDDEA Spill Response")), __alloT('stem.titration.acid_spill_neutralize_with_sodium_bica', " \u2014 Acid spill: neutralize with sodium bicarbonate, then rinse. Base spill: neutralize with dilute citric acid. Always alert others in the lab.")
+          React.createElement("span", { className: "font-bold text-red-400" }, __alloT('stem.titration.spill_response', "\uD83E\uDDEA Spill Response")), __alloT('stem.titration.acid_spill_neutralize_with_sodium_bica', " — Spill response: alert the teacher, keep others away, and follow the approved SDS/local spill plan. Students should not neutralize or clean unknown spills.")
         ),
         React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed mb-1" },
           React.createElement("span", { className: "font-bold text-amber-400" }, __alloT('stem.titration.never_mix', "\u274C Never Mix")), __alloT('stem.titration.never_mix_bleach_with_ammonia_toxic_ch', " \u2014 Never mix bleach with ammonia (toxic chloramine gas). Never add water to concentrated acid (exothermic splash risk \u2014 always add acid to water).")
@@ -3904,7 +4208,7 @@ return React.createElement("div", {
           React.createElement("span", { className: "font-bold text-cyan-400" }, __alloT('stem.titration.equipment_2', "\uD83E\uDDEA Equipment")), __alloT('stem.titration.rinse_the_burette_with_the_titrant_sol', " \u2014 Rinse the burette with the titrant solution before filling. Swirl the flask gently after each addition. Read the burette at the meniscus bottom.")
         ),
         React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed" },
-          React.createElement("span", { className: "font-bold text-emerald-400" }, __alloT('stem.titration.waste_disposal', "\u267B\uFE0F Waste Disposal")), __alloT('stem.titration.neutralized_acid_base_solutions_ph_6_8', " \u2014 Neutralized acid/base solutions (pH 6\u20138) can go down the drain with excess water. Check your institution's chemical waste policy for concentrated solutions.")
+          React.createElement("span", { className: "font-bold text-emerald-400" }, __alloT('stem.titration.waste_disposal', "\u267B\uFE0F Waste Disposal")), __alloT('stem.titration.neutralized_acid_base_solutions_ph_6_8', " — Waste disposal: label and collect chemical waste according to the instructor\'s SDS/local waste plan. Never assume drain disposal is allowed.")
         )
       )
 
@@ -4045,6 +4349,10 @@ return React.createElement("div", {
     };
     var setZoom = function (z) { upd('gZoom3d', Math.max(0.5, Math.min(2.6, z))); };
     BURETTE_GL.push({
+      // A still life — see pass 13. Nothing in this scene moves on its own, so the
+      // viewer must not re-arm rAF after each frame; it repaints on push, resize and
+      // on scrolling back into view, which covers orbit, zoom and every eye-height step.
+      static: true,
       sig: [Math.round(gEyeCm * 4), spec.id, Math.abs(parErr) <= BURETTE.TOLERANCE_ML,
             gVb.toFixed(2), gRecordedVb.toFixed(2)].join('|'),
       eyeCm: gEyeCm, contrast: !!(ctx && ctx.isContrast),
@@ -4679,6 +4987,7 @@ return React.createElement("div", {
       var bZoom = d.benchZoom || 1;
       var setBRot = function (y, x) { upd('benchRot', { rotY: y, rotX: Math.max(-40, Math.min(70, x)) }); };
       BENCH_GL.push({
+        static: true,                      // still life; see the burette push above
         sig: [benchSel, !!(ctx && ctx.isContrast)].join('|'),
         selected: benchSel, contrast: !!(ctx && ctx.isContrast),
         rotY: bRot.rotY, rotX: bRot.rotX, zoom: bZoom
@@ -4981,13 +5290,16 @@ return React.createElement("div", {
     // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
     // TITRATION CURVE animation
     // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-    React.createElement("div", { className: "mt-5 rounded-2xl border border-emerald-300 bg-white p-3 shadow-sm" },
+    // Dark tokens, matching the panels around it. This card used to be bg-white with an
+    // emerald-300 border — the only light surface in the tool, wrapped around a canvas
+    // that renders on near-black.
+    React.createElement("div", { className: "mt-5 rounded-2xl border border-emerald-800/40 bg-slate-900/40 p-3" },
       React.createElement("div", { className: "flex items-center justify-between mb-2" },
         React.createElement("div", { className: "flex items-center gap-2" },
           React.createElement("span", { className: "text-lg" }, "\uD83E\uDDEB"),
-          React.createElement("h4", { className: "text-sm font-bold text-emerald-700" }, __alloT('stem.titration.titration_curve_finding_the_equivalenc', "Titration Curve \u2014 Finding the equivalence point"))
+          React.createElement("h4", { className: "text-sm font-bold text-emerald-400" }, __alloT('stem.titration.titration_curve_finding_the_equivalenc', "Titration Curve \u2014 Finding the equivalence point"))
         ),
-        React.createElement("span", { className: "text-[10px] italic text-slate-500" }, __alloT('stem.titration.strong_acid_strong_base_ph_meter_shows', "strong acid + strong base \u00B7 pH meter shows the jump"))
+        React.createElement("span", { className: "text-[10px] italic text-slate-400" }, __alloT('stem.titration.strong_acid_strong_base_ph_meter_shows', "strong acid + strong base \u00B7 pH meter shows the jump"))
       ),
       React.createElement("div", { className: "rounded-xl overflow-hidden border border-emerald-200", style: { background: '#020210', aspectRatio: '16/6' } },
         React.createElement("canvas", {

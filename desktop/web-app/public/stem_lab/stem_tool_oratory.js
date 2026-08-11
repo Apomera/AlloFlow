@@ -33,7 +33,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -3142,7 +3142,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                         // Play/Pause button
                         h('button', {
                           className: 'w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ' +
-                            (isDark ? 'transition-colors bg-violet-600 text-white hover:bg-violet-700 active:scale-[0.97]' : 'transition-colors bg-violet-600 text-white hover:bg-violet-700 active:scale-[0.97]'),
+                            ('transition-colors bg-violet-600 text-white hover:bg-violet-700 active:scale-[0.97]'),
                           onClick: function() {
                             if (isPlaying) pausePlayback();
                             else if (isPausing) resumePlayback();
@@ -3661,7 +3661,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               h('button', {
                 className: isRecording
                   ? 'transition-colors px-4 py-2 rounded-full font-bold text-sm bg-red-600 hover:bg-red-700 text-white focus:outline-none focus:ring-2 focus:ring-red-300 active:scale-[0.97]' + (reducedMotion ? '' : ' animate-pulse')
-                  : 'px-4 py-2 rounded-full font-bold text-sm ' + (isDark ? 'transition-colors bg-violet-600 hover:bg-violet-700 text-white active:scale-[0.97]' : 'transition-colors bg-violet-600 hover:bg-violet-700 text-white active:scale-[0.97]') + ' focus:outline-none focus:ring-2 focus:ring-violet-400',
+                  : 'px-4 py-2 rounded-full font-bold text-sm ' + ('transition-colors bg-violet-600 hover:bg-violet-700 text-white active:scale-[0.97]') + ' focus:outline-none focus:ring-2 focus:ring-violet-400',
                 onClick: isRecording ? stopRecording : startRecording,
                 'aria-label': isRecording ? 'Stop microphone' : 'Start microphone'
               }, isRecording ? '\uD83D\uDD34 Stop' : '\uD83C\uDFA4 Start'),
@@ -3939,7 +3939,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                   if (isRecording) stopRecording();
                   setStemLabTool(null);
                 },
-                'aria-label': t('stem.oratory.go_back_to_stem_lab_tool_list', 'Go back to STEM Lab tool list')
+                'aria-label': t('stem.oratory.go_back_to_stem_lab_tool_list', 'Go back to STEAM Lab tool list')
               },
                 ArrowLeft && h(ArrowLeft, { size: 14 }),
                 t('stem.oratory.back_3', 'Back')),

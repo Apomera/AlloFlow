@@ -39,6 +39,11 @@ describe('Geology Explorer cross-scene comparison', () => {
     expect(P.sceneComparisonInsight('subduction', 'hotspot')).toContain('plate boundary');
   });
 
+  it('provides three aligned stages for visual transfer comparisons', () => {
+    expect(P.sceneJourney('crust').map((step) => step.label)).toEqual(['Read the layers', 'Find what cuts', 'Notice the heat']);
+    expect(P.sceneJourney('geode').map((step) => step.label)).toEqual(['Wall rind', 'Banded pulses', 'Open-space crystals']);
+  });
+
   it('keeps both app mirrors identical', () => {
     expect(fs.readFileSync(deployPath, 'utf8')).toBe(fs.readFileSync(sourcePath, 'utf8'));
   });

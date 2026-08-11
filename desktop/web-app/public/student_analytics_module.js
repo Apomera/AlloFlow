@@ -6,6 +6,112 @@
 (function () {
   'use strict';
 
+// ── Share & Collect bridge (survey delivery over the class mailbox) ──────
+// Suite question shapes -> the v13 survey wire items. Pure, exported for
+// tests. Images on labels cannot travel (the mailbox stores plain strings),
+// so the flag lets the caller SAY so instead of dropping them silently.
+function _saiSuiteQuestionsToWireItems(questions) {
+  var dropped = false;
+  var itemKeys = [];
+  var items = [];
+  (Array.isArray(questions) ? questions : []).forEach(function (question) {
+    if (!question || !String(question.text || '').trim()) return;
+    var kind = question.type === 'mcq' ? 'choice'
+      : (question.type === 'freetext' || question.type === 'numeric') ? question.type
+      : 'likert';
+    var entry = { type: kind, text: String(question.text).replace(/\s+/g, ' ').trim().slice(0, 240), required: false };
+    var cellText = function (cell) {
+      if (cell && typeof cell === 'object') {
+        if (cell.image) dropped = true;
+        return String(cell.text || '').trim().slice(0, 60);
+      }
+      return String(cell == null ? '' : cell).trim().slice(0, 60);
+    };
+    if (kind === 'likert') {
+      var labels = (Array.isArray(question.labels) ? question.labels : []).map(cellText);
+      if (labels.length < 2) labels = ['Strongly disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly agree'];
+      entry.steps = Math.max(2, Math.min(10, labels.length));
+      entry.labels = labels.slice(0, entry.steps);
+    } else if (kind === 'choice') {
+      var options = ((question.options && question.options.length) ? question.options : question.labels || [])
+        .map(cellText).filter(Boolean).slice(0, 12);
+      if (options.length < 2) return;
+      entry.options = options.map(function (label) { return { label: label.slice(0, 80) }; });
+    } else if (kind === 'numeric') {
+      if (isFinite(Number(question.min))) entry.min = Number(question.min);
+      if (isFinite(Number(question.max))) entry.max = Number(question.max);
+    }
+    items.push(entry);
+    // The original question id, in item order: the importer uses these to
+    // give mailbox rows the SAME CSV columns as in-person responses, so
+    // pre/post analysis does not care which route an answer took.
+    itemKeys.push(String(question.id || ('q' + (itemKeys.length + 1))));
+  });
+  return { items: items.slice(0, 12), itemKeys: itemKeys.slice(0, 12), droppedImages: dropped };
+}
+
+// Mailbox admin summary -> Suite response rows. Deduped per activity + row
+// so re-importing after new responses only adds the new ones. Anonymous
+// surveys have no rows BY DESIGN (the server refuses to attribute them), so
+// they report aggregateOnly instead of fabricating respondents.
+function _saiImportMailboxSurveySummary(summary, meta) {
+  var info = meta && typeof meta === 'object' ? meta : {};
+  if (!summary || summary.type !== 'survey' || summary.ok === false) return { imported: 0, skipped: 0, error: 'not-a-survey' };
+  var rows = Array.isArray(summary.rows) ? summary.rows : [];
+  if (!rows.length) return { imported: 0, skipped: 0, aggregateOnly: true };
+  var items = Array.isArray(summary.items) ? summary.items : [];
+  var itemKeys = Array.isArray(info.itemKeys) ? info.itemKeys : [];
+  // Only trust the id remap when it still lines up one-to-one; a teacher who
+  // edited the drafted items in the dialog broke the correspondence, and a
+  // wrong column is worse than a raw i1/i2 column.
+  var aligned = itemKeys.length === items.length;
+  var store = {};
+  try { store = JSON.parse(localStorage.getItem('alloflow_survey_responses') || '{}'); } catch (e) { store = {}; }
+  if (!store || typeof store !== 'object' || Array.isArray(store)) store = {};
+  var population = ['student', 'teacher', 'parent'].indexOf(info.population) >= 0 ? info.population : 'parent';
+  var imported = 0;
+  var skipped = 0;
+  rows.forEach(function (row) {
+    if (!row || !row.answers) return;
+    var respondent = String(row.label || '').trim() || 'Respondent';
+    var key = population + '_' + respondent;
+    var list = Array.isArray(store[key]) ? store[key] : [];
+    var importKey = String(summary.activityId || '') + ':' + respondent + ':' + String(row.updatedAt || 0);
+    if (list.some(function (entry) { return entry && entry.importKey === importKey; })) { skipped++; return; }
+    var entry = {
+      timestamp: row.updatedAt ? new Date(row.updatedAt).toISOString() : new Date().toISOString(),
+      type: population,
+      respondent: respondent,
+      timepoint: String(info.timepoint || 'unspecified'),
+      studyName: String(info.studyName || 'No active study'),
+      source: 'mailbox',
+      importKey: importKey
+    };
+    items.forEach(function (item, at) {
+      var value = row.answers[item.id];
+      if (value === undefined || value === null) return;
+      var columnKey = aligned ? (itemKeys[at] || item.id) : item.id;
+      if (item.type === 'choice') {
+        var match = (item.options || []).filter(function (option) { return option.id === value; })[0];
+        entry[columnKey] = match ? match.label : String(value);
+      } else {
+        entry[columnKey] = value;
+      }
+    });
+    store[key] = list.concat([entry]);
+    imported++;
+  });
+  try { localStorage.setItem('alloflow_survey_responses', JSON.stringify(store)); } catch (e) {}
+  try { window.dispatchEvent(new CustomEvent('alloflow:survey-responses-updated')); } catch (e) {}
+  return { imported: imported, skipped: skipped };
+}
+try {
+  window.AlloModules = window.AlloModules || {};
+  var _saiC = (window.AlloModules.StudentAnalyticsInternals = window.AlloModules.StudentAnalyticsInternals || {});
+  _saiC.suiteQuestionsToWireItems = _saiSuiteQuestionsToWireItems;
+  _saiC.importMailboxSurveySummary = _saiImportMailboxSurveySummary;
+} catch (e) {}
+
   // WCAG 2.1 AA: Accessibility CSS injection
   if (!document.getElementById('sa-a11y-css')) {
     var saA11yStyle = document.createElement('style');
@@ -216,6 +322,9 @@
   };
   var SA_ALLOSHEET_MEASURES = {
     orf: { code: 'orf', probeType: 'orf', unit: 'wcpm', scores: ['wcpm', 'itemsPerMin', 'correct'] },
+    // Decodable-passage WCPM: probeType null on purpose — controlled text
+    // has no published norms, so it must never be clinically interpreted.
+    orf_decodable: { code: 'orf_decodable', probeType: null, unit: 'wcpm_decodable_text', scores: ['wcpm', 'itemsPerMin', 'correct'] },
     nwf: { code: 'nwf_cls', probeType: 'nwf_cls', unit: 'correct_letter_sounds', scores: ['cls', 'itemsPerMin', 'correct'] },
     nwf_cls: { code: 'nwf_cls', probeType: 'nwf_cls', unit: 'correct_letter_sounds', scores: ['cls', 'itemsPerMin', 'correct'] },
     lnf: { code: 'lnf', probeType: 'lnf', unit: 'letters_correct', scores: ['itemsPerMin', 'correct'] },
@@ -1107,6 +1216,9 @@
     probeTargetStudent,
     setProbeTargetStudent,
     saveProbeResult,
+    // The loaded Word Sounds pack — the vocabulary the decodable ORF
+    // passage is built from. Value, not just the setter.
+    wsPreloadedWords,
     setWsPreloadedWords,
     setWordSoundsActivity,
     setIsWordSoundsMode,
@@ -1342,6 +1454,11 @@
     const [orfProbeTimer, setOrfProbeTimer] = React.useState(60);
     const [orfProbeGrade, setOrfProbeGrade] = React.useState('1');
     const [orfProbeLastWord, setOrfProbeLastWord] = React.useState(-1);
+    // Decodable-passage ORF: same tap-to-mark surface, different MEASURE.
+    // Controlled text has no published norms, so this flag keeps the result
+    // out of every grade-level interpretation path (benchmarks, clinical
+    // print, comprehension questions from the screening passages).
+    const [orfProbeDecodable, setOrfProbeDecodable] = React.useState(false);
     const orfProbeTimerRef = React.useRef(null);
     React.useEffect(() => {
       if (orfProbeActive && orfProbeTimer === 0 && orfProbeTimerRef.current === null && orfProbeWords.length > 0 && !orfProbeResults) {
@@ -1356,11 +1473,12 @@
           totalWords: orfProbeWords.length,
           type: 'orf',
           grade: orfProbeGrade,
-          title: orfProbeTitle
+          title: orfProbeTitle,
+          decodable: orfProbeDecodable
         });
         setOrfProbeActive(false);
       }
-    }, [orfProbeTimer, orfProbeActive, orfProbeWords, orfProbeResults, orfProbeLastWord]);
+    }, [orfProbeTimer, orfProbeActive, orfProbeWords, orfProbeResults, orfProbeLastWord, orfProbeDecodable]);
     // Cleanup all probe timers on unmount to prevent memory leaks
     React.useEffect(() => {
       return () => {
@@ -2077,6 +2195,7 @@
     // tests/extracted_logic fork has drifted, so we test the shipped module directly).
     try { window.AlloModules = window.AlloModules || {}; var _saiB = (window.AlloModules.StudentAnalyticsInternals = window.AlloModules.StudentAnalyticsInternals || {}); if (!_saiB.interpretProbeResult) { _saiB.interpretProbeResult = interpretProbeResult; _saiB.CBM_NORMS = CBM_NORMS; _saiB.classifyRTITier = classifyRTITier; } } catch (e) {}
 
+
     // ── Render Probe Interpretation UI ──
     var renderProbeInterpretation = function(probeType, score, grade, season) {
       var result = interpretProbeResult(probeType, score, grade, season);
@@ -2641,11 +2760,12 @@
         });
       });
       if (!allResponses.length) { addToast && addToast(t('toasts.survey_responses_export'), 'info'); return; }
-      var headers = ['Timestamp', 'Type', 'Respondent', 'Timepoint', 'Study_Name'];
+      var headers = ['Timestamp', 'Type', 'Respondent', 'Timepoint', 'Study_Name', 'Consent_Provenance'];
+      var consentProvenance = (researchMode && researchMode.consentProvenance) || '';
       var questionIds = new Set();
       allResponses.forEach(function(r) {
         Object.keys(r).forEach(function(k) {
-          if (!['timestamp','type','respondent','timepoint','studyName'].includes(k)) questionIds.add(k);
+          if (!['timestamp','type','respondent','timepoint','studyName','source','importKey'].includes(k)) questionIds.add(k);
         });
       });
       var qids = Array.from(questionIds).sort();
@@ -2656,7 +2776,8 @@
           r.type || '',
           '"' + String(r.respondent || '').replace(/"/g, '""') + '"',
           r.timepoint || 'unspecified',
-          '"' + String(r.studyName || '').replace(/"/g, '""') + '"'
+          '"' + String(r.studyName || '').replace(/"/g, '""') + '"',
+          '"' + String(consentProvenance).replace(/"/g, '""') + '"'
         ];
         var answers = qids.map(function(q) { return r[q] !== undefined ? r[q] : ''; });
         return base.concat(answers).join(',');
@@ -2954,6 +3075,15 @@
         return {};
       }
     });
+    React.useEffect(() => {
+      // The host writes this store when it imports mailbox survey results;
+      // re-read so an open panel shows them without a remount.
+      const refresh = () => {
+        try { setSurveyResponses(JSON.parse(localStorage.getItem('alloflow_survey_responses') || '{}')); } catch (e) {}
+      };
+      window.addEventListener('alloflow:survey-responses-updated', refresh);
+      return () => window.removeEventListener('alloflow:survey-responses-updated', refresh);
+    }, []);
     const saveSurveyResponse = (type, respondent, responses) => {
       const key = type + '_' + respondent;
       const existing = surveyResponses[key] || [];
@@ -3072,6 +3202,38 @@
         text: 'I would recommend AlloFlow to other parents',
         labels: ['Definitely not', 'Unlikely', 'Unsure', 'Likely', 'Definitely']
       }]
+    };
+    // Hand a population's instrument to Share & Collect. The HOST owns the
+    // dialog, the identity choice and the create step — nothing is shared
+    // from here, and the teacher picks who is answering with the pairing
+    // consequences stated next to the choice.
+    const shareSurveyByLink = (population) => {
+      const customForPop = researchMode && researchMode.customQuestions && researchMode.customQuestions[population];
+      const questions = (Array.isArray(customForPop) && customForPop.length > 0) ? customForPop : (SURVEY_QUESTIONS[population] || []);
+      const wire = _saiSuiteQuestionsToWireItems(questions);
+      if (!wire.items.length) return;
+      try {
+        window.dispatchEvent(new CustomEvent('alloflow:prepare-shared-survey', {
+          detail: {
+            population,
+            prompt: (population === 'parent' ? 'Family check-in' : population === 'teacher' ? 'Staff check-in' : 'Student check-in')
+              + ' (' + (surveyTimepoint || 'unspecified') + ')',
+            items: wire.items,
+            researchMeta: {
+              population,
+              timepoint: surveyTimepoint || 'unspecified',
+              studyName: (researchMode && researchMode.studyName) || 'No active study',
+              itemKeys: wire.itemKeys,
+            },
+            // A neutral, factual starting point — the teacher edits it in the
+            // dialog before anything is shared. Deliberately makes NO claims
+            // about outcomes and states only what is true of the form itself.
+            info: ((researchMode && researchMode.studyName) ? 'Part of "' + researchMode.studyName + '". ' : '')
+              + 'These questions help us understand how the program is working. Taking part is voluntary, and you can skip any question that is not marked required.',
+            droppedImages: wire.droppedImages,
+          },
+        }));
+      } catch (e) {}
     };
     const renderSurveyModal = () => {
       if (!showSurveyModal) return null;
@@ -3602,6 +3764,15 @@
       }, React.createElement('span', null, '\u{1F46A}'), 'Parent/Guardian Survey', surveyCount > 0 ? React.createElement('span', {
         className: 'bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full text-[11px] font-bold'
       }, surveyCount + ' responses') : null),
+      React.createElement('div', { className: 'col-span-2 rounded-lg border border-sky-300 bg-sky-50 p-2' },
+        React.createElement('p', { className: 'text-[11px] font-black text-sky-900' }, '\u{1F517} Send a survey by link or QR (Share & Collect)'),
+        React.createElement('p', { className: 'text-[10px] text-sky-800 mt-0.5' }, 'Families and staff answer from their own phone, no account. Uses the current timepoint (' + (surveyTimepoint || 'unspecified') + ') and your custom items when you have them.'),
+        React.createElement('div', { className: 'mt-1.5 grid grid-cols-3 gap-1.5' },
+          ['student', 'teacher', 'parent'].map(population => React.createElement('button', {
+            key: population,
+            className: 'px-2 py-1.5 bg-white rounded-md border border-sky-300 hover:bg-sky-100 text-[11px] font-bold text-slate-800',
+            onClick: () => shareSurveyByLink(population)
+          }, population === 'student' ? 'Student link' : population === 'teacher' ? 'Teacher link' : 'Parent link')))),
       React.createElement('button', {
         className: 'col-span-2 flex items-center justify-center gap-2 px-3 py-2 bg-white rounded-lg border-2 border-amber-400 hover:bg-amber-50 transition-all text-xs font-bold text-amber-800 mt-1',
         onClick: () => openCustomQuestions(customQuestionsPopulation || 'student'),
@@ -3717,6 +3888,7 @@
       studyName: '',
       surveyFrequency: '5',
       irb: '',
+      consentProvenance: '',
       notes: ''
     });
     const renderResearchSetupModal = () => {
@@ -3784,6 +3956,21 @@
         placeholder: 'e.g. IRB-2026-0042'
       })), React.createElement('div', null, React.createElement('label', {
         className: 'text-xs font-bold text-slate-600 uppercase'
+      }, 'Consent records (kept outside AlloFlow)'), React.createElement('select', {
+        'aria-label': 'Where consent records are kept',
+        className: 'w-full mt-1 px-3 py-2 border border-slate-400 rounded-lg text-sm bg-white',
+        value: researchSetupForm.consentProvenance,
+        onChange: e => setResearchSetupForm(p => ({
+          ...p,
+          consentProvenance: e.target.value
+        }))
+      }, React.createElement('option', { value: '' }, 'Not specified'),
+        React.createElement('option', { value: 'external_forms' }, 'Collected outside AlloFlow - signed forms on file'),
+        React.createElement('option', { value: 'not_required' }, 'Not required - internal program evaluation')),
+      React.createElement('p', {
+        className: 'text-[10px] text-slate-500 mt-1'
+      }, 'AlloFlow never collects consent itself. This records where yours lives, and rides along in every CSV export.')), React.createElement('div', null, React.createElement('label', {
+        className: 'text-xs font-bold text-slate-600 uppercase'
       }, 'Notes'), React.createElement('textarea', {
         'aria-label': 'Research notes',
         className: 'w-full mt-1 px-3 py-2 border border-slate-400 rounded-lg text-sm resize-none',
@@ -3808,6 +3995,7 @@
             studyName: researchSetupForm.studyName || 'Untitled Study',
             surveyFrequency: researchSetupForm.surveyFrequency,
             irb: researchSetupForm.irb,
+            consentProvenance: researchSetupForm.consentProvenance || '',
             notes: researchSetupForm.notes
           });
           setShowResearchSetup(false);
@@ -4202,6 +4390,7 @@
       setOrfProbeResults(null);
       setOrfProbeTimer(60);
       setOrfProbeGrade(g);
+      setOrfProbeDecodable(false);
       setOrfProbeActive(true);
       if (orfProbeTimerRef.current) clearInterval(orfProbeTimerRef.current);
       orfProbeTimerRef.current = setInterval(() => {
@@ -4215,6 +4404,82 @@
         });
       }, 1000);
       addToast(t('toasts.orf_probe') + passage.title + ' — 60 seconds', 'info');
+    };
+    // ── Decodable ORF: a passage built from the loaded Word Sounds pack ──
+    // The passage is assembled from the pack's own Finish-the-Sentence
+    // sentences — text the teacher reviewed at setup, made of words the
+    // child has been taught — so the child is timed on text they can decode
+    // BY CONSTRUCTION. Sentence order is shuffled per launch (alternate
+    // forms from the same word set) and the cycle repeats so a fast reader
+    // cannot run out of text inside the minute.
+    const DECODABLE_ORF_FRAMES = [
+      { before: 'I can see the', after: '.' },
+      { before: 'Look at the', after: '!' },
+      { before: 'Here is the', after: '.' },
+      { before: 'We like the', after: '.' }
+    ];
+    const buildDecodablePassage = (packWords) => {
+      const sentences = (packWords || []).map((it) => {
+        const w = String((it && (it.targetWord || it.word || it.term)) || '').trim().toLowerCase();
+        if (!w) return '';
+        // Prefer the pack's three-sentence story (richer, less repetition in
+        // the assembled passage), then the single sentence, then a frame.
+        const packedStory = it.activityItems && it.activityItems.read_passage && it.activityItems.read_passage.story;
+        if (typeof packedStory === 'string' && packedStory.trim()) return packedStory.trim();
+        const packed = it.activityItems && it.activityItems.read_sentence && it.activityItems.read_sentence.sentence;
+        if (typeof packed === 'string' && packed.trim()) return packed.trim();
+        const seed = w.split('').reduce((s, c) => s + c.charCodeAt(0), 0);
+        const f = DECODABLE_ORF_FRAMES[seed % DECODABLE_ORF_FRAMES.length];
+        return (f.before + ' ' + w + (/^[.,!?]/.test(f.after) ? '' : ' ') + f.after).trim();
+      }).filter(Boolean);
+      if (!sentences.length) return null;
+      const shuffled = [...sentences];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      const out = [];
+      let wordCount = 0;
+      let k = 0;
+      while (wordCount < 120 && out.length < 40) {
+        const s = shuffled[k % shuffled.length];
+        out.push(s);
+        wordCount += s.split(/\s+/).length;
+        k++;
+      }
+      return out.join(' ');
+    };
+    const handleLaunchDecodableORF = () => {
+      const packItems = (wsPreloadedWords || []).filter((it) => it && (it.targetWord || it.word || it.term));
+      const passage = buildDecodablePassage(packItems);
+      if (!passage) {
+        addToast(t('toasts.decodable_orf_needs_pack'), 'warning');
+        return;
+      }
+      const words = passage.split(/\s+/).map((w, i) => ({
+        word: w,
+        index: i,
+        error: false
+      }));
+      setOrfProbeWords(words);
+      setOrfProbeTitle('Decodable Passage — ' + packItems.length + ' taught words');
+      setOrfProbeLastWord(-1);
+      setOrfProbeResults(null);
+      setOrfProbeTimer(60);
+      setOrfProbeDecodable(true);
+      setOrfProbeActive(true);
+      if (orfProbeTimerRef.current) clearInterval(orfProbeTimerRef.current);
+      orfProbeTimerRef.current = setInterval(() => {
+        setOrfProbeTimer(prev => {
+          if (prev <= 1) {
+            clearInterval(orfProbeTimerRef.current);
+            orfProbeTimerRef.current = null;
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      addToast(t('toasts.decodable_orf_started'), 'info');
     };
     const launchBenchmarkProbe = (grade, activity, form = 'A') => {
       const gradeBank = BENCHMARK_PROBE_BANKS && BENCHMARK_PROBE_BANKS[grade];
@@ -5349,8 +5614,13 @@
       const quizzes = (sessionData?.history || []).filter(h => h.type === 'quiz');
       const avgQuizScore = quizzes.length > 0 ? Math.round(quizzes.reduce((sum, q) => sum + (q.score || 0), 0) / quizzes.length) : null;
       const wsHistory = sessionData?.wordSoundsHistory || [];
-      const wsCorrect = wsHistory.filter(h => h.correct).length;
-      const wsAccuracy = wsHistory.length > 0 ? Math.round(wsCorrect / wsHistory.length * 100) : null;
+      // Coach-until-right activities (Letter Trace) write practiceOnly rows that
+      // are always correct:true — they measure practice volume, not accuracy, so
+      // they stay out of the percentage. The activity test covers rows saved
+      // before the flag existed.
+      const wsGraded = wsHistory.filter(h => h && h.practiceOnly !== true && h.activity !== 'letter_tracing');
+      const wsCorrect = wsGraded.filter(h => h.correct).length;
+      const wsAccuracy = wsGraded.length > 0 ? Math.round(wsCorrect / wsGraded.length * 100) : null;
       const xp = sessionData?.globalPoints || 0;
       const level = sessionData?.globalLevel || 1;
       const badges = sessionData?.wordSoundsBadges || {};
@@ -6345,8 +6615,8 @@
       className: "text-[11px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
     }, "CBM-style")), /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-slate-600 mb-3"
-    }, "Nonsense Word Fluency (NWF), Letter Naming Fluency (LNF), and Rapid Automatized Naming (RAN) assessments."), /*#__PURE__*/React.createElement("div", {
-      className: "grid grid-cols-1 sm:grid-cols-3 gap-2"
+    }, "Nonsense Word Fluency (NWF), Letter Naming Fluency (LNF), Rapid Automatized Naming (RAN), and Decodable ORF (a timed passage built from your Word Sounds pack)."), /*#__PURE__*/React.createElement("div", {
+      className: "grid grid-cols-1 sm:grid-cols-2 gap-2"
     }, /*#__PURE__*/React.createElement("button", {
       onClick: () => {
         const grade = nwfGrade || 'K';
@@ -6444,7 +6714,18 @@
       className: "font-bold"
     }, "RAN"), /*#__PURE__*/React.createElement("div", {
       className: "text-[11px] text-slate-600 font-normal"
-    }, t('probes.ran')))))), nwfProbeActive && /*#__PURE__*/React.createElement("div", {
+    }, t('probes.ran')))), /*#__PURE__*/React.createElement("button", {
+      onClick: handleLaunchDecodableORF,
+      className: "flex items-center gap-2 px-3 py-2.5 bg-white border-2 border-emerald-600 text-slate-700 rounded-lg font-bold text-xs hover:bg-emerald-50 hover:border-emerald-400 transition-all"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-base"
+    }, "📖"), /*#__PURE__*/React.createElement("div", {
+      className: "text-left"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "font-bold"
+    }, "Decodable ORF"), /*#__PURE__*/React.createElement("div", {
+      className: "text-[11px] text-slate-600 font-normal"
+    }, t('probes.decodable_orf')))))), nwfProbeActive && /*#__PURE__*/React.createElement("div", {
       className: "mt-4 bg-white rounded-xl border-2 border-emerald-300 p-6 shadow-lg animate-in fade-in slide-in-from-top-4"
     }, /*#__PURE__*/React.createElement("div", {
       className: "flex items-center justify-between mb-4"
@@ -7005,7 +7286,7 @@
       className: "flex items-center gap-3"
     }, /*#__PURE__*/React.createElement("span", {
       className: "bg-rose-100 text-rose-700 px-3 py-1 rounded-full text-xs font-bold"
-    }, "\uD83D\uDCD6 ORF PROBE"), /*#__PURE__*/React.createElement("span", {
+    }, orfProbeDecodable ? "\uD83D\uDCD6 DECODABLE ORF" : "\uD83D\uDCD6 ORF PROBE"), /*#__PURE__*/React.createElement("span", {
       className: "text-sm font-medium text-slate-600"
     }, orfProbeTitle)), /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-3"
@@ -7080,7 +7361,8 @@
           totalWords: orfProbeWords.length,
           type: 'orf',
           grade: orfProbeGrade,
-          title: orfProbeTitle
+          title: orfProbeTitle,
+          decodable: orfProbeDecodable
         });
         setOrfProbeActive(false);
       },
@@ -7114,6 +7396,28 @@
       className: "text-xs text-slate-600"
     }, "Accuracy"))), mathProbeStudent && /*#__PURE__*/React.createElement("button", {
       onClick: () => {
+        if (orfProbeResults.decodable) {
+          // Progress monitoring on CONTROLLED text: banks to probeHistory
+          // under its own activity id so nothing ever pools it with
+          // grade-passage ORF (different measure, no published norms).
+          if (typeof saveProbeResult === 'function') {
+            saveProbeResult(mathProbeStudent, {
+              activity: 'orf_decodable',
+              student: mathProbeStudent,
+              wcpm: orfProbeResults.wcpm,
+              itemsPerMin: orfProbeResults.wcpm,
+              correct: orfProbeResults.wcpm,
+              total: orfProbeResults.wordsAttempted,
+              errors: orfProbeResults.errors,
+              accuracy: orfProbeResults.wordsAttempted > 0 ? Math.round((orfProbeResults.wordsAttempted - orfProbeResults.errors) / orfProbeResults.wordsAttempted * 100) : 0,
+              title: orfProbeResults.title,
+              timestamp: Date.now(),
+              date: new Date().toISOString()
+            });
+          }
+          addToast(t('toasts.orf_results_saved') + mathProbeStudent, 'success');
+          return;
+        }
         setLatestProbeResult({
           student: mathProbeStudent,
           type: 'orf',
@@ -7130,6 +7434,9 @@
       },
       className: "w-full mt-2 px-4 py-2 bg-rose-700 text-white rounded-lg font-bold text-sm hover:bg-rose-600 transition-colors"
     }, "\uD83D\uDCBE Save to Student Record"), (() => {
+      // The comprehension questions belong to the static screening passage
+      // for the selected grade/form \u2014 never to a decodable pack passage.
+      if (orfProbeResults.decodable) return null;
       const g = orfProbeGrade || '1';
       const fm = mathProbeForm || 'A';
       const passages = window.ORF_SCREENING_PASSAGES && window.ORF_SCREENING_PASSAGES[g] && window.ORF_SCREENING_PASSAGES[g][fm];
@@ -7153,8 +7460,10 @@
         className: "text-[11px] text-slate-600 mt-2 italic"
       }, "Ask each question orally. Correct answers highlighted."));
     })(),
-    renderProbeInterpretation('orf', orfProbeResults.wcpm, orfProbeGrade),
-    /*#__PURE__*/React.createElement("button", {
+    orfProbeResults.decodable ? /*#__PURE__*/React.createElement("p", {
+      className: "mt-2 text-xs text-slate-600 bg-amber-50 border border-amber-200 rounded-lg p-2"
+    }, "\uD83D\uDCCF This score tracks progress on the taught patterns in this pack. Decodable-text WCPM is not comparable to grade-level ORF benchmarks \u2014 do not use it for screening or tier decisions.") : renderProbeInterpretation('orf', orfProbeResults.wcpm, orfProbeGrade),
+    !orfProbeResults.decodable && /*#__PURE__*/React.createElement("button", {
       onClick: () => printClinicalProbeReport('orf', orfProbeResults, orfProbeGrade, mathProbeForm, mathProbeStudent),
       className: "w-full mt-1 px-4 py-1.5 bg-slate-50 text-slate-600 rounded-lg font-bold text-xs hover:bg-slate-100 transition-colors"
     }, "\uD83D\uDDA8\uFE0F Print Clinical Report"), /*#__PURE__*/React.createElement("button", {

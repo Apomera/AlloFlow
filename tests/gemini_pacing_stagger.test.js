@@ -243,7 +243,7 @@ describe('anti-drift: the pacing wiring ships in the source', () => {
     expect(dp).toMatch(/var _applyGeminiPacing = function \(heavy, opts\)/);
     expect(dp).toMatch(/if \(_heavyScanned \|\| _heavyPages >= 8\) \{\s*\n\s*_applyGeminiPacing\(true,/);
     expect(dp).toMatch(/_applyGeminiPacing\(true, \(det\.pageCount >= 20\)/);
-    expect(dp).toContain("_applyGeminiPacing(true, { maxConcurrent: 2, staggerMs: 1500, label: 'the opening PDF audit' })");
+    expect(dp).toContain("_applyGeminiPacing(true, { maxConcurrent: 2, staggerMs: 1500, label: _imageInputMime ? 'the opening image audit' : 'the opening PDF audit' })");
     expect(dp).toContain("_pipeLog('API-start'");
     expect(dp).toContain("_pipeLog('Vision-start'");
   });

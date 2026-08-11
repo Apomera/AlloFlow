@@ -167,21 +167,7 @@
   {
    "type": "paragraph",
    "text": "If you chose to apply part or all of the refund to your 2025 estimated state or local income tax, the amount applied is treated as received in 2025. If the refund was for a tax you paid in 2024 and you deducted state and local income taxes on your 2024 Schedule A, use the State and Local Income Tax Refund Worksheet in these instructions to see if any of your refund is taxable.",
-   "source_page": 88,
-   "runs": [
-    {
-     "text": "If you chose to apply part or all of the refund to your 2025 estimated state or local income tax, the amount applied is treated as received in 2025. If the refund was for a tax you paid in 2024 and you deducted state and local income taxes on your 2024 Schedule A, use the ",
-     "style": "normal"
-    },
-    {
-     "text": "State and Local Income Tax Refund Worksheet",
-     "style": "emphasis"
-    },
-    {
-     "text": " in these instructions to see if any of your refund is taxable.",
-     "style": "normal"
-    }
-   ]
+   "source_page": 88
   },
   {
    "type": "heading",

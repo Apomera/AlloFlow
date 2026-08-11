@@ -1674,7 +1674,7 @@ function MathPanel(props) {
                         </div>
                         {/* Manipulatives off-switch — default ON (the bridge was silently always-on with no control). English-hardcoded pending i18n. */}
                         <div className="flex items-center gap-2" data-help-key="math_manipulatives">
-                            <input aria-label="Attach STEM Lab manipulatives to generated problems"
+                            <input aria-label="Attach STEAM Lab manipulatives to generated problems"
                                 id="mathManipulatives"
                                 type="checkbox"
                                 checked={autoAttachManipulatives !== false}

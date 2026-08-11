@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════
-// AlloFlow STEM Lab — Magnetism & Electromagnetism
+// AlloFlow STEAM Lab — Magnetism & Electromagnetism
 //
 // An interactive study of magnetic fields and how electricity makes them:
 //   • Field Explorer — bar magnets with traced field lines + a draggable
@@ -40,7 +40,7 @@
 // ═══════════════════════════════════════════════════════════════════════
 (function () {
   'use strict';
-  // Register only when the STEM Lab host is present; still run the rest so the
+  // Register only when the STEAM Lab host is present; still run the rest so the
   // pure physics helpers below can be require()'d directly by the test suite.
   var _hasHost = !!(typeof window !== 'undefined' && window.StemLab && typeof window.StemLab.registerTool === 'function');
 

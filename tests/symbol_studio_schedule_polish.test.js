@@ -22,7 +22,7 @@ describe('Symbol Studio visual schedule polish', () => {
     expect(schedule).toContain("'aria-pressed': isDone");
     expect(schedule).toContain("'Move ' + item.label + ' earlier'");
     expect(schedule).toContain("'Move ' + item.label + ' later'");
-    expect(schedule).toContain("'Remove ' + item.label + ' from schedule'");
+    expect(schedule).toContain("'Remove ' + item.label + ' from sequence'");
     expect(schedule).toContain("minHeight: '44px', minWidth: '44px'");
     expect(schedule).toContain("id: 'ss-schedule-reorder-help'");
   });
@@ -48,12 +48,24 @@ describe('Symbol Studio visual schedule polish', () => {
     expect(source).toContain('if (generationEpoch !== schedGenerationEpochRef.current) return');
   });
 
+  it('plans topic-driven sequences and reuses the per-profile Symbol Bank', () => {
+    expect(source).toContain("var _schedTopic = useState('')");
+    expect(source).toContain('var _schedPlanning = useState(false)');
+    expect(source).toContain('var planningEpoch = ++schedGenerationEpochRef.current');
+    expect(source).toContain('if (planningEpoch !== schedGenerationEpochRef.current) return');
+    expect(source).toContain('await generateSequenceItems(steps)');
+    expect(source).toContain('var cached = findExactBankAsset(gallery, label)');
+    expect(source).toContain('assetId: cached ? cached.id : null');
+    expect(schedule).toContain("'aria-label': 'Sequence topic or task'");
+    expect(schedule).toContain("'aria-label': 'Build visual sequence from topic'");
+  });
+
   it('normalizes loaded schedules and reports storage failures truthfully', () => {
     expect(source).toContain('sched && Array.isArray(sched.items) ? sched.items : []');
     expect(source).toContain("'Unlabeled step ' + (index + 1)");
     expect(source.indexOf('var saveOk = store(scopedKey(STORAGE_SCHEDULES), updated)')).toBeLessThan(source.indexOf('setSavedSchedules(updated)', source.indexOf('var saveOk = store(scopedKey(STORAGE_SCHEDULES), updated)')));
     expect(source).toContain('notifyVisualSupportsUpdated()');
-    expect(source).toContain('Could not save the schedule - device storage is full.');
+    expect(source).toContain('Could not save the sequence - device storage is full.');
   });
 
   it('keeps the deployment mirror identical', () => {

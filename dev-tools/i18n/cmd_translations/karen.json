@@ -320,5 +320,8 @@
   "cmd.run_lesson_blueprint": "တ့ထီၣ် lesson plan",
   "cmd.run_lesson_blueprint_done": "plan တ့ထီၣ်အံၤ — နကွၢ်တဆီတဆီလၢ card အဖီခိၣ်သ့.",
   "cmd.run_lesson_blueprint_hint": "တ့ထီၣ် resource ခဲလၢာ်လၢ plan အခဲအံၤအပူၤ",
-  "cmd.cancelled": "Ta bluh htee. Ta htee ha k’thu ta ta hku bluh htee."
+  "cmd.cancelled": "Ta bluh htee. Ta htee ha k’thu ta ta hku bluh htee.",
+  "cmd.open_share_collect": "အိးထီၣ် Share & Collect",
+  "cmd.open_share_collect_hint": "တၢ်ဟ့ၣ်တၢ်ဆၢ, တၢ်ကွဲးနီၣ်မံၤ, တၢ်သံကွၢ် ဒီး အစၢတဖၣ်",
+  "cmd.open_share_collect_done": "အိးထီၣ်လံ Share & Collect."
 }

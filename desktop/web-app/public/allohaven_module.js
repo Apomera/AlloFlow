@@ -176,7 +176,7 @@
   //     callImagen, callGemini, callTTS,  — AI plumbing pass-through
   //     addToast,
   //     toolData               — cross-tool state aggregator (read-only)
-  //     setStemLabTool(id)     — for modes that deep-link into STEM Lab
+  //     setStemLabTool(id)     — for modes that deep-link into STEAM Lab
   //   }
   // Visible and announced validation fallback for standalone or partially loaded hosts.
   function notifyAlloHaven(message, type) {
@@ -429,7 +429,7 @@
   var CLASSROOM_REWARD_INBOX_KEY = 'alloflow_allohaven_classroom_reward_inbox_v1';
   var STUDENT_PROGRESS_SUMMARY_KEY = 'alloflow_student_progress_summary';
   var STUDENT_ARTIFACTS_KEY = 'alloflow_student_artifacts';
-  // STEM Lab's shared persistence key — used to read inherited theme from
+  // STEAM Lab's shared persistence key — used to read inherited theme from
   // Typing Practice (or any other tool that stamps state.theme there).
   var STEMLAB_STORAGE_KEY = 'alloflow_stemlab_v2';
   // Token cost to generate / draw / upload a single decoration. Module-scoped
@@ -641,7 +641,7 @@
     }
   }
 
-  // Read the active AlloFlow theme from the shared STEM Lab data.
+  // Read the active AlloFlow theme from the shared STEAM Lab data.
   // Typing Practice writes state.theme there via StemLab's `update` hook.
   // If unavailable, falls back to 'default'.
   function getInheritedTheme() {
@@ -962,7 +962,7 @@
   // SECTION 3: THEME BASES
   // ─────────────────────────────────────────────────────────
   // Each theme's wallpaper + floor texture. AlloHaven inherits the active
-  // theme from the shared STEM Lab localStorage. Decorations stay theme-
+  // theme from the shared STEAM Lab localStorage. Decorations stay theme-
   // neutral; only the room base swaps. Switching themes feels like
   // changing paint, not destroying the student's stuff.
   var THEME_BASES = {
@@ -28482,7 +28482,7 @@
           return h('div', { style: { marginBottom: '20px', padding: '10px 14px', background: '#fafafa', border: '1px solid #ddd', borderRadius: '4px' } },
             h('div', { style: { fontWeight: 700, marginBottom: '6px', fontSize: '11px', color: '#000' } },
               '🎭 Mood timeline · last 13 weeks · ' + taggedDecs.length + ' tagged decoration' + (taggedDecs.length === 1 ? '' : 's')),
-            h('svg', { viewBox: '0 0 ' + W + ' ' + (padT + maxBarH + padB), width: '100%', height: padT + maxBarH + padB },
+            h('svg', { role: 'img', 'aria-label': 'Mood timeline bar chart for the last 13 weeks', viewBox: '0 0 ' + W + ' ' + (padT + maxBarH + padB), width: '100%', height: padT + maxBarH + padB },
               h('line', { x1: padL, x2: W - padR, y1: padT + maxBarH, y2: padT + maxBarH, stroke: '#000', strokeWidth: 0.4 }),
               bars,
               h('text', { x: padL, y: padT + maxBarH + padB - 2, fontSize: '8', fill: '#444' }, '13w ago'),

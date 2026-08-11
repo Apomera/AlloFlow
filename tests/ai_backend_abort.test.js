@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { loadAlloModule } from './setup.js';
+import { afterEach, vi } from 'vitest';
 
 let AIProvider;
 
@@ -88,5 +89,68 @@ describe('AIProvider text cancellation', () => {
       signal: controller.signal,
     })).rejects.toMatchObject({ name: 'AbortError' });
     expect(calls).toBe(1);
+  });
+});
+
+describe('AIProvider image cancellation', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('rejects an already-aborted image request before starting transport', async () => {
+    const calls = vi.fn();
+    vi.stubGlobal('fetch', calls);
+    const provider = createProvider('gemini', async () => { throw new Error('retry transport should not run'); });
+    const controller = new AbortController();
+    controller.abort();
+
+    await expect(provider.generateImage('A classroom icon.', { signal: controller.signal }))
+      .rejects.toMatchObject({ name: 'AbortError' });
+    expect(calls).not.toHaveBeenCalled();
+  });
+
+  it('forwards the image signal and does not retry an aborted Gemini image request', async () => {
+    const controller = new AbortController();
+    const calls = [];
+    vi.stubGlobal('fetch', vi.fn(async (_url, options) => {
+      calls.push(options);
+      const error = new Error('cancelled');
+      error.name = 'AbortError';
+      throw error;
+    }));
+    const provider = createProvider('gemini', async () => { throw new Error('fallback transport should not run'); });
+
+    await expect(provider.generateImage('A classroom icon.', { signal: controller.signal }))
+      .rejects.toMatchObject({ name: 'AbortError' });
+    expect(calls).toHaveLength(1);
+    expect(calls[0].signal).toBe(controller.signal);
+  });
+
+  it('forwards cancellation through Gemini image editing', async () => {
+    const controller = new AbortController();
+    let optionsSeen = null;
+    vi.stubGlobal('fetch', vi.fn(async (_url, options) => {
+      optionsSeen = options;
+      return {
+        json: async () => ({ candidates: [{ content: { parts: [{ inlineData: { data: 'edited' } }] } }] }),
+      };
+    }));
+    const provider = createProvider('gemini', async () => { throw new Error('fallback transport should not run'); });
+
+    await expect(provider.editImage('Remove text.', 'source', { signal: controller.signal }))
+      .resolves.toContain('data:image/png;base64');
+    expect(optionsSeen.signal).toBe(controller.signal);
+  });
+
+  it('can be aborted while waiting for a transient image retry', async () => {
+    const controller = new AbortController();
+    const calls = vi.fn(async () => ({ status: 503, ok: false, text: async () => '' }));
+    vi.stubGlobal('fetch', calls);
+    const provider = createProvider('gemini', async () => { throw new Error('fallback transport should not run'); });
+
+    const pending = provider.generateImage('A retrying classroom icon.', { signal: controller.signal });
+    await vi.waitFor(() => expect(calls).toHaveBeenCalledTimes(1));
+    controller.abort();
+
+    await expect(pending).rejects.toMatchObject({ name: 'AbortError' });
+    expect(calls).toHaveBeenCalledTimes(1);
   });
 });

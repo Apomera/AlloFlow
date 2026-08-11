@@ -1,4 +1,4 @@
-// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -827,12 +827,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             PLAYABLE_SPECIES.map(function(sp) {
               var isSelected = selectedPlayableSpecies === sp.id;
               // Stat bar helper
-              function statBar(label, value, max, barColor) {
+              // `display` is the number the reader sees; `value`/`max` only size
+              // the bar. The two came apart because some of these stats have a
+              // real unit and others are relative game figures — beam width was
+              // being shown as a bare "80", a normalised index that reads as a
+              // measurement when the actual beam is 144 degrees wide.
+              function statBar(label, value, max, barColor, display) {
                 var pct = Math.round((value / max) * 100);
                 return h('div', { className: 'mb-1' },
-                  h('div', { className: 'flex justify-between text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-200') },
+                  h('div', { className: 'flex justify-between text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') },
                     h('span', null, label),
-                    h('span', null, Math.round(value))),
+                    h('span', null, display == null ? Math.round(value) : display)),
                   h('div', { className: 'h-1.5 rounded-full overflow-hidden ' + (isDark ? 'bg-slate-700' : 'bg-slate-200') },
                     h('div', { style: { width: pct + '%', background: barColor }, className: 'h-full rounded-full transition-all' }))
                 );
@@ -857,13 +862,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 h('p', { className: 'text-[11px] mb-3 ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.echolocation.' + (sp.id) + '_desc', sp.desc)),
                 // Stats visualization
                 h('div', { className: 'space-y-0.5 mb-3' },
-                  statBar('Sonar Range', sp.sonarRange, 300, '#6366f1'),
-                  statBar('Beam Width', (sp.sonarWidth / Math.PI) * 100, 150, '#8b5cf6'),
-                  statBar('Pulse Speed', (25 - sp.pulseCooldown), 20, '#06b6d4'),
-                  statBar('Flight Speed', sp.speed, 5, '#10b981'),
-                  statBar('Energy Efficiency', (1 - sp.energyDrain) * 100, 100, '#f59e0b')
+                  statBar('Sonar Range', sp.sonarRange, 300, '#6366f1', 'relative ' + Math.round(sp.sonarRange / 250 * 100) + '%'),
+                  // The beam really is this wide: sonarWidth is stored in radians
+                  // and drives the sweep the simulator draws.
+                  statBar('Beam Width', (sp.sonarWidth / Math.PI) * 100, 150, '#8b5cf6',
+                    Math.round(sp.sonarWidth * 180 / Math.PI) + '°'),
+                  // pulseCooldown counts animation frames between pulses, so at
+                  // 60 fps this is a genuine rate — and it lands near the real
+                  // search-phase rates these two species use.
+                  statBar('Pulse Rate', (25 - sp.pulseCooldown), 20, '#06b6d4',
+                    (60 / sp.pulseCooldown).toFixed(1) + '/s'),
+                  statBar('Flight Speed', sp.speed, 5, '#10b981', 'relative ' + Math.round(sp.speed / 4 * 100) + '%'),
+                  statBar('Energy Efficiency', (1 - sp.energyDrain) * 100, 100, '#f59e0b',
+                    Math.round((1 - sp.energyDrain) * 100) + '%')
                 ),
-                h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-200') },
+                h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') },
                   h('div', null, '\uD83C\uDF1F Prey: ' + sp.preyEmoji + ' ' + sp.preyLabel),
                   h('div', null, '\uD83D\uDD0A Sonar: ' + sp.sonarType)),
                 // Select button
@@ -876,6 +889,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               );
             })
           ),
+          // One note under both cards, not one inside each: it describes the
+          // stat block as a whole, and duplicating it read as two claims.
+          h('div', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') },
+            'Beam width, pulse rate and efficiency are real figures for this simulation. Range and flight speed are shown relative to the Little Brown Bat.'),
           // Science comparison
           selectedPlayableSpecies ? h('div', { className: 'rounded-xl p-3 ' + (isDark ? 'bg-indigo-900/20 border border-indigo-800/30' : 'bg-indigo-50 border border-indigo-200') },
             h('div', { className: 'text-xs font-bold mb-1 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.science_note', '\uD83E\uDDEC Science Note')),
@@ -886,9 +903,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           ) : null,
           // Start playing button (visible once species selected)
           selectedPlayableSpecies ? h('div', { className: 'text-center' },
-            h('div', { className: 'text-[11px] mb-2 ' + (isDark ? 'text-slate-200' : 'text-slate-200') },
+            h('div', { className: 'text-[11px] mb-2 ' + (isDark ? 'text-slate-200' : 'text-slate-600') },
               t('stem.echolocation.species_selected_the_sonar_simulator_b', 'Species selected! The sonar simulator below is now configured for your bat.')),
-            h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-200') },
+            h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') },
               t('stem.echolocation.you_can_change_species_anytime_using_t', 'You can change species anytime using the toggle in the game HUD.'))
           ) : null
         );
@@ -912,6 +929,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
       var cave3dRef = useRef(null);
       var cave3dEngineRef = useRef(null);
       var cave3dAnimRef = useRef(0);
+      var cave3dRetryState = useState(0);
+      var cave3dRetryNonce = cave3dRetryState[0];
+      var setCave3dRetryNonce = cave3dRetryState[1];
 
       // Initialize Three.js cave — hoisted to top level to obey Rules of Hooks
       useEffect(function() {
@@ -1141,7 +1161,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           // arrow keys do, and the original bug class felt like
           // "the controls don't work" even when keys were registering.)
           eng.keys = {};
-          var _CAVE_FLIGHT_CODES = { KeyW: 1, KeyA: 1, KeyS: 1, KeyD: 1, KeyE: 1, KeyP: 1, KeyR: 1, Space: 1, ArrowUp: 1, ArrowDown: 1, ArrowLeft: 1, ArrowRight: 1 };
+          var _CAVE_FLIGHT_CODES = { KeyW: 1, KeyA: 1, KeyS: 1, KeyD: 1, KeyE: 1, KeyP: 1, KeyR: 1, Space: 1, ShiftLeft: 1, ShiftRight: 1, ArrowUp: 1, ArrowDown: 1, ArrowLeft: 1, ArrowRight: 1 };
           eng._keyDown = function(e) {
             if (_CAVE_FLIGHT_CODES[e.code]) {
               eng.keys[e.code] = true;
@@ -1209,7 +1229,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               if (tch.identifier === _caveTouchLookId) { _caveTouchLookId = null; _caveTouchLookStart = null; }
             }
           }, { passive: false });
-          document.addEventListener('pointerlockchange', function() { eng._locked = !!document.pointerLockElement; });
+          eng._pointerLockChange = function() { eng._locked = document.pointerLockElement === cnv; };
+          document.addEventListener('pointerlockchange', eng._pointerLockChange);
 
           // ── Animate ──
           function animate() {
@@ -1218,14 +1239,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             var t = eng.clock.getElapsedTime();
 
             // ── Game over check ──
+            // Restart must be handled before the game-over early return.
+            if (eng.gameOver && eng.keys['KeyR']) {
+              eng.gameOver = false;
+              eng.energy = eng.energyMax;
+              eng.mothsCaught = 0;
+              eng.score = 0;
+              eng.survivalTime = 0;
+              eng.camera.position.set(0, 2, 0);
+              eng.moths.forEach(function(m) { eng.scene.remove(m); m.geometry.dispose(); m.material.dispose(); });
+              eng.moths = [];
+              for (var ri = 0; ri < 8; ri++) spawnInsect();
+            }
             if (eng.gameOver) {
               eng.renderer.render(eng.scene, eng.camera);
               return;
             }
             eng.survivalTime += dt;
 
+            // Compute drain before the energy update that consumes it.
+            var difficultyMult = 1 + (eng.survivalTime / 120) * 0.5;
+            var currentDrain = eng.energyDrain * difficultyMult;
+
             // ── Energy system ──
-            var isMoving = eng.keys['KeyW'] || eng.keys['KeyS'] || eng.keys['KeyA'] || eng.keys['KeyD'];
+            var isMoving = eng.keys['KeyW'] || eng.keys['ArrowUp'] || eng.keys['KeyS'] || eng.keys['ArrowDown'] || eng.keys['KeyA'] || eng.keys['ArrowLeft'] || eng.keys['KeyD'] || eng.keys['ArrowRight'];
             // Perching: press P or land on floor (y < 0.8)
             var nearFloor = eng.camera.position.y < 0.8;
             var nearCeiling = eng.camera.position.y > 5.2;
@@ -1260,23 +1297,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               if (addToast) addToast('\uD83E\uDD87 Out of energy! Score: ' + eng.score + ' \u2022 ' + eng.mothsCaught + ' insects \u2022 ' + Math.round(eng.survivalTime) + 's. Press R to restart.', 'error');
             }
 
-            // Restart on R key
-            if (eng.keys['KeyR'] && eng.gameOver) {
-              eng.gameOver = false;
-              eng.energy = eng.energyMax;
-              eng.mothsCaught = 0;
-              eng.score = 0;
-              eng.survivalTime = 0;
-              eng.camera.position.set(0, 2, 0);
-              // Respawn all insects
-              eng.moths.forEach(function(m) { eng.scene.remove(m); m.geometry.dispose(); m.material.dispose(); });
-              eng.moths = [];
-              for (var ri = 0; ri < 8; ri++) spawnInsect();
-            }
 
-            // ── Difficulty scaling: drain increases over time ──
-            var difficultyMult = 1 + (eng.survivalTime / 120) * 0.5; // +50% drain per 2 minutes
-            var currentDrain = eng.energyDrain * difficultyMult;
 
             // Movement (WASD) — only if not game over
             var fwd = new THREE.Vector3();
@@ -1284,10 +1305,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             var right = new THREE.Vector3().crossVectors(fwd, new THREE.Vector3(0, 1, 0)).normalize();
             var moveSpeed = eng.perching ? 0 : 4;
             var prevPos = eng.camera.position.clone();
-            if (eng.keys['KeyW']) eng.camera.position.addScaledVector(fwd, moveSpeed * dt);
-            if (eng.keys['KeyS']) eng.camera.position.addScaledVector(fwd, -moveSpeed * dt);
-            if (eng.keys['KeyA']) eng.camera.position.addScaledVector(right, -moveSpeed * dt);
-            if (eng.keys['KeyD']) eng.camera.position.addScaledVector(right, moveSpeed * dt);
+            if (eng.keys['KeyW'] || eng.keys['ArrowUp']) eng.camera.position.addScaledVector(fwd, moveSpeed * dt);
+            if (eng.keys['KeyS'] || eng.keys['ArrowDown']) eng.camera.position.addScaledVector(fwd, -moveSpeed * dt);
+            if (eng.keys['KeyA'] || eng.keys['ArrowLeft']) eng.camera.position.addScaledVector(right, -moveSpeed * dt);
+            if (eng.keys['KeyD'] || eng.keys['ArrowRight']) eng.camera.position.addScaledVector(right, moveSpeed * dt);
             if (!eng.perching) {
               if (eng.keys['Space']) eng.camera.position.y += 3 * dt;
               if (eng.keys['ShiftLeft'] || eng.keys['ShiftRight']) eng.camera.position.y -= 3 * dt;
@@ -1451,7 +1472,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 var ilAge = t - il2._born;
                 il2.intensity = Math.max(0, 1.5 - ilAge * 3);
                 if (ilAge > 0.5) {
-                  eng.scene.remove(il2); il2.dispose();
+                  eng.scene.remove(il2);
+                  if (typeof il2.dispose === 'function') il2.dispose();
                   eng._impactLights.splice(ili, 1);
                 }
               }
@@ -1631,13 +1653,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             document.removeEventListener('keydown', eng._keyDown);
             document.removeEventListener('keyup', eng._keyUp);
             document.removeEventListener('mousemove', eng._mouseMove);
+            document.removeEventListener('pointerlockchange', eng._pointerLockChange);
             if (cnv.parentNode) cnv.parentNode.removeChild(cnv);
+            try { if (eng.renderer && eng.renderer.dispose) eng.renderer.dispose(); } catch (e) {}
             cave3dEngineRef.current = null;
           };
-      }, [tab, threeLoaded]);
+      }, [tab, threeLoaded, cave3dRetryNonce]);
 
       function renderCave3dTab() {
         var threeReady = window.THREE;
+        var threeLoadError = (ctx.toolData && ctx.toolData._threeLoadError) || null;
 
         return h('div', { className: 'space-y-3' },
           // Header \u2014 clear goal + survival framing.
@@ -1699,8 +1724,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           ),
           // Three.js not loaded
           !threeReady && h('div', { className: 'text-center p-8 text-slate-600' },
-            h('p', null, t('stem.echolocation.loading_3d_engine_three_js_required', 'Loading 3D engine... (Three.js required)')),
-            h('p', { className: 'text-xs mt-2' }, t('stem.echolocation.three_js_loads_automatically_when_you_', 'Three.js loads automatically when you open any 3D tool.'))
+            h('p', null, threeLoadError
+              ? t('stem.echolocation.three_js_failed_to_load', 'The 3D engine could not be loaded.')
+              : t('stem.echolocation.loading_3d_engine_three_js_required', 'Loading 3D engine... (Three.js required)')),
+            h('p', { className: 'text-xs mt-2' }, threeLoadError
+              ? String(threeLoadError.message || threeLoadError)
+              : t('stem.echolocation.three_js_loads_automatically_when_you_', 'Three.js loads automatically when you open any 3D tool.')),
+            threeLoadError && h('button', {
+              type: 'button',
+              onClick: function() {
+                ctx.setToolData(function(prev) {
+                  return Object.assign({}, prev, {
+                    _threeLoadError: undefined,
+                    _threeLoaded: false,
+                    _threeAttempt: ((prev && prev._threeAttempt) || 0) + 1
+                  });
+                });
+              },
+              style: { marginTop: 10, padding: '6px 12px', background: '#0369a1', color: '#fff', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' }
+            }, t('stem.echolocation.retry_loading_3d_engine', 'Retry loading 3D engine'))
           ),
           // 3D Canvas container
           threeReady && (webglError
@@ -1711,6 +1753,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 h('button', {
                   onClick: function() {
                     setWebglError(false);
+                    cave3dEngineRef.current = null;
+                    setCave3dRetryNonce(function(n) { return n + 1; });
                   },
                   style: { padding: '6px 12px', background: '#b91c1c', color: '#fff', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' }
                 }, t('stem.echolocation.retry', 'Retry'))
@@ -1952,7 +1996,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
       }
 
       function renderSonarTab() {
-        var sonarCanvasEl = h('canvas', { 'aria-label': t('stem.echolocation.echolocation_visualization', 'Echolocation visualization'),
+        // Every canvas in this file carried TWO 'aria-label' keys in one props
+        // object: a generic translated one written first, and the specific
+        // hand-written one below it. Duplicate keys are legal JavaScript and the
+        // last wins, so the generic label never reached the DOM and its
+        // translation key was dead weight. The specific label is the one screen
+        // readers have always actually received; only the dead key is removed.
+        var sonarCanvasEl = h('canvas', {
           ref: sonarCanvasRef,
           width: 800,
           height: 500,
@@ -2328,7 +2378,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                   h('div', { style: { width: '12px', height: '12px', borderRadius: '50%', background: m.color }, 'aria-hidden': 'true' }),
                   h('div', null,
                     h('div', { className: 'text-[11px] font-bold ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, m.material + ' (' + m.reflectivity + ')'),
-                    h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-200') }, m.desc))
+                    h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, m.desc))
                 );
               })
             )
@@ -2618,9 +2668,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           }
 
           if (!st.perching) {
-            // Gravity
+            // Gravity. Velocity is integrated with dt below, so this cap is
+            // pixels/second. Keep the normal glide cap but give a deliberate
+            // dive enough headroom to produce visible downward travel.
             st.batVy += GRAVITY;
-            if (st.batVy > MAX_FALL_SPEED) st.batVy = MAX_FALL_SPEED;
+            var fallSpeedLimit = isDiving ? Math.max(MAX_FALL_SPEED, 120) : MAX_FALL_SPEED;
+            if (st.batVy > fallSpeedLimit) st.batVy = fallSpeedLimit;
 
             // Horizontal movement
             var hAccel = sp.speed * 60;
@@ -2633,7 +2686,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               st.energy -= sp.energyDrain;
               st.flapPhase += dt * 20; // fast wing flap
             } else if (isDiving) {
-              st.batVy += 2 * dt * 60;
+              // Reverse upward momentum promptly, then descend at a visible
+              // baseline speed (the old path remained around 5 px/second).
+              st.batVy = Math.max(st.batVy + 240 * dt, 90);
+              if (st.batVy > fallSpeedLimit) st.batVy = fallSpeedLimit;
               st.flapPhase += dt * 2; // wings folded
             } else {
               st.flapPhase += dt * 4; // gentle glide
@@ -3024,7 +3080,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             h('div', { className: 'flex items-center gap-2 mb-3' },
               h('span', { className: 'text-xl' }, '\uD83C\uDF0A'),
               h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.wave_visualizer', 'Wave Visualizer'))),
-            h('canvas', { 'aria-label': t('stem.echolocation.echolocation_visualization_2', 'Echolocation visualization'),
+            h('canvas', {
               ref: waveCanvasRef,
               width: 700,
               height: 180,
@@ -3049,7 +3105,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                   onChange: function(e) { upd('waveFreq', parseInt(e.target.value)); },
                   className: 'w-full accent-indigo-500'
                 }),
-                h('div', { className: 'flex justify-between text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-200') },
+                h('div', { className: 'flex justify-between text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') },
                   h('span', null, t('stem.echolocation.20_hz', '20 Hz')),
                   h('span', { className: 'text-green-500' }, t('stem.echolocation.audible', '\u2190 Audible \u2192')),
                   h('span', { className: 'text-purple-500' }, t('stem.echolocation.bat_range', '\u2190 Bat range \u2192')),
@@ -3075,7 +3131,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 }
               },
               className: 'transition-colors mt-2 px-4 py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700'
-            }, '\uD83D\uDD0A Play Tone (' + waveFreq + ' Hz)') : h('div', { className: 'mt-2 text-[11px] italic ' + (isDark ? 'text-slate-200' : 'text-slate-200') },
+            }, '\uD83D\uDD0A Play Tone (' + waveFreq + ' Hz)') : h('div', { className: 'mt-2 text-[11px] italic ' + (isDark ? 'text-slate-200' : 'text-slate-600') },
               waveFreq < 20 ? '\uD83D\uDC33 This frequency is infrasonic \u2014 too low for human hearing (below 20 Hz)' :
               '\uD83E\uDD87 This frequency is ultrasonic \u2014 above human hearing! Bats can hear this, but we cannot.'),
             // Properties readout
@@ -3164,7 +3220,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 }, mat.label + ' (' + Math.round(mat.reflection * 100) + '%)');
               })
             ),
-            h('canvas', { 'aria-label': t('stem.echolocation.echolocation_visualization_3', 'Echolocation visualization'),
+            h('canvas', {
               ref: reflCanvasRef,
               width: 700,
               height: 150,
@@ -3198,7 +3254,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             h('div', { className: 'flex items-center gap-2 mb-3' },
               h('span', { className: 'text-xl' }, '\uD83D\uDCC9'),
               h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.inverse_square_law', 'Inverse Square Law'))),
-            h('canvas', { 'aria-label': t('stem.echolocation.echolocation_visualization_4', 'Echolocation visualization'),
+            h('canvas', {
               ref: invSqCanvasRef,
               width: 700,
               height: 160,
@@ -3615,7 +3671,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             h('div', { className: 'flex items-center gap-2 mb-3' },
               h('span', { className: 'text-xl' }, '\uD83D\uDEA8'),
               h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.doppler_effect_simulator', 'Doppler Effect Simulator'))),
-            h('canvas', { 'aria-label': t('stem.echolocation.echolocation_visualization_5', 'Echolocation visualization'),
+            h('canvas', {
               ref: dopplerCanvasRef,
               width: 700,
               height: 280,
@@ -4077,7 +4133,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           bioSection === 'anatomy' && h('div', { className: 'space-y-3' },
             h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
               h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.bat_anatomy_click_a_part_to_learn_more', '\uD83E\uDDA0 Bat Anatomy \u2014 Click a part to learn more')),
-              h('canvas', { 'aria-label': t('stem.echolocation.echolocation_visualization_6', 'Echolocation visualization'),
+              h('canvas', {
                 ref: anatomyCanvasRef,
                 width: 500,
                 height: 300,
@@ -4132,7 +4188,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                     h('p', { className: 'text-[11px] ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, part.physics))
                 );
               })(),
-              !selectedAnatomyPart && h('div', { className: 'mt-2 text-[11px] italic text-center ' + (isDark ? 'text-slate-200' : 'text-slate-200') },
+              !selectedAnatomyPart && h('div', { className: 'mt-2 text-[11px] italic text-center ' + (isDark ? 'text-slate-200' : 'text-slate-600') },
                 t('stem.echolocation.click_or_tap_a_part_of_the_bat_to_expl', 'Click or tap a part of the bat to explore it. Use arrow keys for keyboard navigation.'))
             ),
 
@@ -4267,7 +4323,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                     h('span', { className: 'text-2xl' }, sp.emoji),
                     h('div', null,
                       h('div', { className: 'text-xs font-bold ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, sp.name),
-                      h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-200') }, sp.region))),
+                      h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, sp.region))),
                   expanded && h('div', { className: 'space-y-1 mt-2' },
                     h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-300' : 'text-slate-600') },
                       h('strong', null, 'Size: '), sp.size, ' | ',
@@ -4347,13 +4403,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               h('div', { className: 'grid grid-cols-3 gap-2 mt-2 text-center' },
                 h('div', { className: 'p-2 rounded ' + (isDark ? 'bg-slate-700/40' : 'bg-slate-100') },
                   h('div', { className: 'text-lg font-black ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, '1,400+'),
-                  h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-200') }, t('stem.echolocation.bat_species_worldwide', 'bat species worldwide'))),
+                  h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, t('stem.echolocation.bat_species_worldwide', 'bat species worldwide'))),
                 h('div', { className: 'p-2 rounded ' + (isDark ? 'bg-slate-700/40' : 'bg-slate-100') },
                   h('div', { className: 'text-lg font-black ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, '~25%'),
-                  h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-200') }, t('stem.echolocation.threatened_or_endangered', 'threatened or endangered'))),
+                  h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, t('stem.echolocation.threatened_or_endangered', 'threatened or endangered'))),
                 h('div', { className: 'p-2 rounded ' + (isDark ? 'bg-slate-700/40' : 'bg-slate-100') },
                   h('div', { className: 'text-lg font-black ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') }, '$23B'),
-                  h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-200') }, t('stem.echolocation.annual_value_of_pest_control', 'annual value of pest control')))
+                  h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, t('stem.echolocation.annual_value_of_pest_control', 'annual value of pest control')))
               )
             ),
             // Bat myths busted
@@ -4564,7 +4620,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               h('div', { className: 'flex items-center gap-2 mb-3' },
                 h('span', { className: 'text-xl' }, '\uD83C\uDF33'),
                 h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.night_soundscape_toggle_animals_to_hea', 'Night Soundscape \u2014 Toggle animals to hear how they share the frequency space'))),
-              h('canvas', { 'aria-label': t('stem.echolocation.echolocation_visualization_7', 'Echolocation visualization'),
+              h('canvas', {
                 ref: soundscapeCanvasRef,
                 width: 700,
                 height: 250,
@@ -4661,7 +4717,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                     h('div', { className: 'w-10 text-right text-[11px] font-mono font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, item.dB + ' dB'),
                     h('div', { className: 'flex-1 h-3 rounded-full overflow-hidden ' + (isDark ? 'bg-slate-700' : 'bg-slate-200') },
                       h('div', { style: { width: item.bar + '%', background: item.color }, className: 'h-full rounded-full' })),
-                    h('div', { className: 'flex-1 text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-200') }, item.label));
+                    h('div', { className: 'flex-1 text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, item.label));
                 })
               ),
               h('div', { className: 'mt-2 text-[11px] italic ' + (isDark ? 'text-indigo-400' : 'text-indigo-600') },
@@ -4780,7 +4836,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                   )
                 )
               ),
-              h('div', { className: 'mt-2 text-[11px] italic ' + (isDark ? 'text-slate-200' : 'text-slate-200') },
+              h('div', { className: 'mt-2 text-[11px] italic ' + (isDark ? 'text-slate-200' : 'text-slate-600') },
                 t('stem.echolocation.note_sound_travels_4_3x_faster_in_wate', 'Note: Sound travels ~4.3x faster in water than air, so dolphin sonar has much greater range than bat sonar at similar frequencies.'))
             ),
 
@@ -5169,7 +5225,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         h('div', { className: 'flex items-center justify-between' },
           h('div', { className: 'flex items-center gap-3' },
             h('button', {
-              'aria-label': t('stem.echolocation.back_to_stem_lab_menu', 'Back to STEM Lab menu'),
+              'aria-label': t('stem.echolocation.back_to_stem_lab_menu', 'Back to STEAM Lab menu'),
               onClick: function() { if (setStemLabTool) setStemLabTool(null); },
               className: 'p-2 rounded-lg transition-all ' + (isDark ? 'hover:bg-slate-700' : 'hover:bg-slate-200')
             }, h(ArrowLeft, { size: 18 })),

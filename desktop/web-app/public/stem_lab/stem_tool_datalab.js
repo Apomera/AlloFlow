@@ -1,13 +1,14 @@
 // ═══════════════════════════════════════════════════════════════════════
-// AlloFlow STEM Lab — Data Lab (CODAP + Socratic tutor) launcher + AI bridge
+// AlloFlow STEAM Lab — Data Lab (CODAP + Socratic tutor) launcher + AI bridge
 //
 // The Data Lab itself is a COMPANION WINDOW (data_lab/data_lab.html, the
 // Video-Studio / Access-Lens / Immersive-Geometry escape-hatch pattern): a
 // top-level page hosting the Concord Consortium's CODAP workspace (MIT,
 // codap.concord.org — credit to Concord) plus an AlloFlow Socratic tutor
 // panel. A tiny "tutor link" plugin rides inside CODAP (?di=) and reports the
-// SHAPE of the student's work — dataset/collection/column names + case
-// counts, NEVER cell values.
+// SHAPE of the student's work — dataset/collection/column names, case counts,
+// per-column summary statistics, and a BOUNDED sample of real rows (the
+// plugin caps rows, columns, and cell length) — never the whole table.
 //
 // This tool is the launcher and the AI bridge:
 //   popup ── allodatalab-hello ──────────▶ here (replies -ready {ai})
@@ -119,7 +120,8 @@
     label: 'Data Lab',
     desc: 'Real data science in CODAP — the Concord Consortium’s open data workspace — with an AlloFlow Socratic tutor beside it that asks questions about YOUR data instead of giving answers.',
     color: 'indigo',
-    category: 'general',
+    category: 'data',
+    aliases: ['CODAP', 'data science', 'statistics', 'datasets'],
     questHooks: [
       { id: 'dl_open', label: 'Open the Data Lab', icon: '📊',
         check: function (d) { return !!(d && d.opened); } },
@@ -234,24 +236,24 @@
       function returnToCatalog() {
         if (typeof setStemLabTool !== 'function') return;
         setStemLabTool(null);
-        if (announceToSR) announceToSR(t('stem.dataLab.returned_catalog_sr', 'Returned to the STEM Lab tools.'));
+        if (announceToSR) announceToSR(t('stem.dataLab.returned_catalog_sr', 'Returned to the STEAM Lab tools.'));
       }
 
       return h('div', { className: 'flex flex-col gap-4 animate-in fade-in duration-300 max-w-2xl' },
         typeof setStemLabTool === 'function' && h('button', {
           onClick: returnToCatalog,
           className: 'inline-flex w-fit items-center gap-2 rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-xs font-bold text-slate-200 transition-colors hover:bg-slate-800 active:scale-[0.97]',
-          'aria-label': t('stem.dataLab.back_to_tools', 'Back to STEM Lab tools')
+          'aria-label': t('stem.dataLab.back_to_tools', 'Back to STEAM Lab tools')
         },
           ArrowLeft ? h(ArrowLeft, { size: 16 }) : null,
-          h('span', null, t('stem.dataLab.back_to_tools', 'Back to STEM Lab tools'))
+          h('span', null, t('stem.dataLab.back_to_tools', 'Back to STEAM Lab tools'))
         ),
         h('h2', { className: 'text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-sky-400' },
           t('stem.dataLab.title', '📊 Data Lab — real data science, Socratic style')),
         h('p', { className: 'text-sm text-slate-300 leading-relaxed' },
           t('stem.dataLab.blurb', 'Build tables, drag out graphs, and explore real datasets in CODAP — the Concord Consortium’s open data workspace used in classrooms worldwide. An AlloFlow thinking partner sits beside it: it can see your column names, summary statistics, and a sample of your rows, and asks you questions instead of giving answers.')),
         h('div', { className: 'bg-slate-800/60 rounded-xl p-3 border border-slate-700 text-xs text-slate-300 space-y-1.5' },
-          h('div', null, '🔒 ' + t('stem.dataLab.privacy1', 'Your data values never leave the workspace — the tutor only sees names and counts.')),
+          h('div', null, '🔒 ' + t('stem.dataLab.privacy1', 'The tutor sees column names, summary statistics, and a small sample of rows — never your whole table.')),
           h('div', null, '💬 ' + t('stem.dataLab.privacy2', 'Tutor chats are not saved anywhere.')),
           h('div', null, (aiOn ? '✨ ' + t('stem.dataLab.ai_on', 'AI tutor is ON — it will answer through this window while it stays open.')
             : '🌱 ' + t('stem.dataLab.ai_off', 'AI hints are off — the Data Lab still works, with built-in thinking prompts instead of the AI tutor.')))),

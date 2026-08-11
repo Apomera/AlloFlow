@@ -660,7 +660,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
       id: 'help-school',
       title: 'The school side: IEPs, 504s, and how to ask',
       evidence: null,
-      body: 'Plain-English version, from the school-psych side of the table. A 504 PLAN provides accommodations — changes to HOW a child learns (extra time, preferential seating, breaks) — for a disability that limits a major life activity. An IEP provides specialized instruction — changes to WHAT and HOW a child is taught — under IDEA, and comes with measurable goals the team must track. You can request an evaluation AT ANY TIME, in writing, to the principal or special-education office; the district must respond within a legally defined timeline (the exact clock varies by state — ask for yours in the same letter). You are a full member of the team, you may bring anyone to the meeting, and you may ask for anything to be explained again in plain language. In Parent Mode, AlloFlow\'s chat assistant will also explain IEP goals in plain English — paste a goal and ask. Procedures vary by state and district; this is orientation, not legal advice.'
+      body: 'Plain-English version, from the school-psych side of the table. Section 504 is a civil-rights law. When an impairment substantially limits a major life activity, a knowledgeable school group may determine that a student needs regular or special education and related aids or services; these are often documented in a 504 plan and can include more than classroom accommodations. An IEP is under IDEA and provides special education and related services when a student meets IDEA\'s educational disability definition and, by reason of it, needs special education. You can request an evaluation AT ANY TIME, in writing, to the principal or special-education office; the district must respond within a legally defined timeline (the exact clock varies by state — ask for yours in the same letter). You are a full member of the team, you may invite a person with knowledge or special expertise regarding your child, and you may ask for anything to be explained again in plain language. In Parent Mode, AlloFlow\'s chat assistant will also explain IEP goals in plain English — paste a goal and ask. Procedures vary by state and district; this is orientation, not legal advice.'
     },
     {
       id: 'help-rights',
@@ -679,7 +679,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
         'IT IS NEVER SET IN STONE. The IEP is reviewed at least annually, your child is reevaluated at least every three years, and you can request an IEP meeting at any time in between. A 504 plan carries its own protections and grievance path.',
         'DISCIPLINE HAS A GUARDRAIL. If a child with an IEP or 504 faces removal beyond ten school days, the team must hold a MANIFESTATION DETERMINATION: was the behavior substantially caused by the disability, or by the plan not being implemented? If yes, the child generally returns, and the team\'s job becomes fixing the plan — often with a functional behavior assessment — not extending the punishment.',
         'THE IEP MUST LOOK PAST GRADUATION. By age 16 — earlier in many states — the IEP must include TRANSITION PLANNING: measurable goals for life after school (work, training, independent living) and the services to get there, built around the student\'s own stated interests. The student should be invited to these meetings; it is their future being planned.',
-        'WANT TO READ THE ACTUAL RULE? Every right above comes from a written regulation you are allowed to read yourself. The Education Law Navigator in STEM Lab shows the verbatim text of IDEA Part B and Section 504 — searchable, date-stamped, with federal and state rules side by side. Nothing in it is paraphrased.'
+        'WANT TO READ THE ACTUAL RULE? Every right above comes from a written regulation you are allowed to read yourself. The Education Law Navigator in STEAM Lab shows the verbatim text of IDEA Part B and Section 504 — searchable, date-stamped, with federal and state rules side by side. Nothing in it is paraphrased.'
       ]
     },
     {
@@ -802,7 +802,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
         },
         className: 'inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-bold border transition-colors',
         style: { background: pal.panel, borderColor: pal.border, color: pal.text },
-        'aria-label': view === 'menu' ? __alloT('stem.parentingLab.back_tools', 'Back to STEM Lab tools') : __alloT('stem.parentingLab.back_menu', 'Back to Parenting Lab menu')
+        'aria-label': view === 'menu' ? __alloT('stem.parentingLab.back_tools', 'Back to STEAM Lab tools') : __alloT('stem.parentingLab.back_menu', 'Back to Parenting Lab menu')
       }, view === 'menu' ? '← ' + __alloT('stem.parentingLab.tools', 'Tools') : '← ' + __alloT('stem.parentingLab.menu', 'Menu'));
 
       // ── The badge legend — teachable on its own ──

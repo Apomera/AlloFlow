@@ -22,7 +22,7 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -283,7 +283,22 @@ window.StemLab = window.StemLab || {
         if (cm) {
           var op1 = cm[2].replace('\u2264', '<=').replace('\u2265', '>=');
           var op2 = cm[4].replace('\u2264', '<=').replace('\u2265', '>=');
-          return { compound: true, lo: parseFloat(cm[1]), op1: op1, v: cm[3], op2: op2, hi: parseFloat(cm[5]) };
+          var loRaw = parseFloat(cm[1]), hiRaw = parseFloat(cm[5]);
+          // "5 > x > 1" is a valid descending compound meaning 1 < x < 5, but
+          // the notation, test-a-value, and graph all assume ascending order \u2014
+          // untreated it rendered the backwards interval (5, 1) and reported
+          // every tested value as "not a solution". Normalize by swapping the
+          // bounds and flipping both operators. Mixed directions ("3 < x > 2")
+          // describe no interval at all and are rejected rather than drawn.
+          var dir1 = op1.charAt(0), dir2 = op2.charAt(0);
+          if (dir1 !== dir2) return null;
+          if (dir1 === '>') {
+            return {
+              compound: true, lo: hiRaw, hi: loRaw, v: cm[3],
+              op1: op2.replace('>', '<'), op2: op1.replace('>', '<')
+            };
+          }
+          return { compound: true, lo: loRaw, op1: op1, v: cm[3], op2: op2, hi: hiRaw };
         }
         var absM = expr.match(/\|([a-z])\s*([+-])\s*(\d+\.?\d*)\|\s*([<>]=?|[\u2264\u2265])\s*(\d+\.?\d*)/);
         if (absM) {
@@ -332,6 +347,15 @@ window.StemLab = window.StemLab || {
           }
           var dispOp = ineq.op.replace('<=', '\u2264').replace('>=', '\u2265');
           setBuilderStr = '{ ' + ineq.v + ' | ' + ineq.v + ' ' + dispOp + ' ' + ineq.val + ' }';
+          // |x - c| > b solutions are a UNION of two rays; without this the
+          // notation showed only the left piece and silently dropped half the
+          // solution set.
+          if (ineq.absRight) {
+            var rOp = ineq.absRight.op;
+            intervalStr += ' \u222A ' + (rOp.includes('=') ? '[' : '(') + ineq.absRight.val + ', \u221E)';
+            var rDispOp = rOp.replace('<=', '\u2264').replace('>=', '\u2265');
+            setBuilderStr = '{ ' + ineq.v + ' | ' + ineq.v + ' ' + dispOp + ' ' + ineq.val + ' or ' + ineq.v + ' ' + rDispOp + ' ' + ineq.absRight.val + ' }';
+          }
         }
       }
 
@@ -349,6 +373,14 @@ window.StemLab = window.StemLab || {
           else if (ineq.op === '>=') testResult = tv >= ineq.val;
           else if (ineq.op === '<') testResult = tv < ineq.val;
           else if (ineq.op === '<=') testResult = tv <= ineq.val;
+          // Union case (|x - c| > b): a value on the RIGHT ray is also a
+          // solution — without this, testing x = 10 against |x - 3| > 5
+          // wrongly reported "not a solution".
+          if (!testResult && ineq.absRight) {
+            var rv = ineq.absRight;
+            if (rv.op === '>') testResult = tv > rv.val;
+            else if (rv.op === '>=') testResult = tv >= rv.val;
+          }
         }
       }
 
@@ -426,7 +458,7 @@ window.StemLab = window.StemLab || {
         { q: 'Shade: x between 1 and 8, including 1 but not 8', a: '1 <= x < 8', opts: ['1 <= x < 8', '1 < x <= 8', '1 < x < 8', '1 <= x <= 8'] },
       ];
       var QUIZ_HARD = [
-        { q: 'A roller coaster requires riders to be at least 48 inches tall. Write the inequality for height h.', a: 'x >= 48', opts: ['x >= 48', 'x > 48', 'x <= 48', 'x < 48'], range: { min: 40, max: 56 } },
+        { q: 'A roller coaster requires riders to be at least 48 inches tall. Write the inequality for height x.', a: 'x >= 48', opts: ['x >= 48', 'x > 48', 'x <= 48', 'x < 48'], range: { min: 40, max: 56 } },
         { q: 'The speed limit is under 65 mph. Write the inequality for speed x.', a: 'x < 65', opts: ['x < 65', 'x <= 65', 'x > 65', 'x >= 65'], range: { min: 55, max: 75 } },
         { q: 'A pH between 6 and 8 (inclusive) is safe for swimming. Write the inequality.', a: '6 <= x <= 8', opts: ['6 <= x <= 8', '6 < x < 8', '6 <= x < 8', '6 < x <= 8'], range: { min: 0, max: 14 } },
         { q: 'Water is liquid strictly between 0\u00B0C and 100\u00B0C. Write the inequality.', a: '0 < x < 100', opts: ['0 < x < 100', '0 <= x <= 100', '0 < x <= 100', '0 <= x < 100'], range: { min: -10, max: 110 } },
@@ -446,7 +478,15 @@ window.StemLab = window.StemLab || {
       var iqStartQuiz = function() {
         var pool = getQuizPool();
         var q = pool[Math.floor(Math.random() * pool.length)];
-        var shuffled = q.opts.slice().sort(function() { return Math.random() - 0.5; });
+        // Fisher-Yates: the old random-comparator .sort() is statistically
+        // biased (some orderings come up measurably more often). The question
+        // is drawn once into state, so a true shuffle here is stable for the
+        // life of the question; grading compares option TEXT to q.a.
+        var shuffled = q.opts.slice();
+        for (var fy = shuffled.length - 1; fy > 0; fy--) {
+          var fj = Math.floor(Math.random() * (fy + 1));
+          var ft = shuffled[fy]; shuffled[fy] = shuffled[fj]; shuffled[fj] = ft;
+        }
         upd({
           quiz: { q: q.q, a: q.a, opts: shuffled, answered: false, score: (d.quiz && d.quiz.score) || 0, streak: (d.quiz && d.quiz.streak) || 0 },
           range: q.range || { min: -10, max: 10 }
@@ -792,7 +832,19 @@ window.StemLab = window.StemLab || {
               h('text', { x: sxVal, y: 18, textAnchor: 'middle', fill: '#a21caf', style: { fontSize: '10px', fontWeight: 'bold' } }, ineq.v + ' = ' + ineq.val),
               h('text', { x: sxVal, y: 26, textAnchor: 'middle', fill: '#a21caf', style: { fontSize: '9px', fontWeight: 'bold' } }, endpointLbl),
               ineq.op.includes('>') && h('polygon', { points: (W - pad) + ',50 ' + (W - pad - 10) + ',43 ' + (W - pad - 10) + ',57', fill: '#d946ef' }),
-              ineq.op.includes('<') && h('polygon', { points: pad + ',50 ' + (pad + 10) + ',43 ' + (pad + 10) + ',57', fill: '#d946ef' }));
+              ineq.op.includes('<') && h('polygon', { points: pad + ',50 ' + (pad + 10) + ',43 ' + (pad + 10) + ',57', fill: '#d946ef' }),
+              // Union case (|x - c| > b): draw the RIGHT ray too — the graph
+              // used to shade only the left piece of the solution set.
+              ineq.absRight && (function() {
+                var rx = toSX(ineq.absRight.val);
+                var rClosed = ineq.absRight.op.includes('=');
+                return h('g', null,
+                  h('line', { x1: rx + 8, y1: 50, x2: W - pad, y2: 50, stroke: '#d946ef', strokeWidth: 3.5, style: { filter: 'drop-shadow(0 0 3px rgba(217,70,239,0.55))' } }),
+                  h('circle', { cx: rx, cy: 50, r: 6, fill: rClosed ? '#d946ef' : 'white', stroke: '#d946ef', strokeWidth: 2.5 }),
+                  h('text', { x: rx, y: 26, textAnchor: 'middle', fill: '#a21caf', style: { fontSize: '9px', fontWeight: 'bold' } },
+                    (rClosed ? '● ' : '○ ') + ineq.v + ' = ' + ineq.absRight.val),
+                  h('polygon', { points: (W - pad) + ',50 ' + (W - pad - 10) + ',43 ' + (W - pad - 10) + ',57', fill: '#d946ef' }));
+              })());
           })(),
           ineq && ineq.compound && h('g', null,
             h('line', { x1: toSX(ineq.lo), y1: 50, x2: toSX(ineq.hi), y2: 50, stroke: '#d946ef', strokeWidth: 3.5, style: { filter: 'drop-shadow(0 0 3px rgba(217,70,239,0.55))' } }),

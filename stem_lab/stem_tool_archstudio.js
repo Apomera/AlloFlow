@@ -12,7 +12,7 @@
  */
 (function () {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -425,7 +425,9 @@
   window.StemLab.registerTool('archStudio', {
     name: 'Architecture Studio',
     icon: '\uD83C\uDFD7\uFE0F',
-    category: 'explore',
+    desc: 'Build 3D structures with blocks, columns, arches, and ramps. Snap to a grid, measure shapes, and export a model.',
+    category: 'engineering',
+    aliases: ['architecture', '3D building', 'blocks', 'structural geometry'],
     questHooks: [
       { id: 'place_5_blocks', label: 'Place 5 building blocks', icon: '\uD83E\uDDF1', check: function(d) { return (d.blocks || []).length >= 5; }, progress: function(d) { return (d.blocks || []).length + '/5 blocks'; } },
       { id: 'place_15_blocks', label: 'Build a structure with 15+ blocks', icon: '\uD83C\uDFD7\uFE0F', check: function(d) { return (d.blocks || []).length >= 15; }, progress: function(d) { return (d.blocks || []).length + '/15 blocks'; } },

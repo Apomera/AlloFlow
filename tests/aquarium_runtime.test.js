@@ -1126,3 +1126,112 @@ expect(source).toContain('requestedHabitatInteractionId');
     expect(source).toContain("projected bioload ' + (currentLoad + species.load)");
   });
 });
+
+describe('Aquarium mode bodies are reachable', () => {
+  // Five mode bodies — learn, quiz, waterlab, designer, stressHunt — were nested
+  // INSIDE the marine element instead of being siblings of it. Their
+  // `mode === 'learn'` guards could then only be evaluated while mode was
+  // 'marine', so they could never be true: five tabs rendered their banner and
+  // nothing else. Parsing is the only honest way to check this; indentation
+  // looked correct throughout.
+  it('renders every mode body as a direct child of the tool root', async () => {
+    const { parse } = await import('acorn');
+    const ast = parse(source, { ecmaVersion: 2022, sourceType: 'script', locations: true });
+
+    let root = null;
+    (function walk(n) {
+      if (!n || typeof n !== 'object' || root) return;
+      if (Array.isArray(n)) return n.forEach(walk);
+      if (n.type === 'CallExpression' && n.arguments[1] && n.arguments[1].type === 'ObjectExpression'
+          && n.arguments[1].properties.some(p => p.key && p.key.value === 'data-aquarium-tool')) {
+        root = n; return;
+      }
+      for (const k of Object.keys(n)) { if (k !== 'loc') walk(n[k]); }
+    })(ast);
+    expect(root, 'tool root element not found').toBeTruthy();
+
+    const directLines = new Set(root.arguments.map(a => a.loc.start.line));
+
+    // Every `mode === '<id>'` guard that introduces a mode body.
+    const guards = [];
+    (function walk(n) {
+      if (!n || typeof n !== 'object') return;
+      if (Array.isArray(n)) return n.forEach(walk);
+      if (n.type === 'LogicalExpression' && n.operator === '&&') {
+        const l = n.left;
+        const isModeGuard = l && l.type === 'BinaryExpression' && l.operator === '==='
+          && l.left && l.left.name === 'mode' && l.right && typeof l.right.value === 'string';
+        if (isModeGuard) guards.push({ mode: l.right.value, line: n.loc.start.line });
+      }
+      for (const k of Object.keys(n)) { if (k !== 'loc') walk(n[k]); }
+    })(ast);
+
+    const bodies = guards.filter(g => g.line > 19000);
+    expect(bodies.length, 'expected the mode bodies to be found').toBeGreaterThan(5);
+
+    const unreachable = bodies.filter(g => !directLines.has(g.line)).map(g => `${g.mode}@${g.line}`);
+    expect(unreachable, 'mode bodies nested inside another mode can never render').toEqual([]);
+  });
+});
+
+describe('Aquarium quiz bank wiring', () => {
+  // AQUARIUM_QUIZ (31) and AQUARIUM_QUIZ_EXTENDED (15) were authored and then
+  // referenced nowhere. Wiring them in is only safe because their `correct` is
+  // the answer TEXT while this bank grades by INDEX — so this evaluates the real
+  // literals, the real append, and the real position-rotation together, rather
+  // than trusting the conversion by eye.
+  function sliceFrom(startMarker, endMarker) {
+    const a = source.indexOf(startMarker);
+    if (a < 0) throw new Error('missing marker: ' + startMarker);
+    const b = source.indexOf(endMarker, a);
+    if (b < 0) throw new Error('missing end marker for: ' + startMarker);
+    return source.slice(a, b + endMarker.length);
+  }
+
+  const program = [
+    sliceFrom('var AQUARIUM_QUIZ = [', '\n  ];'),
+    sliceFrom('var AQUARIUM_QUIZ_EXTENDED = [', '\n  ];'),
+    sliceFrom('var AQUARIUM_QUIZ_BANK = [', '\n  ];'),
+    sliceFrom('Array.prototype.push.apply(AQUARIUM_QUIZ_BANK, [\n    {', '\n  ]);'),
+    sliceFrom('Array.prototype.push.apply(AQUARIUM_QUIZ_BANK, [].concat(', '.filter(Boolean));'),
+    sliceFrom('  (function () {\n    for (var qi = 0; qi < AQUARIUM_QUIZ_BANK.length', '  })();')
+  ].join('\n');
+
+  const bank = runInNewContext(
+    '(function(){ ' + program + '; return AQUARIUM_QUIZ_BANK; })()',
+    { Math, Number, Array, Object, isFinite }
+  );
+
+  it('adds the two dormant banks to the live one', () => {
+    const legacy = bank.filter(q => String(q.id).startsWith('q-legacy-'));
+    expect(legacy.length, 'all 31 + 15 dormant questions should be wired in').toBe(46);
+  });
+
+  it('grades every question by index, so no wired question is unanswerable', () => {
+    // The bug this guards against: `correct` arriving as the answer string.
+    // Grading is `i === q.correct`, so a string would never match any option.
+    bank.forEach(q => {
+      expect(Array.isArray(q.options), `${q.id} options`).toBe(true);
+      expect(q.options.length, `${q.id} option count`).toBeGreaterThan(1);
+      expect(typeof q.correct, `${q.id} correct type`).toBe('number');
+      expect(q.correct, `${q.id} correct index in range`).toBeGreaterThanOrEqual(0);
+      expect(q.correct).toBeLessThan(q.options.length);
+      expect(typeof q.explanation, `${q.id} explanation`).toBe('string');
+    });
+  });
+
+  it('keeps question ids unique across all three banks', () => {
+    const ids = bank.map(q => q.id);
+    expect(new Set(ids).size, 'duplicate quiz ids').toBe(ids.length);
+  });
+
+  it('spreads the correct answer across positions in the wired questions', () => {
+    // The rotation exists because the authored bank put 75% of answers in slot 2.
+    // Newly wired questions must go through it too, not sit in one column.
+    const legacy = bank.filter(q => String(q.id).startsWith('q-legacy-'));
+    const inSlot = [0, 0, 0, 0];
+    legacy.forEach(q => { inSlot[q.correct] = (inSlot[q.correct] || 0) + 1; });
+    const worst = Math.max(...inSlot) / legacy.length;
+    expect(worst, 'no single position should hold most correct answers').toBeLessThan(0.5);
+  });
+});

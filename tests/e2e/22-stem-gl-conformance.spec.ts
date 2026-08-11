@@ -94,6 +94,12 @@ const MANIFEST: ToolEntry[] = [
     note: 'reaches 3D on a default mount; also mounts 4 2D canvases',
   },
   {
+    id: 'treeLab',
+    file: 'stem_lab/stem_tool_treelab.js',
+    preScripts: ['stem_lab/stem_lab_module.js'],
+    note: 'procedural tree on the Grow tab; reaches 3D on a default mount',
+  },
+  {
     id: 'nuclearLab',
     file: 'stem_lab/stem_tool_nuclearlab.js',
     preScripts: ['stem_lab/stem_lab_module.js'],

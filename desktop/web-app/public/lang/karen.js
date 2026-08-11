@@ -15544,7 +15544,19 @@
     "run_lesson_blueprint_hint": "တ့ထီၣ် resource ခဲလၢာ်လၢ plan အခဲအံၤအပူၤ",
     "cancelled": "Ta bluh htee. Ta htee ha k’thu ta ta hku bluh htee.",
     "cancel": "Hta meh",
-    "retry": "Hta meh ta bluh"
+    "retry": "Hta meh ta bluh",
+    "open_stem_tool": "Open a specific STEM tool",
+    "open_stem_tool_ambiguous": "More than one tool matches that: ",
+    "open_stem_tool_done": "Opened ",
+    "open_stem_tool_hint": "Name any STEM Lab tool and go straight to it",
+    "open_stem_tool_miss": "No STEM tool matched ",
+    "open_stem_tool_miss_tail": ". STEM Lab opened so you can browse.",
+    "open_stem_tool_no_index": "STEM Lab opened. The tool catalog was not available, so browse the list.",
+    "open_stem_tool_none": "STEM Lab opened. Name a tool and I can go straight to it.",
+    "open_stem_tool_unsupported": "STEM Lab opened. This build cannot jump straight to a named tool.",
+    "open_share_collect": "အိးထီၣ် Share & Collect",
+    "open_share_collect_done": "အိးထီၣ်လံ Share & Collect.",
+    "open_share_collect_hint": "တၢ်ဟ့ၣ်တၢ်ဆၢ, တၢ်ကွဲးနီၣ်မံၤ, တၢ်သံကွၢ် ဒီး အစၢတဖၣ်"
   },
   "palette": {
     "aria": "AlloFlow တၢ်ပၢအလီၢ်",

@@ -320,5 +320,8 @@
   "cmd.run_lesson_blueprint": "Cawnnak plan chuah",
   "cmd.run_lesson_blueprint_done": "Plan chuah lio — card cungah laa pakhat cio na hmuh khawh.",
   "cmd.run_lesson_blueprint_hint": "Hi plan chungah gin hmang zapi chuah",
-  "cmd.cancelled": "Hneek ding cu ngen a si. Tuah lio hna hi a provider nih a pawm tikah a ding."
+  "cmd.cancelled": "Hneek ding cu ngen a si. Tuah lio hna hi a provider nih a pawm tikah a ding.",
+  "cmd.open_share_collect": "Share & Collect hung",
+  "cmd.open_share_collect_hint": "Poll, ming ṭialnak, survey le a ra chuak mi",
+  "cmd.open_share_collect_done": "Share & Collect a hung cang."
 }

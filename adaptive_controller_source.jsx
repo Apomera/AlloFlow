@@ -18,7 +18,7 @@
 // Enables Xbox Adaptive Controller, Quadstick, switch interfaces, and standard
 // gamepads to control the entire AlloFlow UI. Maps controller inputs to keyboard
 // and mouse events so all existing components work without modification.
-// This runs globally — works in STEM Lab, SEL Hub, BehaviorLens, and the main app.
+// This runs globally — works in STEAM Lab, SEL Hub, BehaviorLens, and the main app.
 if (!window._alloGamepadGlobal) {
   window._alloGamepadGlobal = true;
   const _gpad = { prev: {}, axisKeys: {}, deadzone: 0.2, connected: false, scrollAccum: 0,

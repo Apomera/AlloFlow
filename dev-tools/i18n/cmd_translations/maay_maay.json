@@ -320,5 +320,8 @@
   "cmd.run_lesson_blueprint": "Samee qorshaha casharka",
   "cmd.run_lesson_blueprint_done": "Qorshaha ayaa la samaynayaa — waxaad ka daawan kartaa tallaabo kasta kaarka.",
   "cmd.run_lesson_blueprint_hint": "Waxay samaynaysaa dhammaan kheyraadka qorshaha hadda",
-  "cmd.cancelled": "Joojinta waa la codsaday. Shaqada hadda socota way joogsan doontaa marka bixiyuhu taageero."
+  "cmd.cancelled": "Joojinta waa la codsaday. Shaqada hadda socota way joogsan doontaa marka bixiyuhu taageero.",
+  "cmd.open_share_collect": "Fur Share & Collect",
+  "cmd.open_share_collect_hint": "Codbixin, isdiiwaangelin, su’aalo iyo natiijooyinkooda",
+  "cmd.open_share_collect_done": "Share & Collect waa la furay."
 }

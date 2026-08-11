@@ -58,6 +58,19 @@ describe('SIR / SEIR conservation', () => {
   });
 });
 
+describe('Simulation controls', () => {
+  it('honors a custom horizon and starting infected seed', () => {
+    const sir = C.solveSIR({ r0: 1, vaccRate: 0, infectPeriod: 10, popSize: 1000000, simDays: 60, initialInfectedPct: 2 });
+    expect(sir[sir.length - 1].day).toBe(60);
+    expect(sir[0].I).toBeCloseTo(2, 6);
+    expect(sir[0].S + sir[0].I + sir[0].R).toBeCloseTo(100, 6);
+
+    const seir = C.solveSEIR({ r0: 1, vaccRate: 0, infectPeriod: 10, latentPeriod: 5, popSize: 1000000, simDays: 90, initialInfectedPct: 2 });
+    expect(seir[seir.length - 1].day).toBe(90);
+    expect(seir[0].E + seir[0].I).toBeCloseTo(2, 6);
+    expect(seir[0].S + seir[0].E + seir[0].I + seir[0].R).toBeCloseTo(100, 6);
+  });
+});
 describe('SIR epidemic threshold', () => {
   it('R0 below 1 does not produce an outbreak', () => {
     const data = C.solveSIR({ r0: 0.6, vaccRate: 0, infectPeriod: 10, popSize: 1000000 });
@@ -81,6 +94,23 @@ describe('SIR epidemic threshold', () => {
   });
 });
 
+describe('Stochastic ensemble', () => {
+  it('is seeded, finite, and returns a nonzero middle-80 band', () => {
+    const params = { r0: 3, vaccRate: 0, infectPeriod: 10, popSize: 100000, simDays: 40, initialInfectedPct: 0.5, runs: 12, seed: 17 };
+    const first = C.solveSIRStochastic(params);
+    const second = C.solveSIRStochastic(params);
+    expect(first).toEqual(second);
+    expect(first.runs).toBe(12);
+    expect(first.data).toHaveLength(41);
+    expect(first.data[0].mean).toBeCloseTo(0.5, 6);
+    expect(first.data.some((row) => row.upper > row.lower)).toBe(true);
+    first.data.forEach((row) => {
+      expect(Number.isFinite(row.lower)).toBe(true);
+      expect(row.lower).toBeLessThanOrEqual(row.mean);
+      expect(row.mean).toBeLessThanOrEqual(row.upper);
+    });
+  });
+});
 describe('Outbreak map rates track R0', () => {
   // The map used a flat 15% recovery per step and an arbitrary r0 * 0.08 infection
   // chance, so its dynamics had nothing to do with the R0 the rest of the tool teaches.
@@ -107,6 +137,64 @@ describe('Outbreak map rates track R0', () => {
   });
 });
 
+describe('Pathogen-aware map profiles', () => {
+  it('exposes distinct illustrative transmission profiles and spatial features', () => {
+    expect(C.PATHOGEN_PROFILES.map((p) => p.id)).toEqual(['respiratory', 'measles', 'waterborne', 'vector']);
+    const respiratory = C.pathogenGridRates(2.5, 10, 'respiratory');
+    const measles = C.pathogenGridRates(2.5, 10, 'measles');
+    const lowExposure = C.pathogenGridRates(2.5, 10, 'respiratory', 0);
+    const highExposure = C.pathogenGridRates(2.5, 10, 'respiratory', 100);
+    expect(measles.pInfect).toBeGreaterThan(respiratory.pInfect);
+    expect(highExposure.pInfect).toBeGreaterThan(lowExposure.pInfect);
+    expect(C.isPathogenFeature(12, 0, 20, 'waterborne')).toBe(true);
+    expect(C.isPathogenFeature(0, 7, 20, 'vector')).toBe(true);
+    expect(C.getPathogenInterventions('waterborne')[0].id).toBe('sanitation');
+    const baseline = C.pathogenGridRates(2.5, 10, 'respiratory', 50, {});
+    const controlled = C.pathogenGridRates(2.5, 10, 'respiratory', 50, { ventilation: true, masking: true });
+    expect(controlled.pInfect).toBeLessThan(baseline.pInfect);
+  });
+});describe('Clinical map states', () => {
+  it('counts exposed and hospitalized cells and advances them', () => {
+    const counts = C.countGrid([['S', 'E', 'I'], ['H', 'R', 'D']]);
+    expect(counts).toMatchObject({ S: 1, E: 1, I: 1, H: 1, R: 1, D: 1, total: 6 });
+    const next = C.stepGrid([['E', 'H']], 2.5, [], 10, 'respiratory', 50, {});
+    expect(next[0][0]).toBe('I');
+    expect(['H', 'R']).toContain(next[0][1]);
+  });
+});describe('Map outcome summaries', () => {
+  it('tracks peaks, capacity overload, new infections, and containment', () => {
+    const summary = C.summarizeMapHistory([
+      { S: 95, E: 2, I: 3, H: 0, R: 0, total: 100 },
+      { S: 80, E: 4, I: 10, H: 4, R: 2, total: 100 },
+      { S: 75, E: 0, I: 0, H: 0, R: 25, total: 100 }
+    ], 2);
+    expect(summary).toMatchObject({
+      days: 2,
+      peakInfectious: 10,
+      peakInfectiousDay: 1,
+      peakHospitalized: 4,
+      peakHospitalizedDay: 1,
+      overloadDays: 1,
+      newInfections: 20,
+      containmentDay: 2,
+      contained: true,
+      finalActive: 0
+    });
+    expect(summary.attackRate).toBeCloseTo(20, 6);
+  });
+});
+describe('NPI effective reproduction number', () => {
+  it('includes the susceptible fraction created by vaccination', () => {
+    const result = C.solveSIR_NPI({ r0: 4, vaccRate: 75, infectPeriod: 10, popSize: 1000000 }, []);
+    expect(result.interventionR0).toBeCloseTo(4, 6);
+    expect(result.effR0).toBeCloseTo(0.996, 3);
+  });
+
+  it('combines vaccination and intervention effects', () => {
+    const result = C.solveSIR_NPI({ r0: 4, vaccRate: 50, infectPeriod: 10, popSize: 1000000 }, ['masks']);
+    expect(result.effR0).toBeCloseTo(1.1976, 3);
+  });
+});
 describe('Grade banding', () => {
   it('Kindergarten gets the K-2 wording, not 3-5', () => {
     // "Kindergarten" parses to NaN and the old `|| 5` fallback dropped the youngest

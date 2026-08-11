@@ -125,6 +125,24 @@ function HeaderBar(props) {
   } = props;
 
   const [showSetupPathMenu, setShowSetupPathMenu] = React.useState(false);
+  // Remembered per device. Defaults to collapsed on short viewports, where
+  // the header's height is the difference between seeing two paragraphs of
+  // adapted text and seeing five. Once the toggle is used, that choice wins.
+  const [headerCollapsed, setHeaderCollapsed] = React.useState(() => {
+    try {
+      const saved = localStorage.getItem('allo_header_collapsed');
+      if (saved === 'true') return true;
+      if (saved === 'false') return false;
+      return typeof window !== 'undefined' && window.innerHeight > 0 && window.innerHeight < 900;
+    } catch (_) { return false; }
+  });
+  const toggleHeaderCollapsed = React.useCallback(() => {
+    setHeaderCollapsed(previous => {
+      const next = !previous;
+      try { localStorage.setItem('allo_header_collapsed', String(next)); } catch (_) {}
+      return next;
+    });
+  }, []);
   const [pollAsk, setPollAsk] = React.useState('');
   const [pollAiBusy, setPollAiBusy] = React.useState(false);
   // Fills the options box for the organizer to edit. It never shares, never
@@ -228,11 +246,11 @@ function HeaderBar(props) {
     || readingThemeFallbackLabels.default;
 
   return (
-      <header aria-label={t('common.main_application_header')} className={`p-6 md:py-8 md:px-10 shadow-2xl no-print relative z-50 transition-all duration-500 w-full min-w-0 overflow-x-clip ${theme === 'contrast' ? 'bg-black border-b-4 border-yellow-400' : 'bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-900 via-indigo-950 to-slate-900 text-white'}`}>
+      <header aria-label={t('common.main_application_header')} className={`${headerCollapsed ? 'p-3 md:py-2 md:px-8' : 'p-4 md:py-4 md:px-8'} shadow-2xl no-print relative z-50 transition-all duration-500 w-full min-w-0 overflow-x-clip ${theme === 'contrast' ? 'bg-black border-b-4 border-yellow-400' : 'bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-900 via-indigo-950 to-slate-900 text-white'}`}>
         <div className="w-full max-w-[98%] mx-auto relative">
-          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+          <div className={`flex flex-col lg:flex-row items-start lg:items-center justify-between ${headerCollapsed ? 'gap-2' : 'gap-4'}`}>
             <div>
-              <h1 className={`text-3xl md:text-4xl font-black tracking-tight flex items-center gap-3 ${theme === 'contrast' ? 'text-yellow-400' : 'text-white drop-shadow-sm'}`}>
+              <h1 className={`${headerCollapsed ? 'text-xl md:text-2xl' : 'text-2xl md:text-3xl'} font-black tracking-tight flex items-center gap-3 ${theme === 'contrast' ? 'text-yellow-400' : 'text-white drop-shadow-sm'}`}>
                 <span className={`inline-flex items-center justify-center ${theme === 'contrast' ? '' : 'p-1.5 rounded-2xl bg-gradient-to-br from-amber-400/20 to-orange-500/20 border border-amber-200/30'}`} aria-hidden="true">
                   <Layers className="w-10 h-10" aria-hidden="true" />
                 </span>
@@ -254,16 +272,32 @@ function HeaderBar(props) {
                     </div>
                 </div>
               </h1>
-              <p className={`mt-2 text-sm font-medium italic opacity-90 ${theme === 'contrast' ? 'text-yellow-400' : 'text-indigo-100'}`}>
-                {t('header.tagline')}
-              </p>
+              {!headerCollapsed && (
+                <p className={`mt-2 text-sm font-medium italic opacity-90 ${theme === 'contrast' ? 'text-yellow-400' : 'text-indigo-100'}`}>
+                  {t('header.tagline')}
+                </p>
+              )}
               <div className="flex flex-wrap items-center gap-2 mt-2">
+                {!headerCollapsed && (
                 <span className={`inline-flex items-center gap-1 text-[11px] ${theme === 'contrast' ? 'text-yellow-400' : 'px-2.5 py-0.5 rounded-xl bg-white/10 border border-white/20 text-indigo-100'}`}>
                   {t('header.rights')}
                 </span>
+                )}
                 <span className={`inline-flex items-center gap-1 text-[11px] font-medium ${theme === 'contrast' ? 'text-red-400' : 'px-2.5 py-0.5 rounded-xl bg-orange-400/15 border border-orange-300/30 text-orange-100'}`}>
                   <AlertCircle size={10} aria-hidden="true" /> {t('header.pii_warning')}
                 </span>
+                {/* Explicit and remembered. No scroll-driven shrinking: moving
+                    hit targets mid-scroll is exactly the kind of thing this app
+                    exists to avoid. */}
+                <button
+                  type="button"
+                  onClick={toggleHeaderCollapsed}
+                  aria-expanded={!headerCollapsed}
+                  aria-label={headerCollapsed ? (t('header.expand') || 'Expand header') : (t('header.collapse') || 'Collapse header to make room for content')}
+                  className="inline-flex items-center gap-1 rounded-xl border border-white/25 bg-white/10 px-2.5 py-0.5 text-[11px] font-bold text-white/90 hover:bg-white/20"
+                >
+                  {headerCollapsed ? (t('header.expand_short') || 'More') : (t('header.collapse_short') || 'Less')}
+                </button>
               </div>
             </div>
             <div className="flex flex-col items-stretch sm:items-end gap-4 w-full lg:w-auto min-w-0">
@@ -896,7 +930,7 @@ function HeaderBar(props) {
                           onClick={() => setShowLearningHub(true)}
                           data-help-key="header_learning_hub"
                           className="px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wider hover:bg-white/10 text-white/80 hover:text-white border border-white/10"
-                          title={t('header.learning_tools_tooltip') || 'Learning Tools (STEM Lab, SEL Hub, Research Hub, LitLab, PoetTree, StoryForge)'}
+                          title={t('header.learning_tools_tooltip') || 'Learning Tools (STEAM Lab, SEL Hub, Research Hub, LitLab, PoetTree, StoryForge)'}
                           aria-label={t('header.learning_tools_aria') || 'Learning Tools'}
                         >
                           <span style={{fontSize:'14px',lineHeight:1}}>🧠</span>

@@ -1,4 +1,4 @@
-// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -796,6 +796,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var fj = Math.floor(Math.random() * (fy + 1));
       var ft = out[fy]; out[fy] = out[fj]; out[fj] = ft;
     }
+    return out;
+  }
+
+  // The instructional scenario mini-quizzes (roundabout, DUI, defensive,
+  // moose, emergency, bus, rail, winter, construction) authored their correct
+  // answer into slot 2 almost uniformly — they are part of the measured
+  // 10/193/49/2 slot pile-up — and unlike the permit tests they never went
+  // through shuffleAnswers. They are re-derived from static config on every
+  // render and graded by index (ci === sc.correct) with per-scenario state
+  // keyed by sc.id, so a deterministic per-scenario rotation is stable across
+  // renders and safe: `correct` is remapped with the choices, and `exp` is a
+  // single string, not per-option.
+  function rrRotateScenario(sc, si) {
+    if (!sc || !Array.isArray(sc.choices) || sc.choices.length < 2 || typeof sc.correct !== 'number') return sc;
+    var n = sc.choices.length;
+    var shift = ((si * 7) + 3) % n;
+    if (shift === 0) return sc;
+    var moved = new Array(n);
+    for (var i = 0; i < n; i++) moved[(i + shift) % n] = sc.choices[i];
+    var out = Object.assign({}, sc);
+    out.choices = moved;
+    out.correct = (sc.correct + shift) % n;
     return out;
   }
 
@@ -26660,7 +26682,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             )
           ),
           h('div', { style: { fontSize: '11px', fontWeight: 700, color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('stem.roadready.scenarios_2', 'Scenarios')),
-          cfg.scenarios.map(function(sc) {
+          cfg.scenarios.map(rrRotateScenario).map(function(sc) {
             var scState = state[sc.id] || {};
             var answered = scState.answered !== undefined;
             return h('div', { key: sc.id, style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '16px', border: '1px solid ' + (scState.correct ? '#4ade80' : answered ? '#ef4444' : '#334155'), marginBottom: '10px' } },
@@ -26896,7 +26918,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.defensive_driving_drills', 'Defensive Driving Drills')),
             h('div', { style: { fontSize: '12px', color: '#bfdbfe' } }, passed + ' / ' + defScenarios.length + ' passed · Quick hazard-response scenarios')
           ),
-          defScenarios.map(function(sc) {
+          defScenarios.map(rrRotateScenario).map(function(sc) {
             var state = defState[sc.id] || {};
             var answered = state.answered !== undefined;
             return h('div', { key: sc.id, style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '16px', border: '1px solid ' + (state.correct ? '#4ade80' : answered ? '#ef4444' : '#334155'), marginBottom: '10px' } },
@@ -27076,7 +27098,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           ),
           // Scenarios
           h('div', { style: { fontSize: '11px', fontWeight: 700, color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('stem.roadready.scenarios_3', 'Scenarios')),
-          MOOSE_SCENARIOS.map(function(sc) {
+          MOOSE_SCENARIOS.map(rrRotateScenario).map(function(sc) {
             var state = mooseState[sc.id] || {};
             var answered = state.answered !== undefined;
             return h('div', { key: sc.id, style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '16px', border: '1px solid ' + (state.correct ? '#4ade80' : answered ? '#ef4444' : '#334155'), marginBottom: '10px' } },
@@ -27249,7 +27271,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             )
           ),
           h('div', { style: { fontSize: '11px', fontWeight: 700, color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('stem.roadready.scenarios_4', 'Scenarios')),
-          EMG_SCENARIOS.map(function(sc) {
+          EMG_SCENARIOS.map(rrRotateScenario).map(function(sc) {
             var state = emgState[sc.id] || {};
             var answered = state.answered !== undefined;
             return h('div', { key: sc.id, style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '16px', border: '1px solid ' + (state.correct ? '#4ade80' : answered ? '#ef4444' : '#334155'), marginBottom: '10px' } },
@@ -27408,7 +27430,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             )
           ),
           h('div', { style: { fontSize: '11px', fontWeight: 700, color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('stem.roadready.scenarios_5', 'Scenarios')),
-          BUS_SCENARIOS.map(function(sc) {
+          BUS_SCENARIOS.map(rrRotateScenario).map(function(sc) {
             var state = busState[sc.id] || {};
             var answered = state.answered !== undefined;
             return h('div', { key: sc.id, style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '16px', border: '1px solid ' + (state.correct ? '#4ade80' : answered ? '#ef4444' : '#334155'), marginBottom: '10px' } },
@@ -27581,7 +27603,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             )
           ),
           h('div', { style: { fontSize: '11px', fontWeight: 700, color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('stem.roadready.scenarios_6', 'Scenarios')),
-          RR_SCENARIOS.map(function(sc) {
+          RR_SCENARIOS.map(rrRotateScenario).map(function(sc) {
             var state = rrState[sc.id] || {};
             var answered = state.answered !== undefined;
             return h('div', { key: sc.id, style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '16px', border: '1px solid ' + (state.correct ? '#4ade80' : answered ? '#ef4444' : '#334155'), marginBottom: '10px' } },
@@ -27756,7 +27778,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             )
           ),
           h('div', { style: { fontSize: '11px', fontWeight: 700, color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('stem.roadready.scenarios_7', 'Scenarios')),
-          WINTER_SCENARIOS.map(function(sc) {
+          WINTER_SCENARIOS.map(rrRotateScenario).map(function(sc) {
             var state = winterState[sc.id] || {};
             var answered = state.answered !== undefined;
             return h('div', { key: sc.id, style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '16px', border: '1px solid ' + (state.correct ? '#4ade80' : answered ? '#ef4444' : '#334155'), marginBottom: '10px' } },
@@ -27929,7 +27951,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             )
           ),
           h('div', { style: { fontSize: '11px', fontWeight: 700, color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('stem.roadready.scenarios_8', 'Scenarios')),
-          CONSTR_SCENARIOS.map(function(sc) {
+          CONSTR_SCENARIOS.map(rrRotateScenario).map(function(sc) {
             var state = constrState[sc.id] || {};
             var answered = state.answered !== undefined;
             return h('div', { key: sc.id, style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '16px', border: '1px solid ' + (state.correct ? '#4ade80' : answered ? '#ef4444' : '#334155'), marginBottom: '10px' } },

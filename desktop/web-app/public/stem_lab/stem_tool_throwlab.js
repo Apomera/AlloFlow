@@ -48,7 +48,7 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -2211,7 +2211,7 @@ window.StemLab = window.StemLab || {
           });
           sheetHtml += '</ol></div>';
         });
-        sheetHtml += '<footer>ThrowLab — STEM Lab tool for sports physics · AlloFlow</footer>'
+        sheetHtml += '<footer>ThrowLab — STEAM Lab tool for sports physics · AlloFlow</footer>'
           + '</body></html>';
         try {
           var win = window.open('', '_blank');
@@ -5110,7 +5110,7 @@ window.StemLab = window.StemLab || {
           ArrowLeft && h('button', {
             onClick: function() { setStemLabTool && setStemLabTool(null); },
             'data-tl-focusable': 'true',
-            'aria-label': __alloT('stem.throwlab.back_to_stem_lab', 'Back to STEM Lab'),
+            'aria-label': __alloT('stem.throwlab.back_to_stem_lab', 'Back to STEAM Lab'),
             style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #f1f5f9)', padding: '6px 10px', borderRadius: 6, cursor: 'pointer' }
           }, __alloT('stem.throwlab.back', '← Back')),
           h('h2', { style: { margin: 0, fontSize: 20 } }, modeMeta.icon + ' ThrowLab — ' + modeMeta.label),

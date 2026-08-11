@@ -74,15 +74,19 @@
                                                                            "civic_policy",
                                                                            "creative_cultural"
                                                                        ],
-                                              "capabilities":  {
-                                                                   "captureArtifact":  true,
-                                                                   "rawDataIncluded":  false
+                                              "capabilities":  {                                                                   "captureArtifact":  true,
+                                                                   "rawDataIncluded":  false,
+                                                                   "sourceDiscovery":  true,
+                                                                   "sourceVerification":  true,
+                                                                   "citationGeneration":  true
                                                                },
                                               "privacy":  {
                                                               "learnerApprovalRequired":  true,
                                                               "directIdentifiersAllowed":  false,
                                                               "sequenceLikeTextAllowed":  false,
                                                               "fullTextIncluded":  false,
+                                                              "externalSearchQueryAllowed":  true,
+                                                              "externalMetadataUrlAllowed":  true,
                                                               "sanitizerId":  "text_inquiry_excerpt_guard_v1",
                                                               "sanitizerRequired":  false
                                                           },

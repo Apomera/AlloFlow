@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════
-// stem_tool_geo.js — STEM Lab Geo Tools
+// stem_tool_geo.js — STEAM Lab Geo Tools
 // 1 registered tools
 // Auto-extracted (Phase 2 modularization)
 // ═══════════════════════════════════════════
@@ -32,7 +32,7 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -3101,6 +3101,9 @@ var d = labToolData || {};
                 key:p.id, draggable:true,
                 onDragStart:e=>{ _gpDrag.matchId=p.id; e.dataTransfer.effectAllowed='move'; try{e.dataTransfer.setData('text/plain',p.theorem);}catch(ex){} },
                 onDragEnd:()=>{ _gpDrag.matchId=null; },
+                role:'button', tabIndex:0,
+                'aria-label': 'Theorem: '+p.theorem+'. Press Enter to select, then choose a description.',
+                onKeyDown:e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); gpUpd('selectedMatch',gp.selectedMatch===p.id?null:p.id); } },
                 onClick:()=>gpUpd('selectedMatch',gp.selectedMatch===p.id?null:p.id),
                 className:`px-3 py-2 text-xs font-bold rounded-xl cursor-grab active:cursor-grabbing select-none shadow-sm hover:shadow-md hover:scale-105 transition-all ${gp.selectedMatch===p.id?'bg-violet-700 text-white ring-2 ring-violet-300':'bg-white border-2 border-violet-200 text-violet-700 hover:border-violet-400'}`,
                 style:{touchAction:'none'}
@@ -3118,6 +3121,9 @@ var d = labToolData || {};
                   onDragOver:e=>{ if(!isMatched){e.preventDefault();e.dataTransfer.dropEffect='move';gpUpd('matchDragOver',slot);} },
                   onDragLeave:()=>{ if(gp.matchDragOver===slot) gpUpd('matchDragOver',null); },
                   onDrop:e=>{ e.preventDefault(); if(!isMatched&&_gpDrag.matchId!=null){checkMatch(_gpDrag.matchId,slot);_gpDrag.matchId=null;} gpUpd('matchDragOver',null); },
+                  role:'button', tabIndex:0,
+                  'aria-label': 'Description slot '+(slot+1)+(isMatched?', filled':', empty. Select a theorem first, then press Enter to place it here.'),
+                  onKeyDown:e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); if(!isMatched&&gp.selectedMatch!=null){checkMatch(gp.selectedMatch,slot);gpUpd('selectedMatch',null);} } },
                   onClick:()=>{ if(!isMatched&&gp.selectedMatch!=null){checkMatch(gp.selectedMatch,slot);gpUpd('selectedMatch',null);} },
                   className:`p-3 rounded-xl border-2 transition-all ${isMatched?'border-emerald-300 bg-emerald-50 gp-match-pop':isWrong?'border-red-400 bg-red-50 gp-shake':gp.matchDragOver===slot?'border-violet-400 bg-violet-50 shadow-md':'border-slate-200 bg-white hover:border-slate-300'}`
                 },
@@ -3174,12 +3180,15 @@ var d = labToolData || {};
                 draggable:true,
                 onDragStart:e=>{ _gpDrag.angleIdx=a.id; e.dataTransfer.effectAllowed='move'; try{e.dataTransfer.setData('text/plain',String(a.deg));}catch(ex){} },
                 onDragEnd:()=>{ _gpDrag.angleIdx=null; },
+                role:'button', tabIndex:0,
+                'aria-label': a.deg+' degree angle. Press Enter to select, then choose a category.',
+                onKeyDown:e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); gpUpd('selectedAngle',gp.selectedAngle===a.id?null:a.id); } },
                 onClick:()=>gpUpd('selectedAngle',gp.selectedAngle===a.id?null:a.id),
                 className:`flex flex-col items-center p-2 rounded-xl cursor-grab active:cursor-grabbing select-none shadow-sm hover:shadow-lg hover:scale-110 transition-all border-2 ${sr.wrong===a.id?'border-red-400 bg-red-50 gp-shake':gp.selectedAngle===a.id?'border-violet-400 bg-violet-50 scale-105':'border-slate-200 bg-white'}`,
                 style:{touchAction:'none',width:'70px'}
               },
                 // Mini SVG arc
-                React.createElement('svg',{width:50,height:40,viewBox:'0 0 50 40'},
+                React.createElement('svg',{ 'aria-hidden': 'true',width:50,height:40,viewBox:'0 0 50 40'},
                   React.createElement('line',{x1:25,y1:35,x2:48,y2:35,stroke:'#6d28d9',strokeWidth:2}),
                   (()=>{ const rad=a.deg*Math.PI/180; const ex=25+22*Math.cos(-rad),ey=35+22*Math.sin(-rad); return React.createElement(React.Fragment,null,
                     React.createElement('line',{x1:25,y1:35,x2:ex,y2:ey,stroke:'#6d28d9',strokeWidth:2}),
@@ -3197,6 +3206,9 @@ var d = labToolData || {};
                   onDragOver:e=>{ e.preventDefault(); e.dataTransfer.dropEffect='move'; gpUpd('sorterDragOver',ci); },
                   onDragLeave:()=>{ if(gp.sorterDragOver===ci) gpUpd('sorterDragOver',null); },
                   onDrop:e=>{ e.preventDefault(); if(_gpDrag.angleIdx!=null){sortAngle(_gpDrag.angleIdx,ci);_gpDrag.angleIdx=null;} gpUpd('sorterDragOver',null); },
+                  role:'button', tabIndex:0,
+                  'aria-label': cat+' category. Select an angle first, then press Enter to place it here.',
+                  onKeyDown:e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); if(gp.selectedAngle!=null){sortAngle(gp.selectedAngle,ci);gpUpd('selectedAngle',null);} } },
                   onClick:()=>{ if(gp.selectedAngle!=null){sortAngle(gp.selectedAngle,ci);gpUpd('selectedAngle',null);} },
                   className:`p-2 rounded-xl border-2 min-h-[70px] transition-all text-center ${gp.sorterDragOver===ci?'border-violet-400 bg-violet-50 shadow-md':'border-slate-200 bg-slate-50 hover:border-slate-300'}`
                 },
@@ -3427,6 +3439,9 @@ var d = labToolData || {};
                   draggable:true,
                   onDragStart:e=>{ _gpDrag.reason=reason; e.dataTransfer.effectAllowed='move'; try{e.dataTransfer.setData('text/plain',reason);}catch(ex){} },
                   onDragEnd:()=>{ _gpDrag.reason=null; },
+                  role:'button', tabIndex:0,
+                  'aria-label': 'Reason: '+reason+'. Press Enter to select, then choose a proof row.',
+                  onKeyDown:e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); gpUpd('selectedChip', selectedChip===reason?null:reason); } },
                   onClick:()=>{ gpUpd('selectedChip', selectedChip===reason?null:reason); },
                   className:`px-2.5 py-1.5 text-[11px] font-bold rounded-lg cursor-grab active:cursor-grabbing select-none transition-all shadow-sm hover:shadow-md hover:scale-105 ${selectedChip===reason?'bg-violet-700 text-white ring-2 ring-violet-300 scale-105':'bg-white text-emerald-700 border border-emerald-200 hover:border-emerald-400'}`,
                   style:{touchAction:'none'}
@@ -3444,6 +3459,9 @@ var d = labToolData || {};
                   onDragOver:e=>{ if(canAnswer){ e.preventDefault(); e.dataTransfer.dropEffect='move'; gpUpd('dragOverStep',si); } },
                   onDragLeave:()=>{ if(dragOverStep===si) gpUpd('dragOverStep',null); },
                   onDrop:e=>{ e.preventDefault(); if(canAnswer&&_gpDrag.reason){ placeChip(si,_gpDrag.reason); _gpDrag.reason=null; } gpUpd('dragOverStep',null); },
+                  role:'button', tabIndex:0,
+                  'aria-label': 'Proof row '+(si+1)+'. Select a reason first, then press Enter to place it here.',
+                  onKeyDown:e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); if(canAnswer&&selectedChip){ placeChip(si,selectedChip); } } },
                   onClick:()=>{ if(canAnswer&&selectedChip){ placeChip(si,selectedChip); } }
                 },
                   React.createElement('div',{className:'col-span-1 p-2 text-center text-xs font-bold text-emerald-600'},si+1),

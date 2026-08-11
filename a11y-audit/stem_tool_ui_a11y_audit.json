@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-06T01:24:12.127Z",
+  "generatedAt": "2026-08-10T03:09:09.665Z",
   "source": {
     "stemToolFileCount": 137,
     "registeredToolCount": 140
@@ -8,14 +8,14 @@
   "loadErrors": [],
   "renderErrors": [],
   "summary": {
-    "issueCount": 39,
+    "issueCount": 6,
     "errorCount": 0,
-    "warningCount": 21,
-    "noticeCount": 18,
-    "toolsWithIssues": 26,
+    "warningCount": 6,
+    "noticeCount": 0,
+    "toolsWithIssues": 4,
     "toolsWithErrors": 0,
-    "toolsWithWarnings": 8,
-    "toolsWithCanvas": 41,
+    "toolsWithWarnings": 4,
+    "toolsWithCanvas": 43,
     "shellCoverage": {
       "standardShellTools": 140,
       "lightBackgroundTools": [],
@@ -28,17 +28,17 @@
         "warningCount": 0,
         "noticeCount": 0
       },
-      "general": {
-        "toolCount": 10,
+      "accessibility": {
+        "toolCount": 1,
         "errorCount": 0,
         "warningCount": 0,
-        "noticeCount": 10
+        "noticeCount": 0
       },
       "math": {
-        "toolCount": 26,
+        "toolCount": 27,
         "errorCount": 0,
-        "warningCount": 1,
-        "noticeCount": 1
+        "warningCount": 4,
+        "noticeCount": 0
       },
       "Games": {
         "toolCount": 1,
@@ -47,13 +47,13 @@
         "noticeCount": 0
       },
       "science": {
-        "toolCount": 57,
+        "toolCount": 58,
         "errorCount": 0,
-        "warningCount": 16,
-        "noticeCount": 1
+        "warningCount": 1,
+        "noticeCount": 0
       },
       "technology": {
-        "toolCount": 2,
+        "toolCount": 3,
         "errorCount": 0,
         "warningCount": 0,
         "noticeCount": 0
@@ -64,17 +64,17 @@
         "warningCount": 0,
         "noticeCount": 0
       },
-      "explore": {
-        "toolCount": 4,
+      "engineering": {
+        "toolCount": 3,
         "errorCount": 0,
         "warningCount": 0,
-        "noticeCount": 4
+        "noticeCount": 0
       },
       "creative": {
-        "toolCount": 7,
+        "toolCount": 8,
         "errorCount": 0,
         "warningCount": 0,
-        "noticeCount": 1
+        "noticeCount": 0
       },
       "Literacy": {
         "toolCount": 1,
@@ -85,7 +85,7 @@
       "applied": {
         "toolCount": 7,
         "errorCount": 0,
-        "warningCount": 0,
+        "warningCount": 1,
         "noticeCount": 0
       },
       "life-skills": {
@@ -95,16 +95,16 @@
         "noticeCount": 0
       },
       "biology": {
-        "toolCount": 2,
-        "errorCount": 0,
-        "warningCount": 1,
-        "noticeCount": 0
-      },
-      "tech": {
-        "toolCount": 1,
+        "toolCount": 5,
         "errorCount": 0,
         "warningCount": 0,
-        "noticeCount": 1
+        "noticeCount": 0
+      },
+      "data": {
+        "toolCount": 2,
+        "errorCount": 0,
+        "warningCount": 0,
+        "noticeCount": 0
       },
       "Life Science": {
         "toolCount": 1,
@@ -124,13 +124,19 @@
         "warningCount": 0,
         "noticeCount": 0
       },
+      "geology": {
+        "toolCount": 1,
+        "errorCount": 0,
+        "warningCount": 0,
+        "noticeCount": 0
+      },
       "Life Skills": {
         "toolCount": 1,
         "errorCount": 0,
-        "warningCount": 3,
+        "warningCount": 0,
         "noticeCount": 0
       },
-      "data": {
+      "chemistry": {
         "toolCount": 1,
         "errorCount": 0,
         "warningCount": 0,
@@ -165,79 +171,39 @@
         "errorCount": 0,
         "warningCount": 0,
         "noticeCount": 0
+      },
+      "history": {
+        "toolCount": 1,
+        "errorCount": 0,
+        "warningCount": 0,
+        "noticeCount": 0
       }
     }
   },
   "topFindings": [
     {
-      "code": "canvas-focus",
+      "code": "no-interactive-controls",
       "severity": "warning",
-      "count": 13,
-      "toolCount": 4,
-      "exampleTools": [
-        "beehive",
-        "heatLab",
-        "moonMission",
-        "nuclearLab"
-      ],
-      "recommendation": "Make interactive canvases keyboard-focusable. For static output, use role=img, a meaningful name and description, plus data-a11y-static=true."
-    },
-    {
-      "code": "tiny-text",
-      "severity": "warning",
-      "count": 4,
-      "toolCount": 4,
-      "exampleTools": [
-        "beehive",
-        "dnaLab",
-        "lifeSkills",
-        "probability"
-      ],
-      "recommendation": "Avoid persistent 8px/9px instructional text; keep small labels at 10px+ with clear line height."
-    },
-    {
-      "code": "inline-contrast",
-      "severity": "warning",
-      "count": 4,
+      "count": 3,
       "toolCount": 3,
       "exampleTools": [
-        "galaxy",
-        "heatLab",
-        "lifeSkills"
+        "coasterLab",
+        "geoSandbox",
+        "geometryWorld"
       ],
-      "recommendation": "Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text."
+      "recommendation": "Confirm the first screen really has no control. If it does, the audit is stuck on a placeholder and the tool is effectively unaudited."
     },
     {
-      "code": "metadata",
-      "severity": "notice",
-      "count": 16,
-      "toolCount": 16,
+      "code": "placeholder-render",
+      "severity": "warning",
+      "count": 3,
+      "toolCount": 3,
       "exampleTools": [
-        "accessLens",
-        "archStudio",
-        "circuitShelf",
-        "codingPlayground",
-        "cyberDefense",
-        "dataLab",
-        "dinoLab",
-        "evoLab",
-        "geologyExplorer",
+        "geoSandbox",
         "geometryWorld",
-        "moleculeShelf",
-        "nutritionLab"
+        "lawNavigator"
       ],
-      "recommendation": "Fill in label, description, category, and aliases so discovery and context labels stay clear."
-    },
-    {
-      "code": "horizontal-overflow-risk",
-      "severity": "notice",
-      "count": 2,
-      "toolCount": 2,
-      "exampleTools": [
-        "areaPerimeter",
-        "throwlab"
-      ],
-      "recommendation": "Review fixed-width elements at 360px and 768px widths so panels and canvases do not overflow."
+      "recommendation": "The audit only saw a loading/gated screen. Give the harness what the tool waits on (host state, 3D loader, network stub) so the real first screen gets audited."
     }
   ],
   "recommendations": [
@@ -277,6 +243,8 @@
       "aliases": [],
       "desc": "Audit websites and documents for WCAG 2.1 AA accessibility compliance. Learn about digital accessibility by analyzing real-world content.",
       "renderedBytes": 7286,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -299,17 +267,24 @@
     {
       "id": "accessLens",
       "label": "Access Lens",
-      "category": "general",
+      "category": "accessibility",
       "ready": true,
       "lightBackground": false,
-      "aliases": [],
+      "aliases": [
+        "camera",
+        "photo description",
+        "OCR",
+        "low vision"
+      ],
       "desc": "Point your camera at the world: get a scene description read aloud (built for students who are blind or have low vision), re-read any text in large print, translate signs and handouts into your language, or investigate an object Socratic-style with an AI that asks questions instead of pronouncing answers.",
       "renderedBytes": 5414,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
-      "noticeCount": 1,
+      "noticeCount": 0,
       "metrics": {
         "buttons": 8,
         "roleButtons": 0,
@@ -322,14 +297,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "accessLens",
-          "severity": "notice",
-          "code": "metadata",
-          "message": "Tool registry category is missing or generic."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "algebraCAS",
@@ -340,6 +308,8 @@
       "aliases": [],
       "desc": "Interactive algebra with equation builder, balance scale, and step-by-step AI solving",
       "renderedBytes": 8185,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -368,6 +338,8 @@
       "aliases": [],
       "desc": "A cozy sci-fi roguelite where AlloBot’s spells unlock as you master other STEM Lab tools. Cast by demonstrating what you learned.",
       "renderedBytes": 42058,
+      "settlePasses": 5,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -396,6 +368,8 @@
       "aliases": [],
       "desc": "Look up public AlphaFold DB protein structures by UniProt/accession, view them in Mol*, import downloaded AlphaFold result files, prepare AlphaFold Server or AlphaFold 3 local-code JSON, and guide students through classroom presets, grade-leveled lessons, biology-context investigation briefs, LMS-ready assignment packets, learner-support scaffolds, confidence/PAE interpretation, accessible claim-evidence-limit reasoning, local claim review, rubric feedback, and no automatic submission.",
       "renderedBytes": 9582,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -423,14 +397,16 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 10 body systems with layered anatomical visualization",
-      "renderedBytes": 46543,
+      "renderedBytes": 47819,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 93,
+        "buttons": 96,
         "roleButtons": 0,
         "fields": 1,
         "canvases": 1,
@@ -451,16 +427,18 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Describe an app or science demo and AI builds it instantly. Edit the code, iterate, and export.",
-      "renderedBytes": 13941,
+      "renderedBytes": 15989,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 26,
+        "buttons": 27,
         "roleButtons": 0,
-        "fields": 7,
+        "fields": 8,
         "canvases": 0,
         "svgs": 0,
         "images": 0,
@@ -480,6 +458,8 @@
       "aliases": [],
       "desc": "Pilot your skiff to your Bagaduce River lease. Deploy droppers, monitor water quality, harvest mussels, learn IALA-B buoyage + lease tiers + climate stressors in a 3D sim.",
       "renderedBytes": 112805,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -508,6 +488,8 @@
       "aliases": [],
       "desc": "Build and run a virtual fish tank to learn the nitrogen cycle, water chemistry, fish anatomy, species care, and marine ecology.",
       "renderedBytes": 32381,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -536,6 +518,8 @@
       "aliases": [],
       "desc": "Author functions, re-light a neon city, and battle across two function-powered Circuit Clash arenas.",
       "renderedBytes": 36842,
+      "settlePasses": 2,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -558,17 +542,24 @@
     {
       "id": "archStudio",
       "label": "Architecture Studio",
-      "category": "explore",
+      "category": "engineering",
       "ready": true,
       "lightBackground": false,
-      "aliases": [],
-      "desc": "",
-      "renderedBytes": 26494,
+      "aliases": [
+        "architecture",
+        "3D building",
+        "blocks",
+        "structural geometry"
+      ],
+      "desc": "Build 3D structures with blocks, columns, arches, and ramps. Snap to a grid, measure shapes, and export a model.",
+      "renderedBytes": 27107,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
-      "noticeCount": 1,
+      "noticeCount": 0,
       "metrics": {
         "buttons": 83,
         "roleButtons": 0,
@@ -581,14 +572,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "archStudio",
-          "severity": "notice",
-          "code": "metadata",
-          "message": "Tool registry description is missing or too short for catalog/context UI."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "areaPerimeter",
@@ -599,11 +583,13 @@
       "aliases": [],
       "desc": "Tile, compare, decompose, and investigate 2-D shapes while building area and perimeter reasoning.",
       "renderedBytes": 16706,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
-      "noticeCount": 1,
+      "noticeCount": 0,
       "metrics": {
         "buttons": 8,
         "roleButtons": 24,
@@ -614,23 +600,9 @@
         "headings": 3,
         "links": 0,
         "tinyTextClassHits": 0,
-        "fixedWidthRiskCount": 1
+        "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "areaPerimeter",
-          "severity": "notice",
-          "code": "horizontal-overflow-risk",
-          "message": "Tool includes fixed-width surfaces that need mobile visual review.",
-          "count": 1,
-          "examples": [
-            {
-              "selector": "div > section.rounded-2xl.border:nth-of-type(2) > details > div.focus:outline-none.focus:ring-2 > table",
-              "width": "100%"
-            }
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "areamodel",
@@ -641,6 +613,8 @@
       "aliases": [],
       "desc": "Visual multiplication with area model grids, distributive property, partial products, sound effects, and badges.",
       "renderedBytes": 20839,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -669,6 +643,8 @@
       "aliases": [],
       "desc": "Learn addition, subtraction, multiplication, and division through models, strategies, estimation, and mistake analysis.",
       "renderedBytes": 6562,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -697,6 +673,8 @@
       "aliases": [],
       "desc": "Explore the math behind art: color theory, pixel art, symmetry, spirographs, fractals, generative design, and WCAG contrast.",
       "renderedBytes": 10481,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -725,6 +703,8 @@
       "aliases": [],
       "desc": "Learn how cognitive, personality, career, and employer tests actually work — build mock batteries, critique pseudoscience, coach yourself ethically for hiring tests.",
       "renderedBytes": 6449,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -752,20 +732,22 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Earth & Space Science: constellations (with Wabanaki + cross-cultural sky traditions), moon phases, planets, seasons, stars, galaxies, eclipses, observing practice, light-pollution awareness. NGSS MS-ESS1 + HS-ESS1. Place-based for Maine + extendable. Printable observing checklists.",
-      "renderedBytes": 444,
+      "renderedBytes": 14984,
+      "settlePasses": 2,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 0,
+        "buttons": 18,
         "roleButtons": 0,
-        "fields": 0,
+        "fields": 1,
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 1,
+        "headings": 3,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -781,6 +763,8 @@
       "aliases": [],
       "desc": "Air Traffic Control simulator — manage approaching aircraft, solve rate problems, and learn the math behind aviation safety.",
       "renderedBytes": 16719,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -809,6 +793,8 @@
       "aliases": [],
       "desc": "Diagnose, repair, and maintain a vehicle. OBD-II code reading, listening / fluid / visual diagnosis, 7 step-by-step repair scenarios (oil change, brakes, alternator, tires, air filter, A/C, timing belt), tool selection mini-game, safety modules (jack stands, electrical, refrigerant). Career data for ASE certification + Maine vocational pathways. Pairs with RoadReady (you DRIVE the car). Educational only — get certified at ase.com.",
       "renderedBytes": 25928,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -837,6 +823,8 @@
       "aliases": [],
       "desc": "Explore the chemistry, ratios, and heat science that make baking work",
       "renderedBytes": 11406,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -865,6 +853,8 @@
       "aliases": [],
       "desc": "Base-10 blocks, abacus, slide rule & place value quiz.",
       "renderedBytes": 20359,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -892,11 +882,13 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Colony dynamics, nectar flow, and the science of superorganisms",
-      "renderedBytes": 127386,
+      "renderedBytes": 127785,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
-      "issueCount": 2,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 2,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 86,
@@ -907,30 +899,10 @@
         "images": 0,
         "headings": 12,
         "links": 5,
-        "tinyTextClassHits": 105,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "beehive",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas may be interactive but is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div#beehive-canvas-wrap > canvas"
-        },
-        {
-          "toolId": "beehive",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 105,
-          "classes": [
-            "text-[8px]",
-            "text-[9px]"
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "behaviorLab",
@@ -941,6 +913,8 @@
       "aliases": [],
       "desc": "Operant conditioning theory through a virtual Skinner box. 9 progressive levels: positive reinforcement, schedule effects (FR / VR / FI / VI), chained sequences, DRO timers, and classical conditioning (Pavlov). Plus a Schedule Sleuth (read cumulative-response curves) and Function Sleuth (FBA vignettes: attention / escape / tangible / sensory). Sister tool to PetsLab, which applies these mechanics to real-world pet training.",
       "renderedBytes": 12937,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -969,6 +943,8 @@
       "aliases": [],
       "desc": "Side-view bike physics sandbox + gearing math lab + hands-on repair simulator. Teaches Newton's laws, mechanical advantage, and real maintenance skills.",
       "renderedBytes": 14530,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -996,7 +972,9 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Interactive bird-spotting and species ID for adolescents. Layered habitat scenes with animated birds whose movement signatures double as field marks. Pairs with Cornell Lab's free Merlin Bird ID app for real photos and audio. Maine-relevant without being Maine-only.",
-      "renderedBytes": 144225,
+      "renderedBytes": 144218,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1025,6 +1003,8 @@
       "aliases": [],
       "desc": "Explore an interactive brain model: regions, functions, neurotransmitter synapses, EEG waves, and a labeling quiz.",
       "renderedBytes": 39512,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1053,6 +1033,8 @@
       "aliases": [],
       "desc": "NGSS MS-ETS1 + HS-ETS1 + HS-PS2. Truss stress simulator with adjustable span/height/load/material, bridge type comparison (beam/truss/arch/suspension/cable-stayed), materials database, force types, real-world case studies (Tacoma Narrows, Hyatt Regency, Tay, Silver, plus Brooklyn/Golden Gate/Akashi/Millau), engineering design cycle, AP-style quiz, printable design specs.",
       "renderedBytes": 43140,
+      "settlePasses": 2,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1081,6 +1063,8 @@
       "aliases": [],
       "desc": "Riemann sums, derivatives, and guided discovery missions",
       "renderedBytes": 25274,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1109,6 +1093,8 @@
       "aliases": [],
       "desc": "Explore 11 living micro-organisms in a simulated petri dish",
       "renderedBytes": 23041,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1137,6 +1123,8 @@
       "aliases": [],
       "desc": "Move between a version-pinned real pancreas snapshot and teaching models for pancreas, lung, and brain; reason about markers, methods, bias, and protein structure.",
       "renderedBytes": 18877,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1165,6 +1153,8 @@
       "aliases": [],
       "desc": "Explore 2-D Life-like worlds with custom B/S rules, predictive and scientific lenses, challenges, 17 classic patterns, dynamic grids, export, and population evidence - plus all 256 elementary 1-D Wolfram rules.",
       "renderedBytes": 26649,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1193,6 +1183,8 @@
       "aliases": [],
       "desc": "The intelligence + behavior + camouflage biology of octopuses, squid, cuttlefish, and nautilus. Headline: Hunter Sim — play a cephalopod hunter, pick species + habitat + prey + tactic, run the camouflage minigame, time the strike, learn the real biology behind each species' adaptations.",
       "renderedBytes": 16368,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1220,20 +1212,22 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Balance equations, explore reactions, stoichiometry, molecular models & lab safety",
-      "renderedBytes": 8908,
+      "renderedBytes": 13546,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 12,
+        "buttons": 16,
         "roleButtons": 0,
         "fields": 1,
-        "canvases": 1,
+        "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 4,
+        "headings": 5,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -1249,6 +1243,8 @@
       "aliases": [],
       "desc": "Build series & parallel circuits with Ohm's Law",
       "renderedBytes": 24313,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1271,17 +1267,24 @@
     {
       "id": "circuitShelf",
       "label": "Circuit Shelf",
-      "category": "general",
+      "category": "engineering",
       "ready": true,
       "lightBackground": false,
-      "aliases": [],
+      "aliases": [
+        "circuits",
+        "CircuitJS",
+        "electronics",
+        "Ohm law"
+      ],
       "desc": "Build and run real electronic circuits in CircuitJS — Paul Falstad’s open-source simulator — wrapped in a Predict → Explore → Explain coach. Pick a challenge, lock in a guess before you wire anything, build it, then let the coach compare what you predicted with what the meters actually read.",
       "renderedBytes": 2318,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
-      "noticeCount": 1,
+      "noticeCount": 0,
       "metrics": {
         "buttons": 2,
         "roleButtons": 0,
@@ -1294,14 +1297,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "circuitShelf",
-          "severity": "notice",
-          "code": "metadata",
-          "message": "Tool registry category is missing or generic."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "climateExplorer",
@@ -1312,6 +1308,8 @@
       "aliases": [],
       "desc": "Carbon calculator, renewables simulator, climate justice & solutions.",
       "renderedBytes": 34484,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1340,10 +1338,12 @@
       "aliases": [],
       "desc": "Design a roller coaster in full 3-D, predict speeds, g-forces, and bank angles with an educational physics model, pass its simulation inspection, ride onboard with checkpoint questions, and read your own telemetry like an engineer.",
       "renderedBytes": 34626,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
-      "issueCount": 0,
+      "issueCount": 1,
       "errorCount": 0,
-      "warningCount": 0,
+      "warningCount": 1,
       "noticeCount": 0,
       "metrics": {
         "buttons": 0,
@@ -1357,7 +1357,17 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": []
+      "issues": [
+        {
+          "toolId": "coasterLab",
+          "severity": "warning",
+          "code": "no-interactive-controls",
+          "message": "First screen renders no interactive control: needs window.StemLab.ensureThree + a real WebGL context. Not auditable in jsdom — cover it with the Playwright WebGL battery.",
+          "renderedBytes": 34626,
+          "blocker": "needs window.StemLab.ensureThree + a real WebGL context.",
+          "text": "Coaster Lab .clab-root{ --bg:#0f151c; --panel:#161f29; --panel2:#1c2836; --card:#19242f; --line:#26364a; --line2:#31465e"
+        }
+      ]
     },
     {
       "id": "codingPlayground",
@@ -1365,14 +1375,21 @@
       "category": "creative",
       "ready": true,
       "lightBackground": false,
-      "aliases": [],
-      "desc": "",
+      "aliases": [
+        "coding",
+        "block coding",
+        "turtle",
+        "loops"
+      ],
+      "desc": "Learn sequencing, loops, and conditionals by programming a turtle with visual blocks or text code.",
       "renderedBytes": 22885,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
-      "noticeCount": 1,
+      "noticeCount": 0,
       "metrics": {
         "buttons": 45,
         "roleButtons": 0,
@@ -1385,14 +1402,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "codingPlayground",
-          "severity": "notice",
-          "code": "metadata",
-          "message": "Tool registry description is missing or too short for catalog/context UI."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "companionPlanting",
@@ -1403,6 +1413,8 @@
       "aliases": [],
       "desc": "Grow a Three Sisters garden by season, manage soil and pests, and learn which plants help or harm each other.",
       "renderedBytes": 20647,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1438,6 +1450,8 @@
       ],
       "desc": "Compare scientific theories and philosophical views of consciousness through evidence, predictions, and thought experiments.",
       "renderedBytes": 12791,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1466,6 +1480,8 @@
       "aliases": [],
       "desc": "Plot points, draw lines, calculate slope/distance/midpoint with sound effects and badges.",
       "renderedBytes": 13415,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1488,17 +1504,24 @@
     {
       "id": "cyberDefense",
       "label": "Cyber Defense Lab",
-      "category": "tech",
+      "category": "technology",
       "ready": true,
       "lightBackground": false,
-      "aliases": [],
-      "desc": "",
+      "aliases": [
+        "cybersecurity",
+        "phishing",
+        "passwords",
+        "digital citizenship"
+      ],
+      "desc": "Practice spotting phishing, making strong passwords, and solving ciphers through digital-citizenship challenges.",
       "renderedBytes": 10999,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
-      "noticeCount": 1,
+      "noticeCount": 0,
       "metrics": {
         "buttons": 20,
         "roleButtons": 0,
@@ -1511,29 +1534,29 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "cyberDefense",
-          "severity": "notice",
-          "code": "metadata",
-          "message": "Tool registry description is missing or too short for catalog/context UI."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "dataLab",
       "label": "Data Lab",
-      "category": "general",
+      "category": "data",
       "ready": true,
       "lightBackground": false,
-      "aliases": [],
+      "aliases": [
+        "CODAP",
+        "data science",
+        "statistics",
+        "datasets"
+      ],
       "desc": "Real data science in CODAP — the Concord Consortium’s open data workspace — with an AlloFlow Socratic tutor beside it that asks questions about YOUR data instead of giving answers.",
       "renderedBytes": 2145,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
-      "noticeCount": 1,
+      "noticeCount": 0,
       "metrics": {
         "buttons": 2,
         "roleButtons": 0,
@@ -1546,14 +1569,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "dataLab",
-          "severity": "notice",
-          "code": "metadata",
-          "message": "Tool registry category is missing or generic."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "dataPlot",
@@ -1564,6 +1580,8 @@
       "aliases": [],
       "desc": "Plot data, calculate regression & R²",
       "renderedBytes": 11880,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1592,6 +1610,8 @@
       "aliases": [],
       "desc": "Build bar, pie, line, scatter, box and histogram charts from your data, explore stats like mean, median and trendlines, then switch to Regression mode for curve fits, R², residuals and outlier analysis.",
       "renderedBytes": 19635,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1620,6 +1640,8 @@
       "aliases": [],
       "desc": "Break everyday compounds into their constituent elements and explore molecules, atoms, bonds, states of matter, and chemical reactions.",
       "renderedBytes": 18668,
+      "settlePasses": 2,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1641,27 +1663,29 @@
     },
     {
       "id": "diagnosisEligibility",
-      "label": "Diagnosis vs. Eligibility",
+      "label": "Diagnosis, Evaluation & School Eligibility",
       "category": "applied",
       "ready": true,
       "lightBackground": false,
       "aliases": [],
-      "desc": "Why a diagnosis does not equal an IEP — and why a child can qualify with no diagnosis at all. The two-prong federal test, the 13 eligibility categories quoted verbatim from 34 CFR 300.8, worked cases, and what a private evaluation can and cannot do. Never decides eligibility: that is the team's job.",
-      "renderedBytes": 8613,
+      "desc": "Compare clinical diagnosis, IDEA, and Section 504; follow the evaluation path; review source-linked federal definitions and safeguards; explore open-question cases; and build a printable meeting-preparation guide without entering student data. Never decides eligibility, services, or placement.",
+      "renderedBytes": 47778,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 4,
+        "buttons": 13,
         "roleButtons": 0,
-        "fields": 1,
+        "fields": 30,
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 5,
-        "links": 0,
+        "headings": 26,
+        "links": 19,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
@@ -1670,17 +1694,24 @@
     {
       "id": "dinoLab",
       "label": "Dino Lab",
-      "category": "explore",
+      "category": "biology",
       "ready": true,
       "lightBackground": false,
-      "aliases": [],
-      "desc": "",
+      "aliases": [
+        "dinosaurs",
+        "paleontology",
+        "fossils",
+        "food webs"
+      ],
+      "desc": "Explore dinosaurs across deep time, compare species, dig fossils, build food webs, and connect birds to dinosaurs.",
       "renderedBytes": 430995,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
-      "noticeCount": 1,
+      "noticeCount": 0,
       "metrics": {
         "buttons": 408,
         "roleButtons": 0,
@@ -1693,14 +1724,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "dinoLab",
-          "severity": "notice",
-          "code": "metadata",
-          "message": "Tool registry description is missing or too short for catalog/context UI."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "dissection",
@@ -1710,20 +1734,22 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Peel anatomical layers and click organs across specimens (frog, fetal pig, earthworm, perch and more) with quizzes and flashcards.",
-      "renderedBytes": 57516,
+      "renderedBytes": 59312,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 82,
+        "buttons": 83,
         "roleButtons": 0,
         "fields": 11,
         "canvases": 1,
         "svgs": 1,
         "images": 0,
-        "headings": 9,
+        "headings": 10,
         "links": 3,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -1738,36 +1764,27 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Build, replicate, transcribe, translate, mutate, CRISPR-edit, forensics & more.",
-      "renderedBytes": 38926,
+      "renderedBytes": 40139,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 94,
+        "buttons": 97,
         "roleButtons": 0,
         "fields": 1,
         "canvases": 1,
         "svgs": 0,
         "images": 0,
-        "headings": 6,
+        "headings": 7,
         "links": 0,
-        "tinyTextClassHits": 5,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "dnaLab",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 5,
-          "classes": [
-            "text-[9px]"
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "echoTrainer",
@@ -1778,6 +1795,8 @@
       "aliases": [],
       "desc": "Navigate virtual spaces using only spatial audio echoes. 3D first-person with Three.js. Emit clicks, listen for reflections off walls and moving agents, find the goal. Real HRTF binaural audio — wear headphones!",
       "renderedBytes": 29470,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1806,6 +1825,8 @@
       "aliases": [],
       "desc": "See the world through sound — bat sonar vision, sound wave physics, Doppler effect & acoustic ecology",
       "renderedBytes": 10251,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1834,6 +1855,8 @@
       "aliases": [],
       "desc": "Explore economics through supply & demand curves, personal finance, stock-market, business, and macro-policy simulations.",
       "renderedBytes": 13164,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1861,20 +1884,22 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Model predator-prey dynamics with Lotka–Volterra equations, live canvas, sandbox mode, event injection, quiz & AI tutor.",
-      "renderedBytes": 25410,
+      "renderedBytes": 35370,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 33,
+        "buttons": 44,
         "roleButtons": 0,
-        "fields": 8,
+        "fields": 10,
         "canvases": 1,
         "svgs": 0,
         "images": 0,
-        "headings": 3,
+        "headings": 4,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -1889,16 +1914,18 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Simulate disease spread with SIR/SEIR models, vaccination strategies, and outbreak maps.",
-      "renderedBytes": 90893,
+      "renderedBytes": 96105,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 21,
+        "buttons": 24,
         "roleButtons": 0,
-        "fields": 4,
+        "fields": 14,
         "canvases": 1,
         "svgs": 1,
         "images": 0,
@@ -1912,17 +1939,24 @@
     {
       "id": "evoLab",
       "label": "EvoLab — Evolution",
-      "category": "general",
+      "category": "biology",
       "ready": true,
       "lightBackground": false,
-      "aliases": [],
+      "aliases": [
+        "evolution",
+        "natural selection",
+        "Darwin",
+        "Hardy-Weinberg"
+      ],
       "desc": "Evolution and natural selection — three interactive simulators (Selection Sandbox, Galápagos Beak Lab, Phylogenetic Tree Builder) plus four quick labs covering Hardy-Weinberg, genetic drift, common ancestry, and the most common evolution misconceptions. Real-world relevance: includes Maine wildlife examples (snowshoe hare coat color, Maine finches, moose tick mortality).",
       "renderedBytes": 38430,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
-      "noticeCount": 1,
+      "noticeCount": 0,
       "metrics": {
         "buttons": 28,
         "roleButtons": 0,
@@ -1935,14 +1969,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "evoLab",
-          "severity": "notice",
-          "code": "metadata",
-          "message": "Tool registry category is missing or generic."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "fireEcology",
@@ -1952,7 +1979,9 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, and forest management science.",
-      "renderedBytes": 25936,
+      "renderedBytes": 25951,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1981,6 +2010,8 @@
       "aliases": [],
       "desc": "Recognize and respond to medical emergencies. Hands-only CPR rhythm trainer, AED walkthrough, Stop the Bleed, choking, seizure, stroke, anaphylaxis. Disability-affirming peer response. Maine 911 + text-to-911. Educational only — get certified at redcross.org or heart.org.",
       "renderedBytes": 2085,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2009,6 +2040,8 @@
       "aliases": [],
       "desc": "Pilot a Maine skiff. Learn IALA-B buoyage, COLREGS, charts, tides, fish identification, and responsible harvest decisions in an immersive 3D sim.",
       "renderedBytes": 22951,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2037,6 +2070,8 @@
       "aliases": [],
       "desc": "Educational flight simulator — learn aerodynamics, navigation, and world geography by flying between real airports.",
       "renderedBytes": 42260,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2064,16 +2099,18 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Author, validate, and preview new STEM Lab / SEL Hub plugins — describe one in plain language (AI builds a conforming plugin) or hand-code against the contract, with a live in-sandbox render-smoke and the same contract gate the deploy pipeline runs. Teacher / developer tool.",
-      "renderedBytes": 610,
+      "renderedBytes": 7778,
+      "settlePasses": 1,
+      "auditedAs": "teacher-mode",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 0,
+        "buttons": 5,
         "roleButtons": 0,
-        "fields": 0,
+        "fields": 9,
         "canvases": 0,
         "svgs": 0,
         "images": 0,
@@ -2093,6 +2130,8 @@
       "aliases": [],
       "desc": "Interactive fraction visualizer with pie/bar models, operations, equivalents, converter, fraction wall, and challenge mode.",
       "renderedBytes": 15347,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2121,6 +2160,8 @@
       "aliases": [],
       "desc": "Interactive fraction visualizer with pie/bar models, operations, equivalents, converter, fraction wall, and challenge mode.",
       "renderedBytes": 15345,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2149,6 +2190,8 @@
       "aliases": [],
       "desc": "Build your own World of Forms: fill an archetypal 3D structure (Venn, story mountain, fishbone…) with your OWN ideas, sculpt them, and get AI coaching on the whole composition.",
       "renderedBytes": 7725,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2176,20 +2219,22 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Graph and explore mathematical functions interactively",
-      "renderedBytes": 401,
+      "renderedBytes": 24946,
+      "settlePasses": 2,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 0,
+        "buttons": 47,
         "roleButtons": 0,
-        "fields": 0,
-        "canvases": 0,
-        "svgs": 0,
+        "fields": 9,
+        "canvases": 1,
+        "svgs": 1,
         "images": 0,
-        "headings": 1,
+        "headings": 4,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -2205,10 +2250,12 @@
       "aliases": [],
       "desc": "Explore galaxy types, stellar lifecycles, star classification, and metallicity in an interactive 3D Milky Way simulation.",
       "renderedBytes": 44961,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 57,
@@ -2222,20 +2269,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "galaxy",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 34,
-          "selector": "div#galaxy-panel-view > button.flex.min-h-[44px] > span.rounded-full.px-2:nth-of-type(2)",
-          "ratio": 4.47,
-          "color": "#ffffff",
-          "background": "#6366f1",
-          "text": "On"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "gameStudio",
@@ -2246,6 +2280,8 @@
       "aliases": [],
       "desc": "Build, play & learn 2D game design",
       "renderedBytes": 46877,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2274,6 +2310,8 @@
       "aliases": [],
       "desc": "Interactive maps and quizzes for countries, capitals, continents, landmarks, distances, a 3D globe, and an AI quiz builder.",
       "renderedBytes": 7257,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2302,10 +2340,12 @@
       "aliases": [],
       "desc": "Explore 3D shapes with interactive controls. Volume, surface area, challenge mode, and STL export.",
       "renderedBytes": 687,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
-      "issueCount": 0,
+      "issueCount": 2,
       "errorCount": 0,
-      "warningCount": 0,
+      "warningCount": 2,
       "noticeCount": 0,
       "metrics": {
         "buttons": 0,
@@ -2319,42 +2359,61 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": []
+      "issues": [
+        {
+          "toolId": "geoSandbox",
+          "severity": "warning",
+          "code": "placeholder-render",
+          "message": "First screen is still a loading placeholder, so this tool was not really audited.",
+          "renderedBytes": 687,
+          "reason": "loading-copy",
+          "text": "Geometry Sandbox 🔷 Loading 3D engine..."
+        },
+        {
+          "toolId": "geoSandbox",
+          "severity": "warning",
+          "code": "no-interactive-controls",
+          "message": "First screen renders no interactive control: waits on StemLab.ensureThree({orbit:true}) before building its UI. Not auditable in jsdom — cover it with the Playwright WebGL battery.",
+          "renderedBytes": 687,
+          "blocker": "waits on StemLab.ensureThree({orbit:true}) before building its UI.",
+          "text": "Geometry Sandbox 🔷 Loading 3D engine..."
+        }
+      ]
     },
     {
       "id": "geologyExplorer",
       "label": "Geology Explorer",
-      "category": "explore",
+      "category": "geology",
       "ready": true,
       "lightBackground": false,
-      "aliases": [],
-      "desc": "",
-      "renderedBytes": 20015,
+      "aliases": [
+        "geology",
+        "rocks",
+        "minerals",
+        "crust layers"
+      ],
+      "desc": "Excavate a 3D crust cross-section, identify rocks, read layers, and find the pluton that cuts through them.",
+      "renderedBytes": 32928,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
-      "noticeCount": 1,
+      "noticeCount": 0,
       "metrics": {
-        "buttons": 28,
+        "buttons": 46,
         "roleButtons": 0,
         "fields": 1,
         "canvases": 0,
         "svgs": 1,
         "images": 0,
-        "headings": 3,
+        "headings": 5,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "geologyExplorer",
-          "severity": "notice",
-          "code": "metadata",
-          "message": "Tool registry description is missing or too short for catalog/context UI."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "geometryProver",
@@ -2365,6 +2424,8 @@
       "aliases": [],
       "desc": "Explore theorems, construct proofs, discover geometric relationships",
       "renderedBytes": 8129,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2387,17 +2448,24 @@
     {
       "id": "geometryWorld",
       "label": "Geometry World",
-      "category": "explore",
+      "category": "math",
       "ready": true,
       "lightBackground": false,
-      "aliases": [],
-      "desc": "",
-      "renderedBytes": 1033,
+      "aliases": [
+        "geometry",
+        "3D shapes",
+        "spatial reasoning",
+        "shape puzzles"
+      ],
+      "desc": "Explore a 3D geometry world where shape questions unlock areas, NPC conversations, and construction puzzles.",
+      "renderedBytes": 1016,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 2,
       "errorCount": 0,
-      "warningCount": 0,
-      "noticeCount": 1,
+      "warningCount": 2,
+      "noticeCount": 0,
       "metrics": {
         "buttons": 0,
         "roleButtons": 0,
@@ -2413,9 +2481,21 @@
       "issues": [
         {
           "toolId": "geometryWorld",
-          "severity": "notice",
-          "code": "metadata",
-          "message": "Tool registry description is missing or too short for catalog/context UI."
+          "severity": "warning",
+          "code": "placeholder-render",
+          "message": "First screen is still a loading placeholder, so this tool was not really audited.",
+          "renderedBytes": 1016,
+          "reason": "aria-busy",
+          "text": "Geometry World 🧱 💎 🏆 Building your world 🌍 Geometry World Loading the 3D engine and preparing interactive geometry.."
+        },
+        {
+          "toolId": "geometryWorld",
+          "severity": "warning",
+          "code": "no-interactive-controls",
+          "message": "First screen renders no interactive control: builds its scene from window.THREE before rendering controls. Not auditable in jsdom — cover it with the Playwright WebGL battery.",
+          "renderedBytes": 1016,
+          "blocker": "builds its scene from window.THREE before rendering controls.",
+          "text": "Geometry World 🧱 💎 🏆 Building your world 🌍 Geometry World Loading the 3D engine and preparing interactive geometry.."
         }
       ]
     },
@@ -2466,7 +2546,9 @@
         "map projections"
       ],
       "desc": "Build, plan, compare, compose, sequence, review, and export accessible GIS and remote-sensing investigations.",
-      "renderedBytes": 24000,
+      "renderedBytes": 24022,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2495,6 +2577,8 @@
       "aliases": [],
       "desc": "Graph functions, analyze zeros and intersections, explore transformations",
       "renderedBytes": 13960,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2542,11 +2626,13 @@
         "second law"
       ],
       "desc": "Conduction, convection and radiation on a real heat-equation model; insulation R-values; calorimetry mixing; the water heating curve with its two latent plateaus; and why no heat engine reaches 100 percent.",
-      "renderedBytes": 67651,
+      "renderedBytes": 68987,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
-      "issueCount": 4,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 4,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 105,
@@ -2555,49 +2641,12 @@
         "canvases": 4,
         "svgs": 0,
         "images": 0,
-        "headings": 2,
+        "headings": 16,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "heatLab",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas may be interactive but is not focusable in initial markup.",
-          "index": 1,
-          "selector": "div#htsec-insulation > div.mt-2.rounded-lg:nth-of-type(4) > canvas"
-        },
-        {
-          "toolId": "heatLab",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas may be interactive but is not focusable in initial markup.",
-          "index": 2,
-          "selector": "div#htsec-heatingcurve > div.rounded-lg.overflow-hidden:nth-of-type(1) > canvas"
-        },
-        {
-          "toolId": "heatLab",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas may be interactive but is not focusable in initial markup.",
-          "index": 3,
-          "selector": "div#htsec-entropy > div.rounded-lg.overflow-hidden:nth-of-type(1) > canvas"
-        },
-        {
-          "toolId": "heatLab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 179,
-          "selector": "div#htsec-mixing > div.grid.grid-cols-1:nth-of-type(1) > div.rounded-lg.p-2:nth-of-type(2) > div.flex.flex-wrap:nth-of-type(1) > button.min-h-11.px-3:nth-of-type(6)",
-          "ratio": 3.92,
-          "color": "#0b1020",
-          "background": "#71717a",
-          "text": "Iron"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "inequality",
@@ -2608,6 +2657,8 @@
       "aliases": [],
       "desc": "Visualize inequalities on a number line with notation, quiz, solver, badges & AI tutor.",
       "renderedBytes": 19121,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2636,6 +2687,8 @@
       "aliases": [],
       "desc": "Cooking & food safety life skills with culinary science: USDA safe temps + bacteria danger zone, knife cuts (dice / julienne / chiffonade / brunoise), heat techniques (sauté / sear / simmer / braise / roast / fry / steam), the Maillard reaction, top-9 allergens. Real-time recipe simulator + gamified cooking competition coming in v0.2. Sister tool to NutritionLab and BakingScience.",
       "renderedBytes": 39870,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2664,10 +2717,12 @@
       "aliases": [],
       "desc": "Read what special-education law actually says, in its own words. Browse the real text of IDEA Part B and Section 504 (fetched from eCFR and date-stamped), search by topic, and see federal and state rules side by side. Nothing here is paraphrased or generated: if the official text is not loaded, the tool says so rather than guessing.",
       "renderedBytes": 836,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
-      "issueCount": 0,
+      "issueCount": 1,
       "errorCount": 0,
-      "warningCount": 0,
+      "warningCount": 1,
       "noticeCount": 0,
       "metrics": {
         "buttons": 1,
@@ -2681,7 +2736,17 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": []
+      "issues": [
+        {
+          "toolId": "lawNavigator",
+          "severity": "warning",
+          "code": "placeholder-render",
+          "message": "First screen is still a loading placeholder, so this tool was not really audited.",
+          "renderedBytes": 836,
+          "reason": "loading-copy",
+          "text": "Education Law Navigator ← Tools ⚖️ Education Law Navigator Loading the official text…"
+        }
+      ]
     },
     {
       "id": "learningLab",
@@ -2692,6 +2757,8 @@
       "aliases": [],
       "desc": "Explore optional learning, planning, reflection, accessibility, and education-career resources. Individual tools explain their purpose, limits, storage, and cited sources where relevant.",
       "renderedBytes": 18138,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2719,11 +2786,13 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Essential knowledge for adulting — taxes, data literacy, contracts, records, transportation, job readiness, resume building, portfolio proof organization, interview practice, communication, time management, dental care, body care, sleep routines, medication labels, appointments, home safety, digital safety, food confidence, car care, laundry science, home systems, and critical thinking.",
-      "renderedBytes": 62616,
+      "renderedBytes": 62628,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
-      "issueCount": 3,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 3,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 65,
@@ -2734,45 +2803,10 @@
         "images": 0,
         "headings": 6,
         "links": 0,
-        "tinyTextClassHits": 12,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "lifeSkills",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 7,
-          "selector": "div.space-y-4:nth-of-type(4) > div.bg-white/70.backdrop-blur-md:nth-of-type(1) > div.grid.grid-cols-3:nth-of-type(3) > div.min-w-0.text-center:nth-of-type(1) > span.mx-auto.flex:nth-of-type(1)",
-          "ratio": 4.41,
-          "color": "#dc2626",
-          "background": "#f1f5f9",
-          "text": "🛡️"
-        },
-        {
-          "toolId": "lifeSkills",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 9,
-          "selector": "div.space-y-4:nth-of-type(4) > div.bg-white/70.backdrop-blur-md:nth-of-type(1) > div.grid.grid-cols-3:nth-of-type(3) > div.min-w-0.text-center:nth-of-type(3) > span.mx-auto.flex:nth-of-type(1)",
-          "ratio": 3.25,
-          "color": "#ea580c",
-          "background": "#f1f5f9",
-          "text": "🍳"
-        },
-        {
-          "toolId": "lifeSkills",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 12,
-          "classes": [
-            "text-[9px]"
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "llmLiteracy",
@@ -2783,6 +2817,8 @@
       "aliases": [],
       "desc": "How LLMs actually work, when they fail, how to prompt well, and when to use AI as a scaffold vs. let it substitute for your thinking.",
       "renderedBytes": 29127,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2811,6 +2847,8 @@
       "aliases": [],
       "desc": "Propositional Logic, Proofs & Reasoning",
       "renderedBytes": 25141,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2839,6 +2877,8 @@
       "aliases": [],
       "desc": "Study sources or analyze data in one evidence workspace where every claim stays connected to what supports it.",
       "renderedBytes": 2686,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2866,20 +2906,22 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "See invisible magnetic fields and learn how electricity makes them. Trace field lines with a live compass, build an electromagnet, spin a DC motor, crank a generator with Faraday’s law, sort magnetic from non-magnetic materials, and explore Earth’s own magnetic shield. NGSS MS-PS2 fields and forces.",
-      "renderedBytes": 450,
+      "renderedBytes": 55149,
+      "settlePasses": 2,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 0,
+        "buttons": 53,
         "roleButtons": 0,
-        "fields": 0,
+        "fields": 5,
         "canvases": 0,
-        "svgs": 0,
+        "svgs": 3,
         "images": 0,
-        "headings": 1,
+        "headings": 5,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -2895,6 +2937,8 @@
       "aliases": [],
       "desc": "NGSS MS-LS1 + HS-LS1 + HS-LS3 + HS-LS4. The microbial world: bacteria (beneficial + pathogenic), viruses (incl. COVID, flu, HIV, phages, measles), microscopy (light + phase + fluorescent + EM + AFM, plus a virtual-microscope slide-swap with rendered E. coli / Streptococcus / Paramecium / Plasmodium / T4 phage), antibiotic resistance evolution (interactive petri-dish selection-pressure sim), the human + soil + ocean microbiome, immune system + vaccines, fermentation (sourdough, yogurt, kimchi, sauerkraut, kombucha, cheese), classic case studies (Snow's 1854 cholera map as walkable interactive, Fleming's penicillin, MRSA, COVID/mRNA, FMT), AP-style quiz, printable lab safety + key microbes card.",
       "renderedBytes": 44063,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2921,21 +2965,23 @@
       "ready": true,
       "lightBackground": false,
       "aliases": [],
-      "desc": "V-formation aerodynamics, wind currents, bird migration routes & flight physics",
-      "renderedBytes": 17090,
+      "desc": "3D migration flight, Monarch journeys, V-formation aerodynamics, wind currents & flyways",
+      "renderedBytes": 8914,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 10,
-        "roleButtons": 6,
-        "fields": 6,
-        "canvases": 1,
+        "buttons": 13,
+        "roleButtons": 0,
+        "fields": 4,
+        "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 8,
+        "headings": 4,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -2950,7 +2996,9 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore chemistry with a 3D molecule viewer, compound creator, bond builder, 118-element periodic table, reaction simulator, and orbital clouds.",
-      "renderedBytes": 35996,
+      "renderedBytes": 36003,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2973,17 +3021,24 @@
     {
       "id": "moleculeShelf",
       "label": "Molecule Shelf",
-      "category": "general",
+      "category": "chemistry",
       "ready": true,
       "lightBackground": false,
-      "aliases": [],
+      "aliases": [
+        "molecules",
+        "3D structures",
+        "Mol*",
+        "Protein Data Bank"
+      ],
       "desc": "Explore real 3D molecular structures in Mol* — the viewer used by the world’s Protein Data Bank — from crambin and B-DNA to hemoglobin, an antibody, and the coronavirus spike. Rotate, zoom, and switch representations, with a Notice → Wonder observation coach beside it.",
       "renderedBytes": 2247,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
-      "noticeCount": 1,
+      "noticeCount": 0,
       "metrics": {
         "buttons": 2,
         "roleButtons": 0,
@@ -2996,14 +3051,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "moleculeShelf",
-          "severity": "notice",
-          "code": "metadata",
-          "message": "Tool registry category is missing or generic."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "moneyMath",
@@ -3014,6 +3062,8 @@
       "aliases": [],
       "desc": "Coins, bills, making change, grocery store sim, currency exchange, tips, budget, and personal finance.",
       "renderedBytes": 33241,
+      "settlePasses": 2,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3041,11 +3091,13 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Live a 10-phase Apollo mission from Kennedy to splashdown. Pick decisions at real Apollo moments (oxygen leak, landing fuel margin, abort thresholds), land the Lunar Module, collect rock samples, and decode the science of orbital mechanics + EVA. Includes Apollo historical facts and AI-customizable mission objectives from any source text.",
-      "renderedBytes": 14287,
+      "renderedBytes": 14381,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 8,
@@ -3059,16 +3111,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "moonMission",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas may be interactive but is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div.space-y-3:nth-of-type(3) > div.bg-gradient-to-br.from-slate-900 > div.mb-3:nth-of-type(3) > div.relative.rounded-lg > canvas"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "multtable",
@@ -3079,6 +3122,8 @@
       "aliases": [],
       "desc": "Interactive 12×12 grid with quiz modes, speed runs, streaks, badges & AI tutor.",
       "renderedBytes": 32879,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3107,6 +3152,8 @@
       "aliases": [],
       "desc": "Play a piano, build beats, and learn the science of sound with real-time waveform visualization.",
       "renderedBytes": 48099,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3227,11 +3274,13 @@
         "exclusion zone"
       ],
       "desc": "Half-life and decay you can run, what actually stops alpha, beta and gamma, how fission and fusion work, radiation doses on a scale you can read, a simulated Geiger counter that shows why one short count lies, the three accidents in honest numbers, what to do with the waste, and where small modular reactors really stand.",
-      "renderedBytes": 150836,
+      "renderedBytes": 159071,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
-      "issueCount": 8,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 8,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 196,
@@ -3241,76 +3290,11 @@
         "svgs": 0,
         "images": 0,
         "headings": 22,
-        "links": 0,
+        "links": 15,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "nuclearLab",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas may be interactive but is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div#nksec-halflife > div.rounded-lg.overflow-hidden:nth-of-type(2) > canvas"
-        },
-        {
-          "toolId": "nuclearLab",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas may be interactive but is not focusable in initial markup.",
-          "index": 1,
-          "selector": "div#nksec-chain > div.rounded-lg.overflow-hidden:nth-of-type(1) > canvas"
-        },
-        {
-          "toolId": "nuclearLab",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas may be interactive but is not focusable in initial markup.",
-          "index": 2,
-          "selector": "div#nksec-binding > div.rounded-lg.overflow-hidden:nth-of-type(1) > canvas"
-        },
-        {
-          "toolId": "nuclearLab",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas may be interactive but is not focusable in initial markup.",
-          "index": 3,
-          "selector": "div#nksec-biohalf > div.rounded-lg.overflow-hidden:nth-of-type(3) > canvas"
-        },
-        {
-          "toolId": "nuclearLab",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas may be interactive but is not focusable in initial markup.",
-          "index": 4,
-          "selector": "div#nksec-detect > div.rounded-lg.overflow-hidden:nth-of-type(6) > canvas"
-        },
-        {
-          "toolId": "nuclearLab",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas may be interactive but is not focusable in initial markup.",
-          "index": 5,
-          "selector": "div#nksec-protect > div.rounded-lg.overflow-hidden:nth-of-type(5) > canvas"
-        },
-        {
-          "toolId": "nuclearLab",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas may be interactive but is not focusable in initial markup.",
-          "index": 6,
-          "selector": "div#nksec-shelter > div.rounded-lg.overflow-hidden:nth-of-type(5) > canvas"
-        },
-        {
-          "toolId": "nuclearLab",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas may be interactive but is not focusable in initial markup.",
-          "index": 7,
-          "selector": "div#nksec-operate > div.grid.grid-cols-1:nth-of-type(1) > div.rounded-xl.overflow-hidden:nth-of-type(2) > canvas"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "numberline",
@@ -3321,6 +3305,8 @@
       "aliases": [],
       "desc": "Interactive number line with markers, 6 challenge types, skip counting, and AI tutor.",
       "renderedBytes": 17312,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3343,17 +3329,24 @@
     {
       "id": "nutritionLab",
       "label": "NutritionLab — Nutrition Science",
-      "category": "general",
+      "category": "biology",
       "ready": true,
       "lightBackground": false,
-      "aliases": [],
+      "aliases": [
+        "nutrition",
+        "food labels",
+        "macros",
+        "micronutrients"
+      ],
       "desc": "Adolescent-safe nutrition science: macronutrients, micronutrients, food labels, metabolism, digestion, common myths, food + mental health, eating-disorder awareness, Maine food reality, and registered-dietitian career pathways. Frame is physiology-first (\"what your body uses food for\"), not weight-loss. Sources cited inline: USDA FoodData Central, NIH ODS, Harvard T.H. Chan, AAP, NEDA.",
       "renderedBytes": 24124,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
-      "noticeCount": 1,
+      "noticeCount": 0,
       "metrics": {
         "buttons": 19,
         "roleButtons": 0,
@@ -3366,14 +3359,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "nutritionLab",
-          "severity": "notice",
-          "code": "metadata",
-          "message": "Tool registry category is missing or generic."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "opticsLab",
@@ -3384,6 +3370,8 @@
       "aliases": [],
       "desc": "Geometric + wave optics: ray diagrams, Snell's law, mirrors, lenses, double-slit interference, single-slit diffraction, polarization in 3D. Side-by-side draggable sims + calculators with show-the-math, sample problems, glossary, misconceptions, exam-style quiz, and AI-graded explanations.",
       "renderedBytes": 21572,
+      "settlePasses": 2,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3412,6 +3400,8 @@
       "aliases": [],
       "desc": "Real-time speech prosody visualization — pitch, pacing, volume & intonation practice",
       "renderedBytes": 11649,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3440,6 +3430,8 @@
       "aliases": [],
       "desc": "Practice reading and completing the documents adult life runs on — job applications, W-4s, leases, medical intake, permits, and your own IEP meeting invitation. Every field is decoded in plain language, the boxes that can cost you are flagged, and all practice uses a fictional identity because you should never type real personal information into a practice tool.",
       "renderedBytes": 5289,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3468,6 +3460,8 @@
       "aliases": [],
       "desc": "What the parenting literature actually says — and how to tell its strongest claims from its weakest. Warmth and structure as two dials (not four boxes), with a strength-of-evidence badge on every claim: RCT-supported, meta-analytic association, culturally moderated, or popular-but-not-supported. Strengths-based and non-diagnostic. Sister tool to BehaviorLab and Learning Lab.",
       "renderedBytes": 9425,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3496,6 +3490,8 @@
       "aliases": [],
       "desc": "Run fully 3D particle experiments with states of matter, gas laws, diffusion, adjustable collision cross sections, attraction, live measurements, and particle tracing.",
       "renderedBytes": 36740,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3523,7 +3519,9 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Companion-animal SCIENCE: physiology, ethology, nutrition, genetics, domestication, zoonoses, service animals. Cross-species pet training that assumes BehaviorLab's operant theory and applies it to real homes. UDL-aligned via Service & Support Animals coverage.",
-      "renderedBytes": 34094,
+      "renderedBytes": 45388,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3534,7 +3532,7 @@
         "roleButtons": 0,
         "fields": 7,
         "canvases": 0,
-        "svgs": 1,
+        "svgs": 2,
         "images": 0,
         "headings": 4,
         "links": 0,
@@ -3551,20 +3549,22 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Launch projectiles, explore kinematics, and learn Newtons laws",
-      "renderedBytes": 398,
+      "renderedBytes": 20437,
+      "settlePasses": 2,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 0,
+        "buttons": 36,
         "roleButtons": 0,
-        "fields": 0,
-        "canvases": 0,
+        "fields": 10,
+        "canvases": 1,
         "svgs": 0,
         "images": 0,
-        "headings": 1,
+        "headings": 3,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -3580,6 +3580,8 @@
       "aliases": [],
       "desc": "Explore tectonic plates, earthquakes, volcanoes, and continental drift.",
       "renderedBytes": 29125,
+      "settlePasses": 2,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3608,6 +3610,8 @@
       "aliases": [],
       "desc": "Football play-design: route geometry, coverage zones, open-receiver analysis",
       "renderedBytes": 18636,
+      "settlePasses": 2,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3636,6 +3640,8 @@
       "aliases": [],
       "desc": "The Gutenberg-style screw press as a working simulation, plus the materials science, mechanical engineering, economics, history, and typography it touches. Compose your own type, ink the forme, pull the bar, see the impression. Built for interdisciplinary middle-school work. Sources: Gutenberg Museum (Mainz), British Library, Library of Congress, Smithsonian, Aldine Press scholarship, Eisenstein, Johns, Bringhurst.",
       "renderedBytes": 45465,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3663,11 +3669,13 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Coin flips, dice, spinners, real sports stats & custom experiments.",
-      "renderedBytes": 29993,
+      "renderedBytes": 29997,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 39,
@@ -3678,21 +3686,10 @@
         "images": 0,
         "headings": 4,
         "links": 0,
-        "tinyTextClassHits": 4,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "probability",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 4,
-          "classes": [
-            "text-[9px]"
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "protractor",
@@ -3703,6 +3700,8 @@
       "aliases": [],
       "desc": "Measure and construct angles. Classify acute, right, obtuse, and reflex.",
       "renderedBytes": 32397,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3731,6 +3730,8 @@
       "aliases": [],
       "desc": "Genetics lab: crosses, pedigrees, population genetics, DNA translation",
       "renderedBytes": 21541,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3758,7 +3759,9 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Three.js stoop simulator + deep science of raptor hunt mechanics: talon grip force, vision, flight physics, silent flight, and the DDT-era recovery story. 8 species roster from peregrine to harpy.",
-      "renderedBytes": 25680,
+      "renderedBytes": 25377,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3787,6 +3790,8 @@
       "aliases": [],
       "desc": "Explore ratio tables, double number lines, unit rates, percents, and proportional relationships.",
       "renderedBytes": 10633,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3815,6 +3820,8 @@
       "aliases": [],
       "desc": "How each renewable energy source actually works — the physics and engineering. Solar PV, wind (Betz limit), hydro (head + flow), geothermal, CSP, wave/tidal, biomass, and storage. Live sliders driven by the real formulas. Cited to NREL, IEA, IRENA, DOE.",
       "renderedBytes": 13058,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3842,7 +3849,9 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Pseudo-3D driving simulator + US permit test + fuel efficiency physics. Maine state focus.",
-      "renderedBytes": 40962,
+      "renderedBytes": 40970,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3870,7 +3879,9 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Earth Science: the rock cycle as a branching network, not a one-way circle. Animated cross-section diagram with all six pathways clickable, and a transformation machine that takes a named specimen and an agent of change and returns the specific named product with its real temperatures, depths, timescale and field evidence — shale to slate, limestone to marble, granite to gneiss.",
-      "renderedBytes": 33648,
+      "renderedBytes": 33636,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3898,7 +3909,9 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Earth Science: identify 20 rock specimens and 18 minerals by what you can actually see. Interactive landscape cross-section, textured specimen art, a no-AI Visual ID drill, AI Mystery Rock clues, and the real hand-sample tests — Mohs scratch, streak plate, acid fizz — plus a rotatable 3D view of each mineral’s crystal structure and a weathering-climate investigation.",
-      "renderedBytes": 6503,
+      "renderedBytes": 6500,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3927,6 +3940,8 @@
       "aliases": [],
       "desc": "Applied K-12 behavior practice — what school psychs and educators actually do with operant-conditioning science. PBIS three-tier framework, replacement behaviors mapped to FBA functions, setting events (the slow triggers most BIPs miss), Geoff Colvin's seven-phase Acting-Out Cycle for crisis de-escalation, and Restraint & Seclusion ethics anchored in Maine Chapter 33. Sister tool to BehaviorLab (which teaches the science) and Disability Voices in SEL Hub (which centers the people the field has been done to).",
       "renderedBytes": 22803,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3954,14 +3969,16 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore band gaps, doping, junctions, transistors, gates, I-V curves, wafer fab, LEDs, solar cells, quantum wells, memory & amplifiers.",
-      "renderedBytes": 17906,
+      "renderedBytes": 19748,
+      "settlePasses": 2,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 15,
+        "buttons": 17,
         "roleButtons": 3,
         "fields": 4,
         "canvases": 1,
@@ -3977,17 +3994,24 @@
     {
       "id": "simShelf",
       "label": "Sim Shelf",
-      "category": "general",
+      "category": "science",
       "ready": true,
       "lightBackground": false,
-      "aliases": [],
+      "aliases": [
+        "PhET",
+        "simulations",
+        "physics",
+        "predict explore explain"
+      ],
       "desc": "A shelf of PhET simulations — the most researched sims in education — wrapped in a Predict → Explore → Explain coach. Lock in a guess before you touch anything, experiment freely, then let the coach compare what you predicted with what you saw.",
       "renderedBytes": 2225,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
-      "noticeCount": 1,
+      "noticeCount": 0,
       "metrics": {
         "buttons": 2,
         "roleButtons": 0,
@@ -4000,14 +4024,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "simShelf",
-          "severity": "notice",
-          "code": "metadata",
-          "message": "Tool registry category is missing or generic."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "singing",
@@ -4018,6 +4035,8 @@
       "aliases": [],
       "desc": "Pitch training, vocal range, vibrato analysis, interval singing & music theory",
       "renderedBytes": 12495,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -4045,7 +4064,9 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Skate / BMX physics: kickflips, halfpipe pumps, and gap jumps. Same physics that lands a 720.",
-      "renderedBytes": 70737,
+      "renderedBytes": 70684,
+      "settlePasses": 2,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -4074,6 +4095,8 @@
       "aliases": [],
       "desc": "Explore a 3D model of the Sun, 8 planets, and dwarf planets — fly to surfaces, view interiors, run missions, and learn Kepler's laws.",
       "renderedBytes": 16256,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -4102,6 +4125,8 @@
       "aliases": [],
       "desc": "Colonize an alien planet! Turn-based cooperative strategy where mastering science unlocks colony survival.",
       "renderedBytes": 20517,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -4130,6 +4155,8 @@
       "aliases": [],
       "desc": "Roguelike missions across the solar system. AI-generated challenges, real science, and strategic resource management.",
       "renderedBytes": 12090,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -4157,20 +4184,22 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Float through the International Space Station and work a crew shift: run research, troubleshoot life support, practice low-g movement, explore a clickable 3-D map, and learn the engineering behind life in orbit. NGSS MS-ETS1 in Earth’s strangest laboratory.",
-      "renderedBytes": 432,
+      "renderedBytes": 50710,
+      "settlePasses": 2,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 0,
+        "buttons": 30,
         "roleButtons": 0,
         "fields": 0,
-        "canvases": 0,
-        "svgs": 0,
+        "canvases": 1,
+        "svgs": 2,
         "images": 0,
-        "headings": 1,
+        "headings": 4,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -4185,7 +4214,9 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Inferential statistics: t-tests, ANOVA, correlation, regression, chi-square, non-parametric, power analysis. AP Psych / AP Bio focus. Transparent computation, plain-English results, APA write-ups, AI interpretation grader.",
-      "renderedBytes": 17755,
+      "renderedBytes": 18113,
+      "settlePasses": 2,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -4214,6 +4245,8 @@
       "aliases": [],
       "desc": "Cross-campaign launcher across multiple regions and biomes. 5 deep Maine campaigns plus 10 cross-region scenarios across all five mechanic families: fire (Yarralin Australia, Karuk Northern California), conservation (Yellowstone wolves, Akagera Rwanda lions), public health (Mumbai dengue, Liberia 2014 Ebola), watershed (Klamath River, Murray–Darling Basin), climate (Marshall Islands atolls, Bangladesh delta). Same universal mechanics taught through grounded regional case studies. Family Pairing Insights unlock as you complete Maine + cross-region scenarios in the same mechanic family.",
       "renderedBytes": 3680,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -4242,6 +4275,8 @@
       "aliases": [],
       "desc": "How swimming works (stroke physics + survival skills) plus what every swimmer should know about cold water, rip currents, ice, life jackets, and rescue. Visual stroke breakdowns, the science of buoyancy and propulsion, and the survival skills (back float, eggbeater, HELP, huddle) that actually save lives. Sources cited inline (CDC, USCG, AAP, NAA, ASAN, NOAA, USA Swimming, Cold Water Boot Camp). Educational only — find a Water Safety Instructor for actual swim training.",
       "renderedBytes": 14047,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -4269,12 +4304,14 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Sports physics: how spin, speed, and release point shape the ball's path",
-      "renderedBytes": 53519,
+      "renderedBytes": 53526,
+      "settlePasses": 2,
+      "auditedAs": "default",
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
-      "noticeCount": 1,
+      "noticeCount": 0,
       "metrics": {
         "buttons": 54,
         "roleButtons": 0,
@@ -4285,23 +4322,9 @@
         "headings": 7,
         "links": 0,
         "tinyTextClassHits": 0,
-        "fixedWidthRiskCount": 1
+        "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "throwlab",
-          "severity": "notice",
-          "code": "horizontal-overflow-risk",
-          "message": "Tool includes fixed-width surfaces that need mobile visual review.",
-          "count": 1,
-          "examples": [
-            {
-              "selector": "div#throwlab-fs-workspace > div:nth-of-type(2) > details:nth-of-type(1) > div.throwlab-compendium-scroll > table",
-              "width": "100%"
-            }
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "timeSchedule",
@@ -4312,6 +4335,8 @@
       "aliases": [],
       "desc": "Link analog and digital clocks, model elapsed time, reason about schedules, and convert 12/24-hour time.",
       "renderedBytes": 22462,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -4334,17 +4359,24 @@
     {
       "id": "timelineStudio",
       "label": "Timeline Studio",
-      "category": "general",
+      "category": "history",
       "ready": true,
       "lightBackground": false,
-      "aliases": [],
+      "aliases": [
+        "timeline",
+        "TimelineJS",
+        "history",
+        "dated events"
+      ],
       "desc": "Turn any reading — history, a biography, a science-discovery passage — into an interactive TimelineJS timeline. Paste or drop in text and the AI pulls out the dated events; scroll, zoom, and step through them. You can also build a timeline event by event yourself.",
       "renderedBytes": 2892,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
-      "noticeCount": 1,
+      "noticeCount": 0,
       "metrics": {
         "buttons": 2,
         "roleButtons": 0,
@@ -4357,14 +4389,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "timelineStudio",
-          "severity": "notice",
-          "code": "metadata",
-          "message": "Tool registry category is missing or generic."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "titrationLab",
@@ -4375,6 +4400,8 @@
       "aliases": [],
       "desc": "Virtual titration lab with S-curve graphing, safety drills, incident simulator, equipment guide, and dilution calculator.",
       "renderedBytes": 12133,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -4403,6 +4430,8 @@
       "aliases": [],
       "desc": "Keyboarding designed for students with disabilities — accommodations are the product, not a menu. AI-personalized passages, IEP-ready progress, no ads or racing.",
       "renderedBytes": 39975,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -4431,6 +4460,8 @@
       "aliases": [],
       "desc": "Convert units with visual comparison, quiz, AI word problems, badges & keyboard shortcuts",
       "renderedBytes": 16339,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -4459,6 +4490,8 @@
       "aliases": [],
       "desc": "Journey through cosmic time from the Big Bang to heat death, exploring epochs, distance scales, galaxies, exoplanets, and dark matter.",
       "renderedBytes": 106066,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -4486,7 +4519,9 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Build 3D solids, solve volume challenges, and measure irregular objects with water displacement.",
-      "renderedBytes": 39839,
+      "renderedBytes": 41655,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -4514,7 +4549,9 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Live water cycle canvas plus Journey Mode: ride one droplet through evaporation, condensation, precipitation, collection, transpiration, and infiltration with real choices along the way.",
-      "renderedBytes": 34125,
+      "renderedBytes": 35150,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -4542,20 +4579,22 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Animate sound and water waves across Free, Standing, Ripple Tank, Reflection, Longitudinal, Doppler, and Spectrum modes.",
-      "renderedBytes": 405,
+      "renderedBytes": 20992,
+      "settlePasses": 2,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 0,
+        "buttons": 36,
         "roleButtons": 0,
-        "fields": 0,
-        "canvases": 0,
+        "fields": 8,
+        "canvases": 1,
         "svgs": 0,
         "images": 0,
-        "headings": 1,
+        "headings": 4,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -4577,6 +4616,8 @@
       ],
       "desc": "Explore fronts, pressure, humidity, wind, radar, station models, severe-weather hazards, and evidence-based forecasting.",
       "renderedBytes": 93459,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -4599,17 +4640,24 @@
     {
       "id": "weldLab",
       "label": "WeldLab — Welding & Metal Joining",
-      "category": "general",
+      "category": "engineering",
       "ready": true,
       "lightBackground": false,
-      "aliases": [],
+      "aliases": [
+        "welding",
+        "MIG TIG",
+        "weld defects",
+        "skilled trades"
+      ],
       "desc": "Vocational welding simulator covering MIG / TIG / Stick / Oxy-Fuel processes, heat-input physics, weld bead geometry, defect identification, AWS welding symbols, OSHA-aligned PPE, and Maine career pathways (Bath Iron Works, EMCC welding program, AWS certification ladder). Real procedural and conceptual content for skilled-trades exploration — not a watered-down toy.",
       "renderedBytes": 34438,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
-      "noticeCount": 1,
+      "noticeCount": 0,
       "metrics": {
         "buttons": 26,
         "roleButtons": 0,
@@ -4622,14 +4670,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "weldLab",
-          "severity": "notice",
-          "code": "metadata",
-          "message": "Tool registry category is missing or generic."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "worldBuilder",
@@ -4640,6 +4681,8 @@
       "aliases": [],
       "desc": "Literary RPG — explore worlds, craft items, build structures, and battle through the strength of your prose.",
       "renderedBytes": 12717,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -4662,17 +4705,24 @@
     {
       "id": "zoomGallery",
       "label": "Zoom Gallery",
-      "category": "general",
+      "category": "creative",
       "ready": true,
       "lightBackground": false,
-      "aliases": [],
+      "aliases": [
+        "deep zoom",
+        "OpenSeadragon",
+        "NASA images",
+        "Smithsonian"
+      ],
       "desc": "Zoom deep into real, openly-licensed images — Smithsonian Open Access artifacts (CC0) and famous NASA photographs (public domain) — in OpenSeadragon, the viewer museums use. Magnify to the pixel: the Pillars of Creation, an Apollo bootprint, the Apollo 11 capsule, a coral fan. A Notice → Wonder coach sits beside the viewer.",
       "renderedBytes": 2370,
+      "settlePasses": 1,
+      "auditedAs": "default",
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
-      "noticeCount": 1,
+      "noticeCount": 0,
       "metrics": {
         "buttons": 2,
         "roleButtons": 0,
@@ -4685,14 +4735,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "zoomGallery",
-          "severity": "notice",
-          "code": "metadata",
-          "message": "Tool registry category is missing or generic."
-        }
-      ]
+      "issues": []
     }
   ]
 }

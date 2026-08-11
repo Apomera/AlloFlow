@@ -121,7 +121,8 @@ describe('Astronomy observing-plan workflow', () => {
       observingList: ['ursa_major']
     });
     expect(html).toMatch(/aria-label="Ursa Major, The Great Bear \(Big Dipper\)"[^>]*aria-pressed="true"[^>]*aria-controls="astronomy-constellation-detail"/);
-    expect(html).toContain('id="astronomy-constellation-detail" role="region" aria-live="polite" aria-label="Ursa Major details"');
+    expect(html).toContain('id="astronomy-constellation-detail" role="region" aria-label="Ursa Major details"');
+    expect(html).toContain('role="status" aria-live="polite" aria-atomic="true" class="astr-sr-only">Ursa Major selected');
     expect(html).toContain('aria-label="Remove Ursa Major from observing list" aria-pressed="true"');
     expect(html).toContain('✓ Saved · Remove');
   });
@@ -211,7 +212,7 @@ describe('Astronomy diagram state resilience', () => {
   it('recovers a malformed Moon phase without crashing the diagram', () => {
     expect(() => renderAstronomy({ tab: 'moon', observingList: [], moonPhaseIdx: { forged: true } })).not.toThrow();
     const html = renderAstronomy({ tab: 'moon', observingList: [], moonPhaseIdx: { forged: true } });
-    expect(html).toContain('aria-valuetext="New Moon, 0% illuminated" aria-describedby="astronomy-moon-phase-status"');
+    expect(html).toContain('aria-valuetext="New Moon, about 0% illuminated, day 0.00 of 29.53" aria-describedby="astronomy-moon-phase-status"');
     expect(html).toContain('id="astronomy-moon-phase-status" role="status" aria-live="polite" aria-atomic="true"');
     expect(html).not.toContain('NaN');
     expect(html).not.toContain('undefined');
@@ -219,7 +220,7 @@ describe('Astronomy diagram state resilience', () => {
 
   it('describes the full Moon diagram without calling it waning', () => {
     const html = renderAstronomy({ tab: 'moon', observingList: [], moonPhaseIdx: 4 });
-    expect(html).toContain('Moon disc showing 100% illumination. The entire visible face is illuminated.');
+    expect(html).toContain('Moon disc showing approximately 100% illumination. The entire visible face is illuminated.');
     expect(html).not.toContain('left, waning side');
   });
 

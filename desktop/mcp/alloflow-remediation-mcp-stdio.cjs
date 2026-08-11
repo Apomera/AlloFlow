@@ -82,6 +82,7 @@ const os = require('os');
 const path = require('path');
 const readline = require('readline');
 const crypto = require('crypto');
+const zlib = require('zlib');
 
 const Driver = require(path.join(__dirname, 'remediation_headless_driver.cjs'));
 
@@ -363,10 +364,9 @@ const MAX_JOBS = 64;
 const JOB_LOG_LINES = 40;
 let jobQueue = Promise.resolve();
 
-// A job is terminal when nothing more will happen to it. `interrupted` joins the set on restore:
-// a job the previous process was still running cannot be resumed (its browser context died with
-// that process), but it is not a failure either, and pretending it is would misreport work that
-// may well have finished writing its outputs.
+// A job is terminal when nothing more will happen to it. Schema-3 queued/running jobs are
+// automatically requeued. `interrupted` is reserved for legacy, corrupt, incomplete, or
+// compatibility-unsafe durable state that cannot be resumed without risking wrong-file work.
 const TERMINAL_STATUSES = ['completed', 'failed', 'cancelled', 'interrupted'];
 
 // ── Durability ──────────────────────────────────────────────────────────────
@@ -381,66 +381,526 @@ const STATE_DIR = process.env.ALLOFLOW_MCP_STATE_DIR
   : path.join(os.homedir() || os.tmpdir(), '.alloflow-mcp', 'jobs');
 
 function jobRecordPath(jobId) { return path.join(STATE_DIR, jobId + '.json'); }
+function jobRecordTempPath(jobId) { return path.join(STATE_DIR, jobId + '.json.tmp'); }
+function jobCheckpointPath(jobId) { return path.join(STATE_DIR, jobId + '.checkpoint.json.gz'); }
+function jobCheckpointTempPath(jobId) { return path.join(STATE_DIR, jobId + '.checkpoint.json.gz.tmp'); }
 
-// Persistence is best-effort by design: a read-only or full disk must degrade the connector to
-// its old in-memory behaviour, never break a run that is otherwise fine.
-let jobRecordsWritable = true; // flipped false the first time persistence fails, so capabilities can say so
+const JOB_RECORD_SCHEMA = 3;
+const JOB_EXECUTION_SCHEMA = 1;
+const CHECKPOINT_SCHEMA = 1;
+const CHECKPOINT_ENGINE_ABI = 1;
+const CHECKPOINT_STAGES = new Set(['extraction', 'primary', 'round']);
+const CHECKPOINT_MAX_JSON_BYTES = 128 * 1024 * 1024;
+const CHECKPOINT_MAX_COMPRESSED_BYTES = 32 * 1024 * 1024;
+const SHA256_HEX_RE = /^[a-f0-9]{64}$/;
+const SAFE_JOB_ID_RE = /^rjob-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+const ENGINE_ENV_AT_BOOT = Object.freeze({
+  geminiBase: process.env.ALLOFLOW_MCP_GEMINI_BASE || 'https://generativelanguage.googleapis.com/v1beta/models',
+  geminiModel: process.env.ALLOFLOW_MCP_GEMINI_MODEL || 'gemini-3-flash-preview',
+  geminiFallbackModel: process.env.ALLOFLOW_MCP_GEMINI_FALLBACK_MODEL || 'gemini-2.5-flash-lite',
+});
 
-function persistJob(job) {
+function sha256Bytes(value) {
+  return crypto.createHash('sha256').update(value).digest('hex');
+}
+
+function jsonSha256(value) {
+  return sha256Bytes(Buffer.from(JSON.stringify(value), 'utf8'));
+}
+
+function isPlainObject(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const proto = Object.getPrototypeOf(value);
+  return proto === Object.prototype || proto === null;
+}
+
+function hasExactKeys(value, keys) {
+  return isPlainObject(value)
+    && Object.keys(value).sort().join('\u0000') === keys.slice().sort().join('\u0000');
+}
+
+function integerInRange(value, min, max) {
+  return Number.isSafeInteger(value) && value >= min && value <= max;
+}
+
+function atomicWriteBytes(finalPath, bytes, mode = 0o600) {
+  const tempPath = finalPath + '.tmp';
+  let fd = null;
+  fs.mkdirSync(path.dirname(finalPath), { recursive: true });
   try {
-    fs.mkdirSync(STATE_DIR, { recursive: true });
-    const record = {
-      jobId: job.jobId, kind: job.kind, input: job.input, status: job.status,
-      createdAt: job.createdAt, startedAt: job.startedAt, finishedAt: job.finishedAt,
-      logLines: job.logLines, result: job.result, error: job.error,
-      schema: 1,
-    };
-    fs.writeFileSync(jobRecordPath(job.jobId), JSON.stringify(record), 'utf8');
-  } catch (e) {
-    jobRecordsWritable = false;
-    if (!persistJob._warned) { persistJob._warned = true; log('job records are not persisting (' + ((e && e.message) || e) + ') — status survives only while this server runs'); }
+    fd = fs.openSync(tempPath, 'w', mode);
+    fs.writeFileSync(fd, bytes);
+    fs.fsyncSync(fd);
+    fs.closeSync(fd);
+    fd = null;
+    // Never remove the previous committed file first: delete-then-rename creates a crash window.
+    fs.renameSync(tempPath, finalPath);
+    if (process.platform !== 'win32') {
+      let dirFd = null;
+      try {
+        dirFd = fs.openSync(path.dirname(finalPath), 'r');
+        fs.fsyncSync(dirFd);
+      } finally {
+        try { if (dirFd !== null) fs.closeSync(dirFd); } catch (_) {}
+      }
+    }
+  } catch (error) {
+    try { if (fd !== null) fs.closeSync(fd); } catch (_) {}
+    throw error;
   }
 }
 
-function forgetJobRecord(jobId) { try { fs.rmSync(jobRecordPath(jobId), { force: true }); } catch (_) {} }
+function atomicWriteJson(finalPath, value, mode = 0o600) {
+  atomicWriteBytes(finalPath, Buffer.from(JSON.stringify(value, null, 2), 'utf8'), mode);
+}
+
+let checkpointEngineDigestCache = null;
+function checkpointEngineDigest() {
+  if (checkpointEngineDigestCache) return checkpointEngineDigestCache;
+  const hash = crypto.createHash('sha256');
+  hash.update('alloflow-desktop-checkpoint-engine-abi:' + CHECKPOINT_ENGINE_ABI + '\n');
+  const files = [__filename, path.join(__dirname, 'remediation_headless_driver.cjs')];
+  for (const name of Driver.MODULE_FILES) files.push(path.join(Driver.ASSETS_ROOT, name));
+  const vendorManifest = [
+    path.join(__dirname, 'vendor', 'manifest.json'),
+    path.join(Driver.ASSETS_ROOT, 'vendor', 'manifest.json'),
+  ].find((candidate) => fs.existsSync(candidate));
+  if (!vendorManifest) throw new Error('Checkpoint engine vendor manifest is missing.');
+  files.push(vendorManifest);
+  for (const file of files) {
+    const bytes = fs.readFileSync(file);
+    hash.update(path.basename(file) + '\u0000' + bytes.length + '\u0000');
+    hash.update(sha256Bytes(bytes));
+    hash.update('\n');
+  }
+  let normalizedBase = ENGINE_ENV_AT_BOOT.geminiBase;
+  try { normalizedBase = new URL(normalizedBase).toString(); } catch (_) {}
+  hash.update(jsonSha256({
+    geminiBase: normalizedBase,
+    geminiModel: ENGINE_ENV_AT_BOOT.geminiModel,
+    geminiFallbackModel: ENGINE_ENV_AT_BOOT.geminiFallbackModel,
+  }));
+  checkpointEngineDigestCache = hash.digest('hex');
+  return checkpointEngineDigestCache;
+}
+
+function checkpointAudit(value) {
+  if (!hasExactKeys(value, [
+    'score', 'documentLanguage', 'requestedAuditors', 'auditorCount', 'sliced',
+  ])) return null;
+  if (
+    !(value.score === null || (typeof value.score === 'number' && Number.isFinite(value.score)
+      && value.score >= 0 && value.score <= 100)) ||
+    !(value.documentLanguage === null || (typeof value.documentLanguage === 'string'
+      && value.documentLanguage.length <= 32)) ||
+    !integerInRange(value.requestedAuditors, 3, 5) ||
+    !integerInRange(value.auditorCount, value.requestedAuditors, 5) ||
+    value.sliced !== false
+  ) return null;
+  return value;
+}
+
+function checkpointExtraction(value, inputSha256) {
+  if (!hasExactKeys(value, [
+    'fileName', 'documentDigest', 'text', 'groundTruthCharCount', 'groundTruthMethod',
+    'groundTruthPages', 'ocrMethod', 'ocrTesseractText', 'ocrVisionText',
+    'ocrDisagreements', 'ocrPageErrors', 'ocrLowConfidencePages', 'detectedFolios',
+    'ocrDupeCollapses', 'ocrColumnReorders', 'strippedEdgeLines', 'visionStripTrail',
+  ])) return null;
+  if (
+    typeof value.fileName !== 'string' || value.fileName.length === 0 || value.fileName.length > 255 ||
+    value.documentDigest !== 'sha256:' + inputSha256 ||
+    typeof value.text !== 'string' || value.text.length === 0 ||
+    !Number.isSafeInteger(value.groundTruthCharCount) || value.groundTruthCharCount < 0 ||
+    !(value.groundTruthMethod === null || (typeof value.groundTruthMethod === 'string'
+      && value.groundTruthMethod.length <= 128)) ||
+    !(value.groundTruthPages === null || Array.isArray(value.groundTruthPages)) ||
+    !(value.ocrMethod === null || (typeof value.ocrMethod === 'string'
+      && value.ocrMethod.length <= 128)) ||
+    typeof value.ocrTesseractText !== 'string' ||
+    typeof value.ocrVisionText !== 'string' ||
+    ![
+      value.ocrDisagreements, value.ocrPageErrors, value.ocrLowConfidencePages,
+      value.detectedFolios, value.ocrDupeCollapses, value.ocrColumnReorders,
+      value.strippedEdgeLines, value.visionStripTrail,
+    ].every(Array.isArray)
+  ) return null;
+  return value;
+}
+
+function checkpointRemediationSnapshot(value) {
+  if (!hasExactKeys(value, [
+    'schema', 'stage', 'audit', 'remediation', 'nextRound', 'roundsRun',
+    'roundLog', 'loopState', 'autoContinueDone',
+  ])) return null;
+  if (
+    value.schema !== CHECKPOINT_SCHEMA ||
+    !['primary', 'round'].includes(value.stage) ||
+    !checkpointAudit(value.audit) ||
+    !isPlainObject(value.remediation) ||
+    typeof value.remediation.accessibleHtml !== 'string' ||
+    value.remediation.accessibleHtml.length === 0 ||
+    !integerInRange(value.nextRound, 0, 5) ||
+    !integerInRange(value.roundsRun, 0, 5) ||
+    !Array.isArray(value.roundLog) || value.roundLog.length > 64 ||
+    !value.roundLog.every((line) => typeof line === 'string' && line.length <= 1000) ||
+    !hasExactKeys(value.loopState, ['lastViolations', 'lastDet', 'lastIssues', 'stagnant']) ||
+    ![
+      value.loopState.lastViolations, value.loopState.lastDet, value.loopState.lastIssues,
+    ].every((entry) => entry === null || (typeof entry === 'number' && Number.isFinite(entry))) ||
+    !integerInRange(value.loopState.stagnant, 0, 10) ||
+    typeof value.autoContinueDone !== 'boolean' ||
+    (value.stage === 'primary' && (value.nextRound !== 0 || value.roundsRun !== 0)) ||
+    (value.stage === 'round' && (value.nextRound === 0 || value.nextRound !== value.roundsRun))
+  ) return null;
+  return value;
+}
+
+function validateCheckpointEnvelope(value, expected = {}) {
+  if (!hasExactKeys(value, [
+    'schema', 'sequence', 'stage', 'inputSha256', 'optionsSha256', 'engineSha256', 'snapshot',
+  ])) return null;
+  if (
+    value.schema !== CHECKPOINT_SCHEMA ||
+    !integerInRange(value.sequence, 1, 1000000) ||
+    !CHECKPOINT_STAGES.has(value.stage) ||
+    ![value.inputSha256, value.optionsSha256, value.engineSha256]
+      .every((digest) => typeof digest === 'string' && SHA256_HEX_RE.test(digest)) ||
+    (expected.inputSha256 && value.inputSha256 !== expected.inputSha256) ||
+    (expected.optionsSha256 && value.optionsSha256 !== expected.optionsSha256) ||
+    (expected.engineSha256 && value.engineSha256 !== expected.engineSha256)
+  ) return null;
+  let snapshot = null;
+  if (
+    value.stage === 'extraction' &&
+    hasExactKeys(value.snapshot, ['schema', 'stage', 'audit', 'extraction']) &&
+    value.snapshot.schema === CHECKPOINT_SCHEMA &&
+    value.snapshot.stage === 'extraction' &&
+    checkpointAudit(value.snapshot.audit) &&
+    checkpointExtraction(value.snapshot.extraction, value.inputSha256)
+  ) snapshot = value.snapshot;
+  else if (value.stage === 'primary' || value.stage === 'round') {
+    snapshot = checkpointRemediationSnapshot(value.snapshot);
+  }
+  return snapshot && snapshot.stage === value.stage ? value : null;
+}
+
+function readCheckpointCandidate(candidatePath, expected, pointer) {
+  try {
+    const stat = fs.statSync(candidatePath);
+    if (!stat.isFile() || stat.size <= 0 || stat.size > CHECKPOINT_MAX_COMPRESSED_BYTES) return null;
+    const compressed = fs.readFileSync(candidatePath);
+    const compressedSha256 = sha256Bytes(compressed);
+    const json = zlib.gunzipSync(compressed, { maxOutputLength: CHECKPOINT_MAX_JSON_BYTES });
+    if (!json.length || json.length > CHECKPOINT_MAX_JSON_BYTES) return null;
+    const envelope = validateCheckpointEnvelope(JSON.parse(json.toString('utf8')), expected);
+    if (!envelope) return null;
+    if (
+      pointer && pointer.sequence === envelope.sequence &&
+      pointer.compressedSha256 && pointer.compressedSha256 !== compressedSha256
+    ) return null;
+    return { envelope, compressedSha256, sizeBytes: compressed.length, path: candidatePath };
+  } catch (_) {
+    return null;
+  }
+}
+
+function checkpointPointer(candidate, job) {
+  return {
+    schema: CHECKPOINT_SCHEMA,
+    sequence: candidate.envelope.sequence,
+    stage: candidate.envelope.stage,
+    inputSha256: candidate.envelope.inputSha256,
+    optionsSha256: candidate.envelope.optionsSha256,
+    engineSha256: candidate.envelope.engineSha256,
+    compressedSha256: candidate.compressedSha256,
+    sizeBytes: candidate.sizeBytes,
+    attemptId: job.attemptId || null,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function loadLocalCheckpoint(job, expected, persistPointer = true) {
+  const finalPath = jobCheckpointPath(job.jobId);
+  const tempPath = jobCheckpointTempPath(job.jobId);
+  const finalCandidate = readCheckpointCandidate(finalPath, expected, job.checkpoint);
+  const tempCandidate = readCheckpointCandidate(tempPath, expected, null);
+  let selected = finalCandidate;
+  if (tempCandidate && (!selected || tempCandidate.envelope.sequence >= selected.envelope.sequence)) {
+    try {
+      fs.renameSync(tempPath, finalPath);
+      selected = Object.assign({}, tempCandidate, { path: finalPath });
+    } catch (_) {
+      selected = tempCandidate;
+    }
+  } else if (fs.existsSync(tempPath)) {
+    try { fs.rmSync(tempPath, { force: true }); } catch (_) {}
+  }
+  if (!selected) {
+    try { fs.rmSync(finalPath, { force: true }); } catch (_) {}
+    try { fs.rmSync(tempPath, { force: true }); } catch (_) {}
+    return null;
+  }
+  const pointer = checkpointPointer(selected, job);
+  if (persistPointer && JSON.stringify(job.checkpoint || null) !== JSON.stringify(pointer)) {
+    job.checkpoint = pointer;
+    persistJob(job, { required: true });
+  }
+  return selected.envelope;
+}
+
+function saveLocalCheckpoint(job, snapshot, compatibility) {
+  const prior = loadLocalCheckpoint(job, compatibility, false);
+  const sequence = Math.max(
+    prior && prior.sequence || 0,
+    job.checkpoint && job.checkpoint.sequence || 0,
+  ) + 1;
+  if (!integerInRange(sequence, 1, 1000000)) throw new Error('checkpoint_sequence_exhausted');
+  const envelope = {
+    schema: CHECKPOINT_SCHEMA,
+    sequence,
+    stage: snapshot && snapshot.stage,
+    inputSha256: compatibility.inputSha256,
+    optionsSha256: compatibility.optionsSha256,
+    engineSha256: compatibility.engineSha256,
+    snapshot,
+  };
+  if (!validateCheckpointEnvelope(envelope, compatibility)) {
+    throw new Error('checkpoint_snapshot_invalid');
+  }
+  let json;
+  try { json = Buffer.from(JSON.stringify(envelope), 'utf8'); }
+  catch (_) { throw new Error('checkpoint_snapshot_invalid'); }
+  if (!json.length) throw new Error('checkpoint_snapshot_invalid');
+  if (json.length > CHECKPOINT_MAX_JSON_BYTES) throw new Error('checkpoint_snapshot_too_large');
+  let compressed;
+  try { compressed = zlib.gzipSync(json, { level: 6 }); }
+  catch (_) { throw new Error('checkpoint_snapshot_invalid'); }
+  if (!compressed.length) throw new Error('checkpoint_snapshot_invalid');
+  if (compressed.length > CHECKPOINT_MAX_COMPRESSED_BYTES) {
+    throw new Error('checkpoint_snapshot_too_large');
+  }
+  atomicWriteBytes(jobCheckpointPath(job.jobId), compressed);
+  const candidate = { envelope, compressedSha256: sha256Bytes(compressed), sizeBytes: compressed.length };
+  job.checkpoint = checkpointPointer(candidate, job);
+  job.runStage = 'checkpoint:' + envelope.stage;
+  persistJob(job, { required: true });
+  return { saved: true, sequence, stage: envelope.stage };
+}
+
+function removeLocalCheckpointFiles(jobId) {
+  try { fs.rmSync(jobCheckpointPath(jobId), { force: true }); } catch (_) {}
+  try { fs.rmSync(jobCheckpointTempPath(jobId), { force: true }); } catch (_) {}
+}
+
+function clearLocalCheckpoint(job, persist = false) {
+  removeLocalCheckpointFiles(job.jobId);
+  job.checkpoint = null;
+  job.currentFile = null;
+  if (persist) persistJob(job, { required: true });
+}
+
+// Durable job acceptance and every checkpoint/file-boundary commit are fail-closed.
+let jobRecordsWritable = true; // flipped false the first time persistence fails, so capabilities can say so
+
+function persistJob(job, options = {}) {
+  try {
+    const record = {
+      jobId: job.jobId, kind: job.kind, input: job.input, status: job.status,
+      createdAt: job.createdAt, startedAt: job.startedAt, finishedAt: job.finishedAt,
+      logLines: job.logLines, progress: job.progress || null,
+      result: job.result, error: job.error,
+      cancelRequested: job.cancelRequested === true,
+      execution: job.execution || null,
+      inputIdentitySha256: job.inputIdentitySha256 || null,
+      inputSha256: job.inputSha256 || null,
+      optionsSha256: job.optionsSha256 || null,
+      engineSha256: job.engineSha256 || null,
+      attemptId: job.attemptId || null,
+      attemptNumber: Number(job.attemptNumber) || 0,
+      attemptStartedAt: job.attemptStartedAt || null,
+      runStage: job.runStage || null,
+      checkpoint: job.checkpoint || null,
+      currentFile: job.currentFile || null,
+      fileRows: Array.isArray(job.fileRows) ? job.fileRows : [],
+      persistedAt: new Date().toISOString(),
+      schema: JOB_RECORD_SCHEMA,
+    };
+    atomicWriteJson(jobRecordPath(job.jobId), record);
+    return true;
+  } catch (e) {
+    jobRecordsWritable = false;
+    if (!persistJob._warned) { persistJob._warned = true; log('job records are not persisting (' + ((e && e.message) || e) + ') — status survives only while this server runs'); }
+    if (options.required) {
+      const failure = new Error('job_state_persistence_failed');
+      failure.cause = e;
+      throw failure;
+    }
+    return false;
+  }
+}
+
+function forgetJobRecord(jobId) {
+  try { fs.rmSync(jobRecordPath(jobId), { force: true }); } catch (_) {}
+  try { fs.rmSync(jobRecordTempPath(jobId), { force: true }); } catch (_) {}
+  try { fs.rmSync(jobCheckpointPath(jobId), { force: true }); } catch (_) {}
+  try { fs.rmSync(jobCheckpointTempPath(jobId), { force: true }); } catch (_) {}
+}
 
 const JOB_RECORD_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+const RESTORED_TO_REQUEUE = [];
+
+function storedExecutionIsValid(execution, kind) {
+  if (
+    !isPlainObject(execution) ||
+    execution.schema !== JOB_EXECUTION_SCHEMA ||
+    execution.kind !== kind ||
+    !['pdf_remediate', 'pdf_batch_audit', 'pdf_batch_remediate',
+      'pdf_remediate_from_scoreboard'].includes(kind) ||
+    !Array.isArray(execution.files) ||
+    execution.files.length < 1 ||
+    execution.files.length > BATCH_LIMIT_AUDIT ||
+    !execution.files.every((file) => typeof file === 'string' && path.isAbsolute(file)) ||
+    typeof execution.outDir !== 'string' || !path.isAbsolute(execution.outDir) ||
+    !isPlainObject(execution.options) ||
+    typeof execution.skipExisting !== 'boolean' ||
+    !(execution.meta === null || isPlainObject(execution.meta))
+  ) return false;
+  if (kind === 'pdf_remediate') return execution.files.length === 1 && execution.meta === null;
+  if (!execution.meta || typeof execution.meta.dir !== 'string'
+      || !path.isAbsolute(execution.meta.dir)) return false;
+  if (kind === 'pdf_batch_audit') return execution.files.length <= BATCH_LIMIT_AUDIT;
+  if (execution.files.length > BATCH_LIMIT_REMEDIATE) return false;
+  if (kind === 'pdf_batch_remediate') return true;
+  return typeof execution.meta.scoreboard === 'string'
+    && path.isAbsolute(execution.meta.scoreboard)
+    && Array.isArray(execution.meta.bands)
+    && execution.meta.bands.every((band) => typeof band === 'string')
+    && Number.isSafeInteger(execution.meta.scoredDocuments)
+    && execution.meta.scoredDocuments >= execution.files.length
+    && Array.isArray(execution.meta.missingFromDisk)
+    && execution.meta.missingFromDisk.every((file) => typeof file === 'string');
+}
+
+function recordCanResume(rec) {
+  return rec.schema === JOB_RECORD_SCHEMA &&
+    storedExecutionIsValid(rec.execution, rec.kind) &&
+    typeof rec.inputIdentitySha256 === 'string' && SHA256_HEX_RE.test(rec.inputIdentitySha256) &&
+    (rec.inputSha256 === null || rec.inputSha256 === undefined || SHA256_HEX_RE.test(rec.inputSha256)) &&
+    typeof rec.optionsSha256 === 'string' && SHA256_HEX_RE.test(rec.optionsSha256) &&
+    typeof rec.engineSha256 === 'string' && SHA256_HEX_RE.test(rec.engineSha256);
+}
 
 function restoreJobs() {
   let names;
   try { names = fs.readdirSync(STATE_DIR); } catch (_) { return 0; }
+  // Recover a fully-flushed write that was interrupted between fsync and rename. A valid temp
+  // is the newer intended snapshot and atomically replaces any older committed record. Invalid
+  // temp data is quarantined while the last known-good final record remains untouched.
+  for (const n of names) {
+    if (!/^rjob-.*\.json\.tmp$/.test(n)) continue;
+    const tempPath = path.join(STATE_DIR, n);
+    const finalPath = tempPath.slice(0, -4);
+    try {
+      const candidate = JSON.parse(fs.readFileSync(tempPath, 'utf8'));
+      const expectedId = n.slice(0, -'.json.tmp'.length);
+      if (!candidate || candidate.jobId !== expectedId || !SAFE_JOB_ID_RE.test(candidate.jobId)) {
+        throw new Error('invalid temporary job record');
+      }
+      fs.renameSync(tempPath, finalPath);
+    } catch (_) {
+      // Preserve corrupt evidence for support/recovery instead of making the job id disappear.
+      try { fs.renameSync(tempPath, tempPath + '.corrupt-' + Date.now()); } catch (__) {}
+    }
+  }
+  try { names = fs.readdirSync(STATE_DIR); } catch (_) { return 0; }
   const now = Date.now();
   let restored = 0;
   let interrupted = 0;
+  let requeued = 0;
   for (const n of names) {
     if (!/^rjob-.*\.json$/.test(n)) continue;
     const p = path.join(STATE_DIR, n);
     let rec;
-    try { rec = JSON.parse(fs.readFileSync(p, 'utf8')); } catch (_) { try { fs.rmSync(p, { force: true }); } catch (__) {} continue; }
-    if (!rec || !rec.jobId) { try { fs.rmSync(p, { force: true }); } catch (_) {} continue; }
+    try { rec = JSON.parse(fs.readFileSync(p, 'utf8')); } catch (_) { try { fs.renameSync(p, p + '.corrupt-' + Date.now()); } catch (__) {} continue; }
+    const expectedId = n.slice(0, -'.json'.length);
+    if (!rec || rec.jobId !== expectedId || !SAFE_JOB_ID_RE.test(rec.jobId)) {
+      try { fs.renameSync(p, p + '.corrupt-' + Date.now()); } catch (_) {}
+      removeLocalCheckpointFiles(expectedId);
+      continue;
+    }
     const age = now - Date.parse(rec.createdAt || 0);
-    if (Number.isFinite(age) && age > JOB_RECORD_TTL_MS) { try { fs.rmSync(p, { force: true }); } catch (_) {} continue; }
-    // Nothing is mid-flight in a process that just booted. Anything the previous one was still
-    // working on is orphaned, and saying `running` would be a lie a client could poll forever.
-    const wasUnfinished = rec.status === 'queued' || rec.status === 'running';
-    if (wasUnfinished) { rec.status = 'interrupted'; rec.finishedAt = rec.finishedAt || new Date().toISOString(); interrupted++; }
-    JOBS.set(rec.jobId, {
+    if (Number.isFinite(age) && age > JOB_RECORD_TTL_MS) {
+      forgetJobRecord(rec.jobId);
+      continue;
+    }
+    const priorStatus = rec.status;
+    const wasUnfinished = priorStatus === 'queued' || priorStatus === 'running';
+    const resumable = wasUnfinished && recordCanResume(rec) &&
+      ((priorStatus === 'queued' && !rec.startedAt) || priorStatus === 'running');
+    if (wasUnfinished && rec.cancelRequested === true) {
+      rec.status = 'cancelled';
+      rec.finishedAt = rec.finishedAt || new Date().toISOString();
+    } else if (resumable) {
+      rec.status = 'queued';
+      rec.finishedAt = null;
+      rec.error = null;
+      requeued++;
+    } else if (wasUnfinished) {
+      rec.status = 'interrupted';
+      rec.finishedAt = rec.finishedAt || new Date().toISOString();
+      interrupted++;
+    }
+    const restoredJob = {
       jobId: rec.jobId, kind: rec.kind, input: rec.input, status: rec.status,
       createdAt: rec.createdAt, startedAt: rec.startedAt || null, finishedAt: rec.finishedAt || null,
       cancelRequested: false,
       logLines: Array.isArray(rec.logLines) ? rec.logLines : [],
+      progress: rec.progress && typeof rec.progress === 'object' ? rec.progress : null,
       result: rec.result === undefined ? null : rec.result,
       error: rec.error || null,
+      execution: isPlainObject(rec.execution) ? rec.execution : null,
+      inputIdentitySha256: rec.inputIdentitySha256 || null,
+      inputSha256: rec.inputSha256 || null,
+      optionsSha256: rec.optionsSha256 || null,
+      engineSha256: rec.engineSha256 || null,
+      attemptId: rec.attemptId || null,
+      attemptNumber: Number(rec.attemptNumber) || 0,
+      attemptStartedAt: rec.attemptStartedAt || null,
+      runStage: rec.runStage || null,
+      checkpoint: isPlainObject(rec.checkpoint) ? rec.checkpoint : null,
+      currentFile: isPlainObject(rec.currentFile) ? rec.currentFile : null,
+      fileRows: Array.isArray(rec.fileRows) ? rec.fileRows.filter(isPlainObject).slice(0, BATCH_LIMIT_AUDIT) : [],
+      restoredFromStatus: resumable ? priorStatus : null,
       restored: true,
-    });
-    if (wasUnfinished) persistJob(JOBS.get(rec.jobId));
+    };
+    JOBS.set(rec.jobId, restoredJob);
+    if (resumable) RESTORED_TO_REQUEUE.push(restoredJob);
+    if (wasUnfinished) {
+      if (!resumable) removeLocalCheckpointFiles(rec.jobId);
+      persistJob(restoredJob);
+    } else {
+      removeLocalCheckpointFiles(rec.jobId);
+    }
     restored++;
   }
-  if (restored) log('restored ' + restored + ' job record(s) from ' + STATE_DIR + (interrupted ? ' (' + interrupted + ' marked interrupted)' : ''));
+  // Checkpoint bodies can contain extracted document text. Never retain an orphan after its
+  // record expired, was quarantined, or reached a terminal state.
+  try {
+    for (const name of fs.readdirSync(STATE_DIR)) {
+      const match = /^(rjob-[0-9a-f-]{36})\.checkpoint\.json\.gz(?:\.tmp)?$/.exec(name);
+      if (!match) continue;
+      const job = JOBS.get(match[1]);
+      if (!job || TERMINAL_STATUSES.includes(job.status)) removeLocalCheckpointFiles(match[1]);
+    }
+  } catch (_) {}
+  if (restored) log('restored ' + restored + ' job record(s) from ' + STATE_DIR
+    + (requeued ? ' (' + requeued + ' requeued)' : '')
+    + (interrupted ? ' (' + interrupted + ' marked interrupted)' : ''));
   return restored;
 }
 
-function newJob(kind, input) {
+function newJob(kind, input, execution) {
   if (JOBS.size >= MAX_JOBS) {
     // Evict the oldest FINISHED job; never evict queued/running ones.
     for (const [id, j] of JOBS) {
@@ -451,15 +911,33 @@ function newJob(kind, input) {
   const job = {
     jobId: 'rjob-' + crypto.randomUUID(),
     kind, input,
-    status: 'queued', // queued | running | completed | failed | cancelled | interrupted (restore-only)
+    status: 'queued', // queued | running | completed | failed | cancelled | interrupted (unsafe resume)
     createdAt: new Date().toISOString(),
     startedAt: null, finishedAt: null,
     cancelRequested: false,
     logLines: [],
     result: null, error: null,
+    execution,
+    inputIdentitySha256: execution.inputIdentitySha256,
+    inputSha256: null,
+    optionsSha256: execution.optionsSha256,
+    engineSha256: execution.engineSha256,
+    attemptId: null,
+    attemptNumber: 0,
+    attemptStartedAt: null,
+    runStage: 'queued',
+    checkpoint: null,
+    currentFile: null,
+    fileRows: [],
   };
   JOBS.set(job.jobId, job);
-  persistJob(job);
+  try {
+    persistJob(job, { required: true });
+  } catch (error) {
+    JOBS.delete(job.jobId);
+    forgetJobRecord(job.jobId);
+    throw error;
+  }
   return job;
 }
 
@@ -481,6 +959,9 @@ function noteBatchProgress(job, { done, total, processedMs }) {
   p.total = total;
   p.done = done;
   if (typeof processedMs === 'number') { p.processed += 1; p.processedMs += processedMs; }
+  // One write per completed/skipped file is cheap compared with the remediation itself and makes
+  // the visible checkpoint survive a connector restart. Log lines remain intentionally buffered.
+  persistJob(job, { required: true });
 }
 
 function batchProgressPayload(job) {
@@ -514,7 +995,7 @@ function jobStatusPayload(job) {
     resultAvailable: job.result != null,
     restored: job.restored || undefined,
     interruptedNote: job.status === 'interrupted'
-      ? 'This job was still running when the previous server process ended, so it cannot be resumed. Any files it had already written are on disk — check its output folder — and re-running the same batch with skip_existing (the default) will pick up where it left off without re-spending quota.'
+      ? 'This job had legacy, incomplete, corrupt, or compatibility-unsafe recovery state, so AlloFlow stopped rather than resume against the wrong input or engine. Verified outputs remain on disk; inspect the error and re-run explicitly if appropriate.'
       : undefined,
   };
 }
@@ -531,11 +1012,16 @@ function enqueueJob(job, runner) {
       await new Promise((r) => setTimeout(r, 3000));
     }
     if (job.cancelRequested) { job.status = 'cancelled'; job.finishedAt = new Date().toISOString(); jobLog(job, 'cancelled before start'); persistJob(job); return; }
+    const attemptStartedAt = new Date().toISOString();
     job.status = 'running';
-    job.startedAt = new Date().toISOString();
+    job.startedAt = job.startedAt || attemptStartedAt;
+    job.attemptNumber = Math.max(0, Number(job.attemptNumber) || 0) + 1;
+    job.attemptId = crypto.randomUUID();
+    job.attemptStartedAt = attemptStartedAt;
+    job.runStage = 'starting';
     // Persisted at each transition, not on every log line: a 200-file triage would otherwise do
     // thousands of writes to record telemetry that is already on stderr.
-    persistJob(job);
+    persistJob(job, { required: true });
     try {
       job.result = await withSingleFlight(job.kind, () => runner(job));
       // A cancelled batch returns normally with a partial scoreboard — the status
@@ -543,7 +1029,10 @@ function enqueueJob(job, runner) {
       job.status = job.cancelRequested ? 'cancelled' : 'completed';
     } catch (e) {
       if (job.cancelRequested) { job.status = 'cancelled'; }
-      else { job.status = 'failed'; job.error = (e && e.message) || String(e); }
+      else if (e && e.interrupted) {
+        job.status = 'interrupted';
+        job.error = e.message || String(e);
+      } else { job.status = 'failed'; job.error = (e && e.message) || String(e); }
     } finally {
       job.finishedAt = new Date().toISOString();
       jobLog(job, job.status + (job.error ? ': ' + job.error : ''));
@@ -570,7 +1059,134 @@ function validateRemediateOptions(args) {
   if (args.auto_continue !== undefined && typeof args.auto_continue !== 'boolean') throw invalidParams('arguments.auto_continue must be a boolean');
   if (args.validate_ua !== undefined && typeof args.validate_ua !== 'boolean') throw invalidParams('arguments.validate_ua must be a boolean');
   const autoContinueRounds = optionalBoundedNumber(args, 'auto_continue_rounds', 1, 5);
-  return { targetScore, fixPasses, polishPasses, taggedPdf: args.tagged_pdf !== false, autoContinue: args.auto_continue === true, autoContinueRounds, validateUa: args.validate_ua === true, ocrLanguage: optionalOcrLanguage(args) };
+  return {
+    targetScore: targetScore === undefined ? 95 : targetScore,
+    fixPasses: fixPasses === undefined ? 2 : fixPasses,
+    polishPasses: polishPasses === undefined ? 0 : polishPasses,
+    taggedPdf: args.tagged_pdf !== false,
+    autoContinue: args.auto_continue === true,
+    autoContinueRounds: autoContinueRounds === undefined ? 3 : autoContinueRounds,
+    validateUa: args.validate_ua === true,
+    ocrLanguage: optionalOcrLanguage(args),
+    maxRunMinutes: Math.max(1, Number(process.env.ALLOFLOW_MCP_MAX_RUN_MINUTES) || 30),
+  };
+}
+
+function checkpointOptionsDigest(options) {
+  return jsonSha256({
+    targetScore: options.targetScore,
+    fixPasses: options.fixPasses,
+    polishPasses: options.polishPasses,
+    taggedPdf: options.taggedPdf,
+    autoContinue: options.autoContinue,
+    autoContinueRounds: options.autoContinueRounds,
+    validateUa: options.validateUa,
+    ocrLanguage: options.ocrLanguage,
+    maxRunMinutes: options.maxRunMinutes,
+  });
+}
+
+function inputIdentityDigest(files) {
+  return jsonSha256(files.map((file) => {
+    const stat = fs.statSync(file);
+    return { file, sizeBytes: stat.size, modifiedMs: Math.trunc(stat.mtimeMs) };
+  }));
+}
+
+function storedExecution(kind, files, outDir, options, skipExisting, meta = null) {
+  const normalizedFiles = files.map((file) => path.resolve(file));
+  const normalizedOptions = Object.assign({}, options);
+  const optionsSha256 = kind === 'pdf_batch_audit'
+    ? jsonSha256({ kind, ocrLanguage: normalizedOptions.ocrLanguage || '',
+      maxRunMinutes: normalizedOptions.maxRunMinutes })
+    : checkpointOptionsDigest(normalizedOptions);
+  return {
+    schema: JOB_EXECUTION_SCHEMA,
+    kind,
+    files: normalizedFiles,
+    outDir: path.resolve(outDir),
+    options: normalizedOptions,
+    skipExisting: !!skipExisting,
+    meta,
+    inputIdentitySha256: inputIdentityDigest(normalizedFiles),
+    optionsSha256,
+    engineSha256: checkpointEngineDigest(),
+  };
+}
+
+function sha256File(file) {
+  return new Promise((resolve, reject) => {
+    const hash = crypto.createHash('sha256');
+    const stream = fs.createReadStream(file);
+    stream.on('error', reject);
+    stream.on('data', (chunk) => hash.update(chunk));
+    stream.on('end', () => resolve(hash.digest('hex')));
+  });
+}
+
+function unsafeResume(message) {
+  const error = new Error(message);
+  error.interrupted = true;
+  return error;
+}
+
+async function prepareStoredExecution(job) {
+  const execution = job.execution;
+  if (!storedExecutionIsValid(execution, job.kind)) throw unsafeResume('stored_execution_invalid');
+  const expectedOptionsSha256 = job.kind === 'pdf_batch_audit'
+    ? jsonSha256({ kind: job.kind, ocrLanguage: execution.options.ocrLanguage || '',
+      maxRunMinutes: execution.options.maxRunMinutes })
+    : checkpointOptionsDigest(execution.options);
+  if (expectedOptionsSha256 !== job.optionsSha256 || expectedOptionsSha256 !== execution.optionsSha256) {
+    throw unsafeResume('stored_options_digest_mismatch');
+  }
+  const currentInputIdentitySha256 = inputIdentityDigest(execution.files);
+  if (currentInputIdentitySha256 !== job.inputIdentitySha256
+      || currentInputIdentitySha256 !== execution.inputIdentitySha256) {
+    throw unsafeResume('stored_input_identity_mismatch');
+  }
+  const currentEngineSha256 = checkpointEngineDigest();
+  if (job.restoredFromStatus === 'queued') {
+    // An untouched queued job has no prior engine work to preserve.
+    job.engineSha256 = currentEngineSha256;
+    execution.engineSha256 = currentEngineSha256;
+  }
+  job.runStage = 'preparing-inputs';
+  persistJob(job, { required: true });
+  const entries = [];
+  for (const file of execution.files) {
+    if (job.cancelRequested) throw new Error('cancelled');
+    const resolved = requireDocPath({ file_path: file });
+    if (resolved !== path.resolve(file)) throw unsafeResume('stored_input_path_mismatch');
+    const before = fs.statSync(resolved);
+    const digest = await sha256File(resolved);
+    const after = fs.statSync(resolved);
+    if (before.size !== after.size || before.mtimeMs !== after.mtimeMs) {
+      throw unsafeResume('input_changed_while_hashing');
+    }
+    entries.push({
+      file: resolved,
+      sha256: digest,
+      sizeBytes: after.size,
+      modifiedMs: Math.trunc(after.mtimeMs),
+    });
+  }
+  const inputSha256 = jsonSha256(entries.map(({ file, sha256, sizeBytes }) => ({
+    file, sha256, sizeBytes,
+  })));
+  if (job.inputSha256 && job.inputSha256 !== inputSha256) {
+    throw unsafeResume('input_changed_since_job_started');
+  }
+  execution.fileDigests = entries;
+  job.inputSha256 = inputSha256;
+  job.runStage = 'inputs-verified';
+  persistJob(job, { required: true });
+  return {
+    entries,
+    byFile: new Map(entries.map((entry) => [entry.file, entry])),
+    currentEngineSha256,
+    engineCompatible: job.engineSha256 === currentEngineSha256,
+  };
 }
 
 function resolveOutputDir(args, filePath) {
@@ -724,34 +1340,233 @@ function loadScoreboard(args) {
   return { scoreboardPath, board };
 }
 
+const COMPLETION_MANIFEST_SCHEMA = 1;
+const COMPLETION_MANIFEST_KIND = 'alloflow-remediation-completion';
+
+function completionManifestPath(outDir, reportPath) {
+  const reportBase = path.basename(reportPath);
+  const base = reportBase.replace(/-remediation-report(-\d+)?\.json$/i,
+    (_match, suffix) => '-remediation-completion' + (suffix || '') + '.json');
+  return claimOutputPath(outDir, base === reportBase ? reportBase + '.completion.json' : base);
+}
+
+async function writeCompletionManifest(filePath, outDir, summary, compatibility, job) {
+  const artifacts = [];
+  for (const role of ['accessibleHtml', 'taggedPdf', 'report']) {
+    const artifactPath = summary.files && summary.files[role];
+    if (!artifactPath) continue;
+    const resolved = path.resolve(artifactPath);
+    const relativePath = path.relative(outDir, resolved);
+    if (!relativePath || path.isAbsolute(relativePath) || relativePath.startsWith('..' + path.sep)
+      || relativePath === '..') throw new Error('completion_artifact_outside_output_dir');
+    const stat = fs.statSync(resolved);
+    if (!stat.isFile()) throw new Error('completion_artifact_missing');
+    artifacts.push({
+      role,
+      relativePath: relativePath.split(path.sep).join('/'),
+      sizeBytes: stat.size,
+      sha256: await sha256File(resolved),
+    });
+  }
+  if (!artifacts.some((artifact) => artifact.role === 'report')) {
+    throw new Error('completion_report_missing');
+  }
+  const source = fs.statSync(filePath);
+  const manifest = {
+    schema: COMPLETION_MANIFEST_SCHEMA,
+    kind: COMPLETION_MANIFEST_KIND,
+    source: { path: filePath, sizeBytes: source.size, sha256: compatibility.inputSha256 },
+    compatibility: {
+      optionsSha256: compatibility.optionsSha256,
+      engineSha256: compatibility.engineSha256,
+    },
+    attempt: {
+      jobId: job && job.jobId || null,
+      attemptId: job && job.attemptId || null,
+      attemptNumber: job && job.attemptNumber || 0,
+    },
+    completedAt: new Date().toISOString(),
+    artifacts,
+  };
+  atomicWriteJson(summary.files.completionManifest, manifest);
+  return manifest;
+}
+
+async function validateCompletionManifest(manifestPath, filePath, outDir, compatibility) {
+  try {
+    const manifestStat = fs.statSync(manifestPath);
+    if (!manifestStat.isFile() || manifestStat.size <= 0 || manifestStat.size > 2 * 1024 * 1024) return null;
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    if (
+      !hasExactKeys(manifest, [
+        'schema', 'kind', 'source', 'compatibility', 'attempt', 'completedAt', 'artifacts',
+      ]) ||
+      manifest.schema !== COMPLETION_MANIFEST_SCHEMA ||
+      manifest.kind !== COMPLETION_MANIFEST_KIND ||
+      !hasExactKeys(manifest.source, ['path', 'sizeBytes', 'sha256']) ||
+      path.resolve(manifest.source.path) !== filePath ||
+      manifest.source.sha256 !== compatibility.inputSha256 ||
+      !Number.isSafeInteger(manifest.source.sizeBytes) || manifest.source.sizeBytes < 0 ||
+      !hasExactKeys(manifest.compatibility, ['optionsSha256', 'engineSha256']) ||
+      manifest.compatibility.optionsSha256 !== compatibility.optionsSha256 ||
+      manifest.compatibility.engineSha256 !== compatibility.engineSha256 ||
+      !hasExactKeys(manifest.attempt, ['jobId', 'attemptId', 'attemptNumber']) ||
+      !Array.isArray(manifest.artifacts) || manifest.artifacts.length < 1 ||
+      manifest.artifacts.length > 4
+    ) return null;
+    const sourceStat = fs.statSync(filePath);
+    if (sourceStat.size !== manifest.source.sizeBytes) return null;
+    const artifacts = new Map();
+    for (const artifact of manifest.artifacts) {
+      if (
+        !hasExactKeys(artifact, ['role', 'relativePath', 'sizeBytes', 'sha256']) ||
+        !['accessibleHtml', 'taggedPdf', 'report'].includes(artifact.role) ||
+        artifacts.has(artifact.role) ||
+        typeof artifact.relativePath !== 'string' || !artifact.relativePath ||
+        artifact.relativePath.includes('\\') ||
+        !Number.isSafeInteger(artifact.sizeBytes) || artifact.sizeBytes < 0 ||
+        typeof artifact.sha256 !== 'string' || !SHA256_HEX_RE.test(artifact.sha256)
+      ) return null;
+      const resolved = path.resolve(outDir, ...artifact.relativePath.split('/'));
+      const relative = path.relative(outDir, resolved);
+      if (path.isAbsolute(relative) || relative === '..' || relative.startsWith('..' + path.sep)) return null;
+      const stat = fs.statSync(resolved);
+      if (!stat.isFile() || stat.size !== artifact.sizeBytes ||
+        await sha256File(resolved) !== artifact.sha256) return null;
+      artifacts.set(artifact.role, resolved);
+    }
+    const reportPath = artifacts.get('report');
+    if (!reportPath || fs.statSync(reportPath).size > 8 * 1024 * 1024) return null;
+    const summary = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+    if (!isPlainObject(summary) || path.resolve(summary.input || '') !== filePath ||
+      !isPlainObject(summary.files) ||
+      path.resolve(summary.files.report || '') !== reportPath ||
+      path.resolve(summary.files.completionManifest || '') !== path.resolve(manifestPath)) return null;
+    for (const role of ['accessibleHtml', 'taggedPdf']) {
+      const declared = summary.files[role];
+      if (!!declared !== artifacts.has(role)) return null;
+      if (declared && path.resolve(declared) !== artifacts.get(role)) return null;
+    }
+    return { manifest, manifestPath: path.resolve(manifestPath), summary };
+  } catch (_) {
+    return null;
+  }
+}
+
+async function findValidCompletionManifest(filePath, outDir, compatibility) {
+  let names;
+  try { names = fs.readdirSync(outDir); } catch (_) { return null; }
+  const candidates = names
+    .filter((name) => /-remediation-completion(?:-\d+)?\.json$/i.test(name))
+    .map((name) => path.join(outDir, name))
+    .sort((a, b) => {
+      try { return fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs; } catch (_) { return 0; }
+    });
+  for (const candidate of candidates) {
+    const valid = await validateCompletionManifest(candidate, filePath, outDir, compatibility);
+    if (valid) return valid;
+  }
+  return null;
+}
+
+function compatibilityForFile(job, prepared, file) {
+  const entry = prepared.byFile.get(file);
+  if (!entry) throw unsafeResume('stored_file_digest_missing');
+  return {
+    inputSha256: entry.sha256,
+    optionsSha256: job.optionsSha256,
+    engineSha256: prepared.currentEngineSha256,
+  };
+}
+
+function committedFileRow(job, kind, file, compatibility) {
+  return (job.fileRows || []).find((row) => (
+    row.kind === kind && row.file === file &&
+    row.inputSha256 === compatibility.inputSha256 &&
+    row.optionsSha256 === compatibility.optionsSha256 &&
+    row.engineSha256 === compatibility.engineSha256 &&
+    isPlainObject(row.result)
+  )) || null;
+}
+
+function commitFileRow(job, kind, file, compatibility, result) {
+  const row = {
+    kind, file,
+    inputSha256: compatibility.inputSha256,
+    optionsSha256: compatibility.optionsSha256,
+    engineSha256: compatibility.engineSha256,
+    committedAt: new Date().toISOString(),
+    result,
+  };
+  job.fileRows = (job.fileRows || []).filter((prior) => !(prior.kind === kind && prior.file === file));
+  job.fileRows.push(row);
+  job.currentFile = null;
+  job.runStage = 'file-committed';
+  return row;
+}
+
 // The remediate-every-file loop, shared by the folder batch and the scoreboard selection so the
 // two cannot drift on resumability, per-file failure handling, cancellation, or progress.
-async function runRemediateBatch(j, { files, dir, outDir, opts, skipExisting }) {
+async function runRemediateBatch(j, { files, dir, outDir, opts, skipExisting, prepared }) {
   const perFile = [];
   for (let i = 0; i < files.length; i++) {
     if (j.cancelRequested) { jobLog(j, 'batch cancelled at file ' + (i + 1) + '/' + files.length); break; }
     const f = files[i];
-    // Resumability (default ON): a file whose report already sits in outDir was finished by a
-    // previous run — skip it instead of re-spending its quota. skip_existing: false forces
-    // re-remediation (fresh outputs get collision-suffixed names, nothing overwrites).
-    if (skipExisting) {
-      const stem = path.basename(f).replace(/\.(pdf|docx|pptx)$/i, '');
-      if (fs.existsSync(path.join(outDir, stem + '-remediation-report.json'))) {
-        perFile.push({ file: f, ok: true, skipped: 'report-exists' });
-        noteBatchProgress(j, { done: i + 1, total: files.length });
-        jobLog(j, 'file ' + (i + 1) + '/' + files.length + ': ' + path.basename(f) + ' SKIPPED (report exists — resumed batch)');
-        continue;
-      }
+    const compatibility = compatibilityForFile(j, prepared, f);
+    const committed = committedFileRow(j, 'remediation', f, compatibility);
+    if (committed) {
+      perFile.push(committed.result);
+      noteBatchProgress(j, { done: i + 1, total: files.length });
+      jobLog(j, 'file ' + (i + 1) + '/' + files.length + ': ' + path.basename(f)
+        + ' SKIPPED (digest-bound journal row)');
+      continue;
+    }
+    const proofCompatibility = prepared.engineCompatible
+      ? compatibility : Object.assign({}, compatibility, { engineSha256: j.engineSha256 });
+    const proof = (skipExisting || j.restoredFromStatus === 'running')
+      ? await findValidCompletionManifest(f, outDir, proofCompatibility) : null;
+    if (proof) {
+      const summary = proof.summary;
+      const result = {
+        file: f, ok: true, skipped: 'completion-manifest-verified',
+        verdict: summary.verdict, afterScore: summary.afterScore,
+        aiVerificationIncomplete: summary.aiVerificationIncomplete, files: summary.files,
+      };
+      commitFileRow(j, 'remediation', f, proofCompatibility, result);
+      perFile.push(result);
+      noteBatchProgress(j, { done: i + 1, total: files.length });
+      jobLog(j, 'file ' + (i + 1) + '/' + files.length + ': ' + path.basename(f)
+        + ' SKIPPED (artifact hashes verified)');
+      continue;
+    }
+    if (!prepared.engineCompatible && j.restoredFromStatus === 'running') {
+      throw unsafeResume('checkpoint_engine_changed_since_job_started');
+    }
+    if (j.restoredFromStatus === 'running' && j.currentFile && j.currentFile.file === f
+      && !loadLocalCheckpoint(j, compatibility, false)) {
+      throw unsafeResume('running_file_has_no_valid_checkpoint_or_completion_manifest');
     }
     jobLog(j, 'file ' + (i + 1) + '/' + files.length + ': ' + path.basename(f));
     const startedAt = Date.now();
     try {
       // Per-file validation (size/header) at run time — one bad file must not sink the batch.
       requireDocPath({ file_path: f });
-      const summary = await remediateOneFile(f, outDir, opts, (line) => jobLog(j, line));
-      perFile.push({ file: f, ok: true, verdict: summary.verdict, afterScore: summary.afterScore, aiVerificationIncomplete: summary.aiVerificationIncomplete, files: summary.files });
+      requireGeminiKey();
+      const summary = await remediateOneFile(f, outDir, opts, (line) => jobLog(j, line),
+        { job: j, compatibility });
+      const result = {
+        file: f, ok: true, verdict: summary.verdict, afterScore: summary.afterScore,
+        aiVerificationIncomplete: summary.aiVerificationIncomplete, files: summary.files,
+      };
+      perFile.push(result);
+      commitFileRow(j, 'remediation', f, compatibility, result);
     } catch (e) {
-      perFile.push({ file: f, ok: false, error: (e && e.message) || String(e) });
+      const message = (e && e.message) || String(e);
+      if (e && e.interrupted || /^(?:checkpoint_|job_state_persistence_failed)/.test(message)) throw e;
+      clearLocalCheckpoint(j, false);
+      const result = { file: f, ok: false, error: message };
+      perFile.push(result);
+      commitFileRow(j, 'remediation', f, compatibility, result);
       jobLog(j, 'FAILED (continuing): ' + ((e && e.message) || e));
     }
     noteBatchProgress(j, { done: i + 1, total: files.length, processedMs: Date.now() - startedAt });
@@ -781,9 +1596,12 @@ function _htmlOutputPath(args, inputPath, suffix) {
 
 // One audited file, reduced to a scoreboard row. The full issue list and _fullAudit are dropped
 // on purpose: 200 of them would blow the MCP payload, and per-file detail is one pdf_audit away.
-function auditRow(filePath, out) {
+function auditRow(filePath, out, compatibility) {
   return {
     file: filePath, ok: true,
+    inputSha256: compatibility.inputSha256,
+    optionsSha256: compatibility.optionsSha256,
+    engineSha256: compatibility.engineSha256,
     score: out && out.score,
     issueCounts: (out && out.issueCounts) || {},
     pageCount: (out && out.pageCount) != null ? out.pageCount : null,
@@ -791,6 +1609,86 @@ function auditRow(filePath, out) {
     hasSearchableText: !!(out && out.hasSearchableText),
     documentLanguage: (out && out.documentLanguage) || null,
     summary: String((out && out.summary) || '').slice(0, 300),
+  };
+}
+
+async function runAuditBatch(j, { files, dir, outDir, options, skipExisting, prepared }) {
+  const prior = skipExisting ? readPriorScoreboards(outDir) : new Map();
+  const rows = [];
+  let audited = 0;
+  let skipped = 0;
+  for (let i = 0; i < files.length; i++) {
+    if (j.cancelRequested) { jobLog(j, 'triage cancelled at file ' + (i + 1) + '/' + files.length); break; }
+    const file = files[i];
+    const currentCompatibility = compatibilityForFile(j, prepared, file);
+    const rowCompatibility = prepared.engineCompatible ? currentCompatibility
+      : Object.assign({}, currentCompatibility, { engineSha256: j.engineSha256 });
+    const committed = committedFileRow(j, 'audit', file, rowCompatibility);
+    if (committed) {
+      rows.push(committed.result);
+      skipped++;
+      noteBatchProgress(j, { done: i + 1, total: files.length });
+      jobLog(j, 'file ' + (i + 1) + '/' + files.length + ': ' + path.basename(file)
+        + ' SKIPPED (digest-bound audit row)');
+      continue;
+    }
+    const priorRow = prior.get(file);
+    if (priorRow && priorRow.inputSha256 === currentCompatibility.inputSha256
+      && priorRow.optionsSha256 === currentCompatibility.optionsSha256
+      && priorRow.engineSha256 === currentCompatibility.engineSha256) {
+      const row = Object.assign({}, priorRow, { resumedFromPriorRun: true });
+      rows.push(row);
+      commitFileRow(j, 'audit', file, currentCompatibility, row);
+      skipped++;
+      noteBatchProgress(j, { done: i + 1, total: files.length });
+      continue;
+    }
+    if (!prepared.engineCompatible && j.restoredFromStatus === 'running') {
+      throw unsafeResume('audit_engine_changed_since_job_started');
+    }
+    j.currentFile = Object.assign({ file }, currentCompatibility);
+    j.runStage = 'auditing';
+    persistJob(j, { required: true });
+    jobLog(j, 'file ' + (i + 1) + '/' + files.length + ': ' + path.basename(file));
+    const startedAt = Date.now();
+    let row;
+    try {
+      requireDocPath({ file_path: file });
+      requireGeminiKey();
+      const out = await getDriver().audit({
+        filePath: file, ocrLanguage: options.ocrLanguage,
+        onLog: (line) => jobLog(j, line),
+      });
+      row = auditRow(file, out, currentCompatibility);
+      audited++;
+      jobLog(j, '  → ' + triageBand(row) + ' (score ' + row.score + ')');
+    } catch (error) {
+      const message = (error && error.message) || String(error);
+      if (error && error.interrupted || message === 'job_state_persistence_failed') throw error;
+      row = {
+        file, ok: false, error: message.slice(0, 300),
+        inputSha256: currentCompatibility.inputSha256,
+        optionsSha256: currentCompatibility.optionsSha256,
+        engineSha256: currentCompatibility.engineSha256,
+      };
+      jobLog(j, '  → FAILED (continuing): ' + message);
+    }
+    rows.push(row);
+    commitFileRow(j, 'audit', file, currentCompatibility, row);
+    noteBatchProgress(j, {
+      done: i + 1, total: files.length, processedMs: Date.now() - startedAt,
+    });
+  }
+  const written = writeScoreboard(outDir, dir, rows);
+  jobLog(j, 'scoreboard: ' + written.scoreboardJson);
+  return {
+    dir, outputDir: outDir, requested: files.length, audited, skipped,
+    failed: rows.filter((row) => !row.ok).length,
+    cancelled: j.cancelRequested || undefined,
+    bands: written.bands, medianScore: written.medianScore,
+    scoreboardJson: written.scoreboardJson, scoreboardCsv: written.scoreboardCsv,
+    files: rows,
+    note: 'Bands name the next action, not a grade. Scores judge the SOURCE documents; remediate the needs-work band first, and OCR anything in scanned before trusting its score.',
   };
 }
 
@@ -864,17 +1762,46 @@ function safeAuditCoverage(value) {
   };
 }
 
-async function remediateOneFile(filePath, outDir, opts, onLog) {
-  const out = await getDriver().remediate(Object.assign({ filePath, onLog }, opts));
+async function remediateOneFile(filePath, outDir, opts, onLog, durability = null) {
+  const compatibility = durability && durability.compatibility
+    ? durability.compatibility
+    : {
+      inputSha256: await sha256File(filePath),
+      optionsSha256: checkpointOptionsDigest(opts),
+      engineSha256: checkpointEngineDigest(),
+    };
+  const job = durability && durability.job;
+  const driverOptions = Object.assign({ filePath, onLog }, opts);
+  if (job) {
+    job.currentFile = {
+      file: filePath,
+      inputSha256: compatibility.inputSha256,
+      optionsSha256: compatibility.optionsSha256,
+      engineSha256: compatibility.engineSha256,
+    };
+    job.runStage = 'remediating';
+    persistJob(job, { required: true });
+    const envelope = loadLocalCheckpoint(job, compatibility);
+    if (envelope) {
+      driverOptions.resumeCheckpoint = envelope.snapshot;
+      if (onLog) onLog('checkpoint: resuming ' + envelope.stage + ' sequence ' + envelope.sequence);
+    }
+    driverOptions.onCheckpoint = (snapshot) => saveLocalCheckpoint(job, snapshot, compatibility);
+  }
+  const out = await getDriver().remediate(driverOptions);
+  if (job) {
+    job.runStage = 'writing-artifacts';
+    persistJob(job, { required: true });
+  }
   const stem = path.basename(filePath).replace(/\.(pdf|docx|pptx)$/i, '');
   const files = {};
   if (out.accessibleHtml) {
     files.accessibleHtml = claimOutputPath(outDir, stem + '-accessible.html');
-    fs.writeFileSync(files.accessibleHtml, out.accessibleHtml, 'utf8');
+    atomicWriteBytes(files.accessibleHtml, Buffer.from(out.accessibleHtml, 'utf8'));
   }
   if (out.taggedPdfB64) {
     files.taggedPdf = claimOutputPath(outDir, stem + '-tagged.pdf');
-    fs.writeFileSync(files.taggedPdf, Buffer.from(out.taggedPdfB64, 'base64'));
+    atomicWriteBytes(files.taggedPdf, Buffer.from(out.taggedPdfB64, 'base64'));
   }
   // validate_ua: independent ISO 14289-1 check of the just-written tagged bytes (keyless,
   // ~1 min incl. JVM boot). Parity with the app's auto-veraPDF; verdict rides the report.
@@ -916,8 +1843,81 @@ async function remediateOneFile(filePath, outDir, opts, onLog) {
     note: 'Scores and the verdict come from AlloFlow\'s honesty-gated verification. Review the fidelity notes and spot-check the output before distributing; the tagged PDF only carries a PDF/UA declaration when it earned one.',
   };
   files.report = claimOutputPath(outDir, stem + '-remediation-report.json');
-  fs.writeFileSync(files.report, JSON.stringify(summary, null, 2), 'utf8');
+  files.completionManifest = completionManifestPath(outDir, files.report);
+  atomicWriteJson(files.report, summary);
+  await writeCompletionManifest(filePath, outDir, summary, compatibility, job);
+  if (job) clearLocalCheckpoint(job, true);
   return summary;
+}
+
+async function runnerForStoredJob(job) {
+  const execution = job.execution;
+  const prepared = await prepareStoredExecution(job);
+  enforceAllowedRoot(execution.outDir, 'stored output directory');
+  fs.mkdirSync(execution.outDir, { recursive: true });
+  if (job.kind === 'pdf_remediate') {
+    const file = execution.files[0];
+    const compatibility = compatibilityForFile(job, prepared, file);
+    const proofCompatibility = prepared.engineCompatible ? compatibility
+      : Object.assign({}, compatibility, { engineSha256: job.engineSha256 });
+    const proof = job.restoredFromStatus === 'running'
+      ? await findValidCompletionManifest(file, execution.outDir, proofCompatibility) : null;
+    if (proof) return proof.summary;
+    if (!prepared.engineCompatible && job.restoredFromStatus === 'running') {
+      throw unsafeResume('checkpoint_engine_changed_since_job_started');
+    }
+    if (job.restoredFromStatus === 'running' && job.currentFile
+      && !loadLocalCheckpoint(job, compatibility, false)) {
+      throw unsafeResume('running_file_has_no_valid_checkpoint_or_completion_manifest');
+    }
+    requireGeminiKey();
+    return remediateOneFile(file, execution.outDir, execution.options,
+      (line) => jobLog(job, line), { job, compatibility });
+  }
+  if (job.kind === 'pdf_batch_audit') {
+    return runAuditBatch(job, {
+      files: execution.files,
+      dir: execution.meta.dir,
+      outDir: execution.outDir,
+      options: execution.options,
+      skipExisting: execution.skipExisting,
+      prepared,
+    });
+  }
+  if (job.kind === 'pdf_batch_remediate') {
+    return runRemediateBatch(job, {
+      files: execution.files,
+      dir: execution.meta.dir,
+      outDir: execution.outDir,
+      opts: execution.options,
+      skipExisting: execution.skipExisting,
+      prepared,
+    });
+  }
+  if (job.kind === 'pdf_remediate_from_scoreboard') {
+    const meta = execution.meta;
+    jobLog(job, 'remediating ' + execution.files.length + ' of '
+      + meta.scoredDocuments + ' scored document(s) in band(s): ' + meta.bands.join(', '));
+    if (meta.missingFromDisk.length) {
+      jobLog(job, meta.missingFromDisk.length + ' scored file(s) no longer exist and were left out');
+    }
+    const out = await runRemediateBatch(job, {
+      files: execution.files,
+      dir: meta.dir,
+      outDir: execution.outDir,
+      opts: execution.options,
+      skipExisting: execution.skipExisting,
+      prepared,
+    });
+    return Object.assign(out, {
+      scoreboard: meta.scoreboard,
+      bands: meta.bands,
+      scoredDocuments: meta.scoredDocuments,
+      selected: execution.files.length,
+      missingFromDisk: meta.missingFromDisk.length ? meta.missingFromDisk : undefined,
+    });
+  }
+  throw unsafeResume('stored_job_kind_unsupported');
 }
 
 // ── Tools ───────────────────────────────────────────────────────────────────
@@ -1245,7 +2245,7 @@ const TOOLS = [
           type: 'object', required: ['dir_path'],
           properties: Object.assign({
             dir_path: { type: 'string', description: 'Folder containing .pdf/.docx/.pptx files (searched non-recursively)' },
-            skip_existing: { type: 'boolean', description: 'Skip files whose -remediation-report.json already exists in the output folder — makes an interrupted batch resumable without re-spending quota (default true)' },
+            skip_existing: { type: 'boolean', description: 'Skip only files with a digest-bound completion manifest whose input, options, engine, and artifact hashes all verify (default true)' },
           }, REMEDIATE_OPTION_PROPS),
           additionalProperties: false,
         },
@@ -1280,7 +2280,7 @@ const TOOLS = [
               type: 'array', items: { type: 'string', enum: TRIAGE_BANDS },
               description: "Which triage bands to remediate (default ['needs-work']). 'scanned' documents are remediable but slower — they take the full OCR path.",
             },
-            skip_existing: { type: 'boolean', description: 'Skip documents whose -remediation-report.json already exists in the output folder (default true)' },
+            skip_existing: { type: 'boolean', description: 'Skip only documents with a digest-bound completion manifest whose input, options, engine, and artifact hashes all verify (default true)' },
           }, REMEDIATE_OPTION_PROPS),
           additionalProperties: false,
         },
@@ -2174,8 +3174,9 @@ const TOOL_HANDLERS = {
     const opts = validateRemediateOptions(args);
     const outDir = resolveOutputDir(args, filePath);
     requireGeminiKey();
-    const job = newJob('pdf_remediate', { file: filePath, outputDir: outDir });
-    enqueueJob(job, (j) => remediateOneFile(filePath, outDir, opts, (line) => jobLog(j, line)));
+    const execution = storedExecution('pdf_remediate', [filePath], outDir, opts, false, null);
+    const job = newJob('pdf_remediate', { file: filePath, outputDir: outDir }, execution);
+    enqueueJob(job, runnerForStoredJob);
     return { jobId: job.jobId, status: job.status, note: 'Poll remediation_job_status every 30-60s; runs typically take 5-30 minutes.' };
   },
 
@@ -2187,58 +3188,19 @@ const TOOL_HANDLERS = {
     const { dir, files } = listBatchInputs(args.dir_path, BATCH_LIMIT_AUDIT, 'audit');
     const outDir = args.output_dir !== undefined ? resolveOutputDir(args, files[0]) : dir;
     requireGeminiKey();
-    const job = newJob('pdf_batch_audit', { dir, files: files.length, outputDir: outDir });
-    enqueueJob(job, async (j) => {
-      // Prior rows are READ once at job start, then carried into the new scoreboard, so a resumed
-      // triage produces a complete picture rather than a scoreboard with holes where the skips were.
-      const prior = skipExisting ? readPriorScoreboards(outDir) : new Map();
-      const rows = [];
-      let audited = 0;
-      let skipped = 0;
-      for (let i = 0; i < files.length; i++) {
-        if (j.cancelRequested) { jobLog(j, 'triage cancelled at file ' + (i + 1) + '/' + files.length); break; }
-        const f = files[i];
-        if (prior.has(f)) {
-          rows.push(Object.assign({}, prior.get(f), { resumedFromPriorRun: true }));
-          skipped++;
-          noteBatchProgress(j, { done: i + 1, total: files.length });
-          jobLog(j, 'file ' + (i + 1) + '/' + files.length + ': ' + path.basename(f) + ' SKIPPED (already in a scoreboard)');
-          continue;
-        }
-        jobLog(j, 'file ' + (i + 1) + '/' + files.length + ': ' + path.basename(f));
-        const startedAt = Date.now();
-        try {
-          requireDocPath({ file_path: f }); // per-file size/header validation — one bad file must not sink the triage
-          const out = await getDriver().audit({ filePath: f, ocrLanguage, onLog: (line) => jobLog(j, line) });
-          const row = auditRow(f, out);
-          rows.push(row);
-          audited++;
-          jobLog(j, '  → ' + triageBand(row) + ' (score ' + row.score + ')');
-        } catch (e) {
-          rows.push({ file: f, ok: false, error: ((e && e.message) || String(e)).slice(0, 300) });
-          jobLog(j, '  → FAILED (continuing): ' + ((e && e.message) || e));
-        }
-        // Counted whether it succeeded or failed: a file that took four minutes to fail still
-        // tells you what the next one might cost.
-        noteBatchProgress(j, { done: i + 1, total: files.length, processedMs: Date.now() - startedAt });
-      }
-      // Written even for a cancelled run: a partial triage is still useful, and throwing away the
-      // quota already spent because the user stopped early would be the wrong trade.
-      const written = writeScoreboard(outDir, dir, rows);
-      jobLog(j, 'scoreboard: ' + written.scoreboardJson);
-      return {
-        dir, outputDir: outDir,
-        requested: files.length, audited, skipped,
-        failed: rows.filter((r) => !r.ok).length,
-        cancelled: j.cancelRequested || undefined,
-        bands: written.bands,
-        medianScore: written.medianScore,
-        scoreboardJson: written.scoreboardJson,
-        scoreboardCsv: written.scoreboardCsv,
-        files: rows,
-        note: 'Bands name the next action, not a grade. Scores judge the SOURCE documents; remediate the needs-work band first, and OCR anything in scanned before trusting its score.',
-      };
-    });
+    const auditOptions = {
+      ocrLanguage,
+      maxRunMinutes: Math.max(1, Number(process.env.ALLOFLOW_MCP_MAX_RUN_MINUTES) || 30),
+    };
+    const execution = storedExecution(
+      'pdf_batch_audit', files, outDir, auditOptions, skipExisting, { dir },
+    );
+    const job = newJob(
+      'pdf_batch_audit',
+      { dir, files: files.length, outputDir: outDir },
+      execution,
+    );
+    enqueueJob(job, runnerForStoredJob);
     return { jobId: job.jobId, status: job.status, files: files.length, note: 'Poll remediation_job_status for per-file progress; each document typically takes 1-3 minutes.' };
   },
 
@@ -2250,8 +3212,15 @@ const TOOL_HANDLERS = {
     const opts = validateRemediateOptions(args);
     const outDir = args.output_dir !== undefined ? resolveOutputDir(args, pdfs[0]) : dir;
     requireGeminiKey();
-    const job = newJob('pdf_batch_remediate', { dir, files: pdfs.length, outputDir: outDir });
-    enqueueJob(job, (j) => runRemediateBatch(j, { files: pdfs, dir, outDir, opts, skipExisting }));
+    const execution = storedExecution(
+      'pdf_batch_remediate', pdfs, outDir, opts, skipExisting, { dir },
+    );
+    const job = newJob(
+      'pdf_batch_remediate',
+      { dir, files: pdfs.length, outputDir: outDir },
+      execution,
+    );
+    enqueueJob(job, runnerForStoredJob);
     return { jobId: job.jobId, status: job.status, files: pdfs.length, note: 'Poll remediation_job_status for per-file progress and an ETA; each file typically takes 5-30 minutes.' };
   },
 
@@ -2287,18 +3256,28 @@ const TOOL_HANDLERS = {
 
     const outDir = args.output_dir !== undefined ? resolveOutputDir(args, selected[0]) : path.dirname(scoreboardPath);
     requireGeminiKey();
-    const job = newJob('pdf_remediate_from_scoreboard', { scoreboard: scoreboardPath, bands, files: selected.length, outputDir: outDir });
-    enqueueJob(job, async (j) => {
-      jobLog(j, 'remediating ' + selected.length + ' of ' + rows.length + ' scored document(s) in band(s): ' + bands.join(', '));
-      if (missing.length) jobLog(j, missing.length + ' scored file(s) no longer exist and were left out');
-      const out = await runRemediateBatch(j, { files: selected, dir: board.generatedFor || path.dirname(scoreboardPath), outDir, opts, skipExisting });
-      return Object.assign(out, {
-        scoreboard: scoreboardPath, bands,
+    const sourceDir = typeof board.generatedFor === 'string' && path.isAbsolute(board.generatedFor)
+      ? path.resolve(board.generatedFor) : path.dirname(scoreboardPath);
+    const execution = storedExecution(
+      'pdf_remediate_from_scoreboard',
+      selected,
+      outDir,
+      opts,
+      skipExisting,
+      {
+        dir: sourceDir,
+        scoreboard: scoreboardPath,
+        bands: bands.slice(),
         scoredDocuments: rows.length,
-        selected: selected.length,
-        missingFromDisk: missing.length ? missing : undefined,
-      });
-    });
+        missingFromDisk: missing.slice(),
+      },
+    );
+    const job = newJob(
+      'pdf_remediate_from_scoreboard',
+      { scoreboard: scoreboardPath, bands, files: selected.length, outputDir: outDir },
+      execution,
+    );
+    enqueueJob(job, runnerForStoredJob);
     return {
       jobId: job.jobId, status: job.status, files: selected.length,
       selectedFrom: rows.length, bands, scoreboard: scoreboardPath,
@@ -2322,7 +3301,7 @@ const TOOL_HANDLERS = {
       return {
         ok: false, status: job.status,
         error: job.status === 'interrupted'
-          ? 'This job was still running when the previous server process ended, so it never produced a result. Its partial outputs are on disk in ' + ((job.input && job.input.outputDir) || 'its output folder') + '; re-run the same batch with skip_existing (the default) to finish it without re-spending quota.'
+          ? 'Recovery stopped because the durable state was legacy, incomplete, corrupt, or incompatible. Verified partial outputs remain in ' + ((job.input && job.input.outputDir) || 'its output folder') + '; inspect the status error before explicitly re-running.'
           : 'Result is available only once the job completes. Check remediation_job_status.',
       };
     }
@@ -2341,7 +3320,7 @@ const TOOL_HANDLERS = {
       return {
         ok: false, status: job.status,
         error: job.status === 'interrupted'
-          ? 'This job ended with the server process that was running it; there is nothing left to cancel.'
+          ? 'This job is already stopped because its durable recovery state was unsafe; there is nothing left to cancel.'
           : 'Job already finished; nothing to cancel.',
       };
     }
@@ -2513,5 +3492,15 @@ rl.on('close', async () => {
 });
 
 restoreJobs(); // before the first request, so a client can ask about work the last process was doing
+RESTORED_TO_REQUEUE.sort(
+  (a, b) => Date.parse(a.createdAt || 0) - Date.parse(b.createdAt || 0),
+);
+for (const restoredJob of RESTORED_TO_REQUEUE.splice(0)) {
+  jobLog(
+    restoredJob,
+    'requeued after server restart from ' + restoredJob.restoredFromStatus,
+  );
+  enqueueJob(restoredJob, runnerForStoredJob);
+}
 if (ALLOWED_ROOTS.length) log('filesystem boundary active — only: ' + ALLOWED_ROOTS.join(', '));
 log('ready (stdio only; tools: ' + TOOLS.map((t) => t.name).join(', ') + ')');

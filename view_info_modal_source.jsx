@@ -120,6 +120,7 @@ const OSS_CREDITS = [
         featured: 2, owner: 'University of Colorado Boulder',
         blurb: 'Powers the Sim Shelf. Students lock in a prediction, explore an interactive science or math simulation, then an AI coach debriefs what they actually observed.',
         site: 'https://phet.colorado.edu', repo: 'https://github.com/phetsims' },
+      { name: 'Human Reference Atlas kidney v1.3', use: 'bundled female-left 3D reference organ and ontology crosswalk for Anatomy Clinical Atlas - Kristen Browne & Heidi Schlehlein / HuBMAP; derived from the NLM Visible Human Dataset', license: 'CC BY 4.0', url: 'https://cdn.humanatlas.io/digital-objects/ref-organ/kidney-female-left/v1.3/' },
       { name: 'iframe-phone', use: 'bridge to the CODAP window — Concord Consortium', license: 'MIT', url: 'https://github.com/concord-consortium/iframe-phone' },
       { name: 'OpenSeadragon', use: 'deep-zoom image viewer (Zoom Gallery)', license: 'BSD-3-Clause', url: 'https://openseadragon.github.io',
         featured: 5,
@@ -436,7 +437,7 @@ function OpenSourceTab({ t }) {
   );
 }
 
-// The Atlas data below is GENERATED from the real hub catalogs (STEM Lab, SEL
+// The Atlas data below is GENERATED from the real hub catalogs (STEAM Lab, SEL
 // Hub, Research Hub, command palette) by dev-tools/harvest_atlas.cjs — so it
 // stays complete and current instead of being hand-typed. To refresh after
 // tools change:  node dev-tools/harvest_atlas.cjs && node _build_view_info_modal_module.js
@@ -465,10 +466,10 @@ const ATLAS_HUBS = [
     ]
   },
   {
-    "hub": "STEM Lab",
+    "hub": "STEAM Lab",
     "icon": "🔬",
     "sourceKind": "registry",
-    "sourceLabel": "Generated from the STEM Lab registry",
+    "sourceLabel": "Generated from the STEAM Lab registry",
     "total": 127,
     "categories": [
       {
@@ -859,7 +860,7 @@ const ATLAS_HUBS = [
           "Report Writer",
           "Research Hub",
           "SEL Hub",
-          "STEM Lab",
+          "STEAM Lab",
           "StoryForge",
           "Symbol Studio",
           "Test Prep Hub",
@@ -882,7 +883,7 @@ const ATLAS_HUBS = [
 // has a strict prerequisite relationship.
 const ATLAS_HUB_VISUALS = {
   'Documents & Literacy': { eyebrow: 'Learning-resource flow', description: 'Turn source material into clear, supported, accessible resources.', route: ['Source', 'Adapt', 'Support', 'Share'], surface: 'from-indigo-50 to-violet-50', border: 'border-indigo-200', accent: 'bg-indigo-600', text: 'text-indigo-900', launchLabel: 'Open Document Builder', launchQuery: 'document builder' },
-  'STEM Lab': { eyebrow: 'Exploration constellation', description: 'Move among mathematical, scientific, engineering, and technology experiences.', route: ['Math', 'Science', 'Engineering', 'Technology'], surface: 'from-sky-50 to-cyan-50', border: 'border-sky-200', accent: 'bg-sky-600', text: 'text-sky-900', launchLabel: 'Open STEM Lab', launchQuery: 'stem lab' },
+  'STEAM Lab': { eyebrow: 'Exploration constellation', description: 'Move among mathematical, scientific, engineering, and technology experiences.', route: ['Math', 'Science', 'Engineering', 'Technology'], surface: 'from-sky-50 to-cyan-50', border: 'border-sky-200', accent: 'bg-sky-600', text: 'text-sky-900', launchLabel: 'Open STEAM Lab', launchQuery: 'stem lab' },
   'SEL Hub': { eyebrow: 'Growth map', description: 'Connect understanding yourself with caring for others and community.', route: ['Self', 'Regulate', 'Relate', 'Contribute'], surface: 'from-rose-50 to-orange-50', border: 'border-rose-200', accent: 'bg-rose-600', text: 'text-rose-900', launchLabel: 'Open SEL Hub', launchQuery: 'sel hub' },
   'Research Hub': { eyebrow: 'Inquiry cycle', description: 'Follow an idea from a strong question to evidence-based communication.', route: ['Question', 'Investigate', 'Make sense', 'Share'], surface: 'from-amber-50 to-yellow-50', border: 'border-amber-200', accent: 'bg-amber-600', text: 'text-amber-900', launchLabel: 'Open Research Hub', launchQuery: 'research hub' },
   'Studios & Surfaces': { eyebrow: 'Creative toolkit', description: 'Open flexible spaces for making, organizing, presenting, and reflecting.', route: ['Create', 'Organize', 'Present', 'Reflect'], surface: 'from-fuchsia-50 to-purple-50', border: 'border-fuchsia-200', accent: 'bg-fuchsia-600', text: 'text-fuchsia-900', launchLabel: 'Open Educator Hub', launchQuery: 'educator hub' },
@@ -1245,7 +1246,7 @@ const ATLAS_JOURNEYS = [
   {
     title: 'Investigate a phenomenon',
     description: 'Frame the inquiry, explore a model or simulation, then communicate what you found.',
-    stops: ['Research Hub', 'STEM Lab', 'Studios & Surfaces'],
+    stops: ['Research Hub', 'STEAM Lab', 'Studios & Surfaces'],
   },
   {
     title: 'Support the whole learner',
@@ -1752,6 +1753,7 @@ function InfoModal({
   const Ear = window.Ear || noop;
   const FileQuestion = window.FileQuestion || noop;
   const MessageCircleQuestion = window.MessageCircleQuestion || noop;
+  const MonitorPlay = window.MonitorPlay || noop;
 
   const [selectedFeature, setSelectedFeature] = React.useState(null);
   const [featureQuery, setFeatureQuery] = React.useState('');
@@ -1777,6 +1779,20 @@ function InfoModal({
       try {
         window.dispatchEvent(new window.CustomEvent('alloflow:open-command-palette', {
           detail: { query: safeQuery, source },
+        }));
+      } catch (_) {}
+    });
+  };
+
+  // Same shape as openCommandPaletteFromInfo: close this modal first, then let
+  // the host open the overlay on the next frame. The host owns the state and
+  // lazy-loads the module, so nothing here is fetched until the card is clicked.
+  const openVideoLibraryFromInfo = () => {
+    handleSetShowInfoModalToFalse();
+    window.requestAnimationFrame(() => {
+      try {
+        window.dispatchEvent(new window.CustomEvent('alloflow:open-video-library', {
+          detail: { source: 'about' },
         }));
       } catch (_) {}
     });
@@ -1902,7 +1918,7 @@ function InfoModal({
 
   const featuresList = t('about.features_list', { returnObjects: true });
   const rawFeatureItems = Array.isArray(featuresList?.items) ? featuresList.items : [];
-  const stemCatalogCount = ATLAS_HUBS.find((hub) => hub.hub === 'STEM Lab')?.total || 0;
+  const stemCatalogCount = ATLAS_HUBS.find((hub) => hub.hub === 'STEAM Lab')?.total || 0;
   const selCatalogCount = ATLAS_HUBS.find((hub) => hub.hub === 'SEL Hub')?.total || 0;
   const featureCatalogItems = rawFeatureItems.map((feature) => {
     if (feature?.icon === 'Layers' && feature?.category === 'platform') {
@@ -2015,6 +2031,10 @@ function InfoModal({
                   <button type="button" onClick={() => openCommandPaletteFromInfo('', 'about')} className="min-h-11 rounded-lg border border-slate-700 bg-slate-800 p-3 text-left hover:border-indigo-400 hover:bg-slate-800/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400">
                     <span className="flex items-center gap-2 text-sm font-bold"><Search size={16} className="text-indigo-300" aria-hidden="true" /> Find any tool</span>
                     <span className="block text-[11px] text-slate-300 mt-1">Open the command palette and search the live app.</span>
+                  </button>
+                  <button type="button" onClick={openVideoLibraryFromInfo} className="sm:col-span-2 min-h-11 rounded-lg border border-slate-700 bg-slate-800 p-3 text-left hover:border-indigo-400 hover:bg-slate-800/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400">
+                    <span className="flex items-center gap-2 text-sm font-bold"><MonitorPlay size={16} className="text-indigo-300" aria-hidden="true" /> Watch how it works</span>
+                    <span className="block text-[11px] text-slate-300 mt-1">A short tour of the platform. Streams from the AlloFlow CDN, not a video platform.</span>
                   </button>
                 </div>
               </section>
@@ -2674,12 +2694,12 @@ function getFeatureDetails(title) {
       customizations: ["Per-cell parent voice recording", "Up to 8 student profiles", "Partner-assisted scanning", "Wish-seed capture for unmet vocabulary"],
       proTip: "Word Garden's wish-seed button (💫) captures the moment a student reaches for a word that isn't on their board — invaluable data for next-board planning."
     },
-    "STEM Lab": {
+    "STEAM Lab": {
       inputs: ["Tool selection from the live STEM catalog across 16 subject areas", "Optional grade + standards filters"],
       engine: ["Dynamically lazy-loaded per-tool module", "Per-tool state persistence where supported", "Theme-aware rendering shell"],
       outputs: ["Interactive math labs (Fraction Lab, Algebra Solver, Geometry Sandbox, Calculus Visualizer, Graphing Calculator)", "Life science (Cell Simulator, Human Anatomy, Brain Atlas, DNA Lab, Punnett Square, Dissection Lab, Ecosystem, Dino Lab)", "Earth/Space (Plate Tectonics, Solar System, Moon Mission, Universe Time-Lapse)", "Physics + Chemistry (Wave Simulator, Circuit Builder, Molecule Builder, Titration Lab)", "Open-source shelves (Data Lab, Sim Shelf, Circuit Shelf, Molecule Shelf, Zoom Gallery, Timeline Studio)", "CS, life-skills/CTE, creative design, and social-studies tools"],
       customizations: ["Tool-specific configurations", "Some tools support multi-student saved worlds", "Print/export where supported"],
-      proTip: "Open STEM Lab from the Educator Hub and search by keyword — the catalog filters to tools matching your current lesson topic in real time."
+      proTip: "Open STEAM Lab from the Educator Hub and search by keyword — the catalog filters to tools matching your current lesson topic in real time."
     },
     "DBQ Generator": {
       inputs: ["Primary or secondary source document (text, PDF, image)", "Target grade level", "Number of DBQs"],

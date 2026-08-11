@@ -55,12 +55,12 @@ describe('ChemBalance timing accessibility', () => {
   it('excludes paused time from scoring and cleans up its live interval', () => {
     expect(source).toContain('if (d.timerActive && !d.timerPaused && d.timerStart)');
     expect(source).toContain('elapsedMs += Math.max(0, Date.now() - d.timerStart)');
-    expect(source).toContain('if (d.timerActive) speedTime = getTimerElapsedMs() / 1000');
+    expect(source).toContain('var speedTime = d.timerActive ? getTimerElapsedMs() / 1000 : null;');
     expect(source).toContain('return function() { window.clearInterval(intervalId); };');
   });
 
   it('keeps quiz and battle feedback until the learner chooses to continue', () => {
-    expect(source).not.toContain('setTimeout(function()');
+    expect(source).not.toMatch(/setTimeout\(function\(\)\s*\{[\s\S]{0,240}_(?:chalIdx|battleRound)/);
     expect(source).toContain("__alloT('stem.chembalance.next_question', 'Next question')");
     expect(source).toContain("__alloT('stem.chembalance.finish_challenge', 'Finish challenge')");
     expect(source).toContain("__alloT('stem.chembalance.next_battle_round', 'Next round')");

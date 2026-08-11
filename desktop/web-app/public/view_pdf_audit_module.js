@@ -1619,6 +1619,63 @@ function _collectMoSegments(html) {
   }
   return { segments, bodyHtml, lang: doc.documentElement.getAttribute("lang") || "en" };
 }
+function _pdfAuditArtifactAudioEntryToBlob(entry) {
+  if (!entry || typeof Blob === "undefined" || typeof atob !== "function") return null;
+  const encoded = String(entry.base64 || entry.b64 || entry.audio || "").replace(/^data:[^,]*,/, "").replace(/\s+/g, "");
+  if (!encoded) return null;
+  try {
+    const binary = atob(encoded);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+    return new Blob([bytes], { type: String(entry.mime || "audio/mpeg") });
+  } catch (_) {
+    return null;
+  }
+}
+function _pdfAuditAudioLanguage(html, fallback) {
+  const match = String(html || "").match(/<html\b[^>]*\blang\s*=\s*["']([^"']+)["']/i);
+  const raw = (match && match[1] ? match[1] : fallback || "English").trim() || "English";
+  const primary = raw.toLowerCase().split(/[-_]/)[0];
+  const languageNames = {
+    en: "English",
+    es: "Spanish",
+    fr: "French",
+    de: "German",
+    it: "Italian",
+    pt: "Portuguese",
+    zh: "Chinese",
+    ja: "Japanese",
+    ko: "Korean",
+    ar: "Arabic",
+    hi: "Hindi",
+    bn: "Bengali",
+    pa: "Punjabi",
+    gu: "Gujarati",
+    ta: "Tamil",
+    te: "Telugu",
+    mr: "Marathi",
+    ur: "Urdu",
+    ru: "Russian",
+    uk: "Ukrainian",
+    pl: "Polish",
+    nl: "Dutch",
+    tr: "Turkish",
+    vi: "Vietnamese",
+    th: "Thai",
+    id: "Indonesian",
+    ms: "Malay",
+    sw: "Swahili",
+    so: "Somali",
+    am: "Amharic",
+    he: "Hebrew",
+    fa: "Farsi",
+    ps: "Pashto",
+    km: "Khmer",
+    my: "Burmese",
+    tl: "Tagalog"
+  };
+  return languageNames[primary] || raw;
+}
 function _buildMoSmil(segments, durations, ext, hasAudio) {
   const _ext = ext || "mp3";
   const _has = (i) => !hasAudio || hasAudio[i];
@@ -2121,16 +2178,50 @@ function _ensurePdfHarper() {
   if (_pdfHarperPromise) return _pdfHarperPromise;
   _pdfHarperPromise = (async () => {
     const _imp = new Function("u", "return import(u)");
-    const mod = await _imp("https://cdn.jsdelivr.net/npm/harper.js@2.4.0/+esm");
-    const binary = await mod.createBinaryModuleFromUrl("https://cdn.jsdelivr.net/npm/harper.js@2.4.0/dist/harper_wasm_bg.wasm");
+    const assetRoot = "https://alloflow-cdn.pages.dev/vendor/harper/2.4.0";
+    const mod = await _imp(assetRoot + "/index.js");
+    const binary = await mod.createBinaryModuleFromUrl(assetRoot + "/harper_wasm_full_bg.wasm", "full");
     const linter = new mod.LocalLinter({ binary });
     if (linter.setup) await linter.setup();
+    if (linter.getLintConfig && linter.setLintConfig) {
+      const config = await linter.getLintConfig();
+      if (!config || config.SpellCheck !== true) {
+        await linter.setLintConfig({ ...config || {}, SpellCheck: true });
+      }
+    }
     return linter;
   })();
   _pdfHarperPromise.catch(() => {
     _pdfHarperPromise = null;
   });
   return _pdfHarperPromise;
+}
+function _applyHarperTextReplacement(doc, textNode, localStart, badLength, replacement) {
+  if (!doc || !textNode || textNode.nodeType !== 3 || !Number.isInteger(localStart) || !Number.isInteger(badLength)) return false;
+  const raw = textNode.textContent || "";
+  if (localStart < 0 || badLength < 0 || localStart + badLength > raw.length) return false;
+  let applied = false;
+  try {
+    const range = doc.createRange();
+    range.setStart(textNode, localStart);
+    range.setEnd(textNode, localStart + badLength);
+    const selection = doc.getSelection ? doc.getSelection() : doc.defaultView?.getSelection?.();
+    if (selection) {
+      selection.removeAllRanges();
+      selection.addRange(range);
+      applied = Boolean(doc.execCommand?.("insertText", false, String(replacement)));
+    }
+  } catch (_) {
+    applied = false;
+  }
+  if (!applied) {
+    textNode.textContent = raw.slice(0, localStart) + String(replacement) + raw.slice(localStart + badLength);
+  }
+  try {
+    doc.body?.setAttribute("data-allo-user-edited", "1");
+  } catch (_) {
+  }
+  return true;
 }
 function _ensurePptxLib() {
   if (typeof window === "undefined") return Promise.resolve(null);
@@ -4984,6 +5075,42 @@ function PdfAuditView(props) {
       return false;
     }
   };
+  const _preparePdfArtifactAudio = async (segments, options = {}) => {
+    const modules = typeof window !== "undefined" && window.AlloModules ? window.AlloModules : null;
+    const artifactModule = modules && modules.ReadAloudArtifactAudio;
+    const factory = artifactModule && typeof artifactModule.create === "function" ? artifactModule.create : modules && typeof modules.createReadAloudArtifactAudio === "function" ? modules.createReadAloudArtifactAudio : null;
+    if (typeof factory !== "function") {
+      const error = new Error("The shared read-aloud artifact audio service is not loaded.");
+      error.code = "audio-service-unavailable";
+      throw error;
+    }
+    const service = factory({
+      callTTS,
+      fetch: typeof window !== "undefined" && typeof window.fetch === "function" ? window.fetch.bind(window) : void 0
+    });
+    if (!service || typeof service.prepare !== "function") {
+      const error = new Error("The shared read-aloud artifact audio service is unavailable.");
+      error.code = "audio-service-unavailable";
+      throw error;
+    }
+    const requestedSpeed = Number(options.speed);
+    const maxRetries = Number(options.maxRetries);
+    return service.prepare({
+      ownerApproved: true,
+      resourceId: String(options.resourceId || "pdf-audit-read-aloud").slice(0, 240),
+      resourceType: String(options.resourceType || "pdf-audit-read-aloud").slice(0, 160),
+      adapterId: String(options.adapterId || "pdf-audit-read-aloud").slice(0, 160),
+      scopeId: String(options.scopeId || "document").slice(0, 240),
+      source: String(options.source || "pdf-audit-owner-export").slice(0, 80),
+      defaultVoice: String(options.defaultVoice || selectedVoice || "Puck").slice(0, 160),
+      language: String(options.language || "English").slice(0, 100),
+      speed: Number.isFinite(requestedSpeed) && requestedSpeed > 0 && requestedSpeed <= 4 ? requestedSpeed : 1,
+      maxRetries: Number.isFinite(maxRetries) && maxRetries >= 0 ? maxRetries : 2,
+      segments: Array.isArray(segments) ? segments : [],
+      signal: options.signal,
+      onProgress: options.onProgress
+    });
+  };
   const _dlOdt = async () => {
     let html = pdfFixResult?.accessibleHtml;
     if (!html) return;
@@ -5088,45 +5215,89 @@ function PdfAuditView(props) {
     const epubLang = lang || "en";
     setMoExport({ total: segments.length, done: 0, status: "running" });
     const measure = (url) => new Promise((res) => {
+      let finished = false;
+      let timer = null;
+      let audio = null;
+      const done = (value) => {
+        if (finished) return;
+        finished = true;
+        if (timer) clearTimeout(timer);
+        res(typeof value === "number" && isFinite(value) && value > 0 ? value : 0);
+      };
       try {
-        const au = new Audio();
-        au.preload = "metadata";
-        au.onloadedmetadata = () => res(au.duration || 0);
-        au.onerror = () => res(0);
-        au.src = url;
+        audio = new Audio();
+        audio.preload = "metadata";
+        audio.onloadedmetadata = () => done(audio.duration || 0);
+        audio.onerror = () => done(0);
+        timer = setTimeout(() => done(0), 1e4);
+        audio.src = url;
       } catch (_) {
-        res(0);
+        done(0);
       }
     });
     try {
+      const narrationVoice = String(selectedVoice || "Puck");
+      const narrationLanguage = String(lang || _pdfAuditAudioLanguage(html, "English"));
+      const artifactSegments = segments.map((segment, index) => ({
+        segmentId: String(segment.id || "mo" + (index + 1)),
+        text: segment.text,
+        voice: narrationVoice,
+        language: narrationLanguage,
+        speed: 1
+      }));
+      const resourceSlug = String(title).replace(/[^a-zA-Z0-9_-]+/g, "-").slice(0, 120) || "document";
+      const prepared = await _preparePdfArtifactAudio(artifactSegments, {
+        resourceId: "pdf-audit-readalong-" + resourceSlug,
+        resourceType: "pdf-audit-read-along-epub",
+        adapterId: "pdf-audit-read-along-epub",
+        scopeId: epubLang,
+        source: "pdf-audit-owner-read-along-export",
+        defaultVoice: narrationVoice,
+        language: narrationLanguage,
+        speed: 1,
+        maxRetries: 2,
+        onProgress: (progress) => {
+          const update = progress && typeof progress === "object" ? progress : {};
+          const completed = Number(update.completed);
+          setMoExport({
+            total: segments.length,
+            done: Number.isFinite(completed) ? Math.max(0, Math.min(segments.length, completed)) : 0,
+            status: "running"
+          });
+        }
+      });
+      const audioBySegmentId = prepared && prepared.audioBySegmentId && typeof prepared.audioBySegmentId === "object" ? prepared.audioBySegmentId : {};
       const audioBlobs = [];
       const durations = [];
       for (let i = 0; i < segments.length; i++) {
-        let blob2 = null, dur = 0;
+        let blob2 = null;
+        let dur = 0;
         try {
-          const url = await callTTS(segments[i].text, selectedVoice || "Puck", 1, 2);
-          if (url && (url.startsWith("blob:") || url.startsWith("data:") || url.startsWith("http"))) {
-            dur = await measure(url);
-            const response = await _withTimeout(fetch(url), 2e4, "TTS audio fetch");
-            if (!response.ok) throw new Error("TTS audio fetch failed (" + response.status + ")");
-            const rawBlob = await response.blob();
-            blob2 = await _epubCoreAudioBlob(rawBlob);
-            if (!(typeof dur === "number" && isFinite(dur) && dur > 0) && blob2) {
+          const segmentId = artifactSegments[i].segmentId;
+          const rawBlob = _pdfAuditArtifactAudioEntryToBlob(audioBySegmentId[segmentId]);
+          const normalizedBlob = await _epubCoreAudioBlob(rawBlob);
+          if (normalizedBlob) {
+            const objectUrl = URL.createObjectURL(normalizedBlob);
+            try {
+              dur = await measure(objectUrl);
+            } finally {
               try {
-                dur = _wavDurationFromBytes(new Uint8Array(await blob2.arrayBuffer()));
+                URL.revokeObjectURL(objectUrl);
               } catch (_) {
               }
             }
-            try {
-              if (url.startsWith("blob:")) URL.revokeObjectURL(url);
-            } catch (_) {
+            blob2 = normalizedBlob;
+            if (!(typeof dur === "number" && isFinite(dur) && dur > 0)) {
+              try {
+                dur = _wavDurationFromBytes(new Uint8Array(await normalizedBlob.arrayBuffer()));
+              } catch (_) {
+              }
             }
           }
         } catch (_) {
         }
         audioBlobs.push(blob2);
         durations.push(dur);
-        setMoExport({ total: segments.length, done: i + 1, status: "running" });
       }
       const ext = "mp3";
       const mime = "audio/mpeg";
@@ -5215,60 +5386,59 @@ function PdfAuditView(props) {
           if (!_saveAudioMeta(j, false, operationTicket)) _cancelRemediationOperation(operationTicket);
           return;
         }
-        let url = "";
+        let audioBlob = null;
         try {
-          url = await callTTS(j.segments[j.nextIdx], selectedVoice || "Puck", 1, 2);
+          const segmentIndex = j.nextIdx;
+          const segmentId = "pdf-audio-" + String(j.variant || "main") + "-segment-" + (segmentIndex + 1);
+          const fallbackLanguage = j.variant === "translation" && pdfFixResult && pdfFixResult._translation && pdfFixResult._translation.lang ? pdfFixResult._translation.lang : "English";
+          const prepared = await _preparePdfArtifactAudio([{
+            segmentId,
+            text: j.segments[segmentIndex],
+            voice: String(selectedVoice || "Puck"),
+            language: _pdfAuditAudioLanguage(j.sourceHtml, fallbackLanguage),
+            speed: 1
+          }], {
+            resourceId: "pdf-audit-audio-" + String(j.variant || "main") + "-" + String(j.companionAt || "main"),
+            resourceType: "pdf-audit-audio-job",
+            adapterId: "pdf-audit-audio-job",
+            scopeId: String(j.variant || "main"),
+            source: "pdf-audit-owner-audio-download",
+            defaultVoice: String(selectedVoice || "Puck"),
+            language: _pdfAuditAudioLanguage(j.sourceHtml, fallbackLanguage),
+            speed: 1,
+            maxRetries: 2,
+            signal: operationTicket.controller && operationTicket.controller.signal
+          });
           if (!_audioOperationIsCurrent(operationTicket, j)) {
-            try {
-              if (url && url.startsWith("blob:")) URL.revokeObjectURL(url);
-            } catch (_) {
-            }
             _cancelRemediationOperation(operationTicket);
             return;
           }
-          if (url && (url.startsWith("blob:") || url.startsWith("data:") || url.startsWith("http"))) {
-            const resp = await _withTimeout(fetch(url, { signal: operationTicket.controller && operationTicket.controller.signal }), 2e4, "TTS audio fetch");
-            if (!_audioOperationIsCurrent(operationTicket, j)) {
-              try {
-                if (url.startsWith("blob:")) URL.revokeObjectURL(url);
-              } catch (_) {
-              }
-              _cancelRemediationOperation(operationTicket);
-              return;
-            }
-            if (!resp.ok) throw new Error("TTS audio fetch failed (" + resp.status + ")");
-            const audioBlob = await resp.blob();
-            if (!_audioOperationIsCurrent(operationTicket, j)) {
-              try {
-                if (url.startsWith("blob:")) URL.revokeObjectURL(url);
-              } catch (_) {
-              }
-              _cancelRemediationOperation(operationTicket);
-              return;
-            }
-            if (!audioBlob.size) throw new Error("TTS audio fetch returned an empty payload");
-            j.blobs.push(audioBlob);
-            try {
-              if (url.startsWith("blob:")) URL.revokeObjectURL(url);
-            } catch (_) {
-            }
-            j.nextIdx++;
-            consecutiveNull = 0;
-          } else {
-            j.failed++;
-            consecutiveNull++;
-            j.nextIdx++;
+          const entry = prepared && prepared.audioBySegmentId && prepared.audioBySegmentId[segmentId];
+          audioBlob = _pdfAuditArtifactAudioEntryToBlob(entry);
+          if (!audioBlob || !audioBlob.size) {
+            const failure = prepared && Array.isArray(prepared.errors) ? prepared.errors[0] : null;
+            const error = new Error(failure && failure.message ? failure.message : "The shared narration service returned no audio for this section.");
+            if (failure && failure.code) error.code = failure.code;
+            throw error;
           }
+          j.blobs.push(audioBlob);
+          j.nextIdx++;
+          consecutiveNull = 0;
         } catch (e) {
-          try {
-            if (url && url.startsWith("blob:")) URL.revokeObjectURL(url);
-          } catch (_) {
-          }
           if (!_audioOperationIsCurrent(operationTicket, j)) {
             _cancelRemediationOperation(operationTicket);
             return;
           }
           warnLog("[Audio Job] segment " + (j.nextIdx + 1) + " failed:", e?.message || e);
+          if (e && e.code === "audio-service-unavailable") {
+            publish("stalled");
+            if (!_saveAudioMeta(j, false, operationTicket)) {
+              _cancelRemediationOperation(operationTicket);
+              return;
+            }
+            _toastForRemediationOperation(operationTicket, "\u23F8 " + (t("toasts.audio_stalled") || "The shared narration service is still loading \u2014 your progress is saved. Retry in a moment."), "info");
+            return;
+          }
           j.failed++;
           consecutiveNull++;
           if (e?.message?.includes("429") || e?.message?.includes("Rate")) {
@@ -8723,7 +8893,7 @@ Return ONLY JSON:
       setPdfAuditResult(null);
       addToast(t("toasts.retrying_audit"), "info");
       try {
-        const _result = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name, mimeType: _inputMimeType });
+        const _result = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name, mimeType: _inputMimeType, skipCache: true });
         if (!_auditCurrent()) return;
         if (!_result) {
           setPdfAuditResult(_viewAuditFallbackResult(_auditSnapshot, pendingPdfFile));
@@ -8750,7 +8920,30 @@ Return ONLY JSON:
       } else {
         setPdfAuditResult((previous) => previous ? { ...previous, _choosing: true, fileName: pendingPdfFile?.name || previous.fileName, fileSize: pendingPdfFile?.size || previous.fileSize || 0 } : previous);
       }
-    }, className: "px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg border border-slate-300 text-xs font-bold hover:bg-slate-200" }, "Back to processing choices")), (!pdfFixResult || pdfAuditTab === "original") && /* @__PURE__ */ React.createElement("div", { "data-help-key": "pdf_audit_results_score_badge", className: `p-6 text-center ${!_auditScoreKnown || pdfAuditResult._isWebAudit && pdfAuditResult.verificationState !== "complete" ? "bg-gradient-to-r from-amber-800 to-orange-800" : pdfAuditResult.score >= 80 ? "bg-gradient-to-r from-green-800 to-emerald-800" : pdfAuditResult.score >= 50 ? "bg-gradient-to-r from-amber-800 to-orange-800" : "bg-gradient-to-r from-red-800 to-rose-800"} text-white rounded-t-2xl` }, /* @__PURE__ */ React.createElement("div", { className: "text-5xl font-black mb-1", "aria-label": _auditScoreKnown ? `Score: ${pdfAuditResult.score} out of 100` : "Score unavailable because audit coverage is incomplete" }, _auditScoreKnown ? pdfAuditResult.score : "?", _auditScoreKnown && /* @__PURE__ */ React.createElement("span", { className: "text-2xl opacity-80", "aria-hidden": "true" }, "/100")), /* @__PURE__ */ React.createElement("h3", { className: "text-lg font-bold", id: "pdf-audit-title" }, pdfAuditResult._isWebAudit ? "Static HTML Source Evidence Score" : pdfAuditResult._officeInput ? "Document Accessibility Score" : "PDF Accessibility Score", " ", pdfAuditResult._isWebAudit ? /* @__PURE__ */ React.createElement("span", { className: "text-xs font-normal" }, "(available engine evidence; lower score governs)") : pdfAuditResult._scoreIsBlended ? /* @__PURE__ */ React.createElement("span", { className: "text-xs font-normal opacity-80" }, pdfAuditResult.hasSearchableText === false ? "(AI rubric \u2014 automated checks N/A, no text layer)" : "(lower of AI & automated)") : pdfAuditResult._officeInput ? /* @__PURE__ */ React.createElement("span", { className: "text-xs font-normal opacity-80" }, "(axe-core on extracted text)") : /* @__PURE__ */ React.createElement("span", { className: "text-xs font-normal opacity-80" }, "(AI Rubric)")), pdfAuditResult._isWebAudit && /* @__PURE__ */ React.createElement("p", { className: "text-xs mt-1 bg-black/20 inline-block px-2 py-0.5 rounded-full font-bold" }, "Verification: ", pdfAuditResult.verificationState || "partial", " \xB7 AI + axe-core + IBM Equal Access"), !_auditScoreKnown && /* @__PURE__ */ React.createElement("p", { className: "text-xs mt-1 bg-black/20 inline-block px-3 py-1 rounded-full font-bold" }, "Coverage incomplete - no numeric baseline was assigned"), pdfAuditResult._slicedAudit && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] mt-1 bg-white/20 inline-block px-2 py-0.5 rounded-full font-bold", title: "Merged from page-slices because a single whole-document pass exceeded the model; cross-page checks (reading order, heading continuity) are approximate. Not cached." }, "\u{1F9E9} Approximate \u2014 audited in ", pdfAuditResult._sliceCount || "multiple", " page-slices"), pdfAuditResult._slicedAudit ? /* @__PURE__ */ React.createElement("p", { className: "text-xs opacity-70 mt-0.5" }, "One pass per page-slice (same model) \xB7 approximate cross-page coverage") : pdfAuditResult.scores && pdfAuditResult.scores.length > 1 && /* @__PURE__ */ React.createElement("p", { className: "text-xs opacity-70 mt-0.5" }, pdfAuditResult.auditorCount || pdfAuditResult.scores.length, " AI audit passes (varied persona prompts, same model) \xB7 scores: ", pdfAuditResult.scores.join(", "), " \xB7 SD: ", pdfAuditResult.scoreSD ?? "?"), pdfAuditResult.structTree && pdfAuditResult.structTree.hasTags && (() => {
+    }, className: "px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg border border-slate-300 text-xs font-bold hover:bg-slate-200" }, "Back to processing choices")), (!pdfFixResult || pdfAuditTab === "original") && /* @__PURE__ */ React.createElement("div", { "data-help-key": "pdf_audit_results_score_badge", className: `p-6 text-center ${!_auditScoreKnown || pdfAuditResult._isWebAudit && pdfAuditResult.verificationState !== "complete" ? "bg-gradient-to-r from-amber-800 to-orange-800" : pdfAuditResult.score >= 80 ? "bg-gradient-to-r from-green-800 to-emerald-800" : pdfAuditResult.score >= 50 ? "bg-gradient-to-r from-amber-800 to-orange-800" : "bg-gradient-to-r from-red-800 to-rose-800"} text-white rounded-t-2xl` }, /* @__PURE__ */ React.createElement("div", { className: "text-5xl font-black mb-1", "aria-label": _auditScoreKnown ? `Score: ${pdfAuditResult.score} out of 100` : "Score unavailable because audit coverage is incomplete" }, _auditScoreKnown ? pdfAuditResult.score : "?", _auditScoreKnown && /* @__PURE__ */ React.createElement("span", { className: "text-2xl opacity-80", "aria-hidden": "true" }, "/100")), /* @__PURE__ */ React.createElement("h3", { className: "text-lg font-bold", id: "pdf-audit-title" }, pdfAuditResult._isWebAudit ? "Static HTML Source Evidence Score" : pdfAuditResult._officeInput ? "Document Accessibility Score" : "PDF Accessibility Score", " ", pdfAuditResult._isWebAudit ? /* @__PURE__ */ React.createElement("span", { className: "text-xs font-normal" }, "(available engine evidence; lower score governs)") : pdfAuditResult._scoreIsBlended ? /* @__PURE__ */ React.createElement("span", { className: "text-xs font-normal opacity-80" }, pdfAuditResult.hasSearchableText === false ? "(AI rubric \u2014 automated checks N/A, no text layer)" : "(lower of AI & automated)") : pdfAuditResult._officeInput ? /* @__PURE__ */ React.createElement("span", { className: "text-xs font-normal opacity-80" }, "(axe-core on extracted text)") : /* @__PURE__ */ React.createElement("span", { className: "text-xs font-normal opacity-80" }, "(AI Rubric)")), pdfAuditResult._isWebAudit && /* @__PURE__ */ React.createElement("p", { className: "text-xs mt-1 bg-black/20 inline-block px-2 py-0.5 rounded-full font-bold" }, "Verification: ", pdfAuditResult.verificationState || "partial", " \xB7 AI + axe-core + IBM Equal Access"), !_auditScoreKnown && /* @__PURE__ */ React.createElement("p", { className: "text-xs mt-1 bg-black/20 inline-block px-3 py-1 rounded-full font-bold" }, "Coverage incomplete - no numeric baseline was assigned"), pdfAuditResult._slicedAudit && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] mt-1 bg-white/20 inline-block px-2 py-0.5 rounded-full font-bold", title: "Merged from page-slices because a single whole-document pass exceeded the model; cross-page checks (reading order, heading continuity) are approximate. Not cached." }, "\u{1F9E9} Approximate \u2014 audited in ", pdfAuditResult._sliceCount || "multiple", " page-slices"), pdfAuditResult._fromAuditCache && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] mt-1 bg-white/20 inline-block px-2 py-0.5 rounded-full font-bold" }, "\u267B\uFE0F ", (t("pdf_audit.cached_result_pill") || "Cached audit") + (pdfAuditResult._auditCachedAt ? " \xB7 " + new Date(pdfAuditResult._auditCachedAt).toLocaleString() : ""), " \u2014 ", t("pdf_audit.cached_result_hint") || "Retry Audit runs fresh", /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        className: "underline ml-2 font-bold",
+        disabled: _modalWorkBusy,
+        title: t("pdf_audit.clear_cache_title") || "Forget every cached audit/remediation result so all documents run fresh",
+        onClick: async () => {
+          try {
+            const _pipe = typeof window !== "undefined" && window.AlloModules && window.AlloModules.DocPipelineModule || null;
+            if (!_pipe || typeof _pipe.clearPdfDocumentCaches !== "function") {
+              addToast(t("pdf_audit.clear_cache_unavailable") || "Cache clearing is unavailable on this host version.", "warning");
+              return;
+            }
+            const _res = await _pipe.clearPdfDocumentCaches();
+            if (_res && _res.ok) addToast((t("pdf_audit.clear_cache_done") || "Cleared cached results") + " (" + (_res.removed || 0) + ")", "success");
+            else addToast((t("pdf_audit.clear_cache_failed") || "Could not clear the cache") + (_res && _res.reason ? ": " + _res.reason : ""), "error");
+          } catch (_e) {
+            addToast((t("pdf_audit.clear_cache_failed") || "Could not clear the cache") + (_e && _e.message ? ": " + _e.message : ""), "error");
+          }
+        }
+      },
+      t("pdf_audit.clear_cache_btn") || "Clear cache"
+    )), pdfAuditResult._slicedAudit ? /* @__PURE__ */ React.createElement("p", { className: "text-xs opacity-70 mt-0.5" }, "One pass per page-slice (same model) \xB7 approximate cross-page coverage") : pdfAuditResult.scores && pdfAuditResult.scores.length > 1 && /* @__PURE__ */ React.createElement("p", { className: "text-xs opacity-70 mt-0.5" }, pdfAuditResult.auditorCount || pdfAuditResult.scores.length, " AI audit passes (varied persona prompts, same model) \xB7 scores: ", pdfAuditResult.scores.join(", "), " \xB7 SD: ", pdfAuditResult.scoreSD ?? "?"), pdfAuditResult.structTree && pdfAuditResult.structTree.hasTags && (() => {
       const rc = pdfAuditResult.structTree.roleCounts || {};
       const top = Object.entries(rc).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([r, n]) => `${r}\xD7${n}`).join(", ");
       return /* @__PURE__ */ React.createElement("p", { className: "text-[11px] opacity-80 mt-0.5", title: t("pdf_audit.tagtree.tooltip") || "This PDF includes a PDF/UA-style tag tree. Auditors were instructed to credit the existing structure." }, "\u{1F4D1} ", t("pdf_audit.tagtree.label") || "Pre-existing tag structure", ": ", top);
@@ -10516,7 +10709,7 @@ Return ONLY JSON:
           }
         ), /* @__PURE__ */ React.createElement("button", { onClick: () => _applyScopedIntent(issue, _srcKey), disabled: !!_issueEdit[_srcKey].saving || !(_issueEdit[_srcKey] && _issueEdit[_srcKey].intent || "").trim(), className: "px-2 py-0.5 rounded bg-indigo-600 text-white font-bold shrink-0 " + (_issueEdit[_srcKey].saving || !(_issueEdit[_srcKey] && _issueEdit[_srcKey].intent || "").trim() ? "opacity-50 cursor-not-allowed" : "hover:bg-indigo-700"), title: t("pdf_audit.issue.ai_btn_title") || "The AI edits ONLY this section (bounded), then re-checks \u2014 accept or revert." }, "\u2728 ", t("pdf_audit.issue.ai_btn") || "Apply with AI")), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-400 italic" }, t("pdf_audit.issue.ai_scoped_hint") || "Scoped to this section only \u2014 bounded so the agent can\u2019t touch the rest of the document."))) : /* @__PURE__ */ React.createElement("pre", { className: "whitespace-pre-wrap break-words bg-slate-50 border border-slate-200 rounded p-1.5 max-h-48 overflow-auto font-mono text-[10px] leading-snug" }, _src.html)) : _src.exact ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-slate-500 mb-1" }, t("pdf_audit.issue.source_context") || "Context (text around this issue)"), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border border-slate-200 rounded p-1.5 leading-relaxed" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-400" }, "\u2026", _src.before, " "), /* @__PURE__ */ React.createElement("mark", { className: "bg-amber-200 text-amber-900 font-semibold px-0.5 rounded" }, _src.snippet), /* @__PURE__ */ React.createElement("span", { className: "text-slate-400" }, " ", _src.after, "\u2026"))) : /* @__PURE__ */ React.createElement("div", { className: "text-slate-600" }, t("pdf_audit.issue.source_coarse") || "This issue is document- or page-level \u2014 there is no single text spot to show.", _src.pages ? " " + (t("pdf_audit.issue.source_page_cap") || "Page") + " " + _src.pages.join(", ") + "." : "", _src.rawLocation && !/^document$/i.test(_src.rawLocation) ? /* @__PURE__ */ React.createElement(React.Fragment, null, " ", /* @__PURE__ */ React.createElement("span", { className: "text-slate-400" }, t("pdf_audit.issue.source_anchor") || "Auditor note", ":"), " ", /* @__PURE__ */ React.createElement("span", { className: "italic" }, "\u201C", _src.rawLocation.slice(0, 140), "\u201D")) : null));
       })());
-    })), (pdfFixResult.verificationAudit.passes || []).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-green-50 rounded-lg p-2 border border-green-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-green-600 uppercase mb-1" }, t("pdf_audit.results.ai_reported_passing") || "Reported passing (AI rubric \u2014 not independently verified)"), pdfFixResult.verificationAudit.passes.map((pass, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "text-[11px] text-green-700 mb-0.5" }, "\u2713 ", pass)))), pdfFixResult.axeAudit && /* @__PURE__ */ React.createElement("div", { id: "allo-sec-axe", className: "bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl border-2 border-indigo-200 p-3 space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-lg" }, "\u{1F52C}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-indigo-800" }, "axe-core Automated WCAG Checker"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-indigo-500" }, "Industry-standard engine (Deque) v", pdfFixResult.axeAudit.version, " \u2014 WCAG 2.2 AA"))), /* @__PURE__ */ React.createElement("div", { className: `text-2xl font-black ${pdfFixResult.axeAudit.totalViolations === 0 ? "text-green-600" : pdfFixResult.axeAudit.totalViolations <= 3 ? "text-amber-600" : "text-red-600"}` }, pdfFixResult.axeAudit.totalViolations === 0 ? "\u2705" : pdfFixResult.axeAudit.totalViolations, " ", pdfFixResult.axeAudit.totalViolations === 0 ? "" : "violations")), pdfFixResult.axeAudit.totalViolations === 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-green-100 rounded-lg p-2 border border-green-300 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-green-800" }, t("pdf_audit.results.zero_violations") || "Zero WCAG violations detected"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-green-600" }, pdfFixResult.axeAudit.totalPasses, " accessibility checks passed")), pdfFixResult.axeAudit.critical.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-red-50 rounded-lg p-2 border border-red-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-red-600 uppercase mb-1" }, "Critical (", pdfFixResult.axeAudit.critical.length, ")"), pdfFixResult.axeAudit.critical.map((v, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "flex items-start gap-1.5 text-[11px] text-red-800 mb-1" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 leading-snug" }, "\u{1F534} ", v.description, " ", /* @__PURE__ */ React.createElement("span", { className: "text-red-600" }, "(", v.id, ", ", v.nodes, " element", v.nodes > 1 ? "s" : "", ")")), _axeActions(v)))), pdfFixResult.axeAudit.serious.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-orange-50 rounded-lg p-2 border border-orange-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-orange-600 uppercase mb-1" }, "Serious (", pdfFixResult.axeAudit.serious.length, ")"), pdfFixResult.axeAudit.serious.map((v, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "flex items-start gap-1.5 text-[11px] text-orange-800 mb-1" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 leading-snug" }, "\u{1F7E0} ", v.description, " ", /* @__PURE__ */ React.createElement("span", { className: "text-orange-700" }, "(", v.id, ", ", v.nodes, " element", v.nodes > 1 ? "s" : "", ")")), _axeActions(v)))), pdfFixResult.axeAudit.moderate.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 rounded-lg p-2 border border-amber-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-amber-600 uppercase mb-1" }, "Moderate (", pdfFixResult.axeAudit.moderate.length, ")"), pdfFixResult.axeAudit.moderate.map((v, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "flex items-start gap-1.5 text-[11px] text-amber-800 mb-1" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 leading-snug" }, "\u{1F7E1} ", v.description, " ", /* @__PURE__ */ React.createElement("span", { className: "text-amber-700" }, "(", v.id, ")")), _axeActions(v)))), pdfFixResult.axeAudit.minor.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 rounded-lg p-2 border border-slate-400" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1" }, "Minor (", pdfFixResult.axeAudit.minor.length, ")"), pdfFixResult.axeAudit.minor.map((v, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "flex items-start gap-1.5 text-[11px] text-slate-600 mb-1" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 leading-snug" }, "\u26AA ", v.description), _axeActions(v)))), pdfFixResult.axeAudit.passes && pdfFixResult.axeAudit.passes.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "w-full" }, /* @__PURE__ */ React.createElement("summary", { className: "text-[11px] font-bold text-green-600 cursor-pointer hover:text-green-800 transition-colors" }, "\u2705 ", pdfFixResult.axeAudit.totalPasses, " accessibility checks passed (click to view)"), /* @__PURE__ */ React.createElement("div", { className: "mt-1 max-h-40 overflow-y-auto bg-green-50 rounded-lg p-2 border border-green-200 space-y-0.5" }, pdfFixResult.axeAudit.passes.map((p, pi) => /* @__PURE__ */ React.createElement("div", { key: pi, className: "text-[11px] text-green-800 flex items-start gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-green-500 shrink-0" }, "\u2713"), /* @__PURE__ */ React.createElement("span", { className: "font-medium" }, typeof p === "string" ? p : p.description), p.id && /* @__PURE__ */ React.createElement("span", { className: "text-green-700 shrink-0 font-mono" }, "(", p.id, ")"), p.wcag && /* @__PURE__ */ React.createElement("span", { className: "text-green-700 shrink-0" }, "[", p.wcag, "]"))))), (() => {
+    })), (pdfFixResult.verificationAudit?.passes || []).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-green-50 rounded-lg p-2 border border-green-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-green-600 uppercase mb-1" }, t("pdf_audit.results.ai_reported_passing") || "Reported passing (AI rubric \u2014 not independently verified)"), pdfFixResult.verificationAudit.passes.map((pass, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "text-[11px] text-green-700 mb-0.5" }, "\u2713 ", pass)))), pdfFixResult.axeAudit && /* @__PURE__ */ React.createElement("div", { id: "allo-sec-axe", className: "bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl border-2 border-indigo-200 p-3 space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-lg" }, "\u{1F52C}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-indigo-800" }, "axe-core Automated WCAG Checker"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-indigo-500" }, "Industry-standard engine (Deque) v", pdfFixResult.axeAudit.version, " \u2014 WCAG 2.2 AA"))), /* @__PURE__ */ React.createElement("div", { className: `text-2xl font-black ${pdfFixResult.axeAudit.totalViolations === 0 ? "text-green-600" : pdfFixResult.axeAudit.totalViolations <= 3 ? "text-amber-600" : "text-red-600"}` }, pdfFixResult.axeAudit.totalViolations === 0 ? "\u2705" : pdfFixResult.axeAudit.totalViolations, " ", pdfFixResult.axeAudit.totalViolations === 0 ? "" : "violations")), pdfFixResult.axeAudit.totalViolations === 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-green-100 rounded-lg p-2 border border-green-300 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-green-800" }, t("pdf_audit.results.zero_violations") || "Zero WCAG violations detected"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-green-600" }, pdfFixResult.axeAudit.totalPasses, " accessibility checks passed")), pdfFixResult.axeAudit.critical.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-red-50 rounded-lg p-2 border border-red-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-red-600 uppercase mb-1" }, "Critical (", pdfFixResult.axeAudit.critical.length, ")"), pdfFixResult.axeAudit.critical.map((v, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "flex items-start gap-1.5 text-[11px] text-red-800 mb-1" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 leading-snug" }, "\u{1F534} ", v.description, " ", /* @__PURE__ */ React.createElement("span", { className: "text-red-600" }, "(", v.id, ", ", v.nodes, " element", v.nodes > 1 ? "s" : "", ")")), _axeActions(v)))), pdfFixResult.axeAudit.serious.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-orange-50 rounded-lg p-2 border border-orange-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-orange-600 uppercase mb-1" }, "Serious (", pdfFixResult.axeAudit.serious.length, ")"), pdfFixResult.axeAudit.serious.map((v, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "flex items-start gap-1.5 text-[11px] text-orange-800 mb-1" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 leading-snug" }, "\u{1F7E0} ", v.description, " ", /* @__PURE__ */ React.createElement("span", { className: "text-orange-700" }, "(", v.id, ", ", v.nodes, " element", v.nodes > 1 ? "s" : "", ")")), _axeActions(v)))), pdfFixResult.axeAudit.moderate.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 rounded-lg p-2 border border-amber-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-amber-600 uppercase mb-1" }, "Moderate (", pdfFixResult.axeAudit.moderate.length, ")"), pdfFixResult.axeAudit.moderate.map((v, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "flex items-start gap-1.5 text-[11px] text-amber-800 mb-1" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 leading-snug" }, "\u{1F7E1} ", v.description, " ", /* @__PURE__ */ React.createElement("span", { className: "text-amber-700" }, "(", v.id, ")")), _axeActions(v)))), pdfFixResult.axeAudit.minor.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 rounded-lg p-2 border border-slate-400" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1" }, "Minor (", pdfFixResult.axeAudit.minor.length, ")"), pdfFixResult.axeAudit.minor.map((v, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "flex items-start gap-1.5 text-[11px] text-slate-600 mb-1" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 leading-snug" }, "\u26AA ", v.description), _axeActions(v)))), pdfFixResult.axeAudit.passes && pdfFixResult.axeAudit.passes.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "w-full" }, /* @__PURE__ */ React.createElement("summary", { className: "text-[11px] font-bold text-green-600 cursor-pointer hover:text-green-800 transition-colors" }, "\u2705 ", pdfFixResult.axeAudit.totalPasses, " accessibility checks passed (click to view)"), /* @__PURE__ */ React.createElement("div", { className: "mt-1 max-h-40 overflow-y-auto bg-green-50 rounded-lg p-2 border border-green-200 space-y-0.5" }, pdfFixResult.axeAudit.passes.map((p, pi) => /* @__PURE__ */ React.createElement("div", { key: pi, className: "text-[11px] text-green-800 flex items-start gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-green-500 shrink-0" }, "\u2713"), /* @__PURE__ */ React.createElement("span", { className: "font-medium" }, typeof p === "string" ? p : p.description), p.id && /* @__PURE__ */ React.createElement("span", { className: "text-green-700 shrink-0 font-mono" }, "(", p.id, ")"), p.wcag && /* @__PURE__ */ React.createElement("span", { className: "text-green-700 shrink-0" }, "[", p.wcag, "]"))))), (() => {
       const WCAG_LABELS = {
         "1.1.1": "Non-text Content (alt text)",
         "1.3.1": "Info and Relationships (structure)",
@@ -13583,7 +13776,7 @@ Return ONLY the plain-language summary.`, false));
             }
           })();
           if (_docLang && _docLang.split("-")[0] !== "en") {
-            setWritingCheck({ status: "error", error: t("export_preview.writing.non_english") || 'Writing Check is English-only \u2014 this document is set to language "' + _docLang + '". Your browser still underlines spelling as you type.' });
+            setWritingCheck({ status: "error", error: t("export_preview.writing.non_english") || 'Writing Check is English-only \u2014 this document is set to language "' + _docLang + '".' });
             return;
           }
           setWritingCheck({ status: "loading" });
@@ -13604,14 +13797,14 @@ Return ONLY the plain-language summary.`, false));
               const text = blocks[bi].textContent || "";
               let lints = [];
               try {
-                lints = await linter.lint(text);
+                lints = await linter.lint(text, { language: "plaintext" });
               } catch (_) {
                 continue;
               }
               for (const l of lints) {
                 try {
                   const span = l.span();
-                  const sugg = (l.suggestions ? l.suggestions() : []).map((s) => s.get_replacement_text ? s.get_replacement_text() : "").filter(Boolean).slice(0, 3);
+                  const sugg = (l.suggestions ? l.suggestions() : []).map((s) => s && s.get_replacement_text ? s.get_replacement_text() : null).filter((value, index, all) => value != null && all.indexOf(value) === index).slice(0, 3);
                   items.push({ blockIndex: bi, message: l.message ? l.message() : "Possible issue", start: span.start, end: span.end, bad: text.slice(span.start, span.end), snippet: (span.start > 20 ? "\u2026" : "") + text.slice(Math.max(0, span.start - 20), Math.min(text.length, span.end + 24)) + (span.end + 24 < text.length ? "\u2026" : ""), suggestions: sugg });
                 } catch (_) {
                 }
@@ -13676,25 +13869,8 @@ Return ONLY the plain-language summary.`, false));
               return;
             }
             const _badLen = item.end - item.start;
-            let _ok = false;
-            try {
-              const _range = doc.createRange();
-              _range.setStart(hit.node, hit.local);
-              _range.setEnd(hit.node, hit.local + _badLen);
-              const _sel = (doc.defaultView || window).getSelection();
-              _sel.removeAllRanges();
-              _sel.addRange(_range);
-              _ok = doc.execCommand("insertText", false, replacement);
-            } catch (_) {
-              _ok = false;
-            }
-            if (!_ok) {
-              const raw = hit.node.textContent;
-              hit.node.textContent = raw.slice(0, hit.local) + replacement + raw.slice(hit.local + _badLen);
-            }
-            try {
-              if (doc.body) doc.body.setAttribute("data-allo-user-edited", "1");
-            } catch (_) {
+            if (!_applyHarperTextReplacement(doc, hit.node, hit.local, _badLen, replacement)) {
+              throw new Error("The correction could not be applied.");
             }
             try {
               if (typeof window.__alloflowOnPdfPreviewMutated === "function") window.__alloflowOnPdfPreviewMutated();
@@ -13718,7 +13894,7 @@ Return ONLY the plain-language summary.`, false));
         const _dismiss = (item) => {
           setWritingCheck((p) => p && p.items ? { ...p, items: p.items.filter((x) => x !== item) } : p);
         };
-        return /* @__PURE__ */ React.createElement("div", { className: "bg-teal-50/60 border border-teal-300 rounded-lg p-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-teal-800 uppercase mb-1.5" }, "\u{1F4DD} ", t("export_preview.writing.heading") || "Writing Check"), /* @__PURE__ */ React.createElement("button", { onClick: runWritingCheck, "data-help-key": "pdf_audit_writing_check_btn", disabled: wc && wc.status === "loading", "aria-busy": !!(wc && wc.status === "loading"), className: "w-full px-3 py-2 bg-teal-100 text-teal-800 rounded-lg text-xs font-bold hover:bg-teal-200 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5" }, wc && wc.status === "loading" ? t("export_preview.writing.checking") || "\u23F3 Checking\u2026 (first run downloads the checker)" : t("export_preview.writing.run") || "\u{1F4DD} Check grammar (English)"), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, t("export_preview.writing.disclosure") || "Runs entirely on this device \u2014 no text leaves the browser. English only; the checker is a ~10 MB download on first use (instant once loaded). Spelling is underlined by your browser as you type."), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-amber-700 mt-1" }, t("export_preview.writing.remediation_caution") || "\u26A0 This wording comes from the source document \u2014 apply grammar changes thoughtfully; the original author\u2019s phrasing may be intentional."), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, t("export_preview.writing.spell_hint") || "\u{1F4A1} To fix a spelling underline, right-click the word in the preview \u2014 your browser lists corrections."), wc && wc.status === "error" && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 text-[11px] text-red-700 bg-red-50 border border-red-200 rounded p-1.5" }, wc.error), wc && wc.status === "done" && wc.items.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 text-[11px] text-green-700 bg-green-50 border border-green-200 rounded p-1.5" }, "\u2713 ", t("export_preview.writing.clean") || "No grammar suggestions found."), wc && wc.status === "done" && wc.items.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 space-y-1.5 max-h-64 overflow-y-auto" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-600" }, wc.items.length, " ", t("export_preview.writing.suggestions") || "suggestion(s)", wc.capped ? " (first 150 shown)" : "", " \u2014 ", t("export_preview.writing.suggestions_note") || "nothing is changed unless you Apply it", ":"), wc.items.map((item, ii) => /* @__PURE__ */ React.createElement("div", { key: ii, className: "bg-white border border-slate-200 rounded-lg p-1.5 text-[11px]" }, /* @__PURE__ */ React.createElement("button", { onClick: () => _locate(item, true), className: "text-left w-full hover:underline", title: t("export_preview.writing.locate_title") || "Scroll the preview to this spot" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-700" }, item.message), /* @__PURE__ */ React.createElement("span", { className: "block text-slate-500 italic mt-0.5" }, item.snippet)), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1 mt-1 flex-wrap items-center" }, item.suggestions.map((s, si) => /* @__PURE__ */ React.createElement("button", { key: si, onClick: () => _apply(item, s), className: "px-1.5 py-0.5 bg-teal-50 border border-teal-300 text-teal-800 rounded text-[10px] font-bold hover:bg-teal-100", title: (t("export_preview.writing.apply_title") || "Replace") + ' "' + item.bad + '"' }, "\u2192 ", s || "(remove)")), /* @__PURE__ */ React.createElement("button", { onClick: () => _dismiss(item), className: "px-1.5 py-0.5 bg-slate-50 border border-slate-300 text-slate-600 rounded text-[10px] font-bold hover:bg-slate-100 ml-auto", title: t("export_preview.writing.keep_title") || "Keep the original wording and dismiss this suggestion" }, "\u2713 ", t("export_preview.writing.keep") || "Keep as-is"))))));
+        return /* @__PURE__ */ React.createElement("div", { className: "bg-teal-50/60 border border-teal-300 rounded-lg p-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-teal-800 uppercase mb-1.5" }, "\u{1F4DD} ", t("export_preview.writing.heading") || "Writing Check"), /* @__PURE__ */ React.createElement("button", { onClick: runWritingCheck, "data-help-key": "pdf_audit_writing_check_btn", disabled: wc && wc.status === "loading", "aria-busy": !!(wc && wc.status === "loading"), className: "w-full px-3 py-2 bg-teal-100 text-teal-800 rounded-lg text-xs font-bold hover:bg-teal-200 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5" }, wc && wc.status === "loading" ? t("export_preview.writing.checking") || "\u23F3 Checking\u2026 (first run downloads the checker)" : t("export_preview.writing.run") || "\u{1F4DD} Check spelling & grammar (English)"), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, t("export_preview.writing.disclosure") || "Runs entirely on this device \u2014 no text leaves the browser. English only; the ~18 MB checker downloads on first use, then checks both spelling and grammar."), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-amber-700 mt-1" }, t("export_preview.writing.remediation_caution") || "\u26A0 This wording comes from the source document \u2014 apply spelling or grammar changes thoughtfully; the original author\u2019s phrasing may be intentional."), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, t("export_preview.writing.spell_hint") || "\u{1F4A1} Browser correction menus can be limited in embedded previews. Run Writing Check to see spelling corrections here as Apply buttons."), wc && wc.status === "error" && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 text-[11px] text-red-700 bg-red-50 border border-red-200 rounded p-1.5" }, wc.error), wc && wc.status === "done" && wc.items.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 text-[11px] text-green-700 bg-green-50 border border-green-200 rounded p-1.5" }, "\u2713 ", t("export_preview.writing.clean") || "No spelling or grammar suggestions found."), wc && wc.status === "done" && wc.items.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 space-y-1.5 max-h-64 overflow-y-auto" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-600" }, wc.items.length, " ", t("export_preview.writing.suggestions") || "suggestion(s)", wc.capped ? " (first 150 shown)" : "", " \u2014 ", t("export_preview.writing.suggestions_note") || "nothing is changed unless you Apply it", ":"), wc.items.map((item, ii) => /* @__PURE__ */ React.createElement("div", { key: ii, className: "bg-white border border-slate-200 rounded-lg p-1.5 text-[11px]" }, /* @__PURE__ */ React.createElement("button", { onClick: () => _locate(item, true), className: "text-left w-full hover:underline", title: t("export_preview.writing.locate_title") || "Scroll the preview to this spot" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-700" }, item.message), /* @__PURE__ */ React.createElement("span", { className: "block text-slate-500 italic mt-0.5" }, item.snippet)), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1 mt-1 flex-wrap items-center" }, item.suggestions.map((s, si) => /* @__PURE__ */ React.createElement("button", { key: si, onClick: () => _apply(item, s), className: "px-1.5 py-0.5 bg-teal-50 border border-teal-300 text-teal-800 rounded text-[10px] font-bold hover:bg-teal-100", title: (t("export_preview.writing.apply_title") || "Replace") + ' "' + item.bad + '"' }, "\u2192 ", s || (t("export_preview.writing.remove") || "(remove)"))), /* @__PURE__ */ React.createElement("button", { onClick: () => _dismiss(item), className: "px-1.5 py-0.5 bg-slate-50 border border-slate-300 text-slate-600 rounded text-[10px] font-bold hover:bg-slate-100 ml-auto", title: t("export_preview.writing.keep_title") || "Keep the original wording and dismiss this suggestion" }, "\u2713 ", t("export_preview.writing.keep") || "Keep as-is"))))));
       })(), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-1" }, "Style"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-1" }, t("pdf_audit.preview.wcag_guaranteed") || "Text contrast is re-verified by the deterministic sanitizer on every style change (contrast only \u2014 not a full WCAG audit)."), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-1" }, Object.entries(STYLE_SEEDS).filter(([, s]) => s.cssVars || s.name === "Match Original").map(([key, s]) => /* @__PURE__ */ React.createElement(
         "button",
         {
@@ -16703,22 +16879,35 @@ Return ONLY JSON:
         for (let si = 0; si < segments.length; si++) {
           if (btn) btn.textContent = "\u23F3 " + (si + 1) + "/" + segments.length;
           try {
-            const url = await callTTS(segments[si], selectedVoice || "Puck", 1, 2);
-            if (url && (url.startsWith("blob:") || url.startsWith("data:") || url.startsWith("http"))) {
-              const r = await _withTimeout(fetch(url), 2e4, "TTS audio fetch");
-              if (!r.ok) throw new Error("TTS audio fetch failed (" + r.status + ")");
-              const audioBlob = await r.blob();
-              if (!audioBlob.size) throw new Error("TTS audio fetch returned an empty payload");
-              blobs.push(audioBlob);
-              try {
-                if (url.startsWith("blob:")) URL.revokeObjectURL(url);
-              } catch (_) {
-              }
-              consecutiveNull = 0;
-            } else {
-              failed++;
-              consecutiveNull++;
+            const segmentId = "pdf-audit-preview-segment-" + (si + 1);
+            const narrationLanguage = _pdfAuditAudioLanguage(pdfFixResult?.accessibleHtml || "", "English");
+            const prepared = await _preparePdfArtifactAudio([{
+              segmentId,
+              text: segments[si],
+              voice: String(selectedVoice || "Puck"),
+              language: narrationLanguage,
+              speed: 1
+            }], {
+              resourceId: "pdf-audit-preview-audio",
+              resourceType: "pdf-audit-preview-audio",
+              adapterId: "pdf-audit-preview-audio",
+              scopeId: "preview",
+              source: "pdf-audit-owner-preview-download",
+              defaultVoice: String(selectedVoice || "Puck"),
+              language: narrationLanguage,
+              speed: 1,
+              maxRetries: 2
+            });
+            const entry = prepared && prepared.audioBySegmentId && prepared.audioBySegmentId[segmentId];
+            const audioBlob = _pdfAuditArtifactAudioEntryToBlob(entry);
+            if (!audioBlob || !audioBlob.size) {
+              const failure = prepared && Array.isArray(prepared.errors) ? prepared.errors[0] : null;
+              const error = new Error(failure && failure.message ? failure.message : "The shared narration service returned no audio for this section.");
+              if (failure && failure.code) error.code = failure.code;
+              throw error;
             }
+            blobs.push(audioBlob);
+            consecutiveNull = 0;
           } catch (e) {
             warnLog("[Audio] Seg " + si + " failed:", e?.message);
             failed++;

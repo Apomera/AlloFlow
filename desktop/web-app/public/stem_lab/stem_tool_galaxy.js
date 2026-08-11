@@ -29,7 +29,7 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -6119,7 +6119,7 @@ if (!window._galaxyHasLoadedOnce) {
 
               React.createElement("button", { type: "button", "data-galaxy-science-toggle": "true", "aria-pressed": galaxyScienceOverlay, onClick: function () { upd('galaxyScienceOverlay', !galaxyScienceOverlay); }, className: "flex min-h-[44px] w-full items-center justify-between gap-3 rounded-xl border px-3 py-2 text-left text-xs transition-colors " + (galaxyScienceOverlay ? "border-cyan-300 bg-cyan-50 text-cyan-950" : "border-slate-200 bg-slate-50 text-slate-600") },
                 React.createElement("span", null, React.createElement("span", { className: "block font-black" }, __alloT('stem.galaxy.science_overlay_title', 'Science labels')), React.createElement("span", { className: "block text-[11px] opacity-75" }, __alloT('stem.galaxy.science_overlay_sub', 'Connect visible features to the evidence they provide.'))),
-                React.createElement("span", { className: "rounded-full px-2 py-1 text-[11px] font-black", style: { background: galaxyScienceOverlay ? activeObserve.accent : '#e2e8f0', color: galaxyScienceOverlay ? '#ffffff' : '#475569' } }, galaxyScienceOverlay ? __alloT('stem.galaxy.overlay_on', 'On') : __alloT('stem.galaxy.overlay_off', 'Off'))
+                React.createElement("span", { className: "rounded-full px-2 py-1 text-[11px] font-black", style: { background: galaxyScienceOverlay ? '#334155' : '#e2e8f0', color: galaxyScienceOverlay ? '#f8fafc' : '#475569' } }, galaxyScienceOverlay ? __alloT('stem.galaxy.overlay_on', 'On') : __alloT('stem.galaxy.overlay_off', 'Off'))
               ),
               React.createElement("div", { className: "grid grid-cols-2 gap-2" },
 

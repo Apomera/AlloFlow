@@ -55,6 +55,18 @@ conversation working directory is the Skill directory.
    - `extract-office --source X` — paragraph/slide text from `.docx`/`.pptx`
      so a plan can be authored without vision. Tables, images, and text boxes
      are NOT extracted; read the document for them.
+   - `extract-text --source X --ordered --include-text` — best-effort
+     READING-ORDER text (lines grouped by position, top-down per page). The
+     default (unordered) channel reports object order and stays the recall
+     reference; use `--ordered` when authoring so paragraph order and page
+     boundaries are not guessed from shuffled text. Multi-column pages may
+     interleave; compare both channels when in doubt.
+   - `extract-annotations --source X` — every link annotation per page: URI
+     links AND internal GoTo links (footnote markers, cross-references).
+     ALWAYS run this while authoring: a source whose footnote markers are
+     internal links must keep that navigation in the plan (see block `id`
+     below), and written-out URLs should keep the scheme the annotation
+     actually carries.
 4. Read every source page using the host's native document and vision
    capabilities. Preserve the source wording, reading order, headings, lists,
    tables, links, page boundaries, and meaningful images. Do not summarize or
@@ -86,6 +98,21 @@ conversation working directory is the Skill directory.
    (null to skip a row), each an array with one entry per cell (null to skip a
    cell). The same exact-text rule applies per cell. Column headers stay plain
    text — header semantics already carry their emphasis.
+
+   Carry the source's **in-document links** with block ids: any content block
+   may declare `"id": "note-1"` (lowercase `[a-z][a-z0-9-]*`, unique,
+   `main-content`/`alloflow-*` reserved), and a run may then use
+   `"href": "#note-1"`. Validation rejects a `#target` with no declared id, so
+   a rebuilt link can never navigate nowhere. Use this wherever
+   `extract-annotations` shows internal GoTo links — typically footnote
+   markers — so navigation the source really carries survives the rebuild.
+
+   The plan's `review_notes` are rendered into the accessible HTML (and the
+   tagged PDF) as a clearly-marked final "Remediation notes" section, so every
+   disclosed transformation travels with the deliverable itself, where the
+   independent verifier and the reader can see it. Write them as complete,
+   reader-facing sentences, in the document's language when the audience needs
+   that.
 
 For a document too long to read and author in one session, author it in
 TRANCHES: each session writes a complete plan file covering the contiguous
@@ -139,6 +166,24 @@ For a folder of documents, author one plan per document, list the pairs in a
 manifest (`{"items": [{"source": ..., "plan": ...}, ...]}`, at most 60), and
 run `batch-remediate --manifest M --out-dir D`. Report the per-file scoreboard
 it returns — every failure by name — never just "done".
+
+When the run will be reviewed by an administrator or accessibility
+coordinator, finish with:
+
+   ```text
+   python "<skill-dir>/scripts/alloflow_portable.py" summary-report \
+     --run-dir "<out-dir>" [--before-validation before.json] \
+     [--verification verification-report.json]
+   ```
+
+   It folds the run's stamped evidence (accessibility report, optional
+   before-validation from `validate-pdf` on the ORIGINAL file, optional
+   verification report, privacy receipt) into one self-contained
+   plain-language HTML page (`*-evidence-summary.html`) that can be emailed
+   or filed without any technical tooling. It adds nothing: every figure is
+   read from the artifacts, and the no-compliance-claim language is carried
+   through. Running `validate-pdf` on the original first gives the page a
+   real before/after row.
 
 For a translated or plain-language copy, author a second plan from the same
 source with `document.variant` set to `"translated"` or `"simplified"`, a

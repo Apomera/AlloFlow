@@ -278,9 +278,26 @@ describe('Geometry Sandbox visual clarity', () => {
     expect(source).toContain('state.H = Math.abs(');
     expect(source).toContain('if (uvCos > 0.001) return null');
     expect(source).toContain('if (Math.abs(vec3Mag(extrusion) - state.H) > 0.001) return null');
-    expect(source).toContain("var launchState = mode === 'stretch' ? geoImmersiveLaunchState(selectedForImmersive) : null");
-    expect(source).toContain("url += '&' + key + '=' + encodeURIComponent(launchState[key])");
-    expect(source).toContain("immersiveBase = window.location.origin + '/immersive_geometry/immersive_geometry.html'");
-    expect(source).toContain("var url = immersiveBase + '?v=2&source=geosandbox'");
+    expect(source).toContain('function geoImmersiveLabUrl(locationLike, mode, selectedObject)');
+    expect(source).toContain("params.push(key + '=' + encodeURIComponent(launchState[key]))");
+    expect(source).toContain("immersiveBase = immersiveOrigin + '/immersive_geometry/immersive_geometry.html'");
+    expect(source).toContain("var url = geoImmersiveLabUrl(window.location, mode, selectedForImmersive)");
+    expect(source).toContain('function geoOpenImmersiveLab(url, environment)');
+    expect(source).toContain("mode: 'same-window', reason: 'popup-blocked'");
+    expect(source).toContain("addToast(fallbackNotice, 'info')");
+    expect(source).toContain("addToast(blockedNotice, 'error')");
+  });
+
+  it('shows a visible startup and recovery state for the immersive scene', () => {
+    const immersive = read(IMMERSIVE_SOURCE_FILE);
+
+    expect(immersive).toContain('id="immersiveBootStatus" data-state="loading" role="status"');
+    expect(immersive).toContain('id="immersiveBootReload" type="button" hidden');
+    expect(immersive).toContain('window.__alloImmersiveBoot = {');
+    expect(immersive).toContain("scene.addEventListener('renderstart'");
+    expect(immersive).toContain('markComponentReady');
+    expect(immersive).toContain("panel.setAttribute('role', 'alert')");
+    expect(immersive).toContain("figure.addEventListener('componentinitialized'");
+    expect(immersive).toContain("event.detail.name === 'stretch-lab'");
   });
 });

@@ -71,7 +71,7 @@ export async function bootAlloFlow(page: Page, mode: 'learning' | 'full' = 'lear
 /** Click STEM Lab tile from the Learning Tools landing. Returns when modal is open. */
 export async function openStemLab(page: Page): Promise<void> {
   // STEM Lab tile in Learning Tools landing
-  const tile = page.getByRole('button', { name: /STEM Lab/i }).first();
+  const tile = page.getByRole('button', { name: /STEAM Lab/i }).first();
   await tile.waitFor({ state: 'visible', timeout: 8000 }).catch(() => {});
   await tile.click({ force: true });
   await page.waitForTimeout(2500);

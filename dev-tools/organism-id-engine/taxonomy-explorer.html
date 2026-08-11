@@ -1,0 +1,322 @@
+<style>
+  :root {
+    --paper:#E9EDE6; --card:#F5F8F1; --card-2:#EEF2E9;
+    --ink:#16201A; --ink-soft:#48544A; --ink-faint:#727D6F;
+    --border:#D3DACC; --border-strong:#BFC8B5;
+    --accent:#2F6B57; --accent-soft:#4E8A74;
+    --deadly:#AF2620; --contact:#BC5E15; --mild:#8F6A08; --info:#3C6B8C; --safe:#3E7D5A;
+    --deadly-bg:#F6E3E0; --contact-bg:#F7E9DB; --mild-bg:#F3EDD6; --info-bg:#E3ECF1;
+    --shadow:0 1px 2px rgba(20,30,22,.06), 0 10px 30px rgba(20,30,22,.07);
+    --mono:'SF Mono','Cascadia Code',Consolas,ui-monospace,monospace;
+    --serif:Georgia,'Iowan Old Style',Palatino,'Book Antiqua',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --paper:#0F130E; --card:#161B14; --card-2:#1C2218; --ink:#E6EADF; --ink-soft:#AEB6A6; --ink-faint:#7F897A;
+      --border:#2A3222; --border-strong:#3B4530; --accent:#66BB9D; --accent-soft:#539A80;
+      --deadly:#EC6155; --contact:#E68A41; --mild:#DEB04A; --info:#78ABCD; --safe:#66BB9D;
+      --deadly-bg:#291613; --contact-bg:#281A0F; --mild-bg:#241F0E; --info-bg:#132029;
+      --shadow:0 1px 2px rgba(0,0,0,.45), 0 12px 34px rgba(0,0,0,.38); }
+  }
+  :root[data-theme="light"] { --paper:#E9EDE6; --card:#F5F8F1; --card-2:#EEF2E9; --ink:#16201A; --ink-soft:#48544A; --ink-faint:#727D6F;
+    --border:#D3DACC; --border-strong:#BFC8B5; --accent:#2F6B57; --accent-soft:#4E8A74;
+    --deadly:#AF2620; --contact:#BC5E15; --mild:#8F6A08; --info:#3C6B8C; --safe:#3E7D5A;
+    --deadly-bg:#F6E3E0; --contact-bg:#F7E9DB; --mild-bg:#F3EDD6; --info-bg:#E3ECF1; }
+  :root[data-theme="dark"] { --paper:#0F130E; --card:#161B14; --card-2:#1C2218; --ink:#E6EADF; --ink-soft:#AEB6A6; --ink-faint:#7F897A;
+    --border:#2A3222; --border-strong:#3B4530; --accent:#66BB9D; --accent-soft:#539A80;
+    --deadly:#EC6155; --contact:#E68A41; --mild:#DEB04A; --info:#78ABCD; --safe:#66BB9D;
+    --deadly-bg:#291613; --contact-bg:#281A0F; --mild-bg:#241F0E; --info-bg:#132029; }
+
+  * { box-sizing:border-box; }
+  body { margin:0; }
+  .wrap { font-family:var(--sans); color:var(--ink);
+    background:radial-gradient(120% 70% at 50% -8%, color-mix(in srgb, var(--accent) 7%, var(--paper)) 0%, var(--paper) 55%);
+    min-height:100vh; padding:clamp(18px,4vw,48px) clamp(14px,4vw,22px); line-height:1.55; -webkit-font-smoothing:antialiased; }
+  .shell { max-width:940px; margin:0 auto; }
+
+  .top { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:20px; }
+  .brand { display:flex; gap:13px; align-items:center; }
+  .mark { width:46px; height:46px; flex:none; border-radius:12px; display:grid; place-items:center; font-size:23px; background:var(--card); border:1px solid var(--border); box-shadow:var(--shadow); }
+  .eyebrow { font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent); margin:0 0 3px; font-weight:600; }
+  h1 { font-size:1.5rem; margin:0; font-weight:640; letter-spacing:-.015em; text-wrap:balance; }
+  .tagline { margin:5px 0 0; color:var(--ink-soft); font-size:.92rem; max-width:52ch; }
+  .mock-chip { font-family:var(--mono); font-size:11px; color:var(--ink-soft); background:var(--card); border:1px dashed var(--border-strong); border-radius:999px; padding:6px 11px; white-space:nowrap; }
+
+  .tabs { display:flex; gap:7px; flex-wrap:wrap; margin-bottom:18px; border-bottom:1px solid var(--border); padding-bottom:14px; }
+  .tab { font-family:var(--sans); font-size:.88rem; font-weight:540; cursor:pointer; background:var(--card); color:var(--ink-soft);
+    border:1px solid var(--border); border-radius:10px; padding:8px 15px; transition:border-color .15s,color .15s,background .15s; }
+  .tab:hover { color:var(--ink); border-color:var(--border-strong); }
+  .tab[aria-selected="true"] { color:var(--ink); border-color:var(--accent); background:color-mix(in srgb, var(--accent) 9%, var(--card)); }
+  .tab:focus-visible, .node:focus-visible, .exp-head:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+
+  .legend { display:flex; gap:14px; flex-wrap:wrap; margin:0 0 16px; font-family:var(--mono); font-size:10.5px; letter-spacing:.03em; color:var(--ink-soft); }
+  .legend span { display:inline-flex; align-items:center; gap:6px; }
+  .swatch { width:10px; height:10px; border-radius:3px; }
+
+  /* explorer layout */
+  .explorer { display:grid; grid-template-columns:1fr 300px; gap:20px; align-items:start; }
+  .treewrap { min-width:0; }
+  .detail { position:sticky; top:16px; background:var(--card); border:1px solid var(--border); border-radius:13px; padding:16px; box-shadow:var(--shadow); }
+
+  /* tree */
+  .tree, .tree ul { list-style:none; margin:0; padding:0; }
+  .tree ul { margin-left:15px; border-left:1px solid var(--border); padding-left:8px; }
+  .node { display:flex; align-items:center; gap:8px; padding:4px 8px; border-radius:8px; cursor:pointer; border:1px solid transparent; width:100%; text-align:left; background:none; font-family:inherit; color:inherit; }
+  .node:hover { background:var(--card-2); }
+  .node.sel { border-color:var(--accent); background:color-mix(in srgb,var(--accent) 8%, var(--card)); }
+  .caret { width:14px; flex:none; color:var(--ink-faint); font-size:10px; transition:transform .15s; }
+  .node.collapsed .caret { transform:rotate(-90deg); }
+  .node .nm { font-size:.95rem; }
+  .node .nm.it { font-family:var(--serif); font-style:italic; }
+  .node .rk { font-family:var(--mono); font-size:9px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); }
+  .tier-dot { width:9px; height:9px; border-radius:50%; flex:none; }
+  .badge { font-family:var(--mono); font-size:8.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; padding:1px 5px; border-radius:4px; border:1px solid; }
+  li.hidden > ul { display:none; }
+
+  /* detail panel */
+  .detail .dnm { font-size:1.15rem; font-weight:640; margin:0; }
+  .detail .dnm.it { font-family:var(--serif); font-style:italic; font-weight:500; }
+  .detail .dsub { font-family:var(--mono); font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); margin:3px 0 12px; }
+  .detail .drow { font-size:.85rem; color:var(--ink-soft); margin:9px 0; }
+  .detail .drow b { color:var(--ink); font-weight:600; }
+  .detail .tierline { display:inline-flex; align-items:center; gap:7px; margin:2px 0 6px; }
+  .detail .note { font-size:.83rem; color:var(--ink); background:color-mix(in srgb,var(--accent) 8%, transparent); border:1px solid color-mix(in srgb,var(--accent) 22%, var(--border)); border-radius:9px; padding:9px 11px; margin-top:11px; }
+  .detail .ex { font-family:var(--serif); font-style:italic; font-size:.85rem; }
+  .detail .placeholder { color:var(--ink-faint); font-size:.86rem; }
+
+  /* categories view */
+  .catgrid { display:grid; gap:14px; }
+  .catblock { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:15px 16px; box-shadow:var(--shadow); border-left:4px solid var(--sev,var(--accent)); }
+  .catblock h3 { margin:0 0 4px; font-size:1rem; display:flex; align-items:center; gap:9px; }
+  .catblock .cd { font-size:.85rem; color:var(--ink-soft); margin:0 0 10px; }
+  .chips { display:flex; flex-wrap:wrap; gap:7px; }
+  .chip { font-size:.8rem; background:var(--card-2); border:1px solid var(--border); border-radius:999px; padding:3px 10px; }
+  .chip .it { font-family:var(--serif); font-style:italic; }
+  .groupnote { font-family:var(--mono); font-size:10px; color:var(--accent); margin-top:9px; }
+
+  /* lookalikes view */
+  .edge { display:grid; grid-template-columns:1fr auto 1fr; gap:12px; align-items:center; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:13px 15px; box-shadow:var(--shadow); margin-bottom:11px; }
+  .edge .side { min-width:0; }
+  .edge .lbl { font-family:var(--mono); font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); }
+  .edge .cn { font-weight:560; font-size:.94rem; }
+  .edge .cs { font-family:var(--serif); font-style:italic; color:var(--ink-soft); font-size:.85rem; }
+  .edge .vs { font-family:var(--mono); font-size:10px; color:var(--ink-faint); text-align:center; }
+  .edge .vs .arrow { display:block; font-size:15px; color:var(--sev); }
+  .edge.deadly { --sev:var(--deadly); } .edge.contact { --sev:var(--contact); } .edge.mild { --sev:var(--mild); } .edge.info { --sev:var(--info); }
+  .edge .danger .cn { color:var(--sev); }
+  .edge .tell { grid-column:1/-1; font-size:.82rem; color:var(--ink-soft); border-top:1px dashed var(--border); padding-top:8px; margin-top:3px; }
+
+  /* explainer */
+  .intro { font-size:.95rem; color:var(--ink-soft); margin:0 0 16px; max-width:66ch; }
+  .exp { display:grid; gap:11px; }
+  .expcard { background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden; box-shadow:var(--shadow); }
+  .exp-head { width:100%; text-align:left; background:none; border:none; font-family:inherit; color:inherit; cursor:pointer; padding:15px 16px; display:flex; align-items:center; gap:12px; }
+  .exp-head:hover { background:var(--card-2); }
+  .exp-head .ix { font-family:var(--mono); font-size:11px; color:var(--accent); font-weight:700; }
+  .exp-head h3 { margin:0; font-size:1.02rem; font-weight:600; flex:1; }
+  .exp-head .tog { color:var(--ink-faint); font-size:13px; transition:transform .15s; }
+  .expcard.open .exp-head .tog { transform:rotate(45deg); }
+  .exp-body { padding:0 16px 16px; display:none; }
+  .expcard.open .exp-body { display:block; }
+  .exp-body p { margin:0 0 10px; font-size:.9rem; color:var(--ink-soft); }
+  .exp-body p:last-child { margin-bottom:0; }
+  .exp-body b { color:var(--ink); }
+  .exp-body .eg { font-family:var(--serif); font-style:italic; }
+  .exp-body .callout { background:color-mix(in srgb,var(--accent) 8%, transparent); border-left:3px solid var(--accent); border-radius:0 8px 8px 0; padding:9px 12px; font-size:.87rem; color:var(--ink); margin:4px 0 10px; }
+
+  .foot { margin-top:22px; padding-top:14px; border-top:1px solid var(--border); font-size:.8rem; color:var(--ink-faint); }
+  .hidden-tab { display:none; }
+  @media (max-width:720px) { .explorer { grid-template-columns:1fr; } .detail { position:static; order:-1; } .edge { grid-template-columns:1fr; } .edge .vs { justify-self:start; } }
+  @media (prefers-reduced-motion:reduce) { .caret,.exp-head .tog { transition:none; } }
+</style>
+
+<main class="wrap">
+  <div class="shell">
+    <header class="top">
+      <div class="brand">
+        <span class="mark" aria-hidden="true">🌳</span>
+        <div>
+          <p class="eyebrow">AlloFlow · STEM Lab</p>
+          <h1>Taxonomy Explorer</h1>
+          <p class="tagline">The tree of life, its hazard categories and lookalike groupings — and an honest look at why classifying organisms is genuinely hard.</p>
+        </div>
+      </div>
+      <span class="mock-chip">Companion to the Organism ID tool</span>
+    </header>
+
+    <div class="tabs" role="tablist" aria-label="Views">
+      <button class="tab" role="tab" data-tab="tree" aria-selected="true">🗺 Tree map</button>
+      <button class="tab" role="tab" data-tab="cats" aria-selected="false">🛡 Categories &amp; groupings</button>
+      <button class="tab" role="tab" data-tab="looks" aria-selected="false">👥 Deadly lookalikes</button>
+      <button class="tab" role="tab" data-tab="learn" aria-selected="false">📖 Taxonomy 101</button>
+    </div>
+
+    <section id="tab-tree">
+      <div class="legend" aria-hidden="true">
+        <span><span class="swatch" style="background:var(--deadly)"></span>Deadly</span>
+        <span><span class="swatch" style="background:var(--contact)"></span>Contact harm</span>
+        <span><span class="swatch" style="background:var(--mild)"></span>Milder</span>
+        <span><span class="swatch" style="background:var(--info)"></span>Teaching note</span>
+        <span><span class="swatch" style="background:var(--safe)"></span>Benign example</span>
+        <span style="color:var(--ink-faint)">· click a taxon for detail · click a rank with ▸ to expand</span>
+      </div>
+      <div class="explorer">
+        <div class="treewrap"><ul class="tree" id="tree"></ul></div>
+        <aside class="detail" id="detail" aria-live="polite"></aside>
+      </div>
+    </section>
+
+    <section id="tab-cats" class="hidden-tab">
+      <p class="intro">Every warning the Organism ID tool can raise comes from one of three rule types keyed to the taxonomy. This is the whole safety graph, by category.</p>
+      <div class="catgrid" id="cats"></div>
+    </section>
+
+    <section id="tab-looks" class="hidden-tab">
+      <p class="intro">The heart of the tool: pairs that look alike but aren't equally safe. Some are close relatives (an edible <span class="eg" style="font-style:italic">Agaricus</span> and a deadly <span style="font-style:italic">Amanita</span> share an order); others resemble each other only by convergent mimicry. Either way, the resemblance is the danger.</p>
+      <div id="looks"></div>
+    </section>
+
+    <section id="tab-learn" class="hidden-tab">
+      <p class="intro">Classification looks tidy — Kingdom, Phylum, Class, down to Species — but the tidiness is a human invention laid over a messy, branching, four-billion-year process. Here's where it strains, and why that matters for telling a snack from a poison.</p>
+      <div class="exp" id="exp"></div>
+    </section>
+
+    <p class="foot">Sample data drawn from the Organism ID tool's hazard graph (GBIF-verified taxa). A learning aid — not a field guide, and never a basis for eating or handling anything wild.</p>
+  </div>
+</main>
+
+<script>
+  const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+  const TIER = { DEADLY: "deadly", CONTACT: "contact", MILD: "mild", INFO: "info", SAFE: "safe" };
+  const tierVar = (t) => `var(--${(TIER[t] || "safe")})`;
+  const isLatin = (r) => r === "genus" || r === "species";
+
+  /*__DATA_START__*/
+  const TREE = {"n":"Life","r":"domain","note":"Every living thing shares a single common ancestor ~3.5–4 billion years ago. The ranks below are labels we add to the branches — useful, but not laws of nature.","kids":[{"n":"Fungi","r":"kingdom","tier":"DEADLY","rule":"category net — never forage wild fungi","note":"Until about 1969, fungi were filed under 'plants.' They're actually closer to animals: both are opisthokonts. A whole kingdom was re-drawn within living memory.","kids":[{"n":"Basidiomycota","r":"phylum","kids":[{"n":"Agaricales","r":"order","note":"Both the edible Agaricus and the deadly Amanita live in this one order — the lethal difference appears only one rank down, at family.","kids":[{"n":"Agaricaceae","r":"family","kids":[{"n":"Agaricus","r":"genus","tier":"SAFE","common":"button / portobello / meadow","group":"amanita","ex":[["Agaricus bisporus","portobello"],["Agaricus campestris","meadow mushroom"]],"note":"The cultivated ones are edible — but wild lookalikes are not, and no photo can tell them apart safely."},{"n":"Chlorophyllum","r":"genus","tier":"DEADLY","common":"green-spored parasol","note":"The single most common cause of mushroom poisoning in North America — mistaken for edible parasols. Tell: green spore print."},{"n":"Lepiota","r":"genus","tier":"DEADLY","common":"some deadly dapperlings","note":"Small and innocuous-looking; several carry the same amatoxins as the death cap."},{"n":"Lycoperdon","r":"genus","tier":"SAFE","common":"puffball","group":"amanita","note":"Edible when uniformly white inside — but a young Amanita 'egg' looks identical from outside. Always cut it open."}]},{"n":"Amanitaceae","r":"family","kids":[{"n":"Amanita","r":"genus","tier":"DEADLY","common":"death cap / destroying angel","group":"amanita","ex":[["Amanita phalloides","death cap"],["Amanita bisporigera","destroying angel"]],"note":"Amatoxins. Onset delayed 6–24h (a false 'all clear'), then liver failure. A single cap can kill; there is no reliable home test. Tell: white spore print + a volva (cup) at the base."}]},{"n":"Pleurotaceae","r":"family","kids":[{"n":"Pleurotus","r":"genus","tier":"SAFE","common":"oyster mushroom","ex":[["Pleurotus ostreatus","oyster"]],"note":"A benign example — yet the tool still raises the blanket 'no wild fungus is safe from a photo' caution. Fail-safe by design."}]},{"n":"Cortinariaceae","r":"family","kids":[{"n":"Cortinarius","r":"genus","tier":"DEADLY","common":"deadly webcap","note":"Orellanine attacks the kidneys with onset delayed DAYS to WEEKS — long after any 'it was fine.'"}]},{"n":"Omphalotus","r":"genus","tier":"MILD","common":"jack-o'-lantern","note":"Glows faintly in the dark; mistaken for chanterelles. True gills (not blunt ridges) give it away."}]},{"n":"Boletales","r":"order","kids":[{"n":"Boletus","r":"genus","tier":"SAFE","common":"porcini / king bolete","note":"Choice edible — but some red-pored, blue-staining relatives cause serious GI illness."}]}]},{"n":"Ascomycota","r":"phylum","kids":[{"n":"Morchella","r":"genus","tier":"SAFE","common":"true morel","note":"Hollow tip-to-base. The 'false morel' (Gyromitra) is chambered inside and contains a rocket-fuel relative."},{"n":"Gyromitra","r":"genus","tier":"DEADLY","common":"false morel"}]}]},{"n":"Animalia","r":"kingdom","kids":[{"n":"Arthropoda","r":"phylum","kids":[{"n":"Insecta","r":"class","kids":[{"n":"Lepidoptera","r":"order","kids":[{"n":"Nymphalidae","r":"family","kids":[{"n":"Danaus","r":"genus","tier":"INFO","common":"monarch","ex":[["Danaus plexippus","monarch"]],"note":"The monarch and the viceroy (Limenitis) mimic each other despite belonging to different genera — resemblance by convergent evolution, not close kinship. Nature's own lookalike lesson."},{"n":"Limenitis","r":"genus","tier":"INFO","common":"viceroy","note":"Tell it from a monarch by the extra black line crossing each hindwing."}]},{"n":"Megalopyge","r":"genus","tier":"CONTACT","common":"puss caterpillar","note":"The fuzziest, most 'pettable'-looking caterpillar hides venomous spines."}]},{"n":"Arachnida","r":"class","kids":[{"n":"Latrodectus","r":"genus","tier":"CONTACT","common":"black widow"},{"n":"Loxosceles","r":"genus","tier":"CONTACT","common":"brown recluse"}]}]}]},{"n":"Chordata","r":"phylum","kids":[{"n":"Squamata","r":"class","tier":"CONTACT","common":"snakes & lizards","note":"GBIF ranks Squamata as a CLASS with an empty 'order' — other systems call it an order, or place snakes in the suborder Serpentes. The tool's snake rule was silently dead until it was re-keyed to class. A live reminder that ranks are conventions, not facts.","kids":[{"n":"Elapidae","r":"family","kids":[{"n":"Micrurus","r":"genus","tier":"DEADLY","common":"coral snake","note":"The 'red-touches-yellow' rhyme only works in the US. Mimicked by harmless king/milk snakes. Never handle any snake from an ID."}]},{"n":"Viperidae","r":"family","kids":[{"n":"Crotalus","r":"genus","tier":"DEADLY","common":"rattlesnake"}]}]},{"n":"Tetraodontidae","r":"family","tier":"DEADLY","common":"pufferfish","note":"Tetrodotoxin — no antidote, and no home preparation makes it safe."},{"n":"Pterois","r":"genus","tier":"CONTACT","common":"lionfish","note":"Showy venomous fin-spines; admire from a distance."}]},{"n":"Mollusca","r":"phylum","kids":[{"n":"Conus","r":"genus","tier":"DEADLY","common":"cone snail","note":"Fires a venomous harpoon; the big ones are nicknamed 'cigarette snails.' A beautiful shell is not worth it."},{"n":"Hapalochlaena","r":"genus","tier":"DEADLY","common":"blue-ringed octopus","note":"Venom with no antivenom; small, in tide pools. The blue rings flash only once it's already provoked."}]},{"n":"Cnidaria","r":"phylum","kids":[{"n":"Physalia","r":"genus","tier":"CONTACT","common":"Portuguese man o' war","note":"Not even one organism — it's a colony of specialised bodies. Stings severely even when beached."}]}]},{"n":"Plantae","r":"kingdom","kids":[{"n":"Apiaceae","r":"family","tier":"DEADLY","common":"carrot / parsley family","rule":"category net — never forage this family","note":"Holds both the wild carrot and the two most lethal plants in North America (water & poison hemlock), which share the same lacy leaves and umbrella flowers.","kids":[{"n":"Daucus","r":"genus","tier":"SAFE","common":"wild carrot / Queen Anne's lace"},{"n":"Cicuta","r":"genus","tier":"DEADLY","common":"water hemlock","note":"Cicutoxin: violent seizures within an hour, often fatal."},{"n":"Conium","r":"genus","tier":"DEADLY","common":"poison hemlock","note":"Coniine — the poison that killed Socrates."},{"n":"Heracleum","r":"genus","tier":"CONTACT","common":"giant hogweed","note":"Sap causes burns and blistering in sunlight; can blind you."}]},{"n":"Apocynaceae","r":"family","kids":[{"n":"Nerium","r":"genus","tier":"DEADLY","common":"oleander","note":"One of the most poisonous common garden plants; even smoke from burning it is dangerous."}]},{"n":"Solanaceae","r":"family","common":"nightshade family","kids":[{"n":"Atropa","r":"genus","tier":"DEADLY","common":"deadly nightshade"},{"n":"Datura","r":"genus","tier":"DEADLY","common":"jimsonweed","note":"Tropane alkaloids; poisonings often follow curiosity about the seeds."}]},{"n":"Euphorbiaceae","r":"family","kids":[{"n":"Ricinus","r":"genus","tier":"DEADLY","common":"castor bean","note":"Seeds contain ricin — a single chewed seed can be lethal, and they're often strung into jewelry."},{"n":"Hippomane","r":"genus","tier":"DEADLY","common":"manchineel","note":"The 'little apple of death.' Its sap burns; standing under it in the rain injures you."}]},{"n":"Plantaginaceae","r":"family","kids":[{"n":"Digitalis","r":"genus","tier":"DEADLY","common":"foxglove","note":"Cardiac glycosides can stop the heart. Its pre-flower rosette mimics edible comfrey."}]}]}]};
+  const EDGES = [["DEADLY",["Portobello / button","Agaricus bisporus"],["Death cap / destroying angel","Amanita phalloides"],"Agaricus is chocolate-brown-spored with no cup; a deadly Amanita is white-spored with a volva at the base. They split at the family level."],["DEADLY",["Puffball","Lycoperdon"],["Amanita 'egg' (button)","Amanita spp."],"Cut it open: a puffball is uniform white; a young Amanita shows a gilled mushroom forming inside."],["DEADLY",["Paddy straw","Volvariella"],["Death cap","Amanita"],"Both rise from a volva — a leading cause of fatal poisonings among foragers who know paddy straw from home."],["DEADLY",["Honey mushroom","Armillaria"],["Funeral bell","Galerina marginata"],"Both cluster on wood; Galerina carries the death cap's amatoxins."],["DEADLY",["True morel","Morchella"],["False morel","Gyromitra esculenta"],"A true morel is hollow throughout; a false morel is chambered and contains a rocket-fuel relative."],["DEADLY",["Wild carrot","Daucus carota"],["Water / poison hemlock","Cicuta · Conium"],"The carrot family's deadly members share the same lacy leaves and umbels — the most lethal foraging confusion on the continent."],["DEADLY",["Wild onion","Allium"],["Death camas","Toxicoscordion"],"A true Allium always smells of onion; death camas does not — but scent is not a life-and-death test."],["DEADLY",["Comfrey","Symphytum"],["Foxglove","Digitalis"],"Before flowering, foxglove's leaf rosette closely resembles comfrey — and foxglove can stop your heart."],["DEADLY",["Milk / king snake","Lampropeltis"],["Coral snake","Micrurus"],"The color rhyme fails outside the US. Never handle any snake from an ID."],["MILD",["Chanterelle","Cantharellus"],["Jack-o'-lantern","Omphalotus"],"True chanterelles have blunt forking ridges; the toxic mimic has true, sharp gills and grows on wood."],["CONTACT",["Cow parsnip","Heracleum maximum"],["Giant hogweed","Heracleum mantegazzianum"],"Younger hogweed resembles harmless cow parsnip; its sap burns and blisters in sunlight."],["INFO",["Monarch","Danaus plexippus"],["Viceroy","Limenitis archippus"],"A mimicry pair from different genera — look for the viceroy's extra hindwing line. (No hazard — a teaching case.)"]];
+  const EXPLAIN = [["Ranks are conventions, not facts",["<p>Kingdom, phylum, class, order, family, genus, species — the ladder feels absolute, but the rungs are human agreements about where to draw lines on a continuously branching tree. Different authorities draw them differently.</p>","<div class='callout'>Real example from this very tool: <b>GBIF ranks Squamata (snakes & lizards) as a <i>class</i></b>, leaving the 'order' field empty. Other systems call Squamata an order, and place snakes in the suborder Serpentes. Our snake-safety rule was silently dead until we re-keyed it to <i>class</i> — because a rank is a label, and labels disagree.</div>","<p>The number of ranks isn't fixed either: biologists sprinkle in super-, sub-, and infra- ranks whenever the seven aren't enough.</p>"]],["Three ways to draw the same tree",["<p><b>Linnaean ranks</b> (1735) sort life into nested boxes. <b>Cladistics</b> ignores rank and groups strictly by shared ancestry — every group must contain an ancestor and <i>all</i> its descendants. By that rule, 'reptiles' isn't a real group unless you include birds, and 'fish' isn't one unless you include us.</p>","<p><b>The three-domain system</b> (Bacteria, Archaea, Eukarya) reorganised the top of the tree in 1990 around molecular data, demoting the old 'five kingdoms.' GBIF's backbone — what the ID tool resolves against — is yet another synthesis, stitched from many sources.</p>","<div class='callout'>None of these is 'wrong.' They answer different questions: how do we file it, versus how is it related?</div>"]],["What even is a species?",["<p>The word does a lot of quiet work. The <b>biological</b> species concept says a species is a group that interbreeds — but that fails for anything asexual, for fossils, and for organisms that hybridise. The <b>morphological</b> concept sorts by appearance — but <b>cryptic species</b> look identical yet can't interbreed, and a single species can look wildly different by age, sex, or season.</p>","<p><b>Ring species</b> break it outright: neighbouring populations around a ring all interbreed, except where the two ends meet — so they're one species and two at the same time.</p>","<div class='callout'>This is exactly why a photo ID has honest limits: many organisms simply cannot be told apart by eye, which is why the tool shows a <i>range</i> of candidates and narrows confidence down the ladder rather than faking a single answer.</div>"]],["The organisms that break the boxes",["<p><b>Fungi</b> were classified as plants until ~1969; they're closer to animals. <b>Lichens</b> aren't one organism at all — a fungus and an alga (or cyanobacterium) living as one. <b>Viruses</b> may not even be 'alive,' and sit awkwardly outside the tree. Bacteria swap genes sideways by <b>horizontal gene transfer</b>, so their 'tree' is really a web.</p>","<p>And charismatic misfits abound: the <b>platypus</b> (a mammal that lays eggs), the <b>red panda</b> (reshuffled among bears, raccoons, and finally its own family), <b>whales</b> (hoofed mammals nested inside the group that includes hippos).</p>"]],["When lookalikes aren't relatives",["<p><b>Convergent evolution</b> makes unrelated organisms resemble each other because the same problem has the same good solutions. <b>Mimicry</b> takes it further: harmless species evolve to copy dangerous ones, or two defended species converge on one warning look.</p>","<div class='callout'>This is the whole reason the Organism ID tool leads with safety. A resemblance can jump across huge evolutionary distances — so 'it looks like the edible one' is never enough. The monarch and viceroy make the lesson friendly; the edible mushroom and its deadly twin make it deadly serious.</div>","<p>So classification isn't trivia. Knowing <i>how confidently</i> we can place an organism — and where the tree is genuinely uncertain — is the difference between a snack and a poisoning.</p>"]]];
+  /*__DATA_END__*/
+
+  // ---------- render: tree ----------
+  const detail = document.getElementById("detail");
+  const clearDetail = () => { detail.innerHTML = `<p class="placeholder">Select a taxon to see its rank, any hazards, example organisms, and notes.</p>`; };
+
+  function showDetail(node) {
+    const t = node.tier;
+    const tierName = { DEADLY: "Deadly", CONTACT: "Contact harm", MILD: "Milder hazard", INFO: "Teaching note", SAFE: "Benign example" }[t];
+    let h = `<p class="dnm${isLatin(node.r) ? " it" : ""}">${esc(node.n)}</p><p class="dsub">${esc(node.r)}${node.common ? " · " + esc(node.common) : ""}</p>`;
+    if (t) h += `<div class="tierline"><span class="tier-dot" style="background:${tierVar(t)}"></span><b style="color:${tierVar(t)}">${tierName}</b></div>`;
+    if (node.rule) h += `<p class="drow"><b>Rule:</b> ${esc(node.rule)}</p>`;
+    if (node.group) h += `<p class="drow"><b>Lookalike group:</b> ${esc(node.group)} — collapses with its siblings into one warning.</p>`;
+    if (node.ex) h += `<p class="drow"><b>Examples:</b> ${node.ex.map((e) => `<span class="ex">${esc(e[0])}</span> (${esc(e[1])})`).join(", ")}</p>`;
+    if (node.note) h += `<div class="note">${esc(node.note)}</div>`;
+    detail.innerHTML = h;
+  }
+
+  const nodeIndex = new Map();
+  function renderTree(node, depth = 0) {
+    const li = document.createElement("li");
+    const btn = document.createElement("button");
+    btn.className = "node" + (node.kids && depth >= 2 ? " collapsed" : "");
+    btn.type = "button";
+    const hasKids = !!(node.kids && node.kids.length);
+    btn.innerHTML =
+      `<span class="caret">${hasKids ? "▸" : "·"}</span>` +
+      (node.tier ? `<span class="tier-dot" style="background:${tierVar(node.tier)}"></span>` : `<span class="tier-dot" style="background:transparent"></span>`) +
+      `<span class="nm${isLatin(node.r) ? " it" : ""}">${esc(node.n)}</span>` +
+      `<span class="rk">${esc(node.r)}</span>`;
+    li.appendChild(btn);
+    nodeIndex.set(String(node.n).toLowerCase(), { li, btn, node });
+    let childUl = null;
+    if (hasKids) {
+      childUl = document.createElement("ul");
+      node.kids.forEach((k) => childUl.appendChild(renderTree(k, depth + 1)));
+      if (depth >= 2) li.classList.add("hidden");
+      li.appendChild(childUl);
+    }
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".node.sel").forEach((n) => n.classList.remove("sel"));
+      btn.classList.add("sel");
+      showDetail(node);
+      if (hasKids) { li.classList.toggle("hidden"); btn.classList.toggle("collapsed"); }
+    });
+    return li;
+  }
+  const treeRoot = document.getElementById("tree");
+  TREE.kids.forEach((k) => treeRoot.appendChild(renderTree(k, 1)));
+  // expand kingdoms by default (depth 1 shown), collapse deeper handled above
+  clearDetail();
+  showDetail(TREE);
+
+  // ---------- render: categories ----------
+  function collect(pred) {
+    const out = [];
+    (function walk(n) { if (pred(n)) out.push(n); (n.kids || []).forEach(walk); })(TREE);
+    return out;
+  }
+  const chip = (n) => `<span class="chip"><span class="${isLatin(n.r) ? "it" : ""}">${esc(n.n)}</span></span>`;
+  const catBlocks = [
+    ["DEADLY", "Deadly", "Lethal if eaten, or venom that can kill. Gets the blocking red interstitial.", (n) => n.tier === "DEADLY"],
+    ["CONTACT", "Contact harm", "Injures on contact — sap, spines, stings, venom to avoid handling.", (n) => n.tier === "CONTACT"],
+    ["MILD", "Milder hazards", "Makes you ill, rarely lethal — still look-only.", (n) => n.tier === "MILD"],
+    ["INFO", "Teaching notes", "No hazard — flagged to teach observation (e.g. mimicry).", (n) => n.tier === "INFO"],
+    ["SAFE", "Benign examples", "Harmless or edible when cultivated — shown to anchor the contrast (the tool still never clears wild ones).", (n) => n.tier === "SAFE"],
+  ];
+  document.getElementById("cats").innerHTML = catBlocks.map(([key, title, desc, pred]) => {
+    const items = collect(pred);
+    const groups = [...new Set(items.map((n) => n.group).filter(Boolean))];
+    return `<div class="catblock" style="--sev:${tierVar(key)}">
+      <h3><span class="tier-dot" style="background:${tierVar(key)}"></span>${title} <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);font-weight:400">${items.length}</span></h3>
+      <p class="cd">${desc}</p>
+      <div class="chips">${items.map(chip).join("")}</div>
+      ${groups.length ? `<p class="groupnote">◇ lookalike group “${groups.join("”, “")}” collapses these into one banner</p>` : ""}
+    </div>`;
+  }).join("");
+
+  // ---------- render: lookalikes ----------
+  document.getElementById("looks").innerHTML = EDGES.map(([tier, benign, danger, tell]) => `
+    <div class="edge ${TIER[tier]}">
+      <div class="side"><div class="lbl">looks like</div><div class="cn">${esc(benign[0])}</div><div class="cs">${esc(benign[1])}</div></div>
+      <div class="vs"><span class="arrow">⇄</span>${esc(tier)}</div>
+      <div class="side danger"><div class="lbl">but could be</div><div class="cn">${esc(danger[0])}</div><div class="cs">${esc(danger[1])}</div></div>
+      <div class="tell"><b>Tell:</b> ${esc(tell)}</div>
+    </div>`).join("");
+
+  // ---------- render: explainer ----------
+  document.getElementById("exp").innerHTML = EXPLAIN.map(([title, paras], i) => `
+    <div class="expcard${i === 0 ? " open" : ""}">
+      <button class="exp-head" type="button" aria-expanded="${i === 0}"><span class="ix">${String(i + 1).padStart(2, "0")}</span><h3>${esc(title)}</h3><span class="tog">+</span></button>
+      <div class="exp-body">${paras.join("")}</div>
+    </div>`).join("");
+  document.querySelectorAll(".exp-head").forEach((h) => h.addEventListener("click", () => {
+    const card = h.closest(".expcard"); const open = card.classList.toggle("open"); h.setAttribute("aria-expanded", open);
+  }));
+
+  // ---------- tabs ----------
+  const panels = { tree: "tab-tree", cats: "tab-cats", looks: "tab-looks", learn: "tab-learn" };
+  document.querySelectorAll(".tab").forEach((tab) => tab.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach((t) => t.setAttribute("aria-selected", t === tab ? "true" : "false"));
+    Object.values(panels).forEach((id) => document.getElementById(id).classList.add("hidden-tab"));
+    document.getElementById(panels[tab.dataset.tab]).classList.remove("hidden-tab");
+  }));
+
+  // ---------- deep link: #t=Amanita opens that taxon (from the Organism ID tool) ----------
+  function openTaxon(name) {
+    const hit = nodeIndex.get(String(name || "").toLowerCase());
+    if (!hit) return;
+    document.querySelector('.tab[data-tab="tree"]').click();
+    let anc = hit.li.parentElement;
+    while (anc && !anc.classList.contains("tree")) {
+      if (anc.tagName === "LI") { anc.classList.remove("hidden"); anc.querySelector(":scope > .node")?.classList.remove("collapsed"); }
+      anc = anc.parentElement;
+    }
+    document.querySelectorAll(".node.sel").forEach((n) => n.classList.remove("sel"));
+    hit.btn.classList.add("sel");
+    showDetail(hit.node);
+    const smooth = !matchMedia("(prefers-reduced-motion:reduce)").matches;
+    hit.li.scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "center" });
+  }
+  const readHash = () => { const m = location.hash.match(/[#&]t=([^&]+)/); if (m) openTaxon(decodeURIComponent(m[1])); };
+  readHash();
+  window.addEventListener("hashchange", readHash);
+</script>

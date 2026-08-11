@@ -61,13 +61,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     if (document.getElementById('allo-beehive-wcag-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-beehive-wcag-css';
-    st.textContent = '[data-beehive-root="true"] :is(button, summary, a[href], input, select, textarea, canvas[tabindex], [role="tab"], [data-beehive-focus-panel]):focus-visible { outline:3px solid #facc15 !important; outline-offset:3px !important; box-shadow:0 0 0 5px #111827 !important; }' +
-      '[data-beehive-root="true"] :is(button, summary, [role="tab"]) { min-width:24px; min-height:24px; }' +
-      '[data-beehive-root="true"] :is([class~="text-[8px]"], [class~="text-[9px]"], [class~="text-[10px]"]) { font-size:0.75rem !important; line-height:1.35 !important; }' +
+    st.textContent = '[data-beehive-root="true"] :is(button, summary, a[href], input, select, textarea, canvas[tabindex], [role="tab"], [role="radio"], [data-beehive-focus-panel]):focus-visible { outline:3px solid #facc15 !important; outline-offset:3px !important; box-shadow:0 0 0 5px #111827 !important; }' +
+      '[data-beehive-root="true"] :is(button, summary, [role="tab"], [role="radio"]) { min-width:24px; min-height:24px; }' +
+      '[data-beehive-root="true"] :is([class~="text-[10px]"], [class~="text-[10px]"], [class~="text-[10px]"]) { font-size:0.75rem !important; line-height:1.35 !important; }' +
       '[data-beehive-root="true"] [class~="text-[11px]"] { font-size:0.8125rem !important; line-height:1.4 !important; }' +
       '[data-beehive-root="true"] :is(button, summary) { overflow-wrap:anywhere; }' +
-      '[data-beehive-root="true"] :is(button, summary, a[href], input, select, textarea, canvas[tabindex], [role="tab"], [data-beehive-focus-panel]) { scroll-margin-block:72px; }' +
-      '@media (forced-colors:active) { [data-beehive-root="true"] :is(button, summary, a[href], input, select, textarea, canvas[tabindex], [role="tab"], [data-beehive-focus-panel]):focus-visible { outline:3px solid CanvasText !important; box-shadow:none !important; forced-color-adjust:auto; } [data-beehive-root="true"] :is([aria-selected="true"], [aria-pressed="true"]) { border:2px solid Highlight !important; } [data-beehive-root="true"] [role="progressbar"] { border:1px solid CanvasText !important; } [data-beehive-root="true"] [role="progressbar"] > * { background:Highlight !important; forced-color-adjust:none; } }';
+      '[data-beehive-root="true"] :is(button, summary, a[href], input, select, textarea, canvas[tabindex], [role="tab"], [role="radio"], [data-beehive-focus-panel]) { scroll-margin-block:72px; }' +
+      '@media (forced-colors:active) { [data-beehive-root="true"] :is(button, summary, a[href], input, select, textarea, canvas[tabindex], [role="tab"], [role="radio"], [data-beehive-focus-panel]):focus-visible { outline:3px solid CanvasText !important; box-shadow:none !important; forced-color-adjust:auto; } [data-beehive-root="true"] :is([aria-selected="true"], [aria-checked="true"], [aria-pressed="true"]) { border:2px solid Highlight !important; } [data-beehive-root="true"] [role="progressbar"] { border:1px solid CanvasText !important; } [data-beehive-root="true"] [role="progressbar"] > * { background:Highlight !important; forced-color-adjust:none; } }';
     document.head.appendChild(st);
   })();
 
@@ -78,6 +78,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     st.id = 'allo-beehive-visual-css';
     st.textContent =
       '[data-beehive-root="true"] { --bee-accent:#d97706; --bee-accent-rgb:217,119,6; --bee-secondary-rgb:16,185,129; position:relative; isolation:isolate; padding:clamp(.5rem,1.6vw,1rem); border:1px solid rgba(var(--bee-accent-rgb),.18); border-radius:1.75rem; background:radial-gradient(circle at 8% 0%,rgba(var(--bee-accent-rgb),.14),transparent 30rem),radial-gradient(circle at 98% 18%,rgba(var(--bee-secondary-rgb),.10),transparent 28rem),linear-gradient(180deg,rgba(255,251,235,.96),rgba(248,250,252,.92)); box-shadow:0 28px 80px rgba(15,23,42,.12),inset 0 1px 0 rgba(255,255,255,.9); }' +
+      '[data-beehive-root="true"][data-beehive-theme="light"] .text-slate-300,[data-beehive-root="true"][data-beehive-theme="light"] .text-slate-400 { color:#475569 !important; }' +
+      '[data-beehive-root="true"][data-beehive-theme="light"] .text-emerald-500 { color:#047857 !important; }' +
+      '[data-beehive-root="true"][data-beehive-theme="light"] .text-rose-500 { color:#be123c !important; }' +
+      '[data-beehive-root="true"][data-beehive-theme="light"] .text-amber-500 { color:#92400e !important; }' +
+      '[data-beehive-root="true"][data-beehive-theme="light"] .text-yellow-500 { color:#854d0e !important; }' +
+      '[data-beehive-root="true"][data-beehive-theme="light"] .text-orange-500 { color:#9a3412 !important; }' +
+      '[data-beehive-root="true"][data-beehive-theme="light"] .text-purple-500 { color:#6b21a8 !important; }' +
+      '[data-beehive-root="true"][data-beehive-theme="light"] .text-green-500 { color:#166534 !important; }' +
+      '[data-beehive-root="true"][data-beehive-theme="light"] .text-cyan-500 { color:#155e75 !important; }' +
+      '[data-beehive-root="true"][data-beehive-theme="light"] .text-emerald-600 { color:#047857 !important; }' +
+      '[data-beehive-root="true"][data-beehive-theme="light"] .text-amber-600 { color:#92400e !important; }' +
+      '[data-beehive-root="true"][data-beehive-theme="light"] .text-sky-600 { color:#075985 !important; }' +
+      '[data-beehive-root="true"][data-beehive-theme="light"] .text-green-600 { color:#166534 !important; }' +
+      '[data-beehive-root="true"][data-beehive-theme="light"] [data-beehive-inspector="true"] .text-amber-400,[data-beehive-root="true"][data-beehive-theme="light"] [data-beehive-inspector="true"] .text-amber-500 { color:#fbbf24 !important; }' +
+      '[data-beehive-root="true"][data-beehive-theme="light"] [data-beehive-inspector="true"] .text-slate-300 { color:#cbd5e1 !important; }' +
+      '[data-beehive-root="true"][data-beehive-theme="light"] [data-beehive-inspector="true"] .text-slate-400 { color:#94a3b8 !important; }' +
       '[data-beehive-root="true"][data-beehive-theme="dark"] { background:radial-gradient(circle at 8% 0%,rgba(var(--bee-accent-rgb),.18),transparent 30rem),radial-gradient(circle at 98% 18%,rgba(var(--bee-secondary-rgb),.12),transparent 28rem),linear-gradient(180deg,rgba(15,23,42,.98),rgba(2,6,23,.98)); border-color:rgba(var(--bee-accent-rgb),.26); box-shadow:0 30px 90px rgba(2,6,23,.55),inset 0 1px 0 rgba(255,255,255,.06); }' +
       '[data-beehive-root="true"][data-beehive-active-mode="queen"] { --bee-accent:#9333ea; --bee-accent-rgb:147,51,234; --bee-secondary-rgb:244,63,94; }' +
       '[data-beehive-root="true"][data-beehive-active-mode="drone"] { --bee-accent:#4f46e5; --bee-accent-rgb:79,70,229; --bee-secondary-rgb:14,165,233; }' +
@@ -91,8 +107,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       '[data-beehive-theme="dark"] [data-beehive-mode-switcher="true"] { background:rgba(2,6,23,.42) !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 14px 38px rgba(2,6,23,.28); }' +
       '[data-beehive-mode-tab] { position:relative; isolation:isolate; overflow:hidden; transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease; }' +
       '[data-beehive-mode-tab]::after { content:""; position:absolute; left:1rem; right:1rem; bottom:.35rem; height:.22rem; border-radius:999px; background:linear-gradient(90deg,rgba(var(--bee-accent-rgb),.35),rgb(var(--bee-accent-rgb)),rgba(var(--bee-secondary-rgb),.8)); transform:scaleX(0); transition:transform .22s ease; transform-origin:center; }' +
-      '[data-beehive-mode-tab][aria-selected="true"] { transform:translateY(-2px); box-shadow:0 16px 34px rgba(var(--bee-accent-rgb),.16) !important; }' +
-      '[data-beehive-mode-tab][aria-selected="true"]::after { transform:scaleX(1); }' +
+      '[data-beehive-mode-tab][aria-checked="true"] { transform:translateY(-2px); box-shadow:0 16px 34px rgba(var(--bee-accent-rgb),.16) !important; }' +
+      '[data-beehive-mode-tab][aria-checked="true"]::after { transform:scaleX(1); }' +
       '[data-beehive-root="true"] :is([data-beehive-command],[data-beehive-learning-brief],[data-beehive-journey-disclosure],[data-beehive-battlefield-dock],[data-beehive-rts-economy],[data-beehive-command-sequence],[data-beehive-touch-controls],[data-beehive-focus-panel]) { box-shadow:0 14px 34px rgba(15,23,42,.075),inset 0 1px 0 rgba(255,255,255,.55); backdrop-filter:blur(12px); }' +
       '[data-beehive-theme="dark"] :is([data-beehive-command],[data-beehive-learning-brief],[data-beehive-journey-disclosure],[data-beehive-battlefield-dock],[data-beehive-rts-economy],[data-beehive-command-sequence],[data-beehive-touch-controls],[data-beehive-focus-panel]) { box-shadow:0 16px 38px rgba(2,6,23,.28),inset 0 1px 0 rgba(255,255,255,.045); }' +
       '[data-beehive-play-coach="true"] { box-shadow:0 12px 28px rgba(var(--bee-accent-rgb),.10),inset 3px 0 0 rgba(var(--bee-accent-rgb),.72); backdrop-filter:blur(12px); }' +
@@ -150,7 +166,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       '[data-beehive-focus-panel] { animation:bee-panel-arrive .22s ease-out both; }' +
       '@keyframes bee-cycle-clock { from{transform:scaleX(0)} to{transform:scaleX(1)} } @keyframes bee-stage-breathe { 0%,100%{opacity:.48} 50%{opacity:.74} } @keyframes bee-live-pulse { 0%,100%{opacity:.66;transform:scale(.86)} 50%{opacity:1;transform:scale(1.08)} } @keyframes bee-progress-sheen { 0%,55%{transform:translateX(-120%)} 85%,100%{transform:translateX(120%)} } @keyframes bee-panel-arrive { from{opacity:0;transform:translateY(-6px) scale(.992)} to{opacity:1;transform:none} } @keyframes bee-build-zone-pulse { 0%,100%{box-shadow:inset 0 0 38px rgba(16,185,129,.10),0 0 18px rgba(16,185,129,.10)} 50%{box-shadow:inset 0 0 48px rgba(16,185,129,.18),0 0 30px rgba(16,185,129,.22)} }' +
       '@media (prefers-reduced-motion:reduce) { [data-beehive-cycle-fill],[data-beehive-rts-live-dot],[data-beehive-stage]::after { animation:none !important; transform:none !important; } }' +
-      '@media (forced-colors:active) { [data-beehive-root="true"],[data-beehive-hero="true"],[data-beehive-mode-switcher="true"],[data-beehive-stage],[data-beehive-stage-chip],[data-beehive-build-zone],[data-beehive-rival-zone],[data-beehive-build-selection],[data-beehive-cycle-track],[data-beehive-beekeeper-paused-overlay],[data-beehive-flight-paused-overlay],[data-flight-envelope-item],[data-beehive-vital],[data-beehive-root="true"] :is([data-beehive-command],[data-beehive-learning-brief],[data-beehive-journey-disclosure],[data-beehive-focus-panel]) { background:Canvas !important; border-color:CanvasText !important; box-shadow:none !important; backdrop-filter:none !important; } [data-beehive-root="true"]::before,[data-beehive-hero="true"]::after,[data-beehive-stage]::after,[data-beehive-root="true"] [role="progressbar"] > *::after { display:none !important; } [data-beehive-cycle-fill] { background:Highlight !important; } [data-beehive-mode-tab][aria-selected="true"] { outline:2px solid Highlight !important; transform:none; } }' +
+      '@media (forced-colors:active) { [data-beehive-root="true"],[data-beehive-hero="true"],[data-beehive-mode-switcher="true"],[data-beehive-stage],[data-beehive-stage-chip],[data-beehive-build-zone],[data-beehive-rival-zone],[data-beehive-build-selection],[data-beehive-cycle-track],[data-beehive-beekeeper-paused-overlay],[data-beehive-flight-paused-overlay],[data-flight-envelope-item],[data-beehive-vital],[data-beehive-root="true"] :is([data-beehive-command],[data-beehive-learning-brief],[data-beehive-journey-disclosure],[data-beehive-focus-panel]) { background:Canvas !important; border-color:CanvasText !important; box-shadow:none !important; backdrop-filter:none !important; } [data-beehive-root="true"]::before,[data-beehive-hero="true"]::after,[data-beehive-stage]::after,[data-beehive-root="true"] [role="progressbar"] > *::after { display:none !important; } [data-beehive-cycle-fill] { background:Highlight !important; } [data-beehive-mode-tab][aria-checked="true"] { outline:2px solid Highlight !important; transform:none; } }' +
       '@media (max-width:639px) { [data-beehive-root="true"] { border-radius:1.25rem; padding:.5rem; } [data-beehive-hero="true"] { min-height:0; } [data-beehive-hero="true"]::after { width:10rem; right:-3rem; top:-7rem; } [data-beehive-mode-tab] { min-height:6.5rem; } [data-beehive-pulse="true"] { grid-template-columns:1fr; gap:.4rem; } [data-beehive-vital] { min-height:0; padding:.65rem .75rem .6rem .9rem; } [data-beehive-stage-chip] { min-height:1.65rem; padding:.25rem .5rem; font-size:.65rem; } [data-beehive-build-zone] > span,[data-beehive-rival-zone] > span { padding:.3rem .45rem; font-size:.6rem; } [data-beehive-stage] { border-radius:1rem !important; } }';
     document.head.appendChild(st);
   })();
@@ -395,7 +411,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       concept: 'What is the waggle dance?',
       description: 'A figure-8 dance performed by returning foragers on vertical comb in the dark hive that encodes distance and direction to a food source (or new nest site).',
       discoverer: 'Karl von Frisch, who shared the 1973 Nobel Prize in Physiology or Medicine for decoding it. He worked it out over decades of patient observation.',
-      significance: 'The only known example of symbolic communication in invertebrates. Bees abstract real-world distances and angles into dance choreography.',
+      significance: 'A landmark example of symbolic referential communication in an invertebrate: bees encode real-world distance and direction in dance choreography.',
     },
     {
       concept: 'The dance components',
@@ -1859,7 +1875,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
   // ─── Apocrypha and trivia ─────────────────────────────────────────────
   var BEE_TRIVIA = [
     { fact: 'A bee\'s wings beat about 230 times per second, so the fundamental of the buzz sits near 230 Hz — roughly B♭ below middle C. Higher harmonics from the snapping wings add the brighter overtones you also hear.' },
-    { fact: 'Honey has been found in 3,000-year-old Egyptian tombs and is still edible — its low water content and acidity prevent microbial growth.' },
+    { fact: 'Properly ripened honey can remain stable for a very long time when sealed and kept dry; absorbed moisture can let osmophilic yeasts ferment it.' },
     { fact: 'A worker bee produces about 1/12 of a teaspoon of honey in her entire 6-week life.' },
     { fact: 'A bee can fly about 15 mph and travel up to 6 miles from the hive (though typical foraging is 2-3 miles).' },
     { fact: 'A colony of bees collectively consumes about 200 lbs of honey per year. They produce another ~100 lbs as surplus that the beekeeper can harvest.' },
@@ -2629,10 +2645,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     pollenConsumePerWorker: 0.00003,
     baseBroodPerDay: 1500,        // max eggs/day at 100% queen health
     broodEmergeRate: 0.05,        // fraction of brood emerging daily (~21-day development)
+    workerDevelopmentDays: 21,    // used to approximate the laying season of emerging adults
+    pollenBroodDependence: 0.65,  // short-term nurse reserves buffer 35% of new brood at zero stores
     baseWorkerMortality: 0.03,    // base daily worker death rate. Was 0.005 = a 200-day summer
                                   // bee, so population ran away to ~90k; a summer worker lives
                                   // about 5 weeks, and 0.03 puts the peak near 60k.
     varroaMortalityDivisor: 50,   // higher = varroa has less mortality impact
+    // Pollen is brood protein, not a decorative second store. When nurses do
+    // not have enough for the day's demand, reduce new brood in proportion to
+    // the shortfall while existing brood consumes the available pollen.
     // ── Starvation (new) ──────────────────────────────────────────────────────
     // Running out of stores used to cost nothing at all: the probe showed a colony sitting at
     // 0 lb through an entire winter and surviving with 68,730 bees. Starvation is the single
@@ -2691,6 +2712,63 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     actionPointsPerDay: 3
   };
 
+  // Shared Drone Flight contract. Runtime gates, instruments, briefing copy,
+  // and tests all read this object so the learner is never taught a target
+  // that differs from the volume the simulation actually accepts.
+  var DRONE_FLIGHT_PARAMS = {
+    dcaMinFt: 100,
+    dcaMaxFt: 130,
+    dcaMarkerFt: 115,
+    dcaDistanceM: 600,
+    timerByDifficulty: { easy: 150, normal: 110, hard: 75 }
+  };
+
+  // Wing beat, shared by every 3D bee in this file (flight avatars, hive
+  // foragers, RTS swarms). A honey bee beats ~230 times a second, far past any
+  // frame rate, so the honest choice is a legible stylised beat rather than a
+  // strobing one: fast enough to read as "buzzing", slow enough to see.
+  // Amplitude tracks effort so the picture and the physics agree.
+  function beatBeeWings(avatar, clock, effort, reduced) {
+    var wings = avatar && avatar.userData && avatar.userData.wings;
+    if (!wings) return;
+    var amp = 0.30 + 0.55 * Math.max(0, Math.min(1, effort == null ? 0.5 : effort));
+    for (var wi = 0; wi < wings.length; wi++) {
+      var w = wings[wi];
+      var swing = reduced ? 0 : Math.sin(clock * 0.055 + w.pair * 0.9) * amp;
+      w.pivot.rotation.z = w.side * (0.16 + swing);
+      w.pivot.rotation.x = reduced ? 0 : Math.sin(clock * 0.055 + w.pair * 0.9 + 1.2) * 0.18;
+    }
+  }
+
+  // Canonical per-colony reset. Cross-run learning artifacts (badges, notebook,
+  // role career records, preferences) intentionally live outside this patch.
+  function bhCreateNewColonyState() {
+    return {
+      day: 0, workers: 10000, brood: 3000, drones: 500, queenHealth: 100,
+      honey: 20, pollen: 15, wax: 5, varroaLevel: 5, diseaseRisk: 0,
+      morale: 80, foragingEfficiency: 70, pesticideExposure: 0, habitat: 50,
+      capacity: 80, winterized: false, score: 0, colonySurvived: true,
+      actionPoints: 3, totalHoney: 0, totalHarvested: 0, totalFlowerVisits: 0,
+      lastHarvestDay: null, lastHarvestSeason: null, lastHarvestYear: null,
+      eventsHandled: 0, weatherEventsHandled: 0, varroaTreats: 0,
+      hygieneActions: 0, conservationsDone: 0, splitsMade: 0, supersAdded: 0,
+      varietals: {}, treatmentsUsed: {}, conservationCounts: {},
+      eventLog: [], history: [], journal: [], yearReviewsSeen: [],
+      activeEvent: null, lastAdvance: null, lastManagement: null,
+      managementTrail: [], pendingTreatment: null, showTreatModal: false,
+      seasonGoals: null, quizOpen: false, quizIdx: 0, quizScore: 0,
+      quizAnswered: 0, quizFeedback: null, quizQuestions: null,
+      inDearth: false, starving: false, lowStores: false,
+      // A new run must never inherit a live clock or stale overlay from the
+      // collapsed colony. Cross-run mastery and user preferences are omitted
+      // intentionally so the caller's merge preserves them.
+      autoAdvance: false, showInspect: false, showBadges: false,
+      showKeys: false, showGuide: false, reflectionIdx: 0,
+      reflectionThink: false, exportedReport: null,
+      exportedReportTitle: null, bkAnim: null
+    };
+  }
+
   // ── Canonical one-day colony simulation (pure, module scope) ──────────────
   // Single source of truth for BOTH advanceDay (single) and advanceDays (batch),
   // which used to be two hand-maintained copies of the same biology that could
@@ -2701,25 +2779,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
   // Returns { next, event } where `next` holds the updated numeric fields and
   // `event` is the hive/disease event that fired this day (or null). The caller
   // owns history, journal, and side effects (toast/sfx/XP).
+  // Persisted classroom data can be old, hand-edited, or partially corrupt.
+  // Normalize before any biological calculation so malformed values cannot
+  // create NaN chains or make out-of-range pesticide exposure more lethal than
+  // the model's documented 100% ceiling.
+  function bhBoundedNumber(value, fallback, min, max) {
+    var n = typeof value === 'number' && isFinite(value) ? value : fallback;
+    return Math.max(min, Math.min(max, n));
+  }
+
   function bhStepColony(s, cfg) {
     var P = cfg.params, sub = cfg.subMods, site = cfg.siteMods, garden = cfg.gardenBonus || 0;
     var rand = cfg.rand || Math.random;
-    var day = s.day || 0;
+    var day = Math.floor(bhBoundedNumber(s.day, 0, 0, 10000000));
     var season = Math.max(0, Math.min(3, Math.floor((day % 120) / 30)));
-    var workers = typeof s.workers === 'number' ? s.workers : 10000;
-    var brood = typeof s.brood === 'number' ? s.brood : 3000;
-    var drones = typeof s.drones === 'number' ? s.drones : 500;
-    var queenHealth = typeof s.queenHealth === 'number' ? s.queenHealth : 100;
-    var honey = typeof s.honey === 'number' ? s.honey : 20;
-    var pollen = typeof s.pollen === 'number' ? s.pollen : 15;
-    var wax = typeof s.wax === 'number' ? s.wax : 5;
-    var varroa = typeof s.varroaLevel === 'number' ? s.varroaLevel : 5;
-    var morale = typeof s.morale === 'number' ? s.morale : 80;
-    var fe = typeof s.foragingEfficiency === 'number' ? s.foragingEfficiency : 70;
-    var habitat = typeof s.habitat === 'number' ? s.habitat : 50;
-    var pest = s.pesticideExposure || 0;
-    var diseaseRisk = typeof s.diseaseRisk === 'number' ? s.diseaseRisk : 0;
-    var capacity = typeof s.capacity === 'number' ? s.capacity : 80;
+    var workers = bhBoundedNumber(s.workers, 10000, 0, 1000000);
+    var brood = bhBoundedNumber(s.brood, 3000, 0, 500000);
+    var drones = bhBoundedNumber(s.drones, 500, 0, 250000);
+    var queenHealth = bhBoundedNumber(s.queenHealth, 100, 0, 100);
+    var honey = bhBoundedNumber(s.honey, 20, 0, 1000000);
+    var pollen = bhBoundedNumber(s.pollen, 15, 0, 1000000);
+    var wax = bhBoundedNumber(s.wax, 5, 0, 1000000);
+    var varroa = bhBoundedNumber(s.varroaLevel, 5, 0, 100);
+    var morale = bhBoundedNumber(s.morale, 80, 0, 100);
+    var fe = bhBoundedNumber(s.foragingEfficiency, 70, 0, 100);
+    var habitat = bhBoundedNumber(s.habitat, 50, 0, 100);
+    var pest = bhBoundedNumber(s.pesticideExposure, 0, 0, 100);
+    var diseaseRisk = bhBoundedNumber(s.diseaseRisk, 0, 0, 100);
+    var capacity = bhBoundedNumber(s.capacity, 80, 0, 1000000);
 
     // Seasonal shape. broodRate is capped at 1.2 so peak laying is 1,800 eggs/day — a real
     // excellent queen tops out near 2,000, and the old 1.5 (2,250/day) drove the runaway
@@ -2766,6 +2853,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     var broodMod = season === 0 ? sub.spring : 1.0;
     var newBrood = Math.round(queenHealth / 100 * P.baseBroodPerDay * sf.broodRate * broodMod);
     var emerging = Math.round(brood * P.broodEmergeRate);
+    // Adult drones used to appear from eggs laid on this same step while those
+    // eggs also entered brood and later emerged as workers. Split the emerging
+    // cohort instead: no double-counting and no instant egg-to-adult jump.
+    // Emerging adults reflect eggs laid about 21 days earlier, not today's
+    // season. This matters at summer/autumn and winter/spring boundaries.
+    var developmentDays = Math.max(1, P.workerDevelopmentDays || 21);
+    var layDayOfYear = day >= developmentDays ? ((day - developmentDays) % 120 + 120) % 120 : dayOfYear;
+    var laySeason = Math.max(0, Math.min(3, Math.floor(layDayOfYear / 30)));
+    var emergingDroneShare = laySeason < 2 ? P.droneBirthRate : 0;
+    var emergingDrones = Math.round(emerging * emergingDroneShare);
+    var emergingWorkers = Math.max(0, emerging - emergingDrones);
     var winterMod = season === 3 ? (1 / sub.winter) : 1.0;
     var dying = Math.round(workers * P.baseWorkerMortality * sf.mortMult * winterMod
       * (winterized ? P.winterizedMortalityMult : 1) * (1 + varroa / P.varroaMortalityDivisor));
@@ -2823,6 +2921,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         if (typeof e.foragingEfficiency === 'number') wFE = Math.max(0, Math.min(100, wFE + e.foragingEfficiency));
         if (typeof e.queenHealth === 'number') wQH = Math.max(0, Math.min(100, wQH + e.queenHealth));
         if (typeof e.diseaseRisk === 'number') newDisease = Math.max(0, Math.min(100, newDisease + e.diseaseRisk));
+        if (typeof e.pesticideExposure === 'number') pest = Math.max(0, Math.min(100, pest + e.pesticideExposure));
       }
     }
 
@@ -2836,6 +2935,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     // feeding larvae before the colony gives up on itself), and morale drops. Winter is far
     // worse because there is no forage to recover into, which is exactly why autumn feeding
     // exists as a practice.
+    // Pollen is brood protein, not a decorative second store. When nurses do
+    // not have enough for the day's demand, reduce new brood in proportion to
+    // the shortfall while existing brood consumes the available pollen.
+    var pollenAvailable = Math.max(0, wPollen + pollenIn);
+    var pollenSupplyRatio = pollenOut > 0 ? Math.max(0, Math.min(1, pollenAvailable / pollenOut)) : 1;
+    var pollenBroodReduced = Math.round(newBrood * (1 - pollenSupplyRatio) * P.pollenBroodDependence);
+    newBrood = Math.max(0, newBrood - pollenBroodReduced);
+    var pollenAfter = Math.max(0, pollenAvailable - pollenOut);
+
     var honeyAfter = Math.max(0, wHoney + nectarIn - honeyOut);
     var starving = honeyAfter <= 0 && honeyOut > 0;
     var starveDeaths = 0, starveBrood = 0;
@@ -2854,11 +2962,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
     var next = {
       day: day + 1,
-      workers: Math.max(0, Math.round(wWorkers + emerging - dying)),
-      brood: Math.max(0, Math.round(wBrood + newBrood - emerging)),
-      drones: Math.max(0, Math.round(drones + (season < 2 ? Math.round(newBrood * P.droneBirthRate) : 0) - dyingD)),
+      workers: Math.min(1000000, Math.max(0, Math.round(wWorkers + emergingWorkers - dying))),
+      brood: Math.min(500000, Math.max(0, Math.round(wBrood + newBrood - emerging))),
+      drones: Math.min(250000, Math.max(0, Math.round(drones + emergingDrones - dyingD))),
       honey: Math.round(honeyAfter * 10) / 10,
-      pollen: Math.round(Math.max(0, wPollen + pollenIn - pollenOut) * 10) / 10,
+      pollen: Math.round(pollenAfter * 10) / 10,
       wax: Math.round(wWax * 10) / 10,
       // One decimal, NOT an integer. Slowing mite growth to a realistic ~0.19/day exposed a
       // rounding trap: Math.round(nv) truncated each day's sub-1.0 gain back to the starting
@@ -2869,8 +2977,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       morale: Math.round(Math.max(0, Math.min(100, morale + md))),
       foragingEfficiency: Math.round(wFE),
       queenHealth: Math.round(wQH),
-      pesticideExposure: Math.max(0, Math.round(pest - P.pesticideDecayPerDay)),
-      diseaseRisk: Math.round(newDisease),
+      pesticideExposure: Math.round(Math.max(0, Math.min(100, pest - P.pesticideDecayPerDay)) * 10) / 10,
+      diseaseRisk: Math.round(newDisease * 10) / 10,
       habitat: habitat,
       capacity: capacity,
       scoreGain: Math.round(nectarIn * 10),
@@ -2888,6 +2996,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       starveBroodLost: starveBrood,
       lowStores: honeyAfter > 0 && honeyAfter < P.lowStoreThreshold,
       inDearth: inDearth,
+      pollenLimited: pollenSupplyRatio < 0.999,
+      pollenBroodReduced: pollenBroodReduced,
       winterized: winterized,
       seasonReserve: (P.seasonReserve || [])[season],
       flowerVisits: flowerVisits
@@ -2947,7 +3057,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     // One table, shared with the harvest gate (SIMULATION_PARAMS.seasonReserve). Two copies of
     // this would drift, and the forecaster promising 60 lb while harvest left 15 is exactly the
     // kind of contradiction that makes a simulation untrustworthy.
-    var reserveNeeded = ((cfg.params && cfg.params.seasonReserve) || [18, 15, 60, 45])[endSeason];
+    var reserveNeeded = ((cfg.params && cfg.params.seasonReserve) || [18, 25, 60, 45])[endSeason];
     var reserveLabel = ['spring buildup', 'the dearth before goldenrod', 'overwintering', 'the rest of winter'][endSeason];
     if (end.honey <= Math.max(8, reserveNeeded * 0.35)) {
       addRisk('honey', 'critical', 'Starvation risk',
@@ -3022,6 +3132,1038 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     };
   }
 
+  // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+  // 3D SCENES FOR THE BEEKEEPER AND QUEEN SIMULATIONS
+  //
+  // The Drone Flight sim already renders a real WebGL world. The other two
+  // simulations were canvas-only, which costs them the two things a hive is
+  // hardest to teach flat: that a Langstroth hive is a STACK you take apart
+  // box by box, and that an RTS "forage frontline" is a place on the ground
+  // rather than a number in a bar.
+  //
+  // Everything that is NOT scene content \u2014 WebGL setup, orbit, picking,
+  // labels, keyboard camera, context-loss recovery, pause-when-unseen, and
+  // the no-WebGL fallback \u2014 belongs to the host shell
+  // (window.StemLab.makeBayViewer), so this file builds geometry only and
+  // there is no third copy of that lifecycle in the codebase.
+  //
+  // The shell owns per-mesh SCALE, emissive and opacity for the registered
+  // group meshes (that is how selection and recede work), so live data is
+  // driven through POSITION, VISIBILITY and inner-child scale in the frame
+  // callback instead. Anything animated here must stay inside a registered
+  // group's children, never on the group itself.
+  // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+  var BEE_3D_NULL_VIEWER = {
+    attach: function () {}, sync: function () {}, nudge: function () {},
+    zoom: function () {}, reset: function () {}, status: function () { return 'failed'; }
+  };
+  // Two different failures used to be reported with one message elsewhere in
+  // the lab: an old host cannot be fixed by retrying the network, and telling
+  // a teacher to check the wifi sends them the wrong way.
+  var BEE_3D_MISSING = null;
+
+  // A small stylised bee used by both scenes. Deliberately not the flight
+  // sim's full avatar: at bay scale a six-legged model is mush, and what has
+  // to read at 40 pixels is "striped body, blurred wings, moving".
+  function build3dMiniBee(THREE, opts) {
+    opts = opts || {};
+    var bodyColor = opts.body || 0xfbbf24;
+    var group = new THREE.Group();
+    var bodyMat = new THREE.MeshPhongMaterial({ color: bodyColor, shininess: 18 });
+    var darkMat = new THREE.MeshPhongMaterial({ color: opts.dark == null ? 0x27201a : opts.dark, shininess: 6 });
+    // Wings stay small and faint on purpose: at bay scale a bright opaque wing
+    // is the largest thing on the model and the bee stops reading as a bee.
+    var wingMat = new THREE.MeshPhongMaterial({ color: 0xeaf4ff, transparent: true, opacity: 0.30, shininess: 60, side: THREE.DoubleSide, depthWrite: false });
+    var abdomen = new THREE.Mesh(new THREE.SphereGeometry(1, 8, 6), bodyMat);
+    abdomen.scale.set(0.030, 0.028, 0.048); abdomen.position.z = 0.028; group.add(abdomen);
+    var thorax = new THREE.Mesh(new THREE.SphereGeometry(1, 8, 6), darkMat);
+    thorax.scale.set(0.030, 0.029, 0.030); thorax.position.z = -0.026; group.add(thorax);
+    var band = new THREE.Mesh(new THREE.SphereGeometry(1, 8, 6), darkMat);
+    band.scale.set(0.031, 0.029, 0.009); band.position.z = 0.030; group.add(band);
+    var wings = [];
+    [-1, 1].forEach(function (side) {
+      var pivot = new THREE.Group();
+      pivot.position.set(0, 0.020, -0.016);
+      var blade = new THREE.Mesh(new THREE.SphereGeometry(1, 6, 5), wingMat);
+      blade.scale.set(0.036, 0.003, 0.016);
+      blade.position.x = side * 0.034;
+      pivot.add(blade); group.add(pivot);
+      wings.push({ pivot: pivot, side: side, pair: 0 });
+    });
+    group.userData.wings = wings;
+    if (opts.scale) group.scale.setScalar(opts.scale);
+    return group;
+  }
+
+  // \u2500\u2500 Beekeeper: the hive as a stack you can take apart \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+  // ── What a comb face says ──────────────────────────────────────────────
+  // Reading a frame is THE beekeeping skill, and the layout is not decorative:
+  //   * the queen lays a solid ellipse in the middle of the frame,
+  //   * nurses pack pollen in a band immediately around the brood,
+  //   * honey is stored in an arch over the top of both,
+  //   * and a failing queen leaves GAPS in the brood — the "spotty pattern"
+  //     that is the first thing an inspector looks for.
+  // Kept as a pure function of position and colony state so the pattern rules
+  // are testable without a GPU, and so the 3D comb and any future 2D diagram
+  // can never drift apart.
+  //
+  // u and v run -1..1 across the comb face; v = +1 is the top bar.
+  function bhCellNoise(u, v) {
+    var n = Math.sin(u * 127.1 + v * 311.7) * 43758.5453;
+    return n - Math.floor(n);
+  }
+  function bhClamp01(value, fallback) {
+    var n = typeof value === 'number' && isFinite(value) ? value : fallback;
+    return Math.max(0, Math.min(1, n));
+  }
+  function bhCombCellRole(u, v, state) {
+    var s = state || {};
+    var brood = bhClamp01(s.broodFill, 0.5);
+    var honey = bhClamp01(s.honeyFill, 0.3);
+    var pollen = bhClamp01(s.pollenLevel, 0.5);
+    var laying = bhClamp01(s.layingRate, 1);
+    // Undrawn foundation at the very edges: bees draw comb from the middle out,
+    // so a young or shrinking colony has bare corners.
+    var drawn = 0.62 + 0.38 * Math.max(brood, honey);
+    if (Math.abs(u) > drawn || Math.abs(v) > drawn) return 'foundation';
+    // Honey arch over the top. It sits ABOVE the brood, never through it.
+    var arch = 0.86 - honey * 0.42;
+    if (v > arch) return honey > 0.05 ? 'honey' : 'empty';
+    // Brood ellipse. Offset downward because the nest sits low on the frame.
+    var e = (u / 0.84) * (u / 0.84) + ((v + 0.16) / 0.70) * ((v + 0.16) / 0.70);
+    // Scales all the way to nothing. An earlier version kept a 0.18 floor so a
+    // starter nest stayed visible, and that floor drew a brood patch on the
+    // HONEY SUPER comb, which is painted with broodFill 0 — above a queen
+    // excluder, whose entire job is that brood cannot get there.
+    var broodEdge = brood * 1.22;
+    if (broodEdge > 0.0001 && e < broodEdge) {
+      // A queen who is failing skips cells. At full laying rate the pattern is
+      // wall to wall; the gaps appear first, long before the count drops.
+      if (bhCellNoise(u * 31, v * 31) > 0.12 + laying * 0.88) return 'empty';
+      // Drone brood sits along the BOTTOM edge of the nest, in larger cells
+      // with domed "bullet" cappings. Worth drawing rather than glossing:
+      // varroa prefer drone brood because drones stay capped three days longer,
+      // which is exactly why drone-comb trapping works as a mite control.
+      if (v < -0.34 && e > broodEdge * 0.44) return 'drone_brood';
+      // Capped brood in the middle, open larvae at the growing edge — the nest
+      // expands outward, so the youngest brood is always on the rim.
+      return e > broodEdge * 0.62 ? 'open_brood' : 'capped_brood';
+    }
+    // Pollen is stored AROUND a nest, so with no nest there is no band — the
+    // same guard, for the same reason.
+    if (broodEdge > 0.0001 && e < broodEdge + 0.34 + pollen * 0.30) return pollen > 0.05 ? 'pollen' : 'empty';
+    return 'empty';
+  }
+  // Pollen is stored by plant, and different plants give different colours —
+  // a "pollen band" in a real hive is a mosaic, not one shade.
+  var BH_POLLEN_COLORS = ['#e8a33d', '#d97706', '#f5d020', '#b45309', '#f97316', '#caa53a'];
+  function bhCombCellColor(role, u, v, contrast) {
+    if (contrast) {
+      if (role === 'capped_brood' || role === 'honey') return '#ffffff';
+      if (role === 'open_brood' || role === 'pollen' || role === 'drone_brood') return '#a0a0a0';
+      return '#303030';
+    }
+    if (role === 'capped_brood') return '#bd8b53';
+    if (role === 'drone_brood') return '#9c6a35';
+    if (role === 'open_brood') return '#efe4c6';
+    if (role === 'honey') return '#f6ecc9';
+    if (role === 'pollen') return BH_POLLEN_COLORS[Math.floor(bhCellNoise(v * 17, u * 17) * BH_POLLEN_COLORS.length) % BH_POLLEN_COLORS.length];
+    if (role === 'foundation') return '#8d7a56';
+    return '#6d4f24';
+  }
+  // Queens are marked with a dot whose colour encodes the year she was reared,
+  // on a five-year international cycle. It is how a beekeeper knows, at a
+  // glance on a crowded frame, both WHICH bee is the queen and HOW OLD she is.
+  var BH_QUEEN_MARK_COLORS = ['#3b82f6', '#f8fafc', '#facc15', '#ef4444', '#22c55e'];
+  var BH_QUEEN_MARK_NAMES = ['blue', 'white', 'yellow', 'red', 'green'];
+  function bhQueenMarkIndex(year) {
+    var y = typeof year === 'number' && isFinite(year) ? Math.floor(year) : 2026;
+    return ((y % 10) % 5 + 5) % 5;
+  }
+
+  var HIVE_3D_PARTS = [
+    { id: 'outer_cover', label: 'Outer cover', color: '#8fa3b8',
+      desc: 'The telescoping lid. It sheds rain and is the first thing off in any inspection \u2014 which is why nothing structural is ever attached to it.' },
+    { id: 'inner_cover', label: 'Inner cover', color: '#cbd5e1',
+      desc: 'A flat board with a centre hole. It keeps the bees from gluing the outer cover down with propolis, and its hole doubles as an upper entrance and a feeder port.' },
+    { id: 'honey_super', label: 'Honey super', color: '#f0a726',
+      desc: 'The surplus box. Everything stored here is above the colony\u2019s own needs, which is what makes harvesting it fair rather than theft. Add supers BEFORE the flow, not during it.' },
+    { id: 'excluder', label: 'Queen excluder', color: '#dbe3ec',
+      desc: 'A grid sized so workers pass and the wider queen cannot. It keeps brood out of the honey supers. Some beekeepers call it a "honey excluder" because bees are reluctant to cross it \u2014 that argument is genuinely unsettled.' },
+    { id: 'brood_box', label: 'Brood box', color: '#b0741f',
+      desc: 'The colony\u2019s home. Queen, brood, pollen and the winter cluster all live here, and it is never harvested.' },
+    { id: 'brood_frames', label: 'Brood frames', color: '#e3b04b',
+      desc: 'Langstroth\u2019s 1851 insight: leave a 6\u20139 mm gap ("bee space") around each frame and the bees will not glue it in place, so a frame can be lifted out and read like a page.' },
+    { id: 'entrance', label: 'Entrance & landing board', color: '#8a5a2b',
+      desc: 'Where foragers land and guards stand. Traffic here is the fastest field read of colony strength, and narrowing it is the standard defence against robbing.' },
+    { id: 'stand', label: 'Bottom board & stand', color: '#6d7a8a',
+      desc: 'Lifts the hive off wet ground and gives ventilation. A screened bottom board also lets some varroa mites fall out of the colony entirely.' },
+    { id: 'queen', label: 'The queen', color: '#f0abfc',
+      desc: 'One queen, longer than any worker, marked with a coloured dot. The colour is not decoration: it runs on a five-year international cycle, so the dot tells a beekeeper the year she was reared as well as which bee to look for. Find her and the colony has a future; fail to find her and the brood pattern is the next place to look.' },
+    { id: 'foragers', label: 'Foragers in flight', color: '#facc15',
+      desc: 'The orientation and foraging traffic. On a strong summer afternoon this stream is continuous; it thins to nothing in the winter cluster.' }
+  ];
+
+  function hive3dBuildScene(THREE, api) {
+    var meshes = {};
+    var picks = [];
+    var anchor = new THREE.Group();
+    // The shell's camera always looks at y = 0.30, so the hive is lifted to put
+    // its middle there. Built around y = 0 it sat in the bottom-right corner of
+    // the frame with the sky taking two thirds of the panel.
+    anchor.position.y = 0.62;
+    api.scene.add(anchor);
+
+    var contrast = !!api.contrast;
+    function colorOf(id) {
+      if (contrast) return '#ffffff';
+      for (var i = 0; i < HIVE_3D_PARTS.length; i++) if (HIVE_3D_PARTS[i].id === id) return HIVE_3D_PARTS[i].color;
+      return '#94a3b8';
+    }
+    function mat(id, opts) {
+      var o = opts || {};
+      return new THREE.MeshPhongMaterial({
+        color: new THREE.Color(o.color || colorOf(id)),
+        shininess: contrast ? 0 : (o.shininess == null ? 14 : o.shininess),
+        specular: contrast ? 0x000000 : 0x4b5563,
+        transparent: o.opacity != null && o.opacity < 1,
+        opacity: o.opacity == null ? 1 : o.opacity,
+        side: o.side || THREE.FrontSide
+      });
+    }
+    function block(id, w, hgt, dpt, x, y, z, opts) {
+      var m = new THREE.Mesh(new THREE.BoxGeometry(w, hgt, dpt), mat(id, opts));
+      m.position.set(x, y, z);
+      if (api.wantShadow) { m.castShadow = true; m.receiveShadow = true; }
+      return m;
+    }
+    // The shell's raycaster reads userData.partId off the FIRST hit and does
+    // not recurse, so every sub-mesh has to be registered individually and
+    // tagged with its parent part. Pushing the Group alone silently disables
+    // picking for that part — the group has no geometry to hit.
+    function register(id, group, parent) {
+      group.userData.partId = id;
+      group.traverse(function (o) {
+        if (!o.isMesh) return;
+        o.userData.partId = id;
+        picks.push(o);
+        if (api.wantShadow) { o.castShadow = true; o.receiveShadow = true; }
+      });
+      // A part can be parented INSIDE another part's group so it travels with
+      // it — the queen has to stay on her frame when the frame is pulled out.
+      // Register the container FIRST: this traverse re-tags the sub-part's
+      // meshes, and the last write is the one the raycaster reads.
+      (parent || anchor).add(group);
+      meshes[id] = group;
+      return group;
+    }
+    // A comb face drawn as actual hexagonal cells. This is the single biggest
+    // difference between "a brown rectangle" and "a frame you can read": the
+    // brood ellipse, the pollen mosaic, the honey arch and the gaps of a
+    // failing queen are all just per-cell colours over one instanced draw.
+    // Falls back to the flat panel underneath if the host has no batch helper.
+    function buildCombCells(parentGroup, z, centerY, faceW, faceH) {
+      var makeBatch = window.StemLab && window.StemLab.makeVoxelBatch;
+      if (typeof makeBatch !== 'function') return null;
+      var r = 0.0165;
+      // Flat-top hexagons, which is the orientation a Cylinder with 6 radial
+      // segments already has once its axis is turned to face the viewer.
+      var colStep = 1.5 * r, rowStep = Math.sqrt(3) * r;
+      var cols = Math.floor(faceW / colStep);
+      var rows = Math.floor(faceH / rowStep);
+      var cells = [];
+      for (var cx = 0; cx < cols; cx++) {
+        for (var cy = 0; cy < rows; cy++) {
+          var x = -faceW / 2 + colStep * (cx + 0.5);
+          var y = -faceH / 2 + rowStep * (cy + 0.5) + (cx % 2 ? rowStep / 2 : 0);
+          if (y > faceH / 2 - rowStep * 0.4) continue;
+          cells.push({ x: x, y: centerY + y, u: x / (faceW / 2), v: y / (faceH / 2) });
+        }
+      }
+      var cellGeo = new THREE.CylinderGeometry(r * 0.94, r * 0.94, 0.020, 6);
+      cellGeo.rotateX(Math.PI / 2);           // hex face toward the viewer
+      var batch = makeBatch(THREE, {
+        capacity: cells.length,
+        geometry: cellGeo,
+        material: new THREE.MeshPhongMaterial({ color: 0xffffff, shininess: contrast ? 0 : 14, specular: contrast ? 0x000000 : 0x3f4650 })
+      });
+      batch.mesh.position.z = z;
+      parentGroup.add(batch.mesh);
+      return { batch: batch, cells: cells, sig: '' };
+    }
+    function paintCombCells(face, state, key) {
+      if (!face || face.sig === key) return;
+      face.sig = key;
+      for (var i = 0; i < face.cells.length; i++) {
+        var cell = face.cells[i];
+        var role = bhCombCellRole(cell.u, cell.v, state);
+        // Cells are set slightly proud or sunk by role, so capped brood and
+        // capped honey catch the light as raised caps the way they really do.
+        // Drone cappings are domed and stand proud of the comb — that bulge is
+        // how you tell drone brood from worker brood across a room, so it is
+        // drawn as depth rather than only as a different colour.
+        var proud = role === 'drone_brood' ? 0.011 : (role === 'capped_brood' || role === 'honey' ? 0.004 : 0);
+        face.batch.set(i, cell.x, cell.y, proud,
+          role === 'foundation' ? 0.72 : (role === 'drone_brood' ? 1.16 : 1),
+          bhCombCellColor(role, cell.u, cell.v, contrast));
+      }
+      face.batch.commit(face.cells.length);
+    }
+
+    var BW = 1.30, BD = 0.92, WALL = 0.055;
+    // Every box is built with its front (+z) wall missing. That is the whole
+    // point of the view: a closed cube teaches nothing, and a learner who can
+    // see the frames hanging inside understands "stack of boxes full of
+    // removable pages" without a caption.
+    function hiveBoxShell(id, height, y) {
+      var g = new THREE.Group();
+      g.add(block(id, BW, height, WALL, 0, y, -BD / 2 + WALL / 2));
+      g.add(block(id, WALL, height, BD - WALL * 2, -BW / 2 + WALL / 2, y, 0));
+      g.add(block(id, WALL, height, BD - WALL * 2, BW / 2 - WALL / 2, y, 0));
+      // A stub of the front wall on each side, so the box still reads as a box
+      // rather than a three-sided panel.
+      g.add(block(id, 0.22, height, WALL, -BW / 2 + 0.11, y, BD / 2 - WALL / 2));
+      g.add(block(id, 0.22, height, WALL, BW / 2 - 0.11, y, BD / 2 - WALL / 2));
+      return g;
+    }
+
+    // \u2500\u2500 Stand and bottom board \u2500\u2500
+    var standGroup = new THREE.Group();
+    standGroup.add(block('stand', BW + 0.14, 0.07, BD + 0.10, 0, -0.92, 0));
+    [-1, 1].forEach(function (sx) {
+      [-1, 1].forEach(function (sz) {
+        standGroup.add(block('stand', 0.11, 0.30, 0.11, sx * (BW / 2 - 0.06), -1.10, sz * (BD / 2 - 0.06)));
+      });
+    });
+    register('stand', standGroup);
+
+    // \u2500\u2500 Entrance and landing board \u2500\u2500
+    var entranceGroup = new THREE.Group();
+    var landing = block('entrance', BW, 0.045, 0.34, 0, -0.875, BD / 2 + 0.15);
+    landing.rotation.x = -0.10;
+    entranceGroup.add(landing);
+    entranceGroup.add(block('entrance', BW - 0.34, 0.055, 0.06, 0, -0.845, BD / 2 - 0.02, { color: contrast ? '#ffffff' : '#3b2412' }));
+    register('entrance', entranceGroup);
+
+    // \u2500\u2500 Brood box, its frames, and the brood pattern on the front comb \u2500\u2500
+    var broodY = -0.545, broodH = 0.60;
+    register('brood_box', hiveBoxShell('brood_box', broodH, broodY));
+
+    // Every frame gets its four wooden bars, not just a top bar. Without the
+    // side and bottom timbers the front comb is an unbroken slab of wax filling
+    // the whole opening, and the box reads as empty rather than as a frame you
+    // could lift out — which is the one idea a Langstroth hive exists to show.
+    function addFrameTimber(group, mat3d, y, height, z) {
+      var span = BW - 0.08, bar = 0.034, depth = 0.05;
+      var top = new THREE.Mesh(new THREE.BoxGeometry(span, bar, depth), mat3d);
+      top.position.set(0, y + height / 2, z); group.add(top);
+      var bottom = new THREE.Mesh(new THREE.BoxGeometry(span - 0.04, bar * 0.8, depth), mat3d);
+      bottom.position.set(0, y - height / 2, z); group.add(bottom);
+      [-1, 1].forEach(function (side) {
+        var end = new THREE.Mesh(new THREE.BoxGeometry(bar, height, depth), mat3d);
+        end.position.set(side * (span / 2 - bar / 2), y, z); group.add(end);
+      });
+    }
+
+    var broodFrameGroup = new THREE.Group();
+    // The frame nearest the front is the one an inspection actually lifts out,
+    // so it gets its own group: selecting it slides it toward the viewer.
+    var broodBackGroup = new THREE.Group();
+    var broodFrontGroup = new THREE.Group();
+    broodFrameGroup.add(broodBackGroup);
+    broodFrameGroup.add(broodFrontGroup);
+    var broodFrameFaces = [];
+    var combMat = mat('brood_frames', { color: contrast ? '#ffffff' : '#8a6a34', shininess: 4 });
+    var frameBarMat = mat('brood_frames', { color: contrast ? '#ffffff' : '#e8cd94', shininess: 8 });
+    for (var bf = 0; bf < 6; bf++) {
+      var bz = BD / 2 - 0.14 - bf * 0.125;
+      var intoGroup = bf === 0 ? broodFrontGroup : broodBackGroup;
+      var comb = new THREE.Mesh(new THREE.BoxGeometry(BW - 0.16, broodH - 0.13, 0.035), combMat);
+      comb.position.set(0, broodY - 0.02, bz);
+      intoGroup.add(comb);
+      addFrameTimber(intoGroup, frameBarMat, broodY - 0.02, broodH - 0.13, bz);
+      broodFrameFaces.push({ comb: comb, z: bz });
+    }
+    // Brood pattern on the front comb: capped brood in the middle, a pollen
+    // band around it, honey arched over the top. That layout is not decoration
+    // \u2014 it is the single picture a beekeeper reads a colony from, and a
+    // patchy centre is the classic "spotty pattern" queen-failure sign.
+    var patternZ = broodFrameFaces[0].z + 0.026;
+    var broodFace = buildCombCells(broodFrontGroup, patternZ, broodY - 0.02, BW - 0.20, broodH - 0.19);
+    // Fallback pattern for a host with no batch helper. Same three zones, drawn
+    // flat: the reading still works, only the cells are missing.
+    var broodPatch = null, pollenBand = null, honeyArc = null;
+    if (!broodFace) {
+      broodPatch = new THREE.Mesh(new THREE.CircleGeometry(0.30, 26), mat('brood_frames', { color: contrast ? '#ffffff' : '#c99a5e', shininess: 4 }));
+      broodPatch.position.set(0, broodY - 0.06, patternZ);
+      broodFrontGroup.add(broodPatch);
+      pollenBand = new THREE.Mesh(new THREE.RingGeometry(0.30, 0.40, 30), mat('brood_frames', { color: contrast ? '#ffffff' : '#e08a2a', shininess: 4 }));
+      pollenBand.position.set(0, broodY - 0.06, patternZ - 0.002);
+      broodFrontGroup.add(pollenBand);
+      honeyArc = new THREE.Mesh(new THREE.RingGeometry(0.40, 0.50, 30, 1, Math.PI * 0.16, Math.PI * 0.68), mat('brood_frames', { color: contrast ? '#ffffff' : '#f7c948', shininess: 40 }));
+      honeyArc.position.set(0, broodY - 0.06, patternZ - 0.002);
+      broodFrontGroup.add(honeyArc);
+    }
+    // House bees working the comb. A frame with no bees on it is a museum
+    // exhibit; the traffic is what tells you the nest is alive.
+    var combBees = [];
+    for (var cb = 0; cb < 12; cb++) {
+      var houseBee = build3dMiniBee(THREE, { body: contrast ? 0xffffff : 0xdca933, dark: contrast ? 0x000000 : 0x241d16, scale: 0.55 });
+      houseBee.rotation.x = -Math.PI / 2;    // lying flat against the comb face
+      houseBee.userData.crawl = { phase: cb * 0.83, radius: 0.10 + (cb % 5) * 0.075, speed: 0.5 + (cb % 4) * 0.22, tilt: cb * 1.1 };
+      broodFrontGroup.add(houseBee);
+      combBees.push(houseBee);
+    }
+    // The winter cluster. Bees do not hibernate — they ball up over the brood
+    // nest and shiver, and the ball shrinks and grows with the temperature.
+    // Showing this instead of scattered bees is the whole point of a winter
+    // frame: the colony is there, it is just not flying.
+    var clusterGroup = new THREE.Group();
+    for (var cl = 0; cl < 40; cl++) {
+      var clusterBee = new THREE.Mesh(new THREE.SphereGeometry(0.030, 6, 5), mat('brood_frames', { color: contrast ? '#ffffff' : (cl % 3 ? '#b98b3c' : '#5c4423'), shininess: 6 }));
+      var ca = cl * 2.399, cr = 0.20 * Math.sqrt((cl + 0.5) / 40);
+      clusterBee.position.set(Math.cos(ca) * cr * 1.45, broodY - 0.08 + Math.sin(ca) * cr, patternZ + 0.02 + (cl % 3) * 0.012);
+      clusterGroup.add(clusterBee);
+    }
+    clusterGroup.visible = false;
+    broodFrontGroup.add(clusterGroup);
+    // Swarm cells. Peanut-shaped, hanging off the BOTTOM bar of a frame — that
+    // position is the tell, because supersedure cells (a colony quietly
+    // replacing a failing queen) are built on the FACE of the comb instead.
+    // A crowded colony builds these, and once they are capped the swarm leaves.
+    var queenCellGroup = new THREE.Group();
+    var queenCellMat = mat('brood_frames', { color: contrast ? '#ffffff' : '#a9762f', shininess: 6 });
+    for (var qc = 0; qc < 5; qc++) {
+      // Test the constructor BEFORE calling it. `new THREE.CapsuleGeometry ? a : b`
+      // binds as `(new THREE.CapsuleGeometry) ? a : b`, so on pinned r128 — which
+      // has no CapsuleGeometry — the guard itself throws and takes the scene down.
+      var cellGeometry = typeof THREE.CapsuleGeometry === 'function'
+        ? new THREE.CapsuleGeometry(0.021, 0.055, 4, 8)
+        : new THREE.CylinderGeometry(0.016, 0.024, 0.085, 8);
+      var cell = new THREE.Mesh(cellGeometry, queenCellMat);
+      cell.position.set(-0.30 + qc * 0.15, broodY - 0.02 - (broodH - 0.19) / 2 - 0.045, patternZ - 0.004);
+      // Tipped well forward. Swarm cells hang under the bottom bar, so from a
+      // normal above-the-hive angle they are edge-on and easy to miss — which
+      // is exactly why beekeepers are told to TILT the frame to check for them.
+      cell.rotation.x = 0.62;
+      cell.rotation.z = (qc % 2 ? 1 : -1) * 0.12;
+      queenCellGroup.add(cell);
+    }
+    queenCellGroup.visible = false;
+    broodFrontGroup.add(queenCellGroup);
+    // Varroa. Drawn on the brood face because that is where they reproduce \u2014
+    // a mite count is a brood-cell problem before it is an adult-bee problem.
+    var mites = [];
+    var miteMat = mat('brood_frames', { color: contrast ? '#ffffff' : '#8e1c1c', shininess: 30 });
+    for (var mi = 0; mi < 14; mi++) {
+      var mite = new THREE.Mesh(new THREE.SphereGeometry(0.020, 6, 5), miteMat);
+      var ma = mi * 2.399;
+      mite.position.set(Math.cos(ma) * (0.06 + (mi % 5) * 0.048), broodY - 0.06 + Math.sin(ma) * (0.05 + (mi % 4) * 0.05), patternZ + 0.012);
+      mite.visible = false;
+      broodFrontGroup.add(mite);
+      mites.push(mite);
+    }
+    register('brood_frames', broodFrameGroup);
+
+    // The queen. Registered after the frames and parented into the front one,
+    // so she is her own pickable part and still travels with the comb she is
+    // standing on. Longer abdomen, and the year-coded mark on her thorax.
+    var queenGroup = new THREE.Group();
+    var queenBody = build3dMiniBee(THREE, { body: contrast ? 0xffffff : 0xd98b22, dark: contrast ? 0x000000 : 0x2b1d10, scale: 0.95 });
+    queenBody.rotation.x = -Math.PI / 2;
+    // A queen is not a bigger worker — she is a LONGER one. Stretching only the
+    // abdomen along its own axis is the whole silhouette difference, and it is
+    // what lets a learner pick her out of a crowded frame.
+    queenBody.children.forEach(function (node) {
+      if (node.isMesh && node.position.z > 0.02) { node.scale.z *= 1.9; node.position.z *= 1.35; }
+    });
+    queenGroup.add(queenBody);
+    var queenMarkRing = new THREE.Mesh(new THREE.CircleGeometry(0.0165, 14), mat('queen', { color: contrast ? '#000000' : '#1c1917', shininess: 0 }));
+    queenMarkRing.position.set(0, 0.019, -0.018);
+    queenMarkRing.rotation.x = -Math.PI / 2;
+    queenGroup.add(queenMarkRing);
+    var queenMark = new THREE.Mesh(new THREE.CircleGeometry(0.0115, 14), mat('queen', { color: contrast ? '#ffffff' : BH_QUEEN_MARK_COLORS[bhQueenMarkIndex(2026)], shininess: 40 }));
+    queenMark.position.set(0, 0.022, -0.018);
+    queenMark.rotation.x = -Math.PI / 2;
+    queenGroup.add(queenMark);
+    // Her retinue: nurses face INWARD toward her, grooming and feeding. That
+    // ring of attention is often what a beekeeper actually spots first.
+    var retinue = [];
+    for (var rt = 0; rt < 6; rt++) {
+      var attendant = build3dMiniBee(THREE, { body: contrast ? 0xffffff : 0xc99a3a, dark: contrast ? 0x000000 : 0x241d16, scale: 0.48 });
+      attendant.rotation.x = -Math.PI / 2;
+      attendant.userData.slot = rt;
+      queenGroup.add(attendant);
+      retinue.push(attendant);
+    }
+    register('queen', queenGroup, broodFrontGroup);
+
+    // \u2500\u2500 Queen excluder \u2500\u2500
+    var excluderGroup = new THREE.Group();
+    var excluderY = -0.222;
+    excluderGroup.add(block('excluder', BW, 0.018, 0.07, 0, excluderY, -BD / 2 + 0.04));
+    excluderGroup.add(block('excluder', BW, 0.018, 0.07, 0, excluderY, BD / 2 - 0.04));
+    for (var xb = 0; xb < 11; xb++) {
+      excluderGroup.add(block('excluder', 0.022, 0.014, BD - 0.10, -BW / 2 + 0.09 + xb * ((BW - 0.18) / 10), excluderY, 0));
+    }
+    register('excluder', excluderGroup);
+
+    // \u2500\u2500 Honey super and its filling frames \u2500\u2500
+    var superY = 0.045, superH = 0.46;
+    var superGroup = new THREE.Group();
+    // Every extra super is a whole box: shell, frames, timbers and comb face.
+    // All three are built up front and shown or hidden per frame, because
+    // rebuilding the scene on a state change would drop the camera and the
+    // WebGL context every time a student pressed "Add super".
+    var superBoxes = [];
+
+    var superFrameGroup = new THREE.Group();
+    var superFills = [];
+    var superCombMat = mat('honey_super', { color: contrast ? '#ffffff' : '#7d5a24', shininess: 6 });
+    // Capped honey is sealed under WHITE wax cappings, not left amber. That is
+    // how a beekeeper tells a finished frame from a wet one at a glance, and it
+    // also stops the fill blending into the amber box it sits in.
+    var cappedMat = mat('honey_super', { color: contrast ? '#ffffff' : '#f6ecc9', shininess: 12 });
+    var superFrameH = superH - 0.11;
+    for (var sf = 0; sf < 6; sf++) {
+      var sz = BD / 2 - 0.14 - sf * 0.125;
+      var empty = new THREE.Mesh(new THREE.BoxGeometry(BW - 0.16, superFrameH, 0.030), superCombMat);
+      empty.position.set(0, superY - 0.015, sz);
+      superFrameGroup.add(empty);
+      // Capped honey fills a frame from the TOP DOWN, so the fill panel is
+      // pinned to the top bar and grows downward. Filling upward from the
+      // bottom would teach the wrong thing about how a super fills.
+      var fill = new THREE.Mesh(new THREE.BoxGeometry(BW - 0.19, superFrameH, 0.038), cappedMat);
+      fill.position.set(0, superY - 0.015, sz);
+      superFrameGroup.add(fill);
+      addFrameTimber(superFrameGroup, frameBarMat, superY - 0.015, superFrameH, sz);
+      superFills.push({ fill: fill, top: superY - 0.015 + superFrameH / 2, height: superFrameH, index: sf, z: sz });
+    }
+    var superFace = buildCombCells(superFrameGroup, superFills[0].z + 0.026, superY - 0.015, BW - 0.22, superFrameH - 0.06);
+    var superBox0 = new THREE.Group();
+    superBox0.add(hiveBoxShell('honey_super', superH, superY));
+    superBox0.add(superFrameGroup);
+    superGroup.add(superBox0);
+    superBoxes.push({ group: superBox0, fills: superFills, face: superFace });
+    // Supers 2 and 3. Same box, and their comb faces are painted from the same
+    // model — so a stack that is filling reads bottom box first, exactly the
+    // order bees actually work upward through supers.
+    for (var extraSuper = 1; extraSuper < 3; extraSuper++) {
+      var extraGroup = new THREE.Group();
+      extraGroup.add(hiveBoxShell('honey_super', superH, superY));
+      var extraFrames = new THREE.Group();
+      var extraFills = [];
+      for (var xf = 0; xf < 6; xf++) {
+        var xz = BD / 2 - 0.14 - xf * 0.125;
+        var xEmpty = new THREE.Mesh(new THREE.BoxGeometry(BW - 0.16, superFrameH, 0.030), superCombMat);
+        xEmpty.position.set(0, superY - 0.015, xz);
+        extraFrames.add(xEmpty);
+        var xFill = new THREE.Mesh(new THREE.BoxGeometry(BW - 0.19, superFrameH, 0.038), cappedMat);
+        xFill.position.set(0, superY - 0.015, xz);
+        extraFrames.add(xFill);
+        addFrameTimber(extraFrames, frameBarMat, superY - 0.015, superFrameH, xz);
+        extraFills.push({ fill: xFill, top: superY - 0.015 + superFrameH / 2, height: superFrameH, index: xf, z: xz });
+      }
+      var extraFace = buildCombCells(extraFrames, extraFills[0].z + 0.026, superY - 0.015, BW - 0.22, superFrameH - 0.06);
+      extraGroup.add(extraFrames);
+      extraGroup.position.y = extraSuper * superH;
+      extraGroup.visible = false;
+      superGroup.add(extraGroup);
+      superBoxes.push({ group: extraGroup, fills: extraFills, face: extraFace });
+    }
+    register('honey_super', superGroup);
+
+    // \u2500\u2500 Inner and outer covers \u2500\u2500
+    var innerGroup = new THREE.Group();
+    innerGroup.add(block('inner_cover', BW, 0.032, BD, 0, 0.295, 0));
+    innerGroup.add(new THREE.Mesh(new THREE.TorusGeometry(0.10, 0.018, 8, 20), mat('inner_cover')));
+    innerGroup.children[1].rotation.x = Math.PI / 2;
+    innerGroup.children[1].position.set(0, 0.312, 0);
+    register('inner_cover', innerGroup);
+
+    var outerGroup = new THREE.Group();
+    outerGroup.add(block('outer_cover', BW + 0.09, 0.055, BD + 0.09, 0, 0.365, 0, { shininess: 52 }));
+    outerGroup.add(block('outer_cover', BW + 0.09, 0.070, 0.030, 0, 0.322, BD / 2 + 0.030, { shininess: 52 }));
+    outerGroup.add(block('outer_cover', BW + 0.09, 0.070, 0.030, 0, 0.322, -BD / 2 - 0.030, { shininess: 52 }));
+    register('outer_cover', outerGroup);
+
+    // \u2500\u2500 Foragers \u2500\u2500
+    var foragerGroup = new THREE.Group();
+    var foragers = [];
+    for (var fi = 0; fi < 22; fi++) {
+      var bee = build3dMiniBee(THREE, { body: contrast ? 0xffffff : 0xf5c542, dark: contrast ? 0x000000 : 0x241d16, scale: 0.6 });
+      bee.userData.orbit = { radius: 0.42 + (fi % 5) * 0.16, phase: fi * 0.61, lift: (fi % 4) * 0.10, speed: 0.55 + (fi % 3) * 0.22 };
+      foragerGroup.add(bee);
+      foragers.push(bee);
+    }
+    register('foragers', foragerGroup);
+
+    // Ground pad, so the hive sits on something and the shadows land.
+    var pad = new THREE.Mesh(new THREE.CircleGeometry(1.9, 40), mat('stand', { color: contrast ? '#000000' : '#3f6b3a', shininess: 2 }));
+    pad.rotation.x = -Math.PI / 2;
+    pad.position.y = -1.26;
+    if (api.wantShadow) pad.receiveShadow = true;
+    anchor.add(pad);
+    // The apiary around the hive. The whole simulation runs on a seasonal
+    // cycle, and a hive that looks identical in January and June quietly
+    // teaches that the season is a number rather than the thing driving
+    // everything else on screen.
+    var meadowGroup = new THREE.Group();
+    var meadowBlooms = [];
+    var bloomStemMat = mat('stand', { color: contrast ? '#ffffff' : '#2f6b34', shininess: 3 });
+    var bloomHeadGeo = new THREE.SphereGeometry(0.036, 7, 6);
+    var bloomStemGeo = new THREE.CylinderGeometry(0.008, 0.008, 0.15, 5);
+    for (var mb = 0; mb < 26; mb++) {
+      var bloomAngle = mb * 2.399;
+      var bloomRadius = 1.06 + (mb % 5) * 0.15;
+      var bx = Math.cos(bloomAngle) * bloomRadius;
+      var bz = Math.sin(bloomAngle) * bloomRadius * 0.78;
+      var stem = new THREE.Mesh(bloomStemGeo, bloomStemMat);
+      stem.position.set(bx, -1.19, bz);
+      meadowGroup.add(stem);
+      var head = new THREE.Mesh(bloomHeadGeo, mat('stand', { color: contrast ? '#ffffff' : '#e879b0', shininess: 26 }));
+      head.position.set(bx, -1.10, bz);
+      meadowGroup.add(head);
+      meadowBlooms.push({ stem: stem, head: head, hue: mb % 4, phase: mb * 0.7 });
+    }
+    anchor.add(meadowGroup);
+    // Snow: a cap on the lid and a dusting on the ground, shown only in winter.
+    var snowGroup = new THREE.Group();
+    var snowMat = mat('stand', { color: contrast ? '#ffffff' : '#f1f5f9', shininess: 4 });
+    var snowPad = new THREE.Mesh(new THREE.CircleGeometry(1.88, 40), snowMat);
+    snowPad.rotation.x = -Math.PI / 2;
+    snowPad.position.y = -1.24;
+    snowGroup.add(snowPad);
+    var snowCap = new THREE.Mesh(new THREE.BoxGeometry(BW + 0.10, 0.030, BD + 0.10), snowMat);
+    snowCap.position.y = 0.408;
+    snowGroup.add(snowCap);
+    snowGroup.visible = false;
+    anchor.add(snowGroup);
+    // Season palettes for the ground. Autumn is not just "browner": the forage
+    // is over, which is the point the colour is there to make.
+    var SEASON_PAD_COLORS = ['#4e8a3f', '#3f6b3a', '#7a6b2e', '#5c6b58'];
+    var SEASON_BLOOM_COLORS = [
+      ['#e879b0', '#f9a8d4', '#fbbf24', '#c084fc'],
+      ['#fbbf24', '#f472b6', '#a3e635', '#fb923c'],
+      ['#d97706', '#b45309', '#eab308', '#a16207'],
+      ['#94a3b8', '#94a3b8', '#94a3b8', '#94a3b8']
+    ];
+
+    // Stack lift offsets for the exploded view, in the order a real inspection
+    // takes the hive apart. The numbers are cumulative gaps, not absolute
+    // heights, so a box can be resized without re-tuning the explosion.
+    var stackLift = [
+      { group: meshes.outer_cover, lift: 1.05 },
+      { group: meshes.inner_cover, lift: 0.80 },
+      { group: superGroup, lift: 0.52 },
+      { group: meshes.excluder, lift: 0.30 },
+      { group: meshes.brood_frames, lift: 0.12 }
+    ];
+
+    function frame(nowMs, sceneProps, reduced) {
+      var sp = sceneProps || {};
+      var clock = reduced ? 0 : nowMs;
+      var honeyFill = Math.max(0, Math.min(1, sp.honeyFill == null ? 0.3 : sp.honeyFill));
+      var broodFill = Math.max(0, Math.min(1, sp.broodFill == null ? 0.5 : sp.broodFill));
+      var varroa = Math.max(0, Math.min(1, sp.varroa == null ? 0 : sp.varroa));
+      var traffic = Math.max(0, Math.min(1, sp.traffic == null ? 0.5 : sp.traffic));
+      var pollenLevel = Math.max(0, Math.min(1, sp.pollenLevel == null ? 0.5 : sp.pollenLevel));
+      var layingRate = Math.max(0, Math.min(1, sp.layingRate == null ? 1 : sp.layingRate));
+      var wintering = sp.season === 3;
+      var seasonIndex = Math.max(0, Math.min(3, Math.floor(sp.season == null ? 1 : sp.season)));
+      var superCount = Math.max(1, Math.min(superBoxes.length, Math.round(sp.superCount == null ? 1 : sp.superCount)));
+      // Boxes of honey, not a fraction of one box — a three-super stack has
+      // three times the room, and the model has to show which boxes are full.
+      var honeyBoxes = Math.max(0, sp.honeyBoxes == null ? honeyFill : sp.honeyBoxes);
+      var swarmPressure = Math.max(0, Math.min(1.5, sp.swarmPressure == null ? 0 : sp.swarmPressure));
+      var exploded = sp.exploded ? 1 : 0;
+      var pulled = sp.pulled ? 1 : 0;
+
+      // Bees work UPWARD through a stack and OUTWARD across a box, so the
+      // bottom super fills before the one above it, and within each box the
+      // frame nearest the brood nest fills first. Filling everything evenly
+      // would hide the one thing the stack is here to show.
+      for (var bi = 0; bi < superBoxes.length; bi++) {
+        var box = superBoxes[bi];
+        box.group.visible = bi < superCount;
+        box.group.position.y = bi * (superH + (exploded ? 0.10 : 0));
+        if (!box.group.visible) continue;
+        var boxShare = Math.max(0, Math.min(1, honeyBoxes - bi));
+        for (var i = 0; i < box.fills.length; i++) {
+          var slot = box.fills[i];
+          var share = Math.max(0, Math.min(1, boxShare * box.fills.length - i));
+          var hgt = Math.max(0.0001, share * slot.height);
+          slot.fill.scale.y = hgt / slot.height;
+          slot.fill.position.y = slot.top - hgt / 2;
+          slot.fill.visible = share > 0.02;
+        }
+      }
+      // The covers ride on top of whatever the stack has grown to.
+      var stackTop = (superCount - 1) * superH;
+      // …and the whole hive shrinks and drops to stay in frame as it grows. The
+      // shell owns the camera distance, so the scene cannot pull the camera
+      // back; scaling the anchor is the equivalent move and it keeps a
+      // three-super stack from walking off the top of the panel. The anchor is
+      // not one of the registered part meshes, so the shell's own scale pass
+      // never fights this.
+      var stackScale = 1 / (1 + (superCount - 1) * 0.24);
+      var stackDrop = 0.62 - stackTop * 0.46;
+      anchor.scale.setScalar(anchor.scale.x + (stackScale - anchor.scale.x) * (reduced ? 1 : 0.12));
+      anchor.position.y += (stackDrop - anchor.position.y) * (reduced ? 1 : 0.12);
+      if (meshes.inner_cover) meshes.inner_cover.userData.stackTop = stackTop;
+      if (meshes.outer_cover) meshes.outer_cover.userData.stackTop = stackTop;
+      // Repaint the comb only when the reading actually changes. Recolouring
+      // ~500 instances every frame would cost more than the whole rest of the
+      // scene to say the same thing sixty times a second.
+      // The arch of honey a BROOD frame carries is the nest's own winter store,
+      // not the surplus in the supers — capping it keeps the super's fill from
+      // swallowing the brood nest on the one frame the lesson is read from.
+      var combState = { broodFill: broodFill, honeyFill: Math.min(0.5, honeyFill), pollenLevel: pollenLevel, layingRate: layingRate };
+      paintCombCells(broodFace, combState,
+        Math.round(broodFill * 40) + '|' + Math.round(honeyFill * 40) + '|' + Math.round(pollenLevel * 20) + '|' + Math.round(layingRate * 20));
+      // Nothing but honey belongs above the excluder, so the super comb is
+      // painted with the brood and pollen terms zeroed rather than reusing the
+      // brood-nest reading — a super with a brood patch in it would be wrong.
+      for (var pb = 0; pb < superBoxes.length; pb++) {
+        if (pb >= superCount) continue;
+        var boxFill = Math.max(0, Math.min(1, honeyBoxes - pb));
+        paintCombCells(superBoxes[pb].face, { broodFill: 0, honeyFill: boxFill, pollenLevel: 0, layingRate: 1 },
+          's' + pb + '|' + Math.round(boxFill * 40));
+      }
+      if (broodPatch) {
+        var patchScale = 0.42 + broodFill * 0.72;
+        broodPatch.scale.set(patchScale, patchScale, 1);
+        pollenBand.scale.set(0.72 + broodFill * 0.42, 0.72 + broodFill * 0.42, 1);
+        honeyArc.scale.set(0.80 + honeyFill * 0.30, 0.80 + honeyFill * 0.30, 1);
+      }
+      var miteCount = Math.round(varroa * mites.length);
+      for (var mv = 0; mv < mites.length; mv++) mites[mv].visible = mv < miteCount;
+
+      for (var si = 0; si < stackLift.length; si++) {
+        var entry = stackLift[si];
+        if (!entry.group) continue;
+        var wantY = exploded * entry.lift + (entry.group.userData.stackTop || 0);
+        entry.group.position.y += (wantY - entry.group.position.y) * (reduced ? 1 : 0.14);
+      }
+
+      // Queen cells appear once crowding pushes the colony toward swarming.
+      // This is the same crowdRatio the simulation itself uses to fire a swarm
+      // event, so the warning on the frame and the event in the log agree.
+      queenCellGroup.visible = swarmPressure > 0.55 && !wintering;
+      if (queenCellGroup.visible && !reduced) {
+        queenCellGroup.children.forEach(function (qcell, qi) {
+          qcell.rotation.z = (qi % 2 ? 1 : -1) * (0.12 + 0.03 * Math.sin(clock * 0.0014 + qi));
+        });
+      }
+
+      // Seasonal setting.
+      var padColor = SEASON_PAD_COLORS[seasonIndex];
+      if (!contrast && pad.material.userData._season !== seasonIndex) {
+        pad.material.userData._season = seasonIndex;
+        pad.material.color.set(padColor);
+      }
+      snowGroup.visible = wintering;
+      // Winter forage is gone, so the blooms go with it — the dearth is the
+      // reason the colony is clustered, not a separate fact to be told.
+      meadowGroup.visible = !wintering;
+      if (!contrast && meadowGroup.visible) {
+        for (var mbi = 0; mbi < meadowBlooms.length; mbi++) {
+          var bloom = meadowBlooms[mbi];
+          if (bloom.head.material.userData._season !== seasonIndex) {
+            bloom.head.material.userData._season = seasonIndex;
+            bloom.head.material.color.set(SEASON_BLOOM_COLORS[seasonIndex][bloom.hue]);
+          }
+          // Autumn stands are sparse and shorter; spring is coming up fast.
+          var bloomScale = seasonIndex === 2 ? 0.62 : seasonIndex === 0 ? 0.86 : 1;
+          bloom.head.scale.setScalar(bloomScale * (reduced ? 1 : 1 + 0.05 * Math.sin(clock * 0.0018 + bloom.phase)));
+          bloom.stem.scale.y = bloomScale;
+        }
+      }
+
+      // Selecting the frames (or the queen) draws the front frame out of the
+      // box and turns it slightly, which is exactly the motion an inspection
+      // makes: lift, tilt to the light, read the pattern.
+      var wantPullZ = pulled * 0.46, wantPullY = pulled * 0.06;
+      broodFrontGroup.position.z += (wantPullZ - broodFrontGroup.position.z) * (reduced ? 1 : 0.13);
+      broodFrontGroup.position.y += (wantPullY - broodFrontGroup.position.y) * (reduced ? 1 : 0.13);
+      broodFrontGroup.rotation.y += ((pulled ? -0.16 : 0) - broodFrontGroup.rotation.y) * (reduced ? 1 : 0.13);
+
+      // Winter: the colony balls up over the nest instead of working the comb.
+      clusterGroup.visible = wintering;
+      if (wintering && !reduced) {
+        // The ball tightens as it gets colder and loosens on a mild day; a
+        // static blob would suggest the bees are dormant, and they are not.
+        clusterGroup.scale.setScalar(0.92 + 0.08 * Math.sin(clock * 0.0009));
+      }
+      for (var hb = 0; hb < combBees.length; hb++) {
+        var houseBee = combBees[hb];
+        houseBee.visible = !wintering && hb < Math.round(traffic * combBees.length) + 3;
+        if (!houseBee.visible) continue;
+        var crawl = houseBee.userData.crawl;
+        var crawlAngle = clock * 0.00022 * crawl.speed + crawl.phase;
+        houseBee.position.set(
+          Math.cos(crawlAngle + crawl.tilt) * crawl.radius * 1.9,
+          broodY - 0.05 + Math.sin(crawlAngle) * crawl.radius,
+          patternZ + 0.028);
+        houseBee.rotation.y = crawlAngle;
+        beatBeeWings(houseBee, clock * 0.12, 0.15, reduced);
+      }
+
+      // The queen walks the brood nest looking for an empty cell to lay in, so
+      // her path stays INSIDE the pattern rather than wandering the whole frame.
+      var queenVisible = !wintering;
+      queenGroup.visible = queenVisible;
+      if (queenVisible) {
+        var queenAngle = clock * 0.00013;
+        var queenReach = 0.08 + broodFill * 0.20;
+        var queenX = Math.cos(queenAngle) * queenReach * 1.45;
+        var queenY = broodY - 0.06 + Math.sin(queenAngle * 1.6) * queenReach;
+        queenGroup.position.set(queenX, queenY, patternZ + 0.034);
+        queenGroup.rotation.y = queenAngle + Math.PI / 2;
+        for (var rq = 0; rq < retinue.length; rq++) {
+          var ring = (rq / retinue.length) * Math.PI * 2 + clock * 0.00021;
+          retinue[rq].position.set(Math.cos(ring) * 0.055, Math.sin(ring) * 0.042, -0.002);
+          // Facing inward is the whole tell — a retinue is bees pointing AT her.
+          retinue[rq].rotation.y = -ring + Math.PI;
+          beatBeeWings(retinue[rq], clock * 0.12, 0.12, reduced);
+        }
+      }
+
+      // Foragers loop out from the entrance and back. The visible count tracks
+      // colony strength, which makes "the hive got weaker" something a learner
+      // sees at the door before they read it in a number.
+      var activeForagers = Math.round(traffic * foragers.length);
+      for (var fj = 0; fj < foragers.length; fj++) {
+        var bee = foragers[fj];
+        bee.visible = fj < activeForagers;
+        if (!bee.visible) continue;
+        var orbit = bee.userData.orbit;
+        var ang = clock * 0.00042 * orbit.speed + orbit.phase;
+        var radius = orbit.radius;
+        bee.position.set(Math.cos(ang) * radius, -0.72 + orbit.lift + Math.sin(ang * 1.7) * 0.08, BD / 2 + 0.18 + Math.sin(ang) * radius * 0.7);
+        bee.rotation.y = -ang + Math.PI / 2;
+        beatBeeWings(bee, clock, 0.9, reduced);
+      }
+    }
+
+    return { meshes: meshes, picks: picks, anchor: anchor, frame: frame };
+  }
+
+  // \u2500\u2500 Queen RTS: the frontline as a place, not a percentage \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+  var QUEEN_3D_PARTS = [
+    { id: 'home_hive', label: 'Your colony', color: '#a78bfa',
+      desc: 'Your hive. It grows and shrinks with colony health \u2014 every order you give is paid for out of this.' },
+    { id: 'rival_hive', label: 'Rival colony', color: '#fb7185',
+      desc: 'The competing colony. Real hives do compete for the same flowers, and a strong neighbour can rob a weak hive outright.' },
+    { id: 'forage_field', label: 'Contested forage', color: '#facc15',
+      desc: 'The shared meadow. Each bloom shows who is currently working it, so the "frontline" percentage has a physical place on the ground.' },
+    { id: 'swarm', label: 'Your foragers', color: '#fbbf24',
+      desc: 'Bees in transit. Nobody is directing them: recruitment by dance plus individual choice produces the whole pattern. That is what decentralized control looks like.' },
+    { id: 'guard_line', label: 'Frontline marker', color: '#38bdf8',
+      desc: 'Where your foraging range currently meets the rival\u2019s. It moves when scouting, recruitment or defence shifts the balance \u2014 it is an outcome, not an order.' }
+  ];
+
+  function queen3dBuildScene(THREE, api) {
+    var meshes = {};
+    var picks = [];
+    var anchor = new THREE.Group();
+    // Same reason as the hive scene: the shell looks at y = 0.30.
+    anchor.position.y = 0.36;
+    api.scene.add(anchor);
+
+    var contrast = !!api.contrast;
+    function colorOf(id) {
+      if (contrast) return '#ffffff';
+      for (var i = 0; i < QUEEN_3D_PARTS.length; i++) if (QUEEN_3D_PARTS[i].id === id) return QUEEN_3D_PARTS[i].color;
+      return '#94a3b8';
+    }
+    function mat(id, opts) {
+      var o = opts || {};
+      return new THREE.MeshPhongMaterial({
+        color: new THREE.Color(o.color || colorOf(id)),
+        shininess: contrast ? 0 : (o.shininess == null ? 16 : o.shininess),
+        specular: contrast ? 0x000000 : 0x4b5563,
+        transparent: o.opacity != null && o.opacity < 1,
+        opacity: o.opacity == null ? 1 : o.opacity
+      });
+    }
+    // Same contract as the hive scene: individual meshes, each tagged with the
+    // part it belongs to, because the shell's raycast is non-recursive.
+    function register(id, group) {
+      group.userData.partId = id;
+      group.traverse(function (o) {
+        if (!o.isMesh) return;
+        o.userData.partId = id;
+        picks.push(o);
+      });
+      anchor.add(group);
+      meshes[id] = group;
+      return group;
+    }
+
+    var FIELD_W = 3.2, FIELD_D = 2.0, GROUND_Y = -0.62;
+    var ground = new THREE.Mesh(new THREE.BoxGeometry(FIELD_W, 0.08, FIELD_D), mat('forage_field', { color: contrast ? '#000000' : '#3d6b39', shininess: 2 }));
+    ground.position.y = GROUND_Y;
+    if (api.wantShadow) ground.receiveShadow = true;
+    anchor.add(ground);
+
+    function buildHive(id, x, tint) {
+      var g = new THREE.Group();
+      var body = new THREE.Group();
+      // A skep-shaped stack: three tapering drums. It reads as "hive" at a
+      // glance in a way a plain box does not, and the taper gives the health
+      // scaling something visible to act on.
+      var tiers = [[0.34, 0.30, 0.26], [0.30, 0.26, 0.22], [0.26, 0.16, 0.15]];
+      for (var ti = 0; ti < tiers.length; ti++) {
+        var drum = new THREE.Mesh(new THREE.CylinderGeometry(tiers[ti][1], tiers[ti][0], tiers[ti][2], 18), mat(id, { color: tint }));
+        drum.position.y = GROUND_Y + 0.04 + 0.13 + ti * 0.23;
+        if (api.wantShadow) { drum.castShadow = true; drum.receiveShadow = true; }
+        body.add(drum);
+      }
+      var cap = new THREE.Mesh(new THREE.SphereGeometry(0.17, 14, 10), mat(id, { color: tint, shininess: 40 }));
+      cap.position.y = GROUND_Y + 0.04 + 0.13 + tiers.length * 0.23 - 0.05;
+      body.add(cap);
+      var door = new THREE.Mesh(new THREE.BoxGeometry(0.20, 0.05, 0.05), mat(id, { color: contrast ? '#000000' : '#241a10' }));
+      door.position.set(0, GROUND_Y + 0.10, 0.30);
+      body.add(door);
+      g.add(body);
+      // Health ring on the ground. A ring reads as a quantity at any camera
+      // angle, unlike a bar that foreshortens away to nothing.
+      var ring = new THREE.Mesh(new THREE.RingGeometry(0.36, 0.46, 34), mat(id, { color: tint, opacity: 0.75, shininess: 0 }));
+      ring.rotation.x = -Math.PI / 2;
+      ring.position.set(0, GROUND_Y + 0.05, 0);
+      g.add(ring);
+      g.position.x = x;
+      g.userData = { body: body, ring: ring };
+      return g;
+    }
+    register('home_hive', buildHive('home_hive', -1.24, contrast ? '#ffffff' : '#9d7bf0'));
+    register('rival_hive', buildHive('rival_hive', 1.24, contrast ? '#ffffff' : '#ef5f78'));
+
+    // \u2500\u2500 Forage field \u2500\u2500
+    // 44 blooms laid out across the contested strip. Each one flips between
+    // "yours" and "theirs" as the frontline moves, so the meadow itself is the
+    // scoreboard. Two shared materials, swapped by reference \u2014 recolouring 44
+    // materials every frame would be the expensive way to say the same thing.
+    var minePetalMat = mat('forage_field', { color: contrast ? '#ffffff' : '#c9a6ff', shininess: 34 });
+    var theirsPetalMat = mat('forage_field', { color: contrast ? '#555555' : '#f4778c', shininess: 34 });
+    var stemMat = mat('forage_field', { color: contrast ? '#ffffff' : '#2f6b34', shininess: 4 });
+    var fieldGroup = new THREE.Group();
+    var blooms = [];
+    var bloomGeo = new THREE.SphereGeometry(0.055, 8, 6);
+    var stemGeo = new THREE.CylinderGeometry(0.012, 0.012, 0.20, 5);
+    for (var bi = 0; bi < 44; bi++) {
+      var col = bi % 11, row = Math.floor(bi / 11);
+      var bx = -0.90 + col * 0.18 + (row % 2 ? 0.05 : -0.05);
+      var bz = -0.66 + row * 0.44;
+      var stem = new THREE.Mesh(stemGeo, stemMat);
+      stem.position.set(bx, GROUND_Y + 0.14, bz);
+      fieldGroup.add(stem);
+      var bloom = new THREE.Mesh(bloomGeo, minePetalMat);
+      bloom.position.set(bx, GROUND_Y + 0.25, bz);
+      if (api.wantShadow) bloom.castShadow = true;
+      fieldGroup.add(bloom);
+      // Threshold in 0..1 across the strip: a bloom is yours while your share
+      // of the frontline reaches past it.
+      blooms.push({ mesh: bloom, threshold: (bx + 0.95) / 1.90, base: GROUND_Y + 0.25, phase: bi * 0.7 });
+    }
+    register('forage_field', fieldGroup);
+
+    // \u2500\u2500 Frontline marker \u2500\u2500
+    var guardGroup = new THREE.Group();
+    var guardPost = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.016, 0.52, 8), mat('guard_line', { opacity: 0.9 }));
+    guardPost.position.y = GROUND_Y + 0.30;
+    guardGroup.add(guardPost);
+    var guardFlag = new THREE.Mesh(new THREE.BoxGeometry(0.20, 0.10, 0.012), mat('guard_line'));
+    guardFlag.position.set(0.10, GROUND_Y + 0.50, 0);
+    guardGroup.add(guardFlag);
+    var guardBase = new THREE.Mesh(new THREE.RingGeometry(0.07, 0.13, 22), mat('guard_line', { opacity: 0.7 }));
+    guardBase.rotation.x = -Math.PI / 2;
+    guardBase.position.y = GROUND_Y + 0.05;
+    guardGroup.add(guardBase);
+    register('guard_line', guardGroup);
+
+    // \u2500\u2500 Forager swarm \u2500\u2500
+    var swarmGroup = new THREE.Group();
+    var swarmBees = [];
+    for (var si2 = 0; si2 < 26; si2++) {
+      var bee = build3dMiniBee(THREE, { body: contrast ? 0xffffff : 0xf5c542, dark: contrast ? 0x000000 : 0x241d16, scale: 1.5 });
+      bee.userData.route = { phase: si2 * 0.24, speed: 0.34 + (si2 % 5) * 0.09, lane: -0.62 + (si2 % 7) * 0.21, lift: 0.16 + (si2 % 4) * 0.09 };
+      swarmGroup.add(bee);
+      swarmBees.push(bee);
+    }
+    register('swarm', swarmGroup);
+
+    function frame(nowMs, sceneProps, reduced) {
+      var sp = sceneProps || {};
+      var clock = reduced ? 0 : nowMs;
+      var share = Math.max(0, Math.min(1, sp.share == null ? 0.5 : sp.share));
+      var homeHealth = Math.max(0, Math.min(1, sp.homeHealth == null ? 1 : sp.homeHealth));
+      var rivalHealth = Math.max(0, Math.min(1, sp.rivalHealth == null ? 1 : sp.rivalHealth));
+      var forageRate = Math.max(0, Math.min(1, sp.forageRate == null ? 0.5 : sp.forageRate));
+
+      var home = meshes.home_hive, rival = meshes.rival_hive;
+      if (home && home.userData.body) {
+        home.userData.body.scale.set(0.62 + homeHealth * 0.46, 0.55 + homeHealth * 0.55, 0.62 + homeHealth * 0.46);
+        home.userData.ring.scale.setScalar(0.5 + homeHealth * 0.7);
+      }
+      if (rival && rival.userData.body) {
+        rival.userData.body.scale.set(0.62 + rivalHealth * 0.46, 0.55 + rivalHealth * 0.55, 0.62 + rivalHealth * 0.46);
+        rival.userData.ring.scale.setScalar(0.5 + rivalHealth * 0.7);
+      }
+
+      for (var bi2 = 0; bi2 < blooms.length; bi2++) {
+        var b = blooms[bi2];
+        var wantMat = b.threshold <= share ? minePetalMat : theirsPetalMat;
+        if (b.mesh.material !== wantMat) b.mesh.material = wantMat;
+        b.mesh.position.y = b.base + (reduced ? 0 : Math.sin(clock * 0.0016 + b.phase) * 0.012);
+      }
+
+      var guardX = -0.95 + share * 1.90;
+      var guard = meshes.guard_line;
+      if (guard) {
+        guard.position.x += (guardX - guard.position.x) * (reduced ? 1 : 0.12);
+        guardPost.rotation.z = reduced ? 0 : Math.sin(clock * 0.0022) * 0.05;
+      }
+
+      // Foragers run out to the frontline and back. Their turnaround point is
+      // the frontline itself, so pushing the line forward visibly lengthens
+      // every bee's commute \u2014 the cost that makes the RTS a trade-off.
+      var activeBees = Math.round(forageRate * swarmBees.length);
+      for (var sj = 0; sj < swarmBees.length; sj++) {
+        var sb = swarmBees[sj];
+        sb.visible = sj < activeBees;
+        if (!sb.visible) continue;
+        var route = sb.userData.route;
+        var trip = ((clock * 0.00016 * route.speed) + route.phase) % 2;
+        var travel = trip < 1 ? trip : 2 - trip;
+        var x = -1.16 + travel * (guardX + 1.16);
+        sb.position.set(x, GROUND_Y + 0.30 + route.lift + (reduced ? 0 : Math.sin(clock * 0.004 + route.phase) * 0.04), route.lane);
+        sb.rotation.y = trip < 1 ? Math.PI / 2 : -Math.PI / 2;
+        beatBeeWings(sb, clock, 0.85, reduced);
+      }
+    }
+
+    return { meshes: meshes, picks: picks, anchor: anchor, frame: frame };
+  }
+
+  function makeBeeViewer(parts, buildScene, home) {
+    var mk = window.StemLab && window.StemLab.makeBayViewer;
+    if (!mk) { BEE_3D_MISSING = 'host'; return BEE_3D_NULL_VIEWER; }
+    return mk({
+      parts: parts.map(function (p) { return { id: p.id, label: p.label, color: p.color }; }),
+      buildScene: buildScene,
+      home: home
+    });
+  }
+  var HIVE_3D_VIEWER = makeBeeViewer(HIVE_3D_PARTS, hive3dBuildScene, { yaw: -0.62, pitch: 0.34, dist: 4.3 });
+  var QUEEN_3D_VIEWER = makeBeeViewer(QUEEN_3D_PARTS, queen3dBuildScene, { yaw: 0, pitch: 0.56, dist: 4.7 });
+  // Stable identities. A fresh callback each render makes React tear the
+  // viewer down and rebuild the WebGL context on every state change.
+  function hive3dAttach(node) { HIVE_3D_VIEWER.attach(node || null); }
+  function queen3dAttach(node) { QUEEN_3D_VIEWER.attach(node || null); }
+
   window.StemLab.registerTool('beehive', {
     icon: '\uD83D\uDC1D',
     label: 'Beehive Simulator',
@@ -3050,6 +4192,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       var isDark = !!ctx.isDark || isContrast;
       var callGemini = ctx.callGemini;
       var gradeLevel = ctx.gradeLevel;
+      var _beeGradeRaw = String(gradeLevel == null ? '' : gradeLevel);
+      var _beeGradeMatch = _beeGradeRaw.match(/\d+/);
+      var _beeGradeNumber = _beeGradeMatch ? parseInt(_beeGradeMatch[0], 10) : 5;
+      var beeGradeBand = /(^|\D)k(\D|$)/i.test(_beeGradeRaw) || _beeGradeNumber <= 2 ? 'K–2' : _beeGradeNumber <= 5 ? '3–5' : _beeGradeNumber <= 8 ? '6–8' : '9–12';
 
       // Inject fullscreen CSS rules once per session (idempotent).
       // Without this, inline `height: 500px` sticks even in fullscreen.
@@ -3067,6 +4213,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
       return (function() {
         var d = (labToolData.beehive) || {};
+        // Runtime mirrors provide synchronous admission control for rapid actions
+        // and request identity for async tutor responses. React remains the source
+        // of truth; these refs only bridge the interval before a queued render.
+        var _beeStateRef = React.useRef(d);
+        var _aiTutorRequestRef = React.useRef({});
+        var _beeActionEffectsRef = React.useRef({});
+        var _beeActionSequenceRef = React.useRef(0);
+        var _beeBadgeAwardsSeenRef = React.useRef({});
+        var _beekeeperActionTimerRef = React.useRef(null);
+        var _beekeeperActionSequenceRef = React.useRef(0);
+        _beeStateRef.current = d;
+        React.useEffect(function() {
+          return function() {
+            if (_beekeeperActionTimerRef.current) {
+              clearTimeout(_beekeeperActionTimerRef.current);
+              _beekeeperActionTimerRef.current = null;
+            }
+          };
+        }, []);
+        React.useEffect(function() {
+          var trail = Array.isArray(d.managementTrail) ? d.managementTrail : [];
+          trail.forEach(function(record) {
+            var txId = record && record.transactionId;
+            var effect = txId && _beeActionEffectsRef.current[txId];
+            if (!effect) return;
+            // Delete before invoking so React Strict Mode's effect replay cannot
+            // duplicate XP, audio, toasts, or character animation.
+            delete _beeActionEffectsRef.current[txId];
+            try { effect(record); }
+            catch (err) { if (typeof console !== 'undefined' && console.error) console.error('Bee action post-commit effect failed', err); }
+          });
+        }, [d.managementTrail]);
         var upd = function(key, val) { var _k = {}; _k[key] = val; setLabToolData(function(prev) { return Object.assign({}, prev, { beehive: Object.assign({}, prev.beehive || {}, _k) }); }); };
         var updAll = function(patch) { setLabToolData(function(prev) { return Object.assign({}, prev, { beehive: Object.assign({}, prev.beehive || {}, patch) }); }); };
         // Prev-reading updater: the callback mutates a copy of the CURRENT
@@ -3134,31 +4312,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         // shared with the vitest logic suite); render reads it via closure.
 
         // ── Colony State ──
-        var day = d.day || 0;
+        var day = Math.floor(bhBoundedNumber(d.day, 0, 0, 10000000));
         var season = Math.max(0, Math.min(3, Math.floor((day % 120) / 30))); // 0=spring, 1=summer, 2=autumn, 3=winter
         var seasonNames = ['🌱 Spring', '☀️ Summer', '🍂 Autumn', '❄️ Winter'];
 
         // Population
-        var workers = typeof d.workers === 'number' ? d.workers : 10000;
-        var brood = typeof d.brood === 'number' ? d.brood : 3000;
-        var drones = typeof d.drones === 'number' ? d.drones : 500;
-        var queenHealth = typeof d.queenHealth === 'number' ? d.queenHealth : 100;
+        var workers = bhBoundedNumber(d.workers, 10000, 0, 1000000);
+        var brood = bhBoundedNumber(d.brood, 3000, 0, 500000);
+        var drones = bhBoundedNumber(d.drones, 500, 0, 250000);
+        var queenHealth = bhBoundedNumber(d.queenHealth, 100, 0, 100);
 
         // Resources
-        var honey = typeof d.honey === 'number' ? d.honey : 20; // lbs
-        var pollen = typeof d.pollen === 'number' ? d.pollen : 15; // lbs
-        var wax = typeof d.wax === 'number' ? d.wax : 5; // lbs
+        var honey = bhBoundedNumber(d.honey, 20, 0, 1000000); // lbs
+        var pollen = bhBoundedNumber(d.pollen, 15, 0, 1000000); // lbs
+        var wax = bhBoundedNumber(d.wax, 5, 0, 1000000); // lbs
+        var reserveTargets = SIMULATION_PARAMS.seasonReserve || [18, 25, 60, 45];
+        var currentReserve = reserveTargets[season];
+        var currentReserveWhy = ['the spring buildup', 'the dearth before goldenrod', 'overwintering', 'the rest of winter'][season];
 
         // Health
-        var varroaLevel = typeof d.varroaLevel === 'number' ? d.varroaLevel : 5; // 0-100
-        var diseaseRisk = typeof d.diseaseRisk === 'number' ? d.diseaseRisk : 0;
-        var morale = typeof d.morale === 'number' ? d.morale : 80; // 0-100
+        var varroaLevel = bhBoundedNumber(d.varroaLevel, 5, 0, 100); // 0-100
+        var diseaseRisk = bhBoundedNumber(d.diseaseRisk, 0, 0, 100);
+        var morale = bhBoundedNumber(d.morale, 80, 0, 100); // 0-100
 
         // Foraging
         var nectarSources = d.nectarSources || 3; // base number of flower sources
-        var foragingEfficiency = typeof d.foragingEfficiency === 'number' ? d.foragingEfficiency : 70;
+        var foragingEfficiency = bhBoundedNumber(d.foragingEfficiency, 70, 0, 100);
 
-        var score = d.score || 0;
+        // Display the same normalized state the canonical stepper consumes, so
+        // corrupt legacy data cannot flash impossible values before day one.
+        var score = bhBoundedNumber(d.score, 0, 0, 1000000000);
         var eventLog = d.eventLog || [];
         var activeEvent = d.activeEvent || null;
         var phase = d.phase || 'manage'; // 'manage' | 'inspect'
@@ -3273,11 +4456,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
         // ── Bee Knowledge Quiz Questions ──
         var QUIZ_QUESTIONS = [
-          { q: 'How many times does a queen bee mate in her lifetime?', opts: ['Once (on a nuptial flight)', 'Every spring', 'Monthly', 'Continuously'], ans: 0, explain: 'A queen mates once during a nuptial flight at 200+ ft altitude with 10-20 drones, storing millions of sperm for her entire life.' },
+          { q: 'When does a queen bee usually mate?', opts: ['During one or more nuptial flights early in adult life', 'Every spring', 'Monthly throughout life', 'Continuously inside the hive'], ans: 0, explain: 'A queen has a short mating period early in adult life and may take several nuptial flights, mating with multiple drones before storing sperm for years of egg laying.' },
           { q: 'What does the waggle dance communicate?', opts: ['Danger level', 'Direction and distance to food', 'Colony mood', 'Queen health'], ans: 1, explain: 'The waggle run angle (relative to vertical) encodes direction relative to the sun. Duration encodes distance (~1 sec ≈ 1 km, though the exact tempo varies by subspecies). Karl von Frisch won the 1973 Nobel Prize for this discovery.' },
-          { q: 'At what temperature do bees maintain the brood nest?', opts: ['25°C (77°F)', '30°C (86°F)', '35°C (95°F)', '40°C (104°F)'], ans: 2, explain: 'The brood nest is maintained at exactly 35°C ± 0.5°C through shivering (heating) and water evaporation (cooling) — more precise than most mammals.' },
-          { q: 'Why does honey never spoil?', opts: ['Too cold inside the hive', 'Low moisture + enzymes produce hydrogen peroxide', 'Beeswax is airtight', 'It ferments instead'], ans: 1, explain: 'Glucose oxidase converts glucose into gluconic acid + H₂O₂ (hydrogen peroxide). Combined with low water activity (<18.6%), this makes honey permanently antimicrobial. Edible honey was found in 3,000-year-old Egyptian tombs.' },
-          { q: 'What is the primary threat to honeybee colonies worldwide?', opts: ['Bears', 'Varroa destructor mites', 'Cold weather', 'Other bee species'], ans: 1, explain: 'Varroa destructor mites feed on bee fat body tissue and transmit deadly viruses (DWV, ABPV). They arrived from Asian honeybees in the 1970s and are now present on every continent except Australia.' },
+          { q: 'Near what temperature do bees usually maintain the brood area?', opts: ['25°C (77°F)', '30°C (86°F)', '35°C (95°F)', '40°C (104°F)'], ans: 2, explain: 'Colonies usually keep the brood area near 34–36°C (93–97°F) through worker-generated heat and evaporative cooling. Temperature varies across the nest and with brood stage, so 35°C is a useful center value rather than an exact whole-nest set point.' },
+          { q: 'Why is properly ripened honey highly shelf-stable?', opts: ['Too cold inside the hive', 'Low water activity, acidity, and antimicrobial compounds', 'Beeswax is permanently airtight', 'It always ferments'], ans: 1, explain: 'Honey’s low water activity, acidity, and antimicrobial compounds inhibit most microbial growth. It can remain stable for a very long time when kept sealed and dry, but absorbed moisture can allow osmophilic yeasts to ferment it.' },
+          { q: 'What is the primary threat to honeybee colonies worldwide?', opts: ['Bears', 'Varroa destructor mites', 'Cold weather', 'Other bee species'], ans: 1, explain: 'Varroa destructor mites feed on honey bee fat-body tissue and transmit damaging viruses such as deformed wing virus. They are widespread globally. Varroa destructor was detected on mainland Australia in 2022, and Australia shifted from eradication to long-term management in 2023.' },
           { q: 'How many flowers must bees visit to produce 1 pound of honey?', opts: ['About 2,000', 'About 20,000', 'About 200,000', 'About 2 million'], ans: 3, explain: 'It takes roughly 2 million flower visits and 556 worker bees flying 55,000 miles to produce a single pound of honey. A single forager produces about 1/12 of a teaspoon in her lifetime.' },
           { q: 'What chemical does the alarm pheromone smell like?', opts: ['Honey', 'Bananas', 'Roses', 'Smoke'], ans: 1, explain: 'The alarm pheromone isopentyl acetate (isoamyl acetate) smells like bananas. This is why beekeepers avoid eating bananas before inspecting hives — the scent can trigger defensive behavior.' },
           { q: 'Why do beekeepers use smoke?', opts: ['To kill mites', 'To mask alarm pheromone and trigger bees to gorge on honey', 'To warm the hive', 'To attract the queen'], ans: 1, explain: 'Smoke masks alarm pheromone and triggers a "fire evacuation" response — bees gorge on honey to prepare for potentially abandoning the hive, which makes them calmer and less likely to sting.' },
@@ -3309,8 +4492,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         // ── Garden Bridge: Read pollinator plants from companion planting ──
         var gardenPollinators = 0;
         try {
-          var cgData = JSON.parse(localStorage.getItem('alloflow_stemlab') || '{}');
-          var cp = cgData.companionPlanting || {};
+          var cp = labToolData.companionPlanting || null;
+          if (!cp) {
+            var cgData = JSON.parse(localStorage.getItem('alloflow_stemlab_v2') || '{}');
+            cp = cgData.companionPlanting || {};
+          }
           var cg = cp.communityGarden || {};
           var cgGrid = cg.grid || [];
           cgGrid.forEach(function(cell) {
@@ -3328,12 +4514,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           { id: 'varroa_spike', emoji: '🦟', label: __alloT('stem.beehive.varroa_mite_surge', 'Varroa Mite Surge'), desc: __alloT('stem.beehive.varroa_destructor_mites_are_multiplyin', 'Varroa destructor mites are multiplying on developing pupae. They feed on fat body tissue and transmit deadly viruses (DWV, ABPV).'), effect: { varroaLevel: 20, morale: -10 }, lesson: 'Varroa destructor arrived from Asian honeybees (Apis cerana) in the 1970s. A single mite can reduce a worker bee\'s lifespan by 50%. Integrated pest management includes drone brood trapping, oxalic acid treatment, and breeding for hygienic behavior.' },
           { id: 'swarm', emoji: '🐝', label: __alloT('stem.beehive.swarming_impulse', 'Swarming Impulse!'), desc: __alloT('stem.beehive.the_colony_is_crowded_and_wants_to_spl', 'The colony is crowded and wants to split! The old queen may leave with half the workers unless you add space.'), effect: { workers: -3000, morale: -15 }, lesson: 'Swarming is natural reproduction at the colony level — the superorganism reproducing. Before swarming, workers raise queen cells. Scout bees find new nest sites using a democratic "house-hunting" process (studied by Thomas Seeley at Cornell). A beekeeper can prevent swarming by adding supers (more space) or splitting the hive.' },
           { id: 'nectar_flow', emoji: '🌸', label: __alloT('stem.beehive.nectar_flow', 'Nectar Flow!'), desc: __alloT('stem.beehive.wildflowers_are_blooming_abundantly_fo', 'Wildflowers are blooming abundantly! Foragers return heavy with nectar.'), effect: { honey: 8, pollen: 5, morale: 15, foragingEfficiency: 10 }, lesson: 'During a strong nectar flow, a colony can gain 5-10 lbs per day. Forager bees perform waggle dances that communicate the distance (duration of waggle run) and direction (angle relative to sun) of nectar sources. Karl von Frisch won the 1973 Nobel Prize for decoding this dance language.' },
-          { id: 'pesticide_drift', emoji: '☠️', label: __alloT('stem.beehive.pesticide_drift', 'Pesticide Drift'), desc: __alloT('stem.beehive.nearby_agricultural_spraying_has_conta', 'Nearby agricultural spraying has contaminated foraging areas. Workers are returning disoriented or dying.'), effect: { workers: -2000, foragingEfficiency: -20, morale: -20 }, lesson: 'Neonicotinoid pesticides (imidacloprid, clothianidin) are systemic — they spread through the entire plant, including pollen and nectar. Sub-lethal doses impair bee navigation, memory, and learning. Colony Collapse Disorder (CCD) is linked to a combination of pesticides, varroa mites, habitat loss, and nutritional stress.' },
+          { id: 'pesticide_drift', emoji: '☠️', label: __alloT('stem.beehive.pesticide_drift', 'Pesticide Drift'), desc: __alloT('stem.beehive.nearby_agricultural_spraying_has_conta', 'Nearby agricultural spraying has contaminated foraging areas. Workers are returning disoriented or dying.'), effect: { workers: -2000, foragingEfficiency: -20, morale: -20, pesticideExposure: 35 }, lesson: 'Neonicotinoid pesticides (imidacloprid, clothianidin) are systemic — they spread through the entire plant, including pollen and nectar. Sub-lethal doses impair bee navigation, memory, and learning. Colony Collapse Disorder (CCD) is linked to a combination of pesticides, varroa mites, habitat loss, and nutritional stress.' },
           { id: 'bear_visit', emoji: '🐻', label: __alloT('stem.beehive.bear_sighting', 'Bear Sighting!'), desc: __alloT('stem.beehive.a_black_bear_has_been_spotted_near_the', 'A black bear has been spotted near the apiary, attracted by the smell of honey.'), effect: { honey: -10, wax: -3, morale: -10 }, lesson: 'Bears are the most destructive large predators of honeybee colonies. They seek both honey and protein-rich brood. Electric fencing is the most effective deterrent. Interestingly, bears seem immune to bee stings on their faces due to thick fur, so bees target the nose and eyes.' },
-          { id: 'good_queen', emoji: '👑', label: __alloT('stem.beehive.queen_laying_strongly', 'Queen Laying Strongly'), desc: __alloT('stem.beehive.the_queen_is_healthy_and_laying_up_to_', 'The queen is healthy and laying up to 2,000 eggs per day — her own body weight in eggs!'), effect: { brood: 2000, queenHealth: 10, morale: 10 }, lesson: 'A queen bee mates once in her life during a "nuptial flight" with 10-20 drones at 200+ feet altitude. She stores millions of sperm and can lay fertilized (worker/queen) or unfertilized (drone) eggs at will. She produces pheromones (Queen Mandibular Pheromone) that maintain colony cohesion and suppress worker reproduction.' },
+          { id: 'good_queen', emoji: '👑', label: __alloT('stem.beehive.queen_laying_strongly', 'Queen Laying Strongly'), desc: __alloT('stem.beehive.the_queen_is_healthy_and_laying_up_to_', 'The queen is healthy and laying up to 2,000 eggs per day — her own body weight in eggs!'), effect: { brood: 2000, queenHealth: 10, morale: 10 }, lesson: 'A queen mates during a short period early in adult life, often across several nuptial flights and with multiple drones. She stores millions of sperm and can lay fertilized (worker/queen) or unfertilized (drone) eggs at will. She produces pheromones (Queen Mandibular Pheromone) that maintain colony cohesion and suppress worker reproduction.' },
           { id: 'robbing', emoji: '⚔️', label: __alloT('stem.beehive.robbing_attempt', 'Robbing Attempt'), desc: __alloT('stem.beehive.a_weaker_nearby_colony_is_trying_to_st', 'A weaker nearby colony is trying to steal your honey stores! Guard bees are fighting at the entrance.'), effect: { honey: -5, workers: -500, morale: -5 }, lesson: 'Robbing behavior occurs when nectar is scarce (dearth). Bees from other colonies probe for weak hive defenses. Guard bees identify intruders by colony-specific pheromone signatures. Reducing the entrance size during dearth periods helps guards defend more effectively.' },
           // ── Weather / climate events ──
-          { id: 'heatwave', emoji: '🔥', label: __alloT('stem.beehive.heatwave', 'Heatwave'), desc: __alloT('stem.beehive.outside_temperatures_have_spiked_past_', 'Outside temperatures have spiked past 100°F (38°C). Water foragers are working overtime to cool the hive.'), effect: { workers: -800, honey: -3, foragingEfficiency: -10, morale: -8 }, weather: true, lesson: 'Honeybees maintain the brood nest at exactly 35°C even when outside air exceeds 40°C. Water foragers collect droplets and spread them on comb while fanner bees beat wings at 230/sec to evaporate the water — a physiological air conditioner. Climate change is lengthening heatwaves; colonies near water sources survive better.' },
+          { id: 'heatwave', emoji: '🔥', label: __alloT('stem.beehive.heatwave', 'Heatwave'), desc: __alloT('stem.beehive.outside_temperatures_have_spiked_past_', 'Outside temperatures have spiked past 100°F (38°C). Water foragers are working overtime to cool the hive.'), effect: { workers: -800, honey: -3, foragingEfficiency: -10, morale: -8 }, weather: true, lesson: 'Honeybees usually keep the brood area near 34–36°C even when outside air exceeds 40°C. Water foragers collect droplets and spread them on comb while fanner bees beat wings at 230/sec to evaporate the water — a physiological air conditioner. Climate change is lengthening heatwaves; colonies near water sources survive better.' },
           { id: 'drought', emoji: '🏜️', label: __alloT('stem.beehive.drought', 'Drought'), desc: __alloT('stem.beehive.prolonged_dry_weather_has_wilted_flowe', 'Prolonged dry weather has wilted flowers across the foraging range. Nectar flow has collapsed.'), effect: { foragingEfficiency: -25, honey: -4, pollen: -2, morale: -10 }, weather: true, lesson: 'During drought, plants close stomata and stop producing nectar to conserve water. Foragers return empty-handed and may resort to robbing other colonies. Drought-resistant native plants (goldenrod, sunflower, sage, coneflower) are a bee lifeline. Providing shallow water with pebble landing zones saves lives.' },
           { id: 'late_frost', emoji: '🥶', label: __alloT('stem.beehive.late_spring_frost', 'Late Spring Frost'), desc: __alloT('stem.beehive.a_sudden_overnight_frost_has_killed_ea', 'A sudden overnight frost has killed early blossoms and trapped foragers caught outside.'), effect: { workers: -1500, foragingEfficiency: -15, honey: -2, morale: -12 }, weather: true, lesson: 'Honeybees cannot fly below ~10°C (50°F) — their flight muscles seize. A late frost after bloom kills flowers AND foragers who cannot make it home. Climate instability is increasing frost-after-bloom events, a leading cause of spring colony loss. Fruit growers rely on honeybee pollination within tight bloom windows.' },
           { id: 'flood', emoji: '🌊', label: __alloT('stem.beehive.heavy_rain_flood', 'Heavy Rain / Flood'), desc: __alloT('stem.beehive.days_of_heavy_rain_have_waterlogged_th', 'Days of heavy rain have waterlogged the ground and grounded all foragers. Moisture is seeping into the hive.'), effect: { foragingEfficiency: -20, honey: -3, morale: -8, diseaseRisk: 10 }, weather: true, lesson: 'Bees cannot fly in rain — their wings are too thin and droplets hit with hurricane force at their scale. Prolonged wet weather means no income, rising humidity inside the hive, and bacterial/fungal disease risk (Nosema, chalkbrood). Elevated hive stands and good ventilation are critical. Flash floods can destroy ground-nesting native bees entirely.' }
@@ -3354,19 +4540,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
         // ── Gameplay Systems ──
         var year = Math.floor(day / 120) + 1;
-        var totalHoney = d.totalHoney || 0;
+        var totalHoney = bhBoundedNumber(d.totalHoney, 0, 0, 1000000000);
         var colonySurvived = d.colonySurvived !== false; // false = colony collapsed
-        var actionPoints = typeof d.actionPoints === 'number' ? d.actionPoints : 3; // limited actions per day
-        var habitat = d.habitat || 50; // 0-100 — local habitat health (flowers, nesting sites, clean water)
-        var pesticideExposure = d.pesticideExposure || 0; // cumulative exposure level
+        var actionPoints = bhBoundedNumber(d.actionPoints, 3, 0, 3); // limited actions per day
+        var _actionPointsRef = React.useRef(actionPoints);
+        _actionPointsRef.current = actionPoints;
+        var habitat = bhBoundedNumber(d.habitat, 50, 0, 100); // 0-100 — local habitat health
+        var pesticideExposure = bhBoundedNumber(d.pesticideExposure, 0, 0, 100); // cumulative exposure
         var seasonGoals = d.seasonGoals || null;
 
         // Seasonal goals — what the student should aim for each season
         var SEASON_GOALS = [
-          { season: 'Spring', goals: ['Build workforce to 20,000+ workers', 'Keep varroa below 15%', 'Ensure 30+ lbs honey stores'], emoji: '🌱' },
-          { season: 'Summer', goals: ['Harvest surplus honey (keep 15+ lbs)', 'Prevent swarming (add supers)', 'Maximize foraging (plant garden!)'], emoji: '☀️' },
-          { season: 'Autumn', goals: ['Build 40+ lbs winter honey stores', 'Treat varroa before winter', 'Ensure queen health above 70%'], emoji: '🍂' },
-          { season: 'Winter', goals: ['Colony survives with 10,000+ workers', 'Honey doesn\'t drop below 10 lbs', 'Plan habitat improvements'], emoji: '❄️' }
+          { season: 'Spring', goals: ['Build workforce to 20,000+ workers', 'Keep varroa below 15%', 'Maintain at least ' + reserveTargets[0] + ' lbs honey'], emoji: '🌱' },
+          { season: 'Summer', goals: ['Harvest only surplus; leave ' + reserveTargets[1] + ' lbs', 'Prevent swarming (add supers)', 'Maximize foraging (plant garden!)'], emoji: '☀️' },
+          { season: 'Autumn', goals: ['Build ' + reserveTargets[2] + '+ lbs winter honey stores', 'Treat varroa before winter', 'Ensure queen health above 70%'], emoji: '🍂' },
+          { season: 'Winter', goals: ['Colony survives with 10,000+ workers', 'Keep at least ' + reserveTargets[3] + ' lbs in reserve', 'Plan habitat improvements'], emoji: '❄️' }
         ];
 
         // ── Conservation Actions (cost action points) ──
@@ -3522,11 +4710,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   : items.map(function(item, idx) { return renderGuideEntry(item, idx); }))));
         }
 
-        // Colony collapse check — defer state update out of render body
-        if (workers < 500 && day > 30 && colonySurvived) {
-          colonySurvived = false;
-          setTimeout(function() { updAll({ colonySurvived: false }); }, 0);
-        }
+        // Commit collapse after render. This avoids scheduling timers during
+        // render and also disarms the clock before a dead colony can advance.
+        React.useEffect(function() {
+          if (workers < 500 && day > 30 && colonySurvived) {
+            updAll({ colonySurvived: false, autoAdvance: false });
+          }
+        }, [workers, day, colonySurvived]);
 
         // ── Beekeeper's Journal generator (auto-narrative per day) ──
         // ctx: { day, season, workers, honey, varroa, brood, morale, queenHealth, event, subspeciesEmoji }
@@ -3575,7 +4765,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var dt = new Date();
           var dateStamp = dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
           lines.push('# 🐝 Beehive Colony Report');
-          lines.push('*Generated ' + dateStamp + ' — Beehive Simulator · AlloFlow STEM Lab*');
+          lines.push('*Generated ' + dateStamp + ' — Beehive Simulator · AlloFlow STEAM Lab*');
           lines.push('');
           lines.push('## Overview');
           lines.push('- **Subspecies:** ' + activeSubspecies.emoji + ' ' + activeSubspecies.name + ' (*' + activeSubspecies.sci + '*) from ' + activeSubspecies.origin);
@@ -3686,53 +4876,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             honey: honey, pollen: pollen, wax: wax, varroaLevel: varroaLevel, morale: morale,
             foragingEfficiency: foragingEfficiency, habitat: habitat, pesticideExposure: pesticideExposure,
             diseaseRisk: (typeof d.diseaseRisk === 'number' ? d.diseaseRisk : 0), activeEvent: activeEvent,
-            capacity: (typeof d.capacity === 'number' ? d.capacity : 80)
+            capacity: (typeof d.capacity === 'number' ? d.capacity : 80),
+            winterized: !!d.winterized
           };
         }
         function advanceDay() {
-          if (!colonySurvived) return;
-          if (activeEvent) { if (addToast) addToast('Resolve the active colony event before advancing time.', 'info'); return; }
+          var live = _beeStateRef.current || d;
+          if (live.colonySurvived === false) return;
+          if (live.activeEvent) {
+            if (addToast) addToast('Resolve the active colony event before advancing time.', 'info');
+            return;
+          }
+          // The batch reducer reads React's live previous state. Routing a
+          // one-day request through it makes rapid clicks/shortcuts sequential
+          // instead of simulating the same render snapshot twice.
           playSfx(sfxDayChime);
-          // One canonical step (shared with advanceDays — no more divergent copy).
-          var _r = bhStepColony(bhSnapshot(), bhCfg());
-          var nx = _r.next;
-          if (_r.event) playSfx(sfxAlert);
-          var newHistory = history.concat([{ d: nx.day, w: nx.workers, h: nx.honey, v: nx.varroaLevel, m: nx.morale }]);
-          if (newHistory.length > 120) newHistory = newHistory.slice(-120);
-          var entry = generateJournalEntry({
-            day: nx.day, season: Math.floor((nx.day % 120) / 30),
-            workers: nx.workers, honey: nx.honey, varroa: nx.varroaLevel,
-            brood: nx.brood, morale: nx.morale, queenHealth: nx.queenHealth,
-            event: _r.event || null, subspeciesEmoji: activeSubspecies.emoji
-          });
-          var newJournal = (d.journal || []).concat([entry]);
-          if (newJournal.length > 30) newJournal = newJournal.slice(-30);
-          updAll({
-            day: nx.day, workers: nx.workers, brood: nx.brood, drones: nx.drones,
-            honey: nx.honey, pollen: nx.pollen, wax: nx.wax, varroaLevel: nx.varroaLevel,
-            morale: nx.morale, foragingEfficiency: nx.foragingEfficiency, queenHealth: nx.queenHealth,
-            activeEvent: _r.event || activeEvent, // preserve an unresolved event
-            score: score + nx.scoreGain, actionPoints: 3,
-            habitat: nx.habitat, pesticideExposure: nx.pesticideExposure, capacity: nx.capacity,
-            // GROSS, not net. honeyGain became the change in stores on 2026-07-30, and feeding it
-            // here would make "total honey produced" fall during a dearth — it gates the
-            // produce_honey badge, so the badge would have un-earned itself.
-            totalHoney: Math.round((totalHoney + nx.honeyGrossIn) * 10) / 10,
-            totalFlowerVisits: (d.totalFlowerVisits || 0) + nx.flowerVisits,
-            // Surfaced so the UI can say a dearth is on. Nothing consumed this before, which made
-            // the flow shutting off look like a bug rather than a season.
-            inDearth: !!nx.inDearth,
-            history: newHistory, journal: newJournal, diseaseRisk: nx.diseaseRisk,
-            lastAdvance: { fromDay: day, toDay: nx.day, days: 1, workers: nx.workers - workers, honey: Math.round((nx.honey - honey) * 10) / 10, varroa: Math.round((nx.varroaLevel - varroaLevel) * 10) / 10, morale: Math.round((nx.morale - morale) * 10) / 10, stoppedForEvent: !!_r.event }
-          });
+          advanceDays(1);
         }
 
         // ── Advance Multiple Days (pure-functional, reads from prev state) ──
         function advanceDays(n) {
-          if (!colonySurvived) return;
-          if (activeEvent) { if (addToast) addToast('Resolve the active colony event before fast-forwarding.', 'info'); return; }
+          var live = _beeStateRef.current || d;
+          if (live.colonySurvived === false) return;
+          if (live.activeEvent) { if (addToast) addToast('Resolve the active colony event before fast-forwarding.', 'info'); return; }
           setLabToolData(function(prev) {
             var b = Object.assign({}, prev.beehive || {});
+            if (b.colonySurvived === false || b.activeEvent ||
+                (((typeof b.workers === 'number' ? b.workers : 10000) < 500) && (b.day || 0) > 30)) {
+              return prev;
+            }
             var advanceStart = { day: b.day || 0, workers: typeof b.workers === 'number' ? b.workers : 10000, honey: typeof b.honey === 'number' ? b.honey : 20, varroa: typeof b.varroaLevel === 'number' ? b.varroaLevel : 5, morale: typeof b.morale === 'number' ? b.morale : 80 };
             var daysAdvanced = 0;
             var stoppedForEvent = false;
@@ -3757,7 +4929,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 pesticideExposure: b.pesticideExposure || 0,
                 diseaseRisk: typeof b.diseaseRisk === 'number' ? b.diseaseRisk : 0,
                 activeEvent: b.activeEvent || null,
-                capacity: typeof b.capacity === 'number' ? b.capacity : 80
+                capacity: typeof b.capacity === 'number' ? b.capacity : 80,
+                winterized: !!b.winterized
               };
               var _br = bhStepColony(_bs, bhCfg());
               var bnx = _br.next;
@@ -3807,6 +4980,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         }
 
         // ── Actions ──
+        // Announce only the concise event summary. The detailed forecast and
+        // lesson stay in a labelled region for intentional reading instead of
+        // being forced through an assertive live region.
+        var _beeAlertedEventRef = React.useRef(null);
+        React.useEffect(function() {
+          if (!activeEvent) {
+            _beeAlertedEventRef.current = null;
+            return;
+          }
+          var eventKey = activeEvent.id || activeEvent.label || 'colony-event';
+          if (_beeAlertedEventRef.current === eventKey) return;
+          _beeAlertedEventRef.current = eventKey;
+          if (d.autoAdvance) upd('autoAdvance', false);
+          var effect = activeEvent.effect || {};
+          var urgent = (effect.workers || 0) < 0 || (effect.honey || 0) < 0 ||
+            (effect.brood || 0) < 0 || (effect.queenHealth || 0) < 0;
+          playSfx(sfxAlert);
+          announceBee('Colony event: ' + (activeEvent.label || 'new event') +
+            '. Time is paused until you acknowledge it.', urgent);
+        }, [activeEvent]);
+
         // Sound-gated wrappers
         function playSfx(fn) { if (soundOn) fn(); }
 
@@ -3854,26 +5048,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             if (season === 3 || season === 0) { reduction = Math.round(reduction * 0.3); contextNote = ' (few drones being produced — weak effect)'; }
             else if (season === 1) { reduction = Math.round(reduction * 1.2); contextNote = ' (peak drone brood — very effective)'; }
           }
-          // Apply against LIVE state (reduction/hits are context deltas computed
-          // from the captured season/brood, which don't change between clicks) so
-          // two treatments in one batch can't clobber each other's AP spend.
-          updFn(function(b) {
-            if ((typeof b.actionPoints === 'number' ? b.actionPoints : 3) < treatment.ap) return;
-            var before = Object.assign({}, b);
-            b.actionPoints = (typeof b.actionPoints === 'number' ? b.actionPoints : 3) - treatment.ap;
+          // Treatment uses the same two-phase AP contract as every management
+          // action. The preview closes the rapid-click admission gap; the live
+          // updater remains authoritative; and the transaction record is what
+          // releases sound, XP, and success copy. Keeping those effects out of
+          // the React updater is important because Strict Mode may replay updater
+          // functions while checking purity. The record also preserves the actual
+          // contextual reduction, making the intervention evidence auditable.
+          if (!apAction(treatment.ap, treatment.label, function(b, outcome) {
             b.varroaLevel = Math.max(0, (typeof b.varroaLevel === 'number' ? b.varroaLevel : 5) - reduction);
             b.morale = Math.max(0, (typeof b.morale === 'number' ? b.morale : 80) - moraleHit);
             b.queenHealth = Math.max(0, (typeof b.queenHealth === 'number' ? b.queenHealth : 100) - queenHit);
             b.varroaTreats = (b.varroaTreats || 0) + 1;
-            b.lastManagement = managementEvidenceRecord(treatment.label, treatment.ap + ' AP', before, b, treatment.label + ' applied' + contextNote + '. Compare mite reduction and colony stress with the forecast.');
             var tu = Object.assign({}, b.treatmentsUsed || {});
             tu[treatmentId] = ((b.treatmentsUsed || {})[treatmentId] || 0) + 1;
             b.treatmentsUsed = tu;
             b.showTreatModal = false;
-          });
-          playSfx(sfxTreat);
-          if (addToast) addToast(treatment.emoji + ' ' + treatment.label + ': −' + reduction + '% mites' + contextNote, 'success');
-          if (awardStemXP) awardStemXP('beehive', 5 + Math.round(reduction / 5), 'Treated varroa: ' + treatment.label);
+            outcome.reduction = reduction;
+          }, {
+            summary: function() { return treatment.label + ' applied' + contextNote + '. Compare mite reduction and colony stress with the forecast.'; },
+            onCommit: function() {
+              playSfx(sfxTreat);
+              if (addToast) addToast(treatment.emoji + ' ' + treatment.label + ': −' + reduction + '% mites' + contextNote, 'success');
+              if (awardStemXP) awardStemXP('beehive', 5 + Math.round(reduction / 5), 'Treated varroa: ' + treatment.label);
+            }
+          })) return;
         }
 
         // ── Beekeeper-as-character animation trigger ──
@@ -3882,9 +5081,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         // IMPORTANT: duration here must match the auto-clear timeout below.
         function triggerBeekeeperAction(type, caption, emoji) {
           var duration = 5000;
-          upd('bkAnim', { type: type, caption: caption, emoji: emoji, startedAt: Date.now(), duration: duration });
+          var token = 'bee-bk-' + Date.now().toString(36) + '-' + (++_beekeeperActionSequenceRef.current);
+          if (_beekeeperActionTimerRef.current) clearTimeout(_beekeeperActionTimerRef.current);
+          upd('bkAnim', { type: type, caption: caption, emoji: emoji, startedAt: Date.now(), duration: duration, token: token });
           announceBee(caption, false);
-          setTimeout(function () { upd('bkAnim', null); }, duration);
+          _beekeeperActionTimerRef.current = setTimeout(function () {
+            _beekeeperActionTimerRef.current = null;
+            // The previous timer is cancelled before every new action, so this
+            // callback can only belong to the currently displayed animation.
+            upd('bkAnim', null);
+          }, duration);
         }
         function treatVarroa() {
           // Open IPM modal instead of applying a single treatment directly
@@ -3923,14 +5129,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           }
           return { kind: 'intervention', label: label, cost: cost, day: after.day || 0, summary: summary || label + ' completed. Compare the observed changes with the forecast before choosing another intervention.', changes: changes.slice(0, 8) };
         }
-        function apAction(cost, label, mutate) {
-          if (actionPoints < cost) { if (addToast) addToast('Need ' + cost + ' action point' + (cost > 1 ? 's' : '') + ' for ' + label + '. Advance a day for more.', 'info'); return false; }
+        function apAction(cost, label, mutate, options) {
+          options = options || {};
+          var snapshot = Object.assign({}, _beeStateRef.current || d);
+          var available = typeof snapshot.actionPoints === 'number' ? snapshot.actionPoints : 3;
+          if (available < cost) {
+            if (addToast) addToast('Need ' + cost + ' action point' + (cost > 1 ? 's' : '') + ' for ' + label + '. Advance a day for more.', 'info');
+            return false;
+          }
+
+          // Admit the action synchronously against a private preview. This closes
+          // the render-to-updater gap that let a rapid second click return true
+          // and award success effects even though live state rejected its AP spend.
+          var preview = Object.assign({}, snapshot);
+          preview.actionPoints = available - cost;
+          var previewOutcome = {};
+          if (mutate(preview, previewOutcome) === false) return false;
+
+          var txId = 'bee-ap-' + Date.now().toString(36) + '-' + (++_beeActionSequenceRef.current);
+          var previewSummary = typeof options.summary === 'function'
+            ? options.summary(previewOutcome, preview, snapshot)
+            : options.summary;
+          var previewRecord = managementEvidenceRecord(label, cost + ' AP', snapshot, preview, previewSummary);
+          previewRecord.transactionId = txId;
+          previewRecord.outcome = previewOutcome;
+          preview.lastManagement = previewRecord;
+          preview.managementTrail = (Array.isArray(snapshot.managementTrail) ? snapshot.managementTrail : []).concat([previewRecord]).slice(-24);
+          _beeStateRef.current = preview;
+          _actionPointsRef.current = preview.actionPoints;
+
+          if (typeof options.onCommit === 'function') {
+            var pendingIds = Object.keys(_beeActionEffectsRef.current);
+            while (pendingIds.length >= 32) delete _beeActionEffectsRef.current[pendingIds.shift()];
+            _beeActionEffectsRef.current[txId] = options.onCommit;
+          }
+
           updFn(function(b) {
-            if ((typeof b.actionPoints === 'number' ? b.actionPoints : 3) < cost) return; // re-check against live state
+            var liveAvailable = typeof b.actionPoints === 'number' ? b.actionPoints : 3;
+            if (liveAvailable < cost) return;
             var before = Object.assign({}, b);
-            b.actionPoints = (typeof b.actionPoints === 'number' ? b.actionPoints : 3) - cost;
-            mutate(b);
-            b.lastManagement = managementEvidenceRecord(label, cost + ' AP', before, b);
+            var next = Object.assign({}, b, { actionPoints: liveAvailable - cost });
+            var outcome = {};
+            if (mutate(next, outcome) === false) return;
+            var summary = typeof options.summary === 'function'
+              ? options.summary(outcome, next, before)
+              : options.summary;
+            var record = managementEvidenceRecord(label, cost + ' AP', before, next, summary);
+            record.transactionId = txId;
+            record.outcome = outcome;
+            next.lastManagement = record;
+            next.managementTrail = (Array.isArray(b.managementTrail) ? b.managementTrail : []).concat([record]).slice(-24);
+            Object.assign(b, next);
           });
           return true;
         }
@@ -3939,18 +5188,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             b.morale = Math.min(100, (typeof b.morale === 'number' ? b.morale : 80) + 10);
             b.wax = Math.round(((typeof b.wax === 'number' ? b.wax : 5) + 2) * 10) / 10;
             b.capacity = (typeof b.capacity === 'number' ? b.capacity : 80) + 40; // more storage → lower swarm risk
-          })) return;
-          playSfx(sfxBeeBuzz); if (addToast) addToast('📦 Added a honey super — more space, lower swarm risk!', 'success');
-          if (awardStemXP) awardStemXP('beehive', 5, 'Added super');
-          triggerBeekeeperAction('super', 'Adding a super — more room for honey!', '📦');
+            b.supersAdded = (b.supersAdded || 0) + 1;
+          }, { onCommit: function() {
+            playSfx(sfxBeeBuzz); if (addToast) addToast('📦 Added a honey super — more space, lower swarm risk!', 'success');
+            if (awardStemXP) awardStemXP('beehive', 5, 'Added super');
+            triggerBeekeeperAction('super', 'Adding a super — more room for honey!', '📦');
+          } })) return;
         }
         function smokeHive() {
           if (!apAction(1, 'Smoke Hive', function(b) {
             b.morale = Math.min(100, (typeof b.morale === 'number' ? b.morale : 80) + 2);
-          })) return;
-          playSfx(sfxBeeBuzz); if (addToast) addToast('💨 Smoked the hive — bees will gorge on honey and stay calm.', 'info');
-          if (awardStemXP) awardStemXP('beehive', 2, 'Smoked hive');
-          triggerBeekeeperAction('smoke', 'Smoking the hive to calm the bees.', '💨');
+          }, { onCommit: function() {
+            playSfx(sfxBeeBuzz); if (addToast) addToast('💨 Smoked the hive — bees will gorge on honey and stay calm.', 'info');
+            if (awardStemXP) awardStemXP('beehive', 2, 'Smoked hive');
+            triggerBeekeeperAction('smoke', 'Smoking the hive to calm the bees.', '💨');
+          } })) return;
         }
         function requeenColony() {
           // Requeen: replaces old queen, brief morale dip (bees accept new queen over ~2 days),
@@ -3958,10 +5210,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           if (!apAction(2, 'Requeen', function(b) {
             b.queenHealth = 100;
             b.morale = Math.max(40, (typeof b.morale === 'number' ? b.morale : 80) - 5);
-          })) return;
-          playSfx(sfxSuccess); if (addToast) addToast('👑 Installed a new queen — colony will accept her in 2-3 days.', 'success');
-          if (awardStemXP) awardStemXP('beehive', 8, 'Requeened colony');
-          triggerBeekeeperAction('requeen', 'Installing a new queen.', '👑');
+          }, { onCommit: function() {
+            playSfx(sfxSuccess); if (addToast) addToast('👑 Installed a new queen — colony will accept her in 2-3 days.', 'success');
+            if (awardStemXP) awardStemXP('beehive', 8, 'Requeened colony');
+            triggerBeekeeperAction('requeen', 'Installing a new queen.', '👑');
+          } })) return;
         }
         // Identify the honey varietal based on season + garden pollinators
         function identifyVarietal() {
@@ -3985,7 +5238,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           // Now the floor is what the season ahead actually needs — about 60 lbs before winter —
           // so "how much can I take?" becomes the judgement the real craft turns on.
           var hSeason = Math.max(0, Math.min(3, Math.floor(((d.day || 0) % 120) / 30)));
-          var reserve = (SIMULATION_PARAMS.seasonReserve || [18, 15, 60, 45])[hSeason];
+          var reserve = (SIMULATION_PARAMS.seasonReserve || [18, 25, 60, 45])[hSeason];
           var reserveWhy = ['the spring buildup', 'the dearth before goldenrod', 'overwintering', 'the rest of winter'][hSeason];
           // <= reserve, not < reserve: at exactly the floor (reachable — honey is stored rounded
           // to 0.1) harvested was 0, yet it still logged a varietal and a phantom "0 lb / 1 jar"
@@ -3996,15 +5249,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             return;
           }
           if (actionPoints < 1) { if (addToast) addToast('Need 1 action point to harvest. Advance a day for more.', 'info'); return; }
-          var harvested = Math.round((honey - reserve) * 10) / 10;
           var varietal = identifyVarietal();
-          updFn(function(b) {
-            if ((typeof b.actionPoints === 'number' ? b.actionPoints : 3) < 1) return;
-            var before = Object.assign({}, b);
+          if (!apAction(1, 'Harvest ' + varietal.name, function(b, outcome) {
             var bHoney = typeof b.honey === 'number' ? b.honey : 20;
-            if (bHoney <= reserve) return; // live re-check against the same seasonal floor
+            if (bHoney <= reserve) return false; // same seasonal floor, rechecked in preview and live state
             var got = Math.round((bHoney - reserve) * 10) / 10;
-            b.actionPoints = (typeof b.actionPoints === 'number' ? b.actionPoints : 3) - 1;
             var newVarietals = Object.assign({}, b.varietals || {});
             var existing = newVarietals[varietal.id];
             var entry = existing ? Object.assign({}, existing)
@@ -4017,15 +5266,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             b.score = (b.score || 0) + Math.round(got * 20);
             b.totalHarvested = Math.round(((b.totalHarvested || 0) + got) * 10) / 10;
             b.varietals = newVarietals;
-            b.lastManagement = managementEvidenceRecord('Harvest ' + varietal.name, '1 AP', before, b, 'Harvested ' + got + ' lb and left ' + reserve + ' lb for ' + reserveWhy + '. Compare the reserve trade-off with the forecast.');
-          });
-          // Say what was LEFT and why, not just what was taken. The number the beekeeper is
-          // actually judged on is the one still in the hive.
-          playSfx(sfxBeeCollect);
-          if (addToast) addToast(varietal.emoji + ' Harvested ' + harvested + ' lbs of ' + varietal.name
-            + ' honey (+' + Math.round(harvested * 20) + ' pts) — left ' + reserve + ' lbs for ' + reserveWhy + '.', 'success');
-          if (awardStemXP) awardStemXP('beehive', 15, 'Harvested ' + varietal.name);
-          triggerBeekeeperAction('harvest', 'Harvesting ' + varietal.name + ' honey — ' + harvested + ' lbs!', varietal.emoji || '🍯');
+            b.lastHarvestDay = b.day || 0;
+            b.lastHarvestSeason = hSeason;
+            b.lastHarvestYear = Math.floor((b.day || 0) / 120) + 1;
+            outcome.harvested = got;
+            outcome.points = Math.round(got * 20);
+            outcome.harvestSeason = hSeason;
+            outcome.harvestYear = b.lastHarvestYear;
+          }, {
+            summary: function(outcome) { return 'Harvested ' + outcome.harvested + ' lb and left ' + reserve + ' lb for ' + reserveWhy + '. Compare the reserve trade-off with the forecast.'; },
+            onCommit: function(record) {
+              var committed = record.outcome || {};
+              var harvested = committed.harvested || 0;
+              // Say what was LEFT and why, not just what was taken. The number the beekeeper is
+              // actually judged on is the one still in the hive.
+              playSfx(sfxBeeCollect);
+              if (addToast) addToast(varietal.emoji + ' Harvested ' + harvested + ' lbs of ' + varietal.name
+                + ' honey (+' + (committed.points || Math.round(harvested * 20)) + ' pts) — left ' + reserve + ' lbs for ' + reserveWhy + '.', 'success');
+              if (awardStemXP) awardStemXP('beehive', 15, 'Harvested ' + varietal.name);
+              triggerBeekeeperAction('harvest', 'Harvesting ' + varietal.name + ' honey — ' + harvested + ' lbs!', varietal.emoji || '🍯');
+            }
+          })) return;
         }
         // ── Split the colony ──────────────────────────────────────────────────
         // The textbook alternative to letting a crowded hive swarm, and the main way beekeepers
@@ -4055,11 +5316,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             b.queenHealth = 100;                 // the split raises a new queen; parent keeps the old
             b.morale = Math.min(100, (typeof b.morale === 'number' ? b.morale : 80) + 4);
             b.splitsMade = (b.splitsMade || 0) + 1;
-          })) return;
-          playSfx(sfxSuccess);
-          if (addToast) addToast('🧰 Split made. The parent hive keeps about 58% of its bees and its mite load drops with them — expect little surplus honey from this colony this year.', 'success');
-          if (awardStemXP) awardStemXP('beehive', 12, 'Split a colony');
-          triggerBeekeeperAction('split', 'Moving frames of brood and bees into a second box.', '🧰');
+          }, { onCommit: function() {
+            playSfx(sfxSuccess);
+            if (addToast) addToast('🧰 Split made. The parent hive keeps about 58% of its bees and its mite load drops with them — expect little surplus honey from this colony this year.', 'success');
+            if (awardStemXP) awardStemXP('beehive', 12, 'Split a colony');
+            triggerBeekeeperAction('split', 'Moving frames of brood and bees into a second box.', '🧰');
+          } })) return;
         }
 
         // ── Winterize ─────────────────────────────────────────────────────────
@@ -4080,24 +5342,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             // The actual effect lives in bhStepColony, which reads s.winterized and cuts winter
             // consumption and cold mortality. Nudging foragingEfficiency here instead would have
             // been decorative: winter forageMult is 0, so it multiplies to nothing.
-          })) return;
-          playSfx(sfxSuccess);
-          if (addToast) addToast('🧣 Winterized: hive wrapped, insulation over the cluster, mouse guard fitted. The colony will burn less honey holding brood temperature.', 'success');
-          if (awardStemXP) awardStemXP('beehive', 8, 'Winterized the hive');
-          triggerBeekeeperAction('winterize', 'Wrapping the hive and fitting the mouse guard.', '🧣');
+          }, { onCommit: function() {
+            playSfx(sfxSuccess);
+            if (addToast) addToast('🧣 Winterized: hive wrapped, insulation over the cluster, mouse guard fitted. The colony will burn less honey holding brood temperature.', 'success');
+            if (awardStemXP) awardStemXP('beehive', 8, 'Winterized the hive');
+            triggerBeekeeperAction('winterize', 'Wrapping the hive and fitting the mouse guard.', '🧣');
+          } })) return;
         }
 
         function feedBees() {
           if (!apAction(1, 'Feed Bees', function(b) {
             b.honey = Math.round(((typeof b.honey === 'number' ? b.honey : 20) + 5) * 10) / 10;
             b.morale = Math.min(100, (typeof b.morale === 'number' ? b.morale : 80) + 5);
-          })) return;
-          playSfx(sfxSuccess); if (addToast) addToast('🫙 Fed sugar syrup — emergency reserves replenished.', 'success');
-          if (awardStemXP) awardStemXP('beehive', 3, 'Fed bees');
-          triggerBeekeeperAction('feed', 'Pouring sugar syrup into the top feeder.', '🫙');
+          }, { onCommit: function() {
+            playSfx(sfxSuccess); if (addToast) addToast('🫙 Fed sugar syrup — emergency reserves replenished.', 'success');
+            if (awardStemXP) awardStemXP('beehive', 3, 'Fed bees');
+            triggerBeekeeperAction('feed', 'Pouring sugar syrup into the top feeder.', '🫙');
+          } })) return;
         }
         function dismissEvent() {
-          var patch = { activeEvent: null, eventsHandled: (d.eventsHandled || 0) + 1 };
+          var patch = { activeEvent: null, autoAdvance: false, eventsHandled: (d.eventsHandled || 0) + 1 };
           if (activeEvent && activeEvent.weather) patch.weatherEventsHandled = (d.weatherEventsHandled || 0) + 1;
           updAll(patch);
           playSfx(sfxSuccess); if (awardStemXP) awardStemXP('beehive', 5, 'Handled event');
@@ -4141,7 +5405,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         var TUTORIAL_STEPS = [
           { title: __alloT('stem.beehive.welcome_beekeeper', 'Welcome, Beekeeper!'), text: __alloT('stem.beehive.you_re_managing_a_honeybee_colony_a_su', 'You\'re managing a honeybee colony — a superorganism of 10,000 workers, a queen, and hundreds of drones. Your goal: keep the colony alive and thriving through all four seasons.'), icon: '🐝' },
           { title: __alloT('stem.beehive.advance_days', 'Advance Days'), text: __alloT('stem.beehive.click_next_day_to_simulate_one_day_wat', 'Click "Next Day" to simulate one day. Watch the seasonal cycle — spring builds workers, summer brings nectar, autumn prepares for winter, and winter tests your reserves.'), icon: '⏩' },
-          { title: __alloT('stem.beehive.manage_your_hive', 'Manage Your Hive'), text: __alloT('stem.beehive.use_treat_super_harvest_feed_and_inspe', 'Use Treat, Super, Harvest, Feed, and Inspect to manage the colony. Treat varroa mites before they get above 20%. Harvest honey only when surplus exceeds 15 lbs.'), icon: '🔧' },
+          { title: __alloT('stem.beehive.manage_your_hive', 'Manage Your Hive'), text: __alloT('stem.beehive.use_treat_super_harvest_feed_and_inspe', 'Use Treat, Super, Harvest, Feed, and Inspect to manage the colony. Treat varroa mites before they get above 20%. Harvest only the honey above the seasonal reserve shown in the dashboard.'), icon: '🔧' },
           { title: __alloT('stem.beehive.conservation_matters', 'Conservation Matters'), text: __alloT('stem.beehive.spend_action_points_on_conservation_ac', 'Spend action points on conservation actions — plant wildflowers, build bee hotels, and advocate for pesticide-free zones. These improve habitat and foraging for all pollinators.'), icon: '🌍' },
           { title: __alloT('stem.beehive.explore_learn', 'Explore & Learn'), text: 'Open the Hive Inspector to explore bee biology across 9 layers — roles, chemistry, lifecycle, waggle dance, thermoregulation, pheromones, anatomy, native bees, and the bloom calendar. Take the quiz to test your knowledge. Earn all ' + BADGE_DEFS.length + ' badges!', icon: '🎓' }
         ];
@@ -4172,7 +5436,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var undertakerCount = Math.round(workers * 0.05);
           var fannerCount = Math.round(workers * 0.05);
 
-          return h('div', { className: 'bg-gradient-to-b from-amber-900 to-amber-950 rounded-xl border-2 border-amber-400 p-4 space-y-3 text-white' },
+          return h('div', { 'data-beehive-inspector': 'true', className: 'bg-gradient-to-b from-amber-900 to-amber-950 rounded-xl border-2 border-amber-400 p-4 space-y-3 text-white' },
             h('div', { className: 'flex items-center justify-between' },
               h('div', { className: 'flex items-center gap-2' },
                 h('span', { className: 'text-2xl' }, '🔍'),
@@ -4212,7 +5476,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 honey_chem: 'honey chemistry and enzymatic conversion',
                 lifecycle: 'the bee life cycle (egg → larva → pupa → adult)',
                 waggle: 'the waggle dance as a symbolic communication system',
-                temperature: 'hive thermoregulation at 35°C',
+                temperature: 'hive thermoregulation near 34–36°C',
                 pheromones: 'the pheromone language of the colony',
                 anatomy: 'bee anatomy (proboscis, pollen baskets, stinger)',
                 native: 'native bees vs. the European honey bee',
@@ -4323,7 +5587,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('div', { className: 'text-center text-amber-500' }, '↓'),
                   h('div', { className: 'bg-amber-800/30 rounded p-2 text-center' },
                     h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, __alloT('stem.beehive.step_5_capping', 'Step 5: Capping')),
-                    h('p', null, __alloT('stem.beehive.below_18_6_moisture_the_honey_is_stabl', 'Below 18.6% moisture, the honey is stable. Bees seal the cell with a wax cap. This honey will NEVER spoil — edible honey has been found in 3,000-year-old Egyptian tombs.'))))),
+                    h('p', null, __alloT('stem.beehive.below_18_6_moisture_the_honey_is_stabl', 'Below about 18.6% moisture, honey is usually stable enough for capping. Stored sealed and dry, it can remain usable for a very long time; if it absorbs moisture, osmophilic yeasts can ferment it.'))))),
               h('div', { className: 'bg-amber-900/40 rounded-lg p-3 border border-amber-700/30' },
                 h('div', { className: 'font-bold text-amber-200 text-xs mb-1' }, __alloT('stem.beehive.your_hive_right_now', '📊 Your Hive Right Now')),
                 h('div', { className: 'grid grid-cols-3 gap-2 text-center' },
@@ -4335,7 +5599,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             inspectLayer === 'lifecycle' && h('div', { className: 'space-y-2' },
               h('p', { className: 'text-xs text-amber-200 mb-1' }, __alloT('stem.beehive.three_castes_three_lifecycles_all_from', 'Three castes, three lifecycles — all from the same egg. The only difference is diet:')),
               [
-                { caste: '👑 Queen', egg: '3 days', larva: '5.5 days', pupa: '7.5 days', total: '16 days', lifespan: '2-5 years', diet: 'Royal jelly only (entire life)', note: __alloT('stem.beehive.mates_once_on_nuptial_flight_with_10_2', 'Mates once on nuptial flight with 10-20 drones at 200+ ft altitude. Stores millions of sperm. Lays up to 2,000 eggs/day — her own body weight daily.') },
+                { caste: '👑 Queen', egg: '3 days', larva: '5.5 days', pupa: '7.5 days', total: '16 days', lifespan: '2-5 years', diet: 'Royal jelly only (entire life)', note: __alloT('stem.beehive.mates_once_on_nuptial_flight_with_10_2', 'Mates with multiple drones during one or more nuptial flights early in adult life. Observed mating heights vary with terrain and conditions. She stores sperm for years, then can lay up to 2,000 eggs/day without repeating that early-life mating period.') },
                 { caste: '👷 Worker', egg: '3 days', larva: '6 days', pupa: '12 days', total: '21 days', lifespan: '6 weeks (summer) / 6 months (winter)', diet: 'Royal jelly 3 days, then bee bread', note: __alloT('stem.beehive.all_female_cannot_mate_changes_jobs_by', 'All female. Cannot mate. Changes jobs by age (temporal polyethism). Winter bees have more fat body and live 10× longer.') },
                 { caste: '♂ Drone', egg: '3 days', larva: '6.5 days', pupa: '14.5 days', total: '24 days', lifespan: '~90 days', diet: 'Royal jelly 3 days, then bee bread', note: __alloT('stem.beehive.all_male_no_stinger_sole_purpose_mate_', 'All male. No stinger. Sole purpose: mate with a queen from another colony. Dies immediately after mating. Surviving drones are evicted from the hive in autumn.') }
               ].map(function(c) {
@@ -4365,25 +5629,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     h('div', { className: 'text-xl mb-1' }, '📏'),
                     h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, __alloT('stem.beehive.distance', 'Distance')),
                     h('p', { className: 'text-[11px] text-amber-100/70' }, __alloT('stem.beehive.the_duration_of_the_waggle_run_encodes', 'The duration of the waggle run encodes distance. ~1 second of waggling ≈ 1 kilometer. A 2-second waggle run means the nectar is about 2km away. Closer sources use a simpler "round dance" (no direction info needed).')))),
-                h('p', { className: 'text-[11px] text-amber-400 italic' }, __alloT('stem.beehive.karl_von_frisch_decoded_this_in_the_19', 'Karl von Frisch decoded this in the 1940s-60s. He shared the 1973 Nobel Prize in Physiology or Medicine. It remains the only known example of symbolic referential communication in invertebrates.')))),
+                h('p', { className: 'text-[11px] text-amber-400 italic' }, __alloT('stem.beehive.karl_von_frisch_decoded_this_in_the_19', 'Karl von Frisch decoded the waggle dance in the 1940s-60s and shared the 1973 Nobel Prize in Physiology or Medicine. It is a landmark example of symbolic referential communication in an invertebrate.')))),
 
             // ── THERMOREGULATION VIEW ──
             inspectLayer === 'temperature' && h('div', { className: 'space-y-3' },
               h('div', { className: 'bg-amber-900/40 rounded-lg p-3 border border-amber-700/30' },
                 h('div', { className: 'font-bold text-amber-200 text-xs mb-2' }, __alloT('stem.beehive.the_warm_blooded_superorganism', '🌡️ The Warm-Blooded Superorganism')),
-                h('p', { className: 'text-[11px] text-amber-100/80 mb-2' }, __alloT('stem.beehive.individual_bees_are_cold_blooded_but_t', 'Individual bees are cold-blooded. But the colony maintains the brood nest at exactly 35°C (95°F) ± 0.5° — more precisely than most mammals regulate body temperature. How?')),
+                h('p', { className: 'text-[11px] text-amber-100/80 mb-2' }, __alloT('stem.beehive.individual_bees_are_cold_blooded_but_t', 'Individual bees are ectothermic, but the colony usually keeps the brood area near 34–36°C (93–97°F). Temperature varies across the nest and by brood stage. How do workers regulate it?')),
                 h('div', { className: 'grid grid-cols-2 gap-3' },
                   h('div', { className: 'bg-red-900/30 rounded-lg p-3 border border-red-700/30' },
                     h('div', { className: 'text-xl text-center mb-1' }, '🔥'),
                     h('div', { className: 'text-xs font-bold text-red-300 text-center mb-1' }, __alloT('stem.beehive.too_cold_shivering_cluster', 'Too Cold: Shivering Cluster')),
-                    h('p', { className: 'text-[11px] text-red-100/70' }, __alloT('stem.beehive.bees_form_a_tight_ball_winter_cluster_', 'Bees form a tight ball (winter cluster). Outer bees insulate; inner bees vibrate flight muscles WITHOUT moving wings, generating heat. They rotate positions so no bee freezes. The cluster contracts as temperature drops — at -40°C outside, the center stays 35°C.'))),
+                    h('p', { className: 'text-[11px] text-red-100/70' }, __alloT('stem.beehive.bees_form_a_tight_ball_winter_cluster_', 'In winter, bees form a tight cluster. Outer bees insulate while inner bees generate heat, and workers rotate positions. When brood is present, the colony warms the brood area; the rest of the cluster can be cooler and varies with conditions.'))),
                   h('div', { className: 'bg-blue-900/30 rounded-lg p-3 border border-blue-700/30' },
                     h('div', { className: 'text-xl text-center mb-1' }, '💧'),
                     h('div', { className: 'text-xs font-bold text-blue-300 text-center mb-1' }, __alloT('stem.beehive.too_hot_evaporative_cooling', 'Too Hot: Evaporative Cooling')),
                     h('p', { className: 'text-[11px] text-blue-100/70' }, __alloT('stem.beehive.water_foragers_collect_droplets_and_sp', 'Water foragers collect droplets and spread them on comb surfaces. Fanner bees create airflow (230 wingbeats/sec) that evaporates the water, cooling by ~10°C. If overheating continues, bees "beard" outside the entrance to reduce internal body heat.')))),
                 h('div', { className: 'bg-amber-800/30 rounded-lg p-3 mt-2 text-center' },
                   h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, __alloT('stem.beehive.current_brood_temperature', '🌡️ Current Brood Temperature')),
-                  h('div', { className: 'text-2xl font-black text-amber-400' }, season === 3 ? (workers > 5000 ? '35.0°C' : '⚠️ ' + Math.round(20 + workers / 500) + '°C') : '35.0°C ✓'),
+                  h('div', { className: 'text-2xl font-black text-amber-400' }, season === 3 ? (workers > 5000 ? '~35°C' : '⚠️ ' + Math.round(20 + workers / 500) + '°C') : '~35°C center ✓'),
                   h('p', { className: 'text-[11px] text-amber-100/60 mt-1' }, season === 3 ? (workers > 5000 ? 'Cluster is maintaining brood temperature despite ' + ['spring','summer','autumn','winter'][season] + ' conditions.' : 'Colony too small to maintain temperature! Brood at risk.') : 'Brood nest perfectly regulated. ' + fannerCount + ' fanner bees on duty.')))),
 
             // ── PHEROMONE LANGUAGE VIEW ──
@@ -4471,7 +5735,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               // The big picture
               h('div', { className: 'bg-slate-800/50 rounded-lg p-3 border border-slate-600/30 text-center' },
                 h('div', { className: 'text-xs font-bold text-slate-300 mb-1' }, __alloT('stem.beehive.the_chemical_brain', '🧠 The Chemical Brain')),
-                h('p', { className: 'text-[11px] text-slate-600 leading-relaxed' }, __alloT('stem.beehive.a_honeybee_has_170_odorant_receptors_h', 'A honeybee has 170+ odorant receptors (humans have ~400, but bees are 50× more sensitive to floral scents). The colony\'s pheromone system is essentially a distributed nervous system — each bee is a "neuron" that reads and writes chemical signals. The colony thinks, decides, and responds as one organism, without any centralized brain.')))
+                h('p', { className: 'text-[11px] text-slate-300 leading-relaxed' }, __alloT('stem.beehive.a_honeybee_has_170_odorant_receptors_h', 'A honeybee has 170+ odorant receptors (humans have ~400, but bees are 50× more sensitive to floral scents). The colony\'s pheromone system is essentially a distributed nervous system — each bee is a "neuron" that reads and writes chemical signals. The colony thinks, decides, and responds as one organism, without any centralized brain.')))
             ),
 
             // ── BEE ANATOMY VIEW ──
@@ -4669,37 +5933,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           (Math.min(100, honey * 3)) * 0.15
         );
         var colonyRating = colonyHealth >= 80 ? '🐝 Thriving' : colonyHealth >= 55 ? '🌿 Healthy' : colonyHealth >= 35 ? '⚠️ Stressed' : '🚨 Critical';
-        var ratingColor = colonyHealth >= 80 ? 'text-amber-400' : colonyHealth >= 55 ? 'text-green-400' : colonyHealth >= 35 ? 'text-yellow-400' : 'text-red-400';
+        var ratingColor = colonyHealth >= 80 ? (dk ? 'text-amber-300' : 'text-amber-800') : colonyHealth >= 55 ? (dk ? 'text-green-300' : 'text-green-800') : colonyHealth >= 35 ? (dk ? 'text-yellow-300' : 'text-yellow-800') : (dk ? 'text-red-300' : 'text-red-800');
 
         // ── Badge award pass (moved here so late-declared vars are defined) ──
         // gardenPollinators/colonySurvived (declared ~2739/2787) and colonyHealth
         // (just above) are all in scope now; previously this ran at the top of
         // render where they were undefined, making 4 of 14 badges unobtainable.
-        (function awardBadges() {
-          var justEarned = [];
-          BADGE_DEFS.forEach(function(bd) {
-            if (!newBadges[bd.id] && bd.check()) {
-              newBadges[bd.id] = { earned: true, day: day };
-              justEarned.push(bd);
-            }
+        var eligibleBadges = BADGE_DEFS.filter(function(bd) {
+          return !badges[bd.id] && bd.check();
+        });
+        var eligibleBadgeKey = eligibleBadges.map(function(bd) { return bd.id; }).join('|');
+        React.useEffect(function() {
+          if (!eligibleBadges.length) return;
+          var justEarned = eligibleBadges.filter(function(bd) {
+            return !_beeBadgeAwardsSeenRef.current[bd.id];
           });
-          if (justEarned.length > 0) {
-            // Defer state update out of render; toast + XP per new badge
-            setTimeout(function() {
-              updAll({ badges: newBadges });
-              justEarned.forEach(function(bd) {
-                if (addToast) addToast(bd.icon + ' Badge earned: ' + bd.label + '!', 'success');
-                if (awardStemXP) awardStemXP('beehive', 10, 'Badge: ' + bd.label);
-              });
-              if (soundOn) sfxSuccess();
-            }, 0);
-          }
-        })();
+          if (!justEarned.length) return;
+
+          // Mark before committing: React Strict Mode may replay effects, but a
+          // badge's XP, toast, and sound must still occur exactly once.
+          justEarned.forEach(function(bd) { _beeBadgeAwardsSeenRef.current[bd.id] = true; });
+          updFn(function(b) {
+            var merged = Object.assign({}, b.badges || {});
+            justEarned.forEach(function(bd) {
+              if (!merged[bd.id]) merged[bd.id] = { earned: true, day: day };
+            });
+            b.badges = merged;
+          });
+          justEarned.forEach(function(bd) {
+            if (addToast) addToast(bd.icon + ' Badge earned: ' + bd.label + '!', 'success');
+            if (awardStemXP) awardStemXP('beehive', 10, 'Badge: ' + bd.label);
+          });
+          if (soundOn) sfxSuccess();
+        }, [eligibleBadgeKey]);
 
         // ── Explicit panel focus lifecycle ──
         // These surfaces are inline regions, not blocking modals. When a user opens one
         // from a distant toolbar control, move focus to the new region, support Escape,
         // and return focus to the trigger after it closes.
+        // Exactly one active inline surface owns the focus-return lifecycle.
         var activeFocusPanel = d.showTreatModal ? 'treatment' :
           quizOpen ? 'quiz' : d.exportedReport ? 'report' : d.showKeys ? 'shortcuts' :
           d.showGuide ? 'guide' : showBadges ? 'badges' : null;
@@ -7560,7 +8832,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.fillText('🏠 COUNT: A few hundred to a few thousand', pX + 18, sY + 15);
               c.fillText('❤️ ROLE: Mate with queens from OTHER colonies', pX + 18, sY + 30);
               c.font = '9px system-ui'; c.fillStyle = '#1e40af';
-              c.fillText('· GIANT eyes — find queens mid-flight at 200 ft+', pX + 22, sY + 46);
+              c.fillText('· GIANT eyes — track queens in aerial congregation zones', pX + 22, sY + 46);
               c.fillText('· NO stinger (cannot defend the hive)', pX + 22, sY + 60);
               c.fillText('· NO pollen basket (cannot forage)', pX + 22, sY + 74);
               c.fillText('· NO wax glands (cannot build)', pX + 22, sY + 88);
@@ -7624,7 +8896,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.font = 'bold 18px Georgia, serif';
             c.fillText('🌡️ Thermoregulation · The Warm-Blooded Hive', W / 2, 28);
             c.font = 'italic 11px Georgia, serif'; c.fillStyle = '#a16207';
-            c.fillText('35°C (95°F) maintained year-round — bees are collectively warm-blooded, despite being cold-blooded individuals', W / 2, 46);
+            c.fillText('Brood area usually ~34–36°C (93–97°F) — colony-level regulation by ectothermic workers', W / 2, 46);
 
             // ═══ LEFT PANEL: SUMMER COOLING ═══
             (function() {
@@ -7747,7 +9019,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               var mkY = thY + thHi - tempFrac * thHi;
               c.beginPath(); c.moveTo(thX - 12, mkY); c.lineTo(thX + 12, mkY); c.stroke();
               c.font = 'bold 9px system-ui'; c.fillStyle = '#dc2626'; c.textAlign = 'left';
-              c.fillText('35°C', thX + 14, mkY + 3);
+              c.fillText('~35°C', thX + 14, mkY + 3);
 
               // Mini stat box
               c.fillStyle = 'rgba(234,88,12,0.15)';
@@ -7881,7 +9153,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               // Temperature labels on cluster
               c.font = 'bold 9px system-ui'; c.fillStyle = '#fff'; c.textAlign = 'center';
               c.shadowColor = 'rgba(0,0,0,0.8)'; c.shadowBlur = 4;
-              c.fillText('35°C', hvX, hvY - 4);
+              c.fillText('~35°C center', hvX, hvY - 4);
               c.fillText('20°C', hvX + 38, hvY - 24);
               c.fillText('10°C', hvX - 38, hvY + 32);
               c.shadowBlur = 0;
@@ -7917,7 +9189,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               var mkY2 = thY + thHi - tempFrac2 * thHi;
               c.beginPath(); c.moveTo(thX - 12, mkY2); c.lineTo(thX + 12, mkY2); c.stroke();
               c.font = 'bold 9px system-ui'; c.fillStyle = '#dc2626'; c.textAlign = 'left';
-              c.fillText('35°C', thX + 14, mkY2 + 3);
+              c.fillText('~35°C', thX + 14, mkY2 + 3);
 
               // Mini stat box
               c.fillStyle = 'rgba(30,64,175,0.15)';
@@ -7967,7 +9239,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             // Legend
             c.font = '9px system-ui'; c.textAlign = 'left';
             c.fillStyle = '#dc2626';
-            c.fillText('━ inside hive (35°C)', gX + gW + 8, gY + 10);
+            c.fillText('━ brood area (~34–36°C)', gX + gW + 8, gY + 10);
             c.fillStyle = '#3b82f6';
             c.fillText('━ outside (−10 to 32°C)', gX + gW + 8, gY + 24);
             // Month labels
@@ -8538,7 +9810,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.font = 'bold 13px system-ui'; c.textAlign = 'center'; c.fillStyle = '#065f46';
               c.fillText('④ CAPPING · STORAGE', px, pY + 22);
               c.font = '10px system-ui'; c.fillStyle = '#064e3b';
-              c.fillText('Wax cap at 18.6% water — forever honey', px, pY + 38);
+              c.fillText('Wax cap near 18.6% water — stable when kept dry', px, pY + 38);
 
               // Comb with mix of capped + uncapped cells
               var combY = pY + pH * 0.45;
@@ -8597,10 +9869,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
               // Shelf-life fact at bottom
               c.font = 'italic 10px system-ui'; c.fillStyle = '#065f46'; c.textAlign = 'center';
-              c.fillText('Shelf life: FOREVER', px, pY + pH - 30);
+              c.fillText('Shelf life: VERY LONG WHEN KEPT DRY', px, pY + pH - 30);
               c.font = 'italic 9px system-ui';
-              c.fillText('3,000-year-old honey found edible', px, pY + pH - 18);
-              c.fillText('in Egyptian tombs — still sweet!', px, pY + pH - 6);
+              c.fillText('Low water activity limits most microbes', px, pY + pH - 18);
+              c.fillText('Absorbed moisture can permit fermentation', px, pY + pH - 6);
 
               c.restore();
             })();
@@ -8617,7 +9889,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               'Honey is the ONLY food produced by an insect that humans regularly consume.',
               'Raw honey contains ~200 substances including enzymes, antioxidants, and trace vitamins.',
               '1 lb of honey = 2 million flowers visited + 55,000 miles flown by foragers.',
-              'pH of 3.9 + 80% sugars + H₂O₂ + low water = natural antimicrobial — why honey never spoils.'
+              'Low water activity + acidity + antimicrobial compounds make sealed, dry honey highly shelf-stable.'
             ];
             var hfIdx = Math.floor(t2 / 420) % honeyFacts.length;
             c.fillText('💡 ' + honeyFacts[hfIdx], W / 2, stripY + 38);
@@ -17054,7 +18326,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 return cx + w + 4;
               }
               var chipX = hudX + 8;
-              chipX = _drawHudChip(chipX, '\uD83C\uDF6F', Math.round(safeHoney), 'lb', (season === 3 && safeHoney < 20) ? 'high' : (safeHoney < 15 ? 'warn' : 'ok'));
+              chipX = _drawHudChip(chipX, '\uD83C\uDF6F', Math.round(safeHoney), 'lb', safeHoney < currentReserve * 0.6 ? 'high' : (safeHoney < currentReserve ? 'warn' : 'ok'));
               chipX = _drawHudChip(chipX, '\u2764\uFE0F', (morale || 0), '%', morale < 30 ? 'high' : (morale < 50 ? 'warn' : 'ok'));
               chipX = _drawHudChip(chipX, '\uD83E\uDDA0', (varroaLevel || 0), '%', varroaLevel >= 25 ? 'high' : (varroaLevel >= 15 ? 'warn' : 'ok'));
               c.restore();
@@ -17093,47 +18365,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           };
         }, [viewMode, beekeeperMotionPaused]);
 
-        // ── Keyboard shortcuts (ref-based to read latest state) ──
+        // ── Keyboard shortcuts (scoped + ref-based to read latest state) ──
         var _keyState = React.useRef({});
-        _keyState.current = { colonySurvived: colonySurvived, quizOpen: quizOpen, showInspect: showInspect, showBadges: showBadges, soundOn: soundOn, viewMode: viewMode, autoAdvance: !!d.autoAdvance, motionPaused: beekeeperMotionPaused, panelOpen: !!activeFocusPanel, BEE_VIEWS: BEE_VIEWS };
+        _keyState.current = {
+          colonySurvived: colonySurvived, quizOpen: quizOpen, showInspect: showInspect,
+          showBadges: showBadges, soundOn: soundOn, viewMode: viewMode,
+          autoAdvance: !!d.autoAdvance, motionPaused: beekeeperMotionPaused,
+          panelOpen: !!activeFocusPanel, oneKeyShortcuts: d.oneKeyShortcuts !== false,
+          BEE_VIEWS: BEE_VIEWS, advanceDay: advanceDay, advanceDays: advanceDays,
+          treatVarroa: treatVarroa, addSuper: addSuper, harvestHoney: harvestHoney,
+          feedBees: feedBees, startQuiz: startQuiz, selectBeeView: selectBeeView,
+          upd: upd, announceBee: announceBee
+        };
         React.useEffect(function() {
           function onKey(e) {
-            // Don't capture when typing in inputs
-            if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable)) return;
+            // A held key emits repeated keydown events. Discrete management and
+            // time controls should run once per intentional press.
+            if (e.repeat || e.defaultPrevented || e.ctrlKey || e.altKey || e.metaKey) return;
+            var target = e.target;
+            if (!target || !target.closest || !target.closest('[data-beehive-root="true"]')) return;
+            if (target.closest('button,a[href],input,textarea,select,summary,[role="button"],[role="radio"],[role="tab"],[contenteditable="true"]')) return;
             var ks = _keyState.current;
-            // Only active in beekeeper mode — drone/queen modes own their own key handling
-            if (ks.viewMode !== 'beekeeper') return;
-            if (ks.panelOpen) return; // Don't trigger simulation shortcuts while an explicit panel is open
+            if (ks.viewMode !== 'beekeeper' || ks.panelOpen) return;
             var key = e.key.toLowerCase();
-            if (key === 'n') { e.preventDefault(); if (ks.colonySurvived) advanceDay(); }
-            else if (key === ' ') { e.preventDefault(); upd('autoAdvance', !ks.autoAdvance); }
-            else if (key === 't') { e.preventDefault(); treatVarroa(); }
-            else if (key === 's') { e.preventDefault(); addSuper(); }
-            else if (key === 'h') { e.preventDefault(); harvestHoney(); }
-            else if (key === 'f') { e.preventDefault(); feedBees(); }
-            else if (key === 'i') { e.preventDefault(); upd('showInspect', !ks.showInspect); }
-            else if (key === 'q') { e.preventDefault(); startQuiz(); }
-            else if (key === 'b') { e.preventDefault(); upd('showBadges', !ks.showBadges); }
-            else if (key === 'm') { e.preventDefault(); upd('soundOn', !ks.soundOn); }
-            else if (key === 'p') { e.preventDefault(); var nextMotionPaused = !ks.motionPaused; upd('motionPaused', nextMotionPaused); announceBee(nextMotionPaused ? 'Beekeeper canvas animation paused.' : 'Beekeeper canvas animation resumed.', false); }
-            else if (key === '5') { e.preventDefault(); if (ks.colonySurvived) advanceDays(5); }
-            else if (key === '3') { e.preventDefault(); if (ks.colonySurvived) advanceDays(30); }
-            else if (key === '?') { e.preventDefault(); upd('showKeys', true); }
-            // Shift+1..9 / Shift+0 → switch to one of the first 10 educational
-            // views. Keyed off e.code (layout-independent): with Shift held,
-            // e.key is the SHIFTED glyph ('!','@',…), so the old /^[0-9]$/ test
-            // on e.key never matched and the whole shortcut set was dead.
+            if (!ks.oneKeyShortcuts && key !== '?') return;
+            if (key === 'n') { e.preventDefault(); if (ks.colonySurvived) ks.advanceDay(); }
+            else if (key === ' ') { e.preventDefault(); ks.upd('autoAdvance', !ks.autoAdvance); }
+            else if (key === 't') { e.preventDefault(); ks.treatVarroa(); }
+            else if (key === 's') { e.preventDefault(); ks.addSuper(); }
+            else if (key === 'h') { e.preventDefault(); ks.harvestHoney(); }
+            else if (key === 'f') { e.preventDefault(); ks.feedBees(); }
+            else if (key === 'i') { e.preventDefault(); ks.upd('showInspect', !ks.showInspect); }
+            else if (key === 'q') { e.preventDefault(); ks.startQuiz(); }
+            else if (key === 'b') { e.preventDefault(); ks.upd('showBadges', !ks.showBadges); }
+            else if (key === 'm') { e.preventDefault(); ks.upd('soundOn', !ks.soundOn); }
+            else if (key === 'p') { e.preventDefault(); var nextMotionPaused = !ks.motionPaused; ks.upd('motionPaused', nextMotionPaused); ks.announceBee(nextMotionPaused ? 'Beekeeper canvas animation paused.' : 'Beekeeper canvas animation resumed.', false); }
+            else if (key === '5') { e.preventDefault(); if (ks.colonySurvived) ks.advanceDays(5); }
+            else if (key === '3') { e.preventDefault(); if (ks.colonySurvived) ks.advanceDays(30); }
+            else if (key === '?') { e.preventDefault(); ks.upd('showKeys', true); }
             else if (e.shiftKey && /^Digit[0-9]$/.test(e.code || '')) {
               e.preventDefault();
-              var digit = (e.code || '').slice(5); // '0'..'9'
+              var digit = (e.code || '').slice(5);
               var vIdx = digit === '0' ? 9 : parseInt(digit, 10) - 1;
-              if (ks.BEE_VIEWS && ks.BEE_VIEWS[vIdx]) selectBeeView(ks.BEE_VIEWS[vIdx].id);
+              if (ks.BEE_VIEWS && ks.BEE_VIEWS[vIdx]) ks.selectBeeView(ks.BEE_VIEWS[vIdx].id);
             }
           }
           document.addEventListener('keydown', onKey);
           return function() { document.removeEventListener('keydown', onKey); };
         }, []);
-
         // ── Auto-advance loop (▶ play / ⏸ pause time) ──
         // Driven by d.autoAdvance (bool) + d.autoSpeed (1=slow/2s, 2=med/1s, 3=fast/0.4s).
         // Uses a ref so the interval reads the latest survival/view/mode flags
@@ -17161,10 +18440,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var iv = setInterval(function() {
             var s = _autoRef.current;
             if (!s.autoAdvance) return;
-            // Pause conditions: dead colony, wrong view, modal open, event banner
-            if (!s.colonySurvived || s.viewMode !== 'beekeeper' ||
-                s.showInspect || s.quizOpen || s.showBadges ||
-                s.showTreatModal || s.activeEvent) return;
+            // A teachable event, a dead colony, or leaving this perspective
+            // disarms the clock. Inline panels pause without silently changing
+            // the learner's play/pause choice.
+            if (!s.colonySurvived || s.viewMode !== 'beekeeper' || s.activeEvent) {
+              s.autoAdvance = false;
+              s.stopAuto();
+              return;
+            }
+            if (s.showInspect || s.quizOpen || s.showBadges || s.showTreatModal) return;
             // Speed → ms-per-day: 1=slow (2.0s), 2=med (1.0s), 3=fast (0.4s)
             var period = s.autoSpeed === 1 ? 2000 : s.autoSpeed === 3 ? 400 : 1000;
             var now = Date.now();
@@ -17197,7 +18481,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           score: 0,
           distance: 0,
           maxAlt: 80,
-          timer: 120,               // seconds of flight time
+          timer: DRONE_FLIGHT_PARAMS.timerByDifficulty.normal, // seconds of flight time
           facts: [],                // science facts shown
           factIdx: 0,
           telemetry: [],
@@ -17207,33 +18491,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
         // Drone flight science facts
         var DRONE_FACTS = [
-          '🚀 Drones have larger eyes than workers — better for spotting queens mid-flight at 200+ feet altitude.',
+          '🚀 Drones have larger eyes than workers — better for spotting queens in aerial congregation zones. This training target uses ' + DRONE_FLIGHT_PARAMS.dcaMinFt + '–' + DRONE_FLIGHT_PARAMS.dcaMaxFt + ' ft.',
           '💨 A drone\'s flight muscles are the most powerful per body weight in the insect world.',
           '🧬 Drones are haploid — they have only 16 chromosomes (workers have 32). They develop from unfertilized eggs.',
           '❤️ Mating is instantly fatal for the drone — the endophallus ruptures and remains with the queen.',
           '👁️ Drones have 8,600 facets per compound eye vs 6,900 for workers — optimized for tracking queens in flight.',
           '🌡️ Drone Congregation Areas (DCAs) form at 15-40 meters altitude. The same aerial spots are used year after year.',
-          '🏠 Drones cannot feed themselves — workers must feed them. They have no wax glands, no pollen baskets, no stinger.',
+          '🏠 Young adult drones are fed by workers; later they can feed themselves from stored honey. Drones do not forage and have no wax glands, pollen baskets, or stinger.',
           '🎯 Only 1 in 1,000 drones successfully mates. The rest die of exhaustion or are evicted in autumn.',
           '⏱️ A drone\'s mating flight lasts about 30 minutes. He can fly up to 8 km from the hive.',
           '🧪 Queens release 9-ODA pheromone during flight — drones detect it with specialized antennae at 60+ meters.'
         ];
 
+        var _droneRuntimeSession = React.useRef(false);
         var droneData = d.drone || {};
         var droneHighScore = droneData.highScore || 0;
-        var droneFlightActive = droneData.active || false;
+        // An active flag without this mount's runtime session is an interrupted
+        // flight, not a resumable world. The host serializer also strips it.
+        var droneFlightActive = !!droneData.active && _droneRuntimeSession.current;
+        React.useEffect(function() {
+          if (droneData.active && !_droneRuntimeSession.current) {
+            updAll({ drone: Object.assign({}, droneData, { active: false, paused: false, interrupted: true }) });
+          }
+        }, [droneData.active]);
         var droneDifficulty = droneData.difficulty || 'normal'; // easy | normal | hard
         var dronePaused = droneData.paused === true;
         var droneLastRun = droneData.lastRun || null;
         var droneCarryoverContext = d.queen && typeof d.queen === 'object' ? d.queen : {};
         var droneCarryoverBrief = droneCarryoverContext.result === 'victory'
-          ? { label: 'Victory route', tone: 'success', distance: 'Queen signal ~12% closer', time: '+8 seconds', hazards: 'One fewer predator bird', advice: 'Your command advantage carries forward. Collect a few low boosts, then climb with small corrections toward the DCA.', hypothesis: 'A victory route should preserve more energy at the DCA because the signal is closer and predator pressure is lower.', measure: 'DCA arrival energy and predator encounters.' }
+          ? { label: 'Victory route', tone: 'success', distance: 'Queen signal ~12% closer', time: '+8 seconds', hazards: 'One fewer predator bird', advice: 'Your strategy advantage carries forward. Collect a few low boosts, then climb with small corrections toward the DCA.', hypothesis: 'A victory route should preserve more energy at the DCA because the signal is closer and predator pressure is lower.', measure: 'DCA arrival energy and predator encounters.' }
           : droneCarryoverContext.result === 'defeat'
-            ? { label: 'Recovery route', tone: 'warning', distance: 'Queen signal ~8% farther', time: '-8 seconds', hazards: 'One extra predator bird', advice: 'Treat this as a recovery attempt: protect energy, use a thermal or Boost-first plan, and revise the failed command story in your debrief.', hypothesis: 'A defeat route should make energy budgeting the limiting factor because the signal is farther and predator pressure is higher.', measure: 'DCA arrival energy, time remaining, and predator encounters.' }
-            : { label: 'Unresolved command route', tone: 'info', distance: 'Baseline queen distance', time: 'Baseline time', hazards: 'Baseline predator pressure', advice: 'No Queen RTS outcome is recorded yet. Finish a command match to make the flight inherit a strategic advantage or recovery constraint.', hypothesis: 'Use this baseline route as a control before comparing a Queen victory or recovery attempt.', measure: 'DCA arrival energy and route time as the comparison baseline.' };
+            ? { label: 'Recovery route', tone: 'warning', distance: 'Queen signal ~8% farther', time: '-8 seconds', hazards: 'One extra predator bird', advice: 'Treat this as a recovery attempt: protect energy, use a thermal or Boost-first plan, and revise the failed strategy story in your debrief.', hypothesis: 'A defeat route should make energy budgeting the limiting factor because the signal is farther and predator pressure is higher.', measure: 'DCA arrival energy, time remaining, and predator encounters.' }
+            : { label: 'Unresolved strategy route', tone: 'info', distance: 'Baseline queen distance', time: 'Baseline time', hazards: 'Baseline predator pressure', advice: 'No Queen RTS outcome is recorded yet. Finish a Queen RTS match to make the flight inherit a strategic advantage or recovery constraint.', hypothesis: 'Use this baseline route as a control before comparing a Queen victory or recovery attempt.', measure: 'DCA arrival energy and route time as the comparison baseline.' };
         droneCarryoverBrief.commandEvidence = droneCarryoverContext.result
           ? 'Forage ' + Math.round(droneCarryoverContext.territory || 50) + '% - rival ' + Math.round(droneCarryoverContext.rival && droneCarryoverContext.rival.health != null ? droneCarryoverContext.rival.health : (droneCarryoverContext.result === 'victory' ? 0 : 100)) + '% health'
-          : 'No command outcome yet';
+          : 'No strategy outcome yet';
         var DRONE_ROUTE_PLANS = {
           balanced: { label: 'Balanced loop', desc: 'Mix boosts, thermals, and a steady DCA approach.', nectarChance: 0.88, thermalRadius: 1, thermalStrength: 1 },
           'boost-first': { label: 'Boost-first', desc: 'More nectar blooms along the low-altitude opening.', nectarChance: 0.96, thermalRadius: 0.92, thermalStrength: 0.92 },
@@ -17246,7 +18538,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var diagnosis;
           if (run.success && run.energyLeft >= 30 && hazardConflicts === 0) diagnosis = { id: 'repeatable-success', title: 'Repeatable intercept', summary: 'The route combined a healthy reserve, full separation, and queen acquisition.', planId: 'balanced', next: 'Repeat the route with fewer corrections and compare arrival energy.', criterion: 'Intercept again with at least ' + Math.round(run.energyLeft) + '% energy and zero conflicts.' };
           else if ((run.energyLeft || 0) <= 10) diagnosis = { id: 'energy-budget', title: 'Energy was the limiting factor', summary: 'The flight ended with too little reserve to finish the route reliably.', planId: 'boost-first', next: 'Collect the opening boosts, then coast between short thrust pulses.', criterion: 'Reach the DCA with at least 25% energy remaining.' };
-          else if (!run.reachedDca && (run.maxAlt || 0) < 100) diagnosis = { id: 'altitude-gate', title: 'Altitude gate not reached', summary: 'The route never established the DCA altitude band.', planId: 'thermal-first', next: 'Use the first thermal for altitude, then trade climb for forward glide.', criterion: 'Pass 100 ft before 600 m while keeping energy above 30%.' };
+          else if (!run.reachedDca && (run.maxAlt || 0) < DRONE_FLIGHT_PARAMS.dcaMinFt) diagnosis = { id: 'altitude-gate', title: 'Altitude gate not reached', summary: 'The route never established the DCA altitude band.', planId: 'thermal-first', next: 'Use the first thermal for altitude, then trade climb for forward glide.', criterion: 'Enter the ' + DRONE_FLIGHT_PARAMS.dcaMinFt + '–' + DRONE_FLIGHT_PARAMS.dcaMaxFt + ' ft band before ' + DRONE_FLIGHT_PARAMS.dcaDistanceM + ' m while keeping energy above 30%.' };
           else if (!run.reachedDca) diagnosis = { id: 'range-gate', title: 'Range gate not reached', summary: 'Altitude was available, but forward progress did not reach the congregation area.', planId: 'balanced', next: 'Hold a steadier heading and reduce lateral corrections after the climb.', criterion: 'Travel 600 m with no more than one traffic conflict.' };
           else if (hazardConflicts > 0) diagnosis = { id: 'separation', title: 'Traffic spacing limited the approach', summary: hazardConflicts + ' conflict' + (hazardConflicts === 1 ? '' : 's') + ' converted route energy into recovery maneuvers.', planId: 'balanced', next: 'Use the radar earlier and make one small avoidance correction instead of several late turns.', criterion: 'Reach the queen search with zero conflicts.' };
           else if (boostGap > 0) diagnosis = { id: 'boost-gap', title: 'Opening reserve was underbuilt', summary: boostGap + ' training boost' + (boostGap === 1 ? '' : 's') + ' remained uncollected before the climb.', planId: 'boost-first', next: 'Finish the low-altitude boost loop before committing to the DCA climb.', criterion: 'Meet the boost goal and arrive above 25% energy.' };
@@ -17293,7 +18585,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           state = state || {};
           var dx = Number(state.x) || 0, dz = (Number(state.z) || 0) + 600, altitude = Math.max(0, Number(state.y) || 0);
           var planarDistance = Math.sqrt(dx * dx + dz * dz);
-          var altitudeBand = altitude >= 100 && altitude <= 180;
+          var altitudeBand = altitude >= DRONE_FLIGHT_PARAMS.dcaMinFt && altitude <= DRONE_FLIGHT_PARAMS.dcaMaxFt;
           var inVolume = planarDistance <= 72 && altitudeBand;
           return { planarDistance: planarDistance, altitude: altitude, altitudeBand: altitudeBand, inVolume: inVolume, label: inVolume ? 'Inside DCA volume' : planarDistance < 180 ? 'Approaching DCA' : 'En route' };
         }
@@ -17432,14 +18724,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           [0, 1, 2].forEach(function(lane) { var y = top + lane * (laneH + laneGap) + laneH; grid.push(h('line', { key: 'base-' + lane, x1: left, y1: y, x2: chartW - right, y2: y, stroke: dark ? '#334155' : '#cbd5e1', strokeWidth: 1 })); grid.push(h('line', { key: 'mid-' + lane, x1: left, y1: y - laneH / 2, x2: chartW - right, y2: y - laneH / 2, stroke: dark ? '#1e293b' : '#e2e8f0', strokeWidth: 1, strokeDasharray: '3 4' })); });
           var hazards = samples.map(function(sample, index) { return sample.hazard ? h('line', { key: 'hazard-' + index, x1: xAt(index), y1: top, x2: xAt(index), y2: top + 3 * laneH + 2 * laneGap, stroke: '#fb7185', strokeWidth: 2, opacity: 0.72 }) : null; }).filter(Boolean);
           return h('div', { 'data-flight-replay': 'true', className: 'mt-3 rounded-xl border p-3 ' + (dark ? 'border-slate-700 bg-slate-950/35' : 'border-slate-200 bg-slate-50') },
-            h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dark ? 'text-sky-300' : 'text-sky-800') }, 'Telemetry replay'), h('span', { className: 'text-[9px] font-bold ' + (dark ? 'text-slate-400' : 'text-slate-600') }, Math.round(maxTime) + ' sec sampled')),
-            h('label', { className: 'mt-2 block text-[9px] font-black uppercase tracking-wide ' + (dark ? 'text-slate-300' : 'text-slate-600'), htmlFor: 'beehive-drone-replay-range' }, 'Scrub to a flight moment'),
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dark ? 'text-sky-300' : 'text-sky-800') }, 'Telemetry replay'), h('span', { className: 'text-[10px] font-bold ' + (dark ? 'text-slate-400' : 'text-slate-600') }, Math.round(maxTime) + ' sec sampled')),
+            h('label', { className: 'mt-2 block text-[10px] font-black uppercase tracking-wide ' + (dark ? 'text-slate-300' : 'text-slate-600'), htmlFor: 'beehive-drone-replay-range' }, 'Scrub to a flight moment'),
             h('input', { id: 'beehive-drone-replay-range', 'data-flight-replay-range': 'true', type: 'range', min: 0, max: samples.length - 1, step: 1, value: selectedIndex, onChange: function(event) { updAll({ drone: Object.assign({}, droneData, { replayIndex: Number(event.target.value) }) }); }, 'aria-label': 'Select telemetry replay moment', 'aria-valuetext': Math.round(Number(selectedSample.t) || 0) + ' seconds, ' + selectedPhase + ', control ' + selectedAction + ', altitude ' + Math.round(Number(selectedSample.altitude) || 0) + ' feet, energy ' + Math.round(Number(selectedSample.energy) || 0) + ' percent', className: 'mt-1 h-2 w-full cursor-pointer accent-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500' }),
             h('div', { 'data-flight-replay-bookmarks': 'true', className: 'mt-2 flex flex-wrap items-center gap-1.5', role: 'group', 'aria-label': 'Jump to key flight moments' },
-              h('span', { className: 'mr-1 text-[9px] font-black uppercase tracking-wide ' + (dark ? 'text-slate-300' : 'text-slate-600') }, 'Key moments'),
+              h('span', { className: 'mr-1 text-[10px] font-black uppercase tracking-wide ' + (dark ? 'text-slate-300' : 'text-slate-600') }, 'Key moments'),
               replayBookmarks.map(function(bookmark) {
                 var active = selectedIndex === bookmark.index;
-                return h('button', { key: bookmark.id, type: 'button', 'data-flight-replay-bookmark': bookmark.id, 'aria-pressed': active, 'aria-label': bookmark.label + ': ' + bookmark.detail, title: bookmark.detail, onClick: function() { updAll({ drone: Object.assign({}, droneData, { replayIndex: bookmark.index }) }); }, className: 'min-h-[44px] rounded-full border px-2.5 py-1 text-[9px] font-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ' + (active ? (dark ? 'border-indigo-400 bg-indigo-600 text-white' : 'border-indigo-600 bg-indigo-600 text-white') : (dark ? 'border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-500' : 'border-slate-300 bg-white text-slate-700 hover:border-indigo-400')) }, bookmark.label);
+                return h('button', { key: bookmark.id, type: 'button', 'data-flight-replay-bookmark': bookmark.id, 'aria-pressed': active, 'aria-label': bookmark.label + ': ' + bookmark.detail, title: bookmark.detail, onClick: function() { updAll({ drone: Object.assign({}, droneData, { replayIndex: bookmark.index }) }); }, className: 'min-h-[44px] rounded-full border px-2.5 py-1 text-[10px] font-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ' + (active ? (dark ? 'border-indigo-400 bg-indigo-600 text-white' : 'border-indigo-600 bg-indigo-600 text-white') : (dark ? 'border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-500' : 'border-slate-300 bg-white text-slate-700 hover:border-indigo-400')) }, bookmark.label);
               })),
             h('svg', { viewBox: '0 0 ' + chartW + ' ' + chartH, role: 'img', 'aria-labelledby': 'beehive-drone-replay-title beehive-drone-replay-desc', className: 'mt-2 block w-full', style: { minHeight: '180px' } },
               h('title', { id: 'beehive-drone-replay-title' }, 'Drone flight telemetry replay'),
@@ -17456,10 +18748,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('text', { x: left, y: chartH - 7, fill: dark ? '#94a3b8' : '#475569', fontSize: 10 }, 'Launch'),
                 h('text', { x: chartW - right, y: chartH - 7, textAnchor: 'end', fill: dark ? '#94a3b8' : '#475569', fontSize: 10 }, 'Flight end'))),
             h('div', { 'data-flight-replay-moment': 'true', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'mt-2 rounded-lg border p-2.5 ' + (dark ? 'border-indigo-700/50 bg-indigo-950/30' : 'border-indigo-200 bg-indigo-50/70') },
-              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', { className: 'text-[9px] font-black uppercase tracking-wide ' + (dark ? 'text-indigo-300' : 'text-indigo-800') }, (selectedBookmark ? selectedBookmark.label : 'Selected moment')), h('span', { className: 'text-[10px] font-black tabular-nums ' + (dark ? 'text-white' : 'text-slate-900') }, Math.round(Number(selectedSample.t) || 0) + ' sec · ' + selectedPhase)),
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dark ? 'text-indigo-300' : 'text-indigo-800') }, (selectedBookmark ? selectedBookmark.label : 'Selected moment')), h('span', { className: 'text-[10px] font-black tabular-nums ' + (dark ? 'text-white' : 'text-slate-900') }, Math.round(Number(selectedSample.t) || 0) + ' sec · ' + selectedPhase)),
               h('p', { className: 'mt-1 text-[10px] font-semibold leading-relaxed ' + (dark ? 'text-slate-200' : 'text-slate-700') }, 'Control: ' + selectedAction + '. ' + selectedAdvice),
-              h('p', { className: 'mt-1 text-[9px] font-bold ' + (dark ? 'text-slate-300' : 'text-slate-600') }, 'Altitude ' + Math.round(Number(selectedSample.altitude) || 0) + ' ft · Energy ' + Math.round(Number(selectedSample.energy) || 0) + '% (' + (energyDelta > 0 ? '+' : '') + energyDelta + '%) · Wind ' + (Number(selectedSample.wind) || 0) + ' m/s' + (selectedSample.hazard ? ' · Hazard flagged' : '')),
-            h('div', { className: 'mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[9px] font-bold ' + (dark ? 'text-slate-300' : 'text-slate-600') },
+              h('p', { className: 'mt-1 text-[10px] font-bold ' + (dark ? 'text-slate-300' : 'text-slate-600') }, 'Altitude ' + Math.round(Number(selectedSample.altitude) || 0) + ' ft · Energy ' + Math.round(Number(selectedSample.energy) || 0) + '% (' + (energyDelta > 0 ? '+' : '') + energyDelta + '%) · Wind ' + (Number(selectedSample.wind) || 0) + ' m/s' + (selectedSample.hazard ? ' · Hazard flagged' : '')),
+            h('div', { className: 'mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] font-bold ' + (dark ? 'text-slate-300' : 'text-slate-600') },
               h('span', null, h('span', { className: 'mr-1 text-amber-500', 'aria-hidden': 'true' }, '━'), 'Altitude'),
               h('span', null, h('span', { className: 'mr-1 text-emerald-500', 'aria-hidden': 'true' }, '━'), 'Energy'),
               h('span', null, h('span', { className: 'mr-1 text-cyan-500', 'aria-hidden': 'true' }, '━'), 'Wind'),
@@ -17494,7 +18786,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var steps = [
             { label: 'Build forward speed', instruction: 'Hold W or Arrow Up until airspeed reaches 2.0.', hint: 'Release after a short burst; gliding preserves energy.', met: (Number(state.speed) || 0) >= 2 },
             { label: 'Skim one nectar boost', instruction: 'Stay below 30 ft and steer through a glowing bloom.', hint: 'The bloom refills energy and demonstrates approach control.', met: boosts >= 1 },
-            { label: 'Climb into the DCA band', instruction: 'Use Space in short pulses until altitude reaches 100 ft.', hint: 'Keep some forward speed so the wings continue producing lift.', met: (Number(state.y) || 0) >= 100 },
+            { label: 'Climb into the DCA band', instruction: 'Use Space in short pulses until altitude enters ' + DRONE_FLIGHT_PARAMS.dcaMinFt + '–' + DRONE_FLIGHT_PARAMS.dcaMaxFt + ' ft.', hint: 'Keep some forward speed so the wings continue producing lift.', met: (Number(state.y) || 0) >= DRONE_FLIGHT_PARAMS.dcaMinFt && (Number(state.y) || 0) <= DRONE_FLIGHT_PARAMS.dcaMaxFt },
             { label: 'Enter the DCA volume', instruction: 'Center the golden route gates and close to the DCA marker.', hint: 'Use small turns; large corrections waste energy and overshoot.', met: !!state.reachedDca || state.phase === 'congregation' || state.phase === 'mating' },
             { label: 'Acquire the queen signal', instruction: 'Follow the gold signal and pass within 25 m of the queen.', hint: 'Match altitude first, then make one small heading correction.', met: !!state.reachedQueen || state.phase === 'mating' }
           ];
@@ -17534,7 +18826,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var items = [
             { id: 'energy', icon: '⚡', label: 'Energy reserve', value: energyPct + '%', state: energyState, status: energyState === 'danger' ? 'Critical' : energyState === 'caution' ? 'Watch' : 'Strong', advice: energyState === 'danger' ? 'Glide or find a boost now.' : energyState === 'caution' ? 'Use shorter thrust bursts.' : 'Enough reserve for the route.' },
             { id: 'speed', icon: '➤', label: 'Speed and glide', value: speed.toFixed(1) + ' speed', state: speedState, status: speed < 1.5 ? 'Building' : speed > 9 ? 'Fast' : 'Efficient', advice: speed < 1.5 ? 'Briefly thrust to build momentum.' : speed > 9 ? 'Coast before a tight correction.' : 'Glide is conserving energy.' },
-            { id: 'altitude', icon: '↕', label: 'Altitude band', value: altitude + ' ft', state: altitudeState, status: altitude > 220 ? 'Too high' : altitude >= 100 ? 'DCA band' : altitude < 35 ? 'Bloom lane' : 'Climb window', advice: altitude > 220 ? 'Descend toward the DCA band.' : altitude >= 100 ? 'Height supports DCA entry.' : altitude < 35 ? 'Low enough to gather boosts.' : 'Use short climbs toward 100 ft.' },
+            { id: 'altitude', icon: '↕', label: 'Altitude band', value: altitude + ' ft', state: altitudeState, status: altitude > DRONE_FLIGHT_PARAMS.dcaMaxFt ? 'Too high' : altitude >= DRONE_FLIGHT_PARAMS.dcaMinFt ? 'DCA band' : altitude < 35 ? 'Bloom lane' : 'Climb window', advice: altitude > DRONE_FLIGHT_PARAMS.dcaMaxFt ? 'Descend toward the DCA band.' : altitude >= DRONE_FLIGHT_PARAMS.dcaMinFt ? 'Height supports DCA entry.' : altitude < 35 ? 'Low enough to gather boosts.' : 'Use short climbs toward ' + DRONE_FLIGHT_PARAMS.dcaMinFt + ' ft.' },
             { id: 'bearing', icon: '◎', label: state.phase === 'congregation' ? 'Queen bearing' : 'Route bearing', value: Math.round(bearingError * 180 / Math.PI) + '° off target', state: bearingState, status: bearingState === 'danger' ? 'Off route' : bearingState === 'caution' ? 'Near route' : 'Aligned', advice: bearingState === 'good' ? 'Keep the compass arrow centered.' : 'Use a small steering correction.' },
             { id: 'hazard', icon: '⚠', label: 'Predator range', value: isFinite(nearestBird) ? Math.round(nearestBird) + ' m nearest' : 'No nearby bird', state: hazardState, status: hazardState === 'danger' ? 'Danger' : hazardState === 'caution' ? 'Watch' : 'Clear', advice: hazardState === 'danger' ? 'Turn or change altitude now.' : hazardState === 'caution' ? 'Track the bird before climbing.' : 'No predator pressure nearby.' }
           ];
@@ -17718,6 +19010,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         }
 
         function startDroneFlight(diff, coachedRoutePlan) {
+          _droneRuntimeSession.current = true;
           var difficulty = diff || droneDifficulty;
           var startsPaused = prefersReducedMotion;
           var selectedRoutePlan = DRONE_ROUTE_PLANS[coachedRoutePlan] ? coachedRoutePlan : (DRONE_ROUTE_PLANS[droneRoutePlan] ? droneRoutePlan : 'balanced');
@@ -17728,8 +19021,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             ? { label: 'Victory route', distanceScale: 0.88, timerBonus: 8, extraBirds: -1 }
             : queenContext.result === 'defeat'
               ? { label: 'Recovery route', distanceScale: 1.08, timerBonus: -8, extraBirds: 1 }
-              : { label: 'Unresolved command route', distanceScale: 1, timerBonus: 0, extraBirds: 0 };
-          var timerByDiff = { easy: 150, normal: 110, hard: 75 };
+              : { label: 'Unresolved strategy route', distanceScale: 1, timerBonus: 0, extraBirds: 0 };
+          var timerByDiff = DRONE_FLIGHT_PARAMS.timerByDifficulty;
           var queenDistByDiff = { easy: 800, normal: 1200, hard: 1800 };
           var nectarGoalByDiff = { easy: 8, normal: 10, hard: 12 };
           var windScaleByDiff = { easy: 0.7, normal: 1, hard: 1.35 };
@@ -17784,7 +19077,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             steeringSensitivity: _droneSteeringSensitivity.current, cameraStabilized: _droneCameraStabilized.current,
             trainingActive: difficulty === 'easy', trainingComplete: false, trainingStep: 0, _lastTrainingStep: -1 // red flash when hit by bird or obstacle
           };
-          updAll({ drone: Object.assign({}, droneData, { active: true, paused: startsPaused, difficulty: difficulty, routePlan: selectedRoutePlan, scenario: droneScenario, carryover: queenCarryover.label, replayIndex: 0, cameraMode: _droneCameraMode.current || 'cockpit', graphicsMode: _droneGraphicsMode.current, steeringSensitivity: _droneSteeringSensitivity.current, cameraStabilized: _droneCameraStabilized.current }) });
+          updAll({ drone: Object.assign({}, droneData, { active: true, paused: startsPaused, interrupted: false, difficulty: difficulty, routePlan: selectedRoutePlan, scenario: droneScenario, carryover: queenCarryover.label, replayIndex: 0, cameraMode: _droneCameraMode.current || 'cockpit', graphicsMode: _droneGraphicsMode.current, steeringSensitivity: _droneSteeringSensitivity.current, cameraStabilized: _droneCameraStabilized.current }) });
           announceBee('Drone flight started on ' + difficulty + ' / ' + scenarioConfig.label + ' with ' + queenCarryover.label + (startsPaused ? ' and is paused for your reduced-motion preference. Resume when ready.' : '. Gather boosts low, then climb toward the DCA.'), false);
         }
 
@@ -17881,6 +19174,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             (objects.horizonHills || []).forEach(function(node, index) { node.visible = tier !== 'eco' || index % profile.detailStride === 0; });
             (objects.depthMarkers || []).forEach(function(node, index) { node.visible = tier === 'high' || index % profile.detailStride === 0; });
             (objects.clouds || []).forEach(function(node, index) { node.visible = tier !== 'eco' || index % 2 === 0; });
+            (objects.grassTufts || []).forEach(function(node, index) { node.visible = tier === 'high' || index % profile.detailStride === 0; });
+            (objects.butterflies || []).forEach(function(node, index) { node.visible = tier !== 'eco' && (tier === 'high' || index % 2 === 0); });
             updateDroneQualityBadge(tier, reason || 'quality applied');
           }
           function syncAdaptiveDroneQuality(dt) {
@@ -17951,15 +19246,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             if ('outputEncoding' in renderer && THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
             renderer.shadowMap.enabled = initialQuality.shadows; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             if (THREE.ACESFilmicToneMapping) renderer.toneMapping = THREE.ACESFilmicToneMapping;
-            renderer.toneMappingExposure = 0.94;
+            renderer.toneMappingExposure = 1.02;
             var scene = new THREE.Scene();
             scene.fog = new THREE.Fog(0x72bee0, 360, 2600);
             var camera = new THREE.PerspectiveCamera(62, W / H, 0.5, 2600);
-            scene.add(new THREE.HemisphereLight(0xdbeafe, 0x183f28, 0.96));
-            var sun = new THREE.DirectionalLight(0xfff1c2, 1.35);
+            scene.add(new THREE.HemisphereLight(0xcfe4f7, 0x24503a, 0.58));
+            var sun = new THREE.DirectionalLight(0xfff1c2, 1.18);
             sun.position.set(-120, 260, 160);
             scene.add(sun);
-            var rim = new THREE.DirectionalLight(0x7dd3fc, 0.38);
+            var rim = new THREE.DirectionalLight(0x7dd3fc, 0.26);
             rim.position.set(180, 80, -240);
             scene.add(rim);
 
@@ -17974,7 +19269,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             ground.rotation.x = -Math.PI / 2;
             ground.position.y = -1;
             scene.add(ground);
-            var meadow = new THREE.Mesh(new THREE.PlaneGeometry(6000, 6000), basic(0x52a65a, { transparent: true, opacity: 0.38 }));
+            var meadow = new THREE.Mesh(new THREE.PlaneGeometry(6000, 6000), basic(0x3f8c4c, { transparent: true, opacity: 0.22 }));
             meadow.rotation.x = -Math.PI / 2;
             meadow.position.y = -0.95;
             ground.receiveShadow = true; meadow.receiveShadow = true;
@@ -17998,8 +19293,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             var shared = {
               trunk: mat(0x7c4a2d), leaf: mat(0x217a3a), leafLight: mat(0x43a047),
               stone: mat(0x94a3b8), roof: mat(0x475569), pole: mat(0xcbd5e1),
-              stem: mat(0x15803d), wing: mat(0xbfdbfe, { transparent: true, opacity: 0.45, depthWrite: false }),
+              stem: mat(0x15803d), wing: mat(0xdbeafe, { transparent: true, opacity: 0.34, depthWrite: false, roughness: 0.3, side: THREE.DoubleSide }),
               drone: mat(0xfbbf24), dark: mat(0x292524), bird: mat(0x1e293b),
+              // Thorax fuzz reads as hair by being rougher and paler than the
+              // abdomen plates; the eye is near-black and glossy so the drone's
+              // wrap-around eyes catch a highlight and the head is legible.
+              fuzz: mat(0xd8a13a, { roughness: 1, metalness: 0 }),
+              eye: mat(0x1c1917, { roughness: 0.25, metalness: 0.1 }),
+              pollen: mat(0xf59e0b, { emissive: 0xb45309, emissiveIntensity: 0.35, roughness: 0.9 }),
+              rival: mat(0xd97706),
+              butterflyWing: mat(0xfda4af, { transparent: true, opacity: 0.85, side: THREE.DoubleSide, emissive: 0xf43f5e, emissiveIntensity: 0.12 }),
+              grass: mat(0x2f7d3f, { roughness: 1 }),
               queen: mat(0xf59e0b, { emissive: 0x7c2d12, emissiveIntensity: 0.45 }),
               boost: mat(0xfacc15, { emissive: 0xca8a04, emissiveIntensity: 0.9 }),
               flower: [0xf472b6, 0xfbbf24, 0xa78bfa, 0xfb923c, 0x34d399, 0xf87171, 0x60a5fa].map(function(col) { return mat(col, { emissive: col, emissiveIntensity: 0.25 }); })
@@ -18017,6 +19321,90 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               hill.position.set((hillIndex - 4.5) * 235 + Math.sin(hillIndex * 1.7) * 90, 28, -980 - (hillIndex % 3) * 330);
               hill.rotation.y = hillIndex * 0.37; scene.add(hill); objects.horizonHills.push(hill);
             }
+            // ── Sky dome + sun ──
+            // A flat clear colour gives the flight no "up". A gradient dome plus a
+            // visible sun restores the horizon reference a pilot actually banks
+            // against, and gives the scenario tinting somewhere to land: the dome
+            // is multiplied by the same sky colour the fog already uses, so storm
+            // and dusk keep working with no extra state.
+            // The dome rides with the camera, so it never clips the far plane no
+            // matter how far down the corridor the bee flies.
+            // Coloured per VERTEX from world height rather than by a texture.
+            // A texture forces you to know which way three.js runs sphere UVs,
+            // and getting it upside down puts the deep blue under the horizon —
+            // which is exactly what happened. Height is unambiguous.
+            // The band nearest the horizon is deliberately close to the fog
+            // colour: the dome is excluded from fog (it is meant to stay crisp),
+            // so any gap between the two reads as a hard line of "sea" behind
+            // the meadow.
+            var skyDome = null;
+            try {
+              var domeGeometry = new THREE.SphereGeometry(1500, 24, 16);
+              var domePos = domeGeometry.attributes.position;
+              var domeColors = new Float32Array(domePos.count * 3);
+              var domeTop = new THREE.Color(0x2f7fc4);
+              var domeHorizon = new THREE.Color(0xdfeaf2);
+              var domeBelow = new THREE.Color(0xc8dbe6);
+              var domeScratch = new THREE.Color();
+              for (var dv = 0; dv < domePos.count; dv++) {
+                var heightNorm = domePos.getY(dv) / 1500;
+                domeScratch.copy(domeHorizon).lerp(heightNorm >= 0 ? domeTop : domeBelow,
+                  Math.min(1, Math.pow(Math.abs(heightNorm), heightNorm >= 0 ? 0.62 : 1.0)));
+                domeColors[dv * 3] = domeScratch.r;
+                domeColors[dv * 3 + 1] = domeScratch.g;
+                domeColors[dv * 3 + 2] = domeScratch.b;
+              }
+              domeGeometry.setAttribute('color', new THREE.BufferAttribute(domeColors, 3));
+              skyDome = new THREE.Mesh(domeGeometry, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, depthWrite: false, fog: false }));
+              skyDome.renderOrder = -10;
+              scene.add(skyDome);
+            } catch (skyError) { skyDome = null; }
+            objects.skyDome = skyDome;
+            var sunDisc = null;
+            if (skyDome) {
+              sunDisc = new THREE.Group();
+              var sunCore = mesh(new THREE.CircleGeometry(52, 28), basic(0xfff7d6, { transparent: true, opacity: 0.95, depthWrite: false, fog: false }));
+              var sunGlow = mesh(new THREE.CircleGeometry(140, 28), basic(0xfde68a, { transparent: true, opacity: 0.22, depthWrite: false, fog: false }));
+              sunGlow.position.z = -1; sunDisc.add(sunGlow); sunDisc.add(sunCore);
+              sunDisc.renderOrder = -9;
+              skyDome.add(sunDisc);
+              // Same direction as the key light, so highlights and glare agree.
+              sunDisc.position.set(-120, 260, 160).normalize().multiplyScalar(1180);
+            }
+            objects.sunDisc = sunDisc;
+            // ── Ground detail ──
+            // Speed over an empty plane is unreadable: without near-field texture
+            // the bee appears to hover no matter how fast it goes. Grass tufts give
+            // the optic flow that makes throttle changes felt, and they are the
+            // first thing dropped on Eco hardware.
+            var grassTufts = [];
+            for (var grassIndex = 0; grassIndex < 150; grassIndex++) {
+              var tuft = mesh(cone, shared.grass, [2.2 + (grassIndex % 3) * 0.7, 6 + (grassIndex % 5) * 2.4, 2.2]);
+              var grassAngle = grassIndex * 2.399;
+              tuft.position.set(Math.sin(grassAngle) * (60 + (grassIndex % 7) * 26), 2.4, -20 - (grassIndex * 9.4) % 1400);
+              tuft.rotation.y = grassAngle;
+              scene.add(tuft); grassTufts.push(tuft);
+            }
+            objects.grassTufts = grassTufts;
+            // Butterflies. Pure ambience, and deliberately harmless: they never
+            // enter the collision or scoring model, so a learner can watch them
+            // without wondering whether they were meant to chase one.
+            var butterflies = [];
+            for (var flutterIndex = 0; flutterIndex < 8; flutterIndex++) {
+              var flutter = new THREE.Group();
+              flutter.add(mesh(sphere, shared.dark, [0.7, 0.7, 2.6]));
+              var flutterWings = [];
+              [-1, 1].forEach(function(side) {
+                var flutterPivot = new THREE.Group();
+                var flutterBlade = mesh(sphere, shared.butterflyWing, [5.2, 0.2, 4.0]);
+                flutterBlade.position.x = side * 5.0;
+                flutterPivot.add(flutterBlade); flutter.add(flutterPivot);
+                flutterWings.push({ pivot: flutterPivot, side: side });
+              });
+              flutter.userData = { wings: flutterWings, baseX: Math.sin(flutterIndex * 1.9) * 150, baseZ: -90 - flutterIndex * 165, baseY: 16 + (flutterIndex % 4) * 9, phase: flutterIndex * 0.83 };
+              scene.add(flutter); butterflies.push(flutter);
+            }
+            objects.butterflies = butterflies;
             var depthPostMaterial = basic(0x38bdf8, { transparent: true, opacity: 0.62, depthWrite: false });
             var depthCapMaterial = basic(0x22d3ee, { transparent: true, opacity: 0.86, depthWrite: false });
             for (var depthIndex = 1; depthIndex <= 14; depthIndex++) {
@@ -18041,17 +19429,88 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             obstacleWarnRing.rotation.x = Math.PI / 2; obstacleWarnRing.position.y = 2; obstacleWarn.add(obstacleWarnRing);
             var obstacleWarnLight = new THREE.PointLight(0xfb7185, 0.8, 80); obstacleWarnLight.position.y = 12; obstacleWarn.add(obstacleWarnLight);
             obstacleWarn.visible = false; scene.add(obstacleWarn); objects.obstacleWarn = obstacleWarn;
-            var playerDrone = new THREE.Group();
-            var playerBody = mesh(sphere, shared.drone, [5.5, 3, 3.4]); playerDrone.add(playerBody);
-            var playerStripe = mesh(box, shared.dark, [1.2, 5.8, 3.4]); playerStripe.position.x = -0.5; playerDrone.add(playerStripe);
-            var playerWingL = mesh(sphere, shared.wing, [5.2, 0.45, 2.2]); playerWingL.position.set(-3.5, 2.4, 0); playerDrone.add(playerWingL);
-            var playerWingR = playerWingL.clone(); playerWingR.position.x = 3.5; playerDrone.add(playerWingR);
-            var playerBeacon = mesh(new THREE.TorusGeometry(7, 0.65, 8, 24), basic(0x67e8f9, { transparent: true, opacity: 0.8, side: THREE.DoubleSide, depthWrite: false })); playerBeacon.rotation.x = Math.PI / 2; playerBeacon.position.y = -3.5; playerDrone.add(playerBeacon);
+            var playerDrone = buildBeeAvatar({ scale: 1, beacon: true });
             playerDrone.visible = false; scene.add(playerDrone); objects.playerDrone = playerDrone;
+            // Contact shadow. In cockpit view the drone itself is invisible, so the
+            // ONLY continuous altitude cue in the 3D world was the numeric HUD. A
+            // dark ellipse tracking the bee across the ground gives the same reading
+            // the way a real pilot gets it — shadow close and hard means low, far
+            // and faint means high — and it costs one unlit disc.
+            var playerShadow = mesh(new THREE.CircleGeometry(7, 24), basic(0x0b2b16, { transparent: true, opacity: 0.32, depthWrite: false }));
+            playerShadow.rotation.x = -Math.PI / 2; playerShadow.position.y = -0.6; playerShadow.visible = false;
+            scene.add(playerShadow); objects.playerShadow = playerShadow;
             function mesh(geometry, material, scale) {
               var m = new THREE.Mesh(geometry, material);
               if (scale) m.scale.set(scale[0], scale[1], scale[2]);
               return m;
+            }
+            // ── Bee avatar ──
+            // The player and every rival used to be a stretched sphere with a box
+            // through it and two static paddles. A learner flying a "drone bee" on
+            // a mating flight should be able to SEE a drone bee: three body
+            // segments, the huge wrap-around drone eyes, four wings that actually
+            // beat, and pollen baskets that fill as nectar is gathered. Built from
+            // the shared unit geometries so a full rival flight adds no new
+            // geometry allocations.
+            // Nose points -Z, matching the flight model's forward vector at yaw 0.
+            function buildBeeAvatar(opts) {
+              opts = opts || {};
+              var s = opts.scale == null ? 1 : opts.scale;
+              var bodyMat = opts.bodyMat || shared.drone;
+              var group = new THREE.Group();
+              var core = new THREE.Group(); core.scale.setScalar(s); group.add(core);
+              // Head + compound eyes. Drone eyes meet at the top of the head, which
+              // is the field mark that separates a drone from a worker.
+              var head = mesh(sphere, shared.dark, [2.1, 2.0, 1.9]); head.position.z = -4.3; core.add(head);
+              [-1, 1].forEach(function(side) {
+                var eye = mesh(sphere, shared.eye, [1.05, 1.5, 1.15]);
+                eye.position.set(side * 1.25, 0.35, -4.75); core.add(eye);
+                var antenna = mesh(cylinder, shared.dark, [0.16, 2.6, 0.16]);
+                antenna.position.set(side * 0.85, 1.35, -5.5); antenna.rotation.x = 1.15; antenna.rotation.z = side * 0.28; core.add(antenna);
+              });
+              // Thorax (fuzzy, the wing engine) then the striped abdomen.
+              var thorax = mesh(sphere, shared.fuzz, [2.85, 2.65, 2.9]); thorax.position.z = -1.1; core.add(thorax);
+              var waist = mesh(sphere, shared.dark, [2.0, 1.9, 0.9]); waist.position.z = 1.0; core.add(waist);
+              var abdomen = mesh(sphere, bodyMat, [2.5, 2.35, 4.2]); abdomen.position.z = 3.6; core.add(abdomen);
+              [1.5, 3.4, 5.3].forEach(function(sz, bandIndex) {
+                var band = mesh(sphere, shared.dark, [2.42 - bandIndex * 0.22, 2.3 - bandIndex * 0.22, 0.52]);
+                band.position.z = sz; core.add(band);
+              });
+              var tip = mesh(cone, shared.dark, [1.5, 2.0, 1.5]); tip.position.z = 7.0; tip.rotation.x = -Math.PI / 2; core.add(tip);
+              // Four wings on pivots so the beat rotates about the root, not the
+              // wing's own centre — a wing spinning about its middle reads as a
+              // propeller, which is exactly the wrong idea about insect flight.
+              var wings = [];
+              [[-1, -0.4, 4.6, 2.1], [1, -0.4, 4.6, 2.1], [-1, 1.3, 3.4, 1.6], [1, 1.3, 3.4, 1.6]].forEach(function(spec) {
+                var pivot = new THREE.Group();
+                pivot.position.set(spec[0] * 1.0, 1.9, -1.0 + spec[1]);
+                var blade = mesh(sphere, shared.wing, [spec[2], 0.16, spec[3]]);
+                blade.position.set(spec[0] * spec[2] * 0.92, 0, 0);
+                pivot.add(blade); core.add(pivot);
+                wings.push({ pivot: pivot, side: spec[0], pair: spec[1] > 0 ? 1 : 0 });
+              });
+              // Legs, and the corbiculae (pollen baskets) that grow with the haul.
+              var pollenSacs = [];
+              [-1, 1].forEach(function(side) {
+                for (var legIndex = 0; legIndex < 3; legIndex++) {
+                  var leg = mesh(cylinder, shared.dark, [0.2, 2.2, 0.2]);
+                  leg.position.set(side * 1.9, -1.6, -2.6 + legIndex * 1.5);
+                  leg.rotation.z = side * 0.6; leg.rotation.x = 0.25; core.add(leg);
+                }
+                var sac = mesh(sphere, shared.pollen, [1.05, 1.05, 1.3]);
+                sac.position.set(side * 2.3, -2.3, 0.6); sac.visible = false; core.add(sac);
+                pollenSacs.push(sac);
+              });
+              var beacon = null;
+              if (opts.beacon) {
+                beacon = mesh(new THREE.TorusGeometry(7, 0.65, 8, 24), basic(0x67e8f9, { transparent: true, opacity: 0.8, side: THREE.DoubleSide, depthWrite: false }));
+                beacon.rotation.x = Math.PI / 2; beacon.position.y = -4.6; group.add(beacon);
+              }
+              group.userData.wings = wings;
+              group.userData.pollenSacs = pollenSacs;
+              group.userData.beacon = beacon;
+              group.userData.core = core;
+              return group;
             }
             (ds.obstacles || []).forEach(function(ob) {
               var group = new THREE.Group();
@@ -18097,10 +19556,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               scene.add(group); objects.thermals.push(group);
             });
             (ds.drones || []).forEach(function(od) {
-              var group = new THREE.Group(); var body = mesh(sphere, shared.drone, [4.5, 2.5, 2.8]); group.add(body);
-              var stripe = mesh(box, shared.dark, [1.1, 4.5, 3]); stripe.position.x = -0.5; group.add(stripe);
-              var left = mesh(sphere, shared.wing, [4.5, 0.45, 2]); left.position.set(-3, 2.2, 0); group.add(left);
-              var right = left.clone(); right.position.x = 3; group.add(right);
+              var group = buildBeeAvatar({ scale: 0.82, bodyMat: shared.rival });
               var trafficRing = mesh(new THREE.TorusGeometry(12, 1, 8, 24), basic(0xfb923c, { transparent: true, opacity: 0.65, side: THREE.DoubleSide, depthWrite: false })); trafficRing.rotation.x = Math.PI / 2; trafficRing.position.y = -5; trafficRing.visible = false; group.add(trafficRing);
               scene.add(group); objects.drones.push({ group: group, drone: od, alert: trafficRing });
             });
@@ -18112,7 +19568,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               scene.add(group); objects.birds.push({ group: group, bird: bird, wings: [wingL, wingR], alert: alertRing });
             });
             (ds.nearQueens || []).forEach(function(q) {
-              var group = new THREE.Group(); var body = mesh(sphere, shared.queen, [7, 4, 4]); group.add(body);
+              // A virgin queen is bigger than a drone and her abdomen is longer and
+              // tapered — that is how a drone finds her in the congregation area, so
+              // the model has to show it rather than leaving a generic amber blob.
+              var group = buildBeeAvatar({ scale: 1.25, bodyMat: shared.queen });
+              if (group.userData.core) group.userData.core.children.forEach(function(node) {
+                if (node.position && node.position.z > 2.5) node.scale.z *= 1.45;
+              });
               var glow = mesh(sphere, basic(0xfbbf24, { transparent: true, opacity: 0.16, depthWrite: false }), [18, 18, 18]); group.add(glow);
               var marker = mesh(ring, basic(0xfde68a, { transparent: true, opacity: 0.75, side: THREE.DoubleSide, depthWrite: false })); marker.rotation.x = -Math.PI / 2; marker.position.y = -8; marker.scale.set(1.5, 1.5, 1.5); group.add(marker);
               scene.add(group); objects.queens.push({ group: group, queen: q });
@@ -18197,12 +19659,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             ds.cameraStabilized = cameraStabilized;
             var cameraBob = prefersReducedMotion ? 0 : Math.sin(now * 0.008) * Math.min(cameraStabilized ? 0.006 : 0.018, (ds.speed || 0) * 0.0015);
             var fwdX = Math.sin(ds.yaw || 0), fwdZ = -Math.cos(ds.yaw || 0);
+            var throttleEffort = Math.max(0, Math.min(1, (ds.speed || 0) / 11));
+            // Pollen load drives the corbiculae on every bee in the scene, so the
+            // haul is visible on the model and not only in the HUD counter.
+            var nectarLoadRatio = Math.max(0, Math.min(1, ((ds.nectarCollected != null ? ds.nectarCollected : ds.pollenCollected) || 0) / Math.max(1, ds.nectarGoal || ds.pollenGoal || 10)));
+            function dressBeeAvatar(avatar, effort, load) {
+              beatBeeWings(avatar, now, effort, prefersReducedMotion);
+              var sacs = avatar && avatar.userData && avatar.userData.pollenSacs;
+              if (!sacs) return;
+              for (var sacIndex = 0; sacIndex < sacs.length; sacIndex++) {
+                sacs[sacIndex].visible = load > 0.04;
+                sacs[sacIndex].scale.set(0.5 + load * 0.9, 0.5 + load * 0.9, 0.6 + load * 1.1);
+              }
+            }
             if (o.playerDrone) {
               o.playerDrone.visible = cameraMode === 'chase';
               o.playerDrone.position.set(ds.x, ds.y, ds.z);
               o.playerDrone.rotation.order = 'YXZ';
               o.playerDrone.rotation.set(ds.pitch || 0, ds.yaw || 0, ds.roll || 0);
-              o.playerDrone.children[4].rotation.z = prefersReducedMotion ? 0 : now * 0.002;
+              if (o.playerDrone.userData.beacon) o.playerDrone.userData.beacon.rotation.z = prefersReducedMotion ? 0 : now * 0.002;
+              dressBeeAvatar(o.playerDrone, throttleEffort, nectarLoadRatio);
+            }
+            if (o.playerShadow) {
+              // Faint and wide when high, tight and dark when low — the same
+              // reading a pilot takes off their own shadow on short final.
+              var shadowAltitude = Math.max(0, ds.y || 0);
+              var shadowVisible = ds.phase !== 'end' && shadowAltitude < 260;
+              o.playerShadow.visible = shadowVisible;
+              if (shadowVisible) {
+                o.playerShadow.position.set(ds.x, -0.6, ds.z);
+                o.playerShadow.scale.setScalar(0.85 + shadowAltitude * 0.011);
+                o.playerShadow.material.opacity = Math.max(0.08, 0.46 - shadowAltitude * 0.0013);
+              }
+            }
+            if (o.butterflies && o.butterflies.length) {
+              o.butterflies.forEach(function(flutter, flutterIndex) {
+                var base = flutter.userData || {};
+                var wander = prefersReducedMotion ? 0 : now * 0.00042 + (base.phase || 0);
+                flutter.position.set((base.baseX || 0) + Math.cos(wander) * 34, (base.baseY || 16) + Math.sin(wander * 1.7) * 5, (base.baseZ || -200) + Math.sin(wander) * 34);
+                flutter.rotation.y = -wander;
+                (base.wings || []).forEach(function(fw) {
+                  fw.pivot.rotation.z = fw.side * (prefersReducedMotion ? 0.5 : 0.35 + 0.75 * (0.5 + 0.5 * Math.sin(now * 0.011 + flutterIndex)));
+                });
+              });
             }
             if (cameraMode === 'chase') {
               var chasePosition = new THREE.Vector3(ds.x - fwdX * 46, ds.y + 22, ds.z - fwdZ * 46);
@@ -18222,6 +19721,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             t.scene.fog.near = (340 + Math.min(180, (ds.y || 0) * 0.65)) * Math.max(0.76, visibilityScale);
             t.scene.fog.far = (2350 + Math.min(520, (ds.y || 0) * 1.4)) * visibilityScale;
             t.camera.updateMatrixWorld();
+            // Dome and sun ride the camera, so this has to follow the camera move
+            // for the frame or the horizon lags a frame behind the aircraft.
+            if (o.skyDome) {
+              o.skyDome.position.copy(t.camera.position);
+              o.skyDome.updateMatrixWorld();
+              o.skyDome.material.color.copy(skyColor).lerp(new THREE.Color(0xffffff), 0.18);
+              if (o.sunDisc) o.sunDisc.lookAt(t.camera.position);
+            }
             if (o.dcaBeacon) { o.dcaBeacon.visible = !ds.reachedDca && ds.phase !== 'mating' && ds.phase !== 'end'; o.dcaBeacon.rotation.y = now * 0.00028; o.dcaBeacon.children[1].rotation.z = now * 0.00055; }
             if (o.queenBeacon && ds.nearQueens && ds.nearQueens[0]) { var signalQueen = ds.nearQueens[0]; o.queenBeacon.position.set(signalQueen.x, 0, signalQueen.z); o.queenBeacon.visible = !signalQueen.caught && (ds.phase === 'congregation' || ds.reachedDca); o.queenBeacon.rotation.y = -now * 0.0004; o.queenBeacon.children[1].rotation.z = now * 0.0007; }
             if (o.obstacleWarn) {
@@ -18291,9 +19798,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             });
             o.flowers.forEach(function(item, idx) { var active = !item.flower.collected && item.flower.hasNectar !== false; item.group.visible = true; item.bloom.scale.setScalar(active ? 1 + 0.08 * Math.sin(now * 0.006 + idx) : 0.48); if (item.halo) item.halo.visible = active; });
             o.thermals.forEach(function(item, idx) { item.rotation.y = now * 0.00035 * (idx % 2 ? -1 : 1); item.children.forEach(function(child) { child.material.opacity = 0.12 + 0.05 * Math.sin(now * 0.003 + idx); }); });
-            o.drones.forEach(function(item) { var trafficDx = ds.x - item.drone.x, trafficDy = ds.y - item.drone.y, trafficDz = ds.z - item.drone.z; var trafficDistance = Math.sqrt(trafficDx * trafficDx + trafficDy * trafficDy + trafficDz * trafficDz); item.group.position.set(item.drone.x, item.drone.y, item.drone.z); item.group.rotation.y = Math.atan2(item.drone.vx, -item.drone.vz); if (item.alert) { item.alert.visible = trafficDistance < 110; item.alert.material.opacity = trafficDistance < 30 ? 0.95 : 0.4; item.alert.scale.setScalar(1 + 0.1 * Math.sin(now * 0.009)); } });
+            o.drones.forEach(function(item) { var trafficDx = ds.x - item.drone.x, trafficDy = ds.y - item.drone.y, trafficDz = ds.z - item.drone.z; var trafficDistance = Math.sqrt(trafficDx * trafficDx + trafficDy * trafficDy + trafficDz * trafficDz); item.group.position.set(item.drone.x, item.drone.y, item.drone.z); item.group.rotation.y = Math.atan2(item.drone.vx, -item.drone.vz); dressBeeAvatar(item.group, 0.75, 0); if (item.alert) { item.alert.visible = trafficDistance < 110; item.alert.material.opacity = trafficDistance < 30 ? 0.95 : 0.4; item.alert.scale.setScalar(1 + 0.1 * Math.sin(now * 0.009)); } });
             o.birds.forEach(function(item) { item.group.position.set(item.bird.x, item.bird.y, item.bird.z); item.group.rotation.y = Math.atan2(item.bird.vx, -item.bird.vz); var flap = Math.sin(item.bird.wingPhase) * 0.42; item.wings[0].rotation.z = -0.28 - flap; item.wings[1].rotation.z = 0.28 + flap; var hazardDx = ds.x - item.bird.x, hazardDy = ds.y - item.bird.y, hazardDz = ds.z - item.bird.z; var hazardDist = Math.sqrt(hazardDx * hazardDx + hazardDy * hazardDy + hazardDz * hazardDz); if (item.alert) { item.alert.visible = hazardDist < 120; item.alert.material.opacity = hazardDist < 45 ? 0.92 : 0.42; item.alert.scale.setScalar(1 + 0.12 * Math.sin(now * 0.01)); } });
-            o.queens.forEach(function(item) { item.group.position.set(item.queen.x, item.queen.y, item.queen.z); item.group.visible = !item.queen.caught; item.group.rotation.y += 0.006; item.group.children[1].scale.setScalar(1 + 0.16 * Math.sin(now * 0.004)); });
+            o.queens.forEach(function(item) { item.group.position.set(item.queen.x, item.queen.y, item.queen.z); item.group.visible = !item.queen.caught; item.group.rotation.y += 0.006; dressBeeAvatar(item.group, 0.45, 0); item.group.children[1].scale.setScalar(1 + 0.16 * Math.sin(now * 0.004)); });
             var particleLimit = t.particleLimit || 240;
             for (var pi = 0; pi < 240; pi++) { var pt = pi < particleLimit ? (ds.particles || [])[pi] : null; var off = pi * 3; t.particlePositions[off] = pt ? pt.x : 0; t.particlePositions[off + 1] = pt ? pt.y : -9999; t.particlePositions[off + 2] = pt ? pt.z : 0; }
             o.particlePoints.geometry.attributes.position.needsUpdate = true;
@@ -18471,7 +19978,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               ds.nearestObstacle = droneNearestObstacle(ds);
 
               // Nectar boost checkpoints: a game layer based on worker foraging.
-              // Real drones are fed by workers; these blooms teach flower approach and energy tradeoffs.
+              // Real drones do not forage. These boosts are an explicit flight-training mechanic, not a feeding model.
               ds.particles = (ds.particles || []).filter(function(pt) {
                 pt.life -= dt;
                 pt.x += pt.vx * frameScale;
@@ -19180,12 +20687,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               var altTickY = altY + altH - (alt / 300) * altH;
               c.beginPath(); c.moveTo(altX - 12, altTickY); c.lineTo(altX - 8, altTickY); c.stroke();
             }
-            // DCA altitude marker (200ft)
+            // DCA target band; the marker uses the same contract as success logic.
+            var dcaTopY = altY + altH - (DRONE_FLIGHT_PARAMS.dcaMaxFt / 300) * altH;
+            var dcaBottomY = altY + altH - (DRONE_FLIGHT_PARAMS.dcaMinFt / 300) * altH;
+            c.fillStyle = 'rgba(251,191,36,0.16)';
+            c.fillRect(altX - 14, dcaTopY, 28, Math.max(2, dcaBottomY - dcaTopY));
             c.strokeStyle = '#fbbf24'; c.lineWidth = 1.5;
-            var dcaY = altY + altH - (200 / 300) * altH;
+            var dcaY = altY + altH - (DRONE_FLIGHT_PARAMS.dcaMarkerFt / 300) * altH;
             c.beginPath(); c.moveTo(altX - 14, dcaY); c.lineTo(altX + 14, dcaY); c.stroke();
             c.font = 'bold 6px system-ui'; c.textAlign = 'left'; c.fillStyle = '#fbbf24';
-            c.fillText('DCA', altX + 16, dcaY + 2);
+            c.fillText('DCA ' + DRONE_FLIGHT_PARAMS.dcaMinFt + '–' + DRONE_FLIGHT_PARAMS.dcaMaxFt, altX + 16, dcaY + 2);
             // Label
             c.fillStyle = '#94a3b8'; c.textAlign = 'center'; c.font = 'bold 7px system-ui';
             c.fillText('ALT', altX, altY - 4);
@@ -19509,6 +21020,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             announceBee(next ? 'Camera stabilization enabled. Visual roll and bob are reduced.' : 'Camera stabilization disabled. Full bank and motion are visible.', false);
           }
         function leaveDroneFlight() {
+          _droneRuntimeSession.current = false;
           _droneKeys.current = {};
           updAll({ drone: Object.assign({}, droneData, { active: false, paused: false }) });
           announceBee('Drone flight ended. Difficulty selection is available.', false);
@@ -19546,7 +21058,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           forage: { label: 'Range expansion', desc: 'Send a larger scout and forager wing to seize territory before the rival compounds.', effect: '-2 wax, +95 foragers, +15 scouts, faster rival pressure', waxBonus: -2, nurses: 0, builders: 20, guards: -15, foragers: 95, scouts: 15, pressureOffset: 2 }
         };
         var QUEEN_SCENARIOS = {
-          field_report: { label: 'Field report', desc: 'A stable apiary gives you time to learn the full command loop.', hiveHealth: 100, rivalPressure: 0, rivalStrength: 0, nectar: 0, pollen: 0 },
+          field_report: { label: 'Field report', desc: 'A stable apiary gives you time to learn the full strategy loop.', hiveHealth: 100, rivalPressure: 0, rivalStrength: 0, nectar: 0, pollen: 0 },
           mite_crisis: { label: 'Mite crisis', desc: 'Begin under parasite pressure: protect brood before expanding.', hiveHealth: 84, rivalPressure: 6, rivalStrength: 18, nectar: -6, pollen: -2 },
           rival_surge: { label: 'Rival surge', desc: 'The neighboring hive is already organized and will raid sooner.', hiveHealth: 100, rivalPressure: 22, rivalStrength: 55, nectar: 4, pollen: 2 }
         };
@@ -19572,7 +21084,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         var queenResult = queenData.result || null;
         var queenFeedback = queenData.feedback || { tone: 'info', text: 'The simulation is live. Build on the left side, scout the rival, and protect your queen.' };
         var queenImpact = queenData.lastImpact && typeof queenData.lastImpact === 'object' ? queenData.lastImpact : null;
-        var queenFieldReadiness = colonyHealth >= 70 && varroaLevel < 20 && honey >= 15 ? 'prepared' : (colonyHealth < 45 || varroaLevel >= 35 ? 'stressed' : 'watch');
+        var queenFieldReadiness = colonyHealth >= 70 && varroaLevel < 20 && honey >= currentReserve ? 'prepared' : (colonyHealth < 45 || varroaLevel >= 35 || honey < currentReserve * 0.6 ? 'stressed' : 'watch');
         var queenFieldBrief = queenFieldReadiness === 'prepared'
           ? { label: 'Prepared field report', tone: 'success', modifier: '+5 nectar · +3 pollen · +2 wax · −3 rival pressure · +4 hive health', advice: 'Your colony arrives with reserves and low mite pressure. Use the opening to scout or expand before the rival compounds.' }
           : queenFieldReadiness === 'stressed'
@@ -19615,8 +21127,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         function toggleQueenPause() {
           if (!queenGameActive || queenResult) return;
           var nextPaused = !queenPaused;
-          updAll({ queen: Object.assign({}, queenData, { paused: nextPaused, feedback: { tone: 'info', text: nextPaused ? 'Simulation paused. Commands and building remain available.' : 'Simulation resumed.' } }) });
-          announceBee(nextPaused ? 'Queen real-time simulation paused. Commands and building remain available.' : 'Queen real-time simulation resumed.', false);
+          updAll({ queen: Object.assign({}, queenData, { paused: nextPaused, feedback: { tone: 'info', text: nextPaused ? 'Simulation paused. Signal choices and building remain available.' : 'Simulation resumed.' } }) });
+          announceBee(nextPaused ? 'Queen real-time simulation paused. Signal choices and building remain available.' : 'Queen real-time simulation resumed.', false);
         }
 
         function endQueenGame() {
@@ -19640,9 +21152,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           { id: 'emit_qmp', icon: '💜', label: __alloT('stem.beehive.emit_qmp', 'Emit QMP'), desc: __alloT('stem.beehive.release_queen_mandibular_pheromone_sup', 'Release Queen Mandibular Pheromone — suppress worker rebellion, boost morale'), cost: {}, pheromone: 'qmp' },
           { id: 'alarm_signal', icon: '🚨', label: __alloT('stem.beehive.alarm_signal', 'Alarm Signal'), desc: __alloT('stem.beehive.release_alarm_pheromone_mobilize_guard', 'Release alarm pheromone — mobilize guards against threat'), cost: {}, pheromone: 'alarm' },
           { id: 'nasonov_call', icon: '🏠', label: __alloT('stem.beehive.nasonov_rally', 'Nasonov Rally'), desc: __alloT('stem.beehive.release_nasonov_call_foragers_home_mar', 'Release Nasonov — call foragers home, mark safe areas'), cost: {}, pheromone: 'nasonov' },
-          { id: 'build_comb', icon: '🏗️', label: __alloT('stem.beehive.order_comb', 'Order Comb'), desc: __alloT('stem.beehive.direct_builders_to_construct_new_comb_', 'Direct builders to construct new comb cells'), cost: { wax: 5 }, pheromone: 'qmp' }
+          { id: 'build_comb', icon: '🏗️', label: __alloT('stem.beehive.order_comb', 'Recruit Builders'), desc: __alloT('stem.beehive.direct_builders_to_construct_new_comb_', 'Shift workers into wax production and comb-building support'), cost: { wax: 5 }, pheromone: 'qmp' }
         ];
 
+        // Preserve internal command IDs for saved-state and selector compatibility; learner copy names signals, responses, and strategy choices.
         var queenCombCommand = QUEEN_ACTIONS.find(function(a) { return a.id === 'build_comb'; });
         if (queenCombCommand) {
           queenCombCommand.label = 'Recruit Builders';
@@ -19685,7 +21198,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var opening = QUEEN_OPENINGS[chosenOpening];
           var chosenScenario = QUEEN_SCENARIOS[queenScenario] ? queenScenario : 'field_report';
           var scenario = QUEEN_SCENARIOS[chosenScenario];
-          var fieldReadiness = colonyHealth >= 70 && varroaLevel < 20 && honey >= 15 ? 'prepared' : (colonyHealth < 45 || varroaLevel >= 35 ? 'stressed' : 'watch');
+          var fieldReadiness = colonyHealth >= 70 && varroaLevel < 20 && honey >= currentReserve ? 'prepared' : (colonyHealth < 45 || varroaLevel >= 35 || honey < currentReserve * 0.6 ? 'stressed' : 'watch');
           var fieldCarryover = fieldReadiness === 'prepared'
             ? { label: 'Prepared field report', nectar: 5, pollen: 3, wax: 2, rivalPressure: -3, hiveHealth: 4 }
             : fieldReadiness === 'stressed'
@@ -19694,7 +21207,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           updAll({ queen: {
             active: true, paused: false, speed: 1, day: 0, score: 0, phase: 'build', difficulty: chosenDifficulty, opening: chosenOpening, scenario: chosenScenario, carryover: { source: 'beekeeper', readiness: fieldReadiness, label: fieldCarryover.label },
             hiveHealth: Math.max(35, Math.min(100, scenario.hiveHealth + fieldCarryover.hiveHealth)), territory: 50, result: null, resultRecorded: false, buildMode: null, career: queenCareer,
-            feedback: { tone: 'info', text: setup.label.toUpperCase() + ' / ' + opening.label.toUpperCase() + ' / ' + scenario.label.toUpperCase() + ': ' + fieldCarryover.label + ' carried into the command map. ' + scenario.desc },
+            feedback: { tone: 'info', text: setup.label.toUpperCase() + ' / ' + opening.label.toUpperCase() + ' / ' + scenario.label.toUpperCase() + ': ' + fieldCarryover.label + ' carried into the strategy map. ' + scenario.desc },
             rival: { name: setup.rivalName, health: 100, strength: setup.strength + scenario.rivalStrength, stores: setup.stores, structures: setup.structures, pressure: Math.max(0, setup.pressure + opening.pressureOffset + scenario.rivalPressure + fieldCarryover.rivalPressure), intel: 0, doctrine: setup.doctrine, posture: 'forage', lastMove: 'Establishing forage lanes', telegraph: 'Stores and map pressure are rising', counter: QUEEN_RIVAL_DOCTRINES[setup.doctrine].counter },
             pheromones: { qmp: 100, alarm: 0, nasonov: 50, brood: 40 },
             resources: { nectar: Math.max(4, 30 + scenario.nectar + fieldCarryover.nectar), pollen: Math.max(4, 20 + scenario.pollen + fieldCarryover.pollen), wax: Math.max(2, setup.startWax + opening.waxBonus + fieldCarryover.wax), royalJelly: 5 },
@@ -19728,7 +21241,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var result = queenResult;
           var paused = queenPaused;
           var sc = queenScore;
-          var feedback = { tone: 'success', text: action.label + ' command received.' };
+          var feedback = { tone: 'success', text: action.label + ' signal applied.' };
 
           if (actionId === 'lay_workers') { productionQueue.push({ id: 'worker-brood-' + queenDay + '-' + (productionQueue.length + 1), type: 'workers', label: 'Worker brood', icon: '\uD83D\uDC23', amount: 20, remaining: 2 }); sc += 10; ph.brood = Math.min(100, ph.brood + 5); feedback.text = 'Worker brood queued; 20 nurses mature in 2 cycles.'; playSfx(sfxBeeCollect); }
           else if (actionId === 'lay_drones') { productionQueue.push({ id: 'drone-brood-' + queenDay + '-' + (productionQueue.length + 1), type: 'drones', label: 'Drone brood', icon: '\u2642\uFE0F', amount: 40, remaining: 3 }); sc += 5; feedback.text = 'Drone brood queued; mating capacity matures in 3 cycles.'; playSfx(sfxBeeCollect); }
@@ -20130,7 +21643,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var raidIn = Math.min(pressureCycles, cadenceCycles);
           var timing = raidIn <= 1 ? 'Before the next cycle' : 'Within ' + raidIn + ' cycles';
           var empty = { key: 'observe', tone: 'info', badge: 'PLAN AHEAD', title: 'Build for the next phase', detail: 'No immediate raid response is required. Use the next safe cycle to strengthen the economy or place a structure before pressure compounds.', timing: timing, actionId: null, action: null, ready: false, gap: '' };
-          if (queenResult) return { key: 'review', tone: queenResult === 'victory' ? 'success' : 'danger', badge: 'REVIEW', title: queenResult === 'victory' ? 'Map control secured' : 'Brood core lost', detail: 'The clock is stopped. Review the impact report and name the command or automatic event that changed the outcome.', timing: 'Review the debrief', actionId: null, action: null, ready: false, gap: '' };
+          if (queenResult) return { key: 'review', tone: queenResult === 'victory' ? 'success' : 'danger', badge: 'REVIEW', title: queenResult === 'victory' ? 'Map control secured' : 'Brood core lost', detail: 'The clock is stopped. Review the impact report and name the strategy choice or automatic event that changed the outcome.', timing: 'Review the debrief', actionId: null, action: null, ready: false, gap: '' };
           if (queenThreats.length > 0 || pressure >= 60) {
             var alarm = QUEEN_ACTIONS.find(function(action) { return action.id === 'alarm_signal'; });
             return { key: 'defend', tone: 'danger', badge: 'ACT NOW', title: 'Defend before the raid lands', detail: queenThreats.length > 0 ? 'An active threat is already inside the decision window. Alarm pheromone mobilizes guards immediately; add a Guard Post after stabilizing.' : 'Raid pressure has reached the 60% threshold. Alarm pheromone buys time while you reinforce the entrance.', timing: 'This cycle', actionId: alarm ? alarm.id : null, action: alarm, ready: true, gap: '' };
@@ -20142,7 +21655,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           if ((queenRival.intel || 0) <= 0) {
             var scout = QUEEN_ACTIONS.find(function(action) { return action.id === 'scout_rival'; });
             var scoutReady = !!scout && hasQueenResources(scout.cost);
-            return { key: 'scout', tone: 'info', badge: scoutReady ? 'SCOUT FIRST' : 'GATHER', title: scoutReady ? 'Scout before committing' : 'Gather nectar, then scout', detail: scoutReady ? 'Rival power is hidden. Spend 3 nectar to reveal the attack estimate and turn uncertainty into an informed command.' : 'Rival power is hidden and scouting costs 3 nectar. Protect the reserve until the command becomes affordable.', timing: timing, actionId: scoutReady ? scout.id : null, action: scout, ready: scoutReady, gap: scout ? queenResourceGapText(scout.cost) : '' };
+            return { key: 'scout', tone: 'info', badge: scoutReady ? 'SCOUT FIRST' : 'GATHER', title: scoutReady ? 'Scout before committing' : 'Gather nectar, then scout', detail: scoutReady ? 'Rival power is hidden. Spend 3 nectar to reveal the attack estimate and turn uncertainty into an informed choice.' : 'Rival power is hidden and scouting costs 3 nectar. Protect the reserve until that choice becomes affordable.', timing: timing, actionId: scoutReady ? scout.id : null, action: scout, ready: scoutReady, gap: scout ? queenResourceGapText(scout.cost) : '' };
           }
           var attack = queenPopulation.guards * 0.24 + queenPopulation.scouts * 0.7 + queenPheromones.alarm * 0.18;
           var estimate = Math.max(4, Math.min(28, Math.round(attack / 8 - queenRival.strength / 120)));
@@ -20195,6 +21708,183 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         }
 
         // Queen RTS canvas rendering
+        // ══ 3D bays for the Beekeeper and Queen simulations ══
+        // Status lives in component state because the host viewer reports
+        // loading/ready/failed asynchronously and the fallback copy has to
+        // change with it. Selection and the panel toggles live in tool data so
+        // they survive a mode switch, like every other preference here.
+        var _hive3dStatusState = React.useState(HIVE_3D_VIEWER.status ? HIVE_3D_VIEWER.status() : 'idle');
+        var hive3dStatus = _hive3dStatusState[0], setHive3dStatus = _hive3dStatusState[1];
+        var _queen3dStatusState = React.useState(QUEEN_3D_VIEWER.status ? QUEEN_3D_VIEWER.status() : 'idle');
+        var queen3dStatus = _queen3dStatusState[0], setQueen3dStatus = _queen3dStatusState[1];
+        var hive3dPart = d.hive3dPart || null;
+        var hive3dExploded = d.hive3dExploded === true;
+        var show3dHive = d.show3dHive !== false;
+        var queen3dPart = d.queen3dPart || null;
+        var show3dQueen = d.show3dQueen !== false;
+        // Live readings, normalised once so the scene and the caption below it
+        // can never disagree about what the hive is currently doing.
+        // 60 lb is a full medium super of capped honey — the number a keeper
+        // would actually call "full", not an arbitrary ceiling.
+        var hive3dHoneyFill = Math.max(0, Math.min(1, honey / 60));
+        var hive3dBroodFill = Math.max(0, Math.min(1, brood / 12000));
+        var hive3dVarroa = Math.max(0, Math.min(1, varroaLevel / 100));
+        // Winter bees cluster instead of flying, so entrance traffic collapses
+        // even when the colony is perfectly healthy. Flattening that would
+        // teach the wrong thing about a quiet hive in January.
+        var hive3dTraffic = Math.max(0, Math.min(1, (workers / 45000) * (season === 3 ? 0.12 : season === 0 ? 0.72 : 1)));
+        var hive3dPollen = Math.max(0, Math.min(1, pollen / 30));
+        // Queen health drives how SOLID the brood pattern is. A failing queen
+        // shows up as gaps in the comb long before the brood count falls, and
+        // that is the read the 3D frame is here to teach.
+        var hive3dLaying = Math.max(0, Math.min(1, queenHealth / 100));
+        // Pulling the front frame out is what selecting the frames (or the
+        // queen standing on them) means — the same gesture as an inspection.
+        var hive3dPulled = hive3dPart === 'brood_frames' || hive3dPart === 'queen';
+        // Comb capacity is what "Add super" actually buys in this simulation:
+        // the base hive is 80 and each super adds 40. Showing the boxes means a
+        // student can see the move they made, instead of trusting a number.
+        var hive3dCapacity = bhBoundedNumber(d.capacity, 80, 0, 1000000);
+        var hive3dSuperCount = Math.max(1, Math.min(3, 1 + Math.round((hive3dCapacity - 80) / 40)));
+        // Boxes of honey, so a full stack reads as a full stack.
+        var hive3dHoneyBoxes = Math.max(0, honey / 60);
+        // The SAME crowding ratio the colony stepper uses to fire a swarm event,
+        // so the queen cells on the frame and the event in the log never
+        // disagree about whether this colony is about to swarm.
+        var hive3dSwarmPressure = workers / Math.max(1, hive3dCapacity * 350);
+        React.useEffect(function() {
+          HIVE_3D_VIEWER.sync({
+            selected: hive3dPart,
+            dark: isDark,
+            contrast: isContrast,
+            showAllLabels: hive3dExploded,
+            sceneProps: {
+              honeyFill: hive3dHoneyFill, broodFill: hive3dBroodFill,
+              varroa: hive3dVarroa, traffic: hive3dTraffic, exploded: hive3dExploded,
+              pollenLevel: hive3dPollen, layingRate: hive3dLaying,
+              season: season, pulled: hive3dPulled,
+              superCount: hive3dSuperCount, honeyBoxes: hive3dHoneyBoxes,
+              swarmPressure: hive3dSwarmPressure
+            },
+            onPick: function(id) {
+              upd('hive3dPart', id);
+              for (var i = 0; i < HIVE_3D_PARTS.length; i++) {
+                if (HIVE_3D_PARTS[i].id === id) { announceBee(HIVE_3D_PARTS[i].label + '. ' + HIVE_3D_PARTS[i].desc, false); break; }
+              }
+            },
+            onStatus: function(next) { setHive3dStatus(next); }
+          });
+        }, [hive3dPart, hive3dExploded, isDark, isContrast, hive3dHoneyFill, hive3dBroodFill,
+          hive3dVarroa, hive3dTraffic, hive3dPollen, hive3dLaying, hive3dPulled, season,
+          hive3dSuperCount, hive3dHoneyBoxes, hive3dSwarmPressure]);
+
+        var queen3dShare = Math.max(0, Math.min(1, (queenTerritory || 50) / 100));
+        var queen3dHome = Math.max(0, Math.min(1, (queenHiveHealth || 0) / 100));
+        var queen3dRival = Math.max(0, Math.min(1, ((queenRival && queenRival.health) || 0) / 100));
+        var queen3dForage = Math.max(0, Math.min(1, ((queenPopulation && queenPopulation.foragers) || 0) / 600));
+        React.useEffect(function() {
+          QUEEN_3D_VIEWER.sync({
+            selected: queen3dPart,
+            dark: isDark,
+            contrast: isContrast,
+            sceneProps: {
+              share: queen3dShare, homeHealth: queen3dHome,
+              rivalHealth: queen3dRival, forageRate: queen3dForage
+            },
+            onPick: function(id) {
+              upd('queen3dPart', id);
+              for (var i = 0; i < QUEEN_3D_PARTS.length; i++) {
+                if (QUEEN_3D_PARTS[i].id === id) { announceBee(QUEEN_3D_PARTS[i].label + '. ' + QUEEN_3D_PARTS[i].desc, false); break; }
+              }
+            },
+            onStatus: function(next) { setQueen3dStatus(next); }
+          });
+        }, [queen3dPart, isDark, isContrast, queen3dShare, queen3dHome, queen3dRival, queen3dForage]);
+
+        // One panel shell for both bays. The two scenes differ only in their
+        // parts list, their caption and one extra control, so a second copy of
+        // the surrounding chrome would be a second thing to keep accessible.
+        function renderBee3dBay(cfg) {
+          var ready = cfg.status === 'ready';
+          var accent = cfg.accent;
+          var selected = null;
+          for (var pi = 0; pi < cfg.parts.length; pi++) if (cfg.parts[pi].id === cfg.selected) selected = cfg.parts[pi];
+          var controls = [
+            ['◀', 'Rotate left', function() { cfg.viewer.nudge(-0.3, 0); }],
+            ['▶', 'Rotate right', function() { cfg.viewer.nudge(0.3, 0); }],
+            ['▲', 'Tilt up', function() { cfg.viewer.nudge(0, 0.2); }],
+            ['▼', 'Tilt down', function() { cfg.viewer.nudge(0, -0.2); }],
+            ['＋', 'Zoom in', function() { cfg.viewer.zoom(-0.6); }],
+            ['－', 'Zoom out', function() { cfg.viewer.zoom(0.6); }],
+            ['↺', 'Reset view', function() { cfg.viewer.reset(); }]
+          ];
+          return h('section', {
+            key: 'beehive-3d-' + cfg.id,
+            'data-beehive-3d-bay': cfg.id,
+            'data-beehive-3d-status': cfg.status,
+            className: 'rounded-2xl border p-3 ' + (dk ? 'border-slate-700/60 bg-slate-900/65' : 'border-slate-300 bg-white'),
+            'aria-label': cfg.title
+          },
+            h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
+              h('div', { className: 'min-w-0' },
+                h('div', { className: 'text-[10px] font-black uppercase tracking-[0.15em] ' + accent.label }, cfg.eyebrow),
+                h('p', { className: 'mt-1 text-[11px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, cfg.blurb)),
+              h('button', {
+                type: 'button',
+                onClick: function() { upd(cfg.toggleKey, !cfg.open); announceBee(cfg.open ? cfg.title + ' hidden.' : cfg.title + ' shown.', false); },
+                'aria-expanded': cfg.open ? 'true' : 'false',
+                'aria-label': (cfg.open ? 'Hide ' : 'Show ') + cfg.title,
+                className: 'inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-lg border px-3 text-[11px] font-black ' + accent.button
+              }, h('span', { 'aria-hidden': 'true' }, cfg.open ? '▾' : '▸'), cfg.open ? 'Hide 3D' : 'Show 3D')),
+            cfg.open && h('div', { className: 'mt-2 space-y-2' },
+              h('div', {
+                className: 'relative overflow-hidden rounded-xl border ' + accent.frame,
+                style: { height: 'clamp(260px, 34vw, 340px)', background: dk ? '#0b1220' : '#dfe6ef' }
+              },
+                h('div', { ref: cfg.attach, style: { position: 'absolute', inset: 0 } }),
+                !ready && h('div', {
+                  role: 'status',
+                  className: 'absolute inset-0 flex items-center justify-center p-4 text-center',
+                  style: { background: dk ? 'rgba(11,18,32,0.92)' : 'rgba(223,230,239,0.94)' }
+                },
+                  h('p', { className: 'text-[11px] font-bold ' + (dk ? 'text-slate-300' : 'text-slate-600') },
+                    cfg.status === 'loading'
+                      ? 'Loading the 3D view…'
+                      : (BEE_3D_MISSING === 'host'
+                        ? 'The 3D view needs a newer STEAM Lab host than this build has. Everything else in this simulation still works.'
+                        : cfg.fallback)))),
+              h('div', { role: 'group', 'aria-label': cfg.title + ' camera controls', className: 'flex flex-wrap gap-1' },
+                controls.map(function(control) {
+                  return h('button', {
+                    key: control[1], type: 'button', 'aria-label': control[1], title: control[1],
+                    disabled: !ready, onClick: control[2],
+                    className: 'min-h-[44px] min-w-[44px] rounded-lg border px-3 text-[11px] font-bold ' + accent.button,
+                    style: { opacity: ready ? 1 : 0.45 }
+                  }, control[0]);
+                }).concat(cfg.extraControls || [])),
+              h('p', { className: 'text-[11px] font-bold ' + (dk ? 'text-slate-300' : 'text-slate-600') }, cfg.pickPrompt),
+              h('div', { className: 'flex flex-wrap gap-1', role: 'group', 'aria-label': cfg.title + ' parts' },
+                cfg.parts.map(function(part) {
+                  var on = cfg.selected === part.id;
+                  return h('button', {
+                    key: part.id, type: 'button',
+                    'aria-pressed': on ? 'true' : 'false',
+                    'aria-label': (on ? 'Hide' : 'Show') + ' details for ' + part.label,
+                    onClick: function() {
+                      var next = on ? null : part.id;
+                      upd(cfg.partKey, next);
+                      if (next) announceBee(part.label + '. ' + part.desc, false);
+                    },
+                    className: 'min-h-[44px] rounded-lg border px-3 text-[11px] font-bold ' + (on ? accent.chipOn : accent.chip)
+                  }, part.label);
+                })),
+              selected && h('div', {
+                role: 'status',
+                className: 'rounded-xl border p-3 text-[11px] leading-relaxed ' + accent.frame + ' ' + (dk ? 'bg-slate-950/50 text-slate-200' : 'bg-slate-50 text-slate-700')
+              }, h('strong', { className: accent.label }, selected.label + ' — '), selected.desc),
+              cfg.readout));
+        }
+
         React.useEffect(function() {
           if (viewMode !== 'queen' || !queenGameActive) return;
           // Ref-ready retry — prevents blank canvas when ref attaches late.
@@ -20432,7 +22122,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.fillStyle = 'rgba(15,23,42,0.75)';
             c.beginPath(); if (c.roundRect) c.roundRect(6, 6, 180, 72, 8); else c.rect(6, 6, 180, 72); c.fill();
             c.font = 'bold 10px system-ui'; c.fillStyle = '#fbbf24'; c.textAlign = 'left';
-            c.fillText('👑 QUEEN COMMAND · Day ' + qs.queenDay, 14, 22);
+            c.fillText('👑 QUEEN STRATEGY · Day ' + qs.queenDay, 14, 22);
             c.font = '8px system-ui'; c.fillStyle = '#e2e8f0';
             var totalPop2 = qs.queenPopulation.nurses + qs.queenPopulation.builders + qs.queenPopulation.guards + qs.queenPopulation.foragers + qs.queenPopulation.scouts;
             c.fillText('🐝 ' + totalPop2 + ' bees · 🏆 ' + qs.queenScore + ' pts', 14, 36);
@@ -20603,13 +22293,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             if (!colonySurvived) return 'Review collapse and restart';
             if (activeEvent) return 'Event waiting: ' + activeEvent.label;
             if (varroaLevel >= 20) return 'Mites need attention';
-            if (honey < 15) return 'Honey stores are low';
+            if (honey < currentReserve) return 'Honey below the ' + currentReserve + ' lb seasonal reserve';
             return 'Day ' + day + ' | Health ' + colonyHealth + '%';
           }
           if (id === 'queen') {
             if (queenGameActive) return 'Cycle ' + queenDay + ' | ' + (queenPaused ? 'PAUSED' : 'LIVE') + ' | Rival ' + queenRival.health + '%';
             if ((queenCareer.wins || 0) > 0) return queenCareer.wins + ' RTS win' + (queenCareer.wins === 1 ? '' : 's') + ' | Best cycle ' + queenCareer.bestCycle;
-            return queenDifficultyCfg.label + ' | Command pheromones and comb';
+            return queenDifficultyCfg.label + ' | Model pheromone signals and comb';
           }
           if (droneFlightActive) return 'In flight | Score ' + ((_droneState.current && _droneState.current.score) || 0);
           return droneHighScore > 0 ? 'High score ' + droneHighScore : 'Fly the nuptial route';
@@ -20639,10 +22329,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         }
         function handleBeeTabKey(event, ids, currentId, dataAttribute, onSelect) {
           var key = event.key;
-          if (key !== 'ArrowRight' && key !== 'ArrowLeft' && key !== 'Home' && key !== 'End') return;
+          if (key !== 'ArrowRight' && key !== 'ArrowLeft' && key !== 'ArrowDown' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
           event.preventDefault();
           var currentIndex = Math.max(0, ids.indexOf(currentId));
-          var nextIndex = key === 'Home' ? 0 : key === 'End' ? ids.length - 1 : key === 'ArrowRight' ? (currentIndex + 1) % ids.length : (currentIndex - 1 + ids.length) % ids.length;
+          var moveForward = key === 'ArrowRight' || key === 'ArrowDown';
+          var nextIndex = key === 'Home' ? 0 : key === 'End' ? ids.length - 1 : moveForward ? (currentIndex + 1) % ids.length : (currentIndex - 1 + ids.length) % ids.length;
           var nextId = ids[nextIndex];
           var list = event.currentTarget.parentElement;
           var target = list && list.querySelector('[' + dataAttribute + '="' + nextId + '"]');
@@ -20655,7 +22346,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var frontlineState = frontlinePct >= 60 ? 'Advantage' : frontlinePct <= 40 ? 'Rival advantage' : 'Contested';
           var frontlineAdvice = frontlinePct >= 60 ? 'Your forage lane is open.' : frontlinePct <= 40 ? 'Protect the lane before expanding.' : 'Hold the line while you build.';
           return h('div', { id: 'beehive-queen-playfield', tabIndex: -1, 'data-beehive-focus-panel': 'playfield', role: 'region', 'aria-label': 'Queen RTS playfield. Forage frontline: your colony controls ' + frontlinePct + ' percent; rival controls ' + rivalFrontlinePct + ' percent. ' + frontlineAdvice, 'data-beehive-stage': 'queen', 'data-rts-state': queenResult ? 'complete' : queenPaused ? 'paused' : 'live', className: 'relative rounded-xl overflow-hidden border-2 ' + (dk ? 'border-purple-500/60' : 'border-purple-400'), style: { height: 'clamp(380px, 48vw, 470px)', background: dk ? 'radial-gradient(circle at 50% 44%, rgba(168,85,247,0.22), rgba(15,23,42,0.96) 68%)' : 'radial-gradient(circle at 50% 44%, rgba(245,208,254,0.62), rgba(255,251,235,0.95) 70%)', boxShadow: dk ? '0 18px 42px rgba(15,23,42,0.45), 0 0 0 1px rgba(192,132,252,0.22)' : '0 18px 38px rgba(168,85,247,0.18), 0 0 0 1px rgba(192,132,252,0.24)' } },
-            h('canvas', { ref: _queenCvRef, 'data-beehive-queen-canvas': 'true', role: 'img', 'aria-describedby': 'beehive-queen-canvas-description',
+            h('canvas', { ref: _queenCvRef, 'data-beehive-queen-canvas': 'true', role: 'img', 'data-a11y-static': 'true', 'aria-describedby': 'beehive-queen-canvas-description',
               'aria-label': 'Live two-hive RTS battlefield. Your hive health ' + queenHiveHealth + ' percent, rival hive health ' + queenRival.health + ' percent, forage control ' + frontlinePct + ' percent, frontline status ' + frontlineState.toLowerCase() + '.' + (queenBuildMode ? ' Placement mode active for ' + QUEEN_STRUCTURE_TYPES[queenBuildMode].label + '.' : ''),
               onClick: function(e) {
                 if (!queenBuildMode || queenResult) return;
@@ -20667,7 +22358,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 buildQueenStructure(queenBuildMode, px, py);
               },
               style: { width: '100%', height: '100%', display: 'block', cursor: queenBuildMode ? 'crosshair' : 'default' } }),
-            h('p', { id: 'beehive-queen-canvas-description', className: 'sr-only' }, 'The battlefield is a visual map. Use the quick-command dock after the battlefield, and use the Inner core, Mid comb, or Outer edge buttons for keyboard-accessible structure placement.'),
+            h('p', { id: 'beehive-queen-canvas-description', className: 'sr-only' }, 'The battlefield is a visual map. Use the quick-response dock after the battlefield, and use the Inner core, Mid comb, or Outer edge buttons for keyboard-accessible structure placement.'),
             h('p', { 'data-beehive-frontline-summary': 'true', className: 'sr-only' }, 'Forage frontline: your colony controls ' + frontlinePct + ' percent and the rival controls ' + rivalFrontlinePct + ' percent. ' + frontlineState + '. ' + frontlineAdvice),
             queenBuildMode && h('div', { 'data-beehive-build-zone': 'true', style: { left: '8px', width: 'calc(52% - 12px)' }, 'aria-hidden': 'true' },
               h('span', null, '⬢ Valid build zone')),
@@ -20675,27 +22366,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('span', null, '✕ Rival territory')),
             h('div', { 'data-beehive-battlefield-overlay': 'true', className: 'pointer-events-none absolute inset-x-3 top-3 z-10 flex items-center justify-between gap-3', 'aria-hidden': 'true' },
               h('div', { className: 'rounded-xl border border-purple-300/35 bg-slate-950/78 px-3 py-2 text-left text-white shadow-lg backdrop-blur-md' },
-                h('div', { className: 'text-[8px] font-black uppercase tracking-[0.16em] text-purple-300' }, 'Your colony'),
+                h('div', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-purple-300' }, 'Your colony'),
                 h('div', { className: 'text-sm font-black' }, queenHiveHealth + '% brood core')),
               h('div', { 'data-beehive-frontline-card': 'true', className: 'min-w-0 flex-1 rounded-xl border border-white/25 bg-slate-950/78 px-3 py-2 text-white shadow-lg backdrop-blur-md' },
                 h('div', { className: 'flex items-center justify-between gap-2' },
-                  h('div', { className: 'text-[8px] font-black uppercase tracking-[0.16em] text-amber-200' }, 'Forage frontline'),
+                  h('div', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-amber-200' }, 'Forage frontline'),
                   h('div', { className: 'text-[10px] font-black' }, frontlinePct + '% ours')),
                 h('div', { className: 'mt-1 flex h-2 overflow-hidden rounded-full bg-rose-950/80', 'aria-hidden': 'true' },
                   h('span', { 'data-frontline-side': 'colony', className: 'bg-gradient-to-r from-purple-400 to-fuchsia-300', style: { width: frontlinePct + '%' } }),
                   h('span', { 'data-frontline-side': 'rival', className: 'bg-gradient-to-r from-rose-500 to-orange-400', style: { width: rivalFrontlinePct + '%' } })),
-                h('div', { className: 'mt-1 flex items-center justify-between gap-2 text-[8px] font-bold uppercase tracking-wider text-slate-300' },
+                h('div', { className: 'mt-1 flex items-center justify-between gap-2 text-[10px] font-bold uppercase tracking-wider text-slate-300' },
                   h('span', null, frontlineState), h('span', null, frontlineAdvice))),
               h('div', { className: 'rounded-xl border border-rose-300/35 bg-slate-950/78 px-3 py-2 text-right text-white shadow-lg backdrop-blur-md' },
-                h('div', { className: 'text-[8px] font-black uppercase tracking-[0.16em] text-rose-300' }, queenRival.name),
+                h('div', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-rose-300' }, queenRival.name),
                 h('div', { className: 'text-sm font-black' }, queenRival.health + '% rival hive'))),
             h('div', { className: 'pointer-events-none absolute inset-y-0 z-[5] border-l-2 border-dashed border-white/55', style: { left: (20 + Math.max(15, Math.min(85, queenTerritory || 50)) * 0.6) + '%' }, 'aria-hidden': 'true' },
-              h('span', { className: 'absolute left-1/2 top-20 -translate-x-1/2 whitespace-nowrap rounded-full bg-slate-950/75 px-2 py-1 text-[8px] font-black uppercase tracking-wider text-white backdrop-blur-md' }, 'Forage front')),
-            queenThreats.length > 0 && h('div', { className: 'pointer-events-none absolute left-1/2 top-3 z-20 -translate-x-1/2 rounded-full bg-rose-600 px-3 py-1 text-[9px] font-black uppercase tracking-wider text-white shadow-lg motion-safe:animate-pulse' }, queenThreats.length + ' active threat' + (queenThreats.length === 1 ? '' : 's')),
+              h('span', { className: 'absolute left-1/2 top-20 -translate-x-1/2 whitespace-nowrap rounded-full bg-slate-950/75 px-2 py-1 text-[10px] font-black uppercase tracking-wider text-white backdrop-blur-md' }, 'Forage front')),
+            queenThreats.length > 0 && h('div', { className: 'pointer-events-none absolute left-1/2 top-3 z-20 -translate-x-1/2 rounded-full bg-rose-600 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-white shadow-lg motion-safe:animate-pulse' }, queenThreats.length + ' active threat' + (queenThreats.length === 1 ? '' : 's')),
             queenBuildMode && h('div', { className: 'pointer-events-none absolute inset-x-4 bottom-4 z-20 flex justify-center' },
               h('div', { className: 'rounded-xl border border-amber-200/60 bg-amber-500 px-4 py-2 text-center text-[10px] font-black text-slate-950 shadow-xl' }, '\u2B22 PLACE ' + QUEEN_STRUCTURE_TYPES[queenBuildMode].label.toUpperCase() + ' ON YOUR LEFT COMB')),
             queenPaused && !queenResult && h('div', { 'data-beehive-rts-paused-overlay': 'true', className: 'pointer-events-none absolute inset-0 z-[15] grid place-items-center bg-slate-950/28 backdrop-blur-[1px]' },
-              h('div', { className: 'rounded-2xl border border-white/20 bg-slate-950/80 px-6 py-4 text-center text-white shadow-2xl backdrop-blur-md' }, h('div', { className: 'text-lg font-black' }, 'TACTICAL PAUSE'), h('div', { className: 'mt-1 text-[10px] text-slate-300' }, 'Build and issue commands, then resume time')))
+              h('div', { className: 'rounded-2xl border border-white/20 bg-slate-950/80 px-6 py-4 text-center text-white shadow-2xl backdrop-blur-md' }, h('div', { className: 'text-lg font-black' }, 'TACTICAL PAUSE'), h('div', { className: 'mt-1 text-[10px] text-slate-300' }, 'Build and apply signals, then resume time')))
           );
         }
         // Keyboard/touch placement for build mode. buildQueenStructure clamps x to 0.08-0.48 and y to
@@ -20782,7 +22473,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             honey: 'Each cycle protects more nectar from storage loss.',
             pollen: 'Each cycle stores more pollen for brood consumption.',
             guard: 'Each cycle adds guards to absorb rival pressure.',
-            nursery: 'Each cycle produces extra royal jelly for queen commands.',
+            nursery: 'Each cycle produces extra royal jelly for queen signals.',
             fan: 'In winter, reduces seasonal worker losses and protects brood temperature.'
           };
           return previews[stType] || 'Benefit begins on the next automatic cycle.';
@@ -20791,13 +22482,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var advice = queenStrategicRead();
           var quickIds = ['scout_rival', 'alarm_signal', 'raid_rival'];
           var shortcuts = quickIds.map(function(id) { return QUEEN_ACTIONS.find(function(action) { return action.id === id; }); }).filter(Boolean);
-          return h('section', { 'data-beehive-battlefield-dock': 'true', className: 'rounded-xl border p-3 ' + (dk ? 'border-purple-700/45 bg-gradient-to-r from-purple-950/35 to-slate-900/70' : 'border-purple-200 bg-gradient-to-r from-purple-50 to-white'), 'aria-label': 'Battlefield quick commands' },
+          return h('section', { 'data-beehive-battlefield-dock': 'true', className: 'rounded-xl border p-3 ' + (dk ? 'border-purple-700/45 bg-gradient-to-r from-purple-950/35 to-slate-900/70' : 'border-purple-200 bg-gradient-to-r from-purple-50 to-white'), 'aria-label': 'Battlefield quick responses' },
             h('div', { className: 'flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between' },
               h('div', { className: 'min-w-0 sm:max-w-xs' },
-                h('div', { className: 'text-[9px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-purple-300' : 'text-purple-700') }, 'Battlefield command'),
+                h('div', { className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-purple-300' : 'text-purple-700') }, 'Battlefield response'),
                 h('div', { className: 'mt-0.5 text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, advice.title),
-                h('p', { className: 'mt-0.5 text-[10px] ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Issue the essential response here; the full command deck remains below.')),
-              h('div', { className: 'grid grid-cols-3 gap-1.5 sm:min-w-[360px]', role: 'group', 'aria-label': 'Essential Queen RTS commands' },
+                h('p', { className: 'mt-0.5 text-[10px] ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Issue the essential response here; the full strategy deck remains below.')),
+              h('div', { className: 'grid grid-cols-3 gap-1.5 sm:min-w-[360px]', role: 'group', 'aria-label': 'Essential Queen RTS responses' },
                 shortcuts.map(function(action) {
                   var ready = hasQueenResources(action.cost) && !queenResult;
                   var cost = queenCostText(action.cost);
@@ -20805,8 +22496,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   return h('button', { key: action.id, type: 'button', onClick: function() { queenAction(action.id); }, disabled: !ready, 'data-quick-command': action.id, 'data-command-ready': ready ? 'true' : 'false', 'aria-label': action.label + '. ' + action.desc + '. Effect: ' + preview + '. Cost: ' + cost + '. ' + (ready ? 'Ready' : queenResourceGapText(action.cost)), className: 'min-h-[64px] rounded-lg border px-2 py-2 text-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 ' + (ready ? (dk ? 'border-purple-700 bg-slate-900 text-purple-100 hover:bg-slate-800' : 'border-purple-200 bg-white text-purple-900 hover:bg-purple-100') : (dk ? 'border-slate-700 bg-slate-900/50 text-slate-500 opacity-60' : 'border-slate-200 bg-slate-50 text-slate-600 opacity-70')) },
                     h('span', { className: 'block text-base leading-none', 'aria-hidden': 'true' }, action.icon),
                     h('span', { className: 'mt-1 block text-[10px] font-black leading-tight' }, action.label),
-                    h('span', { 'data-command-preview': action.id, className: 'mt-0.5 block text-[8px] leading-snug ' + (dk ? 'text-slate-400' : 'text-slate-600') }, preview),
-                    h('span', { className: 'mt-1 block text-[8px] font-bold uppercase tracking-wide ' + (ready ? 'text-emerald-500' : '') }, ready ? (cost === 'Free' ? 'Ready / free' : 'Ready') : queenResourceGapText(action.cost)));
+                    h('span', { 'data-command-preview': action.id, className: 'mt-0.5 block text-[10px] leading-snug ' + (dk ? 'text-slate-400' : 'text-slate-600') }, preview),
+                    h('span', { className: 'mt-1 block text-[10px] font-bold uppercase tracking-wide ' + (ready ? 'text-emerald-500' : '') }, ready ? (cost === 'Free' ? 'Ready / free' : 'Ready') : queenResourceGapText(action.cost)));
                 }))),
             // Placement grid renders only while a structure is selected.
             renderQueenPlacementGrid());
@@ -20852,82 +22543,82 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var whyText = queenImpact && queenImpact.kind === 'structure'
             ? 'The build cost was paid immediately. Its production or defense bonus begins on automatic cycles.'
             : queenImpact && queenImpact.kind === 'command'
-              ? 'The command changed its target system immediately; resource costs were deducted at issue time.'
+              ? 'The signal changed its target system immediately; resource costs were deducted at issue time.'
               : 'Automatic cycles resolve income, consumption, structure bonuses, pheromone decay, rival growth, map control, and raid checks in that order.';
           return h('section', { 'data-beehive-rts-timeline': 'true', className: 'rounded-xl border p-3 sm:p-4 ' + (dk ? 'border-fuchsia-700/45 bg-gradient-to-br from-fuchsia-950/25 to-slate-900/75' : 'border-fuchsia-200 bg-gradient-to-br from-fuchsia-50/80 to-white'), 'aria-labelledby': 'beehive-rts-timeline-title' },
             h('div', { className: 'flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between' },
               h('div', null,
-                h('div', { className: 'text-[9px] font-black uppercase tracking-[0.15em] ' + (dk ? 'text-fuchsia-300' : 'text-fuchsia-800') }, 'Real-time cause and effect'),
+                h('div', { className: 'text-[10px] font-black uppercase tracking-[0.15em] ' + (dk ? 'text-fuchsia-300' : 'text-fuchsia-800') }, 'Real-time cause and effect'),
                 h('div', { id: 'beehive-rts-timeline-title', className: 'text-sm font-black ' + (dk ? 'text-white' : 'text-slate-900') }, 'Battle timeline'),
                 h('p', { className: 'mt-0.5 text-[10px] ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Read the last impact, then plan against the next automatic events.')),
-              h('span', { className: 'self-start rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-wide ' + (queenPaused ? (dk ? 'bg-slate-800 text-slate-200' : 'bg-slate-200 text-slate-700') : 'bg-rose-600 text-white') }, queenPaused ? 'Timeline paused' : 'Timeline live')),
+              h('span', { className: 'self-start rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wide ' + (queenPaused ? (dk ? 'bg-slate-800 text-slate-200' : 'bg-slate-200 text-slate-700') : 'bg-rose-600 text-white') }, queenPaused ? 'Timeline paused' : 'Timeline live')),
             h('section', { 'data-rts-decision-window': decision.key, 'data-rts-decision-tone': decision.tone, role: 'region', 'aria-labelledby': 'beehive-rts-decision-title', 'aria-describedby': 'beehive-rts-decision-description', className: 'mt-3 rounded-xl border p-3 ' + decisionToneClass },
               h('div', { className: 'flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between' },
                 h('div', { className: 'min-w-0' },
-                  h('div', { className: 'text-[9px] font-black uppercase tracking-[0.14em] ' + decisionToneText }, 'Decision window'),
+                  h('div', { className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + decisionToneText }, 'Decision window'),
                   h('div', { id: 'beehive-rts-decision-title', className: 'mt-0.5 text-sm font-black ' + decisionToneText }, decision.title),
                   h('p', { id: 'beehive-rts-decision-description', className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-200' : 'text-slate-700') }, decision.detail)),
-                h('span', { 'data-rts-decision-badge': decision.badge, className: 'self-start rounded-full px-2 py-1 text-[9px] font-black tracking-wide ' + decisionBadgeClass }, decision.badge)),
+                h('span', { 'data-rts-decision-badge': decision.badge, className: 'self-start rounded-full px-2 py-1 text-[10px] font-black tracking-wide ' + decisionBadgeClass }, decision.badge)),
               h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(9rem,0.55fr)]' },
                 h('div', { className: 'rounded-lg border p-2 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white/80 bg-white/70') },
-                  h('div', { className: 'flex items-center justify-between gap-2 text-[9px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-200' : 'text-slate-700') },
+                  h('div', { className: 'flex items-center justify-between gap-2 text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-200' : 'text-slate-700') },
                     h('span', null, 'Raid pressure'), h('span', { 'data-rts-decision-pressure-value': 'true', className: 'tabular-nums' }, Math.round(Number(queenRival.pressure) || 0) + '% / 60 threshold')),
                   h('div', { 'data-rts-decision-pressure-track': 'true', className: 'mt-1.5 h-2.5 overflow-hidden rounded-full ' + (dk ? 'bg-slate-800' : 'bg-slate-200'), role: 'progressbar', 'aria-label': 'Raid pressure toward the 60 percent threshold', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': decisionPressure, 'aria-valuetext': Math.round(Number(queenRival.pressure) || 0) + ' percent raid pressure; 60 percent triggers the rival raid window' },
                     h('span', { 'data-rts-decision-pressure-fill': 'true', className: 'block h-full rounded-full transition-all ' + (decision.tone === 'danger' ? 'bg-rose-500' : decision.tone === 'warning' ? 'bg-amber-400' : 'bg-cyan-500'), style: { width: decisionPressure + '%' } })),
-                  h('p', { className: 'mt-1 text-[9px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, decisionPressure >= 100 ? 'Threshold reached: protect the entrance before investing elsewhere.' : Math.max(0, 60 - Math.round(Number(queenRival.pressure) || 0)) + ' pressure points remain before the automatic raid threshold.')),
+                  h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, decisionPressure >= 100 ? 'Threshold reached: protect the entrance before investing elsewhere.' : Math.max(0, 60 - Math.round(Number(queenRival.pressure) || 0)) + ' pressure points remain before the automatic raid threshold.')),
                 h('div', { 'data-rts-decision-timing': 'true', className: 'rounded-lg border p-2 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white/80 bg-white/70') },
-                  h('div', { className: 'text-[9px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Timing'),
+                  h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Timing'),
                   h('div', { className: 'mt-1 text-sm font-black ' + decisionToneText }, decision.timing),
-                  h('p', { className: 'mt-1 text-[9px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Pause keeps this window open while you place a structure or review the command dock.'))),
+                  h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Pause keeps this window open while you place a structure or review the strategy dock.'))),
               h('div', { 'data-rts-decision-response': 'true', className: 'mt-3 flex flex-col gap-2 rounded-lg border border-dashed p-2 sm:flex-row sm:items-center sm:justify-between ' + (dk ? 'border-white/20 bg-slate-950/25' : 'border-slate-300 bg-white/55') },
-                h('div', { className: 'min-w-0' }, h('div', { className: 'text-[9px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Recommended response'), h('div', { className: 'mt-0.5 text-[10px] font-bold ' + (dk ? 'text-white' : 'text-slate-900') }, decision.action ? decision.action.label + ' · ' + decision.action.desc : decision.gap || 'Choose the response that best tests this forecast.')),
+                h('div', { className: 'min-w-0' }, h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Recommended response'), h('div', { className: 'mt-0.5 text-[10px] font-bold ' + (dk ? 'text-white' : 'text-slate-900') }, decision.action ? decision.action.label + ' · ' + decision.action.desc : decision.gap || 'Choose the response that best tests this forecast.')),
                 decision.actionId && decision.ready && h('button', { type: 'button', 'data-rts-recommended-command': 'true', 'data-recommended-action': decision.actionId, onClick: function() { queenAction(decision.actionId); }, 'aria-label': 'Use recommended response: ' + decision.action.label + '. ' + decision.action.desc, className: 'min-h-[44px] shrink-0 rounded-lg bg-purple-700 px-3 py-2 text-[10px] font-black text-white transition-colors hover:bg-purple-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500' }, 'Use ' + decision.action.label))),
             h('article', { 'data-rts-impact-kind': queenImpact ? queenImpact.kind : 'awaiting', className: 'mt-3 rounded-xl border p-3 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-slate-200 bg-white') },
               h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
                 h('div', null,
-                  h('div', { className: 'text-[9px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-fuchsia-300' : 'text-fuchsia-700') }, queenImpact ? (queenImpact.kind === 'cycle' ? 'Automatic cycle impact' : queenImpact.kind === 'structure' ? 'Structure impact' : 'Command impact') : 'Impact report'),
-                  h('div', { className: 'mt-0.5 text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, queenImpact ? queenImpact.title : 'Awaiting the first command or cycle'),
-                  h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, queenImpact ? queenImpact.summary : 'Issue a command or let the clock advance to see exact before-and-after evidence here.')),
-                queenImpact && h('span', { className: 'rounded-full border px-2 py-1 text-[9px] font-black ' + (dk ? 'border-slate-700 text-slate-300' : 'border-slate-200 text-slate-600') }, 'Cycle ' + queenImpact.cycle)),
+                  h('div', { className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-fuchsia-300' : 'text-fuchsia-700') }, queenImpact ? (queenImpact.kind === 'cycle' ? 'Automatic cycle impact' : queenImpact.kind === 'structure' ? 'Structure impact' : 'Signal impact') : 'Impact report'),
+                  h('div', { className: 'mt-0.5 text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, queenImpact ? queenImpact.title : 'Awaiting the first signal or cycle'),
+                  h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, queenImpact ? queenImpact.summary : 'Apply a signal or let the clock advance to see exact before-and-after evidence here.')),
+                queenImpact && h('span', { className: 'rounded-full border px-2 py-1 text-[10px] font-black ' + (dk ? 'border-slate-700 text-slate-300' : 'border-slate-200 text-slate-600') }, 'Cycle ' + queenImpact.cycle)),
               impactChanges.length > 0 && h('div', { className: 'mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4', role: 'list', 'aria-label': 'Last impact metric changes' }, impactChanges.map(function(metric, index) {
                 return h('div', { key: metric.label + '-' + index, 'data-rts-impact-metric': metric.label.toLowerCase().replace(/[^a-z0-9]+/g, '-'), role: 'listitem', 'aria-label': metric.label + ' changed from ' + metric.before + metric.suffix + ' to ' + metric.after + metric.suffix + ', ' + queenSignedValue(metric.delta, metric.suffix), className: 'rounded-lg border px-2.5 py-2 ' + (dk ? 'border-white/10 bg-slate-900/70' : 'border-slate-200 bg-slate-50') },
-                  h('div', { className: 'flex items-baseline justify-between gap-1' }, h('span', { className: 'text-[9px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-300' : 'text-slate-600') }, metric.label), h('span', { className: 'text-[10px] font-black text-fuchsia-600' }, queenSignedValue(metric.delta, metric.suffix))),
+                  h('div', { className: 'flex items-baseline justify-between gap-1' }, h('span', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-300' : 'text-slate-600') }, metric.label), h('span', { className: 'text-[10px] font-black text-fuchsia-600' }, queenSignedValue(metric.delta, metric.suffix))),
                   h('div', { className: 'mt-1 text-[10px] font-bold tabular-nums ' + (dk ? 'text-slate-300' : 'text-slate-700') }, metric.before + metric.suffix + ' \u2192 ' + metric.after + metric.suffix));
               })),
               h('div', { 'data-rts-impact-why': 'true', className: 'mt-3 border-t pt-3 ' + (dk ? 'border-white/10' : 'border-slate-200') },
-                h('div', { className: 'text-[9px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-slate-400' : 'text-slate-500') }, 'Why it changed'),
+                h('div', { className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-slate-400' : 'text-slate-500') }, 'Why it changed'),
                 queenImpact && Array.isArray(queenImpact.events) && queenImpact.events.length > 0
                   ? h('ul', { className: 'mt-1 space-y-1', 'aria-label': 'Triggered cycle events' }, queenImpact.events.map(function(eventText, index) { return h('li', { key: index, className: 'text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-700') }, eventText); }))
                   : h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-700') }, whyText))),
             h('div', { 'data-rts-production-queue': 'true', role: 'region', 'aria-label': 'Queen production queue', className: 'mt-3 rounded-xl border p-3 ' + (dk ? 'border-cyan-700/40 bg-cyan-950/20' : 'border-cyan-200 bg-cyan-50/60') },
-              h('div', { className: 'flex items-center justify-between gap-2' }, h('div', { className: 'text-[9px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-cyan-300' : 'text-cyan-800') }, 'Production queue'), h('span', { className: 'text-[9px] font-bold ' + (dk ? 'text-slate-300' : 'text-slate-600') }, queenProductionQueue.length + ' active')),
+              h('div', { className: 'flex items-center justify-between gap-2' }, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-cyan-300' : 'text-cyan-800') }, 'Production queue'), h('span', { className: 'text-[10px] font-bold ' + (dk ? 'text-slate-300' : 'text-slate-600') }, queenProductionQueue.length + ' active')),
               queenProductionQueue.length > 0
                 ? h('ol', { className: 'mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2', 'aria-label': 'Active brood orders' }, queenProductionQueue.map(function(order) { return h('li', { key: order.id, 'data-rts-production-order': order.type, className: 'flex min-w-0 items-center gap-2 rounded-lg border px-2.5 py-2 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white bg-white/80') }, h('span', { className: 'text-base', 'aria-hidden': 'true' }, order.icon), h('span', { className: 'min-w-0 flex-1 text-[10px] font-black ' + (dk ? 'text-white' : 'text-slate-900') }, order.label + ' · Ready in ' + order.remaining + ' cycle' + (order.remaining === 1 ? '' : 's'))); }))
-                : h('p', { className: 'mt-2 text-[9px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'No brood orders are active. Queue worker or drone brood when royal jelly is available.')),
-            h('div', { 'data-rts-rival-intent': 'true', role: 'note', className: 'mt-3 flex flex-col gap-1 rounded-xl border p-3 sm:flex-row sm:items-center sm:justify-between ' + (rivalIntent.tone === 'danger' ? (dk ? 'border-rose-700/50 bg-rose-950/30' : 'border-rose-200 bg-rose-50') : rivalIntent.tone === 'warning' ? (dk ? 'border-amber-700/50 bg-amber-950/30' : 'border-amber-200 bg-amber-50') : (dk ? 'border-slate-700 bg-slate-950/35' : 'border-slate-200 bg-white')) }, h('div', { className: 'text-[9px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Rival intent'), h('div', { className: 'text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, rivalIntent.label), h('p', { className: 'text-[9px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, rivalIntent.detail)),
+                : h('p', { className: 'mt-2 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'No brood orders are active. Queue worker or drone brood when royal jelly is available.')),
+            h('div', { 'data-rts-rival-intent': 'true', role: 'note', className: 'mt-3 flex flex-col gap-1 rounded-xl border p-3 sm:flex-row sm:items-center sm:justify-between ' + (rivalIntent.tone === 'danger' ? (dk ? 'border-rose-700/50 bg-rose-950/30' : 'border-rose-200 bg-rose-50') : rivalIntent.tone === 'warning' ? (dk ? 'border-amber-700/50 bg-amber-950/30' : 'border-amber-200 bg-amber-50') : (dk ? 'border-slate-700 bg-slate-950/35' : 'border-slate-200 bg-white')) }, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Rival intent'), h('div', { className: 'text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, rivalIntent.label), h('p', { className: 'text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, rivalIntent.detail)),
             h('section', { 'data-rts-rival-doctrine': 'true', 'data-rival-posture': queenRival.posture || 'unknown', role: 'region', 'aria-label': 'Rival hive intelligence', className: 'mt-3 rounded-xl border p-3 ' + (dk ? 'border-rose-800/45 bg-rose-950/15' : 'border-rose-200 bg-rose-50/55') },
-              h('div', { className: 'flex flex-wrap items-start justify-between gap-2' }, h('div', null, h('div', { className: 'text-[9px] font-black uppercase tracking-[0.15em] ' + (dk ? 'text-rose-300' : 'text-rose-800') }, 'Competitor intelligence'), h('div', { className: 'mt-0.5 text-sm font-black ' + (dk ? 'text-white' : 'text-slate-900') }, queenRival.name + ' - ' + rivalDoctrineProfile.label)), h('span', { className: 'rounded-full px-2 py-1 text-[9px] font-black uppercase tracking-wide ' + (rivalIntelKnown ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-white') }, rivalIntelKnown ? Math.round(queenRival.intel || 0) + '% intel' : 'Unscouted')),
+              h('div', { className: 'flex flex-wrap items-start justify-between gap-2' }, h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.15em] ' + (dk ? 'text-rose-300' : 'text-rose-800') }, 'Competitor intelligence'), h('div', { className: 'mt-0.5 text-sm font-black ' + (dk ? 'text-white' : 'text-slate-900') }, queenRival.name + ' - ' + rivalDoctrineProfile.label)), h('span', { className: 'rounded-full px-2 py-1 text-[10px] font-black uppercase tracking-wide ' + (rivalIntelKnown ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-white') }, rivalIntelKnown ? Math.round(queenRival.intel || 0) + '% intel' : 'Unscouted')),
               h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-700') }, rivalDoctrineProfile.signature),
               h('div', { className: 'mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3', role: 'list', 'aria-label': 'Rival posture, telegraph, and counterplay' }, [
                 { label: 'Current posture', value: rivalIntelKnown ? (queenRival.posture || 'forage') : 'Unconfirmed', detail: rivalIntelKnown ? (queenRival.lastMove || 'No move logged') : 'Scout to reveal current worker allocation.' },
                 { label: 'Telegraph', value: rivalIntelKnown ? (queenRival.telegraph || 'No clear signal') : 'Hidden', detail: rivalIntelKnown ? 'What the rival is likely to do next.' : 'Pressure still reveals the raid threshold.' },
                 { label: 'Best counter', value: rivalIntelKnown ? (queenRival.counter || rivalDoctrineProfile.counter) : 'Scout first', detail: rivalIntelKnown ? 'A response derived from the observed posture.' : rivalDoctrineProfile.counter }
-              ].map(function(item) { return h('div', { key: item.label, role: 'listitem', className: 'rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white bg-white/80') }, h('div', { className: 'text-[9px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-500') }, item.label), h('div', { className: 'mt-1 text-[10px] font-black capitalize ' + (dk ? 'text-white' : 'text-slate-900') }, item.value), h('p', { className: 'mt-1 text-[9px] leading-relaxed ' + (dk ? 'text-slate-400' : 'text-slate-600') }, item.detail)); }))
+              ].map(function(item) { return h('div', { key: item.label, role: 'listitem', className: 'rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white bg-white/80') }, h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-500') }, item.label), h('div', { className: 'mt-1 text-[10px] font-black capitalize ' + (dk ? 'text-white' : 'text-slate-900') }, item.value), h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-400' : 'text-slate-600') }, item.detail)); }))
             ),
-            h('div', { className: 'mt-3 text-[9px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-fuchsia-300' : 'text-fuchsia-800') }, 'Upcoming on the live clock'),
+            h('div', { className: 'mt-3 text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-fuchsia-300' : 'text-fuchsia-800') }, 'Upcoming on the live clock'),
             h('ol', { className: 'mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3', 'aria-label': 'Upcoming Queen RTS events' }, forecast.map(function(item, index) {
               return h('li', { key: item.id, 'data-rts-forecast': item.id, className: 'flex min-h-[86px] gap-2.5 rounded-lg border p-3 ' + (dk ? 'border-white/10 bg-slate-950/30' : 'border-slate-200 bg-white') },
                 h('span', { className: 'grid h-7 w-7 shrink-0 place-items-center rounded-full bg-fuchsia-600 text-[10px] font-black text-white', 'aria-hidden': 'true' }, index + 1),
-                h('span', { className: 'min-w-0' }, h('span', { className: 'block text-[10px] font-black ' + (dk ? 'text-white' : 'text-slate-900') }, item.label), h('span', { className: 'block text-[10px] font-black text-fuchsia-600' }, item.timing), h('span', { className: 'mt-0.5 block text-[9px] leading-relaxed ' + (dk ? 'text-slate-400' : 'text-slate-600') }, item.detail)));
+                h('span', { className: 'min-w-0' }, h('span', { className: 'block text-[10px] font-black ' + (dk ? 'text-white' : 'text-slate-900') }, item.label), h('span', { className: 'block text-[10px] font-black text-fuchsia-600' }, item.timing), h('span', { className: 'mt-0.5 block text-[10px] leading-relaxed ' + (dk ? 'text-slate-400' : 'text-slate-600') }, item.detail)));
             })),
-            h('p', { className: 'mt-2 text-[9px] italic ' + (dk ? 'text-slate-500' : 'text-slate-500') }, 'Forecasts use the current phase, pressure, difficulty, and fixed rival cadence; your next command can change them.'));
+            h('p', { className: 'mt-2 text-[10px] italic ' + (dk ? 'text-slate-500' : 'text-slate-500') }, 'Forecasts use the current phase, pressure, difficulty, and fixed rival cadence; your next strategy choice can change them.'));
         }
         function renderBeePulseStrip() {
           var items;
           if (viewMode === 'beekeeper') {
             items = [
               { icon: '\u2665', label: 'Colony health', value: colonyHealth + '%', percent: colonyHealth, tone: colonyHealth >= 80 ? 'good' : colonyHealth >= 55 ? 'info' : colonyHealth >= 35 ? 'warn' : 'danger', detail: colonyHealth >= 80 ? 'Systems are well balanced' : colonyHealth >= 55 ? 'Stable, with room to improve' : 'Intervention is becoming urgent' },
-              { icon: '\uD83C\uDF6F', label: 'Honey stores', value: Math.round(honey) + ' lb', percent: Math.max(0, Math.min(100, honey / 40 * 100)), tone: honey >= 30 ? 'good' : honey >= 15 ? 'warn' : 'danger', detail: honey >= 30 ? 'Strong seasonal reserve' : honey >= 15 ? 'Watch consumption and forage' : 'Feed or improve forage soon' },
+              { icon: '\uD83C\uDF6F', label: 'Honey stores', value: Math.round(honey) + ' lb', percent: Math.max(0, Math.min(100, honey / Math.max(1, currentReserve) * 100)), tone: honey >= currentReserve ? 'good' : honey >= currentReserve * 0.6 ? 'warn' : 'danger', detail: honey >= currentReserve ? 'Seasonal reserve met (' + currentReserve + ' lb)' : honey >= currentReserve * 0.6 ? 'Below the ' + currentReserve + ' lb reserve' : 'Feed or improve forage soon' },
               { icon: '\uD83D\uDC1D', label: 'Worker force', value: workers.toLocaleString(), percent: Math.max(0, Math.min(100, workers / 30000 * 100)), tone: workers >= 12000 ? 'good' : workers >= 7000 ? 'info' : 'danger', detail: brood.toLocaleString() + ' developing brood' }
             ];
           } else if (viewMode === 'queen') {
@@ -20938,7 +22629,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             ] : [
               { icon: '\u23F1', label: 'Simulation tempo', value: 'Real time', tone: 'info', detail: 'Cycles and rival pressure advance automatically' },
               { icon: '\uD83C\uDFAF', label: 'Rival pressure', value: queenDifficultyCfg.label, tone: queenDifficulty === 'guided' ? 'good' : queenDifficulty === 'expert' ? 'danger' : 'warn', detail: 'Face ' + queenDifficultyCfg.rivalName },
-              { icon: '\uD83C\uDFC6', label: 'Command record', value: (queenCareer.wins || 0) + ' win' + ((queenCareer.wins || 0) === 1 ? '' : 's'), tone: (queenCareer.wins || 0) > 0 ? 'good' : 'info', detail: queenCareer.bestCycle ? 'Best victory: cycle ' + queenCareer.bestCycle : 'First victory still ahead' }
+              { icon: '\uD83C\uDFC6', label: 'Strategy record', value: (queenCareer.wins || 0) + ' win' + ((queenCareer.wins || 0) === 1 ? '' : 's'), tone: (queenCareer.wins || 0) > 0 ? 'good' : 'info', detail: queenCareer.bestCycle ? 'Best victory: cycle ' + queenCareer.bestCycle : 'First victory still ahead' }
             ];
           } else {
             items = [
@@ -20947,17 +22638,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               { icon: '\u2605', label: 'High score', value: String(droneHighScore), tone: droneHighScore > 0 ? 'good' : 'info', detail: droneData.bestDifficulty ? 'Best route: ' + droneData.bestDifficulty : 'Collect boosts and find the queen' }
             ];
           }
-          return h('section', { key: 'beehive-pulse', 'data-beehive-pulse': 'true', 'aria-label': viewMode === 'queen' ? 'Queen command status' : viewMode === 'drone' ? 'Drone flight status' : 'Colony vital signs' },
+          return h('section', { key: 'beehive-pulse', 'data-beehive-pulse': 'true', 'aria-label': viewMode === 'queen' ? 'Queen strategy-model status' : viewMode === 'drone' ? 'Drone flight status' : 'Colony vital signs' },
             h('h4', { className: 'sr-only' }, 'At a glance'),
             items.map(function(item) {
               var percent = typeof item.percent === 'number' ? Math.round(Math.max(0, Math.min(100, item.percent))) : null;
               return h('article', { key: item.label, 'data-beehive-vital': item.label.toLowerCase().replace(/[^a-z0-9]+/g, '-'), 'data-tone': item.tone },
                 h('div', { className: 'flex items-start justify-between gap-2' },
                   h('div', { className: 'min-w-0' },
-                    h('div', { className: 'text-[9px] font-black uppercase tracking-[0.12em] ' + (dk ? 'text-slate-300' : 'text-slate-500') }, item.label),
+                    h('div', { className: 'text-[10px] font-black uppercase tracking-[0.12em] ' + (dk ? 'text-slate-300' : 'text-slate-500') }, item.label),
                     h('div', { className: 'mt-0.5 text-lg font-black leading-none ' + (dk ? 'text-white' : 'text-slate-900') }, item.value)),
                   h('span', { className: 'grid h-8 w-8 shrink-0 place-items-center rounded-lg text-base ' + (dk ? 'bg-white/5' : 'bg-slate-950/5'), 'aria-hidden': 'true' }, item.icon)),
-                h('p', { className: 'mt-1.5 truncate text-[10px] font-semibold ' + (dk ? 'text-slate-300' : 'text-slate-600'), title: item.detail }, item.detail),
+                h('p', { className: 'mt-1.5 break-words text-[10px] font-semibold leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600'), title: item.detail }, item.detail),
                 percent !== null && h('div', { 'data-beehive-vital-bar': 'true', className: 'mt-2', role: 'progressbar', 'aria-label': item.label, 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': percent },
                   h('span', { style: { width: percent + '%' } })));
             }));
@@ -20966,15 +22657,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var playTarget = viewMode === 'queen' ? 'beehive-queen-playfield' : viewMode === 'drone' ? 'beehive-drone-playfield' : 'beehive-canvas-wrap';
           var steps = [
             { id: 'focus', target: 'beehive-play-focus', label: 'Focus', hint: 'Read the current goal' },
-            { id: 'play', target: playTarget, label: 'Play', hint: viewMode === 'queen' ? 'Open the command map' : viewMode === 'drone' ? 'Open the flight deck' : 'Open the living hive' },
+            { id: 'play', target: playTarget, label: 'Play', hint: viewMode === 'queen' ? 'Open the strategy map' : viewMode === 'drone' ? 'Open the flight deck' : 'Open the living hive' },
             { id: 'learn', target: 'beehive-learning-brief-summary', label: 'Learn', hint: 'Connect systems to biology' },
             { id: 'explain', target: 'beehive-notebook-summary', label: 'Explain', hint: 'Build an evidence claim' },
-            { id: 'mastery', target: 'beehive-journey-summary', label: 'Mastery', hint: 'Track all three roles' }
+            { id: 'mastery', target: 'beehive-journey-summary', label: 'Experience', hint: 'Track all three roles' }
           ];
           return h('nav', { 'data-beehive-flow-nav': 'true', 'data-layout-state': focusLayout ? 'stage-first' : 'overview-first', className: 'rounded-xl border p-2 ' + (dk ? 'border-slate-700 bg-slate-950/35' : 'border-slate-200 bg-white/70'), 'aria-label': 'Bee simulation learning flow' },
             h('div', { className: 'mb-2 flex flex-wrap items-center justify-between gap-2 px-1' },
               h('div', null,
-                h('div', { className: 'text-[9px] font-black uppercase tracking-[0.15em] ' + (dk ? 'text-slate-300' : 'text-slate-500') }, 'Learning flow'),
+                h('div', { className: 'text-[10px] font-black uppercase tracking-[0.15em] ' + (dk ? 'text-slate-300' : 'text-slate-500') }, 'Learning flow'),
                 h('div', { className: 'text-[10px] font-semibold ' + (dk ? 'text-slate-300' : 'text-slate-600') }, focusLayout ? 'Live stage appears before supporting dashboards.' : 'Supporting dashboards appear before the live stage.')),
               h('button', { type: 'button', 'data-beehive-focus-layout': 'true', 'aria-pressed': focusLayout, onClick: function() { var nextLayout = !focusLayout; upd('focusLayout', nextLayout); announceBee(nextLayout ? 'Stage-first layout enabled.' : 'Overview-first layout enabled.', false); }, className: 'inline-flex min-h-[44px] items-center gap-2 rounded-lg border px-3 py-2 text-[10px] font-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (focusLayout ? (dk ? 'border-emerald-700 bg-emerald-950/40 text-emerald-200' : 'border-emerald-200 bg-emerald-50 text-emerald-800') : (dk ? 'border-slate-700 bg-slate-900 text-slate-200 hover:border-slate-500' : 'border-slate-200 bg-white text-slate-700 hover:border-amber-300')) },
                 h('span', { 'aria-hidden': 'true' }, focusLayout ? '\u25A3' : '\u25A1'),
@@ -20983,7 +22674,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               steps.map(function(step, idx) {
                 return h('a', { key: step.id, href: '#' + step.target, 'data-beehive-flow-step': step.id, 'aria-label': (idx + 1) + '. ' + step.label + ': ' + step.hint, className: 'flex min-h-[48px] snap-start items-center gap-2 rounded-lg border px-2.5 py-2 no-underline transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (dk ? 'border-slate-700 bg-slate-900/70 text-slate-100 hover:border-slate-500' : 'border-slate-200 bg-white text-slate-800 hover:border-amber-300') },
                   h('span', { className: 'grid h-7 w-7 shrink-0 place-items-center rounded-full text-[10px] font-black text-white', style: { backgroundColor: 'rgb(var(--bee-accent-rgb))' }, 'aria-hidden': 'true' }, idx + 1),
-                  h('span', { className: 'min-w-0' }, h('span', { className: 'block text-[10px] font-black' }, step.label), h('span', { className: 'block truncate text-[9px] opacity-65' }, step.hint)),
+                  h('span', { className: 'min-w-0' }, h('span', { className: 'block text-[10px] font-black' }, step.label), h('span', { className: 'block truncate text-[10px] opacity-65' }, step.hint)),
                   h('span', { className: 'ml-auto opacity-45', 'aria-hidden': 'true' }, '\u2192'));
               })));
         }
@@ -21020,7 +22711,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               title = 'Disease risk is rising';
               body = 'Use hygiene, keep the hive ventilated, and avoid skipping too many days at once.';
               action = { id: 'inspect-risk', icon: '\uD83D\uDD0D', label: 'Inspect hive', hint: 'Review linked colony systems', watch: 'Compare disease risk with brood, ventilation, and mites.', shortcut: 'I', onClick: function() { upd('showInspect', true); } };
-            } else if (honey < 15) {
+            } else if (honey < currentReserve) {
               title = 'Stores are getting thin';
               body = 'Feed the colony or improve forage before winter or bad weather turns this into starvation.';
               action = actionPoints > 0
@@ -21035,11 +22726,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             tone = 'purple';
             chips = queenGameActive
               ? ['Cycle ' + queenDay, queenPaused ? 'PAUSED' : 'LIVE', 'Rival ' + queenRival.health + '%']
-              : ['Real-time economy', 'Direct building', 'Rival hive'];
+              : ['Real-time economy', 'Worker-led building', 'Rival hive'];
             if (!queenGameActive) {
               title = 'Queen RTS briefing';
               body = 'This mode works best as a short survival game: build comb, balance pheromones, and react to threats as phases change.';
-              action = { id: 'begin-reign', icon: '\uD83D\uDC51', label: 'Begin reign', hint: 'Start the real-time colony clock', watch: 'Watch income, phase, and rival pressure update automatically.', onClick: startQueenGame };
+              action = { id: 'begin-model', icon: '\uD83D\uDC51', label: 'Begin strategy model', hint: 'Start the real-time colony clock', watch: 'Watch income, phase, and rival pressure update automatically.', onClick: startQueenGame };
             } else if (queenThreats.length > 0) {
               title = 'Threats in the comb';
               body = 'Raise alarm pheromone and build guard posts so workers can intercept attackers.';
@@ -21058,10 +22749,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               body = strategicCoach.body;
               if (queenPheromones.qmp < 30) action = { id: 'emit-qmp', icon: '\uD83D\uDC9C', label: 'Emit QMP', hint: 'Free response; restores cohesion', watch: 'Watch cohesion rise and swarm risk fall.', onClick: function() { queenAction('emit_qmp'); } };
               else if ((queenRival.intel || 0) <= 0 && hasQueenResources({ nectar: 3 })) action = { id: 'scout-rival', icon: '\uD83D\uDD2D', label: 'Scout rival', hint: 'Costs 3 nectar; reveals rival power', watch: 'Watch rival intel and forage control update.', onClick: function() { queenAction('scout_rival'); } };
-              else if ((queenRival.intel || 0) <= 0) action = { id: 'pause-plan', icon: '\u23F8', label: 'Pause & plan', hint: 'Wait for nectar, then scout', watch: 'The cycle clock should stop without blocking commands.', shortcut: 'P', onClick: toggleQueenPause };
+              else if ((queenRival.intel || 0) <= 0) action = { id: 'pause-plan', icon: '\u23F8', label: 'Pause & plan', hint: 'Wait for nectar, then scout', watch: 'The cycle clock should stop without blocking signal choices.', shortcut: 'P', onClick: toggleQueenPause };
               else if (hasQueenResources({ nectar: 10, pollen: 3 })) action = { id: 'raid-rival', icon: '\u2694\uFE0F', label: 'Launch raid', hint: 'Costs 10 nectar and 3 pollen', watch: 'Watch rival health fall and guard losses appear.', onClick: function() { queenAction('raid_rival'); } };
               else if (hasQueenResources(QUEEN_STRUCTURE_TYPES.honey.cost)) action = { id: 'build-honey', icon: '\uD83C\uDF6F', label: 'Select honey store', hint: 'Then place it on your left comb', watch: 'Watch wax fall now; storage improves after placement.', onClick: function() { selectQueenBuild('honey'); } };
-              else action = { id: 'pause-plan', icon: '\u23F8', label: 'Pause & plan', hint: 'Review the economy before the next cycle', watch: 'The cycle clock should stop without blocking commands.', shortcut: 'P', onClick: toggleQueenPause };
+              else action = { id: 'pause-plan', icon: '\u23F8', label: 'Pause & plan', hint: 'Review the economy before the next cycle', watch: 'The cycle clock should stop without blocking signal choices.', shortcut: 'P', onClick: toggleQueenPause };
             }
           } else {
             tone = 'indigo';
@@ -21071,7 +22762,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             title = droneFlightActive ? 'Flight objective' : 'Drone flight briefing';
             body = droneFlightActive
               ? (dronePaused ? 'Flight is paused. Read the evidence panel, choose your next maneuver, then resume with P or the button.' : 'Skim glowing nectar blooms for energy boosts, use thermals for altitude, avoid birds, then climb toward the golden queen signal.')
-              : 'Start on Easy first. The game loop is: gather nectar boosts low, chain combos for energy, then steer toward the DCA. Real drones are fed by workers; the nectar route is the flight-training layer.';
+              : 'Start on Easy first. The game loop is: gather training boosts low, chain combos for energy, then steer toward the DCA. Biology boundary: real drones do not forage. Young adults are fed by workers; older drones can feed themselves from stored honey.';
             action = !droneFlightActive
               ? { id: 'start-easy-flight', icon: '\uD83D\uDE80', label: 'Start easy flight', hint: 'Launch the guided route', watch: 'Watch energy, altitude, distance, and boost count.', onClick: function() { startDroneFlight('easy'); } }
               : dronePaused
@@ -21093,16 +22784,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           if (viewMode === 'beekeeper') {
             quickstart = { step: day <= 0 ? 1 : day < 5 ? 2 : 3, title: 'Field check', text: day <= 0 ? 'Advance one day to establish your baseline colony evidence.' : day < 5 ? 'Inspect brood, stores, and mites before spending every action point.' : 'Make one management decision, then explain the trade-off you observed.' };
           } else if (viewMode === 'queen') {
-            quickstart = { step: !queenGameActive ? 1 : (queenDay === 0 && queenScore === 0 ? 2 : ((queenRival.intel || 0) <= 0 ? 2 : 3)), title: 'Command loop', text: !queenGameActive ? 'Start a match, then place one structure before the automatic rival pressure builds.' : (queenDay === 0 && queenScore === 0 ? 'Place a structure or scout before the first automatic raid window.' : ((queenRival.intel || 0) <= 0 ? 'Scout the rival before committing guards or nectar to a raid.' : 'Use the forecast and last-impact evidence before your next command.')) };
+            quickstart = { step: !queenGameActive ? 1 : (queenDay === 0 && queenScore === 0 ? 2 : ((queenRival.intel || 0) <= 0 ? 2 : 3)), title: 'Strategy loop', text: !queenGameActive ? 'Start a match, then place one structure before the automatic rival pressure builds.' : (queenDay === 0 && queenScore === 0 ? 'Place a structure or scout before the first automatic raid window.' : ((queenRival.intel || 0) <= 0 ? 'Scout the rival before committing guards or nectar to a raid.' : 'Use the forecast and last-impact evidence before your next strategy choice.')) };
           } else {
             var quickFlight = _droneState.current || {};
             quickstart = { step: !droneFlightActive ? 1 : (quickFlight.phase === 'end' ? 3 : 2), title: 'Flight loop', text: !droneFlightActive ? 'Start Easy, collect low nectar boosts, then climb toward the DCA.' : (quickFlight.phase === 'end' ? 'Review the replay and name one control change for your next attempt.' : 'Protect energy first; use small corrections while you build altitude and distance.') };
           }
           return h('div', { key: 'beehive-coach', id: 'beehive-play-focus', tabIndex: -1, 'data-beehive-focus-panel': 'coach', 'data-beehive-play-coach': 'true', className: 'rounded-xl border p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center gap-3 ' + toneCls, role: 'region', 'aria-label': __alloT('stem.beehive.current_sim_goal', 'Current simulation goal') },
             h('div', { 'data-beehive-quickstart': 'true', role: 'group', 'aria-label': quickstart.title + ', step ' + quickstart.step + ' of 3', className: 'w-full shrink-0 rounded-xl border p-2.5 sm:w-44 ' + (dk ? 'border-white/10 bg-slate-950/25' : 'border-white/80 bg-white/55') },
-              h('div', { className: 'flex items-center justify-between gap-2 text-[9px] font-black uppercase tracking-[0.14em] opacity-70' }, h('span', null, 'Quickstart'), h('span', null, quickstart.step + '/3')),
+              h('div', { className: 'flex items-center justify-between gap-2 text-[10px] font-black uppercase tracking-[0.14em] opacity-70' }, h('span', null, 'Quickstart'), h('span', null, quickstart.step + '/3')),
               h('div', { className: 'mt-1 text-[11px] font-black' }, quickstart.title),
-              h('p', { className: 'mt-1 text-[9px] leading-relaxed opacity-75' }, quickstart.text)),
+              h('p', { className: 'mt-1 text-[10px] leading-relaxed opacity-75' }, quickstart.text)),
             h('div', { className: 'flex-1 min-w-0' },
               h('div', { className: 'text-[11px] uppercase tracking-wide font-black opacity-70' }, __alloT('stem.beehive.play_focus', 'Play focus')),
               h('div', { className: 'text-sm font-black mt-0.5' }, title),
@@ -21112,25 +22803,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   return h('span', { key: chip, className: 'rounded-full border px-2 py-0.5 text-[10px] font-bold ' + chipCls }, chip);
                 }))),
             action && h('div', { 'data-beehive-coach-action': action.id, 'data-beehive-cause-effect': 'true', className: 'w-full shrink-0 rounded-xl border p-2.5 sm:w-52 ' + (dk ? 'border-white/10 bg-slate-950/25' : 'border-white/80 bg-white/55') },
-              h('div', { className: 'mb-1 text-[9px] font-black uppercase tracking-[0.14em] opacity-65' }, 'Recommended action'),
+              h('div', { className: 'mb-1 text-[10px] font-black uppercase tracking-[0.14em] opacity-65' }, 'Recommended action'),
               h('button', { type: 'button', onClick: action.onClick, 'data-action-ready': 'true', 'aria-keyshortcuts': action.shortcut || undefined, className: 'flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-black shadow-sm transition-all hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 ' + actionCls },
                 h('span', { 'aria-hidden': 'true' }, action.icon || '\u2192'), action.label,
-                action.shortcut && h('kbd', { 'aria-hidden': 'true', className: 'rounded border border-white/25 bg-black/15 px-1.5 py-0.5 text-[9px]' }, action.shortcut)),
-              h('div', { className: 'mt-1 text-[9px] font-semibold leading-relaxed opacity-70' }, action.hint || 'Ready now'),
-              h('div', { 'data-beehive-coach-watch': 'true', role: 'note', 'aria-label': 'What to watch after ' + action.label, className: 'mt-2 border-t border-current/15 pt-2 text-[9px] leading-relaxed opacity-80' },
+                action.shortcut && h('kbd', { 'aria-hidden': 'true', className: 'rounded border border-white/25 bg-black/15 px-1.5 py-0.5 text-[10px]' }, action.shortcut)),
+              h('div', { className: 'mt-1 text-[10px] font-semibold leading-relaxed opacity-70' }, action.hint || 'Ready now'),
+              h('div', { 'data-beehive-coach-watch': 'true', role: 'note', 'aria-label': 'What to watch after ' + action.label, className: 'mt-2 border-t border-current/15 pt-2 text-[10px] leading-relaxed opacity-80' },
                 h('strong', null, 'Watch: '), action.watch || 'Observe the highlighted system metrics for a change.')));
         }
         function renderBeeMissionDeck() {
           var mission, metrics = [], systemChecks = [], evidenceGoals = [], contextLabel = '', footer = '', accent = 'amber', inquiryStep = 0;
           if (viewMode === 'queen') {
             accent = 'purple';
-            contextLabel = (queenGameActive ? ((queenPaused ? 'Paused strategy room' : 'Live command') + ' \u00B7 Cycle ' + queenDay) : 'Queen RTS briefing') + ' \u00B7 ' + QUEEN_SCENARIOS[queenScenario].label + (queenData.carryover && queenData.carryover.label ? ' \u00B7 ' + queenData.carryover.label : '');
+            contextLabel = (queenGameActive ? ((queenPaused ? 'Paused strategy room' : 'Live strategy') + ' \u00B7 Cycle ' + queenDay) : 'Queen RTS briefing') + ' \u00B7 ' + QUEEN_SCENARIOS[queenScenario].label + (queenData.carryover && queenData.carryover.label ? ' \u00B7 ' + queenData.carryover.label : '');
             systemChecks = queenGameActive ? [queenHiveHealth > 40, queenTerritory >= 45, queenPheromones.qmp >= 30, queenRival.pressure < 60] : [true, true, false, false];
-            metrics = queenGameActive ? [[queenHiveHealth + '%', 'Brood core', queenHiveHealth > 40], [Math.round(queenTerritory) + '%', 'Forage control', queenTerritory >= 45], [Math.round(queenPheromones.qmp) + '%', 'QMP cohesion', queenPheromones.qmp >= 30], [Math.round(queenRival.pressure) + '%', 'Raid pressure', queenRival.pressure < 60]] : [['LIVE', 'Automatic cycles', true], ['LEFT', 'Your build zone', true], ['?', 'Rival intel', false], ['3', 'Reign phases', false]];
+            metrics = queenGameActive ? [[queenHiveHealth + '%', 'Brood core', queenHiveHealth > 40], [Math.round(queenTerritory) + '%', 'Forage control', queenTerritory >= 45], [Math.round(queenPheromones.qmp) + '%', 'QMP cohesion', queenPheromones.qmp >= 30], [Math.round(queenRival.pressure) + '%', 'Raid pressure', queenRival.pressure < 60]] : [['LIVE', 'Automatic cycles', true], ['LEFT', 'Your build zone', true], ['?', 'Rival intel', false], ['3', 'Strategy phases', false]];
             if (queenResult) {
               mission = queenResult === 'victory' ? { icon: '\uD83C\uDFC6', title: 'Explain why your strategy won', body: 'Use territory, defense, pheromones, and the event log to identify the system that created your advantage.' } : { icon: '\uD83D\uDCD3', title: 'Diagnose the failed defense', body: 'Trace whether pressure, low QMP, weak guards, or resource starvation broke the colony first.' };
               inquiryStep = 3;
-            } else if (!queenGameActive) mission = { icon: '\u265F\uFE0F', title: 'Brief, build, then adapt', body: 'This is a real-time systems game: the economy and rival keep moving while you issue pheromone commands and place structures.' };
+            } else if (!queenGameActive) mission = { icon: '\u265F\uFE0F', title: 'Brief, build, then adapt', body: 'This is a real-time systems game: the economy and rival keep moving while you model pheromone signals and place structures.' };
             else if (queenThreats.length > 0 || queenRival.pressure >= 60) { mission = { icon: '\uD83D\uDEE1\uFE0F', title: 'Stabilize before you attack', body: 'Alarm pheromone and guard posts turn worker allocation into defense. Protect the brood core before spending on a raid.' }; inquiryStep = 2; }
             else if ((queenRival.intel || 0) <= 0) { mission = { icon: '\uD83D\uDD2D', title: 'Reduce uncertainty', body: 'Scout ' + queenRival.name + ' before committing guards. Good RTS decisions use information, not only resources.' }; inquiryStep = 1; }
             else { mission = { icon: '\u2694\uFE0F', title: 'Convert economy into map control', body: 'Build a resource engine, keep QMP stable, then raid when your projected attack can outpace rival growth.' }; inquiryStep = 2; }
@@ -21150,16 +22841,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             else if ((dsMission.maxAlt || 0) < 100) { mission = { icon: '\u2191', title: 'Build altitude deliberately', body: 'Use Space or the climb control while keeping enough forward speed to reach the DCA.' }; inquiryStep = 2; }
             else { mission = { icon: '\uD83D\uDC51', title: 'Acquire the queen signal', body: 'At DCA altitude, use the golden guidance cue and make small steering corrections instead of over-turning.' }; inquiryStep = 2; }
             evidenceGoals = ['Relate thrust and altitude to energy cost.', 'Use distance and altitude as evidence of DCA arrival.', 'Distinguish the nectar training layer from real drone biology.'];
-            footer = 'Biology boundary: real drones are fed by workers and do not forage for nectar.';
+            footer = 'Biology boundary: real drones do not forage. Young adults are fed by workers; older drones can feed themselves from stored honey. The glowing boosts are only a flight-training mechanic.';
           } else {
             var seasonGoal = SEASON_GOALS[season] || SEASON_GOALS[0];
             contextLabel = (seasonGoal.emoji || '\uD83C\uDF31') + ' ' + seasonGoal.season + ' \u00B7 Day ' + day;
-            systemChecks = [honey >= 15, varroaLevel < 20, diseaseRisk < 35, queenHealth >= 70];
-            metrics = [[colonyHealth + '%', 'Colony health', colonyHealth >= 70], [Math.round(workers / 1000) + 'k', 'Workers', workers >= 10000], [honey + ' lb', 'Honey stores', honey >= 15], [varroaLevel + '%', 'Varroa', varroaLevel < 20]];
+            systemChecks = [honey >= currentReserve, varroaLevel < 20, diseaseRisk < 35, queenHealth >= 70];
+            metrics = [[colonyHealth + '%', 'Colony health', colonyHealth >= 70], [Math.round(workers / 1000) + 'k', 'Workers', workers >= 10000], [honey + ' lb', 'Honey stores', honey >= currentReserve], [varroaLevel + '%', 'Varroa', varroaLevel < 20]];
             if (!colonySurvived) { mission = { icon: '\uD83D\uDCD3', title: 'Review the collapse evidence', body: 'Trace which linked system failed first, then restart with a new management hypothesis.' }; inquiryStep = 3; }
             else if (activeEvent) { mission = { icon: activeEvent.emoji || '\u26A0\uFE0F', title: 'Respond to the colony event', body: 'Read the biological mechanism before choosing a response.' }; inquiryStep = 1; }
             else if (varroaLevel >= 20) { mission = { icon: '\uD83D\uDEE1\uFE0F', title: 'Interrupt the parasite-virus pathway', body: 'Varroa pressure is the most urgent threat to brood and adult longevity.' }; inquiryStep = 2; }
-            else if (honey < 15) { mission = { icon: '\uD83C\uDF38', title: 'Restore the forage-to-food pathway', body: 'Improve forage or feed before low stores destabilize the colony.' }; inquiryStep = 2; }
+            else if (honey < currentReserve) { mission = { icon: '\uD83C\uDF38', title: 'Restore the forage-to-food pathway', body: 'Improve forage or feed before low stores destabilize the colony.' }; inquiryStep = 2; }
             else { mission = { icon: '\uD83D\uDD2C', title: 'Inspect, predict, then advance', body: 'Use the evidence in each system before moving the seasonal clock.' }; inquiryStep = day > 0 ? 1 : 0; }
             evidenceGoals = (seasonGoal.goals || []).slice(0, 3);
             footer = 'Queen ' + queenHealth + '% \u00B7 Disease risk ' + diseaseRisk + '% \u00B7 Habitat ' + habitat + '%';
@@ -21170,19 +22861,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var labelTone = dk ? 'text-slate-300' : 'text-slate-600';
           var inquiry = ['Observe', 'Decide', 'Act', 'Explain'];
           var scenario = viewMode === 'queen'
-            ? { label: 'Scenario: ' + QUEEN_SCENARIOS[queenScenario].label + ' \u00B7 ' + (queenResult ? 'Post-match diagnosis' : queenGameActive ? (queenThreats.length > 0 || queenRival.pressure >= 60 ? 'Hold against a rival raid' : 'Build an advantage before pressure peaks') : 'First command: establish a foothold'), prompt: queenResult ? 'Name the evidence that decided the match.' : queenGameActive ? 'Choose one command that changes the next forecast, then watch the impact.' : 'Start the match and make one information-first decision.' }
+            ? { label: 'Scenario: ' + QUEEN_SCENARIOS[queenScenario].label + ' \u00B7 ' + (queenResult ? 'Post-match diagnosis' : queenGameActive ? (queenThreats.length > 0 || queenRival.pressure >= 60 ? 'Hold against a rival raid' : 'Build an advantage before pressure peaks') : 'First strategy choice: establish a foothold'), prompt: queenResult ? 'Name the evidence that decided the match.' : queenGameActive ? 'Choose one signal that changes the next forecast, then watch the impact.' : 'Start the match and make one information-first decision.' }
             : viewMode === 'drone'
               ? { label: 'Scenario: ' + DRONE_SCENARIOS[droneScenario].label + ' \u00B7 ' + (droneLastRun ? (droneLastRun.success ? 'Reproduce a successful route' : 'Recover from a failed route') : droneFlightActive ? 'Protect the flight envelope' : 'First flight: energy before altitude'), prompt: droneLastRun ? 'Use the replay to identify one controllable variable for the next run.' : 'Collect evidence from energy, altitude, distance, and traffic instead of chasing score alone.' }
-              : { label: colonySurvived ? (varroaLevel >= 20 ? 'Interrupt the mite pathway' : honey < 15 ? 'Stabilize food stores' : 'Build a resilient colony') : 'Recover the apiary', prompt: 'Make one management choice, advance the clock, and explain the linked metric change.' };
+              : { label: colonySurvived ? (varroaLevel >= 20 ? 'Interrupt the mite pathway' : honey < currentReserve ? 'Stabilize food stores' : 'Build a resilient colony') : 'Recover the apiary', prompt: 'Make one management choice, advance the clock, and explain the linked metric change.' };
           return h('section', { 'data-beehive-command': viewMode, className: 'relative overflow-hidden rounded-2xl border p-4 sm:p-5 ' + palette.shell, 'aria-labelledby': 'beehive-command-title' },
             h('div', { className: 'absolute -right-8 -top-10 text-8xl opacity-[0.06] pointer-events-none', 'aria-hidden': 'true' }, viewMode === 'queen' ? '\uD83D\uDC51' : viewMode === 'drone' ? '\uD83D\uDE80' : '\uD83D\uDC1D'),
             h('div', { className: 'relative grid gap-4 lg:grid-cols-[1.15fr_.85fr]' },
               h('div', null,
-                h('div', { className: 'flex flex-wrap items-center gap-2' }, h('span', { className: 'rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] ' + palette.badge }, viewMode === 'queen' ? 'RTS command brief' : viewMode === 'drone' ? 'Flight systems brief' : 'Superorganism command'), h('span', { className: 'text-[11px] font-bold ' + labelTone }, contextLabel)),
+                h('div', { className: 'flex flex-wrap items-center gap-2' }, h('span', { className: 'rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] ' + palette.badge }, viewMode === 'queen' ? 'RTS strategy brief' : viewMode === 'drone' ? 'Flight systems brief' : 'Superorganism brief'), h('span', { className: 'text-[11px] font-bold ' + labelTone }, contextLabel)),
                 h('h2', { id: 'beehive-command-title', className: 'mt-3 text-xl sm:text-2xl font-black tracking-tight ' + (dk ? 'text-white' : 'text-slate-900') }, mission.icon + ' ' + mission.title),
                 h('p', { className: 'mt-1 max-w-2xl text-xs sm:text-sm leading-relaxed ' + labelTone }, mission.body),
                 h('div', { 'data-beehive-scenario': viewMode, role: 'note', className: 'mt-3 rounded-xl border px-3 py-2 ' + metricTone },
-                  h('div', { className: 'text-[9px] font-black uppercase tracking-[0.14em] ' + palette.heading }, 'Challenge frame'),
+                  h('div', { className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + palette.heading }, 'Challenge frame'),
                   h('div', { className: 'mt-0.5 text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, scenario.label),
                   h('p', { className: 'mt-0.5 text-[10px] leading-relaxed ' + labelTone }, scenario.prompt)),
                 h('div', { role: 'group', className: 'mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4', 'aria-label': 'Current simulation evidence' }, metrics.map(function(metric) { return h('div', { key: metric[1], className: 'rounded-xl border p-3 ' + metricTone }, h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'text-lg font-black ' + (dk ? 'text-white' : 'text-slate-900') }, metric[0]), h('span', { role: 'img', className: metric[2] ? 'text-emerald-500' : 'text-rose-500', 'aria-label': metric[2] ? 'on track' : 'needs attention' }, metric[2] ? '\u25CF' : '\u25B2')), h('div', { className: 'mt-1 text-[10px] font-bold ' + labelTone }, metric[1])); })),
@@ -21203,8 +22894,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           return h('details', { key: 'beehive-learning-brief', 'data-beehive-learning-brief': 'true', open: briefOpen, onToggle: function(e) { var nextOpen = e.currentTarget.open; if (nextOpen !== (d.missionBriefOpen === true)) upd('missionBriefOpen', nextOpen); }, className: 'group overflow-hidden rounded-2xl border ' + (dk ? 'border-slate-700 bg-slate-900/60' : 'border-slate-200 bg-white') },
             h('summary', { id: 'beehive-learning-brief-summary', className: 'flex min-h-[58px] cursor-pointer list-none items-center gap-3 px-3 py-2.5 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-amber-500 sm:px-4', style: { listStyle: 'none' }, 'aria-label': (briefOpen ? 'Collapse ' : 'Expand ') + roleLabel },
               h('span', { className: 'grid h-9 w-9 shrink-0 place-items-center rounded-xl text-base shadow-sm ' + roleVisual.orb, 'aria-hidden': 'true' }, roleIcon),
-              h('span', { className: 'min-w-0 flex-1' }, h('span', { className: 'block text-[9px] font-black uppercase tracking-[0.15em] ' + (dk ? 'text-slate-400' : 'text-slate-500') }, 'Learning brief'), h('span', { className: 'block truncate text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, roleLabel), h('span', { className: 'block truncate text-[9px] font-semibold ' + (dk ? 'text-slate-400' : 'text-slate-600') }, simCardStatus(viewMode))),
-              h('span', { className: 'hidden rounded-full border px-2 py-1 text-[8px] font-black uppercase tracking-wide sm:inline-flex ' + (dk ? 'border-slate-700 text-slate-300' : 'border-slate-200 text-slate-600') }, briefOpen ? 'Hide dashboard' : 'Open dashboard'),
+              h('span', { className: 'min-w-0 flex-1' }, h('span', { className: 'block text-[10px] font-black uppercase tracking-[0.15em] ' + (dk ? 'text-slate-400' : 'text-slate-500') }, 'Learning brief'), h('span', { className: 'block truncate text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, roleLabel), h('span', { className: 'block truncate text-[10px] font-semibold ' + (dk ? 'text-slate-400' : 'text-slate-600') }, simCardStatus(viewMode))),
+              h('span', { className: 'hidden rounded-full border px-2 py-1 text-[10px] font-black uppercase tracking-wide sm:inline-flex ' + (dk ? 'border-slate-700 text-slate-300' : 'border-slate-200 text-slate-600') }, briefOpen ? 'Hide dashboard' : 'Open dashboard'),
               h('span', { className: 'text-lg leading-none transition-transform group-open:rotate-180 motion-reduce:transition-none ' + (dk ? 'text-slate-400' : 'text-slate-500'), 'aria-hidden': 'true' }, '\u2304')),
             h('div', { className: 'border-t p-2 ' + (dk ? 'border-slate-700' : 'border-slate-200') }, renderBeeMissionDeck()));
         }
@@ -21357,10 +23048,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             evidence: 'Record changes in workers, stores, mites, morale, weather, or colony events.',
             explanation: 'Explain the biological or management mechanism that caused the change.'
           };
+          // Keep the same science model for every learner while changing the
+          // writing support. Younger bands get sentence stems; middle grades retain
+          // CER structure; high-school learners are prompted for mechanisms,
+          // uncertainty, and management trade-offs.
+          var notebookScaffold = beeGradeBand === 'K–2' ? {
+            prediction: 'Finish: “I think ___ will change because ___.” ',
+            evidence: 'Write or capture two things you notice. A number can be evidence. ',
+            explanation: 'Finish: “This happened because ___.” Name one bee or hive process. ',
+            placeholders: { prediction: 'I think ___ will change because...', evidence: 'I noticed... The number was...', explanation: 'This happened because...' }
+          } : beeGradeBand === '3–5' ? {
+            prediction: 'Make a testable prediction with “If…, then…, because…”. ',
+            evidence: 'Use two observations or measurements from the simulation. ',
+            explanation: 'Connect your action, the bee biology, and the outcome. ',
+            placeholders: { prediction: 'If I..., then... because...', evidence: 'I observed... and...', explanation: 'The outcome changed because...' }
+          } : beeGradeBand === '9–12' ? {
+            prediction: 'State a directional hypothesis and identify the variable you will compare. ',
+            evidence: 'Record quantitative evidence, uncertainty, and any competing explanation. ',
+            explanation: 'Explain the biological mechanism, evaluate the trade-off, and name a limitation of this model. ',
+            placeholders: { prediction: 'I hypothesize... because... I will compare...', evidence: 'The data show... Uncertainty or an alternative is...', explanation: 'The mechanism is... The trade-off is... This model omits...' }
+          } : {
+            prediction: 'Write a testable prediction that names the expected direction of change. ',
+            evidence: 'Use at least two specific measurements or observations. ',
+            explanation: 'Build a CER link from the intervention to a biological mechanism and outcome. ',
+            placeholders: { prediction: 'I predict... because...', evidence: 'The evidence shows... and...', explanation: 'This happened because...' }
+          };
+          prompts = {
+            prediction: notebookScaffold.prediction + prompts.prediction,
+            evidence: notebookScaffold.evidence + prompts.evidence,
+            explanation: notebookScaffold.explanation + prompts.explanation
+          };
           var fieldMeta = [
-            { id: 'prediction', label: '1. Prediction', prompt: prompts.prediction },
-            { id: 'evidence', label: '2. Evidence', prompt: prompts.evidence },
-            { id: 'explanation', label: '3. Explanation', prompt: prompts.explanation }
+            { id: 'prediction', label: '1. Prediction', prompt: prompts.prediction, placeholder: notebookScaffold.placeholders.prediction },
+            { id: 'evidence', label: '2. Evidence', prompt: prompts.evidence, placeholder: notebookScaffold.placeholders.evidence },
+            { id: 'explanation', label: '3. Explanation', prompt: prompts.explanation, placeholder: notebookScaffold.placeholders.explanation }
           ];
           var notebookHandoffCue = viewMode === 'drone' && droneLastRun ? {
             title: droneLastRun.success ? 'Use the successful flight as evidence' : 'Use the revised route as evidence',
@@ -21371,11 +23092,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('summary', { id: 'beehive-notebook-summary', className: 'flex min-h-[58px] cursor-pointer list-none items-center gap-3 px-3 py-2.5 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sky-500 sm:px-4', style: { listStyle: 'none' }, 'aria-label': (notebookOpen ? 'Collapse ' : 'Expand ') + roleName + ' Science Notebook. ' + completed + ' of 3 sections complete.' },
               h('span', { className: 'grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-sky-700 to-indigo-600 text-base text-white shadow-sm', 'aria-hidden': 'true' }, completed === 3 ? '\u2713' : '\uD83D\uDCD3'),
               h('span', { className: 'min-w-0 flex-1' },
-                h('span', { className: 'block text-[9px] font-black uppercase tracking-[0.15em] ' + (completed === 3 ? 'text-emerald-600' : (dk ? 'text-sky-300' : 'text-sky-700')) }, 'Science Notebook'),
+                h('span', { className: 'block text-[10px] font-black uppercase tracking-[0.15em] ' + (completed === 3 ? 'text-emerald-600' : (dk ? 'text-sky-300' : 'text-sky-700')) }, 'Science Notebook'),
                 h('span', { className: 'block text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, roleName + ' evidence claim'),
                 h('span', { className: 'mt-1 block h-1.5 max-w-xs overflow-hidden rounded-full ' + (dk ? 'bg-slate-800' : 'bg-slate-200'), role: 'progressbar', 'aria-label': completed + ' of 3 notebook sections complete', 'aria-valuemin': 0, 'aria-valuemax': 3, 'aria-valuenow': completed },
                   h('span', { className: 'block h-full rounded-full bg-gradient-to-r from-sky-500 to-emerald-500 transition-all', style: { width: (completed / 3 * 100) + '%' } }))),
-              h('span', { className: 'rounded-full px-2.5 py-1 text-[9px] font-black ' + (completed === 3 ? 'bg-emerald-700 text-white' : (dk ? 'bg-slate-800 text-slate-200' : 'bg-sky-50 text-sky-800')) }, completed + ' / 3'),
+              h('span', { className: 'rounded-full px-2.5 py-1 text-[10px] font-black ' + (completed === 3 ? 'bg-emerald-700 text-white' : (dk ? 'bg-slate-800 text-slate-200' : 'bg-sky-50 text-sky-800')) }, completed + ' / 3'),
               h('span', { className: 'text-lg leading-none transition-transform group-open:rotate-180 motion-reduce:transition-none ' + (dk ? 'text-slate-400' : 'text-slate-500'), 'aria-hidden': 'true' }, '\u2304')),
             h('div', { className: 'border-t p-3 sm:p-4 ' + (dk ? 'border-slate-700' : 'border-sky-100') },
               h('div', { className: 'flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between' },
@@ -21384,12 +23105,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('p', { className: 'mt-0.5 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Write a prediction, capture or record evidence, then explain the mechanism. Entries are saved separately for each role.')),
                 h('button', { type: 'button', 'data-beehive-capture-evidence': viewMode, onClick: captureBeeNotebookEvidence, className: 'inline-flex min-h-[44px] shrink-0 items-center justify-center gap-2 rounded-lg bg-sky-700 px-3 py-2 text-[10px] font-black text-white shadow-sm transition-colors hover:bg-sky-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400', 'aria-label': 'Capture current ' + roleName + ' metrics as notebook evidence' }, h('span', { 'aria-hidden': 'true' }, '\u2295'), 'Capture current evidence')),
               notebookHandoffCue && h('section', { 'data-beehive-notebook-handoff': 'true', role: 'note', className: 'mt-4 rounded-xl border p-3 ' + (droneLastRun.success ? (dk ? 'border-emerald-700/45 bg-emerald-950/25' : 'border-emerald-200 bg-emerald-50/75') : (dk ? 'border-amber-700/45 bg-amber-950/25' : 'border-amber-200 bg-amber-50/75')), 'aria-label': 'Drone Flight evidence carried into the Science Notebook' },
-                h('div', { className: 'text-[9px] font-black uppercase tracking-[0.16em] ' + (droneLastRun.success ? (dk ? 'text-emerald-300' : 'text-emerald-800') : (dk ? 'text-amber-300' : 'text-amber-800')) }, 'Flight evidence → Notebook synthesis'),
+                h('div', { className: 'text-[10px] font-black uppercase tracking-[0.16em] ' + (droneLastRun.success ? (dk ? 'text-emerald-300' : 'text-emerald-800') : (dk ? 'text-amber-300' : 'text-amber-800')) }, 'Flight evidence → Notebook synthesis'),
                 h('div', { className: 'mt-0.5 text-sm font-black ' + (dk ? 'text-white' : 'text-slate-900') }, notebookHandoffCue.title),
                 h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-700') }, notebookHandoffCue.summary),
                 h('div', { className: 'mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4', role: 'list', 'aria-label': 'Last Drone Flight evidence metrics' },
                   [{ label: 'Peak altitude', value: Math.round(droneLastRun.maxAlt || 0) + ' ft' }, { label: 'Distance', value: Math.round(droneLastRun.distance || 0) + ' m' }, { label: 'Energy left', value: Math.round(droneLastRun.energyLeft || 0) + '%' }, { label: 'Hazard conflicts', value: ((droneLastRun.obstacleHits || 0) + (droneLastRun.trafficHits || 0)) + '' }].map(function(item) {
-                    return h('div', { key: item.label, role: 'listitem', className: 'rounded-lg border p-2 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white bg-white/80') }, h('div', { className: 'text-[9px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-500') }, item.label), h('div', { className: 'mt-1 text-sm font-black tabular-nums ' + (dk ? 'text-slate-100' : 'text-slate-800') }, item.value));
+                    return h('div', { key: item.label, role: 'listitem', className: 'rounded-lg border p-2 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white bg-white/80') }, h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-500') }, item.label), h('div', { className: 'mt-1 text-sm font-black tabular-nums ' + (dk ? 'text-slate-100' : 'text-slate-800') }, item.value));
                   })),
                 h('p', { className: 'mt-3 text-[10px] font-black ' + (dk ? 'text-sky-200' : 'text-sky-800') }, notebookHandoffCue.prompt)
               ),
@@ -21398,7 +23119,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 return h('label', { key: field.id, className: 'block rounded-xl border p-3 ' + (dk ? 'border-slate-700 bg-slate-950/30' : 'border-slate-200 bg-slate-50/70') },
                   h('span', { className: 'flex items-center justify-between gap-2 text-xs font-black ' + (dk ? 'text-slate-100' : 'text-slate-900') }, field.label, String(entry[field.id] || '').trim() && h('span', { role: 'img', className: 'text-emerald-500', 'aria-label': field.label + ' complete' }, '\u2713')),
                   h('span', { id: promptId, className: 'mt-1 block min-h-[2.6rem] text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, field.prompt),
-                  h('textarea', { 'data-notebook-field': field.id, value: entry[field.id] || '', onChange: function(e) { updateBeeNotebookField(field.id, e.target.value); }, rows: 4, maxLength: 1200, spellCheck: true, 'aria-describedby': promptId, className: 'mt-2 w-full resize-y rounded-lg border p-2.5 text-xs leading-relaxed outline-none focus:ring-2 focus:ring-sky-500 ' + (dk ? 'border-slate-600 bg-slate-900 text-slate-100 placeholder:text-slate-400' : 'border-slate-300 bg-white text-slate-900 placeholder:text-slate-600'), placeholder: field.id === 'prediction' ? 'I predict...' : field.id === 'evidence' ? 'I observed...' : 'This happened because...' }));
+                  h('textarea', { 'data-notebook-field': field.id, value: entry[field.id] || '', onChange: function(e) { updateBeeNotebookField(field.id, e.target.value); }, rows: 4, maxLength: 1200, spellCheck: true, 'aria-describedby': promptId, className: 'mt-2 w-full resize-y rounded-lg border p-2.5 text-xs leading-relaxed outline-none focus:ring-2 focus:ring-sky-500 ' + (dk ? 'border-slate-600 bg-slate-900 text-slate-100 placeholder:text-slate-400' : 'border-slate-300 bg-white text-slate-900 placeholder:text-slate-600'), placeholder: field.placeholder }));
               })),
               h('section', { 'data-beehive-cer-review': viewMode, 'data-review-complete': reviewCompleted === 3 ? 'true' : 'false', className: 'mt-4 rounded-xl border p-3 sm:p-4 ' + (reviewCompleted === 3 ? (dk ? 'border-emerald-700/70 bg-emerald-950/20' : 'border-emerald-200 bg-emerald-50/70') : (dk ? 'border-indigo-800/70 bg-indigo-950/20' : 'border-indigo-200 bg-indigo-50/55')), 'aria-labelledby': 'beehive-cer-review-title' },
                 h('div', { className: 'flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between' },
@@ -21415,13 +23136,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     h('input', { id: checkId, type: 'checkbox', 'data-notebook-review': item.id, checked: item.checked, disabled: !item.available, onChange: function(e) { updateBeeNotebookReview(item.id, e.target.checked); }, 'aria-describedby': cueId, className: 'mt-0.5 h-5 w-5 shrink-0 accent-emerald-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500' }),
                     h('span', { className: 'min-w-0 flex-1' },
                       h('span', { className: 'block text-[11px] font-black' }, item.label),
-                      h('span', { id: cueId, className: 'mt-0.5 block text-[9px] leading-relaxed ' + (item.available ? (dk ? 'text-slate-300' : 'text-slate-600') : (dk ? 'text-slate-500' : 'text-slate-500')) }, item.available ? item.cue : 'Write the ' + item.id + ' before checking this criterion.')));
+                      h('span', { id: cueId, className: 'mt-0.5 block text-[10px] leading-relaxed ' + (item.available ? (dk ? 'text-slate-300' : 'text-slate-600') : (dk ? 'text-slate-500' : 'text-slate-500')) }, item.available ? item.cue : 'Write the ' + item.id + ' before checking this criterion.')));
                 })),
                 h('div', { 'data-beehive-review-feedback': nextReviewItem ? nextReviewItem.id : 'ready', role: 'note', className: 'mt-3 flex flex-col gap-3 rounded-lg border p-3 sm:flex-row sm:items-center sm:justify-between ' + (reviewCompleted === 3 ? (dk ? 'border-emerald-700/70 bg-emerald-950/25' : 'border-emerald-200 bg-white') : (dk ? 'border-slate-700 bg-slate-900/70' : 'border-slate-200 bg-white')) },
                   h('div', null,
-                    h('div', { className: 'text-[9px] font-black uppercase tracking-[0.14em] ' + (reviewCompleted === 3 ? 'text-emerald-600' : 'text-indigo-600') }, reviewCompleted === 3 ? 'Role reflection ready' : 'Next revision'),
+                    h('div', { className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (reviewCompleted === 3 ? 'text-emerald-600' : 'text-indigo-600') }, reviewCompleted === 3 ? 'Role reflection ready' : 'Next revision'),
                     h('div', { className: 'mt-0.5 text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, nextReviewItem ? (nextReviewItem.available ? 'Review your ' + nextReviewItem.id + ' against the cue.' : 'Write your ' + nextReviewItem.id + ' first.') : 'All three CER checks are ready.'),
-                    h('p', { className: 'mt-0.5 text-[9px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, nextReviewItem ? nextReviewItem.cue : 'Use the synthesis to connect this role with the other two perspectives.')),
+                    h('p', { className: 'mt-0.5 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, nextReviewItem ? nextReviewItem.cue : 'Use the synthesis to connect this role with the other two perspectives.')),
                   h('button', { type: 'button', 'data-beehive-review-next': nextReviewItem ? nextReviewItem.id : 'synthesis', onClick: function() { focusBeeNotebookWriting(nextReviewItem ? nextReviewItem.id : 'synthesis'); }, className: 'inline-flex min-h-[44px] shrink-0 items-center justify-center rounded-lg bg-indigo-700 px-3 py-2 text-[10px] font-black text-white transition-colors hover:bg-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400', 'aria-label': nextReviewItem ? 'Focus ' + nextReviewItem.id + ' writing area' : 'Focus cross-perspective synthesis writing area' }, nextReviewItem ? (nextReviewItem.available ? 'Review ' + nextReviewItem.id : 'Write ' + nextReviewItem.id) : 'Focus synthesis'))),
               h('section', { 'data-beehive-notebook-portfolio': 'true', 'data-notebook-portfolio-complete': portfolioCompleted === 10 ? 'true' : 'false', className: 'mt-4 rounded-xl border p-3 sm:p-4 ' + (dk ? 'border-emerald-800/70 bg-emerald-950/20' : 'border-emerald-200 bg-gradient-to-br from-emerald-50/80 to-sky-50/70'), 'aria-labelledby': 'beehive-notebook-portfolio-title' },
                 h('div', { className: 'flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between' },
@@ -21435,16 +23156,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   var active = viewMode === role.id;
                   return h('button', { key: role.id, type: 'button', 'data-notebook-role': role.id, onClick: function() { upd('viewMode', role.id); }, 'aria-current': active ? 'true' : undefined, 'aria-label': 'Open ' + role.label + ' notebook, ' + role.completed + ' of 3 sections written, self-review ' + role.reviewCompleted + ' of 3 ready', className: 'flex min-h-[48px] items-center gap-2 rounded-lg border px-3 py-2 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-emerald-500 ' + (active ? 'border-emerald-800 bg-emerald-700 text-white' : (dk ? 'border-slate-700 bg-slate-900 text-slate-100 hover:border-emerald-600' : 'border-slate-200 bg-white text-slate-900 hover:border-emerald-400')) },
                     h('span', { className: 'text-base', 'aria-hidden': 'true' }, role.completed === 3 && role.reviewCompleted === 3 ? '\u2713' : role.icon),
-                    h('span', { className: 'min-w-0 flex-1' }, h('span', { className: 'block truncate text-[10px] font-black' }, role.label), h('span', { className: 'block text-[9px] ' + (active ? 'text-emerald-50' : (dk ? 'text-slate-400' : 'text-slate-500')) }, role.completed + ' of 3 written \u00B7 review ' + role.reviewCompleted + ' of 3')));
+                    h('span', { className: 'min-w-0 flex-1' }, h('span', { className: 'block truncate text-[10px] font-black' }, role.label), h('span', { className: 'block text-[10px] ' + (active ? 'text-emerald-50' : (dk ? 'text-slate-400' : 'text-slate-500')) }, role.completed + ' of 3 written \u00B7 review ' + role.reviewCompleted + ' of 3')));
                 })),
                 h('label', { className: 'mt-3 block' },
                   h('span', { className: 'text-xs font-black ' + (dk ? 'text-slate-100' : 'text-slate-900') }, 'Cross-perspective synthesis'),
                   h('span', { id: 'beehive-notebook-synthesis-prompt', className: 'mt-1 block text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'How do individual bee behavior, colony decision-making, and ecosystem management interact?'),
                   h('textarea', { 'data-notebook-synthesis': 'true', value: notebook.synthesis || '', onChange: function(e) { updateBeeNotebookSynthesis(e.target.value); }, rows: 4, maxLength: 1600, spellCheck: true, 'aria-describedby': 'beehive-notebook-synthesis-prompt', className: 'mt-2 w-full resize-y rounded-lg border p-2.5 text-xs leading-relaxed outline-none focus:ring-2 focus:ring-emerald-500 ' + (dk ? 'border-slate-600 bg-slate-900 text-slate-100 placeholder:text-slate-400' : 'border-slate-300 bg-white text-slate-900 placeholder:text-slate-600'), placeholder: 'Across all three perspectives, I found...' })),
                 h('div', { className: 'mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between' },
-                  h('p', { className: 'text-[9px] font-semibold ' + (dk ? 'text-slate-400' : 'text-slate-500') }, synthesisComplete ? 'Synthesis saved. Your portfolio is ready to revisit or share.' : 'Finish the synthesis after gathering evidence in all three roles.'),
+                  h('p', { className: 'text-[10px] font-semibold ' + (dk ? 'text-slate-400' : 'text-slate-500') }, synthesisComplete ? 'Synthesis saved. Your portfolio is ready to revisit or share.' : 'Finish the synthesis after gathering evidence in all three roles.'),
                   h('button', { type: 'button', 'data-beehive-copy-notebook': 'true', onClick: copyBeeNotebookPortfolio, className: 'inline-flex min-h-[44px] items-center justify-center gap-2 rounded-lg bg-emerald-700 px-3 py-2 text-[10px] font-black text-white shadow-sm transition-colors hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400', 'aria-label': 'Copy complete Science Notebook portfolio' }, h('span', { 'aria-hidden': 'true' }, '\uD83D\uDCCB'), 'Copy portfolio'))),
-              h('p', { className: 'mt-3 text-[9px] font-semibold ' + (dk ? 'text-slate-400' : 'text-slate-500') }, 'Notebook entries save automatically in this simulation and remain available when you switch perspectives.')));
+              h('p', { className: 'mt-3 text-[10px] font-semibold ' + (dk ? 'text-slate-400' : 'text-slate-500') }, 'Notebook entries save automatically in this simulation and remain available when you switch perspectives.')));
         }
         function renderBeeJourney() {
           var keeperDone = day >= 30;
@@ -21459,7 +23180,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var droneProgress = droneDone ? 100 : Math.min(95, Math.round(Math.min(1, routeAlt / 100) * 45 + Math.min(1, routeDist / 600) * 45));
           var milestones = [
             { id: 'beekeeper', icon: '\uD83E\uDDD1\u200D\uD83C\uDF3E', title: 'Steward a colony', criterion: 'Keep the colony alive for 30 days', status: keeperDone ? '30-day milestone complete' : Math.min(day, 30) + '/30 days', progress: keeperProgress, done: keeperDone, color: 'amber' },
-            { id: 'queen', icon: '\uD83D\uDC51', title: 'Command a superorganism', criterion: 'Win one real-time rival match', status: queenDone ? (queenCareer.wins || 1) + ' RTS win' + ((queenCareer.wins || 1) === 1 ? '' : 's') : queenGameActive ? Math.round(queenRival.health) + '% rival health remains' : 'Choose a rival and begin', progress: queenProgress, done: queenDone, color: 'purple' },
+            { id: 'queen', icon: '\uD83D\uDC51', title: 'Model a decentralized colony', criterion: 'Win one real-time rival match', status: queenDone ? (queenCareer.wins || 1) + ' RTS win' + ((queenCareer.wins || 1) === 1 ? '' : 's') : queenGameActive ? Math.round(queenRival.health) + '% rival health remains' : 'Choose a rival and begin', progress: queenProgress, done: queenDone, color: 'purple' },
             { id: 'drone', icon: '\uD83D\uDE80', title: 'Navigate a mating flight', criterion: 'Reach the DCA and intercept a queen', status: droneDone ? (droneData.successes || 1) + ' successful flight' + ((droneData.successes || 1) === 1 ? '' : 's') : (droneData.attempts || 0) > 0 ? (droneData.attempts || 0) + ' attempt' + ((droneData.attempts || 0) === 1 ? '' : 's') : 'Launch your first route', progress: droneProgress, done: droneDone, color: 'indigo' }
           ];
           var nextMilestone = milestones.find(function(item) { return !item.done; }) || null;
@@ -21467,21 +23188,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var handoff = viewMode === 'beekeeper'
             ? { label: 'Field report \u2192 Queen RTS', detail: 'Your colony health is ' + colonyHealth + '% with ' + varroaLevel + '% varroa pressure. Use this evidence to choose a defensive or expansion opening.' }
             : viewMode === 'queen'
-              ? { label: 'Command plan \u2192 Drone Flight', detail: queenGameActive ? 'Your hive controls ' + Math.round(queenTerritory) + '% of forage space while the rival sits at ' + Math.round(queenRival.health) + '% health. Carry that risk story into the flight debrief.' : 'The RTS briefing will give the flight a strategic context: protect energy, then turn route evidence into a colony decision.' }
+              ? { label: 'Strategy plan \u2192 Drone Flight', detail: queenGameActive ? 'Your hive controls ' + Math.round(queenTerritory) + '% of forage space while the rival sits at ' + Math.round(queenRival.health) + '% health. Carry that risk story into the flight debrief.' : 'The RTS briefing will give the flight a strategic context: protect energy, then turn route evidence into a colony decision.' }
               : { label: 'Flight evidence \u2192 Notebook synthesis', detail: droneLastRun ? 'Your last route reached ' + Math.round(droneLastRun.maxAlt || 0) + ' ft and traveled ' + Math.round(droneLastRun.distance || 0) + ' m. Explain which control choice made that outcome possible.' : 'Use altitude, distance, energy, and traffic evidence to explain how individual movement becomes colony success.' };
-          var fieldReadinessLabel = colonyHealth >= 70 && varroaLevel < 20 && honey >= 15 ? 'Prepared' : colonyHealth < 50 || varroaLevel >= 35 || honey < 8 ? 'Stressed' : 'Watch';
+          var fieldReadinessLabel = colonyHealth >= 70 && varroaLevel < 20 && honey >= currentReserve ? 'Prepared' : colonyHealth < 50 || varroaLevel >= 35 || honey < currentReserve * 0.6 ? 'Stressed' : 'Watch';
           var fieldCarryoverLabel = queenData.carryover && queenData.carryover.label ? queenData.carryover.label : 'Choose a Queen opening after inspection';
-          var commandOutcomeLabel = queenResult === 'victory' ? 'Victory route' : queenResult ? 'Recovery route' : queenGameActive ? 'Match in progress' : 'Awaiting command';
-          var commandEvidence = queenGameActive ? 'Territory ' + Math.round(queenTerritory) + '% \u00b7 Rival health ' + Math.round(queenRival.health) + '%' : queenResult ? (queenResult === 'victory' ? 'Rival defeated; protect the advantage.' : 'Rival survived; diagnose the first failed defense.') : 'No command outcome recorded yet.';
+          var commandOutcomeLabel = queenResult === 'victory' ? 'Victory route' : queenResult ? 'Recovery route' : queenGameActive ? 'Match in progress' : 'Awaiting strategy';
+          var commandEvidence = queenGameActive ? 'Territory ' + Math.round(queenTerritory) + '% \u00b7 Rival health ' + Math.round(queenRival.health) + '%' : queenResult ? (queenResult === 'victory' ? 'Rival defeated; protect the advantage.' : 'Rival survived; diagnose the first failed defense.') : 'No strategy outcome recorded yet.';
           var flightOutcomeLabel = droneLastRun ? (droneLastRun.success ? 'Intercept complete' : 'Route needs revision') : droneFlightActive ? 'Flight in progress' : 'Awaiting flight';
           var flightEvidence = droneLastRun ? 'Altitude ' + Math.round(droneLastRun.maxAlt || 0) + ' ft \u00b7 Distance ' + Math.round(droneLastRun.distance || 0) + ' m \u00b7 Energy left ' + Math.round(droneLastRun.energyLeft || 0) + '%' : droneFlightActive ? 'Live route evidence is accumulating.' : 'No flight outcome recorded yet.';
           var causalChain = [
-            { id: 'field', step: '1', label: 'Field evidence', detail: 'Health ' + colonyHealth + '% \u00b7 Varroa ' + varroaLevel + '% \u00b7 Honey ' + honey + ' lb', outcome: fieldReadinessLabel, effect: 'Feeds Queen start: ' + fieldCarryoverLabel, next: 'Command map' },
-            { id: 'command', step: '2', label: 'Command evidence', detail: commandEvidence, outcome: commandOutcomeLabel, effect: 'Feeds Drone start: ' + (droneData.carryover || 'finish a Queen RTS match'), next: 'Flight route' },
+            { id: 'field', step: '1', label: 'Field evidence', detail: 'Health ' + colonyHealth + '% \u00b7 Varroa ' + varroaLevel + '% \u00b7 Honey ' + honey + ' lb', outcome: fieldReadinessLabel, effect: 'Feeds Queen start: ' + fieldCarryoverLabel, next: 'Strategy map' },
+            { id: 'command', step: '2', label: 'Strategy evidence', detail: commandEvidence, outcome: commandOutcomeLabel, effect: 'Feeds Drone start: ' + (droneData.carryover || 'finish a Queen RTS match'), next: 'Flight route' },
             { id: 'flight', step: '3', label: 'Flight evidence', detail: flightEvidence, outcome: flightOutcomeLabel, effect: 'Feeds Notebook: name the control decision that produced this result.', next: 'Synthesis' }
           ];
           var handoffActionLabel = viewMode === 'beekeeper' ? 'Open Queen RTS' : viewMode === 'queen' ? 'Open Drone Flight' : d.notebookOpen === true ? 'Review Science Notebook' : 'Open Science Notebook';
-          var handoffActionAria = handoffActionLabel + ': follow the evidence chain from ' + (viewMode === 'beekeeper' ? 'field report to command map' : viewMode === 'queen' ? 'command outcome to flight route' : 'flight outcome to Notebook synthesis');
+          var handoffActionAria = handoffActionLabel + ': follow the evidence chain from ' + (viewMode === 'beekeeper' ? 'field report to strategy map' : viewMode === 'queen' ? 'strategy outcome to flight route' : 'flight outcome to Notebook synthesis');
           function advanceBeeHandoff() {
             if (viewMode === 'beekeeper') {
               upd('viewMode', 'queen');
@@ -21490,7 +23211,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             }
             if (viewMode === 'queen') {
               upd('viewMode', 'drone');
-              announceBee('Drone Flight opened. Carry the command outcome into route planning.', false);
+              announceBee('Drone Flight opened. Carry the strategy outcome into route planning.', false);
               return;
             }
             upd('notebookOpen', true);
@@ -21506,21 +23227,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               return h('button', { key: item.id, onClick: function() { upd('viewMode', item.id); }, 'aria-current': active ? 'step' : undefined, className: 'rounded-xl border p-3 text-left transition-all ' + (active ? (dk ? 'border-white/30 bg-white/10 ring-1 ring-white/20' : 'border-slate-400 bg-slate-50 ring-1 ring-slate-200') : (dk ? 'border-slate-700 bg-slate-950/35 hover:border-slate-500' : 'border-slate-200 bg-white hover:border-slate-300')) },
                 h('div', { className: 'flex items-start gap-2' }, h('span', { className: 'text-xl', 'aria-hidden': 'true' }, item.icon), h('div', { className: 'min-w-0 flex-1' }, h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, item.title), h('span', { className: item.done ? 'text-emerald-500' : (dk ? 'text-slate-500' : 'text-slate-400'), role: 'img', 'aria-label': item.done ? 'milestone complete' : 'milestone in progress' }, item.done ? '\u2713' : '\u25CB')), h('p', { className: 'mt-0.5 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, item.criterion))),
                 h('div', { className: 'mt-2 h-1.5 overflow-hidden rounded-full ' + (dk ? 'bg-slate-800' : 'bg-slate-200'), role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': item.progress, 'aria-label': item.title + ' progress ' + item.progress + ' percent' }, h('div', { className: 'h-full rounded-full transition-all ' + tone, style: { width: item.progress + '%' } })),
-                h('div', { className: 'mt-1.5 text-[9px] font-bold uppercase tracking-wide ' + (item.done ? 'text-emerald-500' : (dk ? 'text-slate-400' : 'text-slate-500')) }, item.status));
+                h('div', { className: 'mt-1.5 text-[10px] font-bold uppercase tracking-wide ' + (item.done ? 'text-emerald-500' : (dk ? 'text-slate-400' : 'text-slate-500')) }, item.status));
             })),
             h('div', { 'data-beehive-journey-next': nextMilestone ? nextMilestone.id : 'complete', role: 'status', 'aria-live': 'polite', className: 'mt-3 flex flex-col gap-2 rounded-xl border p-3 sm:flex-row sm:items-center sm:justify-between ' + (nextMilestone ? (dk ? 'border-emerald-700/45 bg-emerald-950/25' : 'border-emerald-200 bg-emerald-50/70') : (dk ? 'border-indigo-700/45 bg-indigo-950/25' : 'border-indigo-200 bg-indigo-50/70')) },
-              h('div', null, h('div', { className: 'text-[9px] font-black uppercase tracking-[0.14em] ' + (nextMilestone ? 'text-emerald-600' : 'text-indigo-600') }, nextMilestone ? 'Recommended next' : 'Journey complete'), h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-200' : 'text-slate-700') }, nextMilestoneMessage)),
+              h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (nextMilestone ? 'text-emerald-600' : 'text-indigo-600') }, nextMilestone ? 'Recommended next' : 'Journey complete'), h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-200' : 'text-slate-700') }, nextMilestoneMessage)),
               nextMilestone && h('button', { type: 'button', onClick: function() { upd('viewMode', nextMilestone.id); announceBee('Opening ' + nextMilestone.title + '.', false); }, className: 'inline-flex min-h-[44px] shrink-0 items-center justify-center rounded-lg bg-emerald-700 px-3 py-2 text-[10px] font-black text-white transition-colors hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400', 'aria-label': 'Open recommended next simulation: ' + nextMilestone.title }, 'Open ' + nextMilestone.title)),
             h('div', { 'data-beehive-handoff': viewMode, role: 'note', className: 'mt-3 rounded-xl border p-3 ' + (dk ? 'border-sky-700/40 bg-sky-950/20' : 'border-sky-200 bg-sky-50/70') },
               h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
-                h('div', { className: 'text-[9px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-sky-300' : 'text-sky-800') }, handoff.label),
+                h('div', { className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-sky-300' : 'text-sky-800') }, handoff.label),
                 h('button', { type: 'button', 'data-beehive-handoff-action': viewMode, onClick: advanceBeeHandoff, 'aria-label': handoffActionAria, className: 'inline-flex min-h-[44px] shrink-0 items-center justify-center rounded-lg bg-sky-700 px-3 py-2 text-[10px] font-black text-white shadow-sm transition-colors hover:bg-sky-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2' }, handoffActionLabel)),
               h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-200' : 'text-slate-700') }, handoff.detail),
               h('div', { 'data-beehive-causal-chain': 'true', role: 'group', 'aria-label': 'Evidence chain across the three simulations', className: 'mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3' }, causalChain.map(function(item, index) {
                 return h('div', { key: item.id, 'data-causal-step': item.id, role: 'group', 'aria-label': item.label + ': ' + item.detail + '. ' + item.effect, className: 'min-w-0 rounded-lg border p-2 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-sky-100 bg-white/80') },
-                  h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'text-[9px] font-black uppercase tracking-wide ' + (dk ? 'text-sky-300' : 'text-sky-800') }, item.step + '. ' + item.label), h('span', { className: 'rounded-full px-1.5 py-0.5 text-[8px] font-black ' + (dk ? 'bg-slate-800 text-slate-200' : 'bg-sky-50 text-sky-800') }, item.outcome)),
-                  h('p', { className: 'mt-1 text-[9px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, item.detail),
-                  h('p', { className: 'mt-1 text-[9px] font-bold ' + (dk ? 'text-sky-200' : 'text-sky-800') }, item.effect + (index < causalChain.length - 1 ? ' \u2192 ' + item.next : '')));
+                  h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-sky-300' : 'text-sky-800') }, item.step + '. ' + item.label), h('span', { className: 'rounded-full px-1.5 py-0.5 text-[10px] font-black ' + (dk ? 'bg-slate-800 text-slate-200' : 'bg-sky-50 text-sky-800') }, item.outcome)),
+                  h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, item.detail),
+                  h('p', { className: 'mt-1 text-[10px] font-bold ' + (dk ? 'text-sky-200' : 'text-sky-800') }, item.effect + (index < causalChain.length - 1 ? ' \u2192 ' + item.next : '')));
               }))),
           );
         }
@@ -21530,13 +23251,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var droneDone = (droneData.successes || 0) > 0 || !!(droneLastRun && droneLastRun.success);
           var completed = [keeperDone, queenDone, droneDone].filter(Boolean).length;
           var nextJourneyId = !keeperDone ? 'beekeeper' : !queenDone ? 'queen' : !droneDone ? 'drone' : null;
-          var nextJourneyTitle = nextJourneyId === 'beekeeper' ? 'Steward the colony' : nextJourneyId === 'queen' ? 'Command a superorganism' : nextJourneyId === 'drone' ? 'Navigate a mating flight' : null;
+          var nextJourneyTitle = nextJourneyId === 'beekeeper' ? 'Steward the colony' : nextJourneyId === 'queen' ? 'Model a decentralized colony' : nextJourneyId === 'drone' ? 'Navigate a mating flight' : null;
           var journeyOpen = d.journeyOpen === true;
           return h('details', { key: 'beehive-journey', 'data-beehive-journey-disclosure': 'true', open: journeyOpen, onToggle: function(e) { var nextOpen = e.currentTarget.open; if (nextOpen !== (d.journeyOpen === true)) upd('journeyOpen', nextOpen); }, className: 'group overflow-hidden rounded-2xl border ' + (completed === 3 ? (dk ? 'border-emerald-700/60 bg-emerald-950/20' : 'border-emerald-200 bg-emerald-50/60') : (dk ? 'border-slate-700 bg-slate-900/60' : 'border-slate-200 bg-white')) },
-            h('summary', { id: 'beehive-journey-summary', className: 'flex min-h-[58px] cursor-pointer list-none items-center gap-3 px-3 py-2.5 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-500 sm:px-4', style: { listStyle: 'none' }, 'aria-label': (journeyOpen ? 'Collapse' : 'Expand') + ' three-perspective mastery path. ' + (nextJourneyTitle ? 'Recommended next: ' + nextJourneyTitle + '.' : 'All milestones complete; continue with the Science Notebook synthesis.') },
+            h('summary', { id: 'beehive-journey-summary', className: 'flex min-h-[58px] cursor-pointer list-none items-center gap-3 px-3 py-2.5 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-500 sm:px-4', style: { listStyle: 'none' }, 'aria-label': (journeyOpen ? 'Collapse' : 'Expand') + ' three-perspective experience path. ' + (nextJourneyTitle ? 'Recommended next: ' + nextJourneyTitle + '.' : 'All milestones complete; continue with the Science Notebook synthesis.') },
               h('span', { className: 'grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-amber-700 via-purple-600 to-indigo-600 text-base text-white shadow-sm', 'aria-hidden': 'true' }, completed === 3 ? '\u2713' : '\u2B21'),
-              h('span', { className: 'min-w-0 flex-1' }, h('span', { className: 'block text-[9px] font-black uppercase tracking-[0.15em] ' + (completed === 3 ? 'text-emerald-600' : (dk ? 'text-slate-400' : 'text-slate-500')) }, 'Mastery path'), h('span', { className: 'block text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, completed === 3 ? 'Three perspectives connected' : 'Connect organism, colony, and ecosystem'), h('span', { className: 'mt-1 block text-[10px] font-semibold ' + (nextJourneyTitle ? (dk ? 'text-emerald-300' : 'text-emerald-700') : (dk ? 'text-indigo-300' : 'text-indigo-700')) }, nextJourneyTitle ? 'Next: ' + nextJourneyTitle : 'Next: Science Notebook synthesis'), h('span', { className: 'mt-1 block h-1.5 max-w-xs overflow-hidden rounded-full ' + (dk ? 'bg-slate-800' : 'bg-slate-200') }, h('span', { className: 'block h-full rounded-full bg-gradient-to-r from-amber-500 via-purple-500 to-indigo-500 transition-all', style: { width: (completed / 3 * 100) + '%' } }))),
-              h('span', { className: 'rounded-full px-2.5 py-1 text-[9px] font-black ' + (completed === 3 ? 'bg-emerald-700 text-white' : (dk ? 'bg-slate-800 text-slate-200' : 'bg-slate-100 text-slate-700')) }, completed + ' / 3'),
+              h('span', { className: 'min-w-0 flex-1' }, h('span', { className: 'block text-[10px] font-black uppercase tracking-[0.15em] ' + (completed === 3 ? 'text-emerald-600' : (dk ? 'text-slate-400' : 'text-slate-500')) }, 'Experience path'), h('span', { className: 'block text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, completed === 3 ? 'Three perspectives connected' : 'Connect organism, colony, and ecosystem'), h('span', { className: 'mt-1 block text-[10px] font-semibold ' + (nextJourneyTitle ? (dk ? 'text-emerald-300' : 'text-emerald-700') : (dk ? 'text-indigo-300' : 'text-indigo-700')) }, nextJourneyTitle ? 'Next: ' + nextJourneyTitle : 'Next: Science Notebook synthesis'), h('span', { className: 'mt-1 block h-1.5 max-w-xs overflow-hidden rounded-full ' + (dk ? 'bg-slate-800' : 'bg-slate-200') }, h('span', { className: 'block h-full rounded-full bg-gradient-to-r from-amber-500 via-purple-500 to-indigo-500 transition-all', style: { width: (completed / 3 * 100) + '%' } }))),
+              h('span', { className: 'rounded-full px-2.5 py-1 text-[10px] font-black ' + (completed === 3 ? 'bg-emerald-700 text-white' : (dk ? 'bg-slate-800 text-slate-200' : 'bg-slate-100 text-slate-700')) }, completed + ' / 3'),
               h('span', { className: 'text-lg leading-none transition-transform group-open:rotate-180 motion-reduce:transition-none ' + (dk ? 'text-slate-400' : 'text-slate-500'), 'aria-hidden': 'true' }, '\u2304')),
             h('div', { className: 'border-t p-2 ' + (dk ? 'border-slate-700' : 'border-slate-200') }, renderBeeJourney()));
         }
@@ -21604,17 +23325,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           return h('div', { 'data-beehive-event-forecast': 'true', role: 'group', 'aria-labelledby': 'beehive-event-forecast-title', 'aria-describedby': 'beehive-event-forecast-prompt', className: 'rounded-xl border p-3 ' + (dk ? 'border-amber-700/40 bg-slate-950/30' : 'border-amber-200 bg-amber-50/60') },
             h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
               h('div', null,
-                h('div', { id: 'beehive-event-forecast-title', className: 'text-[9px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-amber-300' : 'text-amber-800') }, 'Observed event impact'),
+                h('div', { id: 'beehive-event-forecast-title', className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-amber-300' : 'text-amber-800') }, 'Observed event impact'),
                 h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'These modeled changes were applied when the event fired. Identify the metric to protect, then acknowledge to continue.')),
-              h('span', { className: 'rounded-full border px-2 py-1 text-[9px] font-black uppercase tracking-wide ' + (dk ? 'border-amber-700 text-amber-200' : 'border-amber-300 text-amber-800') }, items.length + ' signal' + (items.length === 1 ? '' : 's'))),
+              h('span', { className: 'rounded-full border px-2 py-1 text-[10px] font-black uppercase tracking-wide ' + (dk ? 'border-amber-700 text-amber-200' : 'border-amber-300 text-amber-800') }, items.length + ' signal' + (items.length === 1 ? '' : 's'))),
             h('div', { className: 'mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4', role: 'list', 'aria-label': 'Observed event impact metrics' }, items.map(function(item) {
               var value = (item.amount > 0 ? '+' : '') + item.amount + item.suffix;
               var tone = item.beneficial ? (dk ? 'text-emerald-300' : 'text-emerald-700') : (dk ? 'text-rose-300' : 'text-rose-700');
               var status = item.beneficial ? 'beneficial change' : 'risk or cost';
               return h('div', { key: item.key, 'data-event-impact': item.key, role: 'listitem', 'aria-label': item.label + ': ' + value + '; ' + status, className: 'rounded-lg border p-2 ' + (dk ? 'border-white/10 bg-slate-950/40' : 'border-amber-100 bg-white/80') },
-                h('div', { className: 'text-[9px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-300' : 'text-slate-600') }, item.label),
+                h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-300' : 'text-slate-600') }, item.label),
                 h('div', { className: 'mt-1 text-sm font-black tabular-nums ' + tone }, value),
-                h('div', { className: 'mt-0.5 text-[9px] font-bold ' + tone }, item.beneficial ? 'Benefit' : 'Risk / cost'));
+                h('div', { className: 'mt-0.5 text-[10px] font-bold ' + tone }, item.beneficial ? 'Benefit' : 'Risk / cost'));
             })),
             h('p', { id: 'beehive-event-forecast-prompt', 'data-beehive-event-prompt': 'true', className: 'mt-2 text-[10px] font-bold ' + (dk ? 'text-amber-200' : 'text-amber-800') }, 'Prediction check: what mechanism explains the largest ' + largest.label.toLowerCase() + ' change?')
           );
@@ -21645,20 +23366,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var causal = managementCausalPath(ev.label, changes);
           return h('section', { 'data-beehive-management-evidence': 'true', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'rounded-2xl border p-3 ' + (dk ? 'border-emerald-700/45 bg-emerald-950/20' : 'border-emerald-200 bg-emerald-50/70'), 'aria-label': 'Latest intervention evidence' },
               h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
-              h('div', { className: 'min-w-0 flex-1' }, h('div', { className: 'text-[9px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-emerald-300' : 'text-emerald-800') }, 'Latest intervention'), h('div', { className: 'mt-0.5 text-sm font-black ' + (dk ? 'text-white' : 'text-slate-900') }, ev.label), h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, ev.summary || 'Compare the observed effect with the forecast.')),
+              h('div', { className: 'min-w-0 flex-1' }, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-emerald-300' : 'text-emerald-800') }, 'Latest intervention'), h('div', { className: 'mt-0.5 text-sm font-black ' + (dk ? 'text-white' : 'text-slate-900') }, ev.label), h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, ev.summary || 'Compare the observed effect with the forecast.')),
               h('div', { className: 'flex flex-wrap items-center justify-end gap-1.5' },
-                h('span', { 'data-management-outcome': outcome.key, role: 'img', className: 'rounded-full px-2.5 py-1 text-[9px] font-black ' + outcomeTone, 'aria-label': 'Observed outcome: ' + outcome.label + '. ' + outcome.detail }, outcome.label),
-                h('span', { className: 'rounded-full bg-emerald-700 px-2.5 py-1 text-[9px] font-black text-white' }, 'Day ' + (ev.day || day) + ' · ' + (ev.cost || 'Action')))),
+                h('span', { 'data-management-outcome': outcome.key, role: 'img', className: 'rounded-full px-2.5 py-1 text-[10px] font-black ' + outcomeTone, 'aria-label': 'Observed outcome: ' + outcome.label + '. ' + outcome.detail }, outcome.label),
+                h('span', { className: 'rounded-full bg-emerald-700 px-2.5 py-1 text-[10px] font-black text-white' }, 'Day ' + (ev.day || day) + ' · ' + (ev.cost || 'Action')))),
             h('p', { 'data-management-outcome-detail': 'true', className: 'mt-2 text-[10px] font-semibold ' + (dk ? 'text-emerald-200' : 'text-emerald-800') }, outcome.detail),
             h('div', { 'data-management-causal-path': 'true', role: 'group', 'aria-labelledby': 'beehive-management-causal-title', 'aria-describedby': 'beehive-management-causal-prompt', className: 'mt-3 rounded-xl border p-3 ' + (dk ? 'border-emerald-700/35 bg-slate-950/30' : 'border-emerald-200 bg-white/75') },
               h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
-                h('div', null, h('div', { id: 'beehive-management-causal-title', className: 'text-[9px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-emerald-300' : 'text-emerald-800') }, 'Causal pathway'), h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Follow the mechanism before interpreting the metric.')),
-                h('span', { className: 'rounded-full border px-2 py-1 text-[9px] font-black uppercase tracking-wide ' + (dk ? 'border-emerald-700 text-emerald-200' : 'border-emerald-200 text-emerald-800') }, 'Action → biology → evidence')),
+                h('div', null, h('div', { id: 'beehive-management-causal-title', className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-emerald-300' : 'text-emerald-800') }, 'Causal pathway'), h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Follow the mechanism before interpreting the metric.')),
+                h('span', { className: 'rounded-full border px-2 py-1 text-[10px] font-black uppercase tracking-wide ' + (dk ? 'border-emerald-700 text-emerald-200' : 'border-emerald-200 text-emerald-800') }, 'Action → biology → evidence')),
               h('ol', { className: 'mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3', 'aria-label': 'Intervention causal pathway' }, [
                 { step: '1', label: 'Intervention', text: ev.label },
                 { step: '2', label: 'Mechanism', text: causal.mechanism },
                 { step: '3', label: 'Observed signal', text: causal.observed }
-              ].map(function(item) { return h('li', { key: item.step, 'data-management-causal-step': item.step, className: 'relative rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-900/60' : 'border-emerald-100 bg-emerald-50/45') }, h('div', { className: 'flex items-center gap-1.5' }, h('span', { className: 'grid h-5 w-5 place-items-center rounded-full bg-emerald-700 text-[9px] font-black text-white', 'aria-hidden': 'true' }, item.step), h('span', { className: 'text-[9px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-300' : 'text-slate-600') }, item.label)), h('p', { className: 'mt-1.5 text-[10px] font-semibold leading-relaxed ' + (dk ? 'text-white' : 'text-slate-900') }, item.text)); })),
+              ].map(function(item) { return h('li', { key: item.step, 'data-management-causal-step': item.step, className: 'relative rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-900/60' : 'border-emerald-100 bg-emerald-50/45') }, h('div', { className: 'flex items-center gap-1.5' }, h('span', { className: 'grid h-5 w-5 place-items-center rounded-full bg-emerald-700 text-[10px] font-black text-white', 'aria-hidden': 'true' }, item.step), h('span', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-300' : 'text-slate-600') }, item.label)), h('p', { className: 'mt-1.5 text-[10px] font-semibold leading-relaxed ' + (dk ? 'text-white' : 'text-slate-900') }, item.text)); })),
               h('p', { id: 'beehive-management-causal-prompt', 'data-management-causal-prompt': 'true', className: 'mt-2 text-[10px] font-bold ' + (dk ? 'text-emerald-200' : 'text-emerald-800') }, causal.prompt)),
             changes.length > 0
               ? h('div', { className: 'mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4', role: 'list', 'aria-label': 'Observed intervention metric changes' }, changes.map(function(change, index) {
@@ -21666,9 +23387,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   var lowerIsBetter = change.label === 'Varroa' || change.label === 'Disease risk' || change.label === 'Pesticide exposure';
                   var good = !numeric || (lowerIsBetter ? change.delta <= 0 : change.delta >= 0);
                   return h('div', { key: change.label + '-' + index, role: 'listitem', 'aria-label': change.label + ' changed from ' + change.before + change.suffix + ' to ' + change.after + change.suffix + (numeric ? ', ' + (change.delta > 0 ? '+' : '') + change.delta + change.suffix : ''), className: 'rounded-lg border p-2 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-emerald-100 bg-white/80') },
-                    h('div', { className: 'text-[9px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-300' : 'text-slate-600') }, change.label),
+                    h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-300' : 'text-slate-600') }, change.label),
                     h('div', { className: 'mt-1 text-[10px] font-black tabular-nums ' + (numeric ? (good ? 'text-emerald-600' : 'text-rose-600') : (dk ? 'text-slate-200' : 'text-slate-700')) }, change.before + change.suffix + ' \u2192 ' + change.after + change.suffix),
-                    numeric && h('div', { className: 'mt-0.5 text-[9px] font-bold ' + (good ? 'text-emerald-600' : 'text-rose-600') }, (change.delta > 0 ? '+' : '') + change.delta + change.suffix));
+                    numeric && h('div', { className: 'mt-0.5 text-[10px] font-bold ' + (good ? 'text-emerald-600' : 'text-rose-600') }, (change.delta > 0 ? '+' : '') + change.delta + change.suffix));
                 }))
               : h('p', { className: 'mt-3 text-[10px] ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'No numeric changes were recorded; use the event log and forecast to evaluate this intervention.'),
             h('p', { className: 'mt-3 text-[10px] font-bold ' + (dk ? 'text-emerald-200' : 'text-emerald-800') }, 'Explain it: which biological mechanism links this intervention to the observed changes?')
@@ -21777,11 +23498,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('button', { type: 'button', onClick: function() { setStemLabTool(null); }, className: 'grid h-10 w-10 shrink-0 place-items-center rounded-xl border transition-colors ' + (dk ? 'border-slate-700 hover:bg-slate-700' : 'border-slate-200 hover:bg-slate-100'), 'aria-label': __alloT('stem.beehive.back', 'Back') }, h(ArrowLeft, { size: 18, className: dk ? 'text-slate-200' : 'text-slate-600' })),
               h('div', { className: 'min-w-0' },
                 h('div', { className: 'mb-1 flex flex-wrap items-center gap-1.5' },
-                  h('span', { className: 'rounded-full bg-amber-500/15 px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.15em] ' + (dk ? 'text-amber-300' : 'text-amber-800') }, 'Interactive systems lab'),
-                  h('span', { className: 'text-[9px] font-bold uppercase tracking-wide ' + (dk ? 'text-emerald-300' : 'text-emerald-700') }, '3 connected perspectives'),
-                  h('span', { 'data-beehive-mode-signal': 'true', className: 'text-[9px] font-black uppercase tracking-wide' },
+                  h('span', { className: 'rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.15em] ' + (dk ? 'text-amber-300' : 'text-amber-800') }, 'Interactive systems lab'),
+                  h('span', { className: 'text-[10px] font-bold uppercase tracking-wide ' + (dk ? 'text-emerald-300' : 'text-emerald-700') }, '3 connected perspectives'),
+                  h('span', { 'data-beehive-mode-signal': 'true', className: 'text-[10px] font-black uppercase tracking-wide' },
                     h('span', { className: 'h-2 w-2 shrink-0 rounded-full ' + beeRoleVisual(viewMode).dot, 'aria-hidden': 'true' }),
-                    viewMode === 'queen' ? 'Queen command' : viewMode === 'drone' ? 'Drone flight' : 'Apiary command',
+                    viewMode === 'queen' ? 'Queen strategy' : viewMode === 'drone' ? 'Drone flight' : 'Apiary view',
                     h('span', { className: 'hidden max-w-[18rem] truncate font-semibold normal-case tracking-normal opacity-70 sm:inline' }, '· ' + simCardStatus(viewMode)))),
                 h('h3', { className: 'text-xl font-black tracking-tight sm:text-2xl ' + (dk ? 'text-slate-100' : 'text-slate-800') }, __alloT('stem.beehive.beehive_colony_simulator', '🐝 Beehive Colony Simulator')),
                 h('p', { className: 'mt-0.5 text-xs font-medium sm:text-sm ' + (dk ? 'text-slate-200' : 'text-slate-600') }, __alloT('stem.beehive.manage_a_living_superorganism_50_000_m', 'Manage a living superorganism — 50,000 minds, one purpose')))),
@@ -21797,7 +23518,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('button', { onClick: function() { upd('showBadges', !showBadges); }, 'aria-label': 'View badges (' + badgeCount + '/' + BADGE_DEFS.length + ' earned)', title: 'Badges: ' + badgeCount + '/' + BADGE_DEFS.length,
                 className: 'relative grid h-10 w-10 place-items-center rounded-lg text-base transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-700') },
                 '🏅',
-                badgeCount > 0 && h('span', { className: 'absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center text-white bg-amber-700' }, badgeCount)),
+                badgeCount > 0 && h('span', { className: 'absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-[10px] font-bold flex items-center justify-center text-white bg-amber-700' }, badgeCount)),
               // Export colony report
               h('button', { onClick: exportColonyReport, 'aria-label': 'Export colony report', title: __alloT('stem.beehive.export_colony_report_to_clipboard', 'Export colony report to clipboard'),
                 className: 'grid h-10 w-10 place-items-center rounded-lg text-base transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-700') }, '📄'),
@@ -21813,15 +23534,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('span', { 'aria-hidden': 'true' }, '\u23F8'),
             h('span', null, h('strong', null, 'Reduced motion is on. '), 'Beekeeper visuals and new Drone flights start paused. Queen map motion is simplified while strategy timing remains real time. Use Resume whenever motion is helpful.')),
 
-          h('div', { 'data-beehive-mode-switcher': 'true', 'data-mobile-rail': 'perspectives', style: { scrollbarWidth: 'thin', WebkitOverflowScrolling: 'touch' }, className: 'grid grid-flow-col auto-cols-[84%] gap-2 overflow-x-auto overscroll-x-contain scroll-px-2 snap-x snap-mandatory touch-pan-x rounded-2xl border p-2 pb-3 sm:grid-flow-row sm:auto-cols-auto sm:grid-cols-3 sm:overflow-visible sm:pb-2 ' + (dk ? 'border-slate-700/80 bg-slate-950/45' : 'border-slate-200 bg-slate-100/80'), role: 'tablist', 'aria-label': __alloT('stem.beehive.simulation_perspective', 'Simulation perspective') },
+          h('div', { 'data-beehive-mode-switcher': 'true', 'data-mobile-rail': 'perspectives', style: { scrollbarWidth: 'thin', WebkitOverflowScrolling: 'touch' }, className: 'grid grid-flow-col auto-cols-[84%] gap-2 overflow-x-auto overscroll-x-contain scroll-px-2 snap-x snap-mandatory touch-pan-x rounded-2xl border p-2 pb-3 sm:grid-flow-row sm:auto-cols-auto sm:grid-cols-3 sm:overflow-visible sm:pb-2 ' + (dk ? 'border-slate-700/80 bg-slate-950/45' : 'border-slate-200 bg-slate-100/80'), role: 'radiogroup', 'aria-label': __alloT('stem.beehive.simulation_perspective', 'Simulation perspective') },
             [
               { id: 'beekeeper', icon: '\uD83E\uDDD1\u200D\uD83C\uDF3E', label: __alloT('stem.beehive.beekeeper', 'Beekeeper'), desc: __alloT('stem.beehive.manage_the_colony_from_outside', 'Manage the colony from outside') },
-              { id: 'queen', icon: '\uD83D\uDC51', label: __alloT('stem.beehive.queen_rts', 'Queen RTS'), desc: __alloT('stem.beehive.command_the_hive_from_within', 'Command the hive from within') },
+              { id: 'queen', icon: '\uD83D\uDC51', label: __alloT('stem.beehive.queen_rts', 'Queen RTS'), desc: __alloT('stem.beehive.command_the_hive_from_within', 'Explore a colony strategy abstraction') },
               { id: 'drone', icon: '\uD83D\uDE80', label: __alloT('stem.beehive.drone_flight', 'Drone Flight'), desc: __alloT('stem.beehive.fly_the_nuptial_flight_in_3d', 'Fly the nuptial flight in 3D') }
             ].map(function(tab) {
               var active = viewMode === tab.id;
               var visual = beeRoleVisual(tab.id);
-              return h('button', { key: tab.id, id: 'beehive-mode-tab-' + tab.id, role: 'tab', 'aria-selected': active ? 'true' : 'false', tabIndex: active ? 0 : -1, 'data-beehive-mode-tab': tab.id,
+              return h('button', { key: tab.id, id: 'beehive-mode-tab-' + tab.id, role: 'radio', 'aria-checked': active ? 'true' : 'false', tabIndex: active ? 0 : -1, 'data-beehive-mode-tab': tab.id,
                 onClick: function() { upd('viewMode', tab.id); },
                 onKeyDown: function(event) { handleBeeTabKey(event, ['beekeeper', 'queen', 'drone'], tab.id, 'data-beehive-mode-tab', function(nextId) { upd('viewMode', nextId); }); },
                 className: 'group min-h-[104px] snap-center rounded-xl border p-3 text-left transition-all sm:snap-none duration-200 hover:-translate-y-0.5 motion-reduce:transform-none motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (active ? visual.active : visual.idle),
@@ -21832,10 +23553,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('span', { className: 'min-w-0 flex-1' },
                     h('span', { className: 'flex items-center justify-between gap-2' },
                       h('span', null,
-                        h('span', { className: 'block text-[9px] font-black uppercase tracking-[0.14em] opacity-65' }, visual.eyebrow),
+                        h('span', { className: 'block text-[10px] font-black uppercase tracking-[0.14em] ' + (active ? '' : (dk ? 'text-slate-300' : 'text-slate-700')) }, visual.eyebrow),
                         h('span', { className: 'mt-0.5 block text-sm font-black' }, tab.label)),
-                      active && h('span', { className: 'rounded-full bg-white/85 px-2 py-0.5 text-[8px] font-black uppercase tracking-wide text-slate-800' }, 'Active')),
-                    h('span', { className: 'mt-1 block text-[10px] font-semibold leading-relaxed opacity-70' }, tab.desc))),
+                      active && h('span', { className: 'rounded-full bg-white/85 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-slate-800' }, 'Active')),
+                    h('span', { className: 'mt-1 block text-[10px] font-semibold leading-relaxed ' + (active ? '' : (dk ? 'text-slate-300' : 'text-slate-700')) }, tab.desc))),
                 h('span', { className: 'mt-2 flex items-center gap-1.5 border-t pt-2 text-[10px] font-bold ' + (active ? 'border-current/15' : (dk ? 'border-white/10' : 'border-slate-200')) },
                   h('span', { className: 'h-1.5 w-1.5 shrink-0 rounded-full ' + visual.dot, 'aria-hidden': 'true' }),
                   h('span', { className: 'truncate' }, simCardStatus(tab.id))))
@@ -21884,6 +23605,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               ref: _cvRef,
               'data-beehive-canvas': 'true',
               role: 'img',
+              'data-a11y-static': 'true',
               'aria-describedby': 'beehive-canvas-description',
               'aria-label': 'Animated beehive simulation. ' + activeBeeView.label + ' educational canvas. ' + activeBeeView.shortDesc + '. Workers: ' + workers + ', Honey: ' + honey + ' lbs, Season: ' + seasonNames[season] + '.',
               style: { width: '100%', height: '100%', display: 'block', cursor: beeView === 'scene' ? 'pointer' : 'default' },
@@ -22014,9 +23736,99 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 title: __alloT('stem.beehive.toggle_fullscreen', 'Toggle fullscreen'),
                 className: 'grid min-h-[44px] min-w-[44px] place-items-center rounded-lg border border-amber-400/45 bg-slate-950/78 text-xs font-bold text-amber-100 shadow-lg backdrop-blur-md transition-all hover:bg-slate-900',
                 style: { fontSize: '16px', lineHeight: 1, cursor: 'pointer' }
-              }, '?')),
+              }, '\u26F6')),
             // The interactive action dock above exposes every scene hotspot to pointer, keyboard, and touch users.
           ),
+          // ═══ 3D HIVE BAY (beekeeper only) ═══
+          // The 2D scene shows the apiary from outside. This shows the same
+          // colony as the object a beekeeper actually handles: a stack that
+          // comes apart, with the live honey, brood, mite and traffic numbers
+          // drawn INTO the hive rather than printed beside it.
+          viewMode === 'beekeeper' && renderBee3dBay({
+            id: 'hive',
+            viewer: HIVE_3D_VIEWER,
+            attach: hive3dAttach,
+            status: hive3dStatus,
+            parts: HIVE_3D_PARTS,
+            selected: hive3dPart,
+            partKey: 'hive3dPart',
+            toggleKey: 'show3dHive',
+            open: show3dHive,
+            title: '3D hive',
+            eyebrow: '🧰 The hive in 3D',
+            blurb: 'Drag to turn the hive, or use the buttons and the parts list. The comb is drawn cell by cell from this colony right now — worker and drone brood, pollen, honey, and the gaps a failing queen leaves. Supers you add appear on the stack, the meadow follows the season, and picking the frames or the queen slides the front frame out the way an inspection lifts it.',
+            pickPrompt: 'Pick a part of the hive',
+            fallback: 'The 3D hive could not start on this device, usually because WebGL is unavailable or blocked. The hive cross-section in the Inspect hive panel shows the same structure.',
+            accent: {
+              label: dk ? 'text-amber-300' : 'text-amber-700',
+              frame: dk ? 'border-amber-700/45' : 'border-amber-300',
+              button: dk ? 'border-amber-600/45 bg-slate-900 text-amber-100 hover:bg-slate-800' : 'border-amber-300 bg-white text-amber-800 hover:bg-amber-50',
+              chip: dk ? 'border-slate-700 bg-slate-900 text-slate-200 hover:bg-slate-800' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50',
+              chipOn: dk ? 'border-amber-400 bg-amber-500/25 text-amber-100' : 'border-amber-500 bg-amber-100 text-amber-900'
+            },
+            extraControls: [h('button', {
+              key: 'hive-explode',
+              type: 'button',
+              onClick: function() {
+                var next = !hive3dExploded;
+                upd('hive3dExploded', next);
+                announceBee(next ? 'Hive opened. The boxes lift apart in inspection order: outer cover, inner cover, honey super, queen excluder, then the brood frames.' : 'Hive closed back into a single stack.', false);
+              },
+              'aria-pressed': hive3dExploded ? 'true' : 'false',
+              // Same Label-in-Name rule as the queen button: the accessible name
+              // opens with the visible text so speech input can reach it.
+              'aria-label': hive3dExploded
+                ? 'Close hive: stack the boxes back together'
+                : 'Open hive: lift the boxes apart in inspection order — outer cover, inner cover, honey super, queen excluder, then the brood frames',
+              title: hive3dExploded ? 'Close hive' : 'Open hive',
+              disabled: hive3dStatus !== 'ready',
+              className: 'min-h-[44px] rounded-lg border px-3 text-[11px] font-black ' + (hive3dExploded
+                ? (dk ? 'border-amber-400 bg-amber-500/25 text-amber-100' : 'border-amber-500 bg-amber-100 text-amber-900')
+                : (dk ? 'border-amber-600/45 bg-slate-900 text-amber-100 hover:bg-slate-800' : 'border-amber-300 bg-white text-amber-800 hover:bg-amber-50')),
+              style: { opacity: hive3dStatus === 'ready' ? 1 : 0.45 }
+            }, hive3dExploded ? '⇊ Close hive' : '⇈ Open hive'),
+            h('button', {
+              key: 'hive-find-queen',
+              type: 'button',
+              onClick: function() {
+                var next = hive3dPart === 'queen' ? null : 'queen';
+                upd('hive3dPart', next);
+                announceBee(next
+                  ? 'Front frame drawn out. The queen is the long bee with the ' + BH_QUEEN_MARK_NAMES[bhQueenMarkIndex(2026)] + ' mark on her thorax, ringed by nurses facing inward.'
+                  : 'Queen deselected. The frame slides back into the brood box.', false);
+              },
+              'aria-pressed': hive3dPart === 'queen' ? 'true' : 'false',
+              // The accessible name has to CONTAIN the visible label (WCAG 2.5.3,
+              // Label in Name) — otherwise a speech-input user says what the
+              // button says and nothing happens. In winter the button reads
+              // "Queen in cluster", so the announced name has to as well; an
+              // earlier version announced "Find the queen" year-round while the
+              // visible text had already changed.
+              'aria-label': season === 3
+                ? 'Queen in cluster: the colony is wintering, so she cannot be shown on a frame'
+                : hive3dPart === 'queen'
+                  ? 'Find the queen: pressed. Stop highlighting her and slide the frame back'
+                  : 'Find the queen: draw out the front frame and highlight her',
+              title: season === 3 ? 'Queen in cluster' : 'Find the queen',
+              disabled: hive3dStatus !== 'ready' || season === 3,
+              className: 'min-h-[44px] rounded-lg border px-3 text-[11px] font-black ' + (hive3dPart === 'queen'
+                ? (dk ? 'border-fuchsia-400 bg-fuchsia-500/25 text-fuchsia-100' : 'border-fuchsia-500 bg-fuchsia-100 text-fuchsia-900')
+                : (dk ? 'border-amber-600/45 bg-slate-900 text-amber-100 hover:bg-slate-800' : 'border-amber-300 bg-white text-amber-800 hover:bg-amber-50')),
+              style: { opacity: hive3dStatus === 'ready' && season !== 3 ? 1 : 0.45 }
+            }, season === 3 ? '❄ Queen in cluster' : '\uD83D\uDC51 Find the queen')],
+            readout: h('p', { className: 'text-[10px] leading-relaxed ' + (dk ? 'text-slate-400' : 'text-slate-500') },
+              'Showing now: super ' + Math.round(hive3dHoneyFill * 100) + '% capped (' + honey + ' lb) · brood pattern ' + Math.round(hive3dBroodFill * 100) + '% (' + brood + ' cells) · mite load ' + Math.round(hive3dVarroa * 100) + '% · entrance traffic ' + Math.round(hive3dTraffic * 100) + '%' + (season === 3 ? ' (winter cluster — bees stay in)' : '') + '. '
+              + hive3dSuperCount + (hive3dSuperCount === 1 ? ' super' : ' supers') + ' on the stack. '
+              + (queenHealth >= 85
+                ? 'The brood is wall-to-wall, which is what a laying queen looks like.'
+                : queenHealth >= 55
+                  ? 'Gaps are opening in the brood — a spotty pattern is the first sign a queen is failing.'
+                  : 'The pattern is badly broken. Check for a queen before anything else.')
+              + (hive3dSwarmPressure > 0.55 && season !== 3
+                ? ' Queen cells are hanging off the bottom bar: this colony is crowded and preparing to swarm. Add a super before it leaves.'
+                : ''))
+          }),
+
           // ═══ EDUCATIONAL VIEW SELECTOR (beekeeper only) ═══
           // Maps the canonical BEE_VIEWS registry (all 18 built diagrams). The
           // first 10 also carry a Shift+1..0 shortcut hint; the other 8 (which
@@ -22024,10 +23836,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           viewMode === 'beekeeper' && h('section', { 'data-beehive-topic-explorer': 'true', className: 'rounded-2xl border p-3 ' + (dk ? 'border-amber-700/35 bg-slate-900/65' : 'border-amber-200 bg-white'), 'aria-label': 'Bee science topic explorer' },
             h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
               h('div', null,
-                h('div', { className: 'text-[9px] font-black uppercase tracking-[0.15em] ' + (dk ? 'text-amber-300' : 'text-amber-700') }, 'Bee science explorer'),
+                h('div', { className: 'text-[10px] font-black uppercase tracking-[0.15em] ' + (dk ? 'text-amber-300' : 'text-amber-700') }, 'Bee science explorer'),
                 h('div', { className: 'mt-0.5 text-sm font-black ' + (dk ? 'text-white' : 'text-slate-900') }, activeBeePath.icon + ' ' + activeBeePath.label),
                 h('p', { className: 'mt-0.5 text-[10px] ' + (dk ? 'text-slate-300' : 'text-slate-600') }, activeBeePath.desc)),
-              h('span', { className: 'rounded-full border px-2.5 py-1 text-[9px] font-black uppercase tracking-wide ' + (dk ? 'border-amber-700 bg-amber-950/35 text-amber-200' : 'border-amber-200 bg-amber-50 text-amber-800') }, exploredBeeViewIds.length + ' / ' + BEE_VIEWS.length + ' explored')),
+              h('span', { className: 'rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-wide ' + (dk ? 'border-amber-700 bg-amber-950/35 text-amber-200' : 'border-amber-200 bg-amber-50 text-amber-800') }, exploredBeeViewIds.length + ' / ' + BEE_VIEWS.length + ' explored')),
             h('div', { className: 'mt-3 flex flex-wrap items-center gap-2' },
               h('div', { 'data-topic-progress': 'true', role: 'progressbar', 'aria-label': 'Bee science topics explored', 'aria-valuemin': 0, 'aria-valuemax': BEE_VIEWS.length, 'aria-valuenow': exploredBeeViewIds.length, className: 'h-2 min-w-[120px] flex-1 overflow-hidden rounded-full ' + (dk ? 'bg-slate-800' : 'bg-amber-100') },
                 h('span', { className: 'block h-full rounded-full bg-gradient-to-r from-amber-500 to-emerald-500 transition-[width] motion-reduce:transition-none', style: { width: ((exploredBeeViewIds.length / BEE_VIEWS.length) * 100) + '%' } })),
@@ -22041,8 +23853,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 return h('button', { key: path.id, type: 'button', 'data-topic-pathway': path.id, 'aria-pressed': selected, 'aria-label': path.label + ', ' + pathExplored + ' of ' + path.ids.length + ' topics explored', onClick: function() { selectBeeView(path.ids[0]); }, className: 'min-h-[74px] snap-center rounded-xl border p-2.5 text-left transition-all sm:snap-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (selected ? (dk ? 'border-amber-400 bg-amber-900/45 text-white shadow-md' : 'border-amber-400 bg-amber-50 text-amber-950 shadow-md') : (dk ? 'border-slate-700 bg-slate-950/35 text-slate-300 hover:border-amber-700' : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-amber-300')) },
                   h('div', { className: 'flex items-center justify-between gap-2' },
                     h('span', { className: 'text-xs font-black' }, h('span', { 'aria-hidden': 'true' }, path.icon + ' '), path.label),
-                    h('span', { className: 'rounded-full px-1.5 py-0.5 text-[8px] font-black ' + (selected ? 'bg-amber-500 text-slate-950' : (dk ? 'bg-slate-800 text-slate-300' : 'bg-white text-slate-600')) }, pathExplored + '/' + path.ids.length)),
-                  h('p', { className: 'mt-1 text-[9px] leading-relaxed opacity-75' }, path.desc));
+                    h('span', { className: 'rounded-full px-1.5 py-0.5 text-[10px] font-black ' + (selected ? 'bg-amber-500 text-slate-950' : (dk ? 'bg-slate-800 text-slate-300' : 'bg-white text-slate-600')) }, pathExplored + '/' + path.ids.length)),
+                  h('p', { className: 'mt-1 text-[10px] leading-relaxed opacity-75' }, path.desc));
               })),
             h('div', { 'data-mobile-rail': 'educational-views', style: { scrollbarWidth: 'thin', WebkitOverflowScrolling: 'touch' }, className: 'mt-3 flex gap-1.5 overflow-x-auto overscroll-x-contain scroll-px-1 snap-x snap-mandatory touch-pan-x rounded-xl p-1 pb-2 sm:flex-wrap sm:overflow-visible sm:pb-1 ' + (dk ? 'bg-slate-800' : 'bg-slate-100'), role: 'tablist', 'aria-label': activeBeePath.label + ' educational topic views' },
               visibleBeeViews.map(function(tab) {
@@ -22055,7 +23867,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   onKeyDown: function(event) { handleBeeTabKey(event, visibleBeeViews.map(function(item) { return item.id; }), tab.id, 'data-beehive-view-tab', function(nextId) { selectBeeView(nextId); }); },
                   className: 'flex min-h-[44px] shrink-0 snap-start items-center justify-center gap-1.5 rounded-lg px-3 py-2.5 text-xs font-bold transition-all sm:snap-none ' + (active ? (dk ? 'bg-amber-700 text-white shadow-md' : 'bg-white text-amber-800 shadow-md border border-amber-200') : (dk ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-700' : 'text-slate-600 hover:text-slate-800 hover:bg-white/60 border border-transparent')),
                   title: 'View: ' + tab.shortDesc + (shortcut ? ' (' + shortcut + ')' : '') + (explored ? ' - explored' : ' - not explored')
-                }, h('span', { 'aria-hidden': 'true' }, tab.icon), tab.label, explored && h('span', { 'data-topic-check': 'true', 'aria-hidden': 'true', className: 'ml-0.5 rounded-full bg-emerald-700 px-1 text-[8px] font-black leading-4 text-white' }, '\u2713'));
+                }, h('span', { 'aria-hidden': 'true' }, tab.icon), tab.label, explored && h('span', { 'data-topic-check': 'true', 'aria-hidden': 'true', className: 'ml-0.5 rounded-full bg-emerald-700 px-1 text-[10px] font-black leading-4 text-white' }, '\u2713'));
               })
             )),
           // DRONE FLIGHT MODE UI
@@ -22066,37 +23878,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('div', { className: 'text-5xl mb-2' }, '🚀'),
                   h('h3', { className: 'text-lg font-black ' + (dk ? 'text-indigo-200' : 'text-indigo-900') }, __alloT('stem.beehive.drone_nuptial_flight', 'Drone Nuptial Flight')),
                   h('p', { className: 'text-xs max-w-md mx-auto leading-relaxed ' + (dk ? 'text-indigo-300' : 'text-indigo-700') },
-                    __alloT('stem.beehive.experience_life_as_a_drone_bee_your_so', 'Experience life as a drone bee. Your sole purpose: fly to the Drone Congregation Area (DCA) at 200+ feet altitude and find a queen to mate with. You have 90 seconds of flight energy. Only 1 in 1,000 drones succeeds — can you?')),
+                    __alloT('stem.beehive.experience_life_as_a_drone_bee_your_so', 'Experience life as a drone bee. Fly into the game’s ' + DRONE_FLIGHT_PARAMS.dcaMinFt + '–' + DRONE_FLIGHT_PARAMS.dcaMaxFt + ' ft Drone Congregation Area target and find a queen. Flight time varies by difficulty: ' + DRONE_FLIGHT_PARAMS.timerByDifficulty.easy + ' / ' + DRONE_FLIGHT_PARAMS.timerByDifficulty.normal + ' / ' + DRONE_FLIGHT_PARAMS.timerByDifficulty.hard + ' seconds.')),
                   h('p', { className: 'text-[11px] max-w-lg mx-auto leading-relaxed rounded-lg border px-3 py-2 ' + (dk ? 'text-indigo-200 bg-indigo-950/35 border-indigo-700/40' : 'text-indigo-800 bg-white/70 border-indigo-200') },
-                    'Game layer: skim glowing nectar blooms for boosts and combo points, then climb toward the DCA. Biology note: real drones do not forage; workers feed them before mating flights.'),
-                  h('section', { 'data-drone-carryover-brief': 'true', role: 'note', className: 'mx-auto w-full max-w-2xl rounded-2xl border p-4 text-left ' + (droneCarryoverBrief.tone === 'success' ? (dk ? 'border-emerald-700/45 bg-emerald-950/25' : 'border-emerald-200 bg-emerald-50/80') : droneCarryoverBrief.tone === 'warning' ? (dk ? 'border-amber-700/45 bg-amber-950/25' : 'border-amber-200 bg-amber-50/80') : (dk ? 'border-sky-700/45 bg-sky-950/25' : 'border-sky-200 bg-sky-50/80')), 'aria-label': 'Queen RTS command evidence carried into Drone Flight' },
+                    'Biology boundary: real drones do not forage. Young adults are fed by workers; older drones can feed themselves from stored honey. The glowing boosts are only a flight-training mechanic.'),
+                  h('section', { 'data-drone-carryover-brief': 'true', role: 'note', className: 'mx-auto w-full max-w-2xl rounded-2xl border p-4 text-left ' + (droneCarryoverBrief.tone === 'success' ? (dk ? 'border-emerald-700/45 bg-emerald-950/25' : 'border-emerald-200 bg-emerald-50/80') : droneCarryoverBrief.tone === 'warning' ? (dk ? 'border-amber-700/45 bg-amber-950/25' : 'border-amber-200 bg-amber-50/80') : (dk ? 'border-sky-700/45 bg-sky-950/25' : 'border-sky-200 bg-sky-50/80')), 'aria-label': 'Queen RTS strategy evidence carried into Drone Flight' },
                     h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
-                      h('div', null, h('div', { className: 'text-[9px] font-black uppercase tracking-[0.16em] ' + (droneCarryoverBrief.tone === 'success' ? (dk ? 'text-emerald-300' : 'text-emerald-800') : droneCarryoverBrief.tone === 'warning' ? (dk ? 'text-amber-300' : 'text-amber-800') : (dk ? 'text-sky-300' : 'text-sky-800')) }, 'Command evidence carried forward'), h('div', { className: 'mt-0.5 text-sm font-black ' + (dk ? 'text-white' : 'text-slate-900') }, droneCarryoverBrief.label)),
-                      h('span', { className: 'rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-wide ' + (droneCarryoverBrief.tone === 'success' ? 'bg-emerald-700 text-white' : droneCarryoverBrief.tone === 'warning' ? 'bg-amber-600 text-slate-950' : 'bg-sky-700 text-white') }, 'Queen → Drone')),
+                      h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.16em] ' + (droneCarryoverBrief.tone === 'success' ? (dk ? 'text-emerald-300' : 'text-emerald-800') : droneCarryoverBrief.tone === 'warning' ? (dk ? 'text-amber-300' : 'text-amber-800') : (dk ? 'text-sky-300' : 'text-sky-800')) }, 'Strategy evidence carried forward'), h('div', { className: 'mt-0.5 text-sm font-black ' + (dk ? 'text-white' : 'text-slate-900') }, droneCarryoverBrief.label)),
+                      h('span', { className: 'rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wide ' + (droneCarryoverBrief.tone === 'success' ? 'bg-emerald-700 text-white' : droneCarryoverBrief.tone === 'warning' ? 'bg-amber-600 text-slate-950' : 'bg-sky-700 text-white') }, 'Queen → Drone')),
                     h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-700') }, droneCarryoverBrief.advice),
                     h('div', { 'data-drone-carryover-hypothesis': 'true', role: 'group', 'aria-labelledby': 'drone-carryover-hypothesis-title', 'aria-describedby': 'drone-carryover-hypothesis-text', className: 'mt-3 rounded-xl border p-3 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white/80 bg-white/75') },
-                      h('div', { id: 'drone-carryover-hypothesis-title', className: 'text-[9px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-indigo-200' : 'text-indigo-800') }, 'Prediction to test'),
+                      h('div', { id: 'drone-carryover-hypothesis-title', className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-indigo-200' : 'text-indigo-800') }, 'Prediction to test'),
                       h('p', { id: 'drone-carryover-hypothesis-text', className: 'mt-1 text-[10px] font-bold leading-relaxed ' + (dk ? 'text-white' : 'text-slate-900') }, droneCarryoverBrief.hypothesis),
-                      h('p', { className: 'mt-1 text-[9px] font-semibold leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Measure: ' + droneCarryoverBrief.measure)),
+                      h('p', { className: 'mt-1 text-[10px] font-semibold leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Measure: ' + droneCarryoverBrief.measure)),
                     h('div', { className: 'mt-3 grid grid-cols-1 gap-2 sm:grid-cols-4', role: 'list', 'aria-label': 'Inherited Queen RTS route modifiers' },
-                      [{ label: 'Command map', value: droneCarryoverBrief.commandEvidence, marker: 'command' }, { label: 'Signal distance', value: droneCarryoverBrief.distance }, { label: 'Flight time', value: droneCarryoverBrief.time }, { label: 'Predator pressure', value: droneCarryoverBrief.hazards }].map(function(item) {
-                        return h('div', { key: item.label, role: 'listitem', 'data-drone-command-evidence': item.marker || undefined, className: 'rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white bg-white/80') }, h('div', { className: 'text-[9px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-500') }, item.label), h('div', { className: 'mt-1 text-[10px] font-black ' + (dk ? 'text-slate-100' : 'text-slate-800') }, item.value));
+                      [{ label: 'Strategy map', value: droneCarryoverBrief.commandEvidence, marker: 'command' }, { label: 'Signal distance', value: droneCarryoverBrief.distance }, { label: 'Flight time', value: droneCarryoverBrief.time }, { label: 'Predator pressure', value: droneCarryoverBrief.hazards }].map(function(item) {
+                        return h('div', { key: item.label, role: 'listitem', 'data-drone-command-evidence': item.marker || undefined, className: 'rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white bg-white/80') }, h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-500') }, item.label), h('div', { className: 'mt-1 text-[10px] font-black ' + (dk ? 'text-slate-100' : 'text-slate-800') }, item.value));
                       })) ),
                   h('section', { 'data-beehive-flight-plan': 'true', className: 'mx-auto w-full max-w-2xl rounded-2xl border p-4 text-left ' + (dk ? 'border-indigo-700/45 bg-slate-950/35' : 'border-indigo-200 bg-white/75'), 'aria-label': 'Three-step Drone Flight preflight route' },
                     h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
-                      h('div', null, h('div', { className: 'text-[9px] font-black uppercase tracking-[0.16em] ' + (dk ? 'text-sky-300' : 'text-sky-700') }, 'Preflight route'), h('div', { className: 'mt-0.5 text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, 'Fuel low, climb high, follow gold')),
-                      h('span', { className: 'rounded-full bg-indigo-600 px-2.5 py-1 text-[9px] font-black uppercase tracking-wide text-white' }, '3 checkpoints')),
+                      h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.16em] ' + (dk ? 'text-sky-300' : 'text-sky-700') }, 'Preflight route'), h('div', { className: 'mt-0.5 text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, 'Fuel low, climb high, follow gold')),
+                      h('span', { className: 'rounded-full bg-indigo-600 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-white' }, '3 checkpoints')),
                     h('div', { 'data-mobile-rail': 'drone-preflight', style: { scrollbarWidth: 'thin', WebkitOverflowScrolling: 'touch' }, className: 'relative mt-4 grid grid-flow-col auto-cols-[84%] gap-2 overflow-x-auto overscroll-x-contain scroll-px-1 snap-x snap-mandatory touch-pan-x pb-2 sm:grid-flow-row sm:auto-cols-auto sm:grid-cols-3 sm:overflow-visible sm:pb-0' },
                       h('div', { className: 'pointer-events-none absolute left-[16%] right-[16%] top-5 hidden h-0.5 bg-gradient-to-r from-lime-400 via-sky-400 to-amber-400 sm:block', 'aria-hidden': 'true' }),
                       [
                         { n: '01', icon: '\u26A1', title: 'Gather boosts', detail: 'Skim glowing blooms while altitude is low', tone: 'from-lime-500 to-emerald-500' },
-                        { n: '02', icon: '\u2191', title: 'Reach the DCA', detail: 'Climb past 100 ft and travel 600 m', tone: 'from-sky-500 to-indigo-500' },
+                        { n: '02', icon: '\u2191', title: 'Reach the DCA', detail: 'Enter ' + DRONE_FLIGHT_PARAMS.dcaMinFt + '–' + DRONE_FLIGHT_PARAMS.dcaMaxFt + ' ft and travel ' + DRONE_FLIGHT_PARAMS.dcaDistanceM + ' m', tone: 'from-sky-500 to-indigo-500' },
                         { n: '03', icon: '\uD83D\uDC51', title: 'Acquire queen', detail: 'Follow the golden signal with small turns', tone: 'from-amber-400 to-orange-500' }
                       ].map(function(stage) {
                         return h('div', { key: stage.n, className: 'relative snap-start rounded-xl border p-3 sm:snap-none ' + (dk ? 'border-white/10 bg-slate-900/85' : 'border-slate-200 bg-white') },
                           h('div', { className: 'flex items-center gap-2 sm:flex-col sm:text-center' },
                             h('span', { className: 'relative z-10 grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gradient-to-br text-sm font-black text-white shadow-lg ' + stage.tone, 'aria-hidden': 'true' }, stage.icon),
-                            h('div', { className: 'min-w-0' }, h('div', { className: 'text-[8px] font-black uppercase tracking-widest ' + (dk ? 'text-slate-400' : 'text-slate-500') }, 'Checkpoint ' + stage.n), h('div', { className: 'text-[11px] font-black ' + (dk ? 'text-white' : 'text-slate-900') }, stage.title), h('p', { className: 'mt-0.5 text-[9px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, stage.detail))));
+                            h('div', { className: 'min-w-0' }, h('div', { className: 'text-[10px] font-black uppercase tracking-widest ' + (dk ? 'text-slate-400' : 'text-slate-500') }, 'Checkpoint ' + stage.n), h('div', { className: 'text-[11px] font-black ' + (dk ? 'text-white' : 'text-slate-900') }, stage.title), h('p', { className: 'mt-0.5 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, stage.detail))));
                       }))),
                   droneHighScore > 0 && h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-400' : 'text-amber-600') }, '🏆 High Score: ' + droneHighScore),
                   (droneData.attempts || 0) > 0 && h('div', { role: 'group', className: 'mx-auto flex max-w-lg flex-wrap items-center justify-center gap-2', 'aria-label': 'Flight record' },
@@ -22104,17 +23916,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     h('span', { className: 'rounded-full border px-2.5 py-1 text-[10px] font-black ' + ((droneData.successes || 0) > 0 ? 'border-emerald-800 bg-emerald-700 text-white' : (dk ? 'border-slate-700 bg-slate-900 text-slate-300' : 'border-slate-200 bg-white text-slate-600')) }, (droneData.successes || 0) + ' successful intercepts'),
                     droneData.bestDifficulty && h('span', { className: 'rounded-full bg-indigo-600 px-2.5 py-1 text-[10px] font-black uppercase text-white' }, 'Best: ' + droneData.bestDifficulty)),
                   h('section', { 'data-drone-route-plans': 'true', className: 'mt-3 rounded-xl border p-3 ' + (dk ? 'border-sky-700/40 bg-sky-950/20' : 'border-sky-200 bg-sky-50/70'), 'aria-label': 'Choose a preflight route plan' },
-                    h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-sky-300' : 'text-sky-800') }, 'Route planning'), h('span', { className: 'text-[9px] font-bold ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Choose your first priority')),
-                    h('div', { className: 'mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3', role: 'group' }, Object.keys(DRONE_ROUTE_PLANS).map(function(planId) { var plan = DRONE_ROUTE_PLANS[planId]; var selected = droneRoutePlan === planId; return h('button', { key: planId, type: 'button', 'data-drone-route-plan': planId, 'aria-pressed': selected, 'aria-label': plan.label + ': ' + plan.desc, onClick: function() { chooseDroneRoutePlan(planId); }, className: 'min-w-0 min-h-[68px] rounded-xl border p-2.5 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ' + (selected ? (dk ? 'border-sky-400 bg-sky-900/50 text-white' : 'border-sky-400 bg-white text-sky-950 shadow-sm') : (dk ? 'border-slate-700 bg-slate-950/35 text-slate-300 hover:border-sky-700' : 'border-slate-200 bg-white/80 text-slate-700 hover:border-sky-300')) }, h('div', { className: 'break-words text-[10px] font-black uppercase tracking-wide' }, plan.label), h('div', { className: 'mt-1 break-words text-[9px] leading-relaxed opacity-80' }, plan.desc)); }))),
+                    h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-sky-300' : 'text-sky-800') }, 'Route planning'), h('span', { className: 'text-[10px] font-bold ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Choose your first priority')),
+                    h('div', { className: 'mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3', role: 'group' }, Object.keys(DRONE_ROUTE_PLANS).map(function(planId) { var plan = DRONE_ROUTE_PLANS[planId]; var selected = droneRoutePlan === planId; return h('button', { key: planId, type: 'button', 'data-drone-route-plan': planId, 'aria-pressed': selected, 'aria-label': plan.label + ': ' + plan.desc, onClick: function() { chooseDroneRoutePlan(planId); }, className: 'min-w-0 min-h-[68px] rounded-xl border p-2.5 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ' + (selected ? (dk ? 'border-sky-400 bg-sky-900/50 text-white' : 'border-sky-400 bg-white text-sky-950 shadow-sm') : (dk ? 'border-slate-700 bg-slate-950/35 text-slate-300 hover:border-sky-700' : 'border-slate-200 bg-white/80 text-slate-700 hover:border-sky-300')) }, h('div', { className: 'break-words text-[10px] font-black uppercase tracking-wide' }, plan.label), h('div', { className: 'mt-1 break-words text-[10px] leading-relaxed opacity-80' }, plan.desc)); }))),
                   h('section', { 'data-drone-scenarios': 'true', className: 'mt-3 rounded-xl border p-3 ' + (dk ? 'border-indigo-700/40 bg-indigo-950/25' : 'border-indigo-200 bg-indigo-50/70'), 'aria-label': 'Choose Drone Flight scenario' },
-                    h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-indigo-300' : 'text-indigo-800') }, 'Choose mission scenario'), h('span', { className: 'text-[9px] font-bold ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Change one flight variable')),
-                    h('div', { className: 'mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3', role: 'group' }, Object.keys(DRONE_SCENARIOS).map(function(id) { var option = DRONE_SCENARIOS[id]; var selected = droneScenario === id; return h('button', { key: id, type: 'button', 'data-drone-scenario': id, onClick: function() { updAll({ drone: Object.assign({}, droneData, { scenario: id }) }); announceBee('Drone scenario selected: ' + option.label + '. ' + option.desc, false); }, 'aria-pressed': selected, 'aria-label': option.label + ': ' + option.desc, className: 'min-w-0 rounded-xl border p-2.5 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ' + (selected ? 'ring-2 ring-indigo-500 ' + (dk ? 'border-indigo-400 bg-indigo-900/45' : 'border-indigo-400 bg-indigo-50') : (dk ? 'border-slate-700 bg-slate-900 hover:border-indigo-600' : 'border-slate-200 bg-white hover:border-indigo-300')) }, h('div', { className: 'text-[10px] font-black ' + (dk ? 'text-white' : 'text-slate-900') }, option.label), h('p', { className: 'mt-1 break-words text-[9px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, option.desc), selected && h('span', { className: 'mt-2 inline-flex rounded-full bg-indigo-600 px-2 py-0.5 text-[9px] font-black text-white' }, 'SELECTED')); })) ),
+                    h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-indigo-300' : 'text-indigo-800') }, 'Choose mission scenario'), h('span', { className: 'text-[10px] font-bold ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Change one flight variable')),
+                    h('div', { className: 'mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3', role: 'group' }, Object.keys(DRONE_SCENARIOS).map(function(id) { var option = DRONE_SCENARIOS[id]; var selected = droneScenario === id; return h('button', { key: id, type: 'button', 'data-drone-scenario': id, onClick: function() { updAll({ drone: Object.assign({}, droneData, { scenario: id }) }); announceBee('Drone scenario selected: ' + option.label + '. ' + option.desc, false); }, 'aria-pressed': selected, 'aria-label': option.label + ': ' + option.desc, className: 'min-w-0 rounded-xl border p-2.5 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ' + (selected ? 'ring-2 ring-indigo-500 ' + (dk ? 'border-indigo-400 bg-indigo-900/45' : 'border-indigo-400 bg-indigo-50') : (dk ? 'border-slate-700 bg-slate-900 hover:border-indigo-600' : 'border-slate-200 bg-white hover:border-indigo-300')) }, h('div', { className: 'text-[10px] font-black ' + (dk ? 'text-white' : 'text-slate-900') }, option.label), h('p', { className: 'mt-1 break-words text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, option.desc), selected && h('span', { className: 'mt-2 inline-flex rounded-full bg-indigo-600 px-2 py-0.5 text-[10px] font-black text-white' }, 'SELECTED')); })) ),
                   // Difficulty selector
                   h('div', { 'data-mobile-rail': 'drone-difficulty', style: { scrollbarWidth: 'thin', WebkitOverflowScrolling: 'touch' }, className: 'flex gap-2 overflow-x-auto overscroll-x-contain scroll-px-1 snap-x snap-mandatory touch-pan-x pb-2 sm:overflow-visible sm:pb-0' },
                     [
-                      { id: 'easy', label: __alloT('stem.beehive.easy', '🌱 Easy'), desc: __alloT('stem.beehive.150s_fewer_birds_closer_queen', '150s, fewer birds, closer queen'), col: 'green' },
-                      { id: 'normal', label: __alloT('stem.beehive.normal', '🐝 Normal'), desc: __alloT('stem.beehive.110s_balanced_challenge', '110s, balanced challenge'), col: 'amber' },
-                      { id: 'hard', label: __alloT('stem.beehive.hard', '🔥 Hard'), desc: __alloT('stem.beehive.75s_more_birds_distant_queen', '75s, more birds, distant queen'), col: 'red' }
+                      { id: 'easy', label: __alloT('stem.beehive.easy', '🌱 Easy'), desc: __alloT('stem.beehive.150s_fewer_birds_closer_queen', DRONE_FLIGHT_PARAMS.timerByDifficulty.easy + 's, fewer birds, closer queen'), col: 'green' },
+                      { id: 'normal', label: __alloT('stem.beehive.normal', '🐝 Normal'), desc: __alloT('stem.beehive.110s_balanced_challenge', DRONE_FLIGHT_PARAMS.timerByDifficulty.normal + 's, balanced challenge'), col: 'amber' },
+                      { id: 'hard', label: __alloT('stem.beehive.hard', '🔥 Hard'), desc: __alloT('stem.beehive.75s_more_birds_distant_queen', DRONE_FLIGHT_PARAMS.timerByDifficulty.hard + 's, more birds, distant queen'), col: 'red' }
                     ].map(function(diff) {
                       return h('button', { key: diff.id, onClick: function() { startDroneFlight(diff.id); },
                         className: 'min-h-[88px] min-w-[78%] flex-1 snap-center px-4 py-3 rounded-xl sm:min-w-0 sm:snap-none font-bold text-sm shadow-lg transition-all duration-200 hover:-translate-y-1 hover:shadow-xl motion-reduce:transform-none motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ' + droneDiffStyle(diff.id),
@@ -22123,15 +23935,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         h('div', null, diff.label),
                         h('div', { className: 'text-[10px] mt-0.5 opacity-70' }, diff.desc));
                     })),
-                  h('p', { className: 'text-[11px] ' + (dk ? 'text-slate-300' : 'text-slate-400') }, __alloT('stem.beehive.arrow_keys_wasd_steer_space_climb_shif', 'Arrow keys / WASD = steer · Space = climb · Shift = descend · Fly low near glowing flowers to chain nectar boosts.')))
+                  h('p', { className: 'text-[11px] ' + (dk ? 'text-slate-300' : 'text-slate-400') }, __alloT('stem.beehive.arrow_keys_wasd_steer_space_climb_shif', 'Arrow keys / WASD = steer · Space = climb · Shift = descend · Fly low near glowing markers to chain training boosts.')))
               : h('div', { id: 'beehive-drone-playfield', tabIndex: -1, 'data-beehive-focus-panel': 'playfield', role: 'region', 'aria-label': 'Drone Flight playfield', 'data-beehive-stage': 'drone', 'data-flight-state': dronePaused ? 'paused' : 'live', className: 'relative rounded-xl overflow-hidden border-2 ' + (dk ? 'border-indigo-500/60' : 'border-indigo-400'), style: { height: 'clamp(420px, 54vw, 520px)', background: dk ? 'linear-gradient(180deg,#111827 0%,#312e81 52%,#1e1b4b 100%)' : 'linear-gradient(180deg,#dbeafe 0%,#c7d2fe 55%,#eef2ff 100%)', boxShadow: dk ? '0 18px 42px rgba(15,23,42,0.45), 0 0 0 1px rgba(129,140,248,0.25)' : '0 18px 38px rgba(99,102,241,0.20), 0 0 0 1px rgba(129,140,248,0.30)' } },
                   h('canvas', { tabIndex: 0, ref: _droneCvRef, 'data-beehive-drone-canvas': 'true', 'data-flight-layer': 'hud-overlay', role: 'img', 'aria-describedby': 'beehive-drone-canvas-description', 'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight W A S D Space Shift P Escape', 'aria-label': __alloT('stem.beehive.drone_flight_simulation_use_arrow_keys', 'Drone flight simulation — use arrow keys to fly'), style: { position: 'relative', zIndex: 1, width: '100%', height: '100%', display: 'block', background: 'transparent' } }),
-                  h('span', { 'data-flight-renderer-badge': 'true', 'data-renderer-state': 'loading', 'data-frame-health': 'warming', role: 'status', 'aria-live': 'polite', style: { position: 'absolute', top: '58px', right: '8px', zIndex: 20 }, className: 'rounded-full border border-white/20 bg-slate-950/82 px-2 py-1 text-[9px] font-black uppercase tracking-wide text-cyan-100 shadow-md backdrop-blur-md' }, 'Preparing 3D'),
-                  h('span', { 'data-flight-quality-badge': 'true', role: 'status', 'aria-live': 'off', 'data-quality-mode': droneGraphicsMode, 'data-quality-tier': droneGraphicsMode === 'auto' ? 'high' : droneGraphicsMode, style: { position: 'absolute', top: '58px', left: '8px', zIndex: 20 }, className: 'rounded-full border border-white/20 bg-slate-950/82 px-2 py-1 text-[9px] font-black uppercase tracking-wide text-lime-100 shadow-md backdrop-blur-md', 'aria-label': (droneGraphicsMode === 'auto' ? 'Automatic graphics, High quality' : droneGraphicsProfile(droneGraphicsMode).label + ' graphics quality') }, (droneGraphicsMode === 'auto' ? 'AUTO - HIGH' : droneGraphicsMode.toUpperCase())),
+                  h('span', { 'data-flight-renderer-badge': 'true', 'data-renderer-state': 'loading', 'data-frame-health': 'warming', role: 'status', 'aria-live': 'polite', style: { position: 'absolute', top: '58px', right: '8px', zIndex: 20 }, className: 'rounded-full border border-white/20 bg-slate-950/82 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-cyan-100 shadow-md backdrop-blur-md' }, 'Preparing 3D'),
+                  h('span', { 'data-flight-quality-badge': 'true', role: 'status', 'aria-live': 'off', 'data-quality-mode': droneGraphicsMode, 'data-quality-tier': droneGraphicsMode === 'auto' ? 'high' : droneGraphicsMode, style: { position: 'absolute', top: '58px', left: '8px', zIndex: 20 }, className: 'rounded-full border border-white/20 bg-slate-950/82 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-lime-100 shadow-md backdrop-blur-md', 'aria-label': (droneGraphicsMode === 'auto' ? 'Automatic graphics, High quality' : droneGraphicsProfile(droneGraphicsMode).label + ' graphics quality') }, (droneGraphicsMode === 'auto' ? 'AUTO - HIGH' : droneGraphicsMode.toUpperCase())),
                   (function() { var cue = droneTrainingStatus(_droneState.current); return h('div', { 'data-flight-training': 'true', 'data-training-state': cue.complete ? 'complete' : cue.active ? 'active' : 'inactive', 'data-training-step': cue.index >= 0 ? String(Math.min(cue.total, cue.index + 1)) : '0', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'aria-hidden': cue.active ? 'false' : 'true', style: { display: cue.active ? 'block' : 'none', position: 'absolute', top: '82px', left: '50%', zIndex: 20, width: 'min(360px,calc(100% - 24px))', transform: 'translateX(-50%)', pointerEvents: 'none' }, className: 'rounded-xl border border-cyan-300/35 bg-slate-950/88 px-3 py-2 text-left text-white shadow-xl backdrop-blur-md' },
-                    h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { 'data-flight-training-step': 'true', className: 'text-[8px] font-black uppercase tracking-[0.14em] text-cyan-200' }, cue.complete ? 'Complete' : 'Step ' + (cue.index + 1) + ' / ' + cue.total), h('span', { 'data-flight-training-label': 'true', className: 'truncate text-[10px] font-black text-amber-200' }, cue.label)),
+                    h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { 'data-flight-training-step': 'true', className: 'text-[10px] font-black uppercase tracking-[0.14em] text-cyan-200' }, cue.complete ? 'Complete' : 'Step ' + (cue.index + 1) + ' / ' + cue.total), h('span', { 'data-flight-training-label': 'true', className: 'truncate text-[10px] font-black text-amber-200' }, cue.label)),
                     h('p', { 'data-flight-training-instruction': 'true', className: 'mt-0.5 text-[10px] font-semibold leading-snug text-white' }, cue.instruction),
-                    h('p', { 'data-flight-training-hint': 'true', className: 'mt-0.5 hidden text-[8px] leading-snug text-slate-300 sm:block' }, cue.hint)); })(),
+                    h('p', { 'data-flight-training-hint': 'true', className: 'mt-0.5 hidden text-[10px] leading-snug text-slate-300 sm:block' }, cue.hint)); })(),
                   h('p', { id: 'beehive-drone-canvas-description', className: 'sr-only' }, 'Use Arrow keys or WASD to steer, Space to climb, Shift to descend, P to pause, and V to switch between cockpit and chase camera. A renderer badge reports whether the true 3D scene is pixel-verified or the 2D safety view is active. A second badge reports adaptive graphics quality. Easy mode includes a five-step flight-school cue, and a cyan flight-path marker distinguishes momentum from heading. Graphics, steering sensitivity, and camera stabilization controls follow the instruments. The radar uses distinct shapes for route targets, predator birds, thermals, and nearby nectar blooms, plus an arrow for wind drift. Three depth-spaced WebGL route gates mark the DCA approach. Obstacle warnings appear in both camera modes. Equivalent labeled touch controls follow the canvas.'),
                   h('div', { 'data-beehive-stage-chip': 'drone', style: { position: 'absolute', left: '50%', bottom: '12px', zIndex: 20, maxWidth: 'calc(100% - 24px)', transform: 'translateX(-50%)' }, 'aria-hidden': 'true' },
                     h('span', { 'data-stage-dot': 'true' }),
@@ -22183,10 +23995,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               ];
               return h('section', { 'data-beehive-flight-instruments': 'true', 'data-flight-state': dronePaused ? 'paused' : 'live', 'data-flight-phase': instrumentState.phase || 'launch', className: 'rounded-xl border p-3 ' + (dk ? 'border-indigo-700/45 bg-slate-900/75' : 'border-indigo-200 bg-white'), 'aria-label': 'Live flight instruments. ' + (dronePaused ? 'Paused' : instrumentPhase.label) + '. Energy ' + Math.round(instrumentState.energy || 0) + ' of ' + instrumentMaxEnergy + '. Altitude ' + instrumentAltitude + ' feet. Distance ' + instrumentDistance + ' meters. Time remaining ' + Math.max(0, Math.ceil(instrumentState.timer || 0)) + ' seconds. Boosts ' + instrumentBoosts + ' of ' + instrumentBoostGoal + '. Closest obstacle clearance ' + instrumentClearance + '. Nearest drone traffic ' + instrumentTraffic + '. DCA ' + (instrumentDcaStatus.inVolume ? 'inside volume' : Math.round(instrumentDcaStatus.planarDistance) + ' meters to center') + '.' },
                 h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
-                  h('div', null, h('div', { className: 'text-[9px] font-black uppercase tracking-[0.15em] ' + (dk ? 'text-indigo-300' : 'text-indigo-700') }, 'Live flight instruments'), h('div', { 'data-flight-readout': 'state', className: 'mt-0.5 text-sm font-black ' + (dk ? 'text-white' : 'text-slate-900') }, dronePaused ? 'Paused' : instrumentPhase.label), h('div', { 'data-flight-live-status': 'true', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'sr-only' }, dronePaused ? 'Flight paused. Telemetry is frozen while you plan.' : instrumentPhase.label + '. Energy ' + Math.round(instrumentState.energy || 0) + '. Altitude ' + instrumentAltitude + ' feet.')) ,
-                  h('span', { className: 'rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-wide ' + (dronePaused ? 'bg-amber-500 text-slate-950' : 'bg-emerald-700 text-white') }, dronePaused ? 'Clock stopped' : 'Telemetry live')),
+                  h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.15em] ' + (dk ? 'text-indigo-300' : 'text-indigo-700') }, 'Live flight instruments'), h('div', { 'data-flight-readout': 'state', className: 'mt-0.5 text-sm font-black ' + (dk ? 'text-white' : 'text-slate-900') }, dronePaused ? 'Paused' : instrumentPhase.label), h('div', { 'data-flight-live-status': 'true', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'sr-only' }, dronePaused ? 'Flight paused. Telemetry is frozen while you plan.' : instrumentPhase.label + '. Energy ' + Math.round(instrumentState.energy || 0) + '. Altitude ' + instrumentAltitude + ' feet.')) ,
+                  h('span', { className: 'rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wide ' + (dronePaused ? 'bg-amber-500 text-slate-950' : 'bg-emerald-700 text-white') }, dronePaused ? 'Clock stopped' : 'Telemetry live')),
                 h('section', { 'data-beehive-flight-route': 'true', className: 'mt-3 rounded-xl border p-3 ' + (dk ? 'border-sky-700/35 bg-sky-950/20' : 'border-sky-200 bg-sky-50/65'), 'aria-labelledby': 'beehive-flight-route-title' },
-                  h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', { id: 'beehive-flight-route-title', className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-sky-300' : 'text-sky-800') }, 'Live route checkpoints'), h('span', { className: 'text-[9px] font-bold ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Boosts \u2192 DCA \u2192 queen signal')),
+                  h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', { id: 'beehive-flight-route-title', className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-sky-300' : 'text-sky-800') }, 'Live route checkpoints'), h('span', { className: 'text-[10px] font-bold ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Boosts \u2192 DCA \u2192 queen signal')),
                   h('ol', { className: 'mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3', 'aria-label': 'Drone Flight route progress' }, [
                     { id: 'boosts', label: 'Gather optional boosts', detail: instrumentBoosts + ' of ' + instrumentBoostGoal + ' collected' },
                     { id: 'dca', label: 'Reach the DCA', detail: instrumentDcaStatus.inVolume ? 'Inside 70 m volume' : Math.round(instrumentDcaStatus.planarDistance) + ' m to center' },
@@ -22195,55 +24007,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     var checkpointStatus = instrumentCheckpointState[checkpoint.id] ? 'complete' : checkpoint.id === 'boosts' && instrumentCheckpointState.dca ? 'optional' : checkpoint.id === instrumentCurrentCheckpoint ? 'current' : 'upcoming';
                     return h('li', { key: checkpoint.id, 'data-flight-checkpoint': checkpoint.id, 'data-checkpoint-state': checkpointStatus, 'aria-current': checkpointStatus === 'current' ? 'step' : undefined, className: 'flex min-h-[64px] items-center gap-2.5 rounded-lg border p-2.5 ' + (checkpointStatus === 'complete' ? (dk ? 'border-emerald-700 bg-emerald-950/25' : 'border-emerald-200 bg-white') : checkpointStatus === 'current' ? (dk ? 'border-sky-600 bg-sky-950/35' : 'border-sky-300 bg-white ring-1 ring-sky-200') : (dk ? 'border-slate-800 bg-slate-950/25' : 'border-slate-200 bg-white/60')) },
                       h('span', { className: 'grid h-7 w-7 shrink-0 place-items-center rounded-full text-[10px] font-black ' + (checkpointStatus === 'complete' ? 'bg-emerald-700 text-white' : checkpointStatus === 'current' ? 'bg-sky-700 text-white' : (dk ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-600')), 'aria-hidden': 'true' }, checkpointStatus === 'complete' ? '\u2713' : index + 1),
-                      h('span', { className: 'min-w-0 flex-1' }, h('span', { className: 'block text-[10px] font-black ' + (dk ? 'text-white' : 'text-slate-900') }, checkpoint.label), h('span', { className: 'block text-[9px] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, checkpoint.detail), h('span', { 'data-checkpoint-status': 'true', className: 'mt-0.5 block text-[8px] font-black uppercase tracking-wide ' + (checkpointStatus === 'complete' ? 'text-emerald-500' : checkpointStatus === 'current' ? 'text-sky-600' : (dk ? 'text-slate-500' : 'text-slate-400')) }, checkpointStatus === 'complete' ? 'Complete' : checkpointStatus === 'current' ? 'In progress' : checkpointStatus === 'optional' ? 'Optional / skipped' : 'Upcoming')));
+                      h('span', { className: 'min-w-0 flex-1' }, h('span', { className: 'block text-[10px] font-black ' + (dk ? 'text-white' : 'text-slate-900') }, checkpoint.label), h('span', { className: 'block text-[10px] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, checkpoint.detail), h('span', { 'data-checkpoint-status': 'true', className: 'mt-0.5 block text-[10px] font-black uppercase tracking-wide ' + (checkpointStatus === 'complete' ? 'text-emerald-500' : checkpointStatus === 'current' ? 'text-sky-600' : (dk ? 'text-slate-500' : 'text-slate-400')) }, checkpointStatus === 'complete' ? 'Complete' : checkpointStatus === 'current' ? 'In progress' : checkpointStatus === 'optional' ? 'Optional / skipped' : 'Upcoming')));
                   }))),
                 h('section', { 'data-beehive-flight-spatial': 'true', 'data-spatial-state': instrumentSpatial.state, className: 'mt-3 rounded-xl border p-3 ' + (instrumentSpatial.state === 'danger' ? (dk ? 'border-rose-700/45 bg-rose-950/25' : 'border-rose-200 bg-rose-50') : instrumentSpatial.state === 'warning' ? (dk ? 'border-amber-700/45 bg-amber-950/25' : 'border-amber-200 bg-amber-50') : (dk ? 'border-sky-700/35 bg-sky-950/20' : 'border-sky-200 bg-sky-50/65')), 'aria-labelledby': 'beehive-flight-spatial-title', 'aria-describedby': 'beehive-flight-spatial-summary beehive-flight-spatial-maneuver' },
                   h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
                     h('div', null, h('div', { id: 'beehive-flight-spatial-title', className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-sky-300' : 'text-sky-800') }, '3D perspective cue'), h('p', { id: 'beehive-flight-spatial-summary', 'data-flight-spatial-summary': 'true', className: 'mt-1 text-[10px] font-semibold leading-relaxed ' + (dk ? 'text-slate-200' : 'text-slate-700') }, instrumentSpatial.primary)),
-                    h('span', { 'data-flight-spatial-camera': 'true', className: 'rounded-full border px-2.5 py-1 text-[9px] font-black uppercase tracking-wide ' + (dk ? 'border-sky-700 bg-slate-950/35 text-sky-200' : 'border-sky-200 bg-white text-sky-800') }, instrumentSpatial.camera + ' view')),
+                    h('span', { 'data-flight-spatial-camera': 'true', className: 'rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-wide ' + (dk ? 'border-sky-700 bg-slate-950/35 text-sky-200' : 'border-sky-200 bg-white text-sky-800') }, instrumentSpatial.camera + ' view')),
                   h('div', { 'data-beehive-flight-spatial-maneuver-card': 'true', role: 'note', 'aria-label': 'Recommended flight correction', className: 'mt-3 rounded-lg border p-2.5 ' + (instrumentSpatial.state === 'danger' ? (dk ? 'border-rose-700/50 bg-rose-950/25' : 'border-rose-200 bg-rose-50') : instrumentSpatial.state === 'warning' ? (dk ? 'border-amber-700/50 bg-amber-950/25' : 'border-amber-200 bg-amber-50') : (dk ? 'border-sky-700/35 bg-sky-950/25' : 'border-sky-100 bg-white/80')) },
-                    h('div', { className: 'text-[9px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-sky-300' : 'text-sky-800') }, 'Recommended correction'),
+                    h('div', { className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-sky-300' : 'text-sky-800') }, 'Recommended correction'),
                     h('p', { id: 'beehive-flight-spatial-maneuver', 'data-flight-spatial-maneuver': 'true', className: 'mt-1 text-sm font-black ' + (dk ? 'text-white' : 'text-slate-900') }, instrumentSpatial.maneuver)),
                   h('div', { className: 'mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3', role: 'list', 'aria-label': 'Relative positions in flight space' }, [
                     ['obstacle', 'Closest obstacle', instrumentSpatial.obstacleText],
                     ['traffic', 'Nearest traffic', instrumentSpatial.trafficText],
                     ['dca', 'DCA volume', instrumentSpatial.dcaText]
-                  ].map(function(item) { return h('div', { key: item[0], role: 'listitem', className: 'rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white bg-white/75') }, h('div', { className: 'text-[9px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-300' : 'text-slate-600') }, item[1]), h('div', { 'data-flight-spatial-value': item[0], className: 'mt-1 text-[10px] font-bold leading-relaxed ' + (dk ? 'text-white' : 'text-slate-900') }, item[2])); })),
+                  ].map(function(item) { return h('div', { key: item[0], role: 'listitem', className: 'rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white bg-white/75') }, h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-300' : 'text-slate-600') }, item[1]), h('div', { 'data-flight-spatial-value': item[0], className: 'mt-1 text-[10px] font-bold leading-relaxed ' + (dk ? 'text-white' : 'text-slate-900') }, item[2])); })),
                   h('div', { className: 'mt-3' },
-                    h('div', { className: 'flex items-center justify-between gap-2 text-[9px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-300' : 'text-slate-600') }, h('span', null, 'Depth to DCA'), h('span', { 'data-flight-spatial-route-band': 'true' }, instrumentSpatial.routeBand)),
+                    h('div', { className: 'flex items-center justify-between gap-2 text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-300' : 'text-slate-600') }, h('span', null, 'Depth to DCA'), h('span', { 'data-flight-spatial-route-band': 'true' }, instrumentSpatial.routeBand)),
                     h('div', { 'data-flight-spatial-route-meter': 'true', className: 'mt-1.5 h-2 overflow-hidden rounded-full ' + (dk ? 'bg-slate-800' : 'bg-slate-200'), role: 'progressbar', 'aria-label': 'Depth progress toward the DCA', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': instrumentSpatial.routeProgress, 'aria-valuetext': instrumentSpatial.routeBand + ', ' + instrumentSpatial.routeProgress + ' percent of the 3D route toward the DCA' }, h('span', { className: 'block h-full rounded-full bg-gradient-to-r from-sky-500 via-indigo-500 to-amber-400', style: { width: instrumentSpatial.routeProgress + '%' } })),
-                    h('p', { className: 'mt-1 text-[9px] leading-relaxed ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Depth labels use ahead/behind, left/right, and above/below so the same spatial model remains readable in cockpit, chase, WebGL, and 2D fallback views.'))),
+                    h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Depth labels use ahead/behind, left/right, and above/below so the same spatial model remains readable in cockpit, chase, WebGL, and 2D fallback views.'))),
                 h('section', { 'data-flight-attitude-cue': 'true', role: 'group', 'aria-labelledby': 'beehive-flight-attitude-title', 'aria-describedby': 'beehive-flight-attitude-summary', className: 'mt-3 rounded-xl border p-3 ' + (dk ? 'border-indigo-700/40 bg-indigo-950/25' : 'border-indigo-200 bg-indigo-50/70') },
                   h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
                     h('div', null, h('div', { id: 'beehive-flight-attitude-title', className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-indigo-300' : 'text-indigo-800') }, 'Flight attitude'), h('p', { id: 'beehive-flight-attitude-summary', 'data-flight-attitude-summary': 'true', className: 'mt-1 text-[10px] font-semibold ' + (dk ? 'text-slate-200' : 'text-slate-700') }, instrumentAttitude.summary + ' / ' + instrumentAttitude.correction)),
-                    h('span', { className: 'rounded-full border px-2.5 py-1 text-[9px] font-black uppercase tracking-wide ' + (dk ? 'border-indigo-700 text-indigo-200' : 'border-indigo-200 bg-white text-indigo-800') }, 'Horizon model')),
+                    h('span', { className: 'rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-wide ' + (dk ? 'border-indigo-700 text-indigo-200' : 'border-indigo-200 bg-white text-indigo-800') }, 'Horizon model')),
                   h('div', { className: 'mt-3 grid grid-cols-2 gap-2', role: 'list', 'aria-label': 'Pitch and bank measurements' },
-                    [['pitch', 'Pitch', instrumentAttitude.pitch], ['bank', 'Bank', instrumentAttitude.bank]].map(function(item) { return h('div', { key: item[0], role: 'listitem', className: 'rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/40' : 'border-white bg-white/80') }, h('div', { className: 'text-[9px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-300' : 'text-slate-600') }, item[1]), h('div', { 'data-flight-attitude-value': item[0], className: 'mt-1 text-lg font-black tabular-nums ' + (dk ? 'text-white' : 'text-slate-900') }, item[2])); }))),
+                    [['pitch', 'Pitch', instrumentAttitude.pitch], ['bank', 'Bank', instrumentAttitude.bank]].map(function(item) { return h('div', { key: item[0], role: 'listitem', className: 'rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/40' : 'border-white bg-white/80') }, h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-300' : 'text-slate-600') }, item[1]), h('div', { 'data-flight-attitude-value': item[0], className: 'mt-1 text-lg font-black tabular-nums ' + (dk ? 'text-white' : 'text-slate-900') }, item[2])); }))),
                 h('div', { className: 'mt-3 grid grid-cols-2 gap-2 sm:grid-cols-8', role: 'list', 'aria-label': 'Current flight measurements' },
                   instrumentCards.map(function(card) { return h('div', { key: card.key, role: 'listitem', className: 'rounded-xl border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/45' : 'border-slate-200 bg-slate-50') },
-                    h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'text-[9px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-300' : 'text-slate-600') }, card.label), h('span', { 'aria-hidden': 'true' }, card.icon)),
+                    h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-300' : 'text-slate-600') }, card.label), h('span', { 'aria-hidden': 'true' }, card.icon)),
                     h('div', { 'data-flight-readout': card.key, className: 'mt-1 text-sm font-black tabular-nums ' + (dk ? 'text-white' : 'text-slate-900') }, card.value),
                     typeof card.pct === 'number' && h('div', { 'data-flight-meter': card.key, className: 'mt-2 h-1.5 overflow-hidden rounded-full ' + (dk ? 'bg-slate-800' : 'bg-slate-200'), role: 'progressbar', 'aria-label': card.label + ' route target progress', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': card.pct }, h('span', { className: 'block h-full rounded-full bg-gradient-to-r ' + card.tone, style: { width: card.pct + '%' } }))); })),
                 h('section', { 'data-beehive-flight-envelope': 'true', 'data-envelope-overall': instrumentEnvelope.overallState, className: 'mt-3 rounded-xl border p-3 ' + (dk ? 'border-emerald-700/35 bg-emerald-950/15' : 'border-emerald-200 bg-emerald-50/55'), 'aria-labelledby': 'beehive-flight-envelope-title', 'aria-describedby': 'beehive-flight-envelope-summary' },
                   h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
-                    h('div', null, h('div', { id: 'beehive-flight-envelope-title', className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-emerald-300' : 'text-emerald-800') }, 'Flight envelope'), h('p', { className: 'mt-0.5 text-[9px] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Five conditions that tell you whether the route is still viable. Crosswind is shown as an additional live cue.')),
-                    h('span', { 'data-flight-envelope-overall': 'true', 'data-envelope-state': instrumentEnvelope.overallState, className: 'rounded-full border px-2.5 py-1 text-[9px] font-black uppercase tracking-wide ' + (dk ? 'border-white/15 bg-slate-950/45 text-white' : 'border-emerald-200 bg-white text-slate-800') }, instrumentEnvelope.overallLabel)),
+                    h('div', null, h('div', { id: 'beehive-flight-envelope-title', className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-emerald-300' : 'text-emerald-800') }, 'Flight envelope'), h('p', { className: 'mt-0.5 text-[10px] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Five conditions that tell you whether the route is still viable. Crosswind is shown as an additional live cue.')),
+                    h('span', { 'data-flight-envelope-overall': 'true', 'data-envelope-state': instrumentEnvelope.overallState, className: 'rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-wide ' + (dk ? 'border-white/15 bg-slate-950/45 text-white' : 'border-emerald-200 bg-white text-slate-800') }, instrumentEnvelope.overallLabel)),
                   h('p', { id: 'beehive-flight-envelope-summary', 'data-flight-envelope-summary': 'true', className: 'mt-2 text-[10px] font-semibold ' + (dk ? 'text-slate-200' : 'text-slate-700') }, instrumentEnvelope.overallAdvice),
                   h('ul', { className: 'mt-2 grid grid-cols-2 gap-2 sm:grid-cols-5', 'aria-label': 'Flight envelope conditions' }, instrumentEnvelope.items.map(function(item) {
                     return h('li', { key: item.id, 'data-flight-envelope-item': item.id, 'data-envelope-state': dronePaused ? 'paused' : item.state, 'aria-label': item.label + ': ' + item.value + '. ' + item.status + '. ' + item.advice, className: 'min-h-[104px] rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white bg-white') },
-                      h('div', { className: 'flex items-center justify-between gap-1' }, h('span', { className: 'text-[9px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-300' : 'text-slate-600') }, item.label), h('span', { 'aria-hidden': 'true' }, item.icon)),
+                      h('div', { className: 'flex items-center justify-between gap-1' }, h('span', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-300' : 'text-slate-600') }, item.label), h('span', { 'aria-hidden': 'true' }, item.icon)),
                       h('div', { 'data-envelope-value': 'true', className: 'mt-1 text-xs font-black tabular-nums ' + (dk ? 'text-white' : 'text-slate-900') }, item.value),
-                      h('div', { 'data-envelope-status': 'true', className: 'mt-1 text-[9px] font-black uppercase tracking-wide ' + (item.state === 'danger' ? 'text-red-600' : item.state === 'caution' ? 'text-amber-600' : 'text-emerald-600') }, item.status),
-                      h('p', { 'data-envelope-advice': 'true', className: 'mt-1 text-[9px] leading-snug ' + (dk ? 'text-slate-400' : 'text-slate-600') }, item.advice));
+                      h('div', { 'data-envelope-status': 'true', className: 'mt-1 text-[10px] font-black uppercase tracking-wide ' + (item.state === 'danger' ? 'text-red-600' : item.state === 'caution' ? 'text-amber-600' : 'text-emerald-600') }, item.status),
+                      h('p', { 'data-envelope-advice': 'true', className: 'mt-1 text-[10px] leading-snug ' + (dk ? 'text-slate-400' : 'text-slate-600') }, item.advice));
                   }))),
                 h('section', { 'data-beehive-maneuver-impact': 'true', role: 'note', className: 'mt-3 rounded-xl border p-3 ' + (dk ? 'border-violet-700/40 bg-violet-950/20' : 'border-violet-200 bg-violet-50/60'), 'aria-label': 'Current maneuver impact and coaching' },
-                  h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-violet-300' : 'text-violet-800') }, 'Maneuver impact'), h('span', { className: 'rounded-full px-2 py-1 text-[9px] font-black ' + (dronePaused ? 'bg-amber-500 text-slate-950' : 'bg-violet-600 text-white'), 'data-flight-maneuver': 'action' }, dronePaused ? 'Paused' : 'Glide')),
+                  h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-violet-300' : 'text-violet-800') }, 'Maneuver impact'), h('span', { className: 'rounded-full px-2 py-1 text-[10px] font-black ' + (dronePaused ? 'bg-amber-500 text-slate-950' : 'bg-violet-600 text-white'), 'data-flight-maneuver': 'action' }, dronePaused ? 'Paused' : 'Glide')),
                   h('div', { className: 'mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2' },
-                    h('div', { className: 'rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/30' : 'border-white bg-white') }, h('div', { className: 'text-[9px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-500') }, 'What changed'), h('p', { 'data-flight-maneuver': 'impact', className: 'mt-1 text-[10px] font-bold tabular-nums ' + (dk ? 'text-slate-200' : 'text-slate-800') }, dronePaused ? 'Telemetry frozen while you plan.' : 'Sampling the first movement interval...')),
-                    h('div', { className: 'rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/30' : 'border-white bg-white') }, h('div', { className: 'text-[9px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-500') }, 'Try next'), h('p', { 'data-flight-maneuver': 'coach', className: 'mt-1 text-[10px] font-semibold leading-relaxed ' + (dk ? 'text-slate-200' : 'text-slate-800') }, dronePaused ? 'Choose a maneuver, then resume with P or the Resume button.' : 'Stay low briefly and skim glowing boosts before committing to the climb.')))),
+                    h('div', { className: 'rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/30' : 'border-white bg-white') }, h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-500') }, 'What changed'), h('p', { 'data-flight-maneuver': 'impact', className: 'mt-1 text-[10px] font-bold tabular-nums ' + (dk ? 'text-slate-200' : 'text-slate-800') }, dronePaused ? 'Telemetry frozen while you plan.' : 'Sampling the first movement interval...')),
+                    h('div', { className: 'rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/30' : 'border-white bg-white') }, h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-500') }, 'Try next'), h('p', { 'data-flight-maneuver': 'coach', className: 'mt-1 text-[10px] font-semibold leading-relaxed ' + (dk ? 'text-slate-200' : 'text-slate-800') }, dronePaused ? 'Choose a maneuver, then resume with P or the Resume button.' : 'Stay low briefly and skim glowing boosts before committing to the climb.')))),
                 h('div', { className: 'mt-3 flex items-start gap-2 rounded-lg border px-3 py-2 ' + (dk ? 'border-indigo-700/35 bg-indigo-950/30' : 'border-indigo-100 bg-indigo-50') },
                   h('span', { className: 'mt-0.5', 'aria-hidden': 'true' }, '\uD83C\uDFAF'),
-                  h('div', null, h('div', { className: 'text-[9px] font-black uppercase tracking-wide ' + (dk ? 'text-indigo-300' : 'text-indigo-700') }, 'Current objective'), h('p', { 'data-flight-readout': 'objective', className: 'mt-0.5 text-[11px] font-semibold leading-relaxed ' + (dk ? 'text-slate-200' : 'text-slate-700') }, instrumentPhase.objective))));
+                  h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-indigo-300' : 'text-indigo-700') }, 'Current objective'), h('p', { 'data-flight-readout': 'objective', className: 'mt-0.5 text-[11px] font-semibold leading-relaxed ' + (dk ? 'text-slate-200' : 'text-slate-700') }, instrumentPhase.objective))));
             })(),
             droneFlightActive && _droneState.current && _droneState.current.phase !== 'end' && h('section', { 'data-beehive-touch-controls': 'true', 'data-flight-state': dronePaused ? 'paused' : 'live', className: 'rounded-xl border p-3 ' + (dk ? 'border-indigo-700/40 bg-indigo-950/20' : 'border-indigo-200 bg-indigo-50/70'), 'aria-label': 'Drone flight controls' },
               h('div', { className: 'flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between' },
@@ -22252,25 +24064,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('button', { type: 'button', onClick: toggleDronePause, 'aria-pressed': dronePaused, 'aria-keyshortcuts': 'P', className: 'rounded-lg px-3 py-2 text-[11px] font-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ' + (dronePaused ? 'bg-emerald-700 text-white' : (dk ? 'bg-slate-800 text-slate-200' : 'bg-white text-slate-700 border border-indigo-200')) }, dronePaused ? 'Resume flight' : 'Pause flight'),
                   h('button', { type: 'button', onClick: toggleDroneCamera, 'aria-pressed': droneCameraMode === 'chase', 'aria-keyshortcuts': 'V', 'data-flight-camera-toggle': 'true', 'aria-label': 'Switch to ' + (droneCameraMode === 'chase' ? 'cockpit' : 'chase') + ' camera. Current view: ' + (droneCameraMode === 'chase' ? 'chase' : 'cockpit') + '. Key V.', className: 'rounded-lg px-3 py-2 text-[11px] font-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 ' + (droneCameraMode === 'chase' ? 'bg-sky-700 text-white' : (dk ? 'bg-slate-800 text-slate-200' : 'bg-white text-slate-700 border border-indigo-200')) }, droneCameraMode === 'chase' ? 'Cockpit view' : 'Chase view')),
               h('div', { 'data-flight-comfort-settings': 'true', className: 'mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3', role: 'group', 'aria-label': 'Flight comfort and graphics settings' },
-                h('label', { className: 'rounded-lg border p-2 ' + (dk ? 'border-slate-700 bg-slate-950/35 text-slate-200' : 'border-indigo-200 bg-white text-slate-700') }, h('span', { className: 'block text-[9px] font-black uppercase tracking-wide' }, 'Graphics'), h('select', { 'data-flight-graphics-mode': 'true', value: droneGraphicsMode, onChange: function(event) { setDroneGraphicsMode(event.target.value); }, className: 'mt-1 min-h-[44px] w-full rounded-md border border-current/20 bg-transparent px-2 text-[11px] font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500', 'aria-label': 'Drone graphics quality' }, h('option', { value: 'auto' }, 'Auto'), h('option', { value: 'high' }, 'High'), h('option', { value: 'eco' }, 'Eco'))),
-                h('label', { className: 'rounded-lg border p-2 ' + (dk ? 'border-slate-700 bg-slate-950/35 text-slate-200' : 'border-indigo-200 bg-white text-slate-700') }, h('span', { className: 'block text-[9px] font-black uppercase tracking-wide' }, 'Steering'), h('select', { 'data-flight-steering-sensitivity': 'true', value: droneSteeringSensitivity, onChange: function(event) { setDroneSteeringSensitivity(event.target.value); }, className: 'mt-1 min-h-[44px] w-full rounded-md border border-current/20 bg-transparent px-2 text-[11px] font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500', 'aria-label': 'Drone steering sensitivity' }, h('option', { value: 'gentle' }, 'Gentle'), h('option', { value: 'standard' }, 'Standard'), h('option', { value: 'quick' }, 'Quick'))),
-                h('button', { type: 'button', 'data-flight-camera-stabilized': 'true', onClick: toggleDroneCameraStabilization, 'aria-pressed': droneCameraStabilized, className: 'min-h-[64px] rounded-lg border p-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ' + (droneCameraStabilized ? 'border-cyan-500 bg-cyan-700 text-white' : (dk ? 'border-slate-700 bg-slate-950/35 text-slate-200' : 'border-indigo-200 bg-white text-slate-700')) }, h('span', { className: 'block text-[9px] font-black uppercase tracking-wide' }, 'Camera comfort'), h('span', { className: 'mt-1 block text-[11px] font-black' }, droneCameraStabilized ? 'Stabilized' : 'Full motion'), h('span', { className: 'mt-0.5 block text-[9px] opacity-80' }, droneCameraStabilized ? 'Reduced roll and bob' : 'Shows full bank angle'))),
+                h('label', { className: 'rounded-lg border p-2 ' + (dk ? 'border-slate-700 bg-slate-950/35 text-slate-200' : 'border-indigo-200 bg-white text-slate-700') }, h('span', { className: 'block text-[10px] font-black uppercase tracking-wide' }, 'Graphics'), h('select', { 'data-flight-graphics-mode': 'true', value: droneGraphicsMode, onChange: function(event) { setDroneGraphicsMode(event.target.value); }, className: 'mt-1 min-h-[44px] w-full rounded-md border border-current/20 bg-transparent px-2 text-[11px] font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500', 'aria-label': 'Drone graphics quality' }, h('option', { value: 'auto' }, 'Auto'), h('option', { value: 'high' }, 'High'), h('option', { value: 'eco' }, 'Eco'))),
+                h('label', { className: 'rounded-lg border p-2 ' + (dk ? 'border-slate-700 bg-slate-950/35 text-slate-200' : 'border-indigo-200 bg-white text-slate-700') }, h('span', { className: 'block text-[10px] font-black uppercase tracking-wide' }, 'Steering'), h('select', { 'data-flight-steering-sensitivity': 'true', value: droneSteeringSensitivity, onChange: function(event) { setDroneSteeringSensitivity(event.target.value); }, className: 'mt-1 min-h-[44px] w-full rounded-md border border-current/20 bg-transparent px-2 text-[11px] font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500', 'aria-label': 'Drone steering sensitivity' }, h('option', { value: 'gentle' }, 'Gentle'), h('option', { value: 'standard' }, 'Standard'), h('option', { value: 'quick' }, 'Quick'))),
+                h('button', { type: 'button', 'data-flight-camera-stabilized': 'true', onClick: toggleDroneCameraStabilization, 'aria-pressed': droneCameraStabilized, className: 'min-h-[64px] rounded-lg border p-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ' + (droneCameraStabilized ? 'border-cyan-500 bg-cyan-700 text-white' : (dk ? 'border-slate-700 bg-slate-950/35 text-slate-200' : 'border-indigo-200 bg-white text-slate-700')) }, h('span', { className: 'block text-[10px] font-black uppercase tracking-wide' }, 'Camera comfort'), h('span', { className: 'mt-1 block text-[11px] font-black' }, droneCameraStabilized ? 'Stabilized' : 'Full motion'), h('span', { className: 'mt-0.5 block text-[10px] opacity-80' }, droneCameraStabilized ? 'Reduced roll and bob' : 'Shows full bank angle'))),
               h('p', { 'data-flight-weather-summary': 'true', className: 'mt-2 rounded-lg border px-2.5 py-2 text-[10px] font-semibold ' + (dk ? 'border-sky-800 bg-sky-950/25 text-sky-200' : 'border-sky-200 bg-sky-50 text-sky-800') }, (DRONE_SCENARIOS[(_droneState.current && _droneState.current.scenario) || droneScenario] || DRONE_SCENARIOS.clear).weather),
               h('div', { className: 'mt-3 grid grid-cols-3 gap-2 select-none', style: { touchAction: 'none' } },
                 [{ key: 'ArrowLeft', label: 'Turn left', effect: 'Yaw left', icon: '←', keycap: 'A / ←' }, { key: ' ', label: 'Climb', effect: 'Gain altitude', icon: '↑', keycap: 'SPACE' }, { key: 'ArrowRight', label: 'Turn right', effect: 'Yaw right', icon: '→', keycap: 'D / →' }, { key: 'ArrowDown', label: 'Brake', effect: 'Reduce speed', icon: '▼', keycap: 'S / ↓' }, { key: 'ArrowUp', label: 'Thrust', effect: 'Gain speed', icon: '▲', keycap: 'W / ↑' }, { key: 'Shift', label: 'Descend', effect: 'Lose altitude', icon: '↓', keycap: 'SHIFT' }].map(function(control) {
                   function release() { setDroneControl(control.key, false); }
-                  return h('button', { key: control.label, disabled: dronePaused, 'data-flight-control': control.key === ' ' ? 'Space' : control.key, 'data-control-active': 'false', 'aria-label': control.label + ': ' + control.effect + '. Key: ' + control.keycap, onPointerDown: function(e) { e.preventDefault(); setDroneControl(control.key, true); }, onPointerUp: release, onPointerCancel: release, onPointerLeave: release, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { if (e.key === ' ') e.preventDefault(); setDroneControl(control.key, true); } }, onKeyUp: function(e) { if (e.key === 'Enter' || e.key === ' ') release(); }, onBlur: release, className: 'min-h-[58px] rounded-xl border px-2 py-2 text-[11px] font-black shadow-sm transition-all active:scale-95 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ' + (dk ? 'border-indigo-700 bg-slate-900 text-indigo-200 hover:bg-slate-800' : 'border-indigo-200 bg-white text-indigo-800 hover:bg-indigo-100') }, h('span', { className: 'block text-base leading-none', 'aria-hidden': 'true' }, control.icon), h('span', { className: 'mt-1 block' }, control.label), h('span', { className: 'mt-0.5 block text-[9px] font-semibold opacity-70' }, control.effect), h('span', { className: 'mt-1 inline-flex rounded bg-slate-950/10 px-1.5 py-0.5 text-[8px] font-black tracking-wide opacity-70' }, control.keycap));
+                  return h('button', { key: control.label, disabled: dronePaused, 'data-flight-control': control.key === ' ' ? 'Space' : control.key, 'data-control-active': 'false', 'aria-label': control.label + ': ' + control.effect + '. Key: ' + control.keycap, onPointerDown: function(e) { e.preventDefault(); setDroneControl(control.key, true); }, onPointerUp: release, onPointerCancel: release, onPointerLeave: release, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { if (e.key === ' ') e.preventDefault(); setDroneControl(control.key, true); } }, onKeyUp: function(e) { if (e.key === 'Enter' || e.key === ' ') release(); }, onBlur: release, className: 'min-h-[58px] rounded-xl border px-2 py-2 text-[11px] font-black shadow-sm transition-all active:scale-95 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ' + (dk ? 'border-indigo-700 bg-slate-900 text-indigo-200 hover:bg-slate-800' : 'border-indigo-200 bg-white text-indigo-800 hover:bg-indigo-100') }, h('span', { className: 'block text-base leading-none', 'aria-hidden': 'true' }, control.icon), h('span', { className: 'mt-1 block' }, control.label), h('span', { className: 'mt-0.5 block text-[10px] font-semibold opacity-70' }, control.effect), h('span', { className: 'mt-1 inline-flex rounded bg-slate-950/10 px-1.5 py-0.5 text-[10px] font-black tracking-wide opacity-70' }, control.keycap));
                 }))),
             droneFlightActive && droneLastRun && _droneState.current && _droneState.current.phase === 'end' && h('section', { className: 'rounded-2xl border-2 p-4 ' + (droneLastRun.success ? (dk ? 'border-emerald-600 bg-emerald-950/30' : 'border-emerald-300 bg-emerald-50') : (dk ? 'border-amber-600 bg-amber-950/30' : 'border-amber-300 bg-amber-50')), 'aria-label': 'Flight debrief' },
               h('div', { className: 'flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between' },
-                h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-wider ' + (droneLastRun.success ? 'text-emerald-600' : 'text-amber-600') }, 'Flight debrief'), h('h3', { className: 'mt-1 text-base font-black ' + (dk ? 'text-white' : 'text-slate-900') }, droneLastRun.success ? 'Queen intercepted - route complete' : 'Queen not reached - revise and retry'), h('p', { className: 'mt-1 text-[11px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, droneLastRun.success ? 'You reached the congregation area with enough control to acquire the queen signal.' : (droneLastRun.energyLeft <= 0 ? 'Energy reached zero. Gather more boosts, coast between corrections, and use thermals.' : !droneLastRun.reachedDca ? 'The route never entered the DCA. Reach 100+ feet and travel at least 600 meters before searching for the queen.' : 'You reached the DCA; use smaller turns and follow the golden queen cue more closely.'))),
+                h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-wider ' + (droneLastRun.success ? 'text-emerald-600' : 'text-amber-600') }, 'Flight debrief'), h('h3', { className: 'mt-1 text-base font-black ' + (dk ? 'text-white' : 'text-slate-900') }, droneLastRun.success ? 'Queen intercepted - route complete' : 'Queen not reached - revise and retry'), h('p', { className: 'mt-1 text-[11px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, droneLastRun.success ? 'You reached the congregation area with enough control to acquire the queen signal.' : (droneLastRun.energyLeft <= 0 ? 'Energy reached zero. Gather more boosts, coast between corrections, and use thermals.' : !droneLastRun.reachedDca ? 'The route never entered the DCA. Enter the ' + DRONE_FLIGHT_PARAMS.dcaMinFt + '–' + DRONE_FLIGHT_PARAMS.dcaMaxFt + ' ft band and travel at least ' + DRONE_FLIGHT_PARAMS.dcaDistanceM + ' meters before searching for the queen.' : 'You reached the DCA; use smaller turns and follow the golden queen cue more closely.'))),
                 h('div', { className: 'flex gap-2' }, h('button', { type: 'button', onClick: function() { startDroneFlight(droneLastRun.difficulty, droneDebrief && droneDebrief.planId); }, className: 'rounded-lg bg-indigo-600 px-3 py-2 text-xs font-black text-white hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2' }, 'Apply plan & fly again'), h('button', { type: 'button', onClick: leaveDroneFlight, className: 'rounded-lg border px-3 py-2 text-xs font-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ' + (dk ? 'border-slate-600 text-slate-200' : 'border-slate-300 text-slate-700') }, 'Change difficulty'))),
-              h('div', { className: 'mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7 text-center', role: 'list', 'aria-label': 'Flight debrief measurements' }, [[droneLastRun.score, 'score'], [droneLastRun.maxAlt + ' ft', 'altitude'], [droneLastRun.distance + ' m', 'distance'], [droneLastRun.nectar + '/' + droneLastRun.nectarGoal, 'boosts'], [droneLastRun.facts + '/' + DRONE_FACTS.length, 'facts'], [droneLastRun.trafficHits || 0, 'traffic conflicts'], [DRONE_ROUTE_PLANS[droneLastRun.routePlan] ? DRONE_ROUTE_PLANS[droneLastRun.routePlan].label : 'Balanced', 'route plan']].map(function(stat) { return h('div', { key: stat[1], role: 'listitem', className: 'min-w-0 rounded-lg border p-2 ' + (dk ? 'border-white/10 bg-slate-950/30' : 'border-white bg-white/80') }, h('div', { className: 'break-words text-sm font-black leading-tight ' + (dk ? 'text-white' : 'text-slate-900') }, stat[0]), h('div', { className: 'text-[9px] uppercase tracking-wide ' + (dk ? 'text-slate-300' : 'text-slate-600') }, stat[1])); })),
+              h('div', { className: 'mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7 text-center', role: 'list', 'aria-label': 'Flight debrief measurements' }, [[droneLastRun.score, 'score'], [droneLastRun.maxAlt + ' ft', 'altitude'], [droneLastRun.distance + ' m', 'distance'], [droneLastRun.nectar + '/' + droneLastRun.nectarGoal, 'boosts'], [droneLastRun.facts + '/' + DRONE_FACTS.length, 'facts'], [droneLastRun.trafficHits || 0, 'traffic conflicts'], [DRONE_ROUTE_PLANS[droneLastRun.routePlan] ? DRONE_ROUTE_PLANS[droneLastRun.routePlan].label : 'Balanced', 'route plan']].map(function(stat) { return h('div', { key: stat[1], role: 'listitem', className: 'min-w-0 rounded-lg border p-2 ' + (dk ? 'border-white/10 bg-slate-950/30' : 'border-white bg-white/80') }, h('div', { className: 'break-words text-sm font-black leading-tight ' + (dk ? 'text-white' : 'text-slate-900') }, stat[0]), h('div', { className: 'text-[10px] uppercase tracking-wide ' + (dk ? 'text-slate-300' : 'text-slate-600') }, stat[1])); })),
               droneDebrief && h('section', { 'data-drone-debrief-coach': droneDebrief.id, role: 'region', 'aria-labelledby': 'drone-debrief-coach-title', className: 'mt-3 rounded-xl border p-3 ' + (dk ? 'border-cyan-700/45 bg-cyan-950/20' : 'border-cyan-200 bg-cyan-50/70') },
-                h('div', { className: 'flex flex-wrap items-start justify-between gap-2' }, h('div', null, h('div', { className: 'text-[9px] font-black uppercase tracking-[0.15em] ' + (dk ? 'text-cyan-300' : 'text-cyan-800') }, 'Priority coaching'), h('div', { id: 'drone-debrief-coach-title', className: 'mt-0.5 text-sm font-black ' + (dk ? 'text-white' : 'text-slate-900') }, droneDebrief.title)), h('span', { className: 'rounded-full bg-indigo-700 px-2.5 py-1 text-[9px] font-black uppercase tracking-wide text-white' }, droneDebrief.planLabel)),
+                h('div', { className: 'flex flex-wrap items-start justify-between gap-2' }, h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.15em] ' + (dk ? 'text-cyan-300' : 'text-cyan-800') }, 'Priority coaching'), h('div', { id: 'drone-debrief-coach-title', className: 'mt-0.5 text-sm font-black ' + (dk ? 'text-white' : 'text-slate-900') }, droneDebrief.title)), h('span', { className: 'rounded-full bg-indigo-700 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-white' }, droneDebrief.planLabel)),
                 h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-700') }, droneDebrief.summary),
-                h('div', { className: 'mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3', role: 'list', 'aria-label': 'Evidence used by the flight coach' }, droneDebrief.evidence.map(function(item) { return h('div', { key: item.label, role: 'listitem', 'data-drone-coach-evidence': item.label.toLowerCase().replace(/[^a-z0-9]+/g, '-'), className: 'rounded-lg border p-2.5 ' + (item.state === 'good' ? (dk ? 'border-emerald-700/45 bg-emerald-950/25' : 'border-emerald-200 bg-emerald-50') : (dk ? 'border-amber-700/45 bg-amber-950/25' : 'border-amber-200 bg-amber-50')) }, h('div', { className: 'text-[9px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-500') }, item.label), h('div', { className: 'mt-1 text-sm font-black tabular-nums ' + (dk ? 'text-white' : 'text-slate-900') }, item.value)); })),
-                h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-2' }, h('div', { className: 'rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white bg-white/80') }, h('div', { className: 'text-[9px] font-black uppercase tracking-wide ' + (dk ? 'text-cyan-300' : 'text-cyan-800') }, 'Next experiment'), h('p', { className: 'mt-1 text-[10px] font-bold leading-relaxed ' + (dk ? 'text-white' : 'text-slate-900') }, droneDebrief.next)), h('div', { className: 'rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white bg-white/80') }, h('div', { className: 'text-[9px] font-black uppercase tracking-wide ' + (dk ? 'text-cyan-300' : 'text-cyan-800') }, 'Success criterion'), h('p', { className: 'mt-1 text-[10px] font-bold leading-relaxed ' + (dk ? 'text-white' : 'text-slate-900') }, droneDebrief.criterion))),
+                h('div', { className: 'mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3', role: 'list', 'aria-label': 'Evidence used by the flight coach' }, droneDebrief.evidence.map(function(item) { return h('div', { key: item.label, role: 'listitem', 'data-drone-coach-evidence': item.label.toLowerCase().replace(/[^a-z0-9]+/g, '-'), className: 'rounded-lg border p-2.5 ' + (item.state === 'good' ? (dk ? 'border-emerald-700/45 bg-emerald-950/25' : 'border-emerald-200 bg-emerald-50') : (dk ? 'border-amber-700/45 bg-amber-950/25' : 'border-amber-200 bg-amber-50')) }, h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-500') }, item.label), h('div', { className: 'mt-1 text-sm font-black tabular-nums ' + (dk ? 'text-white' : 'text-slate-900') }, item.value)); })),
+                h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-2' }, h('div', { className: 'rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white bg-white/80') }, h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-cyan-300' : 'text-cyan-800') }, 'Next experiment'), h('p', { className: 'mt-1 text-[10px] font-bold leading-relaxed ' + (dk ? 'text-white' : 'text-slate-900') }, droneDebrief.next)), h('div', { className: 'rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white bg-white/80') }, h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-cyan-300' : 'text-cyan-800') }, 'Success criterion'), h('p', { className: 'mt-1 text-[10px] font-bold leading-relaxed ' + (dk ? 'text-white' : 'text-slate-900') }, droneDebrief.criterion))),
                 h('p', { 'data-drone-colony-consequence': 'true', className: 'mt-3 rounded-lg border px-2.5 py-2 text-[10px] font-semibold leading-relaxed ' + (dk ? 'border-purple-800/45 bg-purple-950/25 text-purple-200' : 'border-purple-200 bg-purple-50 text-purple-900') }, droneDebrief.consequence)
               ),
               h('p', { className: 'mt-3 text-[11px] font-bold ' + (dk ? 'text-indigo-200' : 'text-indigo-800') }, 'Explain it: which mattered most on this run - energy budgeting, altitude, hazard avoidance, traffic spacing, or steering precision?'),
@@ -22289,19 +24101,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
           // ═══ QUEEN RTS MODE UI ═══
           viewMode === 'queen' && h('div', { key: 'beehive-queen-ui', className: 'space-y-3' },
+            h('aside', { role: 'note', 'data-queen-model-limit': 'true', className: 'rounded-xl border px-3 py-2 text-[11px] font-semibold leading-relaxed ' + (dk ? 'border-purple-700/50 bg-purple-950/35 text-purple-100' : 'border-purple-300 bg-purple-50 text-purple-900') },
+              h('strong', null, 'Model limit: '), 'This RTS personifies the colony. Real queens do not command workers; pheromones are chemical signals, worker groups make decentralized decisions, and building or combat actions are game abstractions.'),
             !queenGameActive
               ? h('div', { id: 'beehive-queen-playfield', tabIndex: -1, 'data-beehive-focus-panel': 'playfield', role: 'region', 'aria-label': 'Queen RTS playfield briefing', 'data-beehive-stage': 'queen-briefing', className: 'rounded-2xl border-2 p-8 text-center space-y-4 ' + (dk ? 'bg-gradient-to-b from-purple-900/40 to-amber-900/30 border-purple-600/50' : 'bg-gradient-to-b from-purple-50 to-amber-50 border-purple-300') },
                   h('div', { className: 'text-5xl mb-2' }, '👑'),
-                  h('h3', { className: 'text-lg font-black ' + (dk ? 'text-purple-200' : 'text-purple-900') }, __alloT('stem.beehive.queen_command_hive_rts', 'Queen Command: Hive RTS')),
+                  h('h3', { className: 'text-lg font-black ' + (dk ? 'text-purple-200' : 'text-purple-900') }, __alloT('stem.beehive.queen_command_hive_rts', 'Queen Signals: Colony Strategy Model')),
                   h('p', { className: 'text-xs max-w-md mx-auto leading-relaxed ' + (dk ? 'text-purple-300' : 'text-purple-700') },
-                    'Command a living colony in real time. Build directly on your comb, tune pheromone signals, contest the forage range, and defeat ' + queenDifficultyCfg.rivalName + ' before it breaches your brood core.'),
+                    'Use an RTS abstraction to explore colony trade-offs in real time. Build on the game map, tune pheromone signals, contest the forage range, and outlast ' + queenDifficultyCfg.rivalName + ' before it breaches your brood core.'),
                   h('section', { 'data-queen-field-brief': 'true', role: 'note', className: 'mx-auto max-w-2xl rounded-2xl border p-4 text-left ' + (queenFieldBrief.tone === 'success' ? (dk ? 'border-emerald-700/45 bg-emerald-950/25' : 'border-emerald-200 bg-emerald-50/80') : queenFieldBrief.tone === 'danger' ? (dk ? 'border-rose-700/45 bg-rose-950/25' : 'border-rose-200 bg-rose-50/80') : (dk ? 'border-amber-700/45 bg-amber-950/25' : 'border-amber-200 bg-amber-50/80')), 'aria-label': 'Beekeeper field evidence carried into Queen RTS' },
                     h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
-                      h('div', null, h('div', { className: 'text-[9px] font-black uppercase tracking-[0.16em] ' + (queenFieldBrief.tone === 'success' ? (dk ? 'text-emerald-300' : 'text-emerald-800') : queenFieldBrief.tone === 'danger' ? (dk ? 'text-rose-300' : 'text-rose-800') : (dk ? 'text-amber-300' : 'text-amber-800')) }, 'Field evidence carried forward'), h('div', { className: 'mt-0.5 text-sm font-black ' + (dk ? 'text-white' : 'text-slate-900') }, queenFieldBrief.label)),
-                      h('span', { className: 'rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-wide ' + (queenFieldBrief.tone === 'success' ? 'bg-emerald-700 text-white' : queenFieldBrief.tone === 'danger' ? 'bg-rose-700 text-white' : 'bg-amber-600 text-slate-950') }, 'Beekeeper → Queen')),
+                      h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.16em] ' + (queenFieldBrief.tone === 'success' ? (dk ? 'text-emerald-300' : 'text-emerald-800') : queenFieldBrief.tone === 'danger' ? (dk ? 'text-rose-300' : 'text-rose-800') : (dk ? 'text-amber-300' : 'text-amber-800')) }, 'Field evidence carried forward'), h('div', { className: 'mt-0.5 text-sm font-black ' + (dk ? 'text-white' : 'text-slate-900') }, queenFieldBrief.label)),
+                      h('span', { className: 'rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wide ' + (queenFieldBrief.tone === 'success' ? 'bg-emerald-700 text-white' : queenFieldBrief.tone === 'danger' ? 'bg-rose-700 text-white' : 'bg-amber-600 text-slate-950') }, 'Beekeeper → Queen')),
                     h('div', { className: 'mt-3 grid grid-cols-3 gap-2', role: 'list', 'aria-label': 'Field evidence metrics' },
                       [{ label: 'Colony health', value: colonyHealth + '%' }, { label: 'Varroa pressure', value: varroaLevel + '%' }, { label: 'Honey reserve', value: honey + ' lb' }].map(function(item) {
-                        return h('div', { key: item.label, role: 'listitem', className: 'rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white bg-white/80') }, h('div', { className: 'text-[9px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-500') }, item.label), h('div', { className: 'mt-1 text-sm font-black tabular-nums ' + (dk ? 'text-slate-100' : 'text-slate-800') }, item.value));
+                        return h('div', { key: item.label, role: 'listitem', className: 'rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white bg-white/80') }, h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-500') }, item.label), h('div', { className: 'mt-1 text-sm font-black tabular-nums ' + (dk ? 'text-slate-100' : 'text-slate-800') }, item.value));
                       })),
                     h('p', { className: 'mt-3 text-[10px] font-black ' + (dk ? 'text-slate-200' : 'text-slate-800') }, 'Opening modifiers: ' + queenFieldBrief.modifier),
                     h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-700') }, queenFieldBrief.advice)
@@ -22315,30 +24129,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-300') }, p[2]));
                     })),
                   h('section', { 'data-queen-scenarios': 'true', className: 'mx-auto max-w-2xl rounded-xl border p-3 ' + (dk ? 'border-sky-700/40 bg-sky-950/20' : 'border-sky-200 bg-sky-50/70'), 'aria-label': 'Choose Queen RTS scenario' },
-                    h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', { className: 'text-[10px] font-black uppercase tracking-wider ' + (dk ? 'text-sky-300' : 'text-sky-800') }, 'Choose mission scenario'), h('span', { className: 'text-[9px] font-bold ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'What problem are you solving?')),
-                    h('div', { 'data-mobile-rail': 'queen-scenarios', className: 'mt-2 grid grid-flow-col auto-cols-[84%] gap-2 overflow-x-auto overscroll-x-contain snap-x snap-mandatory pb-2 sm:grid-flow-row sm:auto-cols-auto sm:grid-cols-3 sm:overflow-visible sm:pb-0' }, Object.keys(QUEEN_SCENARIOS).map(function(id) { var option = QUEEN_SCENARIOS[id]; var selected = queenScenario === id; return h('button', { key: id, type: 'button', 'data-queen-scenario': id, onClick: function() { updAll({ queen: Object.assign({}, queenData, { scenario: id }) }); announceBee('Queen scenario selected: ' + option.label + '. ' + option.desc, false); }, 'aria-pressed': selected, 'aria-label': option.label + ': ' + option.desc, className: 'snap-center rounded-xl border p-3 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 sm:snap-none ' + (selected ? 'ring-2 ring-sky-500 ' + (dk ? 'border-sky-400 bg-sky-900/45' : 'border-sky-400 bg-sky-50') : (dk ? 'border-slate-700 bg-slate-900 hover:border-sky-600' : 'border-slate-200 bg-white hover:border-sky-300')) }, h('div', { className: 'text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, option.label), h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, option.desc), selected && h('span', { className: 'mt-2 inline-flex rounded-full bg-sky-700 px-2 py-0.5 text-[9px] font-black text-white' }, 'SELECTED')); })) ),
+                    h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', { className: 'text-[10px] font-black uppercase tracking-wider ' + (dk ? 'text-sky-300' : 'text-sky-800') }, 'Choose mission scenario'), h('span', { className: 'text-[10px] font-bold ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'What problem are you solving?')),
+                    h('div', { 'data-mobile-rail': 'queen-scenarios', className: 'mt-2 grid grid-flow-col auto-cols-[84%] gap-2 overflow-x-auto overscroll-x-contain snap-x snap-mandatory pb-2 sm:grid-flow-row sm:auto-cols-auto sm:grid-cols-3 sm:overflow-visible sm:pb-0' }, Object.keys(QUEEN_SCENARIOS).map(function(id) { var option = QUEEN_SCENARIOS[id]; var selected = queenScenario === id; return h('button', { key: id, type: 'button', 'data-queen-scenario': id, onClick: function() { updAll({ queen: Object.assign({}, queenData, { scenario: id }) }); announceBee('Queen scenario selected: ' + option.label + '. ' + option.desc, false); }, 'aria-pressed': selected, 'aria-label': option.label + ': ' + option.desc, className: 'snap-center rounded-xl border p-3 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 sm:snap-none ' + (selected ? 'ring-2 ring-sky-500 ' + (dk ? 'border-sky-400 bg-sky-900/45' : 'border-sky-400 bg-sky-50') : (dk ? 'border-slate-700 bg-slate-900 hover:border-sky-600' : 'border-slate-200 bg-white hover:border-sky-300')) }, h('div', { className: 'text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, option.label), h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, option.desc), selected && h('span', { className: 'mt-2 inline-flex rounded-full bg-sky-700 px-2 py-0.5 text-[10px] font-black text-white' }, 'SELECTED')); })) ),
                   h('section', { className: 'mx-auto max-w-2xl rounded-xl border p-3 ' + (dk ? 'border-purple-700/40 bg-slate-900/55' : 'border-purple-200 bg-white/75'), 'aria-label': 'Choose Queen RTS difficulty' },
                     h('div', { className: 'text-[10px] font-black uppercase tracking-wider ' + (dk ? 'text-purple-300' : 'text-purple-800') }, 'Choose rival pressure'),
                     h('div', { 'data-mobile-rail': 'queen-difficulty', style: { scrollbarWidth: 'thin', WebkitOverflowScrolling: 'touch' }, className: 'mt-2 grid grid-flow-col auto-cols-[84%] gap-2 overflow-x-auto overscroll-x-contain scroll-px-1 snap-x snap-mandatory touch-pan-x pb-2 sm:grid-flow-row sm:auto-cols-auto sm:grid-cols-3 sm:overflow-visible sm:pb-0' }, Object.keys(QUEEN_DIFFICULTIES).map(function(id) {
                       var option = QUEEN_DIFFICULTIES[id];
                       var selected = queenDifficulty === id;
                       return h('button', { key: id, onClick: function() { updAll({ queen: Object.assign({}, queenData, { difficulty: id }) }); }, 'aria-pressed': selected, className: 'snap-center rounded-xl border p-3 text-left transition-all sm:snap-none ' + (selected ? 'ring-2 ring-purple-500 ' + (dk ? 'border-purple-400 bg-purple-900/45' : 'border-purple-400 bg-purple-50') : (dk ? 'border-slate-700 bg-slate-900 hover:border-purple-600' : 'border-slate-200 bg-white hover:border-purple-300')) },
-                        h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, option.label), selected && h('span', { className: 'rounded-full bg-purple-600 px-2 py-0.5 text-[9px] font-black text-white' }, 'SELECTED')),
+                        h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, option.label), selected && h('span', { className: 'rounded-full bg-purple-600 px-2 py-0.5 text-[10px] font-black text-white' }, 'SELECTED')),
                         h('div', { className: 'mt-1 text-[10px] font-bold ' + (dk ? 'text-amber-300' : 'text-amber-700') }, 'vs ' + option.rivalName),
                         h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, option.desc));
                     }))),
                   h('section', { className: 'mx-auto max-w-2xl rounded-xl border p-3 ' + (dk ? 'border-amber-700/40 bg-amber-950/20' : 'border-amber-200 bg-amber-50/70'), 'aria-label': 'Choose Queen RTS opening doctrine' },
-                    h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', { className: 'text-[10px] font-black uppercase tracking-wider ' + (dk ? 'text-amber-300' : 'text-amber-800') }, 'Choose opening doctrine'), h('span', { className: 'text-[9px] font-bold ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Your first strategic commitment')),
+                    h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', { className: 'text-[10px] font-black uppercase tracking-wider ' + (dk ? 'text-amber-300' : 'text-amber-800') }, 'Choose opening doctrine'), h('span', { className: 'text-[10px] font-bold ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Your first strategic commitment')),
                     h('div', { 'data-mobile-rail': 'queen-opening', style: { scrollbarWidth: 'thin', WebkitOverflowScrolling: 'touch' }, className: 'mt-2 grid grid-flow-col auto-cols-[84%] gap-2 overflow-x-auto overscroll-x-contain scroll-px-1 snap-x snap-mandatory touch-pan-x pb-2 sm:grid-flow-row sm:auto-cols-auto sm:grid-cols-3 sm:overflow-visible sm:pb-0' }, Object.keys(QUEEN_OPENINGS).map(function(id) {
                       var option = QUEEN_OPENINGS[id];
                       var selected = queenOpening === id;
                       var openingRecord = queenDoctrineRecord(id);
                       var openingRecordLabel = openingRecord.matches ? openingRecord.wins + '/' + openingRecord.matches + ' wins' : 'No matches yet';
                       return h('button', { key: id, type: 'button', 'data-queen-opening': id, onClick: function() { updAll({ queen: Object.assign({}, queenData, { opening: id }) }); announceBee('Opening doctrine selected: ' + option.label + '. ' + option.effect, false); }, 'aria-pressed': selected, 'aria-label': option.label + ': ' + option.desc + '. ' + option.effect + '. Record: ' + openingRecordLabel, className: 'snap-center rounded-xl border p-3 text-left transition-all sm:snap-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (selected ? 'ring-2 ring-amber-500 ' + (dk ? 'border-amber-400 bg-amber-900/45' : 'border-amber-400 bg-amber-50') : (dk ? 'border-slate-700 bg-slate-900 hover:border-amber-600' : 'border-slate-200 bg-white hover:border-amber-300')) },
-                        h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, option.label), selected && h('span', { className: 'rounded-full bg-amber-500 px-2 py-0.5 text-[9px] font-black text-slate-950' }, 'SELECTED')),
+                        h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, option.label), selected && h('span', { className: 'rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-black text-slate-950' }, 'SELECTED')),
                         h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, option.desc),
-                        h('div', { className: 'mt-2 text-[9px] font-black uppercase tracking-wide ' + (dk ? 'text-amber-300' : 'text-amber-700') }, option.effect),
-                        h('div', { className: 'mt-1 text-[9px] font-bold ' + (dk ? 'text-slate-400' : 'text-slate-500') }, 'Match record: ' + openingRecordLabel));
+                        h('div', { className: 'mt-2 text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-amber-300' : 'text-amber-700') }, option.effect),
+                        h('div', { className: 'mt-1 text-[10px] font-bold ' + (dk ? 'text-slate-400' : 'text-slate-500') }, 'Match record: ' + openingRecordLabel));
                     })) ),
                     (function() {
                       var profile = [
@@ -22349,12 +24163,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       ];
                       return h('div', { 'data-queen-opening-profile': 'true', className: 'mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4', role: 'list', 'aria-label': 'Selected opening profile relative to the balanced start' }, profile.map(function(item) {
                         return h('div', { key: item.label, role: 'listitem', className: 'rounded-lg border p-2 ' + (dk ? 'border-slate-700 bg-slate-950/35' : 'border-amber-100 bg-white/80') },
-                          h('div', { className: 'text-[9px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-500') }, item.label),
+                          h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-500') }, item.label),
                           h('div', { className: 'mt-1 text-[10px] font-black ' + item.tone }, item.value));
                       }));
                     })(),
                   // Phase progression explanation
-                  h('div', { className: 'text-xs font-bold mt-2 ' + (dk ? 'text-purple-300' : 'text-purple-700') }, __alloT('stem.beehive.three_phases_of_your_reign', '📋 Three Phases of Your Reign')),
+                  h('div', { className: 'text-xs font-bold mt-2 ' + (dk ? 'text-purple-300' : 'text-purple-700') }, __alloT('stem.beehive.three_phases_of_your_reign', '📋 Three Phases of Colony Strategy')),
                   h('div', { 'data-mobile-rail': 'queen-phases', style: { scrollbarWidth: 'thin', WebkitOverflowScrolling: 'touch' }, className: 'mx-auto grid max-w-lg grid-flow-col auto-cols-[84%] gap-2 overflow-x-auto overscroll-x-contain scroll-px-1 snap-x snap-mandatory touch-pan-x pb-2 sm:grid-flow-row sm:auto-cols-auto sm:grid-cols-3 sm:overflow-visible sm:pb-0' },
                     [
                       { icon: '🏗️', phase: 'BUILD', days: 'Cycles 1-9', desc: __alloT('stem.beehive.establish_your_colony_build_structures', 'Establish your colony. Build structures, lay eggs, stockpile resources. Threats are rare.'), col: 'amber' },
@@ -22377,7 +24191,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     })),                  h('button', { onClick: startQueenGame,
                     className: 'px-8 py-3 rounded-xl font-bold text-white text-sm shadow-lg transition-all hover:scale-105 ' + (dk ? 'bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-500 hover:to-amber-500' : 'bg-gradient-to-r from-purple-500 to-amber-500 hover:from-purple-600 hover:to-amber-600'),
                     style: { boxShadow: '0 4px 16px rgba(147,51,234,0.4)' }
-                  }, __alloT('stem.beehive.begin_your_reign', '👑 Begin Your Reign')))
+                  }, __alloT('stem.beehive.begin_your_reign', '👑 Begin Strategy Model')))
               : h('div', { className: 'space-y-3' },
                   // Phase banner
                   h('div', { role: 'group', 'aria-label': 'Queen RTS phase and cycle status', className: 'flex items-center justify-between px-4 py-2 rounded-xl text-xs font-bold ' +
@@ -22388,22 +24202,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     h('span', null, ['🌱 Spring', '☀️ Summer', '🍂 Autumn', '❄️ Winter'][Math.floor(((queenDay || 0) % 120) / 30)] || ''),
                     queenThreats.length > 0 && h('span', { className: dk ? 'text-red-400' : 'text-red-600' }, '⚠ ' + queenThreats.length + ' threat' + (queenThreats.length > 1 ? 's' : ''))),
                   // Live command HUD: health, territory, opponent, clock, and immediate feedback.
-                  h('section', { className: 'rounded-2xl border p-3 ' + (dk ? 'border-slate-700 bg-slate-900/70' : 'border-slate-200 bg-white'), 'aria-label': 'Live RTS command status' },
+                  h('section', { className: 'rounded-2xl border p-3 ' + (dk ? 'border-slate-700 bg-slate-900/70' : 'border-slate-200 bg-white'), 'aria-label': 'Live RTS strategy status' },
                     h('div', { className: 'flex flex-wrap items-center gap-2' },
                       h('span', { className: 'inline-flex items-center gap-1.5 rounded-full bg-rose-600 px-2 py-1 text-[10px] font-black text-white' },
                         h('span', { 'data-beehive-rts-live-dot': 'true', 'aria-hidden': 'true' }),
                         queenPaused ? 'PAUSED' : 'LIVE RTS'),
                       h('span', { className: 'text-xs font-black ' + (dk ? 'text-purple-200' : 'text-purple-900') }, 'Cycle ' + queenDay),
-                      h('span', { className: 'rounded-full border px-2 py-1 text-[9px] font-black uppercase ' + (dk ? 'border-purple-700 text-purple-300' : 'border-purple-200 text-purple-700') }, queenDifficultyCfg.label + ' / ' + queenOpeningCfg.label + ' vs ' + queenRival.name),
+                      h('span', { className: 'rounded-full border px-2 py-1 text-[10px] font-black uppercase ' + (dk ? 'border-purple-700 text-purple-300' : 'border-purple-200 text-purple-700') }, queenDifficultyCfg.label + ' / ' + queenOpeningCfg.label + ' vs ' + queenRival.name),
                       h('span', { className: 'text-[11px] ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Next cycle: ' + (queenSpeed === 2 ? '1.2s' : '2.4s')),
                       h('div', { className: 'ml-auto flex gap-1', role: 'group', 'aria-label': 'RTS time controls' },
                         h('button', { onClick: toggleQueenPause, 'aria-pressed': queenPaused, 'aria-keyshortcuts': 'P', className: 'rounded-lg px-3 py-1.5 text-[11px] font-black ' + (queenPaused ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-white') }, queenPaused ? 'Resume' : 'Pause'),
                         [1, 2].map(function(speedOption) { return h('button', { key: speedOption, onClick: function() { updAll({ queen: Object.assign({}, queenData, { speed: speedOption }) }); }, 'aria-pressed': queenSpeed === speedOption, className: 'rounded-lg px-2.5 py-1.5 text-[11px] font-black ' + (queenSpeed === speedOption ? 'bg-purple-600 text-white' : (dk ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600')) }, speedOption + 'x'); }))
                     ),
                     h('div', { key: 'queen-cycle-clock-' + queenDay + '-' + queenSpeed, 'data-beehive-cycle-clock': 'true', 'data-cycle-state': queenPaused ? 'paused' : 'live', role: 'timer', 'aria-label': queenPaused ? 'Automatic cycle clock paused' : 'Automatic cycle ' + (queenDay + 1) + ' arrives every ' + (queenSpeed === 2 ? '1.2 seconds' : '2.4 seconds'), style: { '--bee-cycle-duration': queenSpeed === 2 ? '1.2s' : '2.4s' } },
-                      h('span', { className: 'text-[9px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-purple-300' : 'text-purple-700') }, queenPaused ? 'Clock stopped' : 'Cycle ' + (queenDay + 1) + ' incoming'),
+                      h('span', { className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-purple-300' : 'text-purple-700') }, queenPaused ? 'Clock stopped' : 'Cycle ' + (queenDay + 1) + ' incoming'),
                       h('span', { 'data-beehive-cycle-track': 'true', 'aria-hidden': 'true' }, h('span', { 'data-beehive-cycle-fill': 'true' })),
-                      h('span', { className: 'text-[9px] font-black tabular-nums ' + (dk ? 'text-slate-300' : 'text-slate-600') }, queenPaused ? 'Press P' : (queenSpeed === 2 ? '1.2 sec' : '2.4 sec'))),
+                      h('span', { className: 'text-[10px] font-black tabular-nums ' + (dk ? 'text-slate-300' : 'text-slate-600') }, queenPaused ? 'Press P' : (queenSpeed === 2 ? '1.2 sec' : '2.4 sec'))),
                     h('div', { className: 'mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4' },
                       [[queenHiveHealth + '%', 'Your hive', queenHiveHealth > 40], [queenRival.health + '%', 'Rival hive', queenRival.health < 60], [Math.round(queenTerritory) + '%', 'Forage control', queenTerritory >= 50], [Math.round(queenRival.pressure) + '%', 'Raid pressure', queenRival.pressure < 50]].map(function(metric) {
                         return h('div', { key: metric[1], className: 'rounded-xl border p-2 ' + (dk ? 'border-white/10 bg-slate-950/50' : 'border-slate-200 bg-slate-50') },
@@ -22421,13 +24235,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       h('div', { className: 'flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between' },
                         h('div', null, h('div', { className: 'text-lg font-black' }, queenResult === 'victory' ? 'VICTORY - Rival queen retreated' : 'DEFEAT - Brood core lost'), h('p', { className: 'mt-1 text-[11px] text-white/85' }, queenResult === 'victory' ? 'Your colony converted information, worker allocation, and structure timing into forage control.' : 'The colony is frozen for evidence review. Check the final raid, QMP level, and defense investment before trying again.')),
                         h('button', { onClick: startQueenGame, className: 'shrink-0 rounded-lg bg-white px-4 py-2 text-xs font-black text-slate-900 hover:bg-slate-100' }, 'Start rematch')),
-                      h('div', { className: 'mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4 text-center' }, [[queenDay, 'cycles'], [queenScore, 'score'], [Math.round(queenTerritory) + '%', 'territory'], [queenStructures.length, 'structures']].map(function(stat) { return h('div', { key: stat[1], className: 'rounded-lg bg-black/15 p-2' }, h('div', { className: 'text-sm font-black' }, stat[0]), h('div', { className: 'text-[9px] uppercase tracking-wide text-white/75' }, stat[1])); }))),
+                      h('div', { className: 'mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4 text-center' }, [[queenDay, 'cycles'], [queenScore, 'score'], [Math.round(queenTerritory) + '%', 'territory'], [queenStructures.length, 'structures']].map(function(stat) { return h('div', { key: stat[1], className: 'rounded-lg bg-black/15 p-2' }, h('div', { className: 'text-sm font-black' }, stat[0]), h('div', { className: 'text-[10px] uppercase tracking-wide text-white/75' }, stat[1])); }))),
                       h('div', { 'data-rts-opening-review': 'true', className: 'mt-3 rounded-lg border border-white/15 bg-black/10 p-3 text-left' },
-                        h('div', { className: 'text-[9px] font-black uppercase tracking-wider text-white/70' }, 'Opening doctrine: ' + queenOpeningCfg.label),
+                        h('div', { className: 'text-[10px] font-black uppercase tracking-wider text-white/70' }, 'Opening doctrine: ' + queenOpeningCfg.label),
                         h('p', { className: 'mt-1 text-[10px] leading-relaxed text-white/85' }, queenOpeningCfg.effect),
                         h('p', { className: 'mt-1 text-[10px] leading-relaxed text-white/80' }, 'Lesson: ' + (queenOpening === 'fortify' ? 'Defense creates time, but time still needs a food pipeline.' : queenOpening === 'forage' ? 'Territory is valuable only if the hive can defend the workers holding it.' : 'A flexible start turns scouting into your first real advantage.')))
                   ),                  renderQueenBattlefield(),
                   renderQueenBattlefieldDock(),
+                  // The forage frontline is the one RTS number that is really a
+                  // PLACE. On the 2D map it is a dashed line; here the meadow
+                  // itself changes hands bloom by bloom, and every forager's
+                  // commute gets longer as the line is pushed out — which is the
+                  // trade-off the strategy layer is actually built on.
+                  renderBee3dBay({
+                    id: 'queen',
+                    viewer: QUEEN_3D_VIEWER,
+                    attach: queen3dAttach,
+                    status: queen3dStatus,
+                    parts: QUEEN_3D_PARTS,
+                    selected: queen3dPart,
+                    partKey: 'queen3dPart',
+                    toggleKey: 'show3dQueen',
+                    open: show3dQueen,
+                    title: '3D forage map',
+                    eyebrow: '🗺️ The frontline in 3D',
+                    blurb: 'Drag to turn the meadow. Each bloom shows who is working it, the flag marks where your range meets the rival’s, and the swarm turns around at that flag.',
+                    pickPrompt: 'Pick something on the map',
+                    fallback: 'The 3D forage map could not start on this device, usually because WebGL is unavailable or blocked. The 2D battlefield above carries the same frontline reading.',
+                    accent: {
+                      label: dk ? 'text-purple-300' : 'text-purple-700',
+                      frame: dk ? 'border-purple-700/45' : 'border-purple-300',
+                      button: dk ? 'border-purple-600/45 bg-slate-900 text-purple-100 hover:bg-slate-800' : 'border-purple-300 bg-white text-purple-800 hover:bg-purple-50',
+                      chip: dk ? 'border-slate-700 bg-slate-900 text-slate-200 hover:bg-slate-800' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50',
+                      chipOn: dk ? 'border-purple-400 bg-purple-500/25 text-purple-100' : 'border-purple-500 bg-purple-100 text-purple-900'
+                    },
+                    readout: h('p', { className: 'text-[10px] leading-relaxed ' + (dk ? 'text-slate-400' : 'text-slate-500') },
+                      'Showing now: you hold ' + Math.round(queen3dShare * 100) + '% of the forage strip · brood core ' + Math.round(queenHiveHealth) + '% · ' + queenRival.name + ' ' + Math.round(queenRival.health) + '% · ' + Math.round(queenPopulation.foragers) + ' foragers assigned.')
+                  }),
                   renderQueenImpactTimeline(),
                   (function() {
                     var advice = queenStrategicRead();
@@ -22440,13 +24284,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       h('div', { className: 'flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between' },
                         h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-wider ' + (dk ? 'text-cyan-300' : 'text-cyan-800') }, 'Strategic read'), h('div', { className: 'mt-1 text-sm font-black ' + (dk ? 'text-white' : 'text-slate-900') }, advice.title), h('p', { className: 'mt-1 text-[11px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, advice.body)),
                         h('div', { className: 'grid shrink-0 grid-cols-2 gap-2 text-center' },
-                          h('div', { className: 'rounded-lg border px-3 py-2 ' + (dk ? 'border-white/10 bg-slate-950/40' : 'border-white bg-white/80') }, h('div', { className: 'text-sm font-black text-purple-500' }, '~' + raidEstimate), h('div', { className: 'text-[9px] font-bold ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'raid damage')),
-                          h('div', { className: 'rounded-lg border px-3 py-2 ' + (dk ? 'border-white/10 bg-slate-950/40' : 'border-white bg-white/80') }, h('div', { className: 'text-sm font-black text-rose-500' }, cyclesToRaid === 0 ? 'NOW' : '~' + cyclesToRaid), h('div', { className: 'text-[9px] font-bold ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'cycles to raid')))));
+                          h('div', { className: 'rounded-lg border px-3 py-2 ' + (dk ? 'border-white/10 bg-slate-950/40' : 'border-white bg-white/80') }, h('div', { className: 'text-sm font-black text-purple-500' }, '~' + raidEstimate), h('div', { className: 'text-[10px] font-bold ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'raid damage')),
+                          h('div', { className: 'rounded-lg border px-3 py-2 ' + (dk ? 'border-white/10 bg-slate-950/40' : 'border-white bg-white/80') }, h('div', { className: 'text-sm font-black text-rose-500' }, cyclesToRaid === 0 ? 'NOW' : '~' + cyclesToRaid), h('div', { className: 'text-[10px] font-bold ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'cycles to raid')))));
                   })(),
                   h('section', { 'data-beehive-rts-economy': 'true', className: 'rounded-xl border p-3 ' + (dk ? 'border-purple-700/40 bg-slate-900/70' : 'border-purple-200 bg-white'), 'aria-label': 'Live Queen RTS economy' },
                     h('div', { className: 'mb-2 flex items-center justify-between gap-2' },
                       h('div', { className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-purple-300' : 'text-purple-800') }, 'Live economy'),
-                      h('div', { className: 'text-[9px] font-bold ' + (dk ? 'text-slate-400' : 'text-slate-500') }, 'Income updates every cycle')),
+                      h('div', { className: 'text-[10px] font-bold ' + (dk ? 'text-slate-400' : 'text-slate-500') }, 'Income updates every cycle')),
                     h('div', { className: 'grid grid-cols-2 gap-2 sm:grid-cols-5' }, [
                       { icon: '\uD83C\uDF6F', value: Math.round(queenResources.nectar), label: 'Nectar', tone: 'text-amber-500' },
                       { icon: '\uD83C\uDF3C', value: Math.round(queenResources.pollen), label: 'Pollen', tone: 'text-yellow-500' },
@@ -22456,7 +24300,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     ].map(function(resource) {
                       return h('div', { key: resource.label, className: 'flex items-center gap-2 rounded-lg border px-2.5 py-2 ' + (dk ? 'border-white/10 bg-slate-950/40' : 'border-slate-200 bg-slate-50') },
                         h('span', { className: 'text-base', 'aria-hidden': 'true' }, resource.icon),
-                        h('span', null, h('span', { className: 'block text-sm font-black ' + resource.tone }, resource.value), h('span', { className: 'block text-[9px] font-bold uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-500') }, resource.label)));
+                        h('span', null, h('span', { className: 'block text-sm font-black ' + resource.tone }, resource.value), h('span', { className: 'block text-[10px] font-bold uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-500') }, resource.label)));
                     }))),
                   (function() {
                     var nextEconomy = queenNextCycleEconomy();
@@ -22473,19 +24317,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     return h('section', { 'data-rts-next-cycle-economy': 'true', className: 'mt-3 rounded-xl border p-3 ' + (dk ? 'border-cyan-700/35 bg-cyan-950/20' : 'border-cyan-200 bg-cyan-50/60'), 'aria-labelledby': 'rts-next-cycle-title', 'aria-describedby': 'rts-next-cycle-note' },
                       h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
                         h('div', { id: 'rts-next-cycle-title', className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-cyan-300' : 'text-cyan-800') }, 'Next-cycle forecast'),
-                        h('span', { className: 'rounded-full border px-2 py-1 text-[9px] font-black ' + (dk ? 'border-cyan-700 text-cyan-200' : 'border-cyan-300 text-cyan-800') }, 'Cycle ' + nextEconomy.cycle + ' · ' + nextEconomy.season)),
+                        h('span', { className: 'rounded-full border px-2 py-1 text-[10px] font-black ' + (dk ? 'border-cyan-700 text-cyan-200' : 'border-cyan-300 text-cyan-800') }, 'Cycle ' + nextEconomy.cycle + ' · ' + nextEconomy.season)),
                       h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Worker throughput, structures, season, and upkeep are projected from the current state.'),
                       h('div', { className: 'mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4' }, forecastResources.map(function(resource) {
                         var deltaTone = resource.delta > 0.05 ? 'text-emerald-500' : resource.delta < -0.05 ? 'text-rose-500' : (dk ? 'text-slate-300' : 'text-slate-600');
                         return h('div', { key: resource.key, 'data-rts-next-cycle-resource': resource.key, className: 'rounded-lg border p-2 ' + (dk ? 'border-white/10 bg-slate-950/40' : 'border-cyan-100 bg-white/75') },
-                          h('div', { className: 'flex items-center justify-between gap-1' }, h('span', { className: 'text-sm', 'aria-hidden': 'true' }, resource.icon), h('span', { className: 'text-[9px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-500') }, resource.label)),
+                          h('div', { className: 'flex items-center justify-between gap-1' }, h('span', { className: 'text-sm', 'aria-hidden': 'true' }, resource.icon), h('span', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-500') }, resource.label)),
                           h('div', { className: 'mt-1 text-sm font-black ' + resource.tone }, Math.round(resource.value)),
                           h('div', { 'data-rts-next-cycle-delta': resource.key, className: 'text-[10px] font-black ' + deltaTone }, signedForecast(resource.delta) + ' next'));
                       })),
                       h('p', { id: 'rts-next-cycle-note', 'data-rts-economy-watch': 'true', className: 'mt-2 text-[10px] font-bold leading-relaxed ' + (dk ? 'text-cyan-100' : 'text-cyan-900') }, nextEconomy.watch));
                   })(),
-                  h('section', { 'data-beehive-command-sequence': 'true', className: 'rounded-xl border p-3 ' + (dk ? 'border-cyan-700/35 bg-cyan-950/15' : 'border-cyan-200 bg-cyan-50/65'), 'aria-label': 'Queen RTS command sequence' },
-                    h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-cyan-300' : 'text-cyan-800') }, 'Command rhythm'), h('div', { className: 'text-[9px] font-bold ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Information \u2192 infrastructure \u2192 pressure')),
+                  h('section', { 'data-beehive-command-sequence': 'true', className: 'rounded-xl border p-3 ' + (dk ? 'border-cyan-700/35 bg-cyan-950/15' : 'border-cyan-200 bg-cyan-50/65'), 'aria-label': 'Queen RTS strategy sequence' },
+                    h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-cyan-300' : 'text-cyan-800') }, 'Strategy rhythm'), h('div', { className: 'text-[10px] font-bold ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Information \u2192 infrastructure \u2192 pressure')),
                     h('div', { 'data-mobile-rail': 'queen-command-rhythm', style: { scrollbarWidth: 'thin', WebkitOverflowScrolling: 'touch' }, className: 'mt-2 grid grid-flow-col auto-cols-[84%] gap-2 overflow-x-auto overscroll-x-contain scroll-px-1 snap-x snap-mandatory touch-pan-x pb-2 sm:grid-flow-row sm:auto-cols-auto sm:grid-cols-3 sm:overflow-visible sm:pb-0' }, [
                       { n: 1, label: 'Scout rival', detail: 'Reveal power before spending', done: (queenRival.intel || 0) > 0 },
                       { n: 2, label: 'Establish comb', detail: 'Build economy or defense', done: queenStructures.length > 3 },
@@ -22493,11 +24337,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     ].map(function(step) {
                       return h('div', { key: step.n, className: 'flex snap-start items-center gap-2 rounded-lg border p-2.5 sm:snap-none ' + (step.done ? (dk ? 'border-emerald-700/50 bg-emerald-950/25' : 'border-emerald-200 bg-emerald-50') : (dk ? 'border-white/10 bg-slate-950/30' : 'border-slate-200 bg-white')) },
                         h('span', { className: 'grid h-7 w-7 shrink-0 place-items-center rounded-full text-[10px] font-black ' + (step.done ? 'bg-emerald-700 text-white' : (dk ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600')) }, step.done ? '\u2713' : step.n),
-                        h('span', null, h('span', { className: 'block text-[10px] font-black ' + (dk ? 'text-white' : 'text-slate-900') }, step.label), h('span', { className: 'block text-[9px] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, step.detail)));
+                        h('span', null, h('span', { className: 'block text-[10px] font-black ' + (dk ? 'text-white' : 'text-slate-900') }, step.label), h('span', { className: 'block text-[10px] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, step.detail)));
                     }))),
                   // Queen Actions bar
                   h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-purple-900/20 border-purple-700/40' : 'bg-purple-50 border-purple-200') },
-                    h('div', { className: 'mb-2 flex flex-wrap items-end justify-between gap-2' }, h('div', null, h('div', { className: 'text-xs font-black ' + (dk ? 'text-purple-300' : 'text-purple-800') }, __alloT('stem.beehive.pheromone_commands', '👑 Pheromone Commands')), h('p', { className: 'mt-0.5 text-[9px] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Instant signals that redirect worker behavior')), h('span', { className: 'rounded-full bg-purple-600 px-2 py-1 text-[9px] font-black text-white' }, QUEEN_ACTIONS.filter(function(action) { return hasQueenResources(action.cost); }).length + '/' + QUEEN_ACTIONS.length + ' ready')),
+                    h('div', { className: 'mb-2 flex flex-wrap items-end justify-between gap-2' }, h('div', null, h('div', { className: 'text-xs font-black ' + (dk ? 'text-purple-300' : 'text-purple-800') }, __alloT('stem.beehive.pheromone_commands', '👑 Pheromone Signals')), h('p', { className: 'mt-0.5 text-[10px] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Instant signals that redirect worker behavior')), h('span', { className: 'rounded-full bg-purple-600 px-2 py-1 text-[10px] font-black text-white' }, QUEEN_ACTIONS.filter(function(action) { return hasQueenResources(action.cost); }).length + '/' + QUEEN_ACTIONS.length + ' ready')),
                     h('div', { 'data-mobile-rail': 'pheromone-commands', style: { scrollbarWidth: 'thin', WebkitOverflowScrolling: 'touch' }, className: 'grid grid-flow-col auto-cols-[84%] gap-2 overflow-x-auto overscroll-x-contain scroll-px-1 snap-x snap-mandatory touch-pan-x pb-2 sm:grid-flow-row sm:auto-cols-auto sm:grid-cols-3 sm:overflow-visible sm:pb-0' },
                       QUEEN_ACTIONS.map(function(qa) {
                         var affordable = hasQueenResources(qa.cost);
@@ -22507,13 +24351,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                           'data-command-ready': affordable ? 'true' : 'false', className: 'group min-h-[96px] snap-center text-left p-3 rounded-xl border sm:snap-none transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 ' + (affordable ? (dk ? 'bg-slate-800 border-purple-700/30 hover:border-purple-500/50 hover:bg-slate-700' : 'bg-white border-purple-100 hover:border-purple-400 hover:shadow-sm') : (dk ? 'bg-slate-900/60 border-slate-700 text-slate-500 cursor-not-allowed opacity-65' : 'bg-slate-50 border-slate-400 text-slate-600 cursor-not-allowed opacity-70')) },
                           h('div', { className: 'flex items-center gap-1' },
                             h('span', null, qa.icon),
-                            h('span', { className: 'text-[11px] font-bold ' + (affordable ? (dk ? 'text-slate-200' : 'text-slate-800') : '') }, qa.label), h('span', { className: 'ml-auto rounded-full px-1.5 py-0.5 text-[8px] font-black uppercase ' + (affordable ? 'bg-emerald-500/15 text-emerald-500' : (dk ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600')) }, affordable ? 'Ready' : 'Locked')),
+                            h('span', { className: 'text-[11px] font-bold ' + (affordable ? (dk ? 'text-slate-200' : 'text-slate-800') : '') }, qa.label), h('span', { className: 'ml-auto rounded-full px-1.5 py-0.5 text-[10px] font-black uppercase ' + (affordable ? 'bg-emerald-500/15 text-emerald-500' : (dk ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600')) }, affordable ? 'Ready' : 'Locked')),
                           h('div', { className: 'text-[10px] mt-1 leading-relaxed ' + (affordable ? (dk ? 'text-slate-400' : 'text-slate-600') : '') }, qa.desc),
                           h('div', { className: 'inline-flex mt-1 rounded-full border px-1.5 py-0.5 text-[10px] font-bold ' + (affordable ? (dk ? 'border-purple-600/40 text-purple-300 bg-purple-900/20' : 'border-purple-200 text-purple-700 bg-purple-50') : (dk ? 'border-slate-700 text-slate-300 bg-slate-800' : 'border-slate-500 text-slate-700 bg-white')) }, affordable ? costText : queenResourceGapText(qa.cost)));
                       }))),
                   // Build structures
                   h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-amber-900/20 border-amber-700/40' : 'bg-amber-50 border-amber-200') },
-                    h('div', { className: 'flex flex-wrap items-end justify-between gap-2' }, h('div', null, h('div', { className: 'text-xs font-black ' + (dk ? 'text-amber-300' : 'text-amber-800') }, __alloT('stem.beehive.build_comb_structures', '🏗️ Build Comb Structures')), h('p', { className: 'mt-0.5 text-[9px] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Persistent economy, storage, and defense')), h('span', { className: 'rounded-full bg-amber-500 px-2 py-1 text-[9px] font-black text-slate-950' }, Object.keys(QUEEN_STRUCTURE_TYPES).filter(function(id) { return hasQueenResources(QUEEN_STRUCTURE_TYPES[id].cost); }).length + '/' + Object.keys(QUEEN_STRUCTURE_TYPES).length + ' ready')),
+                    h('div', { className: 'flex flex-wrap items-end justify-between gap-2' }, h('div', null, h('div', { className: 'text-xs font-black ' + (dk ? 'text-amber-300' : 'text-amber-800') }, __alloT('stem.beehive.build_comb_structures', '🏗️ Build Comb Structures')), h('p', { className: 'mt-0.5 text-[10px] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Persistent economy, storage, and defense')), h('span', { className: 'rounded-full bg-amber-500 px-2 py-1 text-[10px] font-black text-slate-950' }, Object.keys(QUEEN_STRUCTURE_TYPES).filter(function(id) { return hasQueenResources(QUEEN_STRUCTURE_TYPES[id].cost); }).length + '/' + Object.keys(QUEEN_STRUCTURE_TYPES).length + ' ready')),
                     h('p', { className: 'mb-2 mt-2 text-[10px] ' + (dk ? 'text-slate-300' : 'text-slate-600') }, queenBuildMode ? 'Placement mode: pick a cell in the grid below the battlefield, or click your left side of it.' : 'Choose a structure, then place it from the grid or directly on your comb.'),
                     h('div', { 'data-mobile-rail': 'comb-structures', style: { scrollbarWidth: 'thin', WebkitOverflowScrolling: 'touch' }, className: 'grid grid-flow-col auto-cols-[84%] gap-2 overflow-x-auto overscroll-x-contain scroll-px-1 snap-x snap-mandatory touch-pan-x pb-2 sm:grid-flow-row sm:auto-cols-auto sm:grid-cols-3 sm:overflow-visible sm:pb-0' },
                       Object.keys(QUEEN_STRUCTURE_TYPES).map(function(stId) {
@@ -22525,19 +24369,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                           'data-structure-ready': canBuild ? 'true' : 'false', 'data-structure-selected': queenBuildMode === stId ? 'true' : 'false', className: 'group min-h-[96px] snap-center text-left p-3 rounded-xl border sm:snap-none transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (queenBuildMode === stId ? 'ring-2 ring-amber-500 bg-amber-100 text-slate-900 ' : '') + (canBuild ? (dk ? 'bg-slate-800 border-amber-700/30 hover:border-amber-500/50 hover:bg-slate-700' : 'bg-white border-amber-100 hover:border-amber-400 hover:shadow-sm') : (dk ? 'bg-slate-900/60 border-slate-700 text-slate-500 cursor-not-allowed opacity-65' : 'bg-slate-50 border-slate-400 text-slate-600 cursor-not-allowed opacity-70')) },
                           h('div', { className: 'flex items-center gap-1' },
                             h('span', null, st.icon),
-                            h('span', { className: 'text-[11px] font-bold ' + (canBuild ? (dk ? 'text-slate-200' : 'text-slate-800') : '') }, st.label), h('span', { className: 'ml-auto rounded-full px-1.5 py-0.5 text-[8px] font-black uppercase ' + (queenBuildMode === stId ? 'bg-amber-500 text-slate-950' : canBuild ? 'bg-emerald-500/15 text-emerald-500' : (dk ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600')) }, queenBuildMode === stId ? 'Selected' : canBuild ? 'Ready' : 'Locked')),
+                            h('span', { className: 'text-[11px] font-bold ' + (canBuild ? (dk ? 'text-slate-200' : 'text-slate-800') : '') }, st.label), h('span', { className: 'ml-auto rounded-full px-1.5 py-0.5 text-[10px] font-black uppercase ' + (queenBuildMode === stId ? 'bg-amber-500 text-slate-950' : canBuild ? 'bg-emerald-500/15 text-emerald-500' : (dk ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600')) }, queenBuildMode === stId ? 'Selected' : canBuild ? 'Ready' : 'Locked')),
                           h('div', { className: 'text-[10px] mt-1 leading-relaxed ' + (canBuild ? (dk ? 'text-slate-400' : 'text-slate-600') : '') }, st.desc),
-                          h('div', { 'data-structure-preview': stId, className: 'mt-1 text-[9px] font-semibold leading-snug ' + (dk ? 'text-slate-400' : 'text-slate-600') }, queenStructurePreview(stId)),
+                          h('div', { 'data-structure-preview': stId, className: 'mt-1 text-[10px] font-semibold leading-snug ' + (dk ? 'text-slate-400' : 'text-slate-600') }, queenStructurePreview(stId)),
                           h('div', { className: 'inline-flex mt-1 rounded-full border px-1.5 py-0.5 text-[10px] font-bold ' + (canBuild ? (dk ? 'border-amber-600/40 text-amber-300 bg-amber-900/20' : 'border-amber-200 text-amber-700 bg-amber-50') : (dk ? 'border-slate-700 text-slate-300 bg-slate-800' : 'border-slate-500 text-slate-700 bg-white')) }, canBuild ? costStr : queenResourceGapText(st.cost)));
                       })),
                     queenBuildMode && h('section', { 'data-beehive-build-selection': 'true', className: 'mt-3 rounded-xl border-2 p-3 ' + (dk ? 'border-amber-600/60 bg-gradient-to-r from-amber-950/45 to-slate-950/35' : 'border-amber-300 bg-gradient-to-r from-amber-100/80 to-white'), 'aria-label': 'Placement armed for ' + QUEEN_STRUCTURE_TYPES[queenBuildMode].label },
                       h('div', { className: 'flex items-center gap-3' },
                         h('span', { className: 'grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-amber-500 text-xl shadow-sm', 'aria-hidden': 'true' }, QUEEN_STRUCTURE_TYPES[queenBuildMode].icon),
                         h('div', { className: 'min-w-0 flex-1' },
-                          h('div', { className: 'text-[9px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-amber-300' : 'text-amber-800') }, 'Placement armed'),
+                          h('div', { className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-amber-300' : 'text-amber-800') }, 'Placement armed'),
                           h('div', { className: 'truncate text-sm font-black ' + (dk ? 'text-white' : 'text-slate-900') }, QUEEN_STRUCTURE_TYPES[queenBuildMode].label),
                           h('p', { className: 'mt-0.5 text-[10px] ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Click a highlighted comb cell above, or choose an accessible zone below.')),
-                        h('button', { type: 'button', onClick: function() { updAll({ queen: Object.assign({}, queenData, { buildMode: null, feedback: { tone: 'info', text: 'Structure placement canceled. Choose another command when ready.' } }) }); announceBee('Structure placement canceled.', false); }, className: 'shrink-0 rounded-lg border px-3 py-2 text-[10px] font-black ' + (dk ? 'border-slate-600 bg-slate-900 text-slate-200 hover:bg-slate-800' : 'border-amber-300 bg-white text-amber-900 hover:bg-amber-50'), 'aria-label': 'Cancel ' + QUEEN_STRUCTURE_TYPES[queenBuildMode].label + ' placement' }, 'Cancel placement')),
+                        h('button', { type: 'button', onClick: function() { updAll({ queen: Object.assign({}, queenData, { buildMode: null, feedback: { tone: 'info', text: 'Structure placement canceled. Choose another strategy option when ready.' } }) }); announceBee('Structure placement canceled.', false); }, className: 'shrink-0 rounded-lg border px-3 py-2 text-[10px] font-black ' + (dk ? 'border-slate-600 bg-slate-900 text-slate-200 hover:bg-slate-800' : 'border-amber-300 bg-white text-amber-900 hover:bg-amber-50'), 'aria-label': 'Cancel ' + QUEEN_STRUCTURE_TYPES[queenBuildMode].label + ' placement' }, 'Cancel placement')),
                       h('div', { className: 'mt-3 border-t pt-3 ' + (dk ? 'border-amber-700/35' : 'border-amber-200') },
                         h('div', { className: 'text-[10px] font-black ' + (dk ? 'text-amber-300' : 'text-amber-800') }, 'Place without the canvas'),
                         h('p', { className: 'mt-0.5 text-[10px] ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Keyboard, touch, and switch users can choose the same reliable comb zones.'),
@@ -22585,7 +24429,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('div', null,
                   h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-400' : 'text-amber-700') }, __alloT('stem.beehive.choose_your_bee_stock', '🧬 Choose Your Bee Stock')),
                   h('p', { className: 'text-[11px] mt-0.5 ' + (dk ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.beehive.real_honeybees_come_in_distinct_geneti', 'Real honeybees come in distinct genetic lines, each adapted to different climates. Pick a subspecies — it will modify honey yield, winter survival, spring buildup, and varroa resistance throughout your colony\'s life.')),
-                  h('p', { className: 'text-[11px] mt-0.5 italic ' + (dk ? 'text-amber-500/70' : 'text-amber-600/70') }, 'Current selection: ' + activeSubspecies.emoji + ' ' + activeSubspecies.name + (d.subspecies ? '' : ' (default)'))),
+                  h('p', { className: 'text-[11px] mt-0.5 italic ' + (dk ? 'text-amber-300' : 'text-amber-800') }, 'Current selection: ' + activeSubspecies.emoji + ' ' + activeSubspecies.name + (d.subspecies ? '' : ' (default)'))),
                 d.subspecies && h('button', { onClick: function () { upd('stockPickerOpen', false); }, 'aria-label': __alloT('stem.beehive.collapse_stock_picker', 'Collapse stock picker'), className: 'px-2 py-1 rounded text-[11px] font-bold ' + (dk ? 'transition-colors bg-slate-800 text-slate-300 hover:bg-slate-700' : 'transition-colors bg-white text-slate-600 hover:bg-slate-100 border border-slate-400') }, __alloT('stem.beehive.collapse', '▲ Collapse'))),
             h('div', { className: 'grid grid-cols-1 gap-2' },
               SUBSPECIES.map(function(s) {
@@ -22639,7 +24483,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('div', null,
               h('div', { className: 'text-xs font-bold ' + (dk ? 'text-green-400' : 'text-green-700') }, __alloT('stem.beehive.choose_your_apiary_site', '📍 Choose Your Apiary Site')),
               h('p', { className: 'text-[11px] mt-0.5 ' + (dk ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.beehive.real_beekeepers_spend_weeks_choosing_a', 'Real beekeepers spend weeks choosing a site. Forage range, sun exposure, wind, water, and neighbors all matter. Your choice modifies nectar yield and disease pressure for this colony\'s life.')),
-              h('p', { className: 'text-[11px] mt-0.5 italic ' + (dk ? 'text-green-500/70' : 'text-green-600/70') }, 'Current: ' + activeSite.emoji + ' ' + activeSite.name + (d.apiarySite ? '' : ' (default)'))),
+              h('p', { className: 'text-[11px] mt-0.5 italic ' + (dk ? 'text-green-300' : 'text-green-800') }, 'Current: ' + activeSite.emoji + ' ' + activeSite.name + (d.apiarySite ? '' : ' (default)'))),
             h('div', { className: 'grid grid-cols-1 gap-2' },
               APIARY_SITES.map(function(s) {
                 var active = activeSite.id === s.id;
@@ -22777,6 +24621,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('div', { className: 'flex items-center justify-between mb-1' },
               h('div', { className: 'text-xs font-bold ' + (dk ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.beehive.keyboard_shortcuts_4', '⌨️ Keyboard Shortcuts')),
               h('button', { onClick: function() { upd('showKeys', false); }, className: 'text-[11px] px-2 py-0.5 rounded ' + (dk ? 'transition-colors text-slate-300 hover:bg-slate-700' : 'transition-colors text-slate-600 hover:bg-slate-100'), 'aria-label': __alloT('stem.beehive.close_shortcuts', 'Close shortcuts') }, '✕')),
+            h('label', { className: 'flex items-start gap-2 rounded-lg border px-3 py-2 text-[11px] ' + (dk ? 'border-slate-600 bg-slate-900/40 text-slate-200' : 'border-slate-300 bg-slate-50 text-slate-700') },
+              h('input', { type: 'checkbox', checked: d.oneKeyShortcuts !== false, onChange: function(e) { upd('oneKeyShortcuts', e.target.checked); }, className: 'mt-0.5 h-4 w-4' }),
+              h('span', null, h('strong', null, 'Enable one-key simulation shortcuts. '), 'Shortcuts work only while focus is inside Bee and never override focused buttons or form controls.')),
             h('div', { className: 'grid grid-cols-1 gap-1 sm:grid-cols-2' },
               [
                 ['N', 'Next Day'], ['T', 'Treat Varroa'], ['S', 'Add Super'],
@@ -22814,11 +24661,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('div', { className: 'grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3' },
               BADGE_DEFS.map(function(bd) {
                 var earned = !!(newBadges[bd.id]);
-                return h('div', { key: bd.id, className: 'flex items-start gap-2 p-2 rounded-lg border transition-all ' + (earned ? (dk ? 'bg-amber-900/30 border-amber-600/40' : 'bg-amber-50 border-amber-300') : (dk ? 'bg-slate-800/50 border-slate-700/50 opacity-50' : 'bg-slate-50 border-slate-200 opacity-50')), title: bd.desc },
+                return h('div', { key: bd.id, className: 'flex items-start gap-2 p-2 rounded-lg border transition-all ' + (earned ? (dk ? 'bg-amber-900/30 border-amber-600/40' : 'bg-amber-50 border-amber-300') : (dk ? 'bg-slate-800/60 border-slate-600/70' : 'bg-slate-50 border-slate-300')), title: bd.desc },
                   h('span', { className: 'text-xl ' + (earned ? '' : 'grayscale') }, bd.icon),
                   h('div', null,
-                    h('div', { className: 'text-[11px] font-bold ' + (earned ? (dk ? 'text-amber-300' : 'text-amber-800') : (dk ? 'text-slate-300' : 'text-slate-400')) }, bd.label),
-                    h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-300') }, bd.desc),
+                    h('div', { className: 'text-[11px] font-bold ' + (earned ? (dk ? 'text-amber-300' : 'text-amber-800') : (dk ? 'text-slate-300' : 'text-slate-600')) }, bd.label),
+                    h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, bd.desc),
                     earned && newBadges[bd.id].day !== undefined && h('div', { className: 'text-[10px] ' + (dk ? 'text-amber-500' : 'text-amber-600') }, '✓ Day ' + newBadges[bd.id].day)));
               }))),
 
@@ -22899,11 +24746,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               __alloT('stem.beehive.treat_when_mite_count_exceeds_2_of_bee', 'Treat when mite count exceeds ~2% of bees (about 15–20% on the Varroa meter here). Below that, the colony can usually manage mites via hygienic behavior.'))),
 
           // Event popup (beekeeper mode only)
-          viewMode === 'beekeeper' && activeEvent && h('div', { id: 'beehive-active-event', tabIndex: -1, 'data-beehive-focus-panel': 'event', role: 'alert', 'aria-live': 'assertive', className: 'rounded-xl border-2 p-4 space-y-2 ' + (activeEvent.effect && activeEvent.effect.morale > 0 ? (dk ? 'bg-amber-900/30 border-amber-600/50' : 'bg-amber-50 border-amber-300') : (dk ? 'bg-red-900/30 border-red-600/50' : 'bg-red-50 border-red-300')) },
+          viewMode === 'beekeeper' && activeEvent && h('div', { id: 'beehive-active-event', tabIndex: -1, 'data-beehive-focus-panel': 'event', role: 'region', 'aria-labelledby': 'beehive-active-event-title', className: 'rounded-xl border-2 p-4 space-y-2 ' + (activeEvent.effect && activeEvent.effect.morale > 0 ? (dk ? 'bg-amber-900/30 border-amber-600/50' : 'bg-amber-50 border-amber-300') : (dk ? 'bg-red-900/30 border-red-600/50' : 'bg-red-50 border-red-300')) },
             h('div', { className: 'flex items-center gap-2' },
               h('span', { className: 'text-2xl' }, activeEvent.emoji),
               h('div', null,
-                h('div', { className: 'font-bold text-sm ' + (dk ? 'text-slate-100' : '') }, activeEvent.label),
+                h('div', { id: 'beehive-active-event-title', className: 'font-bold text-sm ' + (dk ? 'text-slate-100' : '') }, activeEvent.label),
                 h('div', { className: 'text-xs ' + (dk ? 'text-slate-300' : 'text-slate-600') }, activeEvent.desc))),
             renderBeeEventForecast(activeEvent),
             h('div', { className: 'rounded-lg p-3 text-xs border ' + (dk ? 'bg-slate-800 text-slate-300 border-slate-700' : 'bg-white text-slate-700 border-slate-200') },
@@ -22926,11 +24773,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               className: 'px-3 py-1 rounded-full cursor-help ' + (dk ? 'bg-green-900/40 text-green-300 border border-green-700/40' : 'bg-green-50 text-green-800 border border-green-200') },
               activeSite.emoji + ' ' + activeSite.name),
             // Current varietal preview (what the next harvest would produce)
-            honey >= 15 && (function() {
+            honey > currentReserve && (function() {
               var vp = identifyVarietal();
-              return h('span', { title: vp.note + ' — Surplus ready to harvest: ' + Math.round((honey - 15) * 10) / 10 + ' lbs',
+              return h('span', { title: vp.note + ' — Surplus ready to harvest: ' + Math.round((honey - currentReserve) * 10) / 10 + ' lbs',
                 className: 'px-3 py-1 rounded-full cursor-help ' + (dk ? 'bg-orange-900/40 text-orange-300 border border-orange-600/40' : 'bg-orange-50 text-orange-800 border border-orange-200') },
-                vp.emoji + ' ' + vp.name + ' · ' + (Math.round((honey - 15) * 10) / 10) + ' lbs ready');
+                vp.emoji + ' ' + vp.name + ' · ' + (Math.round((honey - currentReserve) * 10) / 10) + ' lbs ready');
             })()),
 
           // Colony Dashboard (beekeeper mode only)
@@ -23054,10 +24901,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               );
             })(),
             h('div', { className: 'grid grid-cols-4 gap-2 text-center mb-3' },
-              h('div', { className: 'rounded-lg p-2 ' + (dk ? 'bg-slate-800' : 'bg-white'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } }, h('div', { className: 'text-lg font-black text-amber-500', style: { fontFamily: 'monospace' } }, fmtPop(workers)), h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-200' : 'text-slate-600') }, __alloT('stem.beehive.workers', '👷 Workers'))),
-              h('div', { className: 'rounded-lg p-2 ' + (dk ? 'bg-slate-800' : 'bg-white'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } }, h('div', { className: 'text-lg font-black text-pink-500', style: { fontFamily: 'monospace' } }, fmtPop(brood)), h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-200' : 'text-slate-600') }, __alloT('stem.beehive.brood_2', '🥚 Brood'))),
-              h('div', { className: 'rounded-lg p-2 ' + (dk ? 'bg-slate-800' : 'bg-white'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } }, h('div', { className: 'text-lg font-black text-blue-400', style: { fontFamily: 'monospace' } }, drones), h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-200' : 'text-slate-600') }, __alloT('stem.beehive.drones', '♂ Drones'))),
-              h('div', { className: 'rounded-lg p-2 ' + (dk ? 'bg-slate-800' : 'bg-white'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } }, h('div', { className: 'text-lg font-black ' + (queenHealth > 70 ? 'text-purple-400' : 'text-red-500'), style: { fontFamily: 'monospace' } }, queenHealth + '%'), h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-200' : 'text-slate-600') }, __alloT('stem.beehive.queen_2', '👑 Queen')))),
+              h('div', { className: 'rounded-lg p-2 ' + (dk ? 'bg-slate-800' : 'bg-white'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } }, h('div', { className: 'text-lg font-black ' + (dk ? 'text-amber-300' : 'text-amber-800'), style: { fontFamily: 'monospace' } }, fmtPop(workers)), h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-200' : 'text-slate-600') }, __alloT('stem.beehive.workers', '👷 Workers'))),
+              h('div', { className: 'rounded-lg p-2 ' + (dk ? 'bg-slate-800' : 'bg-white'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } }, h('div', { className: 'text-lg font-black ' + (dk ? 'text-pink-300' : 'text-pink-800'), style: { fontFamily: 'monospace' } }, fmtPop(brood)), h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-200' : 'text-slate-600') }, __alloT('stem.beehive.brood_2', '🥚 Brood'))),
+              h('div', { className: 'rounded-lg p-2 ' + (dk ? 'bg-slate-800' : 'bg-white'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } }, h('div', { className: 'text-lg font-black ' + (dk ? 'text-blue-300' : 'text-blue-800'), style: { fontFamily: 'monospace' } }, drones), h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-200' : 'text-slate-600') }, __alloT('stem.beehive.drones', '♂ Drones'))),
+              h('div', { className: 'rounded-lg p-2 ' + (dk ? 'bg-slate-800' : 'bg-white'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } }, h('div', { className: 'text-lg font-black ' + (queenHealth > 70 ? (dk ? 'text-purple-300' : 'text-purple-800') : (dk ? 'text-red-300' : 'text-red-700')), style: { fontFamily: 'monospace' } }, queenHealth + '%'), h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-200' : 'text-slate-600') }, __alloT('stem.beehive.queen_2', '👑 Queen')))),
             // Meters
             (function() {
               // ── Click-to-expand stat explainers ──
@@ -23113,7 +24960,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 meterRow('varroa',
                   dk ? 'text-red-400' : 'text-red-700', '🦟', 'Varroa Mites',
                   varroaLevel + '%',
-                  varroaLevel > 30 ? 'text-red-500 font-bold' : (dk ? 'text-slate-200' : 'text-slate-600'),
+                  varroaLevel > 30 ? (dk ? 'text-red-300 font-bold' : 'text-red-700 font-bold') : (dk ? 'text-slate-200' : 'text-slate-600'),
                   'bg-gradient-to-r from-red-500 to-red-400',
                   varroaLevel,
                   {
@@ -23128,7 +24975,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 meterRow('morale',
                   dk ? 'text-amber-300' : 'text-amber-700', '😊', 'Colony Morale',
                   morale + '%',
-                  morale < 40 ? 'text-red-500 font-bold' : (dk ? 'text-slate-200' : 'text-slate-600'),
+                  morale < 40 ? (dk ? 'text-red-300 font-bold' : 'text-red-700 font-bold') : (dk ? 'text-slate-200' : 'text-slate-600'),
                   'bg-gradient-to-r from-amber-500 to-amber-400',
                   morale,
                   {
@@ -23158,7 +25005,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 meterRow('disease',
                   dk ? 'text-purple-300' : 'text-purple-700', '🦠', 'Disease Risk',
                   diseaseRisk + '%' + (diseaseRisk > 45 ? ' ⚠ outbreak likely' : ''),
-                  diseaseRisk > 45 ? 'text-red-500 font-bold' : diseaseRisk > 25 ? 'text-amber-400 font-bold' : (dk ? 'text-slate-200' : 'text-slate-600'),
+                  diseaseRisk > 45 ? (dk ? 'text-red-300 font-bold' : 'text-red-700 font-bold') : diseaseRisk > 25 ? (dk ? 'text-amber-300 font-bold' : 'text-amber-800 font-bold') : (dk ? 'text-slate-200' : 'text-slate-600'),
                   'bg-gradient-to-r from-purple-500 to-pink-500',
                   diseaseRisk,
                   {
@@ -23231,6 +25078,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 });
               },
               style: { display: 'block', width: '100%', borderRadius: '8px' },
+              // role="img" is load-bearing: <canvas> has no implicit role, and an
+              // aria-label on a role-less element is not reliably exposed. Every
+              // other labelled canvas in this file pairs the two.
+              role: 'img',
               'aria-label': 'Colony metrics history chart showing workers, honey, varroa, and morale over ' + history.length + ' days'
             })
           ),
@@ -23254,7 +25105,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               { id: 'low_morale',   when: function() { return morale < 35; },
                 q: 'Bees don\'t have brains the way mammals do. What does "low morale" actually mean for a colony? What physical mechanisms produce that aggregate signal?',
                 think: 'Disrupted queen pheromone (QMP), alarm pheromone (isopentyl acetate) building up, fewer waggle dances recruiting foragers, reduced trophallaxis (food sharing).' },
-              { id: 'low_honey_winter', when: function() { return honey < 25 && season === 3; },
+              { id: 'low_honey_winter', when: function() { return honey < reserveTargets[2] && season === 2; },
                 q: 'A wild colony with this little honey going into winter would almost certainly die. Should beekeepers always supplement? What\'s the argument FOR letting some colonies fail?',
                 think: 'Selection pressure breeds resistance. The opposing view: with varroa pressure as it is now, almost no untreated colony can survive — natural selection isn\'t working on bees the way it would.' },
               // ── Seasonal
@@ -23293,7 +25144,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             var prompt = pool[rIdx];
             var showThink = !!d.reflectionThink;
             return h('div', { className: 'rounded-xl border-l-4 p-3 ' + (dk ? 'bg-indigo-900/15 border-indigo-500 text-slate-100' : 'bg-indigo-50 border-indigo-400 text-slate-700'),
-              role: 'region', 'aria-label': __alloT('stem.beehive.reflection_question', 'Reflection question') },
+              role: 'region', 'data-reflection-prompt': prompt.id, 'aria-label': __alloT('stem.beehive.reflection_question', 'Reflection question') },
               h('div', { className: 'flex items-center justify-between mb-1.5' },
                 h('div', { className: 'flex items-center gap-2' },
                   h('span', { 'aria-hidden': 'true', className: 'text-base' }, '💭'),
@@ -23467,7 +25318,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('p', { className: 'font-bold mb-1 ' + (dk ? 'text-amber-300' : 'text-amber-800') }, __alloT('stem.beehive.next_time_try', '\uD83D\uDCA1 Next time, try:')),
               h('ul', { className: 'space-y-0.5 pl-4 list-disc ' + (dk ? 'text-slate-200' : 'text-slate-600') },
                 varroaLevel > 30 && h('li', null, __alloT('stem.beehive.treat_varroa_mites_as_soon_as_levels_e', 'Treat varroa mites as soon as levels exceed 15\u201320%')),
-                honey < 10 && h('li', null, __alloT('stem.beehive.feed_sugar_syrup_before_honey_drops_be', 'Feed sugar syrup before honey drops below 15 lbs')),
+                honey < currentReserve && h('li', null, __alloT('stem.beehive.feed_sugar_syrup_before_honey_drops_be', 'Feed before stores fall below the current seasonal reserve')),
                 habitat < 40 && h('li', null, __alloT('stem.beehive.plant_wildflowers_and_build_bee_hotels', 'Plant wildflowers and build bee hotels to improve habitat')),
                 h('li', null, __alloT('stem.beehive.monitor_colony_health_every_few_days_n', 'Monitor colony health every few days, not just when problems appear')),
                 h('li', null, __alloT('stem.beehive.plant_a_companion_garden_connects_to_t', 'Plant a companion garden (connects to the Companion Planting tool!)'))
@@ -23477,7 +25328,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('div', { className: 'text-center' },
               h('button', {
                 'aria-label': __alloT('stem.beehive.start_a_new_colony_from_scratch', 'Start a new colony from scratch'),
-                onClick: function() { updAll({ day: 0, workers: 10000, brood: 3000, drones: 500, queenHealth: 100, honey: 20, pollen: 15, wax: 5, varroaLevel: 5, morale: 80, foragingEfficiency: 70, score: 0, colonySurvived: true, pesticideExposure: 0, habitat: 50, actionPoints: 3, totalHoney: 0, eventsHandled: 0, eventLog: [], history: [], activeEvent: null, lastAdvance: null, totalFlowerVisits: 0, yearReviewsSeen: [], journal: [], diseaseRisk: 0 }); if (addToast) addToast('\uD83D\uDC1D New colony established! Apply what you learned.', 'success'); },
+                onClick: function() { updAll(bhCreateNewColonyState()); if (addToast) addToast('\uD83D\uDC1D New colony established! Apply what you learned.', 'success'); },
                 className: 'px-6 py-2.5 bg-amber-700 text-white rounded-xl font-bold text-sm hover:bg-amber-800 shadow-md transition-all hover:scale-[1.02]'
               }, __alloT('stem.beehive.start_new_colony_apply_what_you_learne', '\uD83D\uDD04 Start New Colony \u2014 Apply What You Learned'))
             )
@@ -23492,25 +25343,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               [
                 { label: SEASON_GOALS[0].goals[0], met: workers >= 20000 },
                 { label: SEASON_GOALS[0].goals[1], met: varroaLevel < 15 },
-                { label: SEASON_GOALS[0].goals[2], met: honey >= 30 }
+                { label: SEASON_GOALS[0].goals[2], met: honey >= reserveTargets[0] }
               ],
               // Summer
               [
-                { label: SEASON_GOALS[1].goals[0], met: (d.totalHarvested || 0) > 0 || (d.lifetimeHarvest || 0) > 0 },
+                { label: SEASON_GOALS[1].goals[0], met: d.lastHarvestSeason === 1 && d.lastHarvestYear === year && honey >= reserveTargets[1] },
                 { label: SEASON_GOALS[1].goals[1], met: wax >= 15 || (d.supersAdded || 0) > 0 },
                 { label: SEASON_GOALS[1].goals[2], met: (typeof gardenBonus !== 'undefined' && gardenBonus > 0) }
               ],
               // Autumn
               [
-                { label: SEASON_GOALS[2].goals[0], met: honey >= 40 },
+                { label: SEASON_GOALS[2].goals[0], met: honey >= reserveTargets[2] },
                 { label: SEASON_GOALS[2].goals[1], met: varroaLevel < 10 || (d.varroaTreats || 0) > 0 },
                 { label: SEASON_GOALS[2].goals[2], met: queenHealth >= 70 }
               ],
               // Winter
               [
                 { label: SEASON_GOALS[3].goals[0], met: workers >= 10000 },
-                { label: SEASON_GOALS[3].goals[1], met: honey >= 10 },
-                { label: SEASON_GOALS[3].goals[2], met: habitat >= 60 || ((d.conservationActions || []).length > 0) }
+                { label: SEASON_GOALS[3].goals[1], met: honey >= reserveTargets[3] },
+                { label: SEASON_GOALS[3].goals[2], met: habitat >= 60 || (d.conservationsDone || 0) > 0 }
               ]
             ];
             var seasonGoalsList = goalPreds[season] || goalPreds[0];
@@ -23523,7 +25374,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('span', {
                   className: 'text-[11px] font-bold px-2 py-0.5 rounded-full ' + (goalsHit === seasonGoalsList.length ? (dk ? 'bg-emerald-900/50 text-emerald-300' : 'bg-emerald-100 text-emerald-700') : (dk ? 'bg-indigo-900/50 text-indigo-300' : 'bg-indigo-100 text-indigo-700'))
                 }, goalsHit + ' / ' + seasonGoalsList.length + (goalsHit === seasonGoalsList.length ? ' ✓ complete' : '')),
-                h('span', { className: 'text-[11px] ml-auto ' + (dk ? 'text-indigo-400' : 'text-indigo-500') }, '🎯 ' + actionPoints + '/3 actions today')
+                h('span', { className: 'text-[11px] ml-auto ' + (dk ? 'text-indigo-300' : 'text-indigo-700') }, '🎯 ' + actionPoints + '/3 actions today')
               ),
               h('ul', { className: 'space-y-1', role: 'list' },
                 seasonGoalsList.map(function(g, i) {
@@ -23630,13 +25481,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('div', { className: 'rounded-lg border p-2 ' + (dk ? 'bg-green-900/20 border-green-700/40' : 'bg-green-50 border-green-200') },
               h('div', { className: 'flex justify-between text-[11px] mb-0.5' },
                 h('span', { className: 'font-bold ' + (dk ? 'text-green-300' : 'text-green-700') }, __alloT('stem.beehive.local_habitat', '🌳 Local Habitat')),
-                h('span', { className: habitat > 60 ? 'text-green-500' : habitat > 30 ? 'text-yellow-500' : 'text-red-500', style: { fontFamily: 'monospace' } }, habitat + '%')),
+                h('span', { className: habitat > 60 ? (dk ? 'text-green-300' : 'text-green-700') : habitat > 30 ? (dk ? 'text-yellow-300' : 'text-yellow-800') : (dk ? 'text-red-300' : 'text-red-700'), style: { fontFamily: 'monospace' } }, habitat + '%')),
               h('div', { className: 'h-2.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-green-100'), style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
                 h('div', { style: { width: habitat + '%' }, className: 'h-full bg-gradient-to-r from-green-500 to-emerald-400 rounded-full transition-all' }))),
             h('div', { className: 'rounded-lg border p-2 ' + (dk ? 'bg-red-900/20 border-red-700/40' : 'bg-red-50 border-red-200') },
               h('div', { className: 'flex justify-between text-[11px] mb-0.5' },
                 h('span', { className: 'font-bold ' + (dk ? 'text-red-300' : 'text-red-700') }, __alloT('stem.beehive.pesticide_exposure', '☠️ Pesticide Exposure')),
-                h('span', { className: pesticideExposure > 20 ? 'text-red-500 font-bold' : (dk ? 'text-slate-200' : 'text-slate-600'), style: { fontFamily: 'monospace' } }, pesticideExposure + '%')),
+                h('span', { className: pesticideExposure > 20 ? (dk ? 'text-red-300 font-bold' : 'text-red-700 font-bold') : (dk ? 'text-slate-200' : 'text-slate-600'), style: { fontFamily: 'monospace' } }, pesticideExposure + '%')),
               h('div', { className: 'h-2.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-red-100'), style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
                 h('div', { style: { width: pesticideExposure + '%' }, className: 'h-full bg-gradient-to-r from-red-500 to-red-400 rounded-full transition-all' })))),
 
@@ -23647,13 +25498,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('div', { className: 'flex items-center justify-between gap-2 rounded-xl border px-3 py-2 ' + (dk ? 'border-amber-700/40 bg-amber-950/25' : 'border-amber-200 bg-amber-50/80'), role: 'region', 'aria-label': 'Colony interventions and action budget' },
               h('div', { className: 'min-w-0' },
                 h('div', { className: 'text-xs font-black ' + (dk ? 'text-amber-200' : 'text-amber-900') }, 'Colony interventions'),
-                h('div', { className: 'text-[10px] leading-snug ' + (dk ? 'text-amber-300/80' : 'text-amber-800/80') }, actionPoints > 0 ? 'Choose a move, then advance the day to refresh your budget.' : 'All action points spent ? advance a day to refresh.')),
+                h('div', { className: 'text-[10px] leading-snug ' + (dk ? 'text-amber-300/80' : 'text-amber-800/80') }, actionPoints > 0 ? 'Choose a move, then advance the day to refresh your budget.' : 'All action points spent \u2192 advance a day to refresh.')),
               h('div', { 'data-action-budget': 'true', role: 'status', 'aria-live': 'polite', 'aria-label': actionPoints + ' of 3 action points available', className: 'shrink-0 rounded-lg border px-2 py-1 text-right ' + (dk ? 'border-amber-700/50 bg-slate-900/45' : 'border-amber-200 bg-white/80') },
-                h('div', { className: 'text-[8px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-amber-300' : 'text-amber-700') }, 'Action budget'),
+                h('div', { className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-amber-300' : 'text-amber-700') }, 'Action budget'),
                 h('div', { className: 'flex items-center justify-end gap-0.5 text-[12px] leading-none ' + (dk ? 'text-amber-300' : 'text-amber-600') },
                   [0, 1, 2].map(function(i) {
                     var pointAvailable = actionPoints > i;
-                    return h('span', { key: i, 'data-action-point': String(i + 1), 'data-action-point-state': pointAvailable ? 'available' : 'spent', 'aria-hidden': 'true', className: pointAvailable ? 'opacity-100' : 'opacity-25' }, pointAvailable ? '?' : '?');
+                    return h('span', { key: i, 'data-action-point': String(i + 1), 'data-action-point-state': pointAvailable ? 'available' : 'spent', 'aria-hidden': 'true', className: pointAvailable ? 'opacity-100' : 'opacity-25' }, pointAvailable ? '\u25CF' : '\u25CB');
                   }),
                   h('span', { className: 'ml-1 text-[10px] font-black' }, actionPoints + '/3')))
             ),
@@ -23698,14 +25549,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       b.diseaseRisk = Math.max(0, (typeof b.diseaseRisk === 'number' ? b.diseaseRisk : 0) - reduceDisease);
                       b.morale = Math.min(100, (typeof b.morale === 'number' ? b.morale : 80) + 2);
                       b.hygieneActions = (b.hygieneActions || 0) + 1;
-                    })) return;
-                    playSfx(sfxSuccess);
-                    if (addToast) addToast('🧽 Hive hygiene: frames cleaned, dead bees removed. Disease risk −' + reduceDisease + '%.', 'success');
-                    if (awardStemXP) awardStemXP('beehive', 5, 'Hive hygiene');
-                    triggerBeekeeperAction('hygiene', 'Cleaning frames and removing dead bees.', '🧽');
+                    }, { onCommit: function() {
+                      playSfx(sfxSuccess);
+                      if (addToast) addToast('🧽 Hive hygiene: frames cleaned, dead bees removed. Disease risk −' + reduceDisease + '%.', 'success');
+                      if (awardStemXP) awardStemXP('beehive', 5, 'Hive hygiene');
+                      triggerBeekeeperAction('hygiene', 'Cleaning frames and removing dead bees.', '🧽');
+                    } })) return;
                   }, icon: '\uD83E\uDDFD', label: __alloT('stem.beehive.hygiene', 'Hygiene'), tip: __alloT('stem.beehive.clean_comb_remove_dead_bees_improve_ve', 'Clean comb, remove dead bees, improve ventilation (−disease risk)'), disabled: diseaseRisk < 5, locked: 'Disease risk is low', effect: '-18 disease / +2 morale', costLabel: '1 AP', color: 'purple' },
                 { onClick: addSuper, icon: '\uD83D\uDCE6', label: __alloT('stem.beehive.super', 'Super'), tip: __alloT('stem.beehive.add_honey_super_10_morale_2_wax', 'Add honey super (+capacity, +morale, lower swarm risk) — 1 AP'), disabled: actionPoints < 1, locked: 'Need 1 AP', effect: '+40 capacity / +10 morale', costLabel: '1 AP', color: 'blue' },
-                { onClick: harvestHoney, icon: '\uD83C\uDF6F', label: __alloT('stem.beehive.harvest', 'Harvest'), tip: __alloT('stem.beehive.harvest_surplus_honey_need_15_lbs', 'Harvest surplus honey (need 15+ lbs) — 1 AP'), disabled: honey <= 15 || actionPoints < 1, locked: honey <= 15 ? 'Need more than 15 lb' : 'Need 1 AP', effect: 'Collect surplus / leave 15 lb', costLabel: '1 AP', color: 'amber' },
+                { onClick: harvestHoney, icon: '\uD83C\uDF6F', label: __alloT('stem.beehive.harvest', 'Harvest'), tip: 'Harvest only honey above the ' + currentReserve + ' lb reserve for ' + currentReserveWhy + ' — 1 AP', disabled: honey <= currentReserve || actionPoints < 1, locked: honey <= currentReserve ? 'Need more than ' + currentReserve + ' lb' : 'Need 1 AP', effect: 'Collect surplus / leave ' + currentReserve + ' lb', costLabel: '1 AP', color: 'amber' },
                 { onClick: feedBees, icon: '\uD83E\uDED9', label: 'Feed', tip: __alloT('stem.beehive.feed_sugar_syrup_5_lbs_honey_5_morale', 'Feed sugar syrup (+5 lbs honey, +5 morale) — 1 AP'), disabled: actionPoints < 1, locked: 'Need 1 AP', effect: '+5 honey / +5 morale', costLabel: '1 AP', color: 'slate' },
                 { onClick: requeenColony, icon: '\uD83D\uDC51', label: __alloT('stem.beehive.requeen', 'Requeen'), tip: __alloT('stem.beehive.install_a_new_queen_restores_queenheal', 'Install a new queen — restores queenHealth to 100 (2 AP)'), disabled: actionPoints < 2, locked: 'Need 2 AP', effect: 'Queen to 100% / -5 morale', costLabel: '2 AP', color: 'purple' },
                 // Split and Winterize (2026-07-30). Both were missing responses to mechanics the
@@ -23735,9 +25587,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 },
                   h('span', { className: 'text-xl leading-none' }, btn.icon),
                   h('span', { className: 'text-[11px] font-black' }, btn.label),
-                  h('span', { className: 'text-[9px] leading-tight ' + (enabled ? (dk ? 'text-slate-300' : 'text-slate-600') : '') }, btn.effect),
-                  h('span', { 'data-management-cost-badge': btn.label, className: 'rounded-full border px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wide ' + (enabled ? (dk ? 'border-amber-600/40 bg-amber-900/25 text-amber-300' : 'border-amber-200 bg-amber-50 text-amber-700') : (dk ? 'border-slate-700 bg-slate-900/60 text-slate-500' : 'border-slate-200 bg-white/70 text-slate-400')) }, costLabel),
-                  h('span', { className: 'mt-auto rounded-full px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wide ' + (enabled ? 'bg-emerald-500/15 text-emerald-500' : (dk ? 'bg-slate-900/60 text-slate-500' : 'bg-white/70 text-slate-400')) }, enabled ? costLabel + ' ? Ready' : btn.locked));
+                  h('span', { className: 'text-[10px] leading-tight ' + (enabled ? (dk ? 'text-slate-300' : 'text-slate-600') : '') }, btn.effect),
+                  h('span', { 'data-management-cost-badge': btn.label, className: 'rounded-full border px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wide ' + (enabled ? (dk ? 'border-amber-600/40 bg-amber-900/25 text-amber-300' : 'border-amber-200 bg-amber-50 text-amber-700') : (dk ? 'border-slate-700 bg-slate-900/60 text-slate-500' : 'border-slate-200 bg-white/70 text-slate-400')) }, costLabel),
+                  h('span', { className: 'mt-auto rounded-full px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wide ' + (enabled ? 'bg-emerald-500/15 text-emerald-500' : (dk ? 'bg-slate-900/60 text-slate-500' : 'bg-white/70 text-slate-400')) }, enabled ? costLabel + ' \u00B7 Ready' : btn.locked));
               })),
 
             // Conservation Actions
@@ -23750,24 +25602,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   return h('button', { key: action.id, 'aria-label': action.label + ': ' + action.desc + '. Effect: ' + effectText + '. Cost: ' + action.cost + ' action points.' + (actionPoints < action.cost ? ' Not enough action points.' : ''), 'data-conservation-impact': action.id, 'data-conservation-ready': conservationReady ? 'true' : 'false',
                     onClick: function() {
                       if (actionPoints < action.cost) { if (addToast) addToast('Need ' + action.cost + ' action points (have ' + actionPoints + '). Advance to next day for more.', 'info'); return; }
-                      // Apply against LIVE state so two conservation actions in
-                      // one batch each pay their AP (was last-write-wins on the
-                      // captured snapshot → a free action).
-                      updFn(function(b) {
-                        if ((typeof b.actionPoints === 'number' ? b.actionPoints : 3) < action.cost) return;
-                        var before = Object.assign({}, b);
-                        b.actionPoints = (typeof b.actionPoints === 'number' ? b.actionPoints : 3) - action.cost;
-            b.conservationsDone = (b.conservationsDone || 0) + 1;
+                      // Conservation moves share the committed AP path too.
+                      // This is deliberately not a direct updater: every ecological
+                      // benefit, evidence record, and reward now belongs to one
+                      // transaction, so a rapid click cannot create free habitat
+                      // gains or duplicate XP. Exposure is clamped here as well as
+                      // in the daily model because restored legacy state may be
+                      // outside the modern zero-to-one-hundred contract.
+                      if (!apAction(action.cost, action.label, function(b) {
+                        b.conservationsDone = (b.conservationsDone || 0) + 1;
                         var e = action.effect;
                         if (e.habitat) b.habitat = Math.min(100, (b.habitat || 50) + e.habitat);
                         if (e.foragingEfficiency) b.foragingEfficiency = Math.min(100, (typeof b.foragingEfficiency === 'number' ? b.foragingEfficiency : 70) + e.foragingEfficiency);
                         if (e.morale) b.morale = Math.min(100, (typeof b.morale === 'number' ? b.morale : 80) + e.morale);
-                        if (e.pesticideExposure) b.pesticideExposure = Math.max(0, (b.pesticideExposure || 0) + e.pesticideExposure);
+                        if (e.pesticideExposure) b.pesticideExposure = Math.max(0, Math.min(100, (b.pesticideExposure || 0) + e.pesticideExposure));
                         if (e.score) b.score = (b.score || 0) + e.score;
-                        b.lastManagement = managementEvidenceRecord(action.label, action.cost + ' AP', before, b, action.label + ' applied. Compare the ecological benefit with the colony forecast.');
-                      });
-                      if (addToast) addToast(action.emoji + ' ' + action.label + ': ' + action.lesson, 'success');
-                      if (awardStemXP) awardStemXP('beehive', 8, 'Conservation action');
+                      }, {
+                        summary: action.label + ' applied. Compare the ecological benefit with the colony forecast.',
+                        onCommit: function() {
+                          if (addToast) addToast(action.emoji + ' ' + action.label + ': ' + action.lesson, 'success');
+                          if (awardStemXP) awardStemXP('beehive', 8, 'Conservation action');
+                        }
+                      })) return;
                     },
                     title: action.desc + ' (Cost: ' + action.cost + ' AP)',
                     className: 'text-left p-2 rounded-lg border transition-all ' + (dk ? 'bg-slate-800 border-emerald-700/30 hover:border-emerald-500/50 hover:bg-slate-700' : 'bg-white border-emerald-100 hover:border-emerald-400 hover:shadow-sm') + (actionPoints < action.cost ? ' opacity-40' : '')
@@ -23776,7 +25632,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       h('span', null, action.emoji),
                       h('span', { className: 'text-[11px] font-bold ' + (dk ? 'text-slate-200' : 'text-slate-800') }, action.label)),
                     h('div', { className: 'text-[11px] mt-0.5 ' + (dk ? 'text-slate-200' : 'text-slate-600') }, action.cost + ' AP · ' + action.desc),
-                    h('div', { 'data-conservation-preview': action.id, className: 'mt-1 text-[9px] font-semibold leading-snug ' + (dk ? 'text-emerald-300' : 'text-emerald-700') }, 'Impact: ' + effectText));
+                    h('div', { 'data-conservation-preview': action.id, className: 'mt-1 text-[10px] font-semibold leading-snug ' + (dk ? 'text-emerald-300' : 'text-emerald-700') }, 'Impact: ' + effectText));
                 }))),
 
           // Hive Inspection (full view replacement, beekeeper only)
@@ -23784,7 +25640,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
           // ── AI Beehive Tutor (reading-level aware, current view) ──
           viewMode === 'beekeeper' && !showInspect && (function () {
-            var aiLevel = d.aiLevel || 'grade5';
+            var aiLevel = d.aiLevel || (beeGradeBand === 'K–2' ? 'plain' : beeGradeBand === '9–12' ? 'hs' : 'grade5');
             var aiText = d['aiExplain_' + beeView] || '';
             var aiLoading = !!d['aiLoading_' + beeView];
             var aiError = d['aiError_' + beeView] || '';
@@ -23793,22 +25649,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               { id: 'grade5', label: __alloT('stem.beehive.grade_5_2', 'Grade 5'), hint: __alloT('stem.beehive.for_a_5th_grade_student_brief_and_frie_2', 'for a 5th grade student, brief and friendly') },
               { id: 'hs', label: __alloT('stem.beehive.high_school_2', 'High School'), hint: __alloT('stem.beehive.for_a_high_school_biology_student_scie_2', 'for a high school biology student, scientifically accurate') }
             ];
-            var VIEW_LABELS = { scene: 'the hive scene', anatomy: 'bee anatomy', physics: 'bee flight physics', lifecycle: 'the bee lifecycle', honey: 'honey production', waggle: 'the waggle dance', thermo: 'hive thermoregulation', castes: 'bee castes (queen / worker / drone)', pheromones: 'bee pheromones', threats: 'colony threats' };
-            var viewLabel = VIEW_LABELS[beeView] || beeView;
-            function upd2(k, v) { setLabToolData(function (prev) { return Object.assign({}, prev, { beehive: Object.assign({}, prev.beehive, (function(){var o={};o[k]=v;return o;})()) }); }); }
+            // Use the canonical 18-view registry rather than a second partial map.
+            // This keeps newly added science views tutor-ready automatically and
+            // prevents the prompt label from silently falling back to an internal id.
+            // Colony measurements below also come from the same derived values shown
+            // in the dashboard, so the tutor cannot describe cumulative production as
+            // stored honey or invent a season field that the simulation never writes.
+            var viewLabel = activeBeeView.shortDesc || activeBeeView.label || beeView;
+            function upd2(k, v, requestId) {
+              if (requestId && _aiTutorRequestRef.current[beeView] !== requestId) return;
+              setLabToolData(function (prev) {
+                if (requestId && _aiTutorRequestRef.current[beeView] !== requestId) return prev;
+                var patch = {}; patch[k] = v;
+                return Object.assign({}, prev, { beehive: Object.assign({}, prev.beehive || {}, patch) });
+              });
+            }
             function explain() {
               if (typeof callGemini !== 'function') { upd2('aiError_' + beeView, 'AI tutor not available.'); return; }
-              upd2('aiLoading_' + beeView, true); upd2('aiError_' + beeView, ''); upd2('aiExplain_' + beeView, '');
+              var requestId = beeView + ':' + Date.now() + ':' + Math.random().toString(36).slice(2);
+              _aiTutorRequestRef.current[beeView] = requestId;
+              upd2('aiLoading_' + beeView, true, requestId); upd2('aiError_' + beeView, '', requestId); upd2('aiExplain_' + beeView, '', requestId);
               var lv = LEVELS.find(function (L) { return L.id === aiLevel; }) || LEVELS[1];
               var prompt = 'Explain this part of a honeybee hive ' + lv.hint + '. '
-                + 'Current view: ' + viewLabel + '. Colony state: ' + (d.day || 0) + ' days old, ' + (d.workers || 0) + ' workers, ' + (d.totalHoney || 0) + ' honey units stored, season: ' + (d.season || 'spring') + '. '
+                + 'Current view: ' + viewLabel + '. Learner grade band: ' + beeGradeBand + '. Colony state: ' + day + ' days old, ' + workers + ' workers, ' + honey + ' lb currently stored, season: ' + seasonNames[season] + '. '
                 + 'In 3 short sentences: (1) What the student is looking at. (2) The most surprising or important fact about this part of hive biology. (3) One everyday observation (in a garden, kitchen, or park) that connects to it. '
                 + 'No markdown, no bullets, no headings. Plain prose.';
               callGemini(prompt, false, false, 0.5).then(function (resp) {
-                upd2('aiExplain_' + beeView, String(resp || '').trim()); upd2('aiLoading_' + beeView, false);
+                if (_aiTutorRequestRef.current[beeView] !== requestId) return;
+                upd2('aiExplain_' + beeView, String(resp || '').trim(), requestId); upd2('aiLoading_' + beeView, false, requestId);
                 if (typeof announceToSR === 'function') announceToSR('Explanation ready.');
               }).catch(function () {
-                upd2('aiLoading_' + beeView, false); upd2('aiError_' + beeView, 'Could not reach AI tutor. Try again in a moment.');
+                if (_aiTutorRequestRef.current[beeView] !== requestId) return;
+                upd2('aiLoading_' + beeView, false, requestId); upd2('aiError_' + beeView, 'Could not reach AI tutor. Try again in a moment.', requestId);
               });
             }
             return h('div', { className: 'mt-1 mb-2 p-3 rounded-xl border-2 ' + (dk ? 'border-purple-700 bg-purple-950/40' : 'border-purple-200 bg-purple-50'), role: 'region', 'aria-label': __alloT('stem.beehive.ai_beehive_tutor', 'AI beehive tutor') },
@@ -23839,14 +25711,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             );
           })(),
 
-          // Science cards (beekeeper only, when not inspecting)
+          // Science cards (beekeeper only, when not inspecting).
+          // Keep these summaries conditional and model-bounded: shelf stability
+          // depends on sealed, dry storage; brood temperature is a regulated
+          // range rather than an exact whole-nest set point; CCD names a specific
+          // syndrome rather than every colony loss; and the waggle dance is
+          // described as a landmark example without claiming exclusivity.
           viewMode === 'beekeeper' && !showInspect &&
           h('div', { className: 'grid grid-cols-2 gap-3', role: 'region', 'aria-label': __alloT('stem.beehive.bee_science_quick_reference_cards', 'Bee science quick reference cards') },
             [
-              { title: __alloT('stem.beehive.the_waggle_dance', '💃 The Waggle Dance'), text: __alloT('stem.beehive.when_a_forager_finds_nectar_she_perfor', 'When a forager finds nectar, she performs a figure-8 dance on the comb. The angle of the waggle run (relative to vertical) encodes the direction relative to the sun. The duration encodes distance. Karl von Frisch won the 1973 Nobel Prize for decoding this — the only known symbolic language in non-human animals.') },
-              { title: __alloT('stem.beehive.the_superorganism', '🧠 The Superorganism'), text: __alloT('stem.beehive.a_honeybee_colony_is_a_superorganism_5', 'A honeybee colony is a superorganism — 50,000 individuals functioning as a single living entity. The queen is the reproductive system. Workers are the immune system, digestive system, and nervous system. Drones are the reproductive cells. Temperature is regulated at exactly 35°C (95°F) through fanning and clustering — like a warm-blooded animal made of thousands of cold-blooded insects.') },
-              { title: __alloT('stem.beehive.from_nectar_to_honey', '🍯 From Nectar to Honey'), text: __alloT('stem.beehive.nectar_is_80_water_bees_convert_it_to_', 'Nectar is 80% water. Bees convert it to honey (18% water) through enzymatic processing (invertase breaks sucrose into glucose + fructose) and evaporative concentration (bees fan their wings to dehydrate the nectar). Once the moisture content drops below 18.6%, they cap the cell with beeswax. Honey never spoils — edible honey has been found in 3,000-year-old Egyptian tombs.') },
-              { title: __alloT('stem.beehive.colony_collapse_disorder_2', '⚠️ Colony Collapse Disorder'), text: __alloT('stem.beehive.since_2006_beekeepers_have_reported_lo', 'Since 2006, beekeepers have reported losing 30-50% of colonies annually. CCD involves workers abandoning the hive, leaving the queen and brood behind. Causes include: varroa mites + viruses they transmit, neonicotinoid pesticides, habitat loss reducing forage diversity, and nutritional stress from monoculture agriculture. Your garden\'s pollinator plants directly combat the habitat loss component.') }
+              { title: __alloT('stem.beehive.the_waggle_dance', '💃 The Waggle Dance'), text: __alloT('stem.beehive.when_a_forager_finds_nectar_she_perfor', 'When a forager finds nectar, she performs a figure-8 dance on the comb. The waggle-run angle encodes direction relative to the sun, and its duration encodes distance. Karl von Frisch shared the 1973 Nobel Prize for decoding this landmark example of symbolic referential communication in an invertebrate.') },
+              { title: __alloT('stem.beehive.the_superorganism', '🧠 The Superorganism'), text: __alloT('stem.beehive.a_honeybee_colony_is_a_superorganism_5', 'A honeybee colony is a superorganism — thousands of individuals coordinating as one system. The queen is the reproductive system; workers collectively provide many digestive, defensive, and information-processing functions; drones carry a reproductive role. The brood area is usually kept near 34–36°C (93–97°F) through heating, fanning, water evaporation, clustering, and worker movement.') },
+              { title: __alloT('stem.beehive.from_nectar_to_honey', '🍯 From Nectar to Honey'), text: __alloT('stem.beehive.nectar_is_80_water_bees_convert_it_to_', 'Nectar is mostly water. Bees turn it into honey through enzymatic processing and evaporative concentration, then cap cells when moisture is low enough. Properly ripened honey stored sealed and dry can remain stable for a very long time, but absorbed moisture can allow osmophilic yeasts to ferment it.') },
+              { title: __alloT('stem.beehive.colony_collapse_disorder_2', '⚠️ Colony Collapse Disorder'), text: __alloT('stem.beehive.since_2006_beekeepers_have_reported_lo', 'Colony Collapse Disorder (CCD) describes a specific syndrome in which most adult workers disappear while the queen, brood, and food remain. It is not a label for every colony loss. Honey bee health reflects interacting pressures including Varroa and viruses, nutrition and forage, pesticide exposure, weather, queen problems, and management conditions.') }
             ].map(function(sc) {
               return h('div', { key: sc.title, className: 'rounded-xl border p-3 transition-all hover:shadow-md ' + (dk ? 'bg-slate-800 border-slate-700 hover:border-amber-600/40' : 'bg-white border-slate-200 hover:border-amber-300'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.05)' } },
                 h('h4', { className: 'text-xs font-bold mb-1 ' + (dk ? 'text-slate-200' : 'text-slate-800') }, sc.title),
@@ -23866,7 +25743,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             else if (hiveTempC < 32) state = 'chilled';
             else state = 'compensating';
             var sm = {
-              optimal:      { label: __alloT('stem.beehive.optimal_35_c', '🟢 Optimal (35 °C)'),  color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.beehive.brood_healthy_colony_thermoregulating', 'Brood healthy. Colony thermoregulating.') },
+              optimal:      { label: __alloT('stem.beehive.optimal_35_c', '🟢 Typical brood range (34–36 °C)'),  color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.beehive.brood_healthy_colony_thermoregulating', 'Brood healthy. Colony thermoregulating.') },
               overheating:  { label: __alloT('stem.beehive.overheating', '🔥 Overheating'),       color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.beehive.brood_at_risk_above_36_c', 'Brood at risk above 36°C.') },
               chilled:      { label: __alloT('stem.beehive.chilled_brood', '🧊 Chilled brood'),     color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: __alloT('stem.beehive.below_32_c_development_fails', 'Below 32°C development fails.') },
               compensating: { label: __alloT('stem.beehive.within_tolerance', '🟡 Within tolerance'),  color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.beehive.maintains_range_but_costs_energy', 'Maintains range but costs energy.') }
@@ -23895,12 +25772,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('button', { onClick: function() { setIQ({ outsideC: 20, beesFanning: 30, broodCount: 5000, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.beehive.reset', '↺ Reset'))
               ),
               h('label', { htmlFor: 'beehive-thermo-hypothesis', className: 'block text-[11px] font-bold text-slate-700' }, 'Your hypothesis'),
-              h('textarea', { id: 'beehive-thermo-hypothesis', value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.beehive.hypothesis_at_40_c_outside_how_many_fa', 'Hypothesis: At 40°C outside, how many fanning bees maintain 35°C brood?'),
+              h('textarea', { id: 'beehive-thermo-hypothesis', value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.beehive.hypothesis_at_40_c_outside_how_many_fa', 'Hypothesis: At 40°C outside, how many fanning bees keep the brood area near 34–36°C?'),
                 className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
               !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.beehive.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
               iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
                 h('ul', { className: 'list-disc pl-5 space-y-1' },
-                  h('li', null, __alloT('stem.beehive.brood_tolerance_is_35_0_5_c_investigat', 'Brood tolerance is 35 ± 0.5°C. Investigate why so tight.')),
+                  h('li', null, __alloT('stem.beehive.brood_tolerance_is_35_0_5_c_investigat', 'Healthy brood generally develops near 34–36°C. Investigate how bees limit temperature swings.')),
                   h('li', null, __alloT('stem.beehive.what_is_the_cost_of_constant_fanning', 'What is the cost of constant fanning?')))),
               h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
                 h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
@@ -23928,6 +25805,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       bhStepColony: bhStepColony,
       bhForecastColony: bhForecastColony,
       SIMULATION_PARAMS: SIMULATION_PARAMS,
+      DRONE_FLIGHT_PARAMS: DRONE_FLIGHT_PARAMS,
+      bhCreateNewColonyState: bhCreateNewColonyState,
+      // 3D scene builders. Exported so a browser harness can render and
+      // SCREENSHOT the hive and forage-map geometry without booting the whole
+      // app — a 3D claim that has never been looked at is not a verified claim.
+      HIVE_3D_PARTS: HIVE_3D_PARTS, QUEEN_3D_PARTS: QUEEN_3D_PARTS,
+      bhCombCellRole: bhCombCellRole, bhCombCellColor: bhCombCellColor,
+      bhQueenMarkIndex: bhQueenMarkIndex, BH_QUEEN_MARK_NAMES: BH_QUEEN_MARK_NAMES,
+      hive3dBuildScene: hive3dBuildScene, queen3dBuildScene: queen3dBuildScene,
+      build3dMiniBee: build3dMiniBee, beatBeeWings: beatBeeWings,
       BEE_SPECIES: BEE_SPECIES, COLONY_ROLES: COLONY_ROLES,
       WAGGLE_DANCE_GUIDE: WAGGLE_DANCE_GUIDE, POLLINATOR_PLANTS: POLLINATOR_PLANTS,
       COLONY_THREATS: COLONY_THREATS, HONEY_VARIETALS: HONEY_VARIETALS,

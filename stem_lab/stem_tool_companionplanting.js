@@ -1,4 +1,4 @@
-// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -402,6 +402,32 @@ var d = (labToolData.companionPlanting) || {};
 
           ];
 
+          // The authored banks put 80% of correct answers in slot 2 (measured
+          // 2/8/0/0 across quizzes + garden scenarios; later slots never),
+          // rewarding position-guessing. Rotate each question by a
+          // deterministic per-question offset: questions are re-derived from
+          // the bank on every render (quizzes[quizQ % ...]), so a random
+          // shuffle would deal new options under the student mid-question,
+          // while a fixed rotation is stable across renders. The quizzes bank
+          // grades by option TEXT (opt === currentQuiz.correct), so rotating
+          // opts alone is safe; GARDEN_SCENARIOS grades by INDEX, so its
+          // `correct` moves with the options. explain strings are not
+          // positional in either bank.
+          var cpRotateQuestion = function(q, seedIdx) {
+            var opts = q.opts || q.options;
+            if (!opts || opts.length < 2) return q;
+            var n = opts.length;
+            var shift = ((seedIdx * 7) + 3) % n;
+            if (shift === 0) return q;
+            var rotated = new Array(n);
+            for (var i = 0; i < n; i++) rotated[(i + shift) % n] = opts[i];
+            var next = Object.assign({}, q);
+            if (q.opts) next.opts = rotated; else next.options = rotated;
+            if (typeof q.correct === 'number') next.correct = (q.correct + shift) % n;
+            return next;
+          };
+          quizzes = quizzes.map(function(q, qi) { return cpRotateQuestion(q, qi); });
+
           var currentQuiz = quizzes[quizQ % quizzes.length];
 
           // === Wave 1: COMPANION_PAIRS ===
@@ -563,6 +589,31 @@ var d = (labToolData.companionPlanting) || {};
               options: ['Plant drought-resistant varieties only', 'Use squash as living mulch between rows', 'Water at night', 'Dig deeper beds'], correct: 1,
               explain: 'Living mulch (squash, clover, sweet potato vines) shades soil, reducing evaporation by 40-60% and soil temperature by 10\u00B0F. This is exactly why squash is a "Sister" \u2014 it\'s nature\'s mulch!', concept: 'Living Mulch & Water Conservation' }
           ];
+          // The authored scenarios put the answer in slot 2 eight times out of
+          // ten and never in slots 3 or 4, so it could be guessed by position.
+          // Rotate each scenario by a per-question offset.
+          //
+          // Deterministic and applied once to the bank: the active scenario is
+          // re-read as GARDEN_SCENARIOS[gardenScenarioIdx] on every render, so a
+          // render-time Math.random() would deal new options mid-question.
+          //
+          // Correctness is index-based (oi === sc.correct), so `correct` is
+          // remapped with the options. `explain` is one string covering the whole
+          // scenario, not per-option feedback, so it needs no reordering.
+          function cgRotateScenario(sc, seedIdx) {
+            if (!sc || !Array.isArray(sc.options) || sc.options.length < 2) return sc;
+            var n = sc.options.length;
+            var shift = ((seedIdx * 7) + 3) % n;
+            if (shift === 0) return sc;
+            var out = Object.assign({}, sc);
+            var moved = new Array(n);
+            for (var i = 0; i < n; i++) moved[(i + shift) % n] = sc.options[i];
+            out.options = moved;
+            if (typeof sc.correct === "number") out.correct = (sc.correct + shift) % n;
+            return out;
+          }
+          GARDEN_SCENARIOS = GARDEN_SCENARIOS.map(cgRotateScenario);
+
 
           // === Wave 3: GARDEN_FACTS ===
           var GARDEN_FACTS = [
@@ -12676,7 +12727,7 @@ var d = (labToolData.companionPlanting) || {};
                   h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ c: iq.cornDensity, b: iq.beanDensity, sq: iq.squashDensity, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.companionplanting.log', '📋 Log')),
                   h('button', { onClick: function() { setIQ({ cornDensity: 50, beanDensity: 30, squashDensity: 20, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.companionplanting.reset', '↺ Reset'))
                 ),
-                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.companionplanting.hypothesis_what_ratio_makes_the_three_', 'Hypothesis: What ratio makes the Three Sisters mutually beneficial?'),
+                h('textarea', { 'aria-label': __alloT('stem.companionplanting.hypothesis_input', 'Three Sisters ratio hypothesis'), value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.companionplanting.hypothesis_what_ratio_makes_the_three_', 'Hypothesis: What ratio makes the Three Sisters mutually beneficial?'),
                   className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
                 !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.companionplanting.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
                 iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
@@ -12686,7 +12737,7 @@ var d = (labToolData.companionPlanting) || {};
                 h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
                   h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                   __alloT('stem.companionplanting.i_understand_explain_in_own_words', 'I understand — explain in own words')),
-                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.companionplanting.explain_how_each_species_supports_the_', 'Explain how each species supports the others.'),
+                iq.understood && h('textarea', { 'aria-label': __alloT('stem.companionplanting.explanation_input', 'Three Sisters ratio explanation'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.companionplanting.explain_how_each_species_supports_the_', 'Explain how each species supports the others.'),
                   className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
                 h('div', { className: 'text-[10px] italic text-slate-500' }, __alloT('stem.companionplanting.design_note_discrete_4_state_synergy_m', 'Design note: discrete 4-state synergy marker; no yield score; no reveal — by design.'))
               );

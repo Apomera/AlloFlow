@@ -101,7 +101,23 @@ export function loadTool(file, toolId) {
  * Build a defensive ctx with no-op stubs for every callback most tools
  * reach for. Per-tool overrides can be merged in by the test.
  */
-export function makeCtx(overrides) {
+export function newStore(seedToolData) {
+  return { toolData: seedToolData || {}, labToolData: {}, dirty: false };
+}
+
+// Upper bound on state-settling passes in renderTool().
+export const SETTLE_PASSES = 5;
+
+export function makeCtx(overrides, store) {
+  store = store || newStore();
+  function applyUpdater(key, arg) {
+    const prev = store[key] || {};
+    const next = (typeof arg === 'function') ? arg(prev) : arg;
+    if (next && next !== prev) {
+      store[key] = next;
+      store.dirty = true;
+    }
+  }
   const Icons = new Proxy({}, {
     get: function () {
       // Every icon is a function component that renders an empty span.
@@ -112,14 +128,21 @@ export function makeCtx(overrides) {
   });
   const base = {
     React: React,
-    toolData: {},
-    setToolData: function (fn) {
-      // setToolData typically takes (prev) => next. We just call with current
-      // toolData and discard — render is pure under defaults for the smoke.
-      if (typeof fn === 'function') { try { fn(base.toolData); } catch (e) { /* ignore */ } }
+    toolData: store.toolData,
+    // State setters write into `store` rather than discarding. Many tools
+    // self-initialize on first render (setLabToolData/setToolData, then return a
+    // "Loading..." placeholder) and only show their real UI once state exists.
+    // Discarding the write pinned those tools' snapshots to the placeholder.
+    // renderTool() below replays until the writes stop.
+    setToolData: function (fn) { applyUpdater('toolData', fn); },
+    labToolData: store.labToolData,
+    setLabToolData: function (fn) { applyUpdater('labToolData', fn); },
+    update: function (k, v) {
+      applyUpdater('toolData', function (p) { const n = Object.assign({}, p); n[k] = v; return n; });
     },
-    update: noop,
-    updateMulti: noop,
+    updateMulti: function (o) {
+      applyUpdater('toolData', function (p) { return Object.assign({}, p, o || {}); });
+    },
     setStemLabTool: noop,
     setStemLabTab: noop,
     setToolSnapshots: noop,
@@ -170,9 +193,18 @@ export function renderTool(toolId, toolData, overrides) {
   if (!cfg || typeof cfg.render !== 'function') {
     throw new Error('renderTool: ' + toolId + ' has no render fn (load first?)');
   }
-  const ctx = makeCtx(Object.assign({ toolData: toolData || {} }, overrides || {}));
-  const Comp = function () { return cfg.render(ctx); };
-  return ReactDOMServer.renderToStaticMarkup(React.createElement(Comp));
+  // Replay until the tool stops writing state, so self-initializing tools are
+  // snapshotted on their real UI instead of their "Loading..." placeholder.
+  const store = newStore(toolData || {});
+  let html = '';
+  for (let pass = 0; pass < SETTLE_PASSES; pass++) {
+    store.dirty = false;
+    const ctx = makeCtx(Object.assign({ toolData: store.toolData }, overrides || {}), store);
+    const Comp = function () { return cfg.render(ctx); };
+    html = ReactDOMServer.renderToStaticMarkup(React.createElement(Comp));
+    if (!store.dirty) break;
+  }
+  return html;
 }
 
 /**

@@ -59,7 +59,7 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -1697,6 +1697,61 @@ window.StemLab = window.StemLab || {
     return valid ? state : null;
   }
 
+  // Keep the launcher URL and popup fallback deterministic so the browser UI and
+  // the desktop webview follow the same path. Some embedded hosts deny
+  // window.open() without throwing; falling back to this tab is preferable to a
+  // silent no-op, and the selected stretch object is carried in the query string.
+  function geoImmersiveLabUrl(locationLike, mode, selectedObject) {
+    var immersiveBase = 'https://alloflow-cdn.pages.dev/immersive_geometry/immersive_geometry.html';
+    try {
+      var immersiveHost = String(locationLike && locationLike.hostname || '');
+      var immersiveOrigin = String(locationLike && locationLike.origin || '');
+      if (immersiveOrigin && (/^(localhost|127\.0\.0\.1)$/i.test(immersiveHost) || /alloflow/i.test(immersiveHost))) {
+        immersiveBase = immersiveOrigin + '/immersive_geometry/immersive_geometry.html';
+      }
+    } catch (_) {}
+    var params = ['v=2', 'source=geosandbox'];
+    var launchState = mode === 'stretch' ? geoImmersiveLaunchState(selectedObject) : null;
+    if (launchState) {
+      ['d', 'L', 'W', 'H', 'axis'].forEach(function(key) {
+        params.push(key + '=' + encodeURIComponent(launchState[key]));
+      });
+      params.push('target=1', 'boundary=0');
+    }
+    return immersiveBase + '?' + params.join('&');
+  }
+
+  function geoOpenImmersiveLab(url, environment) {
+    environment = environment || {};
+    if (!url) return { opened: false, mode: 'none', reason: 'invalid-url' };
+    var openWindow = typeof environment.openWindow === 'function'
+      ? environment.openWindow
+      : function(nextUrl, name, features) { return window.open(nextUrl, name, features); };
+    var popup = null;
+    try {
+      popup = openWindow(url, 'alloflow-immersive-geometry', 'width=1180,height=820');
+    } catch (_) { popup = null; }
+    if (popup) {
+      try { if (typeof popup.focus === 'function') popup.focus(); } catch (_) {}
+      return { opened: true, mode: 'popup', reason: null };
+    }
+
+    if (typeof environment.beforeSameWindow === 'function') {
+      try { environment.beforeSameWindow(url); } catch (_) {}
+    }
+    var navigateSameWindow = typeof environment.navigateSameWindow === 'function'
+      ? environment.navigateSameWindow
+      : function(nextUrl) {
+          if (!window.location || typeof window.location.assign !== 'function') return false;
+          window.location.assign(nextUrl);
+          return true;
+        };
+    try {
+      if (navigateSameWindow(url) !== false) return { opened: true, mode: 'same-window', reason: 'popup-blocked' };
+    } catch (_) {}
+    return { opened: false, mode: 'none', reason: 'navigation-blocked' };
+  }
+
   function geoStretchMeasure(o) {
     if (!o) return null;
     if (o.type === 'point')   return { dim: 0, kind: 'point',  value: 0, unitExp: 0, formula: '—', label: 'Point' };
@@ -2560,6 +2615,9 @@ window.StemLab = window.StemLab || {
       geoSculptRepresentation: geoSculptRepresentation, geoSculptScaleStudy: geoSculptScaleStudy,
       geoSculptDragSteps: geoSculptDragSteps, geoRestoreSculptPart: geoRestoreSculptPart,
       geoSculptSliceStudy: geoSculptSliceStudy, geoSculptSliceProfile: geoSculptSliceProfile,
+      geoImmersiveLaunchState: geoImmersiveLaunchState,
+      geoImmersiveLabUrl: geoImmersiveLabUrl,
+      geoOpenImmersiveLab: geoOpenImmersiveLab,
       SCULPT_GRID_UNIT: SCULPT_GRID_UNIT,
       geoPrismNet: geoPrismNet
     };
@@ -4071,22 +4129,28 @@ window.StemLab = window.StemLab || {
               onClick: function() {
                 // Top-level window (Video-Studio / Access-Lens escape-hatch), so WebXR
                 // works even when the AlloFlow app is inside Gemini Canvas's sandboxed iframe.
-                var immersiveBase = 'https://alloflow-cdn.pages.dev/immersive_geometry/immersive_geometry.html';
-                try {
-                  var immersiveHost = String(window.location && window.location.hostname || '');
-                  if (/^(localhost|127\.0\.0\.1)$/i.test(immersiveHost) || /alloflow/i.test(immersiveHost)) immersiveBase = window.location.origin + '/immersive_geometry/immersive_geometry.html';
-                } catch (_) {}
-                var url = immersiveBase + '?v=2&source=geosandbox';
                 var selectedForImmersive = construction.objects.find(function(o) { return o.id === construction.selection; });
-                var launchState = mode === 'stretch' ? geoImmersiveLaunchState(selectedForImmersive) : null;
-                if (launchState) {
-                  ['d', 'L', 'W', 'H', 'axis'].forEach(function(key) { url += '&' + key + '=' + encodeURIComponent(launchState[key]); });
-                  url += '&target=1&boundary=0';
+                var url = geoImmersiveLabUrl(window.location, mode, selectedForImmersive);
+                var fallbackNotice = t('stem.geosandbox.open_immersive_fallback', 'Pop-ups are blocked, so the Immersive Geometry Lab is opening in this tab. Use Back to return.');
+                var result = geoOpenImmersiveLab(url, {
+                  openWindow: function(nextUrl, name, features) { return window.open(nextUrl, name, features); },
+                  beforeSameWindow: function() {
+                    if (announceToSR) announceToSR(fallbackNotice);
+                    if (typeof addToast === 'function') addToast(fallbackNotice, 'info');
+                  },
+                  navigateSameWindow: function(nextUrl) {
+                    if (!window.location || typeof window.location.assign !== 'function') return false;
+                    window.location.assign(nextUrl);
+                    return true;
+                  }
+                });
+                if (!result.opened) {
+                  var blockedNotice = t('stem.geosandbox.open_immersive_blocked', 'The immersive lab could not open. Allow pop-ups or open links for this page, then try again.');
+                  if (announceToSR) announceToSR(blockedNotice);
+                  if (typeof addToast === 'function') addToast(blockedNotice, 'error');
+                  return;
                 }
-                var w = null;
-                try { w = window.open(url, 'alloflow-immersive-geometry', 'width=1180,height=820'); } catch (_) { w = null; }
-                if (!w) { if (announceToSR) announceToSR(t('stem.geosandbox.open_immersive_blocked', 'The immersive window was blocked. Allow pop-ups for this page, then try again.')); return; }
-                if (announceToSR) announceToSR(t('stem.geosandbox.open_immersive_sr', 'Opened the Immersive Geometry Lab in a new window.'));
+                if (result.mode === 'popup' && announceToSR) announceToSR(t('stem.geosandbox.open_immersive_sr', 'Opened the Immersive Geometry Lab in a new window.'));
               },
               title: t('stem.geosandbox.open_immersive_title', 'Open the Immersive Geometry Lab in a new window — stretch a point into a line, a line into a plane, a plane into a solid, on a desktop or in VR'),
               className: 'px-3 py-1.5 text-xs font-bold transition-all rounded-full flex items-center gap-1 text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 shadow-md shadow-violet-600/20'

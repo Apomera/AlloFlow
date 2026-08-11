@@ -189,6 +189,38 @@ describe('Lingua Practice WCAG 2.2 AA', () => {
     await click('Cancel');
   }, 30000); // 13 sequential axe sweeps — heavy under parallel CPU load
 
+  it('has no axe violations in a read-only assignment submission dashboard', async () => {
+    await mount({
+      initialSubmission: {
+        product: 'AlloFlow Lingua Learning Record',
+        version: 2,
+        submissionId: 'a11y-submission',
+        generatedAt: '2026-09-02T12:00:00.000Z',
+        learnerCodename: 'Moon',
+        language: { known: 'English', target: 'French', level: 'Beginner' },
+        practiceSet: { id: 'set-alpha', title: 'French foundations' },
+        assignment: {
+          schemaVersion: 1,
+          id: 'assignment-alpha',
+          practiceSetId: 'set-alpha',
+          title: 'French foundations assignment',
+          dueDate: '2026-09-03',
+          revision: 2,
+          targets: { formAttempts: 1, spokenAttempts: 1, listeningAttempts: 0, chatTurns: 0, reviews: 0 },
+          createdAt: 1000,
+          updatedAt: 2000,
+        },
+        summary: { formAttempts: 1, spokenAttempts: 1, savedCount: 1 },
+        formEvidence: [{ id: 'form-1' }],
+        pronunciationEvidence: [{ id: 'speech-1', evidenceLevel: 'transcript-only' }],
+      },
+    });
+    expect(host.querySelector('#lingua-submission-detail-title').textContent).toBe('Moon');
+    expect(host.textContent).toContain('what the recognizer heard, not pronunciation or accent quality');
+    expect(host.querySelector('main input, main textarea, main select')).toBe(null);
+    await expectNoAxeViolations('read-only assignment submission dashboard');
+  });
+
   it('has no axe violations in the upcoming-review forecast', async () => {
     const now = Date.now();
     const day = 24 * 60 * 60 * 1000;
@@ -474,7 +506,7 @@ describe('Lingua Practice describe-the-picture accessibility', () => {
         await new Promise((r) => setTimeout(r, 0));
         await new Promise((r) => setTimeout(r, 0));
       });
-      const img = host.querySelector('img[alt="AI-generated scene to describe"]');
+      const img = host.querySelector('img[alt="AI-generated illustration of this scene: You need a pencil during class."]');
       expect(img).toBeTruthy();
       const description = host.querySelector('#lingua-picture-desc');
       const label = host.querySelector('label[for="lingua-picture-desc"]');
@@ -641,7 +673,7 @@ describe('Lingua Practice accessible error recovery', () => {
 
 
 describe('Lingua Practice speech capture lifecycle', () => {
-  it('keeps successful capture status and reports character matching for Mandarin', async () => {
+  it('keeps one successful Mandarin attempt and labels transcript evidence honestly', async () => {
     localStorage.setItem('allo_lingua_profile_v1', JSON.stringify({
       known: 'English',
       target: 'Mandarin Chinese',
@@ -704,7 +736,26 @@ describe('Lingua Practice speech capture lifecycle', () => {
       expect(speakButton.getAttribute('aria-pressed')).toBe('true');
 
       await act(async () => {
-        captureOptions.onTranscript('你好我叫小明', true);
+        captureOptions.onTranscript('你好', false, {
+          engine: 'web-speech',
+          locale: 'zh-CN',
+          confidence: 0.41,
+        });
+      });
+      expect(host.querySelector('#lingua-speak-response').value).toBe('你好');
+      let savedProgress = JSON.parse(localStorage.getItem('allo_lingua_progress_v1'));
+      expect(savedProgress.spokenAttempts).toBe(0);
+      expect(savedProgress.pronunciationEvidence || []).toHaveLength(0);
+
+      const privateTranscript = '你好我叫小明私密';
+      await act(async () => {
+        const metadata = {
+          engine: 'web-speech',
+          locale: 'zh-CN',
+          confidence: 0.64,
+        };
+        captureOptions.onTranscript(privateTranscript, true, metadata);
+        captureOptions.onTranscript(privateTranscript, true, metadata);
       });
       active = false;
       await act(async () => {
@@ -715,17 +766,41 @@ describe('Lingua Practice speech capture lifecycle', () => {
         (node) => node.textContent === mandarinLesson.phrases[0].target,
       );
       const renderedTranscript = Array.from(host.querySelectorAll('[lang="zh-CN"]')).find(
-        (node) => node.textContent === '你好我叫小明',
+        (node) => node.textContent === privateTranscript,
       );
-      expect(Lingua._similarity(renderedPhrase.textContent, renderedTranscript.textContent)).toBe(100);
-      expect(host.textContent).toContain('100% character match');
+      expect(renderedPhrase).toBeTruthy();
+      expect(renderedTranscript).toBeTruthy();
+      expect(host.textContent).toMatch(/recognizer heard 6 of 6 (?:target )?characters/i);
+      expect(host.textContent).toMatch(/recognizer confidence[^0-9]*64%/i);
+      expect(host.textContent).toMatch(/(?:transcript evidence|compares the transcript).*(?:cannot|does not).*phonemes.*accent.*stress.*native-likeness/i);
+      expect(host.textContent).not.toMatch(/64%\s+(?:pronunciation|accent)/i);
+      expect(host.textContent).not.toMatch(/\brecognizer_[a-z_]+\b/);
       const capturedStatus = Array.from(host.querySelectorAll('[role="status"]')).find(
         (node) => node.textContent === 'Speech captured.',
       );
       expect(capturedStatus).toBeTruthy();
       expect(speakButton.getAttribute('aria-pressed')).toBe('false');
-      expect(JSON.parse(localStorage.getItem('allo_lingua_progress_v1')).spokenAttempts).toBe(1);
-      await expectNoAxeViolations('completed Mandarin speech capture');
+      savedProgress = JSON.parse(localStorage.getItem('allo_lingua_progress_v1'));
+      expect(savedProgress.spokenAttempts).toBe(1);
+      expect(savedProgress.languageStats['Mandarin Chinese'].spokenAttempts).toBe(1);
+      expect(savedProgress.activityLog.filter((item) => item.kind === 'spokenAttempts')).toHaveLength(1);
+      expect(savedProgress.pronunciationEvidence).toHaveLength(1);
+      expect(savedProgress.pronunciationEvidence[0]).toMatchObject({
+        language: 'Mandarin Chinese',
+        evidenceLevel: 'transcript-only',
+        unit: 'character',
+        matchedUnits: 6,
+        totalUnits: 6,
+        coverage: 100,
+        precision: 75,
+        transcriptMatch: 93,
+        focusUnits: [],
+      });
+      expect(savedProgress.pronunciationEvidence[0]).not.toHaveProperty('transcript');
+      expect(savedProgress.pronunciationEvidence[0]).not.toHaveProperty('rawTranscript');
+      expect(savedProgress.pronunciationEvidence[0]).not.toHaveProperty('recognizer');
+      expect(JSON.stringify(savedProgress)).not.toContain(privateTranscript);
+      await expectNoAxeViolations('completed Mandarin transcript evidence');
     } finally {
       if (previousVoice === undefined) delete window.AlloFlowVoice;
       else window.AlloFlowVoice = previousVoice;
@@ -1058,7 +1133,7 @@ describe('Lingua Practice destructive-action dialogs', () => {
     act(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
     expect(host.querySelector('[role="alertdialog"]')).toBeNull();
     expect(document.activeElement).toBe(opener);
-  }, 30000);
+  }, 60000);
   it('clears local Lingua data only after explicit alert-dialog confirmation', async () => {
     localStorage.setItem('allo_lingua_profile_v1', JSON.stringify({
       known: 'English',

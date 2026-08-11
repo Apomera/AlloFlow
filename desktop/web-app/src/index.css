@@ -16,3 +16,100 @@ code {
     font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
         monospace;
 }
+
+/*
+ * Touch-device affordances.
+ *
+ * Scoped to `pointer: coarse` so desktop layout is untouched: these rules only
+ * apply where the primary input is a finger.
+ *
+ * 1. iOS Safari zooms the whole page when a form control with a font under
+ *    16px receives focus, and does not zoom back out. Several controls in the
+ *    header use text-xs (12px) and text-[11px]. Raising the *rendered* font to
+ *    16px on touch is the only fix that does not break pinch zoom; the
+ *    alternative (maximum-scale=1 on the viewport meta) disables user zoom and
+ *    fails WCAG 1.4.4.
+ *
+ * 2. WCAG 2.5.5 asks for a 44px minimum target. Small icon buttons (p-1/p-1.5
+ *    around a 12px icon land at 32x32) are hard to hit accurately with a
+ *    thumb. min-height/min-width raises the hit area without changing the
+ *    icon, so the visual design holds.
+ */
+/*
+ * `!important` is load-bearing here, not laziness. These are element
+ * selectors (specificity 0,0,1) competing with Tailwind utilities like
+ * `text-xs` and `text-[11px]` (0,1,0), which win on specificity regardless of
+ * source order. Without it the font-size rule silently does nothing, which is
+ * exactly what happened on the first attempt: min-height applied, font-size
+ * did not. A touch-input floor has to beat arbitrary utility classes wherever
+ * they appear.
+ */
+@media (pointer: coarse) {
+    input:not([type='checkbox']):not([type='radio']),
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
+
+    /*
+     * Height only, deliberately. A global `min-width: 44px` regressed the
+     * STEM Lab tile grid and reintroduced horizontal overflow: min-width
+     * forces elements to grow sideways, which is precisely what breaks a
+     * grid or a tight toolbar row on a narrow screen. min-height grows
+     * downward, where there is room to spare.
+     *
+     * Controls that are still too narrow need per-component padding rather
+     * than a global rule, since only the component knows what it can afford.
+     *
+     * Anchors are excluded entirely: inline prose links are exempt under
+     * WCAG 2.5.8 and sizing them would break text flow.
+     */
+    button,
+    [role='button'],
+    select {
+        min-height: 44px !important;
+    }
+
+    /* Inputs need the height but not the width: a full-width text field must
+       still be allowed to shrink inside a narrow row. */
+    input:not([type='checkbox']):not([type='radio']),
+    textarea {
+        min-height: 44px !important;
+    }
+
+    /*
+     * AlloBot's four corner controls (sleep / settings / mute / mic).
+     *
+     * On desktop they are `opacity-0` and revealed by `group-hover`, then
+     * drawn at `scale-75`. Neither survives touch: there is no hover event to
+     * reveal them, and the transform shrinks the hit-tested box to ~24px
+     * regardless of any min-height/min-width, because browsers hit-test the
+     * *transformed* box. The `group-focus-within` fallback depends on the
+     * container taking focus from a tap, which is too fragile to rely on as
+     * the only way to reach mute and mic.
+     *
+     * So on touch: always visible, unscaled, and a full 44px target.
+     * Desktop is untouched — this whole block is inside `pointer: coarse`.
+     */
+    [data-help-key='bot_sleep_btn'],
+    [data-help-key='bot_settings_btn'],
+    [data-help-key='bot_mute_btn'],
+    [data-help-key='bot_mic_btn'] {
+        opacity: 1 !important;
+        transform: none !important;
+        min-height: 44px !important;
+        min-width: 44px !important;
+    }
+
+    /*
+     * Growing 24px buttons to 44px around a 64px avatar makes the corner pairs
+     * collide: at the original -8px offsets the two top buttons would overlap
+     * by 8px, so a tap in the middle would hit whichever won the stacking
+     * order. Pushing every offset to -12px puts their edges exactly flush
+     * (64 + 12 - 44 = 32 = -12 + 44) — full-size targets, zero overlap.
+     */
+    [data-help-key='bot_sleep_btn'] { top: -12px !important; right: -12px !important; }
+    [data-help-key='bot_settings_btn'] { top: -12px !important; left: -12px !important; }
+    [data-help-key='bot_mute_btn'] { bottom: -12px !important; right: -12px !important; }
+    [data-help-key='bot_mic_btn'] { bottom: -12px !important; left: -12px !important; }
+}

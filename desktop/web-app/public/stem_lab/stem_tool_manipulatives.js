@@ -61,7 +61,7 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -634,7 +634,19 @@ window.StemLab = window.StemLab || {
       var sr = _m.slideRule || { cOffset: 0, cursorPos: 0.301 };
       var dVal = Math.pow(10, sr.cursorPos || 0.301);
       var cVal = Math.pow(10, (sr.cursorPos || 0.301) - (sr.cOffset || 0));
-      var product = dVal * Math.pow(10, sr.cOffset || 0);
+      // On a real rule the answer to a x b is read DIRECTLY on D under the
+      // cursor: with C's index over a (cOffset = log a) and the cursor on b
+      // along C, D shows 10^(log a + log b) = a*b. The old formula multiplied
+      // that reading by 10^cOffset again (a^2*b), so a student following the
+      // printed procedure for 2x3 read 12 and was marked wrong, while parking
+      // the slide at 1 and pointing the cursor at 6 was marked right.
+      // A negative offset is the right-index wrap (C's 10 over a), which
+      // shifts the decade: read D x 10 - how answers past 10 land on-scale.
+      var srWrapped = (sr.cOffset || 0) < 0;
+      var product = dVal * (srWrapped ? 10 : 1);
+      // The factor the slide itself is set to: the D value under C's active
+      // index. Displayed so the readout states the true equation a x b = D.
+      var srSlideFactor = Math.pow(10, (sr.cOffset || 0) + (srWrapped ? 1 : 0));
       var srProblem = _m.srProblem || null;
       var srFeedback = _m.srFeedback || null;
 
@@ -725,7 +737,7 @@ window.StemLab = window.StemLab || {
       // NOTE: There used to be an embedded "Number Line" mode here. It's been
       // removed (v3.2) because a much richer standalone tool already exists at
       // stem_tool_numberline.js (4 tabs, drag-the-marker, fraction/decimal/percent
-      // equivalence). Use that tool from the STEM Lab launcher for number-line work.
+      // equivalence). Use that tool from the STEAM Lab launcher for number-line work.
 
       // Fraction Bars: which denominators to display, highlighted parts per denom
       var fbDenoms = _m.fbDenoms || [1, 2, 3, 4, 6, 8, 12];
@@ -1253,7 +1265,7 @@ window.StemLab = window.StemLab || {
             counters:      { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)', icon: '\uD83D\uDD34', title: __alloT('stem.manipulatives.two_color_counters_integers_concrete', 'Two-Color Counters \u2014 integers concrete'),     hint: __alloT('stem.manipulatives.yellow_1_red_1_a_yellow_red_pair_0_a_z', 'Yellow = +1; red = -1. A yellow + red pair = 0 (a "zero pair"). The most concrete model for understanding negative numbers and integer arithmetic. CCSS 6.NS.C.5, 7.NS.A.1.') },
             pvDisks:       { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)', icon: '\uD83D\uDCBF', title: __alloT('stem.manipulatives.place_value_disks_bridge_to_algorithm', 'Place-Value Disks \u2014 bridge to algorithm'),     hint: __alloT('stem.manipulatives.each_disk_labeled_with_its_value_1_10_', 'Each disk labeled with its value (1, 10, 100, 1000). Move 10 disks of one kind to trade for 1 of the next. The conceptual bridge from physical blocks to the standard algorithm. CCSS 4.NBT.B.4.') },
             hundredsChart: { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83D\uDCAF', title: __alloT('stem.manipulatives.hundreds_chart_count_pattern_and_skip', 'Hundreds Chart \u2014 count, pattern, and skip'),  hint: __alloT('stem.manipulatives.a_10x10_grid_of_1_100_click_to_highlig', 'A 10x10 grid of 1-100. Click to highlight cells. Skip-count overlays reveal multiplication patterns. CCSS 2.NBT.A.2: skip-counting by 5s, 10s, 100s.') },
-            patternBlocks: { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\u2B22',       title: __alloT('stem.manipulatives.pattern_blocks_fractions_symmetry', 'Pattern Blocks \u2014 fractions + symmetry'), hint: __alloT('stem.manipulatives.hexagon_trapezoid_rhombus_triangle_squ', 'Hexagon, trapezoid, rhombus, triangle, square, narrow rhombus. 6 trapezoids = 1 hexagon (so 1 trapezoid = 1/2 hex). 3 rhombi = 1 hex (so 1 rhombus = 1/3). 6 triangles = 1 hex (so 1 triangle = 1/6).') },
+            patternBlocks: { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\u2B22',       title: __alloT('stem.manipulatives.pattern_blocks_fractions_symmetry', 'Pattern Blocks \u2014 fractions + symmetry'), hint: __alloT('stem.manipulatives.hexagon_trapezoid_rhombus_triangle_squ', 'Hexagon, trapezoid, rhombus, triangle, square, narrow rhombus. 2 trapezoids = 1 hexagon (so 1 trapezoid = 1/2 hex). 3 rhombi = 1 hex (so 1 rhombus = 1/3). 6 triangles = 1 hex (so 1 triangle = 1/6).') },
             geoboard:      { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\u2B1C', title: __alloT('stem.manipulatives.geoboard_polygons_on_a_peg_grid', 'Geoboard \u2014 polygons on a peg grid'),         hint: __alloT('stem.manipulatives.connect_pegs_with_rubber_bands_to_make', 'Connect pegs with "rubber bands" to make polygons. Measure perimeter and area. The classic concrete tool for plane geometry and Pick\'s theorem.') },
             cRods:         { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83D\uDFE7', title: __alloT('stem.manipulatives.cuisenaire_rods_numbers_in_color', 'Cuisenaire Rods \u2014 numbers in color'),         hint: __alloT('stem.manipulatives.belgian_teacher_georges_cuisenaire_195', 'Belgian teacher Georges Cuisenaire (1952): 10 rods, lengths 1-10, each a different color. Add rods to make new numbers. White=1, red=2, light green=3, purple=4, yellow=5, dark green=6, black=7, brown=8, blue=9, orange=10.') },
             numberBonds:   { accent: '#be185d', soft: 'rgba(190,24,93,0.10)',  icon: '\uD83D\uDD17', title: __alloT('stem.manipulatives.number_bonds_part_part_whole', 'Number Bonds \u2014 part-part-whole'),             hint: __alloT('stem.manipulatives.the_whole_splits_into_two_parts_singap', 'The whole splits into two parts. Singapore Math made this central. CCSS K.OA.A.3: decompose 10 into pairs. This builds toward all addition and subtraction.') },
@@ -1600,7 +1612,10 @@ window.StemLab = window.StemLab || {
                 var normX = (svgX - PAD) / RULER_W;
                 if (normX < 0 || normX > 1) return;
                 if (svgY < SH / 2) {
-                  upd({ slideRule: Object.assign({}, sr, { cOffset: Math.max(-0.5, Math.min(0.5, normX - (sr.cursorPos || 0.301))) }) });
+                  // Range +/-1 so the right-index wrap (cOffset = log a - 1,
+                  // as low as -0.7 for a=2) stays reachable; +/-0.5 cut off
+                  // every wrapped problem with a >= 3.2 (e.g. 3x7).
+                  upd({ slideRule: Object.assign({}, sr, { cOffset: Math.max(-1, Math.min(1, normX - (sr.cursorPos || 0.301))) }) });
                 } else {
                   upd({ slideRule: Object.assign({}, sr, { cursorPos: Math.max(0, Math.min(1, normX)) }) });
                 }
@@ -1619,12 +1634,12 @@ window.StemLab = window.StemLab || {
           // Readout
           h('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-4' },
             h('div', { className: 'grid grid-cols-3 gap-4 text-center' },
-              h('div', null, h('div', { className: 'text-xs font-bold text-green-700 uppercase mb-1' }, __alloT('stem.manipulatives.c_scale', 'C Scale')), h('div', { className: 'text-2xl font-bold font-mono text-green-800' }, cVal.toFixed(2))),
+              h('div', null, h('div', { className: 'text-xs font-bold text-green-700 uppercase mb-1' }, __alloT('stem.manipulatives.slide_factor', 'Slide (index over D)')), h('div', { className: 'text-2xl font-bold font-mono text-green-800' }, srSlideFactor.toFixed(2))),
               h('div', null, h('div', { className: 'text-xs font-bold text-slate-600 uppercase mb-1' }, '\u00D7'), h('div', { className: 'text-2xl font-bold text-slate-600' }, '\u00D7')),
-              h('div', null, h('div', { className: 'text-xs font-bold text-amber-700 uppercase mb-1' }, __alloT('stem.manipulatives.d_scale', 'D Scale')), h('div', { className: 'text-2xl font-bold font-mono text-amber-800' }, dVal.toFixed(2)))
+              h('div', null, h('div', { className: 'text-xs font-bold text-green-700 uppercase mb-1' }, __alloT('stem.manipulatives.c_scale', 'C Scale')), h('div', { className: 'text-2xl font-bold font-mono text-green-800' }, cVal.toFixed(2)))
             ),
             h('div', { className: 'text-center mt-3 pt-3 border-t border-amber-200' },
-              h('div', { className: 'text-xs font-bold text-slate-600 uppercase mb-1' }, __alloT('stem.manipulatives.result', 'Result')),
+              h('div', { className: 'text-xs font-bold text-slate-600 uppercase mb-1' }, __alloT('stem.manipulatives.read_on_d_scale', 'Read on D scale') + (srWrapped ? ' \u00D7 10' : '')),
               h('div', { className: 'text-3xl font-bold font-mono text-orange-800' }, '\u2248 ' + product.toFixed(2))
             )
           ),
@@ -1641,7 +1656,9 @@ window.StemLab = window.StemLab || {
           // Practice problem display
           srProblem && h('div', { className: 'bg-amber-50 rounded-lg p-3 border border-amber-200' },
             h('p', { className: 'text-sm font-bold text-amber-800 mb-2' }, '\uD83C\uDFAF Use the slide rule to multiply: ' + srProblem.a + ' \u00D7 ' + srProblem.b + ' = ?'),
-            h('p', { className: 'text-xs text-amber-600 mb-2' }, '\uD83D\uDCA1 Set C-scale "1" to line up with ' + srProblem.a + ' on D, then find ' + srProblem.b + ' on C. Read D under it!'),
+            h('p', { className: 'text-xs text-amber-600 mb-2' }, srProblem.answer > 10
+              ? '\uD83D\uDCA1 The answer is past 10, so use the RIGHT index: line up C-scale "10" with ' + srProblem.a + ' on D, find ' + srProblem.b + ' on C, and read D under it \u00D7 10.'
+              : '\uD83D\uDCA1 Set C-scale "1" to line up with ' + srProblem.a + ' on D, then find ' + srProblem.b + ' on C. Read D under it!'),
             h('div', { className: 'flex gap-2 items-center' },
               h('span', { className: 'text-xs text-amber-600' }, __alloT('stem.manipulatives.your_result', 'Your result: '), h('span', { className: 'font-bold text-amber-900' }, '\u2248 ' + product.toFixed(1))),
               h('button', { 'aria-label': __alloT('stem.manipulatives.check_5', 'Check'), onClick: checkSR, className: 'ml-auto px-4 py-1.5 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-800 transition-all' }, __alloT('stem.manipulatives.check_6', '\u2714 Check'))
@@ -2425,7 +2442,7 @@ window.StemLab = window.StemLab || {
         };
         var pbSvg = function(type, color, size) {
           var pts = pbPolyPoints(type, size / 2, size / 2, size * 0.32);
-          return h('svg', {
+          return h('svg', { 'aria-hidden': 'true',
             width: size, height: size, viewBox: '0 0 ' + size + ' ' + size,
             style: { display: 'block' }
           },
@@ -2628,7 +2645,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'space-y-3 max-w-3xl mx-auto animate-in fade-in duration-200' },
           headerEl,
           h('div', { className: 'bg-white rounded-xl border-2 border-sky-200 p-3 flex justify-center' },
-            h('svg', { viewBox: '0 0 ' + svgW + ' ' + svgW, width: '100%', style: { maxWidth: svgW + 'px' } },
+            h('svg', { role: 'img', 'aria-label': __alloT('stem.manipulatives.fraction_circle_img', 'Fraction circle model'), viewBox: '0 0 ' + svgW + ' ' + svgW, width: '100%', style: { maxWidth: svgW + 'px' } },
               segElements,
               pegs
             )
@@ -2671,7 +2688,7 @@ window.StemLab = window.StemLab || {
                 { q: 'Build a triangle (3 segments, all pegs different).', type: 'tri', segs: 3 },
                 { q: 'Build a quadrilateral (4 segments forming a closed shape).', type: 'quad', segs: 4 },
                 { q: 'Build a pentagon (5 segments).', type: 'penta', segs: 5 },
-                { q: 'Make a square with side length 3 (perimeter = 12).', type: 'perim', target: 12 },
+                { q: 'Make a square with side length 3 (perimeter = 12).', type: 'square', target: 12 },
                 { q: 'Build any closed shape with perimeter ≥ 20.', type: 'perimGte', target: 20 }
               ];
               var p = puzzles[Math.floor(Math.random() * puzzles.length)];
@@ -2730,6 +2747,40 @@ window.StemLab = window.StemLab || {
               }
               return true;
             };
+            var segsFormAxisSquare = function(segs) {
+              if (!segsFormAxisRect(segs)) return false;
+              var xs = {}, ys = {};
+              for (var i = 0; i < segs.length; i++) {
+                xs[segs[i].x1] = true; xs[segs[i].x2] = true;
+                ys[segs[i].y1] = true; ys[segs[i].y2] = true;
+              }
+              var xv = Object.keys(xs).map(Number), yv = Object.keys(ys).map(Number);
+              return Math.abs(xv[1] - xv[0]) === Math.abs(yv[1] - yv[0]);
+            };
+            // Shoelace area of the closed cycle, so three collinear pegs do
+            // not pass as a "triangle" — a zero-area cycle is a line, not a
+            // polygon. Walk the cycle exactly as segsFormClosedCycle does.
+            var cycleArea = function(segs) {
+              if (!segsFormClosedCycle(segs)) return 0;
+              var key = function(x, y) { return x + ',' + y; };
+              var adj = {};
+              for (var i = 0; i < segs.length; i++) {
+                var s = segs[i];
+                (adj[key(s.x1, s.y1)] = adj[key(s.x1, s.y1)] || []).push(key(s.x2, s.y2));
+                (adj[key(s.x2, s.y2)] = adj[key(s.x2, s.y2)] || []).push(key(s.x1, s.y1));
+              }
+              var start = Object.keys(adj)[0];
+              var cur = start, prev = null, area = 0;
+              for (var step = 0; step < segs.length; step++) {
+                var nbrs = adj[cur];
+                var nxt = nbrs[0] === prev ? nbrs[1] : nbrs[0];
+                var a = cur.split(',').map(Number), b = nxt.split(',').map(Number);
+                area += a[0] * b[1] - b[0] * a[1];
+                prev = cur;
+                cur = nxt;
+              }
+              return Math.abs(area) / 2;
+            };
             var checkGb = function() {
               if (!gbChallenge) return;
               var per = geoboardSegments.reduce(function(acc, s) {
@@ -2750,13 +2801,22 @@ window.StemLab = window.StemLab || {
                 if (!closed) msg = '❌ Not a closed shape (each corner peg must touch exactly 2 segments).';
                 else if (per < gbChallenge.target) msg = '❌ Closed shape, but perimeter = ' + per.toFixed(2) + ', need ≥ ' + gbChallenge.target;
                 else msg = '✅ Closed shape with perimeter ' + per.toFixed(2);
+              } else if (gbChallenge.type === 'square') {
+                var isSquare = segsFormAxisSquare(geoboardSegments);
+                var perSqOk = Math.abs(per - gbChallenge.target) < 0.05;
+                ok = isSquare && perSqOk;
+                if (!isSquare) msg = '❌ Not a square (need 4 equal axis-aligned sides forming a closed cycle).';
+                else if (!perSqOk) msg = '❌ Square perimeter = ' + per.toFixed(2) + ', target was ' + gbChallenge.target;
+                else msg = '✅ Square with perimeter ' + per.toFixed(2);
               } else {
                 // tri / quad / penta — N segments forming a single closed cycle
                 var hasN = geoboardSegments.length === gbChallenge.segs;
                 var isClosed = hasN && segsFormClosedCycle(geoboardSegments);
-                ok = hasN && isClosed;
+                var hasArea = isClosed && cycleArea(geoboardSegments) > 1e-9;
+                ok = hasN && isClosed && hasArea;
                 if (!hasN) msg = '❌ You have ' + geoboardSegments.length + ' segments, need exactly ' + gbChallenge.segs;
                 else if (!isClosed) msg = '❌ ' + geoboardSegments.length + ' segments but they do not form a closed shape.';
+                else if (!hasArea) msg = '❌ Those segments all lie on one line — a real polygon encloses some area.';
                 else msg = '✅ Closed ' + geoboardSegments.length + '-sided shape.';
               }
               var newStreak = ok ? streak + 1 : 0;
@@ -3156,7 +3216,7 @@ window.StemLab = window.StemLab || {
           return h('div', { className: 'space-y-3' },
             h('div', { className: 'bg-blue-50 rounded-xl p-4 border-2 border-blue-200' },
               h('p', { className: 'text-xs font-bold text-blue-700 mb-2' }, 'NUMBER LINE — jump forward from ' + t.a + ' by ' + t.b),
-              h('svg', { width: 560, height: 96, viewBox: '0 0 560 96', style: { maxWidth: '100%' } },
+              h('svg', { 'aria-hidden': 'true', width: 560, height: 96, viewBox: '0 0 560 96', style: { maxWidth: '100%' } },
                 // Line
                 h('line', { x1: 10, y1: 70, x2: 550, y2: 70, stroke: '#1e3a8a', strokeWidth: 2 }),
                 // Tick marks
@@ -3196,7 +3256,7 @@ window.StemLab = window.StemLab || {
           return h('div', { className: 'space-y-3' },
             h('div', { className: 'bg-blue-50 rounded-xl p-4 border-2 border-blue-200' },
               h('p', { className: 'text-xs font-bold text-blue-700 mb-2' }, 'NUMBER LINE — jump BACKWARD from ' + t.a + ' by ' + t.b),
-              h('svg', { width: 560, height: 96, viewBox: '0 0 560 96', style: { maxWidth: '100%' } },
+              h('svg', { 'aria-hidden': 'true', width: 560, height: 96, viewBox: '0 0 560 96', style: { maxWidth: '100%' } },
                 h('line', { x1: 10, y1: 70, x2: 550, y2: 70, stroke: '#1e3a8a', strokeWidth: 2 }),
                 Array.from({ length: max + 1 }).map(function(_, n) {
                   return h('g', { key: 'tk' + n },
@@ -3259,7 +3319,7 @@ window.StemLab = window.StemLab || {
                 h('span', null, t.op),
                 h('span', null, t.b),
                 h('span', null, '='),
-                h('input', {
+                h('input', { 'aria-label': __alloT('stem.manipulatives.cra_answer_label', 'Answer to the equation'),
                   type: 'number', value: _m.craUserAns || '',
                   onChange: function(e) { upd({ craUserAns: e.target.value }); },
                   onKeyDown: function(e) {
@@ -3438,7 +3498,7 @@ window.StemLab = window.StemLab || {
                 }, g === 'all' ? 'All' : 'Grade ' + g);
               })
             ),
-            h('input', {
+            h('input', { 'aria-label': __alloT('stem.manipulatives.standards_search_label', 'Search standards'),
               type: 'search',
               value: standardsSearch,
               onChange: function(e) { upd({ standardsSearch: e.target.value }); },
@@ -3559,7 +3619,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'bg-white rounded-xl border-2 border-slate-200 p-3' },
             h('p', { className: 'text-xs font-bold text-slate-700 mb-2' }, __alloT('stem.manipulatives.save_the_current_workspace_from_the_ma', '💾 Save the current workspace (from the manipulative you were just on):')),
             h('div', { className: 'flex gap-2' },
-              h('input', {
+              h('input', { 'aria-label': __alloT('stem.manipulatives.library_name_label', 'Workspace name'),
                 type: 'text', value: libraryName,
                 onChange: function(e) { upd({ libraryName: e.target.value }); },
                 onKeyDown: function(e) { if (e.key === 'Enter') saveCurrent(); },
@@ -3640,7 +3700,7 @@ window.StemLab = window.StemLab || {
           h('div', { style: { padding: 14, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
             h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · load index ' + loadIndex.toFixed(1)),
             h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
-            h('svg', { width: '100%', height: 80, viewBox: '0 0 320 80', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
+            h('svg', { role: 'img', 'aria-label': __alloT('stem.manipulatives.dist_img', 'Sampling distribution chart'), width: '100%', height: 80, viewBox: '0 0 320 80', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
               h('rect', { x: 30, y: 30, width: 260, height: 26, fill: '#0f172a', stroke: '#1e293b' }),
               h('rect', { x: 30 + Math.max(0, Math.min(220, 60)), y: 30, width: 60, height: 26, fill: '#4ade80', opacity: 0.4 }),
               h('text', { x: 120, y: 22, fill: '#4ade80', fontSize: 9, textAnchor: 'middle' }, __alloT('stem.manipulatives.sweet_spot', 'sweet spot')),
@@ -3677,7 +3737,7 @@ window.StemLab = window.StemLab || {
               iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · g' + e.g + ' abs' + e.a + ' sc' + e.sc + ' et' + e.et + ' → idx ' + e.idx); })
             ),
             h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, __alloT('stem.manipulatives.your_hypothesis_which_slider_should_a_', 'Your hypothesis (which slider should a beginning teacher worry about most? Why?)')),
-            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: __alloT('stem.manipulatives.e_g_abstractness_mismatch_causes_the_m', 'e.g., abstractness mismatch causes the most damage because students can\'t see what they\'re even working on...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+            h('textarea', { 'aria-label': __alloT('stem.manipulatives.hypothesis_input', 'Manipulative mismatch hypothesis'), value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: __alloT('stem.manipulatives.e_g_abstractness_mismatch_causes_the_m', 'e.g., abstractness mismatch causes the most damage because students can\'t see what they\'re even working on...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
             !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, __alloT('stem.manipulatives.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
             iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
               h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, __alloT('stem.manipulatives.open_questions_no_answer_key', 'Open questions (no answer key)')),
@@ -3692,7 +3752,7 @@ window.StemLab = window.StemLab || {
               h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
               h('span', null, __alloT('stem.manipulatives.i_can_explain_why_this_lesson_design_l', 'I can explain why this lesson design lands in this state.'))
             ),
-            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.manipulatives.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
+            iq.understood && h('textarea', { 'aria-label': __alloT('stem.manipulatives.explanation_input', 'Manipulative mismatch explanation'), value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.manipulatives.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
             h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, __alloT('stem.manipulatives.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. Load index is a heuristic; real lesson design depends on prior knowledge, motivation, peer dynamics, and many more dimensions than four.'))
           )
         );
@@ -4176,7 +4236,7 @@ window.StemLab = window.StemLab || {
                 crChallenge.q
               ),
               !crFeedback && h('div', { className: 'flex gap-2' },
-                h('input', { type: crChallenge.strAnswer ? 'text' : 'number',
+                h('input', { 'aria-label': __alloT('stem.manipulatives.challenge_answer_label', 'Your answer'), type: crChallenge.strAnswer ? 'text' : 'number',
                   value: _m.crUserAns || '',
                   onChange: function(e) { upd({ crUserAns: e.target.value }); },
                   onKeyDown: function(e) { if (e.key === 'Enter') chCheck(); },
@@ -4268,7 +4328,7 @@ window.StemLab = window.StemLab || {
             example: '1/2, 1/3, 1/4, 1/6 are all unit fractions.' },
           { term: 'Equivalent fraction',   manip: 'patternBlocks',
             def: 'Two fractions that represent the same amount.',
-            example: '2/4 and 1/2 are equivalent (six trapezoids = three rhombi = one hexagon).' },
+            example: '3/6 and 1/2 are equivalent (three triangles cover exactly the same as one trapezoid).' },
           { term: 'Perimeter',             manip: 'geoboard',
             def: 'The distance around the outside of a shape.',
             example: 'A 3-by-4 rectangle has perimeter 3 + 4 + 3 + 4 = 14 units.' },

@@ -235,6 +235,8 @@ const intentionallyHiddenRegisteredIds = new Set([
   'moleculeShelf',
   // Rehomed to Learning Hub as a standalone learner tool.
   'timelineStudio',
+  // Rehomed to Educator Tools > Leadership Hub; hidden registration preserves old saved links.
+  'diagnosisEligibility',
 ]);
 function isIntentionallyHiddenRegisteredId(id) {
   return intentionallyHiddenRegisteredIds.has(id) && !catalogIds.has(id);

@@ -41,7 +41,8 @@ const MIME: Record<string, string> = {
 const HARNESS = `<!doctype html>
 <html><head><meta charset="utf-8"><title>geometry world harness</title>
 <style>html,body{margin:0;height:100%;background:#0f172a}
-#wrap{width:900px;height:600px;position:relative;display:flex}</style></head>
+#wrap{width:100vw;height:100vh;height:100dvh;position:relative;display:flex;overflow:hidden}
+#wrap>*{flex:1 1 auto;min-width:0;min-height:0}</style></head>
 <body><div id="wrap"></div>
 <script src="/desktop/web-app/node_modules/react/umd/react.production.min.js"></script>
 <script src="/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js"></script>
@@ -58,6 +59,10 @@ const HARNESS = `<!doctype html>
     loadScriptResilient: function () { return new Promise(function () {}); },
     ensureThree: function () { return Promise.resolve(window.THREE); },
     getRegisteredTools: function () { return Object.values(this._registry); }
+  };
+  window.__alloStemFS = function (el) {
+    var request = el && (el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen);
+    return request ? request.call(el) : Promise.resolve();
   };
 </script>
 <script src="/stem_lab/stem_tool_geometryworld.js"></script>
@@ -106,12 +111,31 @@ const HARNESS = `<!doctype html>
   // ── Probes ──
   window.__eng = function () { return window.__geoWorldEngine || null; };
 
+  window.__glCanvas = function () {
+    var cs = document.querySelectorAll('#geoworld-fs-wrap canvas');
+    for (var i = 0; i < cs.length; i++) {
+      try {
+        var gl = cs[i].getContext('webgl2') || cs[i].getContext('webgl');
+        if (gl) return { el: cs[i], gl: gl };
+      } catch (e) {}
+    }
+    return null;
+  };
+
   window.__glLive = function () {
     var cs = document.querySelectorAll('#geoworld-fs-wrap canvas');
-    if (!cs.length) return null;
-    var c = cs[cs.length - 1];
-    var gl = c.getContext('webgl2') || c.getContext('webgl');
-    return { canvasCount: cs.length, lost: gl ? gl.isContextLost() : null, w: c.clientWidth, h: c.clientHeight };
+    var hit = window.__glCanvas();
+    if (!hit) return null;
+    var c = hit.el, p = c.parentElement;
+    var cr = c.getBoundingClientRect();
+    var pr = p ? p.getBoundingClientRect() : cr;
+    return {
+      canvasCount: cs.length,
+      lost: hit.gl.isContextLost(),
+      w: c.clientWidth, h: c.clientHeight,
+      box: { w: Math.round(cr.width), h: Math.round(cr.height) },
+      parentBox: { w: Math.round(pr.width), h: Math.round(pr.height) }
+    };
   };
 
   window.__worldState = function () {
@@ -276,6 +300,25 @@ async function mount(page: Pg, bucket: Record<string, unknown> = {}) {
   await page.waitForTimeout(700);   // let the engine settle a few frames
 }
 
+/** Mount a responsive profile without spawning a trace-heavy custom context. */
+async function mountResponsive(page: Pg, bucket: Record<string, unknown>, mobile: boolean, tablet: boolean) {
+  await page.goto(base + '/__harness');
+  await page.waitForFunction(() => !!(window as any).StemLab?._registry?.geometryWorld);
+  await page.evaluate(({ b, isMobile, isTablet }) => {
+    if (isMobile) {
+      const ua = isTablet
+        ? 'Mozilla/5.0 (iPad; CPU OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148'
+        : 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148';
+      Object.defineProperty(navigator, 'userAgent', { configurable: true, get: () => ua });
+      Object.defineProperty(window, 'ontouchstart', { configurable: true, value: null });
+    }
+    (window as any).__mount(b);
+  }, { b: bucket, isMobile: mobile, isTablet: tablet });
+  await page.waitForSelector('#geoworld-fs-wrap canvas', { timeout: 30000 });
+  await page.waitForFunction(() => !!(window as any).__geoWorldEngine, null, { timeout: 30000 });
+  await page.waitForTimeout(700);
+}
+
 /** Keyboard shortcuts go to <body> unless the world surface is focused first. */
 async function focusWorld(page: Pg) {
   await page.evaluate(() => (document.getElementById('geoworld-fs-wrap') as HTMLElement).focus());
@@ -299,8 +342,15 @@ test.describe('Geometry World — real WebGL', () => {
     const gl = await page.evaluate(() => (window as any).__glLive());
     expect(gl).not.toBeNull();
     expect(gl.lost).toBe(false);
-    expect(gl.w).toBeGreaterThan(800);
-    expect(gl.h).toBeGreaterThan(400);
+    expect(gl.box.w).toBeGreaterThanOrEqual(gl.parentBox.w - 2);
+    expect(gl.box.h).toBeGreaterThanOrEqual(gl.parentBox.h - 2);
+    const harnessFill = await page.evaluate(() => {
+      const wrap = document.getElementById('wrap')!.getBoundingClientRect();
+      const root = document.getElementById('geoworld-fs-workspace')!.getBoundingClientRect();
+      return { width: root.width, height: root.height, wrapWidth: wrap.width, wrapHeight: wrap.height };
+    });
+    expect(harnessFill.width).toBeGreaterThanOrEqual(harnessFill.wrapWidth - 2);
+    expect(harnessFill.height).toBeGreaterThanOrEqual(harnessFill.wrapHeight - 2);
 
     const world = await page.evaluate(() => (window as any).__worldState());
     expect(world.totalBlocks).toBeGreaterThan(0);
@@ -572,6 +622,141 @@ test.describe('Geometry World — real WebGL', () => {
     }
   });
 
+  test('keeps HUD presets playable across desktop, tablet, phone, landscape, and fullscreen', async ({ page }) => {
+    test.setTimeout(420_000);
+    const scenarios = [
+      { name: 'desktop', viewport: { width: 1440, height: 900 }, mobile: false, touch: false, tutorial: false },
+      { name: 'tablet', viewport: { width: 768, height: 1024 }, mobile: true, touch: true, tutorial: false },
+      { name: 'phone', viewport: { width: 390, height: 844 }, mobile: true, touch: true, tutorial: true },
+      { name: 'landscape', viewport: { width: 844, height: 390 }, mobile: true, touch: true, tutorial: true },
+      { name: 'boundary-721', viewport: { width: 721, height: 720 }, mobile: false, touch: false, tutorial: false }
+    ];
+    const earnedBadges = {
+      first_measure: true, first_correct: true, lesson_complete: true, builder_10: true,
+      builder_100: true, perfect_lesson: true, npc_chatter: true, world_creator: true,
+      printer_3d: true, world_sharer: true, peer_learner: true, persistence: true, five_lessons: true
+    };
+
+    for (const scenario of scenarios) {
+      await test.step(scenario.name, async () => {
+        await page.setViewportSize(scenario.viewport);
+        try {
+          await mountResponsive(page, {
+            _introShownOnce: true,
+            _mobileDismissed: true,
+            worldActive: true,
+            tutorialDismissed: !scenario.tutorial,
+            hudPreset: 'learning',
+            earnedBadges
+          }, scenario.mobile, scenario.name === 'tablet');
+
+          const initial = await page.evaluate(() => {
+            function rect(selector: string) {
+              const el = document.querySelector(selector) as HTMLElement | null;
+              if (!el || getComputedStyle(el).display === 'none') return null;
+              const r = el.getBoundingClientRect();
+              return { left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: r.width, height: r.height };
+            }
+            function overlaps(a: any, b: any) {
+              return !!a && !!b && a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+            }
+            const root = document.getElementById('geoworld-fs-workspace') as HTMLElement;
+            const toolbar = document.querySelector('.gw-toolbar') as HTMLElement;
+            const viewport = document.getElementById('geoworld-fs-wrap') as HTMLElement;
+            const rootRect = root.getBoundingClientRect();
+            const toolbarRect = toolbar.getBoundingClientRect();
+            const viewportRect = viewport.getBoundingClientRect();
+            const brand = rect('.gw-brand-lockup');
+            const status = rect('.gw-status-cluster');
+            const actions = rect('.gw-touch-actions');
+            const tutorial = rect('.gw-tutorial-shell');
+            const look = rect('.gw-touch-look-panel');
+            const optional = ['#gw-progress-hud', '#gw-minimap', '#gw-history-panel', '#gw-inventory-panel', '#gw-transform-panel', '#gw-scene-map']
+              .filter((selector) => { const el = document.querySelector(selector) as HTMLElement | null; return !!el && getComputedStyle(el).display !== 'none'; });
+            return {
+              rootOverflowX: root.scrollWidth - root.clientWidth,
+              rootOverflowY: root.scrollHeight - root.clientHeight,
+              toolbarOverflow: toolbar.scrollWidth - toolbar.clientWidth,
+              toolbarHeight: toolbarRect.height,
+              viewportRatio: viewportRect.height / Math.max(1, rootRect.height),
+              brandStatusOverlap: overlaps(brand, status),
+              tutorialActionsOverlap: overlaps(tutorial, actions),
+              lookHeight: look ? look.height : 0,
+              touchActive: root.getAttribute('data-touch-active'),
+              optionalCount: optional.length
+            };
+          });
+
+          expect(initial.rootOverflowX, scenario.name + ' root horizontal overflow').toBeLessThanOrEqual(1);
+          expect(initial.rootOverflowY, scenario.name + ' root vertical overflow').toBeLessThanOrEqual(1);
+          expect(initial.toolbarOverflow, scenario.name + ' toolbar overflow').toBeLessThanOrEqual(1);
+          expect(initial.toolbarHeight, scenario.name + ' toolbar height').toBeLessThanOrEqual(scenario.viewport.width <= 800 ? 59 : 65);
+          expect(initial.viewportRatio, scenario.name + ' viewport share').toBeGreaterThan(0.7);
+          expect(initial.brandStatusOverlap, scenario.name + ' brand/status overlap').toBe(false);
+          expect(initial.tutorialActionsOverlap, scenario.name + ' tutorial/action overlap').toBe(false);
+          expect(initial.lookHeight, scenario.name + ' look settings height').toBeLessThanOrEqual(90);
+          expect(initial.touchActive).toBe(scenario.touch ? 'true' : 'false');
+          expect(initial.optionalCount, scenario.name + ' initial HUD count').toBe(1);
+
+          await page.evaluate(() => (document.querySelector('.gw-toolbar [data-geometry-settings-trigger="true"]') as HTMLButtonElement).click());
+          const dialogBounds = await page.locator('#gw-settings-dialog').boundingBox();
+          expect(dialogBounds).not.toBeNull();
+          expect(dialogBounds!.x).toBeGreaterThanOrEqual(-1);
+          expect(dialogBounds!.y).toBeGreaterThanOrEqual(-1);
+          expect(dialogBounds!.x + dialogBounds!.width).toBeLessThanOrEqual(scenario.viewport.width + 1);
+          expect(dialogBounds!.y + dialogBounds!.height).toBeLessThanOrEqual(scenario.viewport.height + 1);
+          await page.evaluate(() => (document.querySelector('[data-geometry-hud-preset="builder"]') as HTMLButtonElement).click());
+          await page.waitForSelector('#gw-inventory-panel');
+
+          const builderLayout = await page.evaluate(() => {
+            function box(selector: string) {
+              const el = document.querySelector(selector) as HTMLElement | null;
+              if (!el) return null;
+              const r = el.getBoundingClientRect();
+              return { left: r.left, top: r.top, right: r.right, bottom: r.bottom };
+            }
+            const inventory = box('#gw-inventory-panel');
+            const actions = box('.gw-touch-actions');
+            const overlap = !!inventory && !!actions && inventory.left < actions.right && inventory.right > actions.left && inventory.top < actions.bottom && inventory.bottom > actions.top;
+            const root = document.getElementById('geoworld-fs-workspace') as HTMLElement;
+            const optional = ['#gw-progress-hud', '#gw-minimap', '#gw-history-panel', '#gw-inventory-panel', '#gw-transform-panel', '#gw-scene-map']
+              .filter((selector) => !!document.querySelector(selector));
+            return { overlap, optionalCount: optional.length, overflowX: root.scrollWidth - root.clientWidth };
+          });
+          expect(builderLayout.overlap, scenario.name + ' inventory/action overlap').toBe(false);
+          expect(builderLayout.optionalCount, scenario.name + ' builder HUD count').toBe(1);
+          expect(builderLayout.overflowX, scenario.name + ' builder overflow').toBeLessThanOrEqual(1);
+
+          if (scenario.name === 'desktop') {
+            await page.getByRole('button', { name: 'Enter fullscreen for the Geometry World workspace' }).click();
+            await page.waitForFunction(() => document.getElementById('geoworld-fs-workspace')?.getAttribute('data-fullscreen') === 'true', null, { timeout: 10_000 });
+            const fullscreen = await page.evaluate(() => {
+              const root = document.getElementById('geoworld-fs-workspace')!.getBoundingClientRect();
+              const viewport = document.getElementById('geoworld-fs-wrap')!.getBoundingClientRect();
+              return {
+                toolbarDisplay: getComputedStyle(document.querySelector('.gw-toolbar')!).display,
+                quickbarDisplay: getComputedStyle(document.querySelector('.gw-fullscreen-quickbar')!).display,
+                topGap: Math.abs(viewport.top - root.top),
+                leftGap: Math.abs(viewport.left - root.left),
+                widthGap: Math.abs(viewport.width - root.width),
+                heightGap: Math.abs(viewport.height - root.height)
+              };
+            });
+            expect(fullscreen.toolbarDisplay).toBe('none');
+            expect(fullscreen.quickbarDisplay).toBe('flex');
+            expect(fullscreen.topGap).toBeLessThanOrEqual(1);
+            expect(fullscreen.leftGap).toBeLessThanOrEqual(1);
+            expect(fullscreen.widthGap).toBeLessThanOrEqual(2);
+            expect(fullscreen.heightGap).toBeLessThanOrEqual(2);
+            await page.getByRole('button', { name: 'Exit fullscreen for the Geometry World workspace' }).click();
+            await page.waitForFunction(() => document.getElementById('geoworld-fs-workspace')?.getAttribute('data-fullscreen') === 'false', null, { timeout: 10_000 });
+          }
+        } finally {
+          await page.evaluate(() => { try { (window as any).__destroy(); } catch {} }).catch(() => {});
+        }
+      });
+    }
+  });
   test('tears the engine down cleanly on unmount', async ({ page }) => {
     await mount(page, { _introShownOnce: true });
     expect(await page.evaluate(() => !!(window as any).__eng())).toBe(true);

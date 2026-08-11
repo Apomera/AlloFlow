@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════
 // stem_tool_dna.js - DNA / Genetics Lab  v3.0
-// Enhanced STEM Lab tool - 11 sub-tools
+// Enhanced STEAM Lab tool - 11 sub-tools
 // Build · Replicate · Transcribe · Translate · Mutate
 // CRISPR · Protein · Forensics · Challenge · Battle · Learn
 // ═══════════════════════════════════════════════════════
@@ -31,7 +31,7 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) - shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) - shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -773,7 +773,12 @@ window.StemLab = window.StemLab || {
       function gradeText(k2, g35, g68, g912) { return gradeBand === 'K-2' ? k2 : gradeBand === '3-5' ? g35 : gradeBand === '6-8' ? g68 : g912; }
 
       // ═══ STATE EXTRACTION ═══
-      var tab = d.tab || 'build';
+      var dnaFocusMode = d.dnaFocusMode === true;
+      var dnaFocusToolIds = ['build', 'replicate', 'transcribe', 'translate', 'mutate'];
+      var requestedTab = d.tab || 'build';
+      var tab = dnaFocusMode && dnaFocusToolIds.indexOf(requestedTab) < 0 ? 'build' : requestedTab;
+      var visibleDnaSubtools = SUBTOOLS.filter(function(tb) { return !dnaFocusMode || dnaFocusToolIds.indexOf(tb.id) >= 0; });
+      var dnaModeToolCount = dnaFocusMode ? dnaFocusToolIds.length : SUBTOOLS.length;
       var dnaSeq = d.dnaSequence || 'ATGCGTACCTGAAACTGA';
       var dnaExperimentHistory = Array.isArray(d.dnaExperimentHistory) ? d.dnaExperimentHistory : [];
       var dnaCompareLeftId = typeof d.dnaCompareLeft === 'string' ? d.dnaCompareLeft : '';
@@ -807,6 +812,11 @@ window.StemLab = window.StemLab || {
       var guidedFeedback = d.guidedFeedback || '';
       var dnaReportOpen = !!d.dnaReportOpen;
       var dnaReportNote = d.dnaReportNote || '';
+      var dnaEvidenceClaim = d.dnaEvidenceClaim || '';
+      var dnaEvidenceCitation = d.dnaEvidenceCitation || '';
+      var dnaEvidenceReasoning = d.dnaEvidenceReasoning || '';
+      var dnaEvidenceFeedback = d.dnaEvidenceFeedback || '';
+      var dnaEvidenceScore = parseInt(d.dnaEvidenceScore, 10) || 0;
 
       // ═══ DERIVED VALUES ═══
       var complementStrand = dnaSeq.split('').map(function(b) { return BASE_COMPLEMENT[b] || 'N'; }).join('');
@@ -1011,6 +1021,11 @@ window.StemLab = window.StemLab || {
           dnaCompareReflection || 'Not entered',
           'Reflection / claim',
           dnaReportNote || 'Not entered',
+          'Evidence & Reasoning',
+          'Claim: ' + (dnaEvidenceClaim || 'Not selected'),
+          'Evidence citation: ' + (dnaEvidenceCitation || 'Not selected'),
+          'Reasoning: ' + (dnaEvidenceReasoning || 'Not entered'),
+          'Evidence check score: ' + dnaEvidenceScore + '/3',
           '',
           'XP: ' + getStemXP('dnaLab')
         ].join('\n');
@@ -2522,6 +2537,79 @@ window.StemLab = window.StemLab || {
         return { beforeSeq: beforeSeq, afterSeq: afterSeq, beforeMRNA: beforeMRNA, afterMRNA: afterMRNA, beforeProtein: beforeProtein, afterProtein: afterProtein, codons: codons, pos: pos };
       }
       var mutationComparison = buildMutationComparison(latestMutation);
+      function buildDnaEvidenceRubric() {
+        if (!latestMutation) {
+          return {
+            prompt: 'Connect complementary base pairing to the DNA evidence.',
+            claims: [
+              { id: 'base_pairing', label: 'Complementary base pairing keeps the two DNA strands matched.' },
+              { id: 'sequence_to_rna', label: 'The coding DNA sequence can be transcribed into mRNA.' }
+            ],
+            validClaims: ['base_pairing', 'sequence_to_rna'],
+            validCitations: ['pairing', 'sequence', 'mrna'],
+            focus: 'base pairing or the DNA-to-mRNA connection'
+          };
+        }
+        if (latestMutationEffect === 'Frameshift') {
+          return {
+            prompt: 'Explain how the insertion or deletion affected downstream codons.',
+            claims: [
+              { id: 'frameshift', label: 'The indel shifted the reading frame and changed downstream codons.' },
+              { id: 'protein_change', label: 'The sequence change affected the protein output.' }
+            ],
+            validClaims: ['frameshift', 'protein_change'],
+            validCitations: ['sequence', 'codon', 'protein'],
+            focus: 'the indel position, changed codons, or protein output'
+          };
+        }
+        if (latestMutationEffect === 'Silent') {
+          return {
+            prompt: 'Explain why a DNA change did or did not change the protein.',
+            claims: [
+              { id: 'silent_change', label: 'The DNA sequence changed, but the protein output stayed the same.' },
+              { id: 'codon_change_same_protein', label: 'A codon changed without changing the amino acid.' }
+            ],
+            validClaims: ['silent_change', 'codon_change_same_protein'],
+            validCitations: ['sequence', 'codon', 'protein'],
+            focus: 'the changed codon and unchanged amino-acid evidence'
+          };
+        }
+        return {
+          prompt: 'Explain how the DNA change affected the codon or protein evidence.',
+          claims: [
+            { id: 'protein_change', label: 'The DNA sequence changed and affected the protein output.' },
+            { id: 'sequence_change', label: 'The mutation changed the sequence and at least one codon.' }
+          ],
+          validClaims: ['protein_change', 'sequence_change'],
+          validCitations: ['sequence', 'codon', 'protein'],
+          focus: 'the changed base, codon, or protein output'
+        };
+      }
+      var dnaEvidenceRubric = buildDnaEvidenceRubric();
+      var dnaEvidenceChangedCodon = mutationComparison && mutationComparison.codons.filter(function(row) { return row.changed; })[0];
+      var dnaEvidenceCitationOptions = [
+        { id: 'sequence', label: 'DNA sequence: ' + dnaSeq },
+        { id: 'codon', label: dnaEvidenceChangedCodon ? 'Codon ' + dnaEvidenceChangedCodon.index + ': ' + dnaEvidenceChangedCodon.beforeCodon + ' -> ' + dnaEvidenceChangedCodon.afterCodon : 'Codon evidence: group the mRNA into triplets' },
+        { id: 'protein', label: mutationComparison ? 'Protein: ' + (proteinSignature(mutationComparison.beforeProtein) || 'none') + ' -> ' + (proteinSignature(mutationComparison.afterProtein) || 'none') : 'Protein output: ' + (proteinSignature(fullProtein) || 'not translated yet') },
+        { id: 'mrna', label: 'mRNA sequence: ' + (fullMRNA || 'not transcribed yet') },
+        { id: 'pairing', label: 'Base-pair rule: A-T and G-C' }
+      ];
+      function checkDnaEvidence() {
+        var claimCorrect = dnaEvidenceRubric.validClaims.indexOf(dnaEvidenceClaim) >= 0;
+        var citationCorrect = dnaEvidenceRubric.validCitations.indexOf(dnaEvidenceCitation) >= 0;
+        var reasoningText = String(dnaEvidenceReasoning || '').trim();
+        var reasoningWords = reasoningText ? reasoningText.split(/\s+/).length : 0;
+        var reasoningCorrect = reasoningWords >= 8 && /because|shows|therefore|so|changed|same|shift|codon|protein|base|pair/i.test(reasoningText);
+        var score = (claimCorrect ? 1 : 0) + (citationCorrect ? 1 : 0) + (reasoningCorrect ? 1 : 0);
+        var feedback = [];
+        if (!claimCorrect) feedback.push('Choose a claim that matches ' + dnaEvidenceRubric.focus + '.');
+        if (!citationCorrect) feedback.push('Choose evidence that directly shows ' + dnaEvidenceRubric.focus + '.');
+        if (!reasoningCorrect) feedback.push('Write at least 8 words that connect your evidence with because, shows, so, or therefore.');
+        if (score === 3) feedback.unshift('Strong claim-evidence-reasoning link. Your explanation connects the molecular evidence to the conclusion.');
+        updMulti({ dnaEvidenceScore: score, dnaEvidenceFeedback: feedback.join(' ') });
+        announceToSR(score === 3 ? 'Evidence and reasoning check complete.' : 'Evidence and reasoning feedback updated.');
+        if (score === 3 && typeof stemCelebrate === 'function') stemCelebrate();
+      }
       function analyzeExperimentSequence(sequence) {
         var clean = typeof sequence === 'string' ? sequence : '';
         var mrna = clean.split('').map(function(b) { return CODING_TO_RNA[b] || 'N'; }).join('');
@@ -2644,12 +2732,102 @@ window.StemLab = window.StemLab || {
       var activeRoute = dnaWorkflowRoutes.filter(function(route) {
         return route.id === dnaTabRouteId[tab];
       })[0] || dnaWorkflowRoutes[0];
+      function buildDnaRecommendation() {
+        var currentResult = guidedAnswers[guidedStep.id] || null;
+        if (guidedStarted) {
+          if (currentResult && !currentResult.correct && (currentResult.attempts || 0) >= 2) {
+            return {
+              title: 'Review ' + guidedStep.label,
+              reason: 'You have made multiple attempts here. Revisit the focused explanation, then try the checkpoint again.',
+              target: guidedStep.tab,
+              action: 'Review checkpoint'
+            };
+          }
+          if (currentResult && currentResult.correct && !guidedActionReady) {
+            return {
+              title: 'Complete the lab action for ' + guidedStep.label,
+              reason: guidedActionInstruction(guidedStep),
+              target: guidedStep.tab,
+              action: 'Open lab action'
+            };
+          }
+          return {
+            title: 'Resume ' + guidedStep.label,
+            reason: 'Your guided investigation is in progress, so the next checkpoint is the most useful place to continue.',
+            target: guidedStep.tab,
+            action: 'Resume checkpoint'
+          };
+        }
+        if (dnaExperimentHistory.length > 1 && !experimentComparison) {
+          return {
+            title: 'Compare your saved experiments',
+            reason: 'You have more than one checkpoint saved. Comparing them can reveal which codons and protein evidence changed.',
+            target: 'mutate',
+            action: 'Open comparison'
+          };
+        }
+        if (latestMutationEffect === 'Frameshift') {
+          return {
+            title: 'Review the frameshift evidence',
+            reason: 'A one-base insertion or deletion can regroup every downstream codon. Inspect the before/after comparison next.',
+            target: 'mutate',
+            action: 'Review mutation'
+          };
+        }
+        if (experimentComparison && !dnaCompareReflection) {
+          return {
+            title: 'Explain your experiment comparison',
+            reason: 'The two checkpoints are selected. Add a short claim supported by the codon or protein evidence.',
+            target: 'mutate',
+            action: 'Write comparison reflection'
+          };
+        }
+        if (!visitedTabs.build) {
+          return {
+            title: 'Build the DNA strand',
+            reason: 'Start with complementary base pairing so the rest of the workflow has a clear molecular foundation.',
+            target: 'build',
+            action: 'Open Build'
+          };
+        }
+        if (!d.mRNA) {
+          return {
+            title: 'Transcribe the sequence',
+            reason: 'The next evidence step is to convert the coding DNA readout into mRNA before interpreting protein output.',
+            target: 'transcribe',
+            action: 'Open Transcribe'
+          };
+        }
+        if (!Array.isArray(d.protein) || !d.protein.length) {
+          return {
+            title: 'Translate the message',
+            reason: 'Use codons to turn the mRNA evidence into an amino-acid sequence.',
+            target: 'translate',
+            action: 'Open Translate'
+          };
+        }
+        if (!latestMutation) {
+          return {
+            title: 'Create and explain a mutation',
+            reason: 'Change one base, then use the comparison view to connect sequence evidence to protein effects.',
+            target: 'mutate',
+            action: 'Open Mutate'
+          };
+        }
+        return {
+          title: 'Explore the next layer',
+          reason: 'The core workflow has evidence to review. Continue with mutation comparison or open the learning library for more context.',
+          target: dnaFocusMode ? 'mutate' : 'learn',
+          action: dnaFocusMode ? 'Review Mutate' : 'Open Learn'
+        };
+      }
       var dnaStartTarget = guidedStarted ? guidedStep.tab :
         !visitedTabs.build ? 'build' :
         !visitedTabs.replicate ? 'replicate' :
         !visitedTabs.transcribe ? 'transcribe' :
         !visitedTabs.translate ? 'translate' :
         !visitedTabs.mutate ? 'mutate' : 'learn';
+      var dnaRecommendation = buildDnaRecommendation();
       var dnaStartTool = SUBTOOLS.filter(function(tb) { return tb.id === dnaStartTarget; })[0];
       var dnaStartTitle = guidedStarted ? 'Resume your guided investigation' : guidedComplete ? 'Choose your next lab station' : 'Start with the core workflow';
       var dnaStartDescription = guidedStarted
@@ -2660,7 +2838,7 @@ window.StemLab = window.StemLab || {
       var dnaStartAction = guidedStarted ? 'Resume checkpoint' : 'Open ' + (dnaStartTool ? dnaStartTool.label : 'next station');
       var dnaStartProgress = guidedStarted
         ? 'Checkpoint ' + (guidedStepIndex + 1) + '/' + DNA_GUIDED_STEPS.length
-        : visitedCount <= 1 ? 'First step' : visitedCount + '/' + SUBTOOLS.length + ' explored';
+        : visitedCount <= 1 ? 'First step' : visitedCount + '/' + dnaModeToolCount + ' explored';
       var dnaStartSequence = [
         { id: 'build', label: 'Build' },
         { id: 'replicate', label: 'Replicate' },
@@ -2675,6 +2853,13 @@ window.StemLab = window.StemLab || {
         return 'later';
       }
 
+      function setDnaFocusMode(next) {
+        var nextFocus = !!next;
+        var patch = { dnaFocusMode: nextFocus };
+        if (nextFocus && dnaFocusToolIds.indexOf(d.tab || 'build') < 0) patch.tab = 'build';
+        updMulti(patch);
+        announceToSR(nextFocus ? 'Guided essentials view enabled. Showing the core DNA workflow.' : 'Explore view enabled. Showing all DNA Lab tools.');
+      }
       function switchDnaTab(nextTab) {
         var v = Object.assign({}, visitedTabs);
         v[tab] = true;
@@ -2688,9 +2873,9 @@ window.StemLab = window.StemLab || {
         var key = event.key;
         if (key !== 'ArrowRight' && key !== 'ArrowLeft' && key !== 'Home' && key !== 'End') return;
         event.preventDefault();
-        var nextIndex = key === 'Home' ? 0 : key === 'End' ? SUBTOOLS.length - 1 :
-          (index + (key === 'ArrowRight' ? 1 : -1) + SUBTOOLS.length) % SUBTOOLS.length;
-        switchDnaTab(SUBTOOLS[nextIndex].id);
+        var nextIndex = key === 'Home' ? 0 : key === 'End' ? visibleDnaSubtools.length - 1 :
+          (index + (key === 'ArrowRight' ? 1 : -1) + visibleDnaSubtools.length) % visibleDnaSubtools.length;
+        switchDnaTab(visibleDnaSubtools[nextIndex].id);
         setTimeout(function() {
           var rail = document.querySelector('[data-dna-tabstrip]');
           var tabs = rail ? rail.querySelectorAll('[role="tab"]') : [];
@@ -2756,6 +2941,10 @@ window.StemLab = window.StemLab || {
           h("div", { className: "dna-command-actions" },
               h("button", { onClick: exportDnaEvidence, className: "min-h-[38px] rounded-lg border border-slate-300 bg-white px-3 text-[11px] font-black text-slate-700 hover:bg-slate-50", 'aria-label': t('stem.dna.export_evidence', 'Export DNA evidence summary') }, '\uD83D\uDCC4 Evidence'),
               h("button", { onClick: toggleDnaReport, className: "min-h-[38px] rounded-lg border border-amber-300 bg-amber-50 px-3 text-[11px] font-black text-amber-900 hover:bg-amber-100", 'aria-label': 'Open student DNA lab report' }, 'Lab report'),
+          h("div", { className: "flex items-center gap-1 rounded-lg border border-slate-300 bg-white p-1", "data-dna-view-mode": dnaFocusMode ? "focus" : "explore", role: "group", "aria-label": "DNA Lab view mode" },
+            h("button", { type: "button", onClick: function() { setDnaFocusMode(true); }, className: "rounded-md px-2 py-1 text-[10px] font-black " + (dnaFocusMode ? "bg-violet-700 text-white" : "text-slate-600 hover:bg-slate-100"), "aria-pressed": dnaFocusMode }, "Focus"),
+            h("button", { type: "button", onClick: function() { setDnaFocusMode(false); }, className: "rounded-md px-2 py-1 text-[10px] font-black " + (!dnaFocusMode ? "bg-slate-700 text-white" : "text-slate-600 hover:bg-slate-100"), "aria-pressed": !dnaFocusMode }, "Explore")
+          ),
           h("span", { className: "dna-live-status" }, h("i", { "aria-hidden": "true" }), "Sequence ready"),
             h("span", { className: "dna-xp-chip", 'aria-label': getStemXP('dnaLab') + ' of 100 experience points' }, "\u2B50 " + getStemXP('dnaLab') + "/100"),
             h("button", { onClick: function() { setToolSnapshots(function(prev) { return prev.concat([{ id: 'dna-' + Date.now(), tool: 'dnaLab', label: 'DNA: ' + dnaSeq.substring(0, 12) + '...', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "dna-snapshot-button", 'aria-label': t('stem.dna.snapshot', 'Save DNA snapshot') }, t('stem.dna.snapshot', "\uD83D\uDCF8 Snapshot"))
@@ -2780,8 +2969,17 @@ window.StemLab = window.StemLab || {
         ),
 
         // ═══ TOOL RAIL ═══
+        dnaFocusMode && h("section", { className: "rounded-xl border-2 border-violet-200 bg-violet-50/70 p-3", "data-dna-focus-banner": true, role: "region", "aria-labelledby": "dna-focus-title" },
+          h("div", { className: "flex flex-wrap items-center justify-between gap-2" },
+            h("div", null,
+              h("h4", { id: "dna-focus-title", className: "text-[11px] font-black uppercase tracking-wide text-violet-900" }, "Guided essentials"),
+              h("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-700" }, "Follow five core stations: build, copy, read, translate, and explain a DNA change. Advanced tools remain available in Explore view.")
+            ),
+            h("button", { type: "button", onClick: function() { setDnaFocusMode(false); }, className: "rounded-lg border border-violet-300 bg-white px-3 py-2 text-[10px] font-black text-violet-900 hover:bg-violet-100" }, "Show all tools")
+          )
+        ),
         h("div", { className: "dna-tool-rail", role: "tablist", "aria-label": "DNA Lab tools", "data-dna-tabstrip": true },
-          SUBTOOLS.map(function(tb, tabIndex) {
+          visibleDnaSubtools.map(function(tb, tabIndex) {
             var isActive = tab === tb.id;
             return h("button", {
               key: tb.id,
@@ -2831,7 +3029,7 @@ window.StemLab = window.StemLab || {
                 );
               })
             ),
-            h("nav", { className: "dna-route-panel", "data-dna-routes": true, "aria-label": "DNA learning paths" },
+            !dnaFocusMode && h("nav", { className: "dna-route-panel", "data-dna-routes": true, "aria-label": "DNA learning paths" },
               h("div", { className: "dna-route-heading" },
                 h("strong", null, "Choose a path"),
                 h("span", null, "Opens the first tool")
@@ -2882,13 +3080,23 @@ window.StemLab = window.StemLab || {
                   h("span", { className: "grid h-5 w-5 place-items-center rounded-full bg-white text-[10px] font-black text-slate-700", "aria-hidden": "true" }, String(stepIndex + 1)),
                   h("span", { className: "text-[11px] font-black text-slate-800" }, step.label)
                 ),
-                h("div", { className: "mt-1 text-[9px] font-black uppercase tracking-wide text-slate-500" }, stateLabel)
+                h("div", { className: "mt-1 text-[10px] font-black uppercase tracking-wide text-slate-500" }, stateLabel)
               );
             })
           ),
           h("div", { className: "mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-cyan-200 bg-white/80 p-3" },
             h("span", { className: "text-[11px] font-bold text-slate-700" }, "Next station: " + (dnaStartTool ? dnaStartTool.label : dnaStartTarget)),
             h("button", { type: "button", onClick: function() { switchDnaTab(dnaStartTarget); }, className: "rounded-lg bg-cyan-700 px-3 py-2 text-[11px] font-bold text-white hover:bg-cyan-800" }, dnaStartAction)
+          )
+        ),
+        h("section", { className: "rounded-xl border border-indigo-200 bg-indigo-50/60 p-3", "data-dna-recommendation": true, role: "region", "aria-labelledby": "dna-recommendation-title" },
+          h("div", { className: "flex flex-wrap items-start justify-between gap-3" },
+            h("div", null,
+              h("div", { className: "text-[10px] font-black uppercase tracking-wide text-indigo-700" }, "Suggested next move"),
+              h("h4", { id: "dna-recommendation-title", className: "mt-1 text-sm font-black text-slate-900" }, dnaRecommendation.title),
+              h("p", { className: "mt-1 max-w-3xl text-[11px] leading-relaxed text-slate-700" }, dnaRecommendation.reason)
+            ),
+            h("button", { type: "button", onClick: function() { switchDnaTab(dnaRecommendation.target); }, className: "rounded-lg bg-indigo-700 px-3 py-2 text-[11px] font-black text-white hover:bg-indigo-800" }, dnaRecommendation.action)
           )
         ),
         h("details", { className: "rounded-xl border border-violet-200 bg-violet-50/60", open: guidedStarted && !guidedComplete, 'data-dna-guided': true },
@@ -2958,14 +3166,47 @@ window.StemLab = window.StemLab || {
             h("span", { className: "text-[10px] font-black uppercase tracking-wide text-amber-700" }, "Reflection / claim"),
             h("textarea", { value: dnaReportNote, onChange: function(e) { upd('dnaReportNote', e.target.value); }, rows: 3, className: "mt-2 w-full resize-y rounded-md border border-slate-300 px-2 py-2 text-[11px] text-slate-700 outline-none focus:border-amber-500", 'aria-label': "DNA lab report reflection or claim", placeholder: "What changed? What stayed the same? What evidence supports your claim?" })
           ),
-          h("div", { className: "mt-3 flex flex-wrap items-center justify-between gap-2" },
+          h("section", { className: "mt-3 rounded-xl border border-violet-200 bg-violet-50/60 p-3", "data-dna-evidence-mode": true, role: "region", "aria-labelledby": "dna-evidence-mode-title" },
+            h("div", { className: "flex flex-wrap items-start justify-between gap-2" },
+              h("div", null,
+                h("h5", { id: "dna-evidence-mode-title", className: "text-[11px] font-black uppercase tracking-wide text-violet-900" }, "Evidence & Reasoning mode"),
+                h("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-700" }, dnaEvidenceRubric.prompt)
+              ),
+              h("span", { className: "rounded-full bg-white px-2 py-1 text-[10px] font-black text-violet-800" }, "Check: " + dnaEvidenceScore + "/3")
+            ),
+            h("div", { className: "mt-3 grid gap-3 md:grid-cols-2" },
+              h("label", { className: "block text-[10px] font-black uppercase tracking-wide text-violet-800" },
+                "Claim",
+                h("select", { value: dnaEvidenceClaim, onChange: function(e) { upd('dnaEvidenceClaim', e.target.value); }, className: "mt-1 w-full rounded-md border border-violet-200 bg-white px-2 py-2 text-[11px] font-bold text-slate-700", 'aria-label': "Choose an evidence-based claim" },
+                  h("option", { value: "" }, "Choose a claim"),
+                  dnaEvidenceRubric.claims.map(function(claim) { return h("option", { key: claim.id, value: claim.id }, claim.label); })
+                )
+              ),
+              h("label", { className: "block text-[10px] font-black uppercase tracking-wide text-violet-800" },
+                "Evidence citation",
+                h("select", { value: dnaEvidenceCitation, onChange: function(e) { upd('dnaEvidenceCitation', e.target.value); }, className: "mt-1 w-full rounded-md border border-violet-200 bg-white px-2 py-2 text-[11px] font-bold text-slate-700", 'aria-label': "Choose evidence to cite" },
+                  h("option", { value: "" }, "Choose evidence"),
+                  dnaEvidenceCitationOptions.map(function(option) { return h("option", { key: option.id, value: option.id }, option.label); })
+                )
+              )
+            ),
+            h("label", { className: "mt-3 block rounded-lg border border-violet-200 bg-white p-3" },
+              h("span", { className: "text-[10px] font-black uppercase tracking-wide text-violet-800" }, "Reasoning"),
+              h("textarea", { value: dnaEvidenceReasoning, onChange: function(e) { upd('dnaEvidenceReasoning', e.target.value); }, rows: 3, className: "mt-2 w-full resize-y rounded-md border border-slate-300 px-2 py-2 text-[11px] text-slate-700 outline-none focus:border-violet-500", 'aria-label': "Explain how the evidence supports the claim", placeholder: "Use because, shows, so, or therefore to connect the evidence to your claim." })
+            ),
+            h("div", { className: "mt-3 flex flex-wrap items-center gap-2" },
+              h("button", { type: "button", onClick: checkDnaEvidence, className: "rounded-lg bg-violet-700 px-3 py-2 text-[11px] font-black text-white hover:bg-violet-800" }, "Check reasoning"),
+              dnaEvidenceFeedback && h("span", { className: "text-[11px] leading-relaxed text-slate-700", role: "status" }, dnaEvidenceFeedback)
+            )
+          ),          h("div", { className: "mt-3 flex flex-wrap items-center justify-between gap-2" },
             h("p", { className: "m-0 max-w-xl text-[10px] leading-relaxed text-slate-600" }, "Tip: connect the sequence change to the codon and protein evidence, then note any uncertainty."),
             h("div", { className: "flex flex-wrap gap-2" },
               h("button", { type: "button", onClick: exportDnaEvidence, className: "rounded-lg bg-amber-700 px-3 py-2 text-[11px] font-bold text-white hover:bg-amber-800" }, "Download report"),
               h("button", { type: "button", onClick: toggleDnaReport, className: "rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px] font-bold text-slate-700 hover:bg-slate-50" }, "Hide report")
             )
           )
-        ),        h("details", { className: "dna-achievements" },
+        ),
+        !dnaFocusMode && h("details", { className: "dna-achievements" },
           h("summary", null,
             h("span", { "aria-hidden": "true" }, "🏆"),
             h("span", null, "Achievements"),
@@ -3518,7 +3759,7 @@ window.StemLab = window.StemLab || {
                   state === 'current' ? 'border-violet-400 bg-violet-50 text-violet-800 shadow-sm' :
                   'border-slate-200 bg-white text-slate-500'
                 ), 'aria-current': state === 'current' ? 'step' : undefined },
-                  h("span", { className: "block font-mono text-[9px] font-black" }, state === 'complete' ? '\u2713' : '0' + (index + 1)),
+                  h("span", { className: "block font-mono text-[10px] font-black" }, state === 'complete' ? '\u2713' : '0' + (index + 1)),
                   h("span", { className: "mt-0.5 block truncate text-[10px] font-bold" }, label)
                 );
               })

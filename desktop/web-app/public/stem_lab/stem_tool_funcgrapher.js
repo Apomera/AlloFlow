@@ -29,7 +29,7 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -121,7 +121,9 @@ window.StemLab = window.StemLab || {
                 aiExplain: '', aiExplainLoading: false
               }});
             });
-            return React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading...');
+            // text-slate-600 on the dark tool shell is ~2:1. Use the theme var so the
+            // placeholder stays readable in light, dark and high-contrast.
+            return React.createElement('div', { className: 'p-8 text-center', style: { color: 'var(--allo-stem-text-soft, #475569)' } }, 'Loading...');
           }
 
           const d = labToolData.funcGrapher;
@@ -171,7 +173,8 @@ window.StemLab = window.StemLab || {
 
           // ── Comparison function evaluator ──
           const evalF2 = d.compare ? function(x) {
-            var ct = d.compareType || 'linear', ca = d.compareA || 1, cb = d.compareB || 0, cc = d.compareC || 0;
+            // typeof check, not ||: a2 = 0 must eval as 0 so the curve matches its printed equation
+            var ct = d.compareType || 'linear', ca = (typeof d.compareA === 'number' ? d.compareA : 1), cb = d.compareB || 0, cc = d.compareC || 0;
             if (ct === 'linear') return ca * x + cb;
             if (ct === 'quadratic') return ca * x * x + cb * x + cc;
             if (ct === 'trig') return ca * Math.sin(cb * x + cc);
@@ -232,11 +235,16 @@ window.StemLab = window.StemLab || {
           const segments = [];
           var curSeg = null;
 
-          const derivPts = [];
+          // The derivative and comparison overlays need the same break-awareness as the
+          // main curve: a rational's asymptote (or a domain edge) must END the segment,
+          // not get bridged by a spurious connecting line.
+          const derivSegs = [];
+          var curDSeg = null;
 
           const areaPts = [];
 
-          const comparePts = [];
+          const compareSegs = [];
+          var curCSeg = null;
 
           for (var px = 0; px <= W - 2 * pad; px += 2) {
 
@@ -248,11 +256,11 @@ window.StemLab = window.StemLab || {
 
             if (isFinite(y) && y >= yR.yMin && y <= yR.yMax) { if (!curSeg) { curSeg = []; segments.push(curSeg); } curSeg.push(toSX(x) + ',' + toSY(y)); } else { curSeg = null; }
 
-            if (dy >= yR.yMin && dy <= yR.yMax) derivPts.push(toSX(x) + ',' + toSY(dy));
+            if (isFinite(dy) && dy >= yR.yMin && dy <= yR.yMax) { if (!curDSeg) { curDSeg = []; derivSegs.push(curDSeg); } curDSeg.push(toSX(x) + ',' + toSY(dy)); } else { curDSeg = null; }
 
             if (d.showArea && y >= yR.yMin && y <= yR.yMax && x >= 0) areaPts.push({ sx: toSX(x), sy: toSY(y) });
 
-            if (evalF2) { var y2c = evalF2(x); if (y2c >= yR.yMin && y2c <= yR.yMax) comparePts.push(toSX(x) + ',' + toSY(y2c)); }
+            if (evalF2) { var y2c = evalF2(x); if (isFinite(y2c) && y2c >= yR.yMin && y2c <= yR.yMax) { if (!curCSeg) { curCSeg = []; compareSegs.push(curCSeg); } curCSeg.push(toSX(x) + ',' + toSY(y2c)); } else { curCSeg = null; } }
 
           }
 
@@ -270,7 +278,10 @@ window.StemLab = window.StemLab || {
 
               var rootX = rx - y1 * (0.05) / (y2 - y1);
 
-              if (rootX >= xR.xMin && rootX <= xR.xMax) roots.push(rootX);
+              // A sign flip across a vertical asymptote (e.g. 1/x at x = 0) is NOT a root:
+              // f is huge there, not zero. And when a sample lands exactly on a root, both
+              // adjacent intervals report it — keep only the first.
+              if (rootX >= xR.xMin && rootX <= xR.xMax && Math.abs(evalF(rootX)) < 0.5 && !(roots.length && Math.abs(rootX - roots[roots.length - 1]) < 0.01)) roots.push(rootX);
 
             }
 
@@ -291,13 +302,20 @@ window.StemLab = window.StemLab || {
 
           // Numerical integral of f from 0 to xR.xMax (trapezoidal) — shown when Area is on
           var integral0ToMax = 0;
+          var integralDefined = true;
           if (d.showArea && xR.xMax > 0) {
+            // A rational's asymptote inside [0, xMax] makes the integral improper and
+            // divergent — no finite number is honest there.
+            if (d.type === 'rational' && (-d.b) >= 0 && (-d.b) <= xR.xMax) integralDefined = false;
             var iSteps = 200, iLo = 0, iHi = xR.xMax;
             var iH = (iHi - iLo) / iSteps;
             for (var ii = 0; ii < iSteps; ii++) {
               var xa = iLo + ii * iH, xb = xa + iH;
-              integral0ToMax += (evalF(xa) + evalF(xb)) * iH / 2;
+              var fa = evalF(xa), fb = evalF(xb);
+              // Skip trapezoids outside the domain (sqrt/log NaN) instead of poisoning the sum
+              if (isFinite(fa) && isFinite(fb)) integral0ToMax += (fa + fb) * iH / 2;
             }
+            if (!isFinite(integral0ToMax)) integralDefined = false;
           }
 
 
@@ -373,7 +391,7 @@ window.StemLab = window.StemLab || {
           // Build comparison equation string
           var eqStr2 = '';
           if (d.compare) {
-            var ca = d.compareA || 0, cb = d.compareB || 0, cc = d.compareC || 0, ct = d.compareType || 'linear';
+            var ca = (typeof d.compareA === 'number' ? d.compareA : 1), cb = d.compareB || 0, cc = d.compareC || 0, ct = d.compareType || 'linear';
             eqStr2 = 'g(x) = ';
             if (ct === 'linear') { var p = fmtCoeff(ca, 'x', true) + fmtConst(cb, ca === 0); eqStr2 += p || '0'; }
             else if (ct === 'quadratic') { var p = fmtCoeff(ca, 'x\u00B2', true) + fmtCoeff(cb, 'x', ca === 0) + fmtConst(cc, ca === 0 && cb === 0); eqStr2 += p || '0'; }
@@ -480,7 +498,7 @@ window.StemLab = window.StemLab || {
           return React.createElement("div", {
               className: "max-w-5xl mx-auto animate-in fade-in duration-200",
               role: "region",
-              "aria-label": __alloT('stem.funcgrapher.function_grapher_keyboard_shortcuts_1_', "Function Grapher. Keyboard shortcuts: 1 through 6 pick a function type, D derivative, A area, T table, L learn."),
+              "aria-label": __alloT('stem.funcgrapher.function_grapher_keyboard_shortcuts_1_', "Function Grapher. Keyboard shortcuts: 1 through 9 pick a function type, D derivative, A area, T table, L learn."),
               tabIndex: 0,
               onKeyDown: onFgKey
             },
@@ -508,7 +526,7 @@ window.StemLab = window.StemLab || {
                     ].map(function(metric) {
                       return React.createElement("div", { key: metric.label, className: "min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center" },
                         React.createElement("div", { className: "truncate text-sm font-black text-white", title: metric.value }, metric.value),
-                        React.createElement("div", { className: "mt-1 text-[9px] font-bold uppercase tracking-wider text-indigo-200" }, metric.label)
+                        React.createElement("div", { className: "mt-1 text-[10px] leading-snug font-bold uppercase tracking-wider text-indigo-200" }, metric.label)
                       );
                     })
                   )
@@ -605,7 +623,7 @@ window.StemLab = window.StemLab || {
 
               // Derivative trace
 
-              d.showDeriv && derivPts.length > 1 && React.createElement("polyline", { points: derivPts.join(" "), fill: "none", stroke: "#f59e0b", strokeWidth: 1.5, strokeDasharray: "6 3" }),
+              d.showDeriv && derivSegs.map(function (seg, si) { return seg.length > 1 ? React.createElement("polyline", { key: 'dseg' + si, points: seg.join(" "), fill: "none", stroke: "#f59e0b", strokeWidth: 1.5, strokeDasharray: "6 3" }) : null; }),
 
               // Main curve
 
@@ -613,7 +631,7 @@ window.StemLab = window.StemLab || {
               segments.map(function (seg, si) { return seg.length > 1 ? React.createElement("polyline", { key: 'seg' + si, points: seg.join(" "), fill: "none", stroke: isDark ? "#818cf8" : "#4f46e5", strokeWidth: 2.5, style: { filter: 'drop-shadow(0 0 3px rgba(' + (isDark ? '129,140,248,0.6' : '79,70,229,0.45') + '))' } }) : null; }),
 
               // Comparison curve (orange)
-              d.compare && comparePts.length > 1 && React.createElement("polyline", { points: comparePts.join(" "), fill: "none", stroke: "#f97316", strokeWidth: 2, strokeDasharray: "8 4" }),
+              d.compare && compareSegs.map(function (seg, si) { return seg.length > 1 ? React.createElement("polyline", { key: 'cseg' + si, points: seg.join(" "), fill: "none", stroke: "#f97316", strokeWidth: 2, strokeDasharray: "8 4" }) : null; }),
 
               // Tangent line at traceX
               tangentInRange && (function() {
@@ -744,7 +762,7 @@ window.StemLab = window.StemLab || {
 
               React.createElement("button", { onClick: () => { if (!d.showArea) upd('overlaysUsed', Object.assign({}, d.overlaysUsed, { area: true })); upd('showArea', !d.showArea); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showArea ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-600 border border-indigo-600') }, d.showArea ? "\u2705 Area" : "\u222B Area"),
 
-              d.showArea && React.createElement("span", { className: "px-2 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-[11px] font-mono font-bold border border-indigo-300" }, "\u222B\u2080^" + xR.xMax.toFixed(0) + " f(x)dx \u2248 " + integral0ToMax.toFixed(2)),
+              d.showArea && React.createElement("span", { className: "px-2 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-[11px] font-mono font-bold border border-indigo-300" }, "\u222B\u2080^" + xR.xMax.toFixed(0) + " f(x)dx " + (integralDefined ? "\u2248 " + integral0ToMax.toFixed(2) : "diverges")),
 
               React.createElement("button", { onClick: () => upd('showTable', !d.showTable), className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showTable ? 'bg-cyan-700 text-white' : 'bg-cyan-50 text-cyan-700 border border-cyan-600') }, d.showTable ? "\u2705 Table" : "\uD83D\uDCCB Table"),
 
@@ -784,8 +802,8 @@ window.StemLab = window.StemLab || {
                       var fdy = evalDeriv(tx);
                       rows.push(React.createElement("tr", { key: tx, className: "border-b border-cyan-100 hover:bg-cyan-100 transition-colors" },
                         React.createElement("td", { className: "px-2 py-0.5 font-mono text-cyan-800" }, tx),
-                        React.createElement("td", { className: "px-2 py-0.5 font-mono text-indigo-700" }, fy.toFixed(2)),
-                        d.showDeriv && React.createElement("td", { className: "px-2 py-0.5 font-mono text-amber-700" }, fdy.toFixed(2))
+                        React.createElement("td", { className: "px-2 py-0.5 font-mono text-indigo-700" }, isFinite(fy) ? fy.toFixed(2) : 'undefined'),
+                        d.showDeriv && React.createElement("td", { className: "px-2 py-0.5 font-mono text-amber-700" }, isFinite(fdy) ? fdy.toFixed(2) : 'undefined')
                       ));
                     }
                     return rows;
@@ -993,6 +1011,17 @@ window.StemLab = window.StemLab || {
                 '9-12': ['linear', 'quadratic', 'trig', 'cubic', 'exponential', 'absolute', 'sqrt', 'log', 'rational']
               };
 
+              // Unbiased in-place Fisher-Yates — the Math.random()-0.5 comparator it
+              // replaces left the correct answer disproportionately near where it
+              // was inserted (position bias).
+              function fgShuffle(arr) {
+                for (var fi = arr.length - 1; fi > 0; fi--) {
+                  var fj = Math.floor(Math.random() * (fi + 1));
+                  var ft = arr[fi]; arr[fi] = arr[fj]; arr[fj] = ft;
+                }
+                return arr;
+              }
+
               // ── Name That Graph generator (grade-banded pool) ──
 
               function makeFgQuiz() {
@@ -1005,7 +1034,7 @@ window.StemLab = window.StemLab || {
 
                 while (opts.length < Math.min(4, types.length)) { var r = FG_LABELS[types[Math.floor(Math.random() * types.length)]]; if (opts.indexOf(r) < 0) opts.push(r); }
 
-                return { mode: 'name', type: tp, answer: FG_LABELS[tp], opts: opts.sort(function () { return Math.random() - 0.5; }), answered: false };
+                return { mode: 'name', type: tp, answer: FG_LABELS[tp], opts: fgShuffle(opts), answered: false };
 
               }
 
@@ -1020,7 +1049,7 @@ window.StemLab = window.StemLab || {
 
                 var pick = (gradeBand === 'K-2' || gradeBand === '3-5') ? 0 : Math.random();
 
-                var qa, qb, qc, qtype, rootAnswer;
+                var qa, qb, qc, qtype, rootAnswer, rootAnswers;
 
                 if (pick < 0.5) {
 
@@ -1034,6 +1063,8 @@ window.StemLab = window.StemLab || {
 
                   rootAnswer = Math.round((-qb / qa) * 100) / 100;
 
+                  rootAnswers = [rootAnswer];
+
                 } else {
 
                   // Quadratic: a*(x - r1)*(x - r2), pick small integer roots
@@ -1044,7 +1075,11 @@ window.StemLab = window.StemLab || {
 
                   qa = 1; qb = -(r1 + r2); qc = r1 * r2; qtype = 'quadratic';
 
-                  rootAnswer = r1; // accept either root
+                  rootAnswer = r1;
+
+                  // BOTH roots are correct answers to "what is one root": r2 must never be
+                  // generated as a "wrong" option, and must grade correct if picked.
+                  rootAnswers = [r1, r2];
 
                 }
 
@@ -1056,11 +1091,11 @@ window.StemLab = window.StemLab || {
 
                   var wrong = rootAnswer + (Math.floor(Math.random() * 7) - 3);
 
-                  if (wrong !== rootAnswer && opts.indexOf(wrong) < 0) opts.push(wrong);
+                  if (rootAnswers.indexOf(wrong) < 0 && opts.indexOf(wrong) < 0) opts.push(wrong);
 
                 }
 
-                return { mode: 'root', type: qtype, a: qa, b: qb, c: qc, answer: rootAnswer, opts: opts.sort(function () { return Math.random() - 0.5; }), answered: false };
+                return { mode: 'root', type: qtype, a: qa, b: qb, c: qc, answer: rootAnswer, answers: rootAnswers, opts: fgShuffle(opts), answered: false };
 
               }
 
@@ -1115,7 +1150,7 @@ window.StemLab = window.StemLab || {
 
                 }
 
-                return { mode: 'yint', type: qtype, a: qa, b: qb, c: qc, answer: yIntAnswer, opts: opts.sort(function () { return Math.random() - 0.5; }), answered: false };
+                return { mode: 'yint', type: qtype, a: qa, b: qb, c: qc, answer: yIntAnswer, opts: fgShuffle(opts), answered: false };
 
               }
 
@@ -1178,7 +1213,7 @@ window.StemLab = window.StemLab || {
                 if (q.mode === 'root') {
                   if (correct) return 'f(' + chosen + ') = 0 — the curve crosses the x-axis exactly there.';
                   var fAt = evalQ(q, chosen);
-                  return 'A root is where the curve CROSSES the x-axis — where f(x) = 0. At your pick x = ' + chosen + ', f(' + chosen + ') = ' + (isFinite(fAt) ? Math.round(fAt * 100) / 100 : '?') + ', not 0. Look where the curve meets the axis: x = ' + q.answer + '.';
+                  return 'A root is where the curve CROSSES the x-axis — where f(x) = 0. At your pick x = ' + chosen + ', f(' + chosen + ') = ' + (isFinite(fAt) ? Math.round(fAt * 100) / 100 : '?') + ', not 0. Look where the curve meets the axis: x = ' + (q.answers ? q.answers.join(' or x = ') : q.answer) + '.';
                 }
                 if (q.mode === 'yint') {
                   if (correct) return 'f(0) = ' + q.answer + ' — the y-intercept is always just the function evaluated at x = 0.';
@@ -1313,11 +1348,12 @@ window.StemLab = window.StemLab || {
 
                         key: String(opt), onClick: function () {
 
-                          var correct = opt === fgQuiz.answer;
+                          // Root questions can have TWO correct answers (either root of a quadratic)
+                          var correct = fgQuiz.answers ? fgQuiz.answers.indexOf(opt) >= 0 : opt === fgQuiz.answer;
 
                           var fb = buildFeedback(fgQuiz, opt, correct);
 
-                          upd('fgQuiz', Object.assign({}, fgQuiz, { answered: true, chosen: opt, fb: fb }));
+                          upd('fgQuiz', Object.assign({}, fgQuiz, { answered: true, chosen: opt, correct: correct, fb: fb }));
 
                           upd('fgScore', fgScore + (correct ? 1 : 0));
 
@@ -1360,13 +1396,13 @@ window.StemLab = window.StemLab || {
 
                 // Result card \u2014 headline + corrective explanation (the pedagogy payload)
 
-                fgQuiz && fgQuiz.answered && React.createElement("div", { className: "p-3 rounded-xl " + (fgQuiz.chosen === fgQuiz.answer ? 'bg-emerald-50 border border-emerald-200' : 'bg-red-50 border border-red-200'), role: "status" },
+                fgQuiz && fgQuiz.answered && React.createElement("div", { className: "p-3 rounded-xl " + (fgQuiz.correct ? 'bg-emerald-50 border border-emerald-200' : 'bg-red-50 border border-red-200'), role: "status" },
 
-                  React.createElement("p", { className: "text-sm font-bold mb-1 " + (fgQuiz.chosen === fgQuiz.answer ? 'text-emerald-700' : 'text-red-700') },
-                    fgQuiz.chosen === fgQuiz.answer ? '\u2705 Correct! +5 XP' : '\u274C Not quite'
+                  React.createElement("p", { className: "text-sm font-bold mb-1 " + (fgQuiz.correct ? 'text-emerald-700' : 'text-red-700') },
+                    fgQuiz.correct ? '\u2705 Correct! +5 XP' : '\u274C Not quite'
                   ),
 
-                  fgQuiz.fb && React.createElement("p", { className: "text-xs leading-relaxed " + (fgQuiz.chosen === fgQuiz.answer ? 'text-emerald-800' : 'text-red-800') }, fgQuiz.fb)
+                  fgQuiz.fb && React.createElement("p", { className: "text-xs leading-relaxed " + (fgQuiz.correct ? 'text-emerald-800' : 'text-red-800') }, fgQuiz.fb)
 
                 )
 
@@ -1379,7 +1415,9 @@ window.StemLab = window.StemLab || {
             // ── AI Function Tutor (reading-level aware) ──
             (function () {
               var aiLevel = d.aiLevel || 'grade5';
-              var aiText = d.aiExplain || '';
+              // Own state key: sharing d.aiExplain with the "Explain This Graph" button
+              // above made each panel display the other's output.
+              var aiText = d.aiTutorText || '';
               var aiLoading = !!d.aiLoading;
               var aiError = d.aiError || '';
               var LEVELS = [
@@ -1389,7 +1427,7 @@ window.StemLab = window.StemLab || {
               ];
               function explain() {
                 if (typeof callGemini !== 'function') { upd('aiError', 'AI tutor not available.'); return; }
-                upd('aiLoading', true); upd('aiError', ''); upd('aiExplain', '');
+                upd('aiLoading', true); upd('aiError', ''); upd('aiTutorText', '');
                 var lv = LEVELS.find(function (L) { return L.id === aiLevel; }) || LEVELS[1];
                 var fnDesc = d.type === 'linear' ? 'y = ' + d.a + 'x + ' + d.b
                   : d.type === 'quadratic' ? 'y = ' + d.a + 'x\u00B2 + ' + d.b + 'x + ' + d.c
@@ -1402,7 +1440,7 @@ window.StemLab = window.StemLab || {
                   + 'In 3 short sentences: (1) What the graph looks like. (2) Which coefficient changes the graph in what way. (3) One real-world situation this function models. '
                   + 'No markdown, no bullets, no headings. Plain prose.';
                 callGemini(prompt, false, false, 0.5).then(function (resp) {
-                  upd('aiExplain', String(resp || '').trim()); upd('aiLoading', false);
+                  upd('aiTutorText', String(resp || '').trim()); upd('aiLoading', false);
                   if (typeof announceToSR === 'function') announceToSR('Explanation ready.');
                 }).catch(function () {
                   upd('aiLoading', false); upd('aiError', 'Could not reach AI tutor. Try again in a moment.');
@@ -1576,7 +1614,7 @@ window.StemLab = window.StemLab || {
                   __alloT('stem.funcgrapher.i_understand_explain_in_own_words', 'I understand — explain in own words')),
                 iq.understood && h('textarea', { 'aria-label': __alloT('stem.funcgrapher.explanation_input', 'Function grapher explanation'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.funcgrapher.explain_how_each_parameter_shapes_a_si', 'Explain how each parameter shapes a sine wave.'),
                   className: 'w-full text-[11px] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 }),
-                h('div', { className: 'text-[9px] italic text-slate-500' }, __alloT('stem.funcgrapher.design_note_discrete_5_state_marker_no', 'Design note: discrete 5-state marker; no wave score; no reveal — by design.'))
+                h('div', { className: 'text-[10px] leading-snug italic text-slate-500' }, __alloT('stem.funcgrapher.design_note_discrete_5_state_marker_no', 'Design note: discrete 5-state marker; no wave score; no reveal — by design.'))
               );
             })()
           )

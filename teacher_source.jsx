@@ -3835,7 +3835,7 @@ const _BUILTIN_METRIC_REGISTRY = [
   { id: 'anchor-chart',    label: 'Anchor Charts',      icon: '📋', color: 'orange',  count: (s) => (s.history || []).filter(h => h && h.type === 'anchor-chart').length },
   { id: 'dbq',             label: 'DBQs',               icon: '⚖️', color: 'rose',    count: (s) => (s.history || []).filter(h => h && h.type === 'dbq').length },
   { id: 'persona',         label: 'Personas',           icon: '🎭', color: 'fuchsia', count: (s) => (s.history || []).filter(h => h && h.type === 'persona').length },
-  { id: 'math',            label: 'STEM Lab',           icon: '🧪', color: 'emerald', count: (s) => (s.history || []).filter(h => h && h.type === 'math').length },
+  { id: 'math',            label: 'STEAM Lab',           icon: '🧪', color: 'emerald', count: (s) => (s.history || []).filter(h => h && h.type === 'math').length },
   { id: 'faq',             label: 'FAQs',               icon: '❓', color: 'slate',   count: (s) => (s.history || []).filter(h => h && h.type === 'faq').length },
   { id: 'image',           label: 'Generated Images',   icon: '🖼️', color: 'pink',    count: (s) => (s.history || []).filter(h => h && h.type === 'image').length },
   { id: 'brainstorm',      label: 'Brainstorms',        icon: '💡', color: 'amber',   count: (s) => (s.history || []).filter(h => h && h.type === 'brainstorm').length },
@@ -4462,9 +4462,28 @@ const LearnerProgressView = React.memo(({
     }, [isParentMode, rosterKey]);
     const stats = useMemo(() => {
         const quizzes = history.filter(h => h.type === 'quiz');
-        const wsCorrect = wordSoundsHistory.filter(h => h.correct).length;
+        // Word Sounds writes two kinds of row. Graded rows are items the child
+        // could get wrong. practiceOnly rows come from coach-until-right
+        // activities (Letter Trace) that never mark an answer wrong, so they
+        // are always correct:true — pooling them turns the accuracy bar into a
+        // measure of how much tracing the child did. wsTotal stays the full
+        // count because "Words Practiced" is a volume, not a score. (The
+        // activity test covers rows saved before the flag existed.)
+        const wsGraded = wordSoundsHistory.filter(
+            h => h && h.practiceOnly !== true && h.activity !== 'letter_tracing'
+        );
+        const wsCorrect = wsGraded.filter(h => h.correct).length;
+        const wsGradedTotal = wsGraded.length;
         const wsTotal = wordSoundsHistory.length;
-        const wsAccuracy = wsTotal > 0 ? Math.round((wsCorrect / wsTotal) * 100) : 0;
+        const wsAccuracy = wsGradedTotal > 0 ? Math.round((wsCorrect / wsGradedTotal) * 100) : 0;
+        // Right on the second try is not the same as right first time, and the
+        // difference is the whole signal when deciding whether a skill is
+        // secure. `attempts` is 1 on a first presentation. Rows saved before
+        // that field existed default to 1, i.e. they read as first-try — which
+        // is exactly how they were recorded.
+        const wsFirstTryCorrect = wsGraded.filter(h => h.correct && (h.attempts || 1) === 1).length;
+        const wsFirstTryAccuracy = wsGradedTotal > 0 ? Math.round((wsFirstTryCorrect / wsGradedTotal) * 100) : 0;
+        const wsHasPracticeOnly = wsTotal > wsGradedTotal;
         const masteredPhonemes = Object.entries(phonemeMastery).filter(([_, v]) => v.accuracy >= 80);
         const practicingPhonemes = Object.entries(phonemeMastery).filter(([_, v]) => v.accuracy > 0 && v.accuracy < 80);
         const totalActivities = history.length + (wsTotal > 0 ? 1 : 0) + (gameCompletions?.length || 0);
@@ -4474,7 +4493,8 @@ const LearnerProgressView = React.memo(({
             : 0;
         return {
             quizCount: quizzes.length,
-            wsAccuracy, wsCorrect, wsTotal,
+            wsAccuracy, wsCorrect, wsTotal, wsGradedTotal,
+            wsFirstTryAccuracy, wsFirstTryCorrect, wsHasPracticeOnly,
             masteredPhonemes, practicingPhonemes,
             totalActivities,
             gamesPlayed: gameCompletions?.length || 0,
@@ -4666,7 +4686,7 @@ const LearnerProgressView = React.memo(({
                         </div>
                     ) : (
                         <div className="space-y-3">
-                            {stats.wsTotal > 0 && (
+                            {stats.wsGradedTotal > 0 && (
                                 <div>
                                     <div className="flex justify-between items-center mb-1">
                                         <span className="text-sm font-bold text-slate-600">{t('learner.ws_accuracy')}</span>
@@ -4680,6 +4700,20 @@ const LearnerProgressView = React.memo(({
                                             style={{ width: `${stats.wsAccuracy}%` }}
                                         />
                                     </div>
+                                    {/* First-try accuracy sits under the overall bar rather than
+                                        replacing it: the gap between the two is the signal about
+                                        whether a skill is secure or still propped up by retries. */}
+                                    <div className="flex justify-between items-center mt-1.5">
+                                        <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">{t('learner.ws_first_try_accuracy')}</span>
+                                        <span className="text-[11px] font-black text-slate-700">
+                                            {stats.wsFirstTryAccuracy}% <span className="font-bold text-slate-600">({stats.wsFirstTryCorrect}/{stats.wsGradedTotal})</span>
+                                        </span>
+                                    </div>
+                                    {stats.wsHasPracticeOnly && (
+                                        <div className="text-[10px] text-slate-600 mt-1 leading-snug">
+                                            {t('learner.ws_practice_only_note')}
+                                        </div>
+                                    )}
                                 </div>
                             )}
                             {stats.masteredPhonemes.length > 0 && (
@@ -4873,7 +4907,9 @@ const LearnerProgressView = React.memo(({
                     </h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <div className="bg-white rounded-xl p-3 border border-slate-400 text-center">
-                            <div className="text-lg font-black text-slate-700">{stats.wsCorrect}/{stats.wsTotal}</div>
+                            {/* Denominator is the graded count, not the practice volume —
+                                wsCorrect can only come from rows that could have been wrong. */}
+                            <div className="text-lg font-black text-slate-700">{stats.wsCorrect}/{stats.wsGradedTotal}</div>
                             <div className="text-[11px] font-bold text-slate-600 uppercase">{t('learner.words_correct')}</div>
                         </div>
                         <div className="bg-white rounded-xl p-3 border border-slate-400 text-center">
@@ -4948,6 +4984,7 @@ const LearnerProgressView = React.memo(({
                           `</div></div>` +
                           `<div class="section-title">📊 Performance Summary</div>` +
                           `${metricBar('Word Sounds Accuracy', stats.wsAccuracy, 100, '%', '🔊')}` +
+                          `${metricBar('Right First Try', stats.wsFirstTryAccuracy, 100, '%', '🎯')}` +
                           `${metricBar('Quizzes Completed', stats.quizCount, 10, '', '📝')}` +
                           `${metricBar('Words Practiced', stats.wsTotal, 50, '', '🔤')}` +
                           `${metricBar('Games Played', stats.gamesPlayed, 10, '', '🎮')}` +

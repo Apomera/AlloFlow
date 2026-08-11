@@ -59,7 +59,7 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -1873,6 +1873,8 @@ window.StemLab = window.StemLab || {
         window.removeEventListener('keydown', window._volumeKeyHandler);
       }
       window._volumeKeyHandler = function(e) {
+        // Window-level handler with no unmount cleanup: refuse to act once the tool left the DOM.
+        if (!document.querySelector('[data-volume-root]')) return;
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
         var key = e.key.toLowerCase();
         if (key === 's' && mode !== 'slider') { e.preventDefault(); upd({ mode: 'slider', builderChallenge: null, builderFeedback: null, wpFeedback: null }); }
@@ -2907,7 +2909,7 @@ window.StemLab = window.StemLab || {
           nextTab.click();
         }
       };
-      return h('div', { className: 'space-y-4 max-w-5xl mx-auto animate-in fade-in duration-200 ' + bgClass },
+      return h('div', { className: 'space-y-4 max-w-5xl mx-auto animate-in fade-in duration-200 ' + bgClass, 'data-volume-root': 'true' },
         // Header
         h('section', { 'data-volume-command': 'true', className: 'overflow-hidden rounded-2xl border border-emerald-300/40 bg-gradient-to-br from-slate-950 via-emerald-950 to-teal-950 text-white shadow-xl' },
           h('div', { className: 'p-4 sm:p-5' },
@@ -3360,16 +3362,32 @@ window.StemLab = window.StemLab || {
           className: 'space-y-3 rounded-2xl'
         },
           h('style', null,
-            '#volume-3d-workspace:fullscreen,#volume-3d-workspace:-webkit-full-screen{' +
+            '#volume-3d-workspace:fullscreen,#volume-3d-workspace:-webkit-full-screen,' +
+            '#volume-3d-workspace[data-allo-fullscreen-active="true"]{' +
               'box-sizing:border-box;display:flex;flex-direction:column;gap:12px;width:100vw;height:100vh;' +
-              'padding:clamp(12px,2vw,24px);overflow:auto;background:#020617}' +
-            '#volume-3d-workspace:fullscreen [data-volume-dimension-controls="true"],' +
-            '#volume-3d-workspace:-webkit-full-screen [data-volume-dimension-controls="true"]{flex:0 0 auto;margin:0}' +
+              'padding:clamp(10px,1.5vw,20px);overflow:hidden;background:#020617}' +
             '#volume-3d-workspace:fullscreen #volume-3d-viewport,' +
-            '#volume-3d-workspace:-webkit-full-screen #volume-3d-viewport{' +
-              'flex:1 1 auto;min-height:min(58vh,640px)!important;border-radius:16px}'
+            '#volume-3d-workspace:-webkit-full-screen #volume-3d-viewport,' +
+            '#volume-3d-workspace[data-allo-fullscreen-active="true"] #volume-3d-viewport{' +
+              'order:1;flex:1 1 0;height:auto!important;min-height:0!important;border-radius:16px}' +
+            '#volume-3d-workspace:fullscreen [data-volume-dimension-controls="true"],' +
+            '#volume-3d-workspace:-webkit-full-screen [data-volume-dimension-controls="true"],' +
+            '#volume-3d-workspace[data-allo-fullscreen-active="true"] [data-volume-dimension-controls="true"]{' +
+              'order:2;flex:0 0 auto;max-height:min(32vh,180px);margin:0;overflow:auto;padding:8px!important;' +
+              'border-color:#6ee7b7;background:#f8fafc}' +
+            '#volume-3d-workspace:fullscreen [data-volume-dimension-controls="true"]>div,' +
+            '#volume-3d-workspace:-webkit-full-screen [data-volume-dimension-controls="true"]>div,' +
+            '#volume-3d-workspace[data-allo-fullscreen-active="true"] [data-volume-dimension-controls="true"]>div{' +
+              'grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important}' +
+            '#volume-3d-workspace:fullscreen [data-volume-dimension-controls="true"]>div>div,' +
+            '#volume-3d-workspace:-webkit-full-screen [data-volume-dimension-controls="true"]>div>div,' +
+            '#volume-3d-workspace[data-allo-fullscreen-active="true"] [data-volume-dimension-controls="true"]>div>div{padding:8px!important}' +
+            '@media(max-width:640px){#volume-3d-workspace:fullscreen [data-volume-dimension-controls="true"]>div,' +
+              '#volume-3d-workspace:-webkit-full-screen [data-volume-dimension-controls="true"]>div,' +
+              '#volume-3d-workspace[data-allo-fullscreen-active="true"] [data-volume-dimension-controls="true"]>div{grid-template-columns:1fr!important}' +
+              '#volume-3d-workspace:fullscreen [data-volume-dimension-controls="true"],#volume-3d-workspace:-webkit-full-screen [data-volume-dimension-controls="true"],' +
+              '#volume-3d-workspace[data-allo-fullscreen-active="true"] [data-volume-dimension-controls="true"]{max-height:42vh}}'
           ),
-          renderDimensionSliders(),
           h('div', {
           id: 'volume-3d-viewport',
           className: 'relative bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl border-2 border-emerald-300/30 flex items-center justify-center overflow-hidden cursor-grab active:cursor-grabbing select-none focus:outline-none focus:ring-2 focus:ring-emerald-400',
@@ -3461,8 +3479,7 @@ window.StemLab = window.StemLab || {
           // pointerEvents stay ON so freeform picking works; the rotate-drag
           // handler on the viewport still gets the same events by bubbling.
           glMode && h('canvas', {
-            role: 'img', 'aria-label': 'Interactive 3D volume model',
-            ref: volGlRef,
+                        ref: volGlRef,
             'data-volume-gl': 'true',
             // Named rather than aria-hidden: the surrounding role="application"
             // carries the *instructions*, but a screen-reader user still needs
@@ -3506,7 +3523,8 @@ window.StemLab = window.StemLab || {
             position: 'relative', width: fw+'px', height: fh+'px',
             visibility: glLive ? 'hidden' : 'visible'
           }
-          }, cubes))
+          }, cubes)),
+          renderDimensionSliders()
         ),
 
         // Layer slider (slider mode)

@@ -18,7 +18,7 @@
 
 const CANVAS_LOADING_TIPS = [
   "💡 Use the Wizard to auto-generate complete lesson plans in seconds",
-  "🎨 Explore 18+ interactive STEM lab tools from the lesson toolbar",
+  "🎨 Explore 18+ interactive STEAM lab tools from the lesson toolbar",
   "🔊 Click any text to hear it read aloud in 30+ natural voices",
   "📊 BehaviorLens includes 80+ observation and analysis tools for educators",
   "✏️ The Report Writer creates clinical reports with AI accuracy checks",

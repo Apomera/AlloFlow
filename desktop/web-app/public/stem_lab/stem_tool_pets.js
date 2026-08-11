@@ -1,4 +1,4 @@
-// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -51,6 +51,7 @@
     '.petslab-wag     { animation: petslab-wag 0.6s ease-in-out infinite; transform-origin: 0% 50%; transform-box: fill-box; }',
     '.petslab-blink   { animation: petslab-blink 4.2s ease-in-out infinite; transform-origin: 50% 50%; transform-box: fill-box; }',
     '.petslab-hop     { animation: petslab-hop 1.4s ease-in-out infinite; }',
+    '.reduce-motion .petslab-breathe, .reduce-motion .petslab-wag, .reduce-motion .petslab-blink, .reduce-motion .petslab-hop { animation: none !important; }',
     '@media (prefers-reduced-motion: reduce) {',
     '  .petslab-breathe, .petslab-wag, .petslab-blink, .petslab-hop { animation: none !important; }',
     '}'
@@ -135,10 +136,280 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       '.petslab-catalog summary,.petslab-inquiry-disclosure summary{min-height:46px;padding:12px 14px;cursor:pointer;color:#fef3e2;font-size:12px;font-weight:900;}',
       '.petslab-catalog-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;padding:0 12px 12px;}',
       '.petslab-inquiry-body{padding:0 12px 12px;}',
+      '.petslab-genetics-view{box-sizing:border-box;min-width:0;width:100%;max-width:880px;}',
+      '.petslab-punnett-lab{min-width:0;max-width:100%;overflow:hidden;border-radius:16px!important;background:radial-gradient(circle at 92% 0,rgba(245,158,11,.12),transparent 32%),linear-gradient(180deg,#211713,#181210)!important;box-shadow:0 18px 46px rgba(0,0,0,.2);}',
+      '.petslab-genetics-view *{box-sizing:border-box;}',
+      '.petslab-gene-parent-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:14px;}',
+      '.petslab-gene-parent-card{min-width:0;padding:12px;border:1px solid rgba(245,158,11,.28);border-radius:14px;background:linear-gradient(145deg,rgba(255,255,255,.055),rgba(0,0,0,.1));}',
+      '.petslab-gene-parent-visual{display:grid;grid-template-columns:96px minmax(0,1fr);gap:11px;align-items:center;margin:9px 0 10px;}',
+      '.petslab-lab-portrait{display:block;width:100%;height:auto;filter:drop-shadow(0 8px 11px rgba(0,0,0,.28));}',
+      '.petslab-parent-summary{min-width:0;}',
+      '.petslab-coat-swatch{display:flex;align-items:center;gap:8px;min-height:38px;padding:7px 9px;border:1px solid rgba(255,255,255,.22);border-radius:10px;box-shadow:inset 0 1px 0 rgba(255,255,255,.12);font-size:11px;font-weight:900;line-height:1.25;}',
+      '.petslab-coat-swatch-mark{display:inline-grid;place-items:center;flex:0 0 24px;width:24px;height:24px;border:2px solid currentColor;border-radius:50%;background:rgba(255,255,255,.12);font-size:13px;}',
+      '.petslab-allele-loci{display:grid;gap:7px;margin-top:8px;}',
+      '.petslab-allele-locus{display:grid;grid-template-columns:46px minmax(0,1fr);gap:7px;align-items:center;}',
+      '.petslab-allele-locus-name{color:#d6b88f;font-size:9px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;}',
+      '.petslab-allele-chips{display:flex;gap:5px;min-width:0;}',
+      '.petslab-allele-chip{display:inline-grid;place-items:center;width:28px;height:28px;border:1px solid rgba(255,255,255,.24);border-radius:8px;background:#2d2019;color:#fff;font:900 14px/1 ui-monospace,SFMono-Regular,Consolas,monospace;box-shadow:inset 0 -2px 0 rgba(0,0,0,.18);}',
+      '.petslab-allele-chip--dominant{border-color:rgba(251,191,36,.72);background:#6b3b12;color:#fff3c4;}',
+      '.petslab-gene-key{margin-top:7px;color:#a89180;font-size:9px;line-height:1.4;}',
+      '.petslab-punnett-scroll{min-width:0;width:100%;max-width:100%;overflow-x:auto;padding:2px 0 7px;scrollbar-gutter:stable;}',
+      '.petslab-punnett-table{width:100%;min-width:500px;max-width:620px;margin:0 auto;border-collapse:separate!important;border-spacing:3px!important;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;}',
+      '.petslab-punnett-table th{border-radius:7px;}',
+      '.petslab-punnett-cell{min-width:82px;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);}',
+      '.petslab-cell-genotype{font-size:12px;font-weight:900;letter-spacing:.025em;}',
+      '.petslab-cell-phenotype{display:inline-flex;align-items:center;justify-content:center;gap:4px;margin-top:3px;padding:2px 5px;border:1px solid currentColor;border-radius:999px;background:rgba(255,255,255,.1);font:800 9px/1.25 system-ui,sans-serif;white-space:nowrap;}',
+      '.petslab-phenotype-shape{font-size:10px;line-height:1;}',
+      '.petslab-outcome{width:100%;margin-top:14px;padding:11px;border:1px solid rgba(245,158,11,.26);border-radius:13px;background:rgba(15,10,8,.5);}',
+      '.petslab-outcome-heading{display:flex;justify-content:space-between;gap:10px;align-items:baseline;margin-bottom:8px;}',
+      '.petslab-outcome-heading strong{color:#fef3e2;font-size:12px;}',
+      '.petslab-outcome-heading span{color:#a89180;font-size:10px;}',
+      '.petslab-outcome-bar{display:flex;width:100%;height:42px;overflow:hidden;border:2px solid rgba(255,255,255,.24);border-radius:11px;background:#100b09;box-shadow:inset 0 2px 7px rgba(0,0,0,.5);}',
+      '.petslab-outcome-segment{display:flex;align-items:center;justify-content:center;min-width:0;color:#fff;font-size:10px;font-weight:950;text-shadow:0 1px 2px rgba(0,0,0,.72);}',
+      '.petslab-outcome-segment--black{background:repeating-linear-gradient(135deg,#111827 0,#111827 8px,#263244 8px,#263244 12px);}',
+      '.petslab-outcome-segment--chocolate{background:repeating-linear-gradient(45deg,#71390f 0,#71390f 8px,#924b1b 8px,#924b1b 12px);}',
+      '.petslab-outcome-segment--yellow{background:radial-gradient(circle at 3px 3px,rgba(91,52,8,.25) 0 1.4px,transparent 1.6px),#e4af36;background-size:9px 9px;color:#291708;text-shadow:none;}',
+      '.petslab-outcome-legend{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:9px;}',
+      '.petslab-outcome-card{min-width:0;padding:9px;border:1px solid rgba(255,255,255,.16);border-radius:10px;text-align:left;}',
+      '.petslab-outcome-card-label{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:900;}',
+      '.petslab-outcome-card-count{margin-top:3px;font-size:20px;font-weight:950;}',
+      '.petslab-outcome-card-pct{font-size:10px;font-weight:750;opacity:.88;}',
+      '@media (max-width:680px){.petslab-gene-parent-grid{grid-template-columns:1fr;}.petslab-punnett-table{min-width:480px;}}',
+      '@media (max-width:480px){.petslab-genetics-view{padding:12px!important;}.petslab-punnett-lab{padding:11px!important;}.petslab-gene-parent-card{padding:10px;}.petslab-gene-parent-visual{grid-template-columns:78px minmax(0,1fr);gap:9px;}.petslab-outcome-heading{display:block;}.petslab-outcome-heading span{display:block;margin-top:2px;}.petslab-outcome-legend{grid-template-columns:1fr;}.petslab-outcome-card{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center;}.petslab-outcome-card-count{margin-top:0;font-size:17px;}.petslab-punnett-table{min-width:450px;}}',
+      '@media (forced-colors:active){.petslab-gene-parent-card,.petslab-outcome,.petslab-outcome-card,.petslab-coat-swatch,.petslab-cell-phenotype{border:1px solid CanvasText;}.petslab-outcome-segment{border-right:2px solid CanvasText;forced-color-adjust:none;}}',
+      '.petslab-cost-view *{box-sizing:border-box;}',
+      '.petslab-cost-summary{overflow:hidden;background:radial-gradient(circle at 94% 4%,rgba(245,158,11,.12),transparent 34%),linear-gradient(155deg,rgba(45,32,24,.98),rgba(24,18,16,.98))!important;box-shadow:0 16px 38px rgba(0,0,0,.18);}',
+      '.petslab-cost-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:12px;}',
+      '.petslab-cost-burden{margin-top:14px;padding-top:12px;border-top:1px solid rgba(232,213,183,.18);}',
+      '.petslab-cost-burden-heading{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:8px;}',
+      '.petslab-cost-burden-heading strong{color:#fef3e2;font-size:clamp(12px,2.5vw,14px);}',
+      '.petslab-cost-burden-heading span{color:#bca58e;font-size:clamp(11px,2.2vw,12px);}',
+      '.petslab-cost-burden-row{display:grid;grid-template-columns:minmax(116px,.7fr) minmax(120px,1.6fr) auto;gap:9px;align-items:center;margin:7px 0;}',
+      '.petslab-cost-burden-label,.petslab-cost-burden-value{color:#ead8c6;font-size:clamp(11px,2.3vw,13px);font-weight:800;}',
+      '.petslab-cost-burden-value{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;text-align:right;}',
+      '.petslab-cost-burden-track{height:12px;overflow:hidden;border:1px solid rgba(255,255,255,.2);border-radius:999px;background:#100b09;box-shadow:inset 0 2px 4px rgba(0,0,0,.45);}',
+      '.petslab-cost-burden-fill{height:100%;min-width:3px;border-radius:inherit;}',
+      '.petslab-cost-burden-fill--annual{background:repeating-linear-gradient(135deg,#0891b2 0,#0891b2 7px,#22d3ee 7px,#22d3ee 10px);}',
+      '.petslab-cost-burden-fill--span{background:linear-gradient(90deg,#f59e0b,#fbbf24);}',
+      '.petslab-cost-timeline{margin-top:12px;padding:10px;border:1px solid rgba(232,213,183,.18);border-radius:12px;background:rgba(15,10,8,.46);}',
+      '.petslab-cost-timeline svg{display:block;width:100%;height:clamp(54px,10vw,70px);}',
+      '.petslab-cost-timeline-labels{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:4px;color:#c9b39c;font-size:clamp(11px,2.2vw,12px);line-height:1.4;}',
+      '.petslab-cost-timeline-key{display:flex;flex-wrap:wrap;gap:8px 14px;margin-top:7px;color:#c9b39c;font-size:clamp(11px,2.2vw,12px);}',
+      '.petslab-cost-allocation{margin-top:14px;padding-top:12px;border-top:1px solid rgba(232,213,183,.18);}',
+      '.petslab-cost-allocation-bar{display:flex;width:100%;height:clamp(42px,8vw,54px);overflow:hidden;border:2px solid rgba(255,255,255,.22);border-radius:11px;background:#100b09;box-shadow:inset 0 2px 7px rgba(0,0,0,.5);}',
+      '.petslab-cost-allocation-segment{display:flex;align-items:center;justify-content:center;min-width:0;overflow:hidden;color:#fff;font-size:clamp(11px,2vw,12px);font-weight:950;text-shadow:0 1px 2px rgba(0,0,0,.68);white-space:nowrap;}',
+      '.petslab-cost-allocation-segment--setup{background:repeating-linear-gradient(135deg,#a94f0b 0,#a94f0b 8px,#f59e0b 8px,#f59e0b 12px);}',
+      '.petslab-cost-allocation-segment--ongoing{background:repeating-linear-gradient(45deg,#075985 0,#075985 8px,#0891b2 8px,#0891b2 12px);}',
+      '.petslab-cost-allocation-segment--reserve{background:radial-gradient(circle at 4px 4px,rgba(255,255,255,.28) 0 1.4px,transparent 1.6px),#a71919;background-size:10px 10px;}',
+      '.petslab-cost-allocation-legend{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 12px;margin-top:9px;}',
+      '.petslab-cost-allocation-item{display:grid;grid-template-columns:26px minmax(0,1fr);gap:7px;align-items:start;min-width:0;color:#d8c3ad;font-size:clamp(11px,2.2vw,12px);line-height:1.4;}',
+      '.petslab-cost-allocation-mark{display:grid;place-items:center;width:24px;height:24px;border:1px solid currentColor;border-radius:7px;background:#2d2019;color:#fff;font-size:11px;font-weight:950;}',
+      '.petslab-cost-allocation-item strong{display:block;color:#fef3e2;}',
+      '.petslab-life-view *{box-sizing:border-box;}',
+      '.petslab-life-stage{width:100%;margin-top:10px;padding:10px;border:1px solid rgba(14,165,233,.28);border-radius:12px;background:linear-gradient(145deg,rgba(14,165,233,.08),rgba(15,23,42,.2));}',
+      '.petslab-life-stage-heading{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:7px;}',
+      '.petslab-life-stage-heading strong{color:#f8fafc;font-size:clamp(12px,2.5vw,14px);}',
+      '.petslab-life-stage-heading span{color:#cbd5e1;font-size:clamp(11px,2.2vw,12px);text-align:right;}',
+      '.petslab-life-stage svg,.petslab-life-compare-track svg{display:block;width:100%;height:32px;}',
+      '.petslab-life-stage-axis{display:flex;justify-content:space-between;gap:8px;margin-top:3px;color:#aebdcd;font-size:clamp(11px,2.2vw,12px);}',
+      '.petslab-life-stage-key{display:flex;flex-wrap:wrap;gap:7px 14px;margin-top:7px;color:#cbd5e1;font-size:clamp(11px,2.2vw,12px);}',
+      '.petslab-life-stage-note{margin:6px 0 0;color:#aebdcd;font-size:clamp(11px,2.2vw,12px);line-height:1.45;}',
+      '.petslab-life-comparison{margin-top:12px;padding:12px;border:1px solid rgba(124,58,237,.34);border-radius:12px;background:rgba(15,10,30,.32);}',
+      '.petslab-life-comparison h4{margin:0;color:#f8fafc;font-size:clamp(13px,2.7vw,15px);}',
+      '.petslab-life-comparison>p{margin:4px 0 10px;color:#cbd5e1;font-size:clamp(11px,2.2vw,12px);line-height:1.45;}',
+      '.petslab-life-compare-list{display:grid;gap:8px;}',
+      '.petslab-life-compare-row{display:grid;grid-template-columns:minmax(160px,.95fr) minmax(180px,1.6fr) 82px;gap:9px;align-items:center;min-width:0;}',
+      '.petslab-life-compare-name{min-width:0;color:#f8fafc;font-size:clamp(11px,2.25vw,13px);font-weight:800;line-height:1.35;}',
+      '.petslab-life-compare-track{min-width:0;}',
+      '.petslab-life-compare-range{color:#e2e8f0;font:800 clamp(11px,2.2vw,12px)/1.25 ui-monospace,SFMono-Regular,Consolas,monospace;text-align:right;}',
+      '.petslab-life-bucket-mark{display:inline-grid;place-items:center;min-width:24px;height:24px;padding:0 5px;border:1px solid currentColor;border-radius:7px;font-weight:950;}',
+      '.petslab-picker-results{padding:14px;border:1px solid rgba(245,158,11,.46);border-radius:14px;background:linear-gradient(155deg,rgba(45,32,24,.98),rgba(24,18,16,.98));margin-bottom:14px;box-shadow:0 14px 32px rgba(0,0,0,.18);}' ,
+      '.petslab-picker-results-head{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}' ,
+      '.petslab-picker-results-head h3{margin:0;color:#fef3e2;font-size:15px;}' ,
+      '.petslab-picker-scale-copy{color:#d6b88f;font-size:10px;font-weight:800;letter-spacing:.035em;}' ,
+      '.petslab-picker-list{display:grid;gap:8px;margin:0;padding:0;list-style:none;}' ,
+      '.petslab-picker-card{min-width:0;padding:11px;border:1px solid #5c4536;border-radius:11px;background:rgba(24,18,16,.88);}' ,
+      '.petslab-picker-card--top{display:grid;grid-template-columns:minmax(112px,148px) minmax(0,1fr);gap:13px;align-items:stretch;border:2px solid #fbbf24;background:radial-gradient(circle at 12% 20%,rgba(251,191,36,.18),transparent 48%),rgba(24,18,16,.96);box-shadow:0 12px 28px rgba(0,0,0,.25);}' ,
+      '.petslab-picker-card-main{min-width:0;}' ,
+      '.petslab-picker-card-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:7px;margin-bottom:7px;}' ,
+      '.petslab-picker-rank{display:grid;width:24px;height:24px;place-items:center;border:2px solid #8d735f;border-radius:50%;color:#fef3e2;font-size:11px;font-weight:900;}' ,
+      '.petslab-picker-card--top .petslab-picker-rank{border-color:#fbbf24;color:#fde68a;}' ,
+      '.petslab-picker-icon{font-size:20px;line-height:1;}' ,
+      '.petslab-picker-name{min-width:0;color:#fef3e2;font-size:14px;font-weight:850;line-height:1.3;overflow-wrap:anywhere;word-break:normal;}' ,
+      '.petslab-picker-status{color:#fde68a;font-family:monospace;font-size:10px;font-weight:800;text-align:right;white-space:nowrap;}' ,
+      '.petslab-picker-top-art{display:grid;min-height:112px;place-items:center;border:1px solid rgba(251,191,36,.32);border-radius:10px;background:rgba(15,23,42,.62);color:#fbbf24;}' ,
+      '.petslab-picker-top-art svg{display:block;width:min(100%,160px);height:auto;}' ,
+      '.petslab-picker-fit{margin:2px 0 9px;}' ,
+      '.petslab-picker-fit-key{margin-bottom:4px;color:#d6b88f;font-size:10px;font-weight:750;}' ,
+      '.petslab-picker-fit-track{position:relative;height:28px;margin:0 5%;border-radius:999px;background:#0f172a;box-shadow:inset 0 1px 4px rgba(0,0,0,.65);}' ,
+      '.petslab-picker-fit-segment{position:absolute;top:9px;height:10px;border-radius:999px;background:#fbbf24;transition:left .24s ease,width .24s ease;}' ,
+      '.petslab-picker-fit-segment.is-negative{background:#f97316;}' ,
+      '.petslab-picker-fit-zero,.petslab-picker-fit-threshold{position:absolute;top:3px;bottom:3px;width:2px;background:#fef3e2;opacity:.7;}' ,
+      '.petslab-picker-fit-threshold{background:#84cc16;}' ,
+      '.petslab-picker-fit-marker{position:absolute;top:4px;width:20px;height:20px;transform:translateX(-50%);border:3px solid #fff7ed;border-radius:50%;background:#1f1612;box-shadow:0 0 0 2px rgba(0,0,0,.35);transition:left .24s ease;}' ,
+      '.petslab-picker-fit-value{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:#fff7ed;font-size:9px;font-weight:900;line-height:1;}' ,
+      '.petslab-picker-fit-ends{display:flex;justify-content:space-between;margin-top:3px;color:#a89180;font-size:9px;font-weight:700;}' ,
+      '.petslab-picker-reasons{display:flex;gap:5px;flex-wrap:wrap;margin:0 0 7px;padding:0;list-style:none;}' ,
+      '.petslab-picker-reason{display:inline-flex;align-items:center;gap:5px;min-width:0;padding:4px 7px;border:1px solid rgba(255,255,255,.13);border-radius:999px;color:#e8d5b7;font-size:10px;line-height:1.25;}' ,
+      '.petslab-picker-reason strong{color:#fde68a;font-family:monospace;}' ,
+      '.petslab-picker-reason.is-negative strong{color:#fdba74;}' ,
+      '.petslab-picker-note{color:#cbbba8;font-size:12px;line-height:1.55;}' ,
+      '@media (max-width:560px){.petslab-picker-card--top{grid-template-columns:1fr;}.petslab-picker-top-art{min-height:88px;}.petslab-picker-top-art svg{width:min(58%,150px);}}' ,
+      '@media (max-width:380px){.petslab-picker-results{padding:9px;}.petslab-picker-card{padding:9px;}.petslab-picker-card-head{grid-template-columns:auto minmax(0,1fr);}.petslab-picker-status{grid-column:2;text-align:left;white-space:normal;}.petslab-picker-reason{border-radius:7px;}}' ,
+      '.reduce-motion .petslab-picker-fit-segment,.reduce-motion .petslab-picker-fit-marker{transition:none!important;}' ,
+      '@media (prefers-reduced-motion:reduce){.petslab-picker-fit-segment,.petslab-picker-fit-marker{transition:none!important;}}' ,
+      '@media (max-width:600px){.petslab-cost-allocation-legend{grid-template-columns:1fr;}.petslab-life-compare-row{grid-template-columns:1fr auto;gap:3px 8px;}.petslab-life-compare-track{grid-column:1/-1;grid-row:2;}.petslab-life-compare-range{grid-column:2;grid-row:1;}}',
+      '@media (max-width:480px){.petslab-cost-view,.petslab-life-view{padding:12px!important;}.petslab-cost-summary{padding:12px!important;}.petslab-cost-burden-heading,.petslab-life-stage-heading{display:block;}.petslab-cost-burden-heading span,.petslab-life-stage-heading span{display:block;margin-top:2px;text-align:left;}.petslab-cost-burden-row{grid-template-columns:1fr auto;gap:4px 8px;}.petslab-cost-burden-track{grid-column:1/-1;grid-row:2;}.petslab-cost-burden-value{grid-column:2;grid-row:1;}.petslab-cost-timeline-labels{align-items:flex-start;}.petslab-cost-allocation{padding-top:10px;}}',
+      '@media (forced-colors:active){.petslab-cost-summary,.petslab-cost-timeline,.petslab-cost-allocation-bar,.petslab-cost-burden-track,.petslab-life-stage,.petslab-life-comparison,.petslab-life-bucket-mark{border:1px solid CanvasText;}.petslab-cost-allocation-segment{border-right:2px solid CanvasText;forced-color-adjust:none;}}',
+      '.reduce-motion .petslab-life-view *{transition:none!important;animation:none!important;}',
+      '@media (prefers-reduced-motion:reduce){.petslab-life-view *{transition:none!important;animation:none!important;}}',
+      '.petslab-tradeoff-dashboard{display:grid;grid-template-columns:minmax(0,1.28fr) minmax(250px,.72fr);gap:12px;align-items:stretch;margin:10px 0 12px;}',
+      '.petslab-tradeoff-panel{min-width:0;padding:12px;border:1px solid rgba(232,213,183,.2);border-radius:14px;background:linear-gradient(150deg,rgba(45,32,24,.96),rgba(20,15,13,.94));box-shadow:inset 0 1px 0 rgba(255,255,255,.055),0 12px 28px rgba(0,0,0,.18);}',
+      '.petslab-tradeoff-radar{display:block;width:100%;height:auto;max-height:430px;margin:0 auto;}',
+      '.petslab-tradeoff-legend{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;margin-top:6px;color:#e8d5b7;font-size:10px;font-weight:800;}',
+      '.petslab-tradeoff-legend-item{display:inline-flex;align-items:center;gap:6px;}',
+      '.petslab-tradeoff-legend-swatch{display:inline-block;width:30px;height:0;border-top:3px solid #fbbf24;}',
+      '.petslab-tradeoff-legend-swatch.is-need{border-top:2px dashed #f6d7a7;}',
+      '.petslab-tradeoff-domain-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin:0 0 10px;}',
+      '.petslab-tradeoff-domain{min-width:0;padding:9px;border:1px solid rgba(232,213,183,.16);border-radius:10px;background:rgba(18,13,11,.64);}',
+      '.petslab-tradeoff-domain strong{display:block;min-height:28px;color:#fef3e2;font-size:10px;line-height:1.3;}',
+      '.petslab-tradeoff-values{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px;}',
+      '.petslab-tradeoff-values span{padding:4px;border-radius:6px;background:rgba(255,255,255,.045);color:#e8d5b7;font-size:9px;line-height:1.25;text-align:center;}',
+      '.petslab-tradeoff-values b{display:block;margin-top:1px;color:#fff4da;font:800 12px/1.2 monospace;}',
+      '.petslab-tradeoff-vignette{display:flex;min-height:100%;flex-direction:column;overflow:hidden;border:1px solid rgba(232,213,183,.2);border-radius:14px;background:#211711;box-shadow:inset 0 1px 0 rgba(255,255,255,.055),0 12px 28px rgba(0,0,0,.18);}',
+      '.petslab-tradeoff-vignette svg{display:block;width:100%;height:auto;flex:1 1 auto;}',
+      '.petslab-tradeoff-vignette-caption{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;padding:9px 11px;border-top:1px solid rgba(232,213,183,.16);background:rgba(18,13,11,.84);font-size:10px;line-height:1.35;}',
+      '.petslab-tradeoff-animal{transform-box:fill-box;transform-origin:center bottom;}',
+      '.petslab-tradeoff-animal.is-calm{animation:petslab-tradeoff-breathe 2.8s ease-in-out infinite;}',
+      '@keyframes petslab-tradeoff-breathe{0%,100%{transform:scale(1);}50%{transform:scale(1.018,.985);}}',
+      '@media (max-width:820px){.petslab-tradeoff-dashboard{grid-template-columns:1fr;}.petslab-tradeoff-vignette{min-height:280px;}.petslab-tradeoff-domain-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}',
+      '@media (max-width:480px){.petslab-tradeoff-panel{padding:7px;}.petslab-tradeoff-radar{max-height:none;}.petslab-tradeoff-radar-scale,.petslab-tradeoff-radar-value{display:none;}.petslab-tradeoff-radar-axis{font-size:20px!important;}.petslab-tradeoff-domain-grid{grid-template-columns:1fr;}.petslab-tradeoff-domain strong{min-height:0;}.petslab-tradeoff-vignette{min-height:240px;}.petslab-tradeoff-vignette-caption{flex-direction:column;}.petslab-tradeoff-legend{justify-content:flex-start;gap:8px;}}',
+      '.reduce-motion .petslab-tradeoff-animal{animation:none!important;}',
+      '@media (prefers-reduced-motion:reduce){.petslab-tradeoff-animal{animation:none!important;}}',
+      '.petslab-diagram-canvas{width:100%;min-width:0;}',
+      '.petslab-diagram-responsive-art{width:100%;min-width:0;}',
+      '.petslab-diagram-responsive-art svg{display:block;width:100%;height:auto;border-radius:10px;}',
+      '.petslab-diagram-narrow{display:none!important;}',
+      '.petslab-diagram-flow{animation:petslab-diagram-flow 1.7s linear infinite;}',
+      '@keyframes petslab-diagram-flow{to{stroke-dashoffset:-36;}}',
+      '@media (max-width:640px){.petslab-diagram-wide{display:none!important;}.petslab-diagram-narrow{display:block!important;}.petslab-diagram-panel{padding:7px!important;}.petslab-diagram-caption{margin-left:1px!important;margin-right:1px!important;}}',
+      '.reduce-motion .petslab-diagram-flow{animation:none!important;}',
+      '@media (prefers-reduced-motion:reduce){.petslab-diagram-flow{animation:none!important;}}',
+      '@media (forced-colors:active){.petslab-diagram-responsive-art svg{border:1px solid CanvasText;}.petslab-diagram-flow{stroke:CanvasText!important;}}',
+      '.petslab-sim-stage{position:relative;isolation:isolate;overflow:hidden;border:1px solid rgba(245,158,11,.34);border-radius:20px;background:#111827;box-shadow:0 24px 60px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.08);}',
+      '.petslab-sensory-stage{height:clamp(340px,52vw,520px);min-height:340px;}',
+      '.petslab-sensory-stage canvas{border-radius:20px!important;}',
+      '.petslab-stage-hud{position:absolute;z-index:4;display:flex;gap:6px;flex-wrap:wrap;pointer-events:none;}',
+      '.petslab-stage-hud--top{left:14px;right:14px;top:14px;justify-content:space-between;align-items:flex-start;}',
+      '.petslab-stage-hud--bottom{left:14px;right:14px;bottom:14px;align-items:flex-end;justify-content:space-between;}',
+      '.petslab-hud-stack{display:flex;gap:6px;flex-wrap:wrap;max-width:min(100%,520px);}',
+      '.petslab-hud-chip{display:inline-flex;align-items:center;gap:6px;min-height:28px;padding:5px 9px;border:1px solid rgba(255,255,255,.2);border-radius:999px;background:rgba(15,23,42,.74);box-shadow:0 6px 20px rgba(0,0,0,.24);backdrop-filter:blur(10px);color:#fff;font-size:10px;font-weight:850;letter-spacing:.025em;text-shadow:0 1px 2px rgba(0,0,0,.4);}',
+      '.petslab-body-pose{margin:0 0 14px;overflow:hidden;border:1px solid rgba(245,158,11,.34);border-radius:14px;background:linear-gradient(155deg,rgba(30,41,59,.98),rgba(24,18,16,.98));box-shadow:0 14px 30px rgba(0,0,0,.22);}',
+      '.petslab-body-pose svg{display:block;width:100%;height:auto;aspect-ratio:14/5;}',
+      '.petslab-body-cues{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:8px 10px 10px;border-top:1px solid rgba(255,255,255,.1);background:rgba(15,23,42,.52);}',
+      '.petslab-body-cue{display:flex;align-items:center;gap:7px;min-width:0;padding:6px 8px;border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fef3e2;font-size:11px;font-weight:750;line-height:1.35;}',
+      '.petslab-body-cue strong{display:inline-grid;flex:0 0 22px;width:22px;height:22px;place-items:center;border:2px solid #fbbf24;border-radius:50%;color:#fde68a;font-size:11px;line-height:1;}',
+      '.petslab-body-motion--sway{transform-box:fill-box;transform-origin:12% 50%;animation:petslab-body-sway 1.7s ease-in-out infinite alternate;}',
+      '.petslab-body-motion--pulse{animation:petslab-body-pulse 1.45s ease-in-out infinite alternate;}',
+      '.petslab-body-motion--lift{transform-box:fill-box;transform-origin:center;animation:petslab-body-lift 1.8s ease-in-out infinite alternate;}',
+      '@keyframes petslab-body-sway{from{transform:rotate(-2deg);}to{transform:rotate(4deg);}}',
+      '@keyframes petslab-body-pulse{from{opacity:.52;}to{opacity:1;}}',
+      '@keyframes petslab-body-lift{from{transform:translateY(0);}to{transform:translateY(-3px);}}',
+      '@media (max-width:480px){.petslab-body-cues{grid-template-columns:1fr;}.petslab-body-cue{padding:5px 7px;}}',
+      '.petslab-body-reference-group{margin-bottom:16px;padding:12px;border:1px solid rgba(232,213,183,.18);border-radius:14px;background:linear-gradient(155deg,rgba(45,32,24,.9),rgba(24,18,16,.94));}',
+      '.petslab-body-reference-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:10px;}',
+      '.petslab-body-reference-head h3{margin:0;color:#fef3e2;font-size:15px;}',
+      '.petslab-body-reference-count{color:#c9b39c;font-size:11px;font-weight:800;}',
+      '.petslab-body-reference-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}',
+      '.petslab-body-reference-card{min-width:0;overflow:hidden;border:1px solid rgba(232,213,183,.2);border-radius:12px;background:rgba(18,13,11,.76);}',
+      '.petslab-body-pose--compact{margin:0!important;border:0;border-bottom:1px solid rgba(255,255,255,.1);border-radius:0;box-shadow:none;}',
+      '.petslab-body-pose--compact svg{aspect-ratio:14/5;}',
+      '.petslab-body-reference-copy{padding:10px 11px 11px;}',
+      '.petslab-body-reference-signal{margin:0 0 5px;color:#fef3e2;font-size:12px;font-weight:800;line-height:1.45;}',
+      '.petslab-body-reference-meaning{margin:0;color:#d8c3ad;font-size:12px;line-height:1.5;}',
+      '.petslab-body-reference-meaning strong{color:#fde68a;}',
+      '@media (max-width:680px){.petslab-body-reference-grid{grid-template-columns:1fr;}.petslab-body-reference-group{padding:9px;}}',
+      '@media (max-width:420px){.petslab-body-reference-head{display:block;}.petslab-body-reference-count{display:block;margin-top:3px;}}',
+      '@media (forced-colors:active){.petslab-body-reference-group,.petslab-body-reference-card,.petslab-body-pose--compact{border:1px solid CanvasText;}}',
+      '.reduce-motion .petslab-body-motion--sway,.reduce-motion .petslab-body-motion--pulse,.reduce-motion .petslab-body-motion--lift{animation:none!important;}',
+      '@media (prefers-reduced-motion:reduce){.petslab-body-motion--sway,.petslab-body-motion--pulse,.petslab-body-motion--lift{animation:none!important;}}',
+
+      '.petslab-hud-chip strong{color:#fde68a;}',
+      '.petslab-hud-objective{max-width:270px;padding:8px 10px;border:1px solid rgba(251,191,36,.42);border-radius:12px;background:rgba(31,22,18,.78);box-shadow:0 8px 28px rgba(0,0,0,.26);backdrop-filter:blur(10px);color:#fef3e2;font-size:10px;line-height:1.45;text-align:right;}',
+      '.petslab-reticle{position:absolute;z-index:3;left:50%;top:50%;width:18px;height:18px;transform:translate(-50%,-50%);border:1px solid rgba(255,255,255,.72);border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,.25),0 0 12px rgba(255,255,255,.16);pointer-events:none;}',
+      '.petslab-reticle:before,.petslab-reticle:after{content:"";position:absolute;background:rgba(255,255,255,.72);}',
+      '.petslab-reticle:before{left:8px;top:-5px;width:1px;height:26px;}',
+      '.petslab-reticle:after{left:-5px;top:8px;width:26px;height:1px;}',
+      '.petslab-control-dock{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-top:10px;padding:10px;border:1px solid #5c4536;border-radius:14px;background:linear-gradient(180deg,rgba(45,32,24,.98),rgba(24,18,16,.98));box-shadow:0 10px 28px rgba(0,0,0,.2);}',
+      '.petslab-control-cluster{display:flex;gap:7px;align-items:center;flex-wrap:wrap;}',
+      '.petslab-control-label{color:#a89180;font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;}',
+      '.petslab-sim-button{transition:transform .16s ease,border-color .16s ease,background .16s ease,box-shadow .16s ease;}',
+      '.petslab-sim-button:not(:disabled):hover{transform:translateY(-1px);border-color:#fbbf24!important;box-shadow:0 7px 18px rgba(0,0,0,.24);}',
+      '.petslab-care-stage{aspect-ratio:20/7;min-height:0;}',
+      '.petslab-care-stage svg{filter:saturate(1.06) contrast(1.02);}',
+      '.petslab-care-zone{transition:transform .16s ease,box-shadow .16s ease,background .16s ease!important;}',
+      '.petslab-care-chips{top:52px!important;bottom:auto!important;left:auto!important;max-width:210px;justify-content:flex-end;}',
+      '@media (min-width:681px){.petslab-care-zone:not(:disabled):hover{transform:translate(-50%,-50%) scale(1.12)!important;box-shadow:0 0 0 5px rgba(255,255,255,.16),0 8px 20px rgba(0,0,0,.34)!important;}}',
+      '.petslab-trainer-stage{height:clamp(220px,42vw,340px);min-height:280px;margin-bottom:12px;}',
+      '.petslab-trainer-stage svg{display:block;position:absolute;inset:0;width:100%;height:100%;}',
+      '.petslab-trainer-tail{transform-box:fill-box;transform-origin:10% 50%;animation:petslab-trainer-wag .52s ease-in-out infinite alternate;}',
+      '.petslab-trainer-reward{animation:petslab-trainer-reward .58s ease-out both;}',
+      '@keyframes petslab-trainer-wag{from{transform:rotate(-8deg);}to{transform:rotate(13deg);}}',
+      '@keyframes petslab-trainer-reward{0%{opacity:0;}65%{opacity:1;}100%{opacity:1;}}',
+      '.petslab-metric-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}',
+      '.petslab-metric-card{padding:10px 11px;border:1px solid rgba(255,255,255,.1);border-radius:12px;background:linear-gradient(145deg,rgba(255,255,255,.055),rgba(0,0,0,.08));}',
+      '.petslab-meter-track{position:relative;height:8px;overflow:hidden;border-radius:999px;background:#120d0b;box-shadow:inset 0 1px 3px rgba(0,0,0,.55);}',
+      '.petslab-meter-fill{height:100%;border-radius:inherit;box-shadow:0 0 12px currentColor;transition:width .35s ease;}',
+      '.petslab-sim-choice{position:relative;overflow:hidden;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease;}',
+      '.petslab-sim-choice:not(:disabled):hover{transform:translateY(-2px);border-color:#fbbf24!important;box-shadow:0 10px 24px rgba(0,0,0,.22);}',
+      '.petslab-day-rail{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;margin-bottom:10px;}',
+      '.petslab-day-node{height:5px;border-radius:999px;background:#3d2c22;overflow:hidden;}',
+      '.petslab-day-node.is-past{background:#84cc16;box-shadow:0 0 9px rgba(132,204,22,.35);}',
+      '.petslab-day-node.is-now{background:#fbbf24;box-shadow:0 0 11px rgba(251,191,36,.5);}',
+      '.petslab-care-event{position:absolute;right:12px;top:52px;display:flex;align-items:center;gap:7px;max-width:238px;padding:6px 9px;border:1px solid rgba(251,191,36,.42);border-radius:10px;background:rgba(31,22,18,.82);box-shadow:0 7px 20px rgba(0,0,0,.26);backdrop-filter:blur(8px);color:#fef3e2;font-size:10px;line-height:1.25;}',
+      '.petslab-care-event-icon{font-size:16px;line-height:1;}',
+      '.petslab-care-event strong,.petslab-care-event small{display:block;}',
+      '.petslab-care-event strong{font-size:10px;color:#fde68a;letter-spacing:.02em;}',
+      '.petslab-care-event small{margin-top:2px;color:#d8c3ad;font-size:10px;}',
+      '.petslab-care-timeline{padding:12px;border:1px solid rgba(232,213,183,.18);border-radius:12px;background:linear-gradient(155deg,rgba(45,32,24,.92),rgba(24,18,16,.96));}',
+      '.petslab-care-timeline-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px;}',
+      '.petslab-care-timeline-head h3{margin:0;color:#fef3e2;font-size:14px;}',
+      '.petslab-care-timeline-head p{margin:4px 0 0;color:#c9b39c;font-size:11px;line-height:1.45;}',
+      '.petslab-care-timeline-legend{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end;color:#d8c3ad;font-size:10px;font-weight:800;text-transform:uppercase;white-space:nowrap;}',
+      '.petslab-care-timeline-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;}',
+      '.petslab-care-timeline-day{min-width:0;padding:8px;border:1px solid rgba(232,213,183,.16);border-radius:9px;background:rgba(15,23,42,.34);}',
+      '.petslab-care-timeline-day.is-past{border-color:rgba(132,204,22,.38);}',
+      '.petslab-care-timeline-day.is-now{border-color:rgba(251,191,36,.78);box-shadow:0 0 0 1px rgba(251,191,36,.22),0 8px 18px rgba(0,0,0,.18);}',
+      '.petslab-care-timeline-daytop{display:flex;justify-content:space-between;gap:4px;margin-bottom:6px;color:#a89180;font-size:9px;font-weight:900;letter-spacing:.06em;}',
+      '.petslab-care-timeline-day.is-now .petslab-care-timeline-daytop{color:#fde68a;}',
+      '.petslab-care-timeline-state{font-weight:800;text-transform:uppercase;}',
+      '.petslab-care-timeline-event{display:flex;align-items:flex-start;gap:6px;min-height:35px;}',
+      '.petslab-care-timeline-icon{flex:0 0 auto;font-size:17px;line-height:1;}',
+      '.petslab-care-timeline-event strong,.petslab-care-timeline-event small{display:block;}',
+      '.petslab-care-timeline-event strong{color:#fef3e2;font-size:11px;line-height:1.25;}',
+      '.petslab-care-timeline-event small{margin-top:2px;color:#c9b39c;font-size:10px;line-height:1.3;}',
+      '.petslab-care-timeline-choice{min-height:36px;margin:7px 0;padding:5px 6px;border-left:2px solid #fbbf24;color:#fef3e2;font-size:10px;line-height:1.35;}',
+      '.petslab-care-timeline-choice.is-empty{border-left-color:rgba(232,213,183,.25);color:#a89180;font-style:italic;}',
+      '.petslab-care-timeline-deltas{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;}',
+      '.petslab-care-timeline-deltas span{display:flex;flex-direction:column;align-items:center;padding:3px 2px;border-radius:5px;background:rgba(255,255,255,.045);color:var(--pets-domain-color);font-size:10px;line-height:1.15;}',
+      '.petslab-care-timeline-deltas b{font-size:9px;}',
+      '.petslab-care-timeline-deltas em{font-style:normal;color:#fef3e2;font-weight:800;}',
+      '@media (max-width:680px){.petslab-care-event{right:8px;top:52px;max-width:195px;}.petslab-care-timeline-head{display:block;}.petslab-care-timeline-legend{justify-content:flex-start;margin-top:8px;}.petslab-care-timeline-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}',
+      '@media (max-width:420px){.petslab-care-event{left:8px;right:8px;top:52px;max-width:none;}.petslab-care-timeline{padding:9px;}.petslab-care-timeline-grid{grid-template-columns:1fr;}.petslab-care-timeline-day{padding:9px;}.petslab-care-timeline-choice{min-height:0;}.petslab-care-timeline-deltas{max-width:220px;}}',
+      '@media (forced-colors:active){.petslab-care-event,.petslab-care-timeline,.petslab-care-timeline-day{border:1px solid CanvasText;}.petslab-care-timeline-deltas span{color:CanvasText!important;}}',
+      '@keyframes petslab-action-pop{0%{opacity:0;transform:translate(-50%,-15%) scale(.72);}16%{opacity:1;transform:translate(-50%,-42%) scale(1.05);}76%{opacity:1;}100%{opacity:0;transform:translate(-50%,-110%) scale(.92);}}',
+      '.petslab-action-pop{animation:petslab-action-pop 1.35s ease-out forwards;}',
       '@media (max-width:920px){.petslab-featured-grid{grid-template-columns:repeat(3,minmax(0,1fr));}.petslab-catalog-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}',
-      '@media (max-width:680px){.petslab-command-stats{grid-template-columns:repeat(2,minmax(0,1fr));}.petslab-featured-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}',
-      '@media (max-width:480px){.petslab-menu-shell{padding:0!important;}.petslab-command{padding:13px!important;border-radius:14px!important;}.petslab-featured-grid,.petslab-catalog-grid{grid-template-columns:1fr;}.petslab-menu-tile{min-height:96px!important;}.petslab-featured-heading{align-items:flex-start;}.petslab-inquiry-body [style*="flex:0 0 160px"]{flex:1 1 100%!important;}}',
-      '@media (prefers-reduced-motion:reduce){.petslab-menu-tile{transition:none!important;}.petslab-menu-tile:hover{transform:none;}}',
+      '@media (max-width:680px){.petslab-command-stats{grid-template-columns:repeat(2,minmax(0,1fr));}.petslab-featured-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.petslab-sensory-stage{height:400px;}.petslab-stage-hud--bottom{display:none;}.petslab-hud-objective{max-width:190px;}.petslab-control-dock{align-items:stretch;}.petslab-control-cluster{flex:1 1 100%;}.petslab-care-stage{min-height:260px;}}',
+      '@media (max-width:480px){.petslab-menu-shell{padding:0!important;}.petslab-command{padding:13px!important;border-radius:14px!important;}.petslab-featured-grid,.petslab-catalog-grid{grid-template-columns:1fr;}.petslab-menu-tile{min-height:96px!important;}.petslab-featured-heading{align-items:flex-start;}.petslab-inquiry-body [style*="flex:0 0 160px"]{flex:1 1 100%!important;}.petslab-sensory-stage{height:340px;min-height:340px;border-radius:14px!important;}.petslab-sensory-stage canvas{border-radius:14px!important;}.petslab-stage-hud--top{left:9px;right:9px;top:9px;}.petslab-hud-objective{display:none;}.petslab-hud-chip{font-size:9px;min-height:25px;padding:4px 7px;}.petslab-control-dock{padding:8px;border-radius:12px;}.petslab-trainer-stage{min-height:220px;}.petslab-metric-grid{grid-template-columns:1fr;}.petslab-care-zone{width:36px!important;height:36px!important;font-size:15px!important;}.petslab-care-chips{left:8px!important;right:8px!important;bottom:8px!important;}}',
+      '@media (max-width:680px){.petslab-care-chips{display:none!important;}.petslab-care-zone{top:auto!important;bottom:10px!important;transform:none!important;width:38px!important;height:38px!important;}.petslab-care-zone--pet{left:3%!important;}.petslab-care-zone--feed{left:23%!important;}.petslab-care-zone--water{left:43%!important;}.petslab-care-zone--play{left:63%!important;}.petslab-care-zone--clean{left:83%!important;}}',
+      '@media (max-width:480px){.petslab-care-chips{display:none!important;}.petslab-care-zone{top:auto!important;bottom:8px!important;transform:none!important;width:34px!important;height:34px!important;}.petslab-care-zone--pet{left:3%!important;}.petslab-care-zone--feed{left:23%!important;}.petslab-care-zone--water{left:43%!important;}.petslab-care-zone--play{left:63%!important;}.petslab-care-zone--clean{left:83%!important;}}',
+      '@media (max-width:680px){.petslab-care-stage{aspect-ratio:auto;height:260px;min-height:260px;min-width:0;width:100%;}}',
+      '.reduce-motion .petslab-action-pop{display:none!important;}.reduce-motion .petslab-trainer-tail,.reduce-motion .petslab-trainer-reward{animation:none!important;}.reduce-motion .petslab-sim-choice:hover,.reduce-motion .petslab-sim-button:hover{transform:none;}',
+      '@media (max-width:480px){.petslab-care-decision{display:none!important;}}',
+      '@media (max-width:680px){.petslab-trainer-stage{height:clamp(220px,44vw,300px);min-height:220px;}}',
+      '@media (max-width:480px){.petslab-trainer-stage{height:clamp(160px,45vw,220px);min-height:160px;}}',
+      '@media (prefers-reduced-motion:reduce){.petslab-menu-tile,.petslab-sim-button,.petslab-care-zone,.petslab-sim-choice,.petslab-meter-fill{transition:none!important;}.petslab-action-pop{display:none!important;}.petslab-trainer-tail,.petslab-trainer-reward{animation:none!important;}.petslab-menu-tile:hover,.petslab-sim-button:hover,.petslab-sim-choice:hover{transform:none;}}',
       '.theme-contrast .petslab-command,.theme-contrast .petslab-start-card,.theme-contrast .petslab-menu-tile{box-shadow:none;}'
     ].join('\n');
     document.head.appendChild(petsWorkspaceStyle);
@@ -1095,7 +1366,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     { x0: -0.10, x1: 1.30, z0: 1.10, z1: 1.90 },  // coffee table
     { x0: -3.05, x1: -2.35, z0: 2.15, z1: 2.85 }, // houseplant
     { x0: -2.20, x1: -1.60, z0: -1.50, z1: -0.90 }, // person
-    { x0: 1.85, x1: 2.85, z0: -1.65, z1: -1.15 }  // bowls
+    { x0: 1.85, x1: 2.85, z0: -1.65, z1: -1.15 }, // bowls
+    { x0: 2.48, x1: 3.08, z0: 1.00, z1: 1.60 },   // floor lamp
+    { x0: -3.08, x1: -2.28, z0: -2.30, z1: -1.70 } // toy basket
   ];
 
   // Soft round sprite for the scent motes, drawn at runtime so there is still
@@ -1127,7 +1400,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     var disposables = [];
 
     function mat(hex, opts) {
-      var m = new THREE.MeshLambertMaterial(Object.assign({ color: hex }, opts || {}));
+      var Material = THREE.MeshStandardMaterial || THREE.MeshLambertMaterial;
+      var base = { color: hex };
+      if (THREE.MeshStandardMaterial) { base.roughness = 0.82; base.metalness = 0.02; }
+      var m = new Material(Object.assign(base, opts || {}));
       disposables.push(m);
       return m;
     }
@@ -1137,13 +1413,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       mesh.position.set(x, y, z);
       if (rx) mesh.rotation.x = rx;
       if (ry) mesh.rotation.y = ry;
+      mesh.castShadow = geo && geo.type !== 'PlaneGeometry';
+      mesh.receiveShadow = true;
       scene.add(mesh);
       return mesh;
     }
-    function prop(geo, hex, x, y, z, rx, ry) {
-      var m = mat(hex);
+    function prop(geo, hex, x, y, z, rx, ry, opts) {
+      var m = mat(hex, opts);
       var mesh = add(geo, m, x, y, z, rx, ry);
       tinted.push({ material: m, baseHex: hex });
+      return mesh;
+    }
+    function scale(mesh, x, y, z) {
+      mesh.scale.set(x, y, z);
       return mesh;
     }
 
@@ -1158,18 +1440,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     prop(new THREE.PlaneGeometry(R.halfZ * 2, R.height), wallHex, -R.halfX, R.height / 2, 0, 0, Math.PI / 2);
     prop(new THREE.PlaneGeometry(R.halfZ * 2, R.height), wallHex, R.halfX, R.height / 2, 0, 0, -Math.PI / 2);
 
+    // Narrow timber boards, seams, and baseboards keep the room from reading
+    // as one flat brown plane while remaining entirely procedural/offline.
+    for (var plank = 0; plank < 12; plank++) {
+      var plankZ = -R.halfZ + 0.29 + plank * 0.57;
+      var plankHex = plank % 3 === 0 ? 0x9b7046 : plank % 3 === 1 ? 0xa77b4e : 0x8f653e;
+      prop(new THREE.BoxGeometry(R.halfX * 2 - 0.04, 0.026, 0.535), plankHex, 0, 0.013, plankZ, 0, 0, { roughness: 0.72 });
+    }
+    prop(new THREE.BoxGeometry(R.halfX * 2, 0.12, 0.045), 0xf1e5d2, 0, 0.06, -R.halfZ + 0.03);
+    prop(new THREE.BoxGeometry(R.halfX * 2, 0.12, 0.045), 0xf1e5d2, 0, 0.06, R.halfZ - 0.03);
+    prop(new THREE.BoxGeometry(0.045, 0.12, R.halfZ * 2), 0xf1e5d2, -R.halfX + 0.03, 0.06, 0);
+    prop(new THREE.BoxGeometry(0.045, 0.12, R.halfZ * 2), 0xf1e5d2, R.halfX - 0.03, 0.06, 0);
+
+    // Framed art and a small shelf create scale cues at every eye height.
+    prop(new THREE.BoxGeometry(1.02, 0.72, 0.055), 0x6b4428, 1.55, 1.68, -R.halfZ + 0.04);
+    prop(new THREE.PlaneGeometry(0.86, 0.56), 0xe8a65d, 1.55, 1.68, -R.halfZ + 0.075);
+    prop(new THREE.SphereGeometry(0.13, 20, 14), 0x4f7a6a, 1.39, 1.70, -R.halfZ + 0.10);
+    prop(new THREE.SphereGeometry(0.10, 20, 14), 0xf5d36c, 1.70, 1.58, -R.halfZ + 0.10);
+    prop(new THREE.BoxGeometry(0.95, 0.07, 0.20), 0x6b4a2f, -R.halfX + 0.10, 1.52, 0.75, 0, Math.PI / 2);
+    prop(new THREE.BoxGeometry(0.16, 0.34, 0.14), 0x315b78, -R.halfX + 0.21, 1.72, 0.50, 0, Math.PI / 2);
+    prop(new THREE.BoxGeometry(0.12, 0.26, 0.13), 0xb4453a, -R.halfX + 0.20, 1.67, 0.75, 0, Math.PI / 2);
+
     // Rug — the cat's spot. Deliberately a warm red so the dichromat view
     // visibly flattens it against the wood floor.
-    prop(new THREE.PlaneGeometry(3.0, 2.2), 0xb4453a, -1.0, 0.01, 1.6, -Math.PI / 2);
+    prop(new THREE.BoxGeometry(3.0, 0.035, 2.2), 0xb4453a, -1.0, 0.048, 1.6, 0, 0, { roughness: 0.96 });
+    for (var stripe = -2; stripe <= 2; stripe++) {
+      prop(new THREE.BoxGeometry(0.035, 0.012, 2.08), stripe % 2 ? 0xd58a67 : 0xe0ab77,
+        -1.0 + stripe * 0.48, 0.072, 1.6);
+    }
+    prop(new THREE.BoxGeometry(3.12, 0.018, 0.055), 0xe4b98a, -1.0, 0.055, 0.49);
+    prop(new THREE.BoxGeometry(3.12, 0.018, 0.055), 0xe4b98a, -1.0, 0.055, 2.71);
+    prop(new THREE.BoxGeometry(0.08, 0.02, 2.0), 0x7d302e, -2.47, 0.061, 1.6);
 
     // Couch: seat, back, two arms
     prop(new THREE.BoxGeometry(2.2, 0.42, 0.9), 0x4f7a6a, 1.2, 0.34, 2.6);
     prop(new THREE.BoxGeometry(2.2, 0.6, 0.22), 0x456e5f, 1.2, 0.72, 3.0);
     prop(new THREE.BoxGeometry(0.22, 0.5, 0.9), 0x456e5f, 0.15, 0.5, 2.6);
     prop(new THREE.BoxGeometry(0.22, 0.5, 0.9), 0x456e5f, 2.25, 0.5, 2.6);
+    // Layered cushions and feet soften the box silhouette and make contact
+    // shadows legible from the dog/cat camera heights.
+    prop(new THREE.BoxGeometry(0.94, 0.14, 0.67), 0x5b8d79, 0.68, 0.59, 2.52, -0.04);
+    prop(new THREE.BoxGeometry(0.94, 0.14, 0.67), 0x5b8d79, 1.72, 0.59, 2.52, -0.04);
+    prop(new THREE.BoxGeometry(0.90, 0.48, 0.16), 0x527f70, 0.70, 0.84, 2.86, -0.10);
+    prop(new THREE.BoxGeometry(0.90, 0.48, 0.16), 0x527f70, 1.70, 0.84, 2.86, -0.10);
+    scale(prop(new THREE.SphereGeometry(0.25, 22, 16), 0xd5a15c, 1.78, 0.78, 2.48), 1.15, 1.0, 0.38);
+    prop(new THREE.BoxGeometry(0.09, 0.22, 0.09), 0x3b2b24, 0.32, 0.12, 2.82);
+    prop(new THREE.BoxGeometry(0.09, 0.22, 0.09), 0x3b2b24, 2.08, 0.12, 2.82);
+    prop(new THREE.BoxGeometry(0.09, 0.22, 0.09), 0x3b2b24, 0.32, 0.12, 2.34);
+    prop(new THREE.BoxGeometry(0.09, 0.22, 0.09), 0x3b2b24, 2.08, 0.12, 2.34);
 
     // Coffee table
-    prop(new THREE.BoxGeometry(1.3, 0.08, 0.7), 0x6b4a2f, 0.6, 0.44, 1.5);
+    prop(new THREE.BoxGeometry(1.3, 0.08, 0.7), 0x6b4a2f, 0.6, 0.44, 1.5, 0, 0, { roughness: 0.60 });
+    prop(new THREE.BoxGeometry(0.34, 0.035, 0.24), 0x315b78, 0.33, 0.50, 1.42, 0, -0.18);
+    prop(new THREE.BoxGeometry(0.31, 0.028, 0.22), 0xd5a15c, 0.36, 0.535, 1.43, 0, -0.18);
+    prop(new THREE.CylinderGeometry(0.065, 0.075, 0.13, 18), 0xf2dfb0, 0.94, 0.535, 1.48);
     [[0.05, 1.2], [1.15, 1.2], [0.05, 1.8], [1.15, 1.8]].forEach(function (p) {
       prop(new THREE.BoxGeometry(0.07, 0.42, 0.07), 0x553a24, p[0], 0.21, p[1]);
     });
@@ -1178,7 +1502,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     prop(new THREE.CylinderGeometry(0.20, 0.16, 0.11, 20), 0xcfd4da, 2.1, 0.055, -1.4);
     prop(new THREE.CylinderGeometry(0.17, 0.14, 0.10, 20), 0x8b5e34, 2.1, 0.085, -1.4);
     prop(new THREE.CylinderGeometry(0.18, 0.15, 0.10, 20), 0xcfd4da, 2.6, 0.05, -1.4);
-    prop(new THREE.CylinderGeometry(0.15, 0.13, 0.08, 20), 0x4aa3d8, 2.6, 0.075, -1.4);
+    prop(new THREE.CylinderGeometry(0.15, 0.13, 0.08, 20), 0x4aa3d8, 2.6, 0.075, -1.4, 0, 0, { roughness: 0.28, metalness: 0.35 });
+    prop(new THREE.TorusGeometry(0.19, 0.022, 8, 28), 0xe9eef2, 2.1, 0.12, -1.4, Math.PI / 2, 0, { roughness: 0.28, metalness: 0.45 });
+    prop(new THREE.TorusGeometry(0.18, 0.020, 8, 28), 0xe9eef2, 2.6, 0.105, -1.4, Math.PI / 2, 0, { roughness: 0.28, metalness: 0.45 });
+    prop(new THREE.BoxGeometry(1.05, 0.025, 0.55), 0x315b78, 2.35, 0.018, -1.4);
+    prop(new THREE.SphereGeometry(0.035, 12, 9), 0xb67a42, 2.04, 0.15, -1.38);
+    prop(new THREE.SphereGeometry(0.035, 12, 9), 0xb67a42, 2.15, 0.15, -1.43);
 
     // THE demo object: a red ball. Vivid to a human, muddy-yellow to a dog
     // or cat — the single clearest illustration of dichromacy in the room.
@@ -1188,7 +1517,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
 
     // Houseplant
     prop(new THREE.CylinderGeometry(0.17, 0.13, 0.28, 16), 0xa9613c, -2.7, 0.14, 2.5);
-    prop(new THREE.SphereGeometry(0.34, 14, 10), 0x3f8a44, -2.7, 0.55, 2.5);
+    scale(prop(new THREE.SphereGeometry(0.28, 18, 12), 0x3f8a44, -2.7, 0.55, 2.5), 1.2, 1.35, 0.75);
+    scale(prop(new THREE.SphereGeometry(0.21, 18, 12), 0x4f9b55, -2.48, 0.66, 2.48), 1.2, 0.65, 0.75);
+    scale(prop(new THREE.SphereGeometry(0.21, 18, 12), 0x477f43, -2.91, 0.67, 2.52), 1.2, 0.70, 0.75);
+    scale(prop(new THREE.SphereGeometry(0.18, 18, 12), 0x5ba960, -2.67, 0.86, 2.51), 0.82, 1.35, 0.64);
+    prop(new THREE.BoxGeometry(0.55, 0.04, 0.55), 0x755136, -2.7, 0.03, 2.5);
+    prop(new THREE.CylinderGeometry(0.115, 0.07, 0.72, 12), 0x765236, -2.7, 0.49, 2.5);
+    prop(new THREE.TorusGeometry(0.18, 0.025, 8, 24), 0xc17b4f, -2.7, 0.30, 2.5, Math.PI / 2);
 
     // A standing person — the scale reference. From a cat's eye line this
     // reads as a tower, which is the point.
@@ -1200,29 +1535,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     prop(new THREE.PlaneGeometry(1.5, 1.0), 0xdff1ff, 0, 1.5, -R.halfZ + 0.02);
     prop(new THREE.BoxGeometry(1.62, 0.06, 0.05), 0xf6f1e7, 0, 2.02, -R.halfZ + 0.04);
     prop(new THREE.BoxGeometry(1.62, 0.06, 0.05), 0xf6f1e7, 0, 0.98, -R.halfZ + 0.04);
+    prop(new THREE.BoxGeometry(0.06, 1.08, 0.05), 0xf6f1e7, -0.79, 1.50, -R.halfZ + 0.04);
+    prop(new THREE.BoxGeometry(0.06, 1.08, 0.05), 0xf6f1e7, 0.79, 1.50, -R.halfZ + 0.04);
+    prop(new THREE.BoxGeometry(0.055, 1.02, 0.05), 0xf6f1e7, 0, 1.50, -R.halfZ + 0.05);
+    prop(new THREE.BoxGeometry(1.66, 0.08, 0.18), 0xd9cbb8, 0, 0.95, -R.halfZ + 0.13);
+    prop(new THREE.BoxGeometry(0.18, 1.18, 0.10), 0xc98f5b, -0.90, 1.50, -R.halfZ + 0.13);
+    prop(new THREE.BoxGeometry(0.18, 1.18, 0.10), 0xc98f5b, 0.90, 1.50, -R.halfZ + 0.13);
 
     // Doorway to the yard — grass visible through it. A red ball on green
     // grass is the classic "why can't he find it?" demonstration.
     prop(new THREE.PlaneGeometry(1.1, 2.1), 0x6f4d31, -2.4, 1.05, -R.halfZ + 0.02);
     prop(new THREE.PlaneGeometry(1.0, 1.9), 0x5d9e4a, -2.4, 0.95, -R.halfZ + 0.05);
     prop(new THREE.SphereGeometry(0.09, 16, 12), 0xd92b2b, -2.4, 0.35, -R.halfZ + 0.09);
+    prop(new THREE.BoxGeometry(0.10, 2.22, 0.10), 0xf0e2ce, -2.98, 1.11, -R.halfZ + 0.14);
+    prop(new THREE.BoxGeometry(0.10, 2.22, 0.10), 0xf0e2ce, -1.82, 1.11, -R.halfZ + 0.14);
+    prop(new THREE.BoxGeometry(1.25, 0.10, 0.10), 0xf0e2ce, -2.40, 2.19, -R.halfZ + 0.14);
+    scale(prop(new THREE.SphereGeometry(0.22, 16, 12), 0x3f8a44, -2.86, 0.30, -R.halfZ + 0.12), 1.35, 0.65, 0.45);
+    scale(prop(new THREE.SphereGeometry(0.22, 16, 12), 0x4d9850, -1.94, 0.29, -R.halfZ + 0.12), 1.35, 0.65, 0.45);
 
     // Scattered toys
     prop(new THREE.BoxGeometry(0.16, 0.08, 0.16), 0xe0762d, 1.9, 0.04, 1.1);
     prop(new THREE.CylinderGeometry(0.05, 0.05, 0.30, 12), 0x8e5bd0, -0.8, 0.05, -0.4, Math.PI / 2);
+    prop(new THREE.CylinderGeometry(0.028, 0.035, 1.55, 14), 0x5b4635, 2.76, 0.78, 1.30);
+    prop(new THREE.CylinderGeometry(0.36, 0.22, 0.48, 28, 1, true), 0xe1b96c, 2.76, 1.58, 1.30, 0, 0, { side: THREE.DoubleSide, roughness: 0.78 });
+    prop(new THREE.CylinderGeometry(0.23, 0.23, 0.05, 24), 0x5b4635, 2.76, 0.025, 1.30);
+    prop(new THREE.SphereGeometry(0.08, 16, 12), 0xffdf9a, 2.76, 1.53, 1.30, 0, 0, { emissive: 0x7a4b16, emissiveIntensity: 0.28 });
+    prop(new THREE.BoxGeometry(0.68, 0.28, 0.42), 0x9c6b4a, -2.68, 0.14, -2.00);
+    prop(new THREE.TorusGeometry(0.18, 0.035, 8, 22, Math.PI), 0x7a4d30, -2.68, 0.36, -2.00, Math.PI / 2);
+    prop(new THREE.SphereGeometry(0.085, 16, 12), 0xf4b942, -2.78, 0.32, -1.94);
+    prop(new THREE.BoxGeometry(0.22, 0.06, 0.12), 0x5b8d79, -2.55, 0.30, -2.04, 0, 0.28);
+    prop(new THREE.TorusGeometry(0.10, 0.028, 8, 22), 0x2d78c4, 1.85, 0.075, 0.20, Math.PI / 2);
+    prop(new THREE.TorusGeometry(0.08, 0.022, 8, 22), 0xf4b942, 1.86, 0.072, 0.20, Math.PI / 2);
 
     // ── Lighting ──
     // Kept deliberately low. An earlier pass ran ambient at 0.55 with a 0.85
     // key and the pale walls blew out to flat cream, which destroys exactly
     // the hue information the dichromat comparison depends on.
-    var ambient = new THREE.AmbientLight(0xffffff, 0.42);
-    scene.add(ambient); lights.push({ light: ambient, base: 0.42 });
-    var sun = new THREE.DirectionalLight(0xfff2d8, 0.62);
-    sun.position.set(0.4, 3.0, -3.2);
-    scene.add(sun); lights.push({ light: sun, base: 0.62 });
-    var lamp = new THREE.PointLight(0xffd9a0, 0.34, 9);
-    lamp.position.set(1.6, 2.1, 1.8);
-    scene.add(lamp); lights.push({ light: lamp, base: 0.34 });
+    var ambient = new THREE.HemisphereLight(0xfff2df, 0x4a3428, 0.48);
+    scene.add(ambient); lights.push({ light: ambient, base: 0.48 });
+    var sun = new THREE.DirectionalLight(0xffefcf, 0.92);
+    sun.position.set(-1.2, 4.8, -2.6);
+    sun.castShadow = true;
+    sun.shadow.mapSize.width = 1024;
+    sun.shadow.mapSize.height = 1024;
+    sun.shadow.camera.left = -4.5; sun.shadow.camera.right = 4.5;
+    sun.shadow.camera.top = 4.5; sun.shadow.camera.bottom = -4.5;
+    sun.shadow.camera.near = 0.2; sun.shadow.camera.far = 12;
+    sun.shadow.bias = -0.0007;
+    scene.add(sun); lights.push({ light: sun, base: 0.92 });
+    var lamp = new THREE.PointLight(0xffcb79, 0.64, 7.5, 2);
+    lamp.position.set(2.76, 1.48, 1.30);
+    scene.add(lamp); lights.push({ light: lamp, base: 0.64 });
+    var windowFill = new THREE.PointLight(0xbfe5ff, 0.24, 5.5, 2);
+    windowFill.position.set(0, 1.55, -2.95);
+    scene.add(windowFill); lights.push({ light: windowFill, base: 0.24 });
 
     // ── Scent field (dog view only) ──
     // Additive drifting motes rising from each source. Kept as one Points
@@ -1310,6 +1676,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       // the room — that contrast IS the lesson, so the gain is species-scaled.
       var gain = dusk ? Math.min(0.62, 0.10 * sp.lowLightFactor) : 1;
       S.built.lights.forEach(function (l) { l.light.intensity = l.base * gain; });
+      S.scene.background.setHex(dusk ? 0x111827 : 0x2a211c);
+      if (S.scene.fog) S.scene.fog.color.setHex(dusk ? 0x1a2130 : 0x5e4a3d);
+      if (S.renderer.toneMappingExposure != null) {
+        S.renderer.toneMappingExposure = dusk ? (sp.lowLightFactor > 1 ? 0.88 : 0.58) : 1.08;
+      }
       S.camera.fov = sp.renderFov;
       S.camera.position.y = sp.eyeHeight;
       S.camera.updateProjectionMatrix();
@@ -1357,13 +1728,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         var h = node.clientHeight || 360;
         renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
         renderer.setSize(w, h, false);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        if (THREE.sRGBEncoding != null) renderer.outputEncoding = THREE.sRGBEncoding;
+        if (THREE.ACESFilmicToneMapping != null) renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.08;
         renderer.domElement.style.cssText =
-          'display:block;width:100%;height:100%;border-radius:10px;touch-action:pan-y;';
+          'display:block;width:100%;height:100%;border-radius:20px;touch-action:pan-y;';
         renderer.domElement.setAttribute('aria-hidden', 'true');
         node.appendChild(renderer.domElement);
 
         var scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x1a1410);
+        scene.background = new THREE.Color(0x2a211c);
+        scene.fog = new THREE.Fog(0x5e4a3d, 8.5, 17);
         var camera = new THREE.PerspectiveCamera(72, w / Math.max(1, h), 0.05, 60);
         camera.position.set(-1.2, 1.6, 2.35);
 
@@ -1377,7 +1754,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           THREE: THREE, node: node, renderer: renderer, scene: scene, camera: camera,
           built: _petsBuildSensoryScene(THREE, scene),
           yaw: 0, pitch: -0.15, x: -1.2, z: 2.35,
-          keys: {}, drag: null, raf: 0, t0: 0, listeners: [], dirty: true
+          keys: {}, drag: null, raf: 0, t0: 0, listeners: [], resizeObserver: null, dirty: true
         };
 
         function on(target, type, fn, opts) {
@@ -1385,6 +1762,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           S.listeners.push({ target: target, type: type, fn: fn });
         }
         on(window, 'resize', resize);
+        if (typeof window.ResizeObserver === 'function') {
+          S.resizeObserver = new window.ResizeObserver(function () { resize(); });
+          S.resizeObserver.observe(node);
+        }
         // Pointer look. pan-y above keeps vertical page scroll working.
         on(renderer.domElement, 'pointerdown', function (e) {
           S.drag = { x: e.clientX, y: e.clientY };
@@ -1423,13 +1804,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           // student moves it. Walking still works — it just does not drift on
           // its own. Bail BEFORE the scent animation and the render.
           if (reduced && !S.dirty) return;
+          var scentAnimating = S.built.scentGroup.visible && !reduced;
+          if (!S.dirty && !scentAnimating) return;
           S.dirty = false;
 
           // Scent motes rise and recycle. Dog view only, so skip the work
           // entirely otherwise. Frozen (but still visible, at a stable
           // position) when motion is reduced — the information is the WHERE,
           // not the drifting.
-          if (S.built.scentGroup.visible && !reduced) {
+          if (scentAnimating) {
             S.built.scentClouds.forEach(function (cl) {
               var pos = cl.geo.attributes.position;
               for (var i = 0; i < cl.seeds.length; i++) {
@@ -1450,6 +1833,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           S.camera.rotateY(S.yaw);
           S.camera.rotateX(S.pitch);
           S.renderer.render(S.scene, S.camera);
+          if (S.renderer.shadowMap && S.renderer.shadowMap.autoUpdate) S.renderer.shadowMap.autoUpdate = false;
         }
         S.raf = window.requestAnimationFrame(frame);
       },
@@ -1485,6 +1869,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           S.pitch - (dPitchDeg || 0) * Math.PI / 180));
       },
 
+      resetView: function () {
+        if (!S) return;
+        S.x = -1.2; S.z = 2.35; S.yaw = 0; S.pitch = -0.15;
+        invalidate();
+      },
+
+      focusTarget: function (name) {
+        if (!S) return;
+        var targets = {
+          balls: { x: 0.22, y: 0.12, z: 0.38 },
+          doorway: { x: -2.40, y: 0.90, z: -3.25 },
+          bowls: { x: 2.35, y: 0.10, z: -1.40 },
+          person: { x: -1.90, y: 1.02, z: -1.20 },
+          couch: { x: 1.20, y: 0.60, z: 2.60 }
+        };
+        var t = targets[name] || targets.balls;
+        var dx = t.x - S.x, dz = t.z - S.z;
+        var flat = Math.max(0.001, Math.sqrt(dx * dx + dz * dz));
+        S.yaw = Math.atan2(-dx, -dz);
+        S.pitch = Math.max(-Math.PI / 2.6, Math.min(Math.PI / 2.6,
+          Math.atan2(t.y - S.camera.position.y, flat)));
+        invalidate();
+      },
+
       setKey: function (name, down) { if (S) S.keys[name] = !!down; },
 
       setSpecies: function (id) { speciesId = id; applySpecies(); },
@@ -1496,6 +1904,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       detach: function () {
         if (!S) return;
         if (S.raf) window.cancelAnimationFrame(S.raf);
+        if (S.resizeObserver) { try { S.resizeObserver.disconnect(); } catch (e) {} }
         S.listeners.forEach(function (l) {
           try { l.target.removeEventListener(l.type, l.fn); } catch (e) {}
         });
@@ -2016,64 +2425,393 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             { k: 'vet', label: 'Vet care', provided: iq.vet, gap: gVet, need: sp.vet * 50 },
             { k: 'training', label: 'Training/enrichment', provided: iq.training, gap: gTrain, need: sp.training * 50 }
           ];
-          // SVG: pentagon radar chart
-          var center = 80;
-          var radius = 60;
+          // Larger SVG radar geometry plus a species/state vignette.
+          var radarW = 440;
+          var radarH = 350;
+          var centerX = 220;
+          var centerY = 160;
+          var radius = 98;
+          var labelRadius = 130;
           var n = 5;
-          var pts = domains.map(function(d, i) {
+          function radarPoint(value, i, rMax) {
             var angle = -Math.PI / 2 + (i * 2 * Math.PI / n);
-            var r = (Math.min(100, d.provided) / 100) * radius;
-            return [center + Math.cos(angle) * r, center + Math.sin(angle) * r];
-          });
-          var needPts = domains.map(function(d, i) {
+            var r = (Math.min(100, value) / 100) * rMax;
+            return [centerX + Math.cos(angle) * r, centerY + Math.sin(angle) * r];
+          }
+          var pts = domains.map(function(domain, i) { return radarPoint(domain.provided, i, radius); });
+          var needPts = domains.map(function(domain, i) { return radarPoint(domain.need, i, radius); });
+          var labelPts = domains.map(function(_, i) {
             var angle = -Math.PI / 2 + (i * 2 * Math.PI / n);
-            var r = (Math.min(100, d.need) / 100) * radius;
-            return [center + Math.cos(angle) * r, center + Math.sin(angle) * r];
+            return [centerX + Math.cos(angle) * labelRadius, centerY + Math.sin(angle) * labelRadius];
           });
-          var labelPts = domains.map(function(d, i) {
-            var angle = -Math.PI / 2 + (i * 2 * Math.PI / n);
-            return [center + Math.cos(angle) * (radius + 14), center + Math.sin(angle) * (radius + 14)];
-          });
-          return h('div', { style: { marginTop: 14, padding: 14, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
+          var radarLabelLines = [
+            ['Food /', 'nutrition'],
+            ['Exercise'],
+            ['Social', 'contact'],
+            ['Vet care'],
+            ['Training /', 'enrichment']
+          ];
+          var stateRank = ({ thriving: 0, healthy: 1, compromised: 2, atrisk: 3, crisis: 4 })[state];
+          var stateMark = ({ thriving: 'STAR', healthy: 'CHECK', compromised: '!', atrisk: '!!', crisis: 'SOS' })[state];
+          var worstDomain = domains.reduce(function(worst, domain) {
+            return domain.gap > worst.gap ? domain : worst;
+          }, domains[0]);
+          var radarSummary = domains.map(function(domain) {
+            return domain.label + ': provided ' + domain.provided + ', species need ' + domain.need.toFixed(0);
+          }).join('. ') + '. Welfare state: ' + sm.label + '.';
+          function provisionOpacity(value) {
+            return 0.18 + (Math.min(100, value) / 100) * 0.82;
+          }
+          function vignetteFace(x, y) {
+            var calm = stateRank <= 1;
+            return h('g', { transform: 'translate(' + x + ' ' + y + ')' },
+              calm
+                ? h('ellipse', { cx: 0, cy: 0, rx: 4.5, ry: 4, fill: '#24150f' })
+                : h('path', { d: 'M -5 0 Q 0 ' + (stateRank >= 3 ? 2 : -2) + ' 5 0', fill: 'none', stroke: '#24150f', strokeWidth: 2.5, strokeLinecap: 'round' }),
+              calm && h('circle', { cx: 1.5, cy: -1.5, r: 1.2, fill: '#fff8e7' }),
+              h('path', {
+                d: calm ? 'M 4 11 Q 10 16 16 10' : 'M 4 14 Q 10 8 16 14',
+                fill: 'none', stroke: '#6b3027', strokeWidth: 2.4, strokeLinecap: 'round'
+              })
+            );
+          }
+          function renderTradeoffAnimalShape() {
+            var calmClass = 'petslab-tradeoff-animal' + (stateRank <= 1 ? ' is-calm' : '');
+            var postureY = stateRank * 5;
+            if (iq.species === 'cat') {
+              return h('g', null,
+                h('ellipse', { cx: 183, cy: 226, rx: 76, ry: 12, fill: '#2b1b14', opacity: 0.25 }),
+                h('g', { transform: 'translate(0 ' + postureY + ')' },
+                  h('g', { className: calmClass },
+                    h('path', {
+                      d: stateRank >= 3 ? 'M 116 183 Q 74 204 96 225' : 'M 116 181 Q 73 139 84 111 Q 100 149 123 158',
+                      fill: 'none', stroke: '#65513f', strokeWidth: 15, strokeLinecap: 'round'
+                    }),
+                    h('ellipse', { cx: 173, cy: 184, rx: 62, ry: stateRank >= 3 ? 31 : 39, fill: '#75604d' }),
+                    h('ellipse', { cx: 189, cy: 196, rx: 38, ry: 20, fill: '#a9947f', opacity: 0.72 }),
+                    h('circle', { cx: 225, cy: 151 + stateRank * 2, r: 34, fill: '#75604d' }),
+                    h('path', { d: 'M 201 ' + (134 + stateRank * 2) + ' L 207 ' + (107 + stateRank * 4) + ' L 220 ' + (132 + stateRank * 2) + ' Z', fill: '#65513f' }),
+                    h('path', { d: 'M 229 ' + (130 + stateRank * 2) + ' L 248 ' + (108 + stateRank * 4) + ' L 251 ' + (140 + stateRank * 2) + ' Z', fill: '#65513f' }),
+                    h('path', { d: 'M 159 203 Q 157 220 151 227 M 198 207 Q 205 220 210 227', fill: 'none', stroke: '#65513f', strokeWidth: 12, strokeLinecap: 'round' }),
+                    vignetteFace(231, 149 + stateRank * 2)
+                  )
+                )
+              );
+            }
+            if (iq.species === 'rabbit') {
+              return h('g', null,
+                h('ellipse', { cx: 183, cy: 226, rx: 73, ry: 12, fill: '#2b1b14', opacity: 0.25 }),
+                h('g', { transform: 'translate(0 ' + postureY + ')' },
+                  h('g', { className: calmClass },
+                    h('ellipse', { cx: 170, cy: 187, rx: 64, ry: stateRank >= 3 ? 34 : 43, fill: '#b8a18d' }),
+                    h('circle', { cx: 226, cy: 158 + stateRank * 2, r: 33, fill: '#c5af9b' }),
+                    h('path', {
+                      d: stateRank >= 3
+                        ? 'M 211 ' + (135 + stateRank * 2) + ' Q 176 110 187 89 Q 213 103 221 136 Z'
+                        : 'M 211 137 Q 190 91 205 62 Q 228 91 225 139 Z',
+                      fill: '#a98f7a'
+                    }),
+                    h('path', {
+                      d: stateRank >= 3
+                        ? 'M 229 ' + (133 + stateRank * 2) + ' Q 247 100 268 102 Q 267 128 245 143 Z'
+                        : 'M 229 137 Q 224 84 245 58 Q 259 99 243 143 Z',
+                      fill: '#b69b85'
+                    }),
+                    h('path', { d: 'M 140 207 Q 132 220 126 227 M 191 211 Q 198 221 205 227', fill: 'none', stroke: '#9e856f', strokeWidth: 13, strokeLinecap: 'round' }),
+                    h('circle', { cx: 109, cy: 178, r: 15, fill: '#eee0d0' }),
+                    vignetteFace(232, 155 + stateRank * 2)
+                  )
+                )
+              );
+            }
+            if (iq.species === 'parrot') {
+              return h('g', null,
+                h('path', { d: 'M 103 226 H 270', stroke: '#795238', strokeWidth: 12, strokeLinecap: 'round' }),
+                h('path', { d: 'M 126 226 V 250 M 248 226 V 250', stroke: '#5b3a2a', strokeWidth: 8, strokeLinecap: 'round' }),
+                h('g', { transform: 'translate(0 ' + postureY + ')' },
+                  h('g', { className: calmClass },
+                    h('ellipse', { cx: 183, cy: 174 + stateRank * 2, rx: stateRank >= 3 ? 42 : 46, ry: stateRank >= 3 ? 51 : 62, fill: '#4f8f6b' }),
+                    h('ellipse', { cx: 169, cy: 183 + stateRank * 2, rx: 28, ry: 45, fill: '#2f7151' }),
+                    h('circle', { cx: 205, cy: 121 + stateRank * 3, r: 34, fill: '#68a97f' }),
+                    h('path', { d: 'M 231 ' + (119 + stateRank * 3) + ' L 261 ' + (130 + stateRank * 3) + ' L 231 ' + (139 + stateRank * 3) + ' Z', fill: '#e2ae42', stroke: '#8d6524', strokeWidth: 2 }),
+                    h('path', { d: 'M 168 219 Q 162 231 160 239 M 198 219 Q 201 231 204 239', fill: 'none', stroke: '#b18c58', strokeWidth: 7, strokeLinecap: 'round' }),
+                    h('path', { d: 'M 165 215 L 151 252 L 181 222', fill: '#2b6c4d' }),
+                    vignetteFace(210, 119 + stateRank * 3)
+                  )
+                )
+              );
+            }
+            if (iq.species === 'reptile') {
+              return h('g', null,
+                h('ellipse', { cx: 185, cy: 226, rx: 91, ry: 12, fill: '#2b1b14', opacity: 0.25 }),
+                h('g', { transform: 'translate(0 ' + postureY + ')' },
+                  h('g', { className: calmClass },
+                    h('path', {
+                      d: stateRank >= 3 ? 'M 120 195 Q 78 218 105 225' : 'M 120 194 Q 73 174 48 191 Q 83 191 112 207',
+                      fill: 'none', stroke: '#618854', strokeWidth: 13, strokeLinecap: 'round'
+                    }),
+                    h('ellipse', { cx: 176, cy: 197, rx: 65, ry: stateRank >= 3 ? 25 : 30, fill: '#739c61' }),
+                    h('ellipse', { cx: 231, cy: 187 + stateRank * 2, rx: 38, ry: 27, fill: '#7fa86d' }),
+                    h('path', { d: 'M 146 209 L 128 225 M 165 211 L 174 228 M 214 207 L 201 225 M 238 204 L 250 219', fill: 'none', stroke: '#577a4c', strokeWidth: 9, strokeLinecap: 'round' }),
+                    h('path', { d: 'M 141 188 L 153 174 L 164 191 M 178 181 L 189 168 L 199 188', fill: '#8db37a' }),
+                    vignetteFace(239, 183 + stateRank * 2)
+                  )
+                )
+              );
+            }
+            return h('g', null,
+              h('ellipse', { cx: 184, cy: 226, rx: 78, ry: 12, fill: '#2b1b14', opacity: 0.25 }),
+              h('g', { transform: 'translate(0 ' + postureY + ')' },
+                h('g', { className: calmClass },
+                  h('path', {
+                    d: stateRank >= 3 ? 'M 122 184 Q 83 208 103 226' : 'M 123 180 Q 79 150 91 121',
+                    fill: 'none', stroke: '#aa6d36', strokeWidth: 17, strokeLinecap: 'round'
+                  }),
+                  h('ellipse', { cx: 174, cy: 183, rx: 64, ry: stateRank >= 3 ? 34 : 42, fill: '#c9894b' }),
+                  h('ellipse', { cx: 190, cy: 194, rx: 37, ry: 24, fill: '#f0d3ad', opacity: 0.78 }),
+                  h('circle', { cx: 229, cy: 148 + stateRank * 2, r: 37, fill: '#d89a58' }),
+                  h('path', { d: 'M 204 ' + (134 + stateRank * 2) + ' Q 183 117 187 153 Q 193 168 211 160 Z', fill: '#965a2b' }),
+                  h('path', { d: 'M 238 ' + (127 + stateRank * 2) + ' Q 264 112 260 150 Q 253 162 241 157 Z', fill: '#9b5b2a' }),
+                  h('ellipse', { cx: 251, cy: 159 + stateRank * 2, rx: 23, ry: 17, fill: '#f3d9b9' }),
+                  h('path', { d: 'M 146 207 Q 144 220 139 228 M 194 210 Q 202 221 207 228', fill: 'none', stroke: '#ad6c35', strokeWidth: 14, strokeLinecap: 'round' }),
+                  h('path', { d: 'M 212 173 Q 229 181 248 168', fill: 'none', stroke: '#315b78', strokeWidth: 8, strokeLinecap: 'round' }),
+                  vignetteFace(235, 146 + stateRank * 2)
+                )
+              )
+            );
+          }
+          function renderTradeoffVignette() {
+            var watchLabel = worstDomain.gap < 5 ? 'Closest watch' : 'Largest mismatch';
+            var vignetteDesc = sp.label + ' welfare vignette. Current state: ' + sm.label + '. ' +
+              watchLabel + ': ' + worstDomain.label + ', gap score ' + worstDomain.gap.toFixed(1) + '. ' +
+              'Food ' + iq.food + ', exercise ' + iq.exercise + ', social contact ' + iq.social +
+              ', vet care ' + iq.vet + ', and training or enrichment ' + iq.training + '.';
+            return h('div', { className: 'petslab-tradeoff-vignette' },
+              h('svg', {
+                viewBox: '0 0 360 270',
+                role: 'img',
+                'aria-labelledby': 'pets-tradeoff-animal-title pets-tradeoff-animal-desc',
+                preserveAspectRatio: 'xMidYMid meet'
+              },
+                h('title', { id: 'pets-tradeoff-animal-title' }, sp.label + ' welfare state: ' + sm.label),
+                h('desc', { id: 'pets-tradeoff-animal-desc' }, vignetteDesc),
+                h('defs', null,
+                  h('linearGradient', { id: 'pets-tradeoff-wall', x1: 0, y1: 0, x2: 0, y2: 1 },
+                    h('stop', { offset: '0%', stopColor: '#f2dfc4' }),
+                    h('stop', { offset: '100%', stopColor: '#cda77d' })
+                  ),
+                  h('linearGradient', { id: 'pets-tradeoff-floor', x1: 0, y1: 0, x2: 0, y2: 1 },
+                    h('stop', { offset: '0%', stopColor: '#9a704d' }),
+                    h('stop', { offset: '100%', stopColor: '#65442f' })
+                  )
+                ),
+                h('rect', { x: 0, y: 0, width: 360, height: 190, fill: 'url(#pets-tradeoff-wall)' }),
+                h('rect', { x: 0, y: 190, width: 360, height: 80, fill: 'url(#pets-tradeoff-floor)' }),
+                h('rect', { x: 0, y: 184, width: 360, height: 10, fill: '#fff1dc' }),
+                h('path', { d: 'M 0 220 H 360 M 0 250 H 360 M 62 190 L 44 270 M 132 190 L 123 270 M 228 190 L 237 270 M 298 190 L 316 270', stroke: '#503322', strokeWidth: 1.5, opacity: 0.35 }),
+                h('ellipse', { cx: 184, cy: 230, rx: 112, ry: 26, fill: '#9f4f45', opacity: 0.74 }),
+                h('ellipse', { cx: 184, cy: 230, rx: 88, ry: 18, fill: 'none', stroke: '#dda081', strokeWidth: 2, opacity: 0.72 }),
+                // Food bowl: the fill becomes visually stronger as provision rises.
+                h('g', { opacity: provisionOpacity(iq.food) },
+                  h('ellipse', { cx: 38, cy: 231, rx: 24, ry: 7, fill: '#2f4050' }),
+                  h('path', { d: 'M 17 220 H 59 L 54 233 H 22 Z', fill: '#607386', stroke: '#d7e1e7', strokeWidth: 1.5 }),
+                  h('ellipse', { cx: 38, cy: 220, rx: 17, ry: 4.5, fill: '#ad6a35' })
+                ),
+                // Exercise, social, veterinary, and enrichment props track their sliders.
+                h('g', { opacity: provisionOpacity(iq.exercise) },
+                  h('circle', { cx: 82, cy: 232, r: 13, fill: '#d06151', stroke: '#f5d18c', strokeWidth: 2 }),
+                  h('path', { d: 'M 71 226 Q 82 236 93 226', fill: 'none', stroke: '#f5d18c', strokeWidth: 2 })
+                ),
+                h('g', { opacity: provisionOpacity(iq.social) },
+                  h('rect', { x: 286, y: 41, width: 52, height: 46, rx: 8, fill: '#fff1dc', stroke: '#9b6c4a', strokeWidth: 2 }),
+                  h('path', { d: 'M 312 74 C 297 64 300 51 312 58 C 324 51 327 64 312 74 Z', fill: '#c65353' })
+                ),
+                h('g', { opacity: provisionOpacity(iq.vet) },
+                  h('rect', { x: 298, y: 112, width: 40, height: 44, rx: 6, fill: '#f4eee5', stroke: '#8a684d', strokeWidth: 2 }),
+                  h('rect', { x: 313, y: 119, width: 10, height: 30, rx: 2, fill: '#b84b4b' }),
+                  h('rect', { x: 305, y: 129, width: 26, height: 10, rx: 2, fill: '#b84b4b' })
+                ),
+                h('g', { opacity: provisionOpacity(iq.training) },
+                  h('rect', { x: 276, y: 216, width: 23, height: 23, rx: 4, fill: '#d6a542', stroke: '#fff0b8', strokeWidth: 1.5 }),
+                  h('rect', { x: 301, y: 228, width: 23, height: 23, rx: 4, fill: '#4e8192', stroke: '#c9eef4', strokeWidth: 1.5 }),
+                  h('circle', { cx: 313, cy: 224, r: 7, fill: '#6f4f8f', stroke: '#eadffc', strokeWidth: 1.5 })
+                ),
+                renderTradeoffAnimalShape(),
+                h('g', { transform: 'translate(12 12)' },
+                  h('rect', { x: 0, y: 0, width: 142, height: 31, rx: 15.5, fill: '#20150f', fillOpacity: 0.9, stroke: sm.color, strokeWidth: 2 }),
+                  h('rect', { x: 8, y: 7, width: 36, height: 17, rx: 8.5, fill: sm.color }),
+                  h('text', { x: 26, y: 19, textAnchor: 'middle', fill: '#17100d', fontSize: 9, fontWeight: 950 }, stateMark),
+                  h('text', { x: 51, y: 20, fill: '#fff5e5', fontSize: 12, fontWeight: 900 }, sm.label)
+                )
+              ),
+              h('div', { className: 'petslab-tradeoff-vignette-caption' },
+                h('span', null,
+                  h('strong', { style: { display: 'block', color: sm.color, fontSize: 11 } }, stateMark + ' ' + sm.label),
+                  'Posture and expression follow the total mismatch.'
+                ),
+                h('span', { style: { color: '#e8d5b7', textAlign: 'right' } },
+                  watchLabel + ': ', h('strong', { style: { color: '#fef3e2' } }, worstDomain.label),
+                  ' (gap ' + worstDomain.gap.toFixed(1) + ')'
+                )
+              )
+            );
+          }
+          return h('div', { className: 'petslab-care-tradeoff', style: { marginTop: 14, padding: 14, borderRadius: 12, background: 'linear-gradient(145deg, #2d2018 0%, ' + sm.bg + ' 100%)', border: '1px solid ' + sm.border, color: '#e8f0f5' } },
             h('h4', { style: { margin: '0 0 4px', fontSize: 13, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, '⚖️ Care Tradeoff — Inquiry Widget'),
             h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, 'Pick a species. Set five care domains. Predict where mismatches with species-typical needs will show up. No score, no reveal — you mark your own understanding.'),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 } },
               ['dog', 'cat', 'rabbit', 'parrot', 'reptile'].map(function(s) {
                 var active = iq.species === s;
-                return h('button', { key: s, onClick: function() { setKey('species', s); }, style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + (active ? sm.color : '#1e293b'), background: active ? sm.color : '#0a0a1a', color: active ? '#000' : '#94a3b8', cursor: 'pointer' } }, ({ dog: '🐕', cat: '🐈', rabbit: '🐰', parrot: '🦜', reptile: '🦎' })[s] + ' ' + s);
+                return h('button', {
+                  key: s,
+                  'aria-pressed': active,
+                  onClick: function() { setKey('species', s); },
+                  style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + (active ? sm.color : '#1e293b'), background: active ? sm.color : '#0a0a1a', color: active ? '#000' : '#94a3b8', cursor: 'pointer' }
+                }, ({ dog: '🐕', cat: '🐈', rabbit: '🐰', parrot: '🦜', reptile: '🦎' })[s] + ' ' + s + (active ? ' \u2713' : ''));
               })
             ),
             h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: '999rem', background: sm.color, color: '#000', fontSize: 10, fontWeight: 800, marginBottom: 6 } }, sp.label + ' — ' + sm.label),
             h('p', { style: { margin: '0 0 10px', fontSize: 10, opacity: 0.8 } }, sm.desc),
-            h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10, flexWrap: 'wrap' } },
-              h('svg', { width: 160, height: 160, viewBox: '0 0 160 160', role: 'img', 'aria-label': sm.label + ' pet needs radar chart', style: { flex: '0 0 160px' } },
-                [0.25, 0.5, 0.75, 1.0].map(function(s, i) {
-                  var rr = s * radius;
-                  var poly = '';
-                  for (var k = 0; k < n; k++) {
-                    var a = -Math.PI / 2 + (k * 2 * Math.PI / n);
-                    poly += (center + Math.cos(a) * rr) + ',' + (center + Math.sin(a) * rr) + ' ';
-                  }
-                  return h('polygon', { key: 'g' + i, points: poly.trim(), fill: 'none', stroke: '#1e293b', strokeWidth: 1, strokeDasharray: i === 3 ? '0' : '2 3' });
-                }),
-                h('polygon', { points: needPts.map(function(p) { return p[0] + ',' + p[1]; }).join(' '), fill: 'none', stroke: '#94a3b8', strokeWidth: 1.5, strokeDasharray: '4 3' }),
-                h('polygon', { points: pts.map(function(p) { return p[0] + ',' + p[1]; }).join(' '), fill: sm.color + '33', stroke: sm.color, strokeWidth: 2 }),
-                pts.map(function(p, i) { return h('circle', { key: 'p' + i, cx: p[0], cy: p[1], r: 3, fill: sm.color }); }),
-                labelPts.map(function(lp, i) { return h('text', { key: 'l' + i, x: lp[0], y: lp[1], textAnchor: 'middle', fill: '#94a3b8', fontSize: 8 }, ['Food', 'Ex', 'Soc', 'Vet', 'Train'][i]); })
+            h('div', { className: 'petslab-tradeoff-dashboard' },
+              h('div', { className: 'petslab-tradeoff-panel' },
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'baseline', flexWrap: 'wrap', marginBottom: 3 } },
+                  h('strong', { style: { color: '#fef3e2', fontSize: 12 } }, 'Care balance radar'),
+                  h('span', { style: { color: '#bda891', fontSize: 9 } }, 'Scale 0-100')
+                ),
+                h('svg', {
+                  className: 'petslab-tradeoff-radar',
+                  viewBox: '0 0 ' + radarW + ' ' + radarH,
+                  role: 'img',
+                  'aria-labelledby': 'pets-tradeoff-radar-title pets-tradeoff-radar-desc',
+                  preserveAspectRatio: 'xMidYMid meet'
+                },
+                  h('title', { id: 'pets-tradeoff-radar-title' }, sm.label + ' care balance for ' + sp.label),
+                  h('desc', { id: 'pets-tradeoff-radar-desc' }, radarSummary),
+                  h('rect', { x: 0, y: 0, width: radarW, height: radarH, rx: 14, fill: '#17100d' }),
+                  h('circle', { cx: centerX, cy: centerY, r: radius + 18, fill: '#2c1f18', opacity: 0.42 }),
+                  [0.25, 0.5, 0.75, 1.0].map(function(level, i) {
+                    var ring = domains.map(function(_, axis) {
+                      return radarPoint(level * 100, axis, radius);
+                    });
+                    return h('polygon', {
+                      key: 'ring-' + i,
+                      points: ring.map(function(p) { return p[0] + ',' + p[1]; }).join(' '),
+                      fill: i % 2 === 0 ? 'rgba(255,255,255,0.018)' : 'none',
+                      stroke: '#7c6655',
+                      strokeWidth: i === 3 ? 1.5 : 1,
+                      strokeDasharray: i === 3 ? null : '3 5',
+                      opacity: i === 3 ? 0.72 : 0.48
+                    });
+                  }),
+                  // Five spokes make each domain axis unambiguous.
+                  domains.map(function(_, i) {
+                    var outer = radarPoint(100, i, radius);
+                    return h('line', {
+                      key: 'spoke-' + i,
+                      x1: centerX, y1: centerY, x2: outer[0], y2: outer[1],
+                      stroke: '#9b816c', strokeWidth: 1.25, opacity: 0.66
+                    });
+                  }),
+                  [25, 50, 75, 100].map(function(value) {
+                    return h('text', {
+                      key: 'scale-' + value,
+                      className: 'petslab-tradeoff-radar-scale',
+                      x: centerX + (value / 100) * radius - 2,
+                      y: centerY - 5,
+                      textAnchor: 'end', fill: '#aa9584', fontSize: 9, fontWeight: 700
+                    }, String(value));
+                  }),
+                  // Need is dashed with square markers; provided is solid with circles.
+                  h('polygon', {
+                    points: needPts.map(function(p) { return p[0] + ',' + p[1]; }).join(' '),
+                    fill: 'none', stroke: '#f6d7a7', strokeWidth: 2.5, strokeDasharray: '8 6',
+                    strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke'
+                  }),
+                  needPts.map(function(p, i) {
+                    return h('rect', {
+                      key: 'need-' + i, x: p[0] - 4, y: p[1] - 4, width: 8, height: 8,
+                      fill: '#17100d', stroke: '#f6d7a7', strokeWidth: 2,
+                      vectorEffect: 'non-scaling-stroke'
+                    });
+                  }),
+                  h('polygon', {
+                    points: pts.map(function(p) { return p[0] + ',' + p[1]; }).join(' '),
+                    fill: sm.color + '2e', stroke: sm.color, strokeWidth: 3,
+                    strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke'
+                  }),
+                  pts.map(function(p, i) {
+                    return h('circle', {
+                      key: 'provided-' + i, cx: p[0], cy: p[1], r: 5,
+                      fill: '#17100d', stroke: sm.color, strokeWidth: 3,
+                      vectorEffect: 'non-scaling-stroke'
+                    });
+                  }),
+                  // Full labels and P/N values remain readable without the legend color.
+                  labelPts.map(function(lp, i) {
+                    var anchor = i === 0 ? 'middle' : (i === 1 || i === 2 ? 'start' : 'end');
+                    var lines = radarLabelLines[i];
+                    var labelY = lp[1] - ((lines.length - 1) * 10);
+                    return h('text', {
+                      key: 'label-' + i,
+                      className: 'petslab-tradeoff-radar-axis',
+                      x: lp[0], y: labelY, textAnchor: anchor,
+                      fill: '#f5e8d6', fontSize: 15, fontWeight: 800
+                    },
+                      lines.map(function(line, lineIndex) {
+                        return h('tspan', {
+                          key: 'label-line-' + lineIndex,
+                          x: lp[0], dy: lineIndex === 0 ? 0 : 20
+                        }, line);
+                      }),
+                      h('tspan', {
+                        className: 'petslab-tradeoff-radar-value',
+                        x: lp[0], dy: 20, fill: sm.color, fontSize: 12, fontWeight: 900
+                      }, 'P ' + domains[i].provided + ' / N ' + domains[i].need.toFixed(0))
+                    );
+                  })
+                ),
+                h('div', { className: 'petslab-tradeoff-legend', role: 'list', 'aria-label': 'Radar chart legend' },
+                  h('span', { className: 'petslab-tradeoff-legend-item', role: 'listitem' },
+                    h('span', { className: 'petslab-tradeoff-legend-swatch', style: { borderTopColor: sm.color }, 'aria-hidden': 'true' }),
+                    h('span', null, 'Circle + solid = provided')
+                  ),
+                  h('span', { className: 'petslab-tradeoff-legend-item', role: 'listitem' },
+                    h('span', { className: 'petslab-tradeoff-legend-swatch is-need', 'aria-hidden': 'true' }),
+                    h('span', null, 'Square + dashed = species need')
+                  )
+                )
               ),
-              h('div', { style: { flex: '1 1 auto', minWidth: 200, fontSize: 10 } },
-                h('div', { style: { fontWeight: 700, marginBottom: 4, opacity: 0.85 } }, 'Gap analysis (provided vs species need)'),
-                domains.map(function(d) {
-                  var sev = d.gap < 5 ? '#4ade80' : d.gap < 15 ? '#facc15' : d.gap < 30 ? '#fb923c' : '#f87171';
-                  return h('div', { key: d.k, style: { display: 'flex', justifyContent: 'space-between', padding: '2px 0', borderBottom: '1px dashed #1e293b' } },
-                    h('span', null, d.label),
-                    h('span', { style: { fontFamily: 'monospace', color: sev, fontWeight: 700 } }, 'gap ' + d.gap.toFixed(1))
-                  );
-                }),
-                h('div', { style: { marginTop: 6, fontSize: 10, opacity: 0.7 } }, 'Total mismatch: ', h('span', { style: { color: sm.color, fontWeight: 700 } }, totalGap.toFixed(1)))
-              )
+              renderTradeoffVignette()
             ),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '6px 10px', marginBottom: 10 } },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, flexWrap: 'wrap', marginBottom: 6 } },
+              h('div', { style: { fontWeight: 800, fontSize: 11, color: '#fef3e2' } }, 'Gap analysis (provided vs species need)'),
+              h('span', { style: { color: '#bda891', fontSize: 9 } }, 'P = provided / N = need')
+            ),
+            h('div', { className: 'petslab-tradeoff-domain-grid' },
+              domains.map(function(domain) {
+                var sev = domain.gap < 5 ? '#4ade80' : domain.gap < 15 ? '#facc15' : domain.gap < 30 ? '#fb923c' : '#f87171';
+                var severityText = domain.gap < 5 ? 'low mismatch' : domain.gap < 15 ? 'moderate mismatch' : domain.gap < 30 ? 'large mismatch' : 'critical mismatch';
+                var delta = domain.provided - domain.need;
+                var relation = Math.abs(delta) < 0.5 ? 'at need'
+                  : delta < 0 ? Math.abs(delta).toFixed(0) + ' below need'
+                  : delta.toFixed(0) + ' above need';
+                return h('div', { key: domain.k, className: 'petslab-tradeoff-domain' },
+                  h('strong', null, domain.label),
+                  h('div', { className: 'petslab-tradeoff-values' },
+                    h('span', null, 'Provided', h('b', null, domain.provided)),
+                    h('span', null, 'Need', h('b', null, domain.need.toFixed(0)))
+                  ),
+                  h('div', { style: { marginTop: 6, color: sev, fontSize: 9, fontWeight: 800, lineHeight: 1.3 } },
+                    'Gap ' + domain.gap.toFixed(1) + ' - ' + severityText
+                  ),
+                  h('div', { style: { marginTop: 2, color: '#bda891', fontSize: 9, lineHeight: 1.25 } }, relation)
+                );
+              })
+            ),
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', padding: '8px 10px', marginBottom: 10, borderRadius: 9, background: 'rgba(18,13,11,.66)', border: '1px solid ' + sm.border, fontSize: 10 } },
+              h('span', { style: { color: '#e8d5b7', fontWeight: 800 } }, 'Total mismatch:'),
+              h('span', { style: { color: sm.color, font: '900 15px/1 monospace' } }, totalGap.toFixed(1) + ' - ' + sm.label)
+            ),            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '6px 10px', marginBottom: 10 } },
               domains.map(function(s) {
                 return h('label', { key: s.k, style: { display: 'block', fontSize: 10 } },
                   h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } },
@@ -2455,6 +3193,276 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           upd('trSim', Object.assign({}, trSim, { done: true }));
         }
       }
+      function renderTrainerStage(moment, thisChoice, revealed, probPct, trustPct) {
+        var round = trSim.idx + 1;
+        var pose = moment.type === 'target' ? 'sit'
+          : moment.type === 'almost' ? 'crouch'
+          : trSim.idx === 1 ? 'sniff'
+          : trSim.idx === 4 ? 'jump'
+          : 'bark';
+        var responseNames = {
+          treat3s: 'Treat within 3 seconds',
+          click: 'Marker only',
+          wait: 'Wait and observe',
+          correct: 'Verbal correction'
+        };
+        var selected = revealed ? thisChoice.rxn : null;
+        var outcomeColor = !revealed ? '#fbbf24'
+          : thisChoice.dProb > 0 ? '#84cc16'
+          : thisChoice.dProb < 0 ? '#ef4444'
+          : '#7dd3fc';
+        var outcomeLabel = !revealed ? '3-second response window'
+          : thisChoice.dTrust < 0 ? 'Trust dipped'
+          : thisChoice.dProb > 0 ? 'Behavior strengthened'
+          : thisChoice.dProb < 0 ? 'Behavior weakened'
+          : 'Observation recorded';
+        var trustLow = trustPct < 70 || selected === 'correct';
+        var tailClass = trustPct >= 70 && selected !== 'correct' ? 'petslab-trainer-tail' : '';
+        var sceneLabel = 'Illustrated kitchen training scene. Round ' + round + ' of ' + TR_MOMENTS.length +
+          '. Puppy action: ' + moment.desc + ' Behavior probability ' + probPct +
+          ' percent. Trust ' + trustPct + ' percent.' +
+          (revealed ? ' Selected response: ' + responseNames[selected] + '. ' + outcomeLabel + '.'
+            : ' Choose a response within three seconds.');
+
+        function puppyHead(x, y, rotation) {
+          return h('g', { transform: 'translate(' + x + ' ' + y + ') rotate(' + rotation + ')' },
+            trustLow
+              ? h('g', null,
+                  h('path', { d: 'M -22 -18 Q -48 -17 -47 4 Q -30 2 -18 -5 Z', fill: '#8a542c' }),
+                  h('path', { d: 'M 15 -20 Q 35 -23 36 -2 Q 25 0 14 -7 Z', fill: '#754523' })
+                )
+              : h('g', null,
+                  h('path', { d: 'M -22 -17 Q -42 -37 -44 -8 Q -38 11 -18 1 Z', fill: '#8a542c' }),
+                  h('path', { d: 'M 14 -20 Q 34 -36 36 -7 Q 32 8 15 1 Z', fill: '#754523' }),
+                  h('path', { d: 'M -27 -17 Q -36 -27 -36 -10 Q -32 -2 -24 -4 Z', fill: '#d89d76', opacity: 0.7 })
+                ),
+            h('ellipse', { cx: 0, cy: 0, rx: 34, ry: 31, fill: 'url(#pets-trainer-fur)' }),
+            h('path', { d: 'M -27 -14 Q -5 -31 8 -17 Q -4 -2 -24 0 Z', fill: '#9a5c2b', opacity: 0.88 }),
+            h('ellipse', { cx: 12, cy: -6, rx: 5.5, ry: trustLow ? 2.4 : 4.6, fill: '#24140d' }),
+            !trustLow && h('circle', { cx: 14, cy: -8, r: 1.5, fill: '#fff8e7' }),
+            trustLow && h('path', { d: 'M 6 -12 Q 14 -16 21 -12', fill: 'none', stroke: '#5a321b', strokeWidth: 2.2, strokeLinecap: 'round' }),
+            h('ellipse', { cx: 20, cy: 10, rx: 22, ry: 15, fill: '#f4d9b8' }),
+            h('path', { d: 'M 34 4 Q 43 5 39 12 Q 34 16 29 10 Z', fill: '#2a1811' }),
+            pose === 'bark'
+              ? h('path', { d: 'M 34 17 Q 47 25 32 31 Q 21 27 22 19 Z', fill: '#6f1d1b', stroke: '#3f1714', strokeWidth: 1.5 })
+              : h('path', { d: trustLow ? 'M 23 21 Q 29 17 35 21' : 'M 22 19 Q 29 25 36 19', fill: 'none', stroke: '#5d2b23', strokeWidth: 2, strokeLinecap: 'round' }),
+            pose !== 'bark' && !trustLow && h('path', { d: 'M 29 22 Q 31 27 35 22', fill: '#d56d7a' })
+          );
+        }
+
+        function puppy() {
+          var coat = 'url(#pets-trainer-fur)';
+          var patch = '#f5dfc5';
+          var tailD = trustLow ? 'M -43 49 Q -85 58 -68 85' : 'M -43 49 Q -91 24 -73 -10';
+          if (pose === 'sit') {
+            return h('g', { transform: 'translate(344 149)', filter: 'url(#pets-trainer-shadow)' },
+              h('path', { className: tailClass, d: tailD, fill: 'none', stroke: '#a96631', strokeWidth: 17, strokeLinecap: 'round' }),
+              h('ellipse', { cx: -7, cy: 67, rx: 48, ry: 57, fill: coat }),
+              h('ellipse', { cx: 16, cy: 73, rx: 25, ry: 44, fill: patch, opacity: 0.92 }),
+              h('ellipse', { cx: -39, cy: 108, rx: 25, ry: 13, fill: '#b77439' }),
+              h('path', { d: 'M 3 72 Q 4 109 -2 121 M 28 69 Q 34 105 31 121', fill: 'none', stroke: '#c9894b', strokeWidth: 15, strokeLinecap: 'round' }),
+              h('ellipse', { cx: -2, cy: 120, rx: 15, ry: 7, fill: patch }),
+              h('ellipse', { cx: 32, cy: 120, rx: 15, ry: 7, fill: patch }),
+              h('path', { d: 'M 3 32 Q 23 43 44 25', fill: 'none', stroke: '#315b78', strokeWidth: 8, strokeLinecap: 'round' }),
+              h('circle', { cx: 24, cy: 37, r: 6, fill: '#f4b942', stroke: '#fff1bc', strokeWidth: 1.5 }),
+              puppyHead(29, 4, -2)
+            );
+          }
+          if (pose === 'jump') {
+            return h('g', { transform: 'translate(337 120) rotate(-10 5 45)', filter: 'url(#pets-trainer-shadow)' },
+              h('path', { className: tailClass, d: trustLow ? 'M -45 55 Q -76 75 -60 91' : 'M -42 52 Q -89 32 -73 4', fill: 'none', stroke: '#a96631', strokeWidth: 16, strokeLinecap: 'round' }),
+              h('ellipse', { cx: 0, cy: 54, rx: 57, ry: 39, fill: coat }),
+              h('ellipse', { cx: 17, cy: 66, rx: 29, ry: 21, fill: patch, opacity: 0.85 }),
+              h('path', { d: 'M -24 75 Q -31 101 -46 111 M 6 82 Q 7 108 -3 119', fill: 'none', stroke: '#b9783d', strokeWidth: 15, strokeLinecap: 'round' }),
+              h('path', { d: 'M 36 58 Q 69 42 82 19 M 29 70 Q 65 65 82 49', fill: 'none', stroke: '#ca894c', strokeWidth: 14, strokeLinecap: 'round' }),
+              h('ellipse', { cx: 84, cy: 17, rx: 13, ry: 7, fill: patch, transform: 'rotate(-20 84 17)' }),
+              h('ellipse', { cx: 85, cy: 48, rx: 13, ry: 7, fill: patch, transform: 'rotate(-8 85 48)' }),
+              h('path', { d: 'M 23 33 Q 43 44 57 25', fill: 'none', stroke: '#315b78', strokeWidth: 8, strokeLinecap: 'round' }),
+              h('circle', { cx: 42, cy: 36, r: 6, fill: '#f4b942', stroke: '#fff1bc', strokeWidth: 1.5 }),
+              puppyHead(59, 8, 2)
+            );
+          }
+          return h('g', { transform: 'translate(320 184)', filter: 'url(#pets-trainer-shadow)' },
+            h('path', { className: tailClass, d: trustLow ? 'M -54 34 Q -91 55 -74 76' : 'M -54 33 Q -99 10 -84 -18', fill: 'none', stroke: '#a96631', strokeWidth: 16, strokeLinecap: 'round' }),
+            h('ellipse', { cx: 0, cy: 38, rx: 66, ry: pose === 'crouch' ? 31 : 35, fill: coat }),
+            h('path', { d: 'M -17 17 Q 3 39 26 17 Q 13 54 -18 54 Z', fill: '#9a5c2b', opacity: 0.72 }),
+            pose === 'crouch'
+              ? h('g', null,
+                  h('path', { d: 'M -42 52 Q -57 70 -40 82 M 19 54 Q 40 69 50 81', fill: 'none', stroke: '#b9783d', strokeWidth: 15, strokeLinecap: 'round' }),
+                  h('ellipse', { cx: -39, cy: 83, rx: 16, ry: 7, fill: patch }),
+                  h('ellipse', { cx: 52, cy: 82, rx: 16, ry: 7, fill: patch })
+                )
+              : h('g', null,
+                  h('path', { d: 'M -39 55 L -42 87 M 29 54 L 34 87', fill: 'none', stroke: '#b9783d', strokeWidth: 15, strokeLinecap: 'round' }),
+                  h('ellipse', { cx: -40, cy: 89, rx: 16, ry: 7, fill: patch }),
+                  h('ellipse', { cx: 36, cy: 89, rx: 16, ry: 7, fill: patch })
+                ),
+            h('path', { d: 'M 36 22 Q 50 32 62 18', fill: 'none', stroke: '#315b78', strokeWidth: 8, strokeLinecap: 'round' }),
+            h('circle', { cx: 51, cy: 26, r: 6, fill: '#f4b942', stroke: '#fff1bc', strokeWidth: 1.5 }),
+            puppyHead(62, pose === 'sniff' ? 58 : pose === 'crouch' ? 27 : 14, pose === 'sniff' ? 28 : pose === 'crouch' ? 8 : 0),
+            pose === 'sniff' && h('g', { opacity: 0.72 },
+              h('path', { d: 'M 104 79 Q 116 68 126 79 Q 137 89 149 77', fill: 'none', stroke: '#fbbf24', strokeWidth: 2, strokeDasharray: '3 5', strokeLinecap: 'round' }),
+              h('circle', { cx: 112, cy: 67, r: 3, fill: '#fbbf24' }),
+              h('circle', { cx: 139, cy: 69, r: 2.5, fill: '#fbbf24' })
+            ),
+            pose === 'bark' && h('g', { fill: 'none', stroke: '#fef3c7', strokeWidth: 3, strokeLinecap: 'round' },
+              h('path', { d: 'M 105 4 L 126 -5' }),
+              h('path', { d: 'M 108 16 L 134 16' }),
+              h('path', { d: 'M 104 28 L 126 39' })
+            )
+          );
+        }
+
+        function responseCue() {
+          if (!revealed) {
+            return h('g', { transform: 'translate(610 107)' },
+              h('circle', { cx: 0, cy: 0, r: 27, fill: '#1f1612', fillOpacity: 0.88, stroke: '#fbbf24', strokeWidth: 3 }),
+              h('path', { d: 'M 0 -18 A 18 18 0 0 1 18 0', fill: 'none', stroke: '#fff5d6', strokeWidth: 3, strokeLinecap: 'round' }),
+              h('text', { x: 0, y: 6, textAnchor: 'middle', fill: '#fff7df', fontSize: 16, fontWeight: 900 }, '3s')
+            );
+          }
+          if (selected === 'treat3s') {
+            return h('g', { className: 'petslab-trainer-reward' },
+              h('path', { d: 'M 635 145 Q 554 122 437 178', fill: 'none', stroke: '#fbbf24', strokeWidth: 3, strokeDasharray: '5 7', strokeLinecap: 'round' }),
+              h('rect', { x: 613, y: 132, width: 20, height: 11, rx: 5, fill: '#9a5b2f', stroke: '#f7d68f', strokeWidth: 2, transform: 'rotate(-18 623 138)' }),
+              h('path', { d: 'M 598 119 L 601 128 L 610 131 L 601 134 L 598 143 L 595 134 L 586 131 L 595 128 Z', fill: '#fef08a' }),
+              h('path', { d: 'M 572 148 L 574 154 L 580 156 L 574 158 L 572 164 L 570 158 L 564 156 L 570 154 Z', fill: '#fff7c2' })
+            );
+          }
+          if (selected === 'click') {
+            return h('g', { className: 'petslab-trainer-reward', transform: 'translate(602 90)' },
+              h('rect', { x: 0, y: 20, width: 45, height: 30, rx: 8, fill: '#253b52', stroke: '#9fd7ea', strokeWidth: 2 }),
+              h('circle', { cx: 34, cy: 29, r: 5, fill: '#fbbf24' }),
+              h('path', { d: 'M 49 20 L 64 10 M 53 30 L 72 30 M 49 41 L 64 53', fill: 'none', stroke: '#fef3c7', strokeWidth: 3, strokeLinecap: 'round' }),
+              h('rect', { x: -10, y: -9, width: 58, height: 22, rx: 11, fill: '#fff7df' }),
+              h('text', { x: 19, y: 7, textAnchor: 'middle', fill: '#315b78', fontSize: 13, fontWeight: 900 }, 'YES!')
+            );
+          }
+          if (selected === 'wait') {
+            return h('g', { className: 'petslab-trainer-reward', transform: 'translate(620 103)' },
+              h('circle', { cx: 0, cy: 0, r: 25, fill: '#243447', fillOpacity: 0.92, stroke: '#bae6fd', strokeWidth: 2 }),
+              h('rect', { x: -8, y: -10, width: 6, height: 20, rx: 3, fill: '#e0f2fe' }),
+              h('rect', { x: 3, y: -10, width: 6, height: 20, rx: 3, fill: '#e0f2fe' }),
+              h('text', { x: 0, y: 42, textAnchor: 'middle', fill: '#e0f2fe', fontSize: 11, fontWeight: 800 }, 'OBSERVE')
+            );
+          }
+          return h('g', { className: 'petslab-trainer-reward', transform: 'translate(575 70)' },
+            h('path', { d: 'M 0 0 H 80 Q 92 0 92 12 V 42 Q 92 54 80 54 H 35 L 21 68 L 23 54 H 0 Q -12 54 -12 42 V 12 Q -12 0 0 0 Z', fill: '#fff1f2', stroke: '#ef4444', strokeWidth: 3 }),
+            h('text', { x: 40, y: 35, textAnchor: 'middle', fill: '#b91c1c', fontSize: 22, fontWeight: 950 }, 'NO!')
+          );
+        }
+
+        return h('div', {
+          className: 'petslab-sim-stage petslab-trainer-stage',
+          style: {
+            borderColor: outcomeColor,
+            boxShadow: '0 24px 60px rgba(0,0,0,.34), 0 0 0 1px ' + outcomeColor + '33'
+          }
+        },
+          h('svg', {
+            viewBox: '0 0 760 330',
+            preserveAspectRatio: 'xMidYMid meet',
+            role: 'img',
+            focusable: 'false',
+            'aria-label': sceneLabel
+          },
+            h('title', null, sceneLabel),
+            h('defs', null,
+              h('linearGradient', { id: 'pets-trainer-wall', x1: 0, y1: 0, x2: 1, y2: 1 },
+                h('stop', { offset: '0%', stopColor: '#f8ead5' }),
+                h('stop', { offset: '65%', stopColor: '#e6c7a3' }),
+                h('stop', { offset: '100%', stopColor: '#d3a97d' })
+              ),
+              h('linearGradient', { id: 'pets-trainer-floor', x1: 0, y1: 0, x2: 0, y2: 1 },
+                h('stop', { offset: '0%', stopColor: '#a8784f' }),
+                h('stop', { offset: '100%', stopColor: '#68452f' })
+              ),
+              h('linearGradient', { id: 'pets-trainer-fur', x1: 0, y1: 0, x2: 1, y2: 1 },
+                h('stop', { offset: '0%', stopColor: '#e8b66f' }),
+                h('stop', { offset: '55%', stopColor: '#c88443' }),
+                h('stop', { offset: '100%', stopColor: '#8a4f27' })
+              ),
+              h('radialGradient', { id: 'pets-trainer-rug', cx: '50%', cy: '42%', r: '70%' },
+                h('stop', { offset: '0%', stopColor: '#d46b59' }),
+                h('stop', { offset: '100%', stopColor: '#8d3f3b' })
+              ),
+              h('filter', { id: 'pets-trainer-shadow', x: '-35%', y: '-35%', width: '170%', height: '180%' },
+                h('feDropShadow', { dx: 0, dy: 5, stdDeviation: 5, floodColor: '#3b2418', floodOpacity: 0.3 })
+              )
+            ),
+            h('rect', { x: 0, y: 0, width: 760, height: 216, fill: 'url(#pets-trainer-wall)' }),
+            h('path', { d: 'M 0 57 H 760 M 0 111 H 760 M 0 165 H 760', stroke: '#b8916c', strokeWidth: 1, opacity: 0.25 }),
+            h('path', { d: 'M 52 0 V 216 M 108 0 V 216 M 164 0 V 216 M 220 0 V 216 M 276 0 V 216 M 332 0 V 216 M 388 0 V 216 M 444 0 V 216 M 500 0 V 216 M 556 0 V 216 M 612 0 V 216 M 668 0 V 216 M 724 0 V 216', stroke: '#b8916c', strokeWidth: 1, opacity: 0.16 }),
+            h('rect', { x: 0, y: 208, width: 760, height: 13, fill: '#fff3df' }),
+            h('rect', { x: 0, y: 218, width: 760, height: 112, fill: 'url(#pets-trainer-floor)' }),
+            h('path', { d: 'M 0 251 H 760 M 0 290 H 760 M 90 218 L 45 330 M 205 218 L 181 330 M 320 218 L 316 330 M 440 218 L 454 330 M 555 218 L 588 330 M 670 218 L 721 330', stroke: '#4f3324', strokeWidth: 2, opacity: 0.34 }),
+            h('ellipse', { cx: 375, cy: 286, rx: 178, ry: 38, fill: 'url(#pets-trainer-rug)', filter: 'url(#pets-trainer-shadow)' }),
+            h('ellipse', { cx: 375, cy: 286, rx: 151, ry: 27, fill: 'none', stroke: '#eda184', strokeWidth: 3, opacity: 0.72 }),
+            h('path', { d: 'M 242 283 Q 375 261 508 283 M 255 294 Q 375 274 495 294', fill: 'none', stroke: '#f7c0a3', strokeWidth: 2, opacity: 0.42 }),
+            h('g', { filter: 'url(#pets-trainer-shadow)' },
+              h('rect', { x: 0, y: 104, width: 225, height: 108, fill: '#6b4935' }),
+              h('rect', { x: 0, y: 98, width: 250, height: 15, rx: 3, fill: '#d7c0a2' }),
+              h('rect', { x: 18, y: 122, width: 86, height: 79, rx: 3, fill: '#815940', stroke: '#a87b59', strokeWidth: 2 }),
+              h('rect', { x: 119, y: 122, width: 86, height: 79, rx: 3, fill: '#815940', stroke: '#a87b59', strokeWidth: 2 }),
+              h('circle', { cx: 92, cy: 160, r: 3, fill: '#e8c680' }),
+              h('circle', { cx: 132, cy: 160, r: 3, fill: '#e8c680' }),
+              h('rect', { x: 28, y: 75, width: 82, height: 23, rx: 4, fill: '#b9c6c8' }),
+              h('ellipse', { cx: 69, cy: 79, rx: 32, ry: 7, fill: '#6d888c' }),
+              h('path', { d: 'M 94 77 Q 95 51 77 51', fill: 'none', stroke: '#73888b', strokeWidth: 7, strokeLinecap: 'round' }),
+              h('rect', { x: 150, y: 52, width: 42, height: 46, rx: 8, fill: '#eef3ed', stroke: '#9aaea9', strokeWidth: 2 }),
+              h('rect', { x: 155, y: 47, width: 32, height: 8, rx: 3, fill: '#6c8290' }),
+              h('circle', { cx: 162, cy: 77, r: 4, fill: '#a86635' }),
+              h('circle', { cx: 175, cy: 70, r: 4, fill: '#a86635' }),
+              h('circle', { cx: 181, cy: 82, r: 4, fill: '#a86635' })
+            ),
+            h('g', { opacity: 0.96 },
+              h('rect', { x: 510, y: 35, width: 157, height: 104, rx: 4, fill: '#8fc7d6' }),
+              h('circle', { cx: 625, cy: 67, r: 22, fill: '#ffe59a' }),
+              h('path', { d: 'M 513 113 Q 550 78 583 109 Q 620 75 664 112 V 136 H 513 Z', fill: '#77a765' }),
+              h('rect', { x: 504, y: 28, width: 169, height: 118, rx: 5, fill: 'none', stroke: '#76533b', strokeWidth: 8 }),
+              h('line', { x1: 588, y1: 31, x2: 588, y2: 143, stroke: '#76533b', strokeWidth: 4 }),
+              h('line', { x1: 508, y1: 87, x2: 669, y2: 87, stroke: '#76533b', strokeWidth: 4 }),
+              h('path', { d: 'M 492 22 Q 519 58 496 154 M 685 22 Q 657 61 680 154', fill: '#c45f51', stroke: '#9e443e', strokeWidth: 3 })
+            ),
+            h('g', { opacity: 0.88 },
+              h('rect', { x: 280, y: 49, width: 99, height: 67, rx: 4, fill: '#815b42' }),
+              h('rect', { x: 288, y: 57, width: 83, height: 51, fill: '#f3c970' }),
+              h('path', { d: 'M 296 96 Q 318 65 336 91 Q 352 69 365 96', fill: '#6f8e69' }),
+              h('circle', { cx: 344, cy: 72, r: 9, fill: '#fff1bd' })
+            ),
+            h('g', { filter: 'url(#pets-trainer-shadow)' },
+              h('path', { d: 'M 697 178 Q 678 227 681 330 H 733 Q 736 250 724 182 Z', fill: '#36465d' }),
+              h('path', { d: 'M 726 181 Q 728 236 742 330 H 760 V 181 Z', fill: '#29394f' }),
+              h('path', { d: 'M 681 318 H 735 V 330 H 669 Q 666 322 681 318 Z', fill: '#2b201c' }),
+              h('path', { d: 'M 733 318 H 760 V 330 H 721 Q 719 322 733 318 Z', fill: '#241a18' }),
+              h('path', { d: 'M 760 81 Q 704 87 648 132', fill: 'none', stroke: '#e5ad83', strokeWidth: 22, strokeLinecap: 'round' }),
+              h('path', { d: 'M 760 72 Q 709 74 679 97', fill: 'none', stroke: '#5d7188', strokeWidth: 31, strokeLinecap: 'round' }),
+              h('ellipse', { cx: 642, cy: 137, rx: 20, ry: 14, fill: '#e5ad83', transform: 'rotate(-20 642 137)' }),
+              h('circle', { cx: 628, cy: 135, r: 5, fill: '#f0bf98' })
+            ),
+            h('ellipse', { cx: pose === 'jump' ? 374 : 375, cy: 284, rx: pose === 'jump' ? 72 : 88, ry: 13, fill: '#24150f', opacity: pose === 'jump' ? 0.18 : 0.24 }),
+            puppy(),
+            responseCue()
+          ),
+          h('div', { className: 'petslab-stage-hud petslab-stage-hud--top', 'aria-hidden': 'true' },
+            h('div', { className: 'petslab-hud-stack' },
+              h('span', { className: 'petslab-hud-chip' }, 'ROUND ', h('strong', null, round + ' / ' + TR_MOMENTS.length)),
+              h('span', { className: 'petslab-hud-chip' }, revealed ? 'RESPONSE ' : 'OBSERVE ', h('strong', null, revealed ? responseNames[selected] : moment.label))
+            ),
+            h('div', { className: 'petslab-hud-objective' },
+              h('strong', { style: { display: 'block', color: outcomeColor, marginBottom: 2 } }, revealed ? outcomeLabel.toUpperCase() : 'TRAINING MOMENT'),
+              revealed ? 'See how your timing changes learning and the relationship.' : 'Watch the puppy, then choose what happens immediately after.'
+            )
+          ),
+          h('div', { className: 'petslab-stage-hud petslab-stage-hud--bottom', 'aria-hidden': 'true' },
+            h('div', { className: 'petslab-hud-stack' },
+              h('span', { className: 'petslab-hud-chip' }, 'Behavior ', h('strong', null, probPct + '%')),
+              h('span', { className: 'petslab-hud-chip' }, 'Trust ', h('strong', { style: { color: trustPct >= 80 ? '#bef264' : trustPct >= 60 ? '#fde68a' : '#fca5a5' } }, trustPct + '%'))
+            ),
+            h('span', { className: 'petslab-hud-chip', style: { borderColor: outcomeColor } }, outcomeLabel)
+          )
+        );
+      }
       function renderTrainerSim() {
         if (!trSim) {
           return h('div', { style: { padding: 18, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, textAlign: 'center' } },
@@ -2482,13 +3490,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           var trustNote = trustScore < 70 ? '⚠ Trust is low — corrections damaged the relationship. The puppy will be hesitant going forward.'
             : trustScore < 90 ? 'Trust took a small hit. Build back with positive sessions.'
             : '✓ Trust is strong. The puppy is engaged and willing.';
-          // Render a probability/trust line over rounds
-          var W = 360, H = 100;
-          var pad = { l: 22, r: 8, t: 8, b: 18 };
+          // Render a larger, responsive probability/trust chart over rounds.
+          var W = 640, H = 250;
+          var pad = { l: 52, r: 24, t: 28, b: 42 };
+          var chartPoints = trSim.log || [];
           var sx = function(i) { return pad.l + (i / (TR_MOMENTS.length - 1)) * (W - pad.l - pad.r); };
           var sy = function(p) { return pad.t + (1 - p) * (H - pad.t - pad.b); };
-          var probPath = 'M ' + (trSim.log || []).map(function(pt, i) { return sx(i) + ',' + sy(pt.prob); }).join(' L ');
-          var trustPath = 'M ' + (trSim.log || []).map(function(pt, i) { return sx(i) + ',' + sy(pt.trust); }).join(' L ');
+          var probPath = 'M ' + chartPoints.map(function(pt, i) { return sx(i) + ',' + sy(pt.prob); }).join(' L ');
+          var trustPath = 'M ' + chartPoints.map(function(pt, i) { return sx(i) + ',' + sy(pt.trust); }).join(' L ');
+          var chartDesc = 'Rounds 1 through 10 are labeled along the horizontal axis. The vertical axis marks 0, 50, and 100 percent. ' +
+            'The behavior goal is 70 percent and the trust goal is 80 percent. Final behavior probability is ' +
+            finalScore + ' percent and final trust is ' + trustScore + ' percent.';
           return h('div', { style: { padding: 18, borderRadius: 12, background: T.card, border: '2px solid ' + (finalScore >= 70 && trustScore >= 80 ? T.ok : T.accent) } },
             h('div', { style: { fontSize: 18, fontWeight: 900, color: T.text, marginBottom: 6 } }, headline),
             h('p', { style: { color: T.muted, fontSize: 13, lineHeight: 1.6, margin: '0 0 8px' } }, trustNote),
@@ -2507,25 +3519,142 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               )
             ),
             // Trajectory
-            h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, marginBottom: 12 } },
-              h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 4 } }, 'Trajectory across 10 rounds'),
-              h('svg', { width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H, role: 'img',
+            h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 12 } },
+              h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 8 } }, 'Trajectory across 10 rounds'),
+              h('svg', {
+                width: '100%',
+                viewBox: '0 0 ' + W + ' ' + H,
+                preserveAspectRatio: 'xMidYMid meet',
+                role: 'img',
+                focusable: 'false',
                 'aria-label': 'Behavior probability and trust trajectory across 10 rounds.',
-                style: { background: T.bg, borderRadius: 4 } },
-                // Y reference lines at 0.5 and 1.0
-                [0.5, 1.0].map(function(v, i) {
-                  return h('g', { key: i },
-                    h('line', { x1: pad.l, y1: sy(v), x2: W - pad.r, y2: sy(v), stroke: '#374151', strokeWidth: 1, strokeDasharray: '2 3' }),
-                    h('text', { x: pad.l - 3, y: sy(v) + 3, textAnchor: 'end', fontSize: 8, fill: T.dim }, v)
+                'aria-describedby': 'pets-trainer-chart-desc',
+                style: { display: 'block', width: '100%', height: 'auto', minHeight: 150, background: T.bg, borderRadius: 8 }
+              },
+                h('title', null, 'Behavior probability and trust trajectory across 10 rounds'),
+                h('desc', { id: 'pets-trainer-chart-desc' }, chartDesc),
+                h('rect', { x: 0, y: 0, width: W, height: H, rx: 8, fill: T.bg }),
+                h('rect', {
+                  x: pad.l, y: pad.t,
+                  width: W - pad.l - pad.r, height: H - pad.t - pad.b,
+                  rx: 5, fill: '#111827', opacity: 0.48
+                }),
+                // Round grid, tick marks, and labels 1-10.
+                TR_MOMENTS.map(function(_, i) {
+                  return h('g', { key: 'round-' + i },
+                    h('line', {
+                      x1: sx(i), y1: pad.t, x2: sx(i), y2: H - pad.b,
+                      stroke: '#475569', strokeWidth: 1, opacity: 0.32
+                    }),
+                    h('line', {
+                      x1: sx(i), y1: H - pad.b, x2: sx(i), y2: H - pad.b + 5,
+                      stroke: '#94a3b8', strokeWidth: 1
+                    }),
+                    h('text', {
+                      x: sx(i), y: H - pad.b + 18,
+                      textAnchor: 'middle', fontSize: 11, fontWeight: 700, fill: T.muted
+                    }, String(i + 1))
                   );
                 }),
-                h('path', { d: probPath, fill: 'none', stroke: T.accent, strokeWidth: 2 }),
-                h('path', { d: trustPath, fill: 'none', stroke: '#7dd3fc', strokeWidth: 2, strokeDasharray: '4 3' }),
-                h('text', { x: W - pad.r, y: pad.t + 6, fontSize: 9, fill: T.accent, textAnchor: 'end' }, 'Behavior'),
-                h('text', { x: W - pad.r, y: pad.t + 18, fontSize: 9, fill: '#7dd3fc', textAnchor: 'end' }, 'Trust')
+                // Y-axis grid and explicit 0 / 50 / 100 percent ticks.
+                [0, 0.5, 1].map(function(v, i) {
+                  return h('g', { key: 'level-' + i },
+                    h('line', {
+                      x1: pad.l, y1: sy(v), x2: W - pad.r, y2: sy(v),
+                      stroke: '#64748b', strokeWidth: 1, strokeDasharray: v === 0 ? null : '3 5', opacity: 0.58
+                    }),
+                    h('line', {
+                      x1: pad.l - 5, y1: sy(v), x2: pad.l, y2: sy(v),
+                      stroke: '#94a3b8', strokeWidth: 1
+                    }),
+                    h('text', {
+                      x: pad.l - 9, y: sy(v) + 4,
+                      textAnchor: 'end', fontSize: 11, fontWeight: 700, fill: T.muted
+                    }, Math.round(v * 100) + '%')
+                  );
+                }),
+                // Goal thresholds stay visible behind the data.
+                h('g', null,
+                  h('line', {
+                    x1: pad.l, y1: sy(0.8), x2: W - pad.r, y2: sy(0.8),
+                    stroke: '#7dd3fc', strokeWidth: 2, strokeDasharray: '8 6', opacity: 0.72,
+                    vectorEffect: 'non-scaling-stroke'
+                  }),
+                  h('rect', {
+                    x: W - pad.r - 103, y: sy(0.8) - 17, width: 98, height: 16, rx: 8,
+                    fill: T.bg, fillOpacity: 0.9, stroke: '#7dd3fc', strokeOpacity: 0.5
+                  }),
+                  h('text', {
+                    x: W - pad.r - 54, y: sy(0.8) - 5,
+                    textAnchor: 'middle', fontSize: 10, fontWeight: 800, fill: '#bae6fd'
+                  }, 'Trust goal 80%')
+                ),
+                h('g', null,
+                  h('line', {
+                    x1: pad.l, y1: sy(0.7), x2: W - pad.r, y2: sy(0.7),
+                    stroke: T.accent, strokeWidth: 2, strokeDasharray: '8 6', opacity: 0.72,
+                    vectorEffect: 'non-scaling-stroke'
+                  }),
+                  h('rect', {
+                    x: pad.l + 6, y: sy(0.7) + 3, width: 113, height: 16, rx: 8,
+                    fill: T.bg, fillOpacity: 0.9, stroke: T.accent, strokeOpacity: 0.5
+                  }),
+                  h('text', {
+                    x: pad.l + 62, y: sy(0.7) + 15,
+                    textAnchor: 'middle', fontSize: 10, fontWeight: 800, fill: '#fde68a'
+                  }, 'Behavior goal 70%')
+                ),
+                h('line', {
+                  x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b,
+                  stroke: '#94a3b8', strokeWidth: 1.25
+                }),
+                h('line', {
+                  x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b,
+                  stroke: '#94a3b8', strokeWidth: 1.25
+                }),
+                h('path', {
+                  d: probPath, fill: 'none', stroke: T.accent, strokeWidth: 3,
+                  strokeLinecap: 'round', strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke'
+                }),
+                h('path', {
+                  d: trustPath, fill: 'none', stroke: '#7dd3fc', strokeWidth: 3,
+                  strokeDasharray: '7 5', strokeLinecap: 'round', strokeLinejoin: 'round',
+                  vectorEffect: 'non-scaling-stroke'
+                }),
+                // Every observation has a visible marker, not just a line segment.
+                chartPoints.map(function(pt, i) {
+                  return h('g', { key: 'point-' + i },
+                    h('circle', {
+                      cx: sx(i), cy: sy(pt.prob), r: 4.7,
+                      fill: T.bg, stroke: T.accent, strokeWidth: 2.5,
+                      vectorEffect: 'non-scaling-stroke'
+                    }),
+                    h('circle', {
+                      cx: sx(i), cy: sy(pt.trust), r: 3.8,
+                      fill: '#7dd3fc', stroke: T.bg, strokeWidth: 1.8,
+                      vectorEffect: 'non-scaling-stroke'
+                    })
+                  );
+                }),
+                h('g', { transform: 'translate(' + (pad.l + 8) + ' 14)' },
+                  h('line', { x1: 0, y1: 0, x2: 24, y2: 0, stroke: T.accent, strokeWidth: 3, strokeLinecap: 'round' }),
+                  h('circle', { cx: 12, cy: 0, r: 3.5, fill: T.bg, stroke: T.accent, strokeWidth: 2 }),
+                  h('text', { x: 31, y: 4, fontSize: 11, fontWeight: 800, fill: T.accentHi }, 'Behavior'),
+                  h('line', { x1: 112, y1: 0, x2: 136, y2: 0, stroke: '#7dd3fc', strokeWidth: 3, strokeDasharray: '6 4', strokeLinecap: 'round' }),
+                  h('circle', { cx: 124, cy: 0, r: 3.5, fill: '#7dd3fc', stroke: T.bg, strokeWidth: 1.5 }),
+                  h('text', { x: 143, y: 4, fontSize: 11, fontWeight: 800, fill: '#7dd3fc' }, 'Trust')
+                ),
+                h('text', {
+                  x: (pad.l + W - pad.r) / 2, y: H - 7,
+                  textAnchor: 'middle', fontSize: 11, fontWeight: 800, fill: T.dim
+                }, 'Round'),
+                h('text', {
+                  x: 14, y: H / 2,
+                  textAnchor: 'middle', fontSize: 10, fontWeight: 800, fill: T.dim,
+                  transform: 'rotate(-90 14 ' + (H / 2) + ')'
+                }, 'Probability / trust')
               )
-            ),
-            h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+            ),            h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
               h('button', { 'data-pets-focusable': true,
                 onClick: newTrSim,
                 style: btnPrimary({ padding: '10px 18px', fontSize: 13 })
@@ -2550,6 +3679,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           { id: 'correct', label: '❌ Verbal correction ("no!")', desc: 'Punishment' }
         ];
         return h('div', null,
+          renderTrainerStage(moment, thisChoice, revealed, probPct, trustPct),
           // Status bars
           h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, marginBottom: 12 } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: T.dim, marginBottom: 4 } },
@@ -2577,7 +3707,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             responseBtns.map(function(b) {
               var isPicked = revealed && thisChoice.rxn === b.id;
               return h('button', {
-                key: b.id, role: 'radio', 'aria-checked': isPicked ? 'true' : 'false',
+                key: b.id, className: 'petslab-sim-choice', role: 'radio', 'aria-checked': isPicked ? 'true' : 'false',
                 'data-pets-focusable': true,
                 disabled: revealed,
                 onClick: function() { pickResponse(b.id); },
@@ -2938,7 +4068,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     // DOMESTICATION & BREEDING
     // ─────────────────────────────────────────
     function renderGenetics() {
-      return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+      return h('div', { className: 'petslab-genetics-view', style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
         backBar('🧬 Domestication & Breeding'),
         h('div', { style: { padding: 14, borderRadius: 12, background: T.cardAlt, border: '1px solid ' + T.accent, marginBottom: 14 } },
           h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, 'This tile owns artificial selection'),
@@ -3036,10 +4166,73 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           function phenotype(b1, b2, e1, e2) {
             // Order by dominant first
             var hasE = (e1 === 'E' || e2 === 'E');
-            if (!hasE) return { color: 'Yellow', hex: '#fbbf24', text: '#1f1612' };
+            if (!hasE) return {
+              color: 'Yellow', hex: '#fbbf24', text: '#1f1612', marker: 'YLW',
+              coat: '#d9ad55', coatHi: '#f4d990', coatShadow: '#9b6f2d', nose: '#4b2c1b'
+            };
             var hasB = (b1 === 'B' || b2 === 'B');
-            if (hasB) return { color: 'Black', hex: '#1f2937', text: '#fef3c7' };
-            return { color: 'Chocolate', hex: '#78350f', text: '#fef3c7' };
+            if (hasB) return {
+              color: 'Black', hex: '#1f2937', text: '#fef3c7', marker: 'BLK',
+              coat: '#242c38', coatHi: '#4b5868', coatShadow: '#10151d', nose: '#05070a'
+            };
+            return {
+              color: 'Chocolate', hex: '#78350f', text: '#fef3c7', marker: 'CHO',
+              coat: '#713c20', coatHi: '#a9673f', coatShadow: '#402012', nose: '#24120d'
+            };
+          }
+          function renderLabPortrait(ph, parentNum) {
+            var gradientId = 'pets-lab-coat-' + parentNum;
+            return h('svg', {
+              className: 'petslab-lab-portrait',
+              viewBox: '0 0 120 108',
+              role: 'img',
+              'aria-label': 'Parent ' + parentNum + ', ' + ph.color + ' Labrador portrait',
+              focusable: 'false'
+            },
+              h('defs', null,
+                h('linearGradient', { id: gradientId, x1: '18%', y1: '8%', x2: '84%', y2: '94%' },
+                  h('stop', { offset: '0%', stopColor: ph.coatHi }),
+                  h('stop', { offset: '48%', stopColor: ph.coat }),
+                  h('stop', { offset: '100%', stopColor: ph.coatShadow })
+                )
+              ),
+              h('circle', { cx: 60, cy: 54, r: 50, fill: 'rgba(245,158,11,0.11)', stroke: 'rgba(245,158,11,0.28)', strokeWidth: 2 }),
+              h('path', { d: 'M26 38 C10 29 10 61 28 73 C34 65 36 50 35 41 Z', fill: ph.coatShadow }),
+              h('path', { d: 'M94 38 C110 29 110 61 92 73 C86 65 84 50 85 41 Z', fill: ph.coatShadow }),
+              h('path', { d: 'M15 108 C18 83 34 76 60 76 C86 76 102 83 105 108 Z', fill: 'url(#' + gradientId + ')' }),
+              h('ellipse', { cx: 60, cy: 54, rx: 34, ry: 38, fill: 'url(#' + gradientId + ')' }),
+              h('path', { d: 'M36 48 C41 42 49 41 53 47', fill: 'none', stroke: ph.coatShadow, strokeWidth: 2.5, strokeLinecap: 'round' }),
+              h('path', { d: 'M67 47 C72 41 80 42 84 48', fill: 'none', stroke: ph.coatShadow, strokeWidth: 2.5, strokeLinecap: 'round' }),
+              h('circle', { cx: 46, cy: 51, r: 3.5, fill: '#20130d' }),
+              h('circle', { cx: 74, cy: 51, r: 3.5, fill: '#20130d' }),
+              h('circle', { cx: 47, cy: 50, r: 1, fill: '#ffffff' }),
+              h('circle', { cx: 75, cy: 50, r: 1, fill: '#ffffff' }),
+              h('ellipse', { cx: 60, cy: 68, rx: 22, ry: 16, fill: ph.coatHi, opacity: 0.92 }),
+              h('path', { d: 'M51 63 Q60 57 69 63 Q68 71 60 72 Q52 71 51 63 Z', fill: ph.nose }),
+              h('path', { d: 'M60 72 L60 77 M60 77 Q53 82 48 77 M60 77 Q67 82 72 77', fill: 'none', stroke: ph.coatShadow, strokeWidth: 2, strokeLinecap: 'round' }),
+              h('path', { d: 'M31 86 Q60 99 89 86', fill: 'none', stroke: '#f59e0b', strokeWidth: 5, strokeLinecap: 'round' }),
+              h('circle', { cx: 60, cy: 94, r: 4, fill: '#fbbf24', stroke: '#5b3408', strokeWidth: 1.5 })
+            );
+          }
+          function renderAlleleLocus(label, alleles) {
+            return h('div', { className: 'petslab-allele-locus' },
+              h('span', { className: 'petslab-allele-locus-name' }, label),
+              h('div', {
+                className: 'petslab-allele-chips',
+                role: 'list',
+                'aria-label': label + ' alleles: ' + alleles.join(' and ')
+              },
+                alleles.map(function(allele, alleleIndex) {
+                  var dominant = allele === allele.toUpperCase();
+                  return h('span', {
+                    key: alleleIndex,
+                    role: 'listitem',
+                    className: 'petslab-allele-chip' + (dominant ? ' petslab-allele-chip--dominant' : ''),
+                    'aria-label': (dominant ? 'dominant ' : 'recessive ') + allele + ' allele'
+                  }, allele);
+                })
+              )
+            );
           }
           // Sort genotype letters so 'BB' / 'Bb' (not 'bB')
           function sortAlleles(a, b) {
@@ -3075,7 +4268,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             { id: 'Bbee', label: 'Bbee — Yellow (B hidden by ee)' },
             { id: 'bbee', label: 'bbee — Yellow with brown pigment (nose, eye rims)' }
           ];
-          return h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent, marginBottom: 14 } },
+          return h('div', { className: 'petslab-punnett-lab', style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent, marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.accentHi } }, '🧪 Punnett square: Labrador coat color (B/b · E/e)'),
             h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
               'Two genes determine Lab color. ',
@@ -3085,12 +4278,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               h('strong', { style: { color: T.text } }, 'ee'), ' masks pigment so the dog is yellow regardless of B/b. Pick two parents to see all 16 possible offspring genotypes and the resulting phenotype ratio.'
             ),
             // Parent pickers
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, marginBottom: 14 } },
+            h('div', { className: 'petslab-gene-parent-grid' },
               ['1', '2'].map(function(num) {
                 var key = num === '1' ? 'geneP1' : 'geneP2';
                 var val = num === '1' ? pa1 : pa2;
                 var ph = phenotype(val[0], val[1], val[2], val[3]);
-                return h('div', { key: num },
+                return h('div', { key: num, className: 'petslab-gene-parent-card' },
                   h('label', { htmlFor: 'pets-gene-p' + num, style: { display: 'block', fontSize: 11, fontWeight: 700, color: T.dim, marginBottom: 4 } }, 'Parent ' + num),
                   h('select', {
                     id: 'pets-gene-p' + num,
@@ -3103,15 +4296,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                       return h('option', { key: opt.id, value: opt.id }, opt.label);
                     })
                   ),
-                  h('div', { style: { marginTop: 6, padding: '6px 10px', borderRadius: 6, background: ph.hex, color: ph.text, fontSize: 11, fontWeight: 700, textAlign: 'center' } },
-                    ph.color + ' Lab'
+                  h('div', { className: 'petslab-gene-parent-visual' },
+                    renderLabPortrait(ph, num),
+                    h('div', { className: 'petslab-parent-summary' },
+                      h('div', {
+                        className: 'petslab-coat-swatch',
+                        role: 'img',
+                        'aria-label': ph.color + ' Labrador coat swatch',
+                        style: {
+                          background: 'linear-gradient(135deg,' + ph.coatHi + ',' + ph.coat + ' 55%,' + ph.coatShadow + ')',
+                          color: ph.text
+                        }
+                      },
+                        h('span', { className: 'petslab-coat-swatch-mark', 'aria-hidden': 'true' }, ph.marker),
+                        h('span', null, ph.color + ' Lab coat')
+                      ),
+                      h('div', { className: 'petslab-allele-loci' },
+                        renderAlleleLocus('B locus', [val[0], val[1]]),
+                        renderAlleleLocus('E locus', [val[2], val[3]])
+                      ),
+                      h('div', { className: 'petslab-gene-key' },
+                        'Uppercase chips are dominant; lowercase chips are recessive.'
+                      )
+                    )
                   )
                 );
               })
             ),
             // Punnett grid
-            h('div', { style: { overflowX: 'auto' } },
-              h('table', { style: { width: '100%', maxWidth: 540, margin: '0 auto', borderCollapse: 'collapse', fontFamily: 'monospace' },
+            h('div', {
+              className: 'petslab-punnett-scroll',
+              role: 'region',
+              'aria-label': 'Scrollable Punnett square',
+              tabIndex: 0
+            },
+              h('table', { className: 'petslab-punnett-table',
                 'aria-label': 'Punnett square 4 by 4 grid showing 16 offspring genotypes and phenotypes' },
                 h('thead', null,
                   h('tr', null,
@@ -3124,15 +4343,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                 h('tbody', null,
                   grid.map(function(row, ri) {
                     return h('tr', { key: ri },
-                      h('td', { style: { padding: 6, color: T.accentHi, fontSize: 12, fontWeight: 800, background: T.cardAlt, border: '1px solid ' + T.border, textAlign: 'center' } }, g1[ri]),
+                      h('th', { scope: 'row', style: { padding: 6, color: T.accentHi, fontSize: 12, fontWeight: 800, background: T.cardAlt, border: '1px solid ' + T.border, textAlign: 'center' } }, g1[ri]),
                       row.map(function(cell, ci) {
-                        return h('td', { key: ci, style: {
+                        return h('td', {
+                          key: ci,
+                          className: 'petslab-punnett-cell',
+                          'data-phenotype': cell.pheno.color.toLowerCase(),
+                          'aria-label': cell.geno + ', ' + cell.pheno.color + ' coat phenotype',
+                          style: {
                           padding: 6, border: '1px solid ' + T.border,
                           background: cell.pheno.hex, color: cell.pheno.text,
-                          textAlign: 'center', fontSize: 12, fontWeight: 700, minWidth: 70
+                          textAlign: 'center', fontSize: 12, fontWeight: 700
                         } },
-                          h('div', null, cell.geno),
-                          h('div', { style: { fontSize: 10, fontWeight: 500, marginTop: 2, opacity: 0.85 } }, cell.pheno.color)
+                          h('div', { className: 'petslab-cell-genotype' }, cell.geno),
+                          h('div', { className: 'petslab-cell-phenotype' },
+                            h('span', { className: 'petslab-phenotype-shape', 'aria-hidden': 'true' }, cell.pheno.marker),
+                            h('span', null, cell.pheno.color)
+                          )
                         );
                       })
                     );
@@ -3141,17 +4368,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               )
             ),
             // Phenotype ratios
-            h('div', { style: { marginTop: 14, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 } },
-              ['Black', 'Chocolate', 'Yellow'].map(function(color, i) {
-                var ph = phenotype(color === 'Black' ? 'B' : 'b', color === 'Black' ? 'B' : 'b',
-                                   color === 'Yellow' ? 'e' : 'E', color === 'Yellow' ? 'e' : 'E');
-                var pct = (counts[color] / 16 * 100).toFixed(0);
-                return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: ph.hex, color: ph.text, textAlign: 'center' } },
-                  h('div', { style: { fontSize: 11, fontWeight: 700, opacity: 0.85 } }, color),
-                  h('div', { style: { fontSize: 22, fontWeight: 800 } }, counts[color] + '/16'),
-                  h('div', { style: { fontSize: 11, opacity: 0.85 } }, pct + '%')
-                );
-              })
+            h('div', { className: 'petslab-outcome' },
+              h('div', { className: 'petslab-outcome-heading' },
+                h('strong', null, 'Phenotype outcomes'),
+                h('span', null, '16 equally likely offspring combinations')
+              ),
+              h('div', {
+                className: 'petslab-outcome-bar',
+                role: 'img',
+                'aria-label': 'Phenotype outcomes: ' + counts.Black + ' black, ' +
+                  counts.Chocolate + ' chocolate, and ' + counts.Yellow + ' yellow, out of 16'
+              },
+                ['Black', 'Chocolate', 'Yellow'].map(function(color) {
+                  var count = counts[color];
+                  if (!count) return null;
+                  var pct = (count / 16 * 100).toFixed(0);
+                  var ph = phenotype(color === 'Black' ? 'B' : 'b', color === 'Black' ? 'B' : 'b',
+                                     color === 'Yellow' ? 'e' : 'E', color === 'Yellow' ? 'e' : 'E');
+                  return h('div', {
+                    key: color,
+                    className: 'petslab-outcome-segment petslab-outcome-segment--' + color.toLowerCase(),
+                    'aria-hidden': 'true',
+                    style: { flex: '0 0 ' + (count / 16 * 100) + '%' }
+                  }, count >= 2 ? ph.marker + ' ' + pct + '%' : ph.marker);
+                })
+              ),
+              h('div', {
+                className: 'petslab-outcome-legend',
+                role: 'list',
+                'aria-label': 'Phenotype outcome legend'
+              },
+                ['Black', 'Chocolate', 'Yellow'].map(function(color) {
+                  var ph = phenotype(color === 'Black' ? 'B' : 'b', color === 'Black' ? 'B' : 'b',
+                                     color === 'Yellow' ? 'e' : 'E', color === 'Yellow' ? 'e' : 'E');
+                  var pct = (counts[color] / 16 * 100).toFixed(0);
+                  return h('div', {
+                    key: color,
+                    role: 'listitem',
+                    className: 'petslab-outcome-card',
+                    style: { background: ph.hex, color: ph.text }
+                  },
+                    h('div', { className: 'petslab-outcome-card-label' },
+                      h('span', { className: 'petslab-phenotype-shape', 'aria-hidden': 'true' }, ph.marker),
+                      h('span', null, color)
+                    ),
+                    h('div', { className: 'petslab-outcome-card-count' }, counts[color] + '/16'),
+                    h('div', { className: 'petslab-outcome-card-pct' }, pct + '%')
+                  );
+                })
+              )
             ),
             // Teaching note tied to the current cross
             h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: T.cardAlt, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
@@ -3417,9 +4682,191 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         experience: pickExperience
       };
       var scored = candidates.map(function(c) {
-        return { id: c.id, name: c.name, icon: c.icon, score: c.fit(inputs), note: c.note };
+        var score = c.fit(inputs);
+        return { id: c.id, name: c.name, icon: c.icon, score: score, note: c.note,
+          reasons: pickerReasonCues(c.id, inputs, score) };
       }).sort(function(a, b) { return b.score - a.score; });
 
+      function pickerReasonCues(candidateId, o, expectedScore) {
+        var factors = [];
+        function add(label, delta) {
+          if (delta) factors.push({ label: label, delta: delta });
+        }
+        if (candidateId === 'dog-large') {
+          if (o.housing === 'house') add('House selected', 3);
+          else if (o.housing === 'apartment') add('Apartment selected', -2);
+          if (o.hours <= 4) add(o.hours + ' hr alone', 2);
+          else if (o.hours <= 8) add(o.hours + ' hr alone', 1);
+          else add(o.hours + ' hr alone', -1);
+          if (o.experience === 'lots') add('Experienced selection', 2);
+          else if (o.experience === 'some') add('Some experience', 1);
+          if (o.budget === 'low') add('Low budget', -2);
+          if (o.allergies) add('Allergies selected', -2);
+        } else if (candidateId === 'dog-small') {
+          add(o.housing === 'apartment' ? 'Apartment selected' : 'Non-apartment setting', o.housing === 'apartment' ? 2 : 1);
+          if (o.hours <= 6) add(o.hours + ' hr alone', 2);
+          if (o.experience === 'first') add('First-time selection', 1);
+          if (o.budget === 'low') add('Low budget', -1);
+          if (o.allergies) add('Allergies selected', -2);
+          if (o.kids) add('Children at home', -1);
+        } else if (candidateId === 'cat') {
+          add('Base score', 2);
+          if (o.housing === 'apartment') add('Apartment selected', 1);
+          if (o.hours >= 6) add(o.hours + ' hr alone', 1);
+          if (o.experience === 'first') add('First-time selection', 1);
+          if (o.budget === 'low') add('Low budget', 1);
+          if (o.allergies) add('Allergies selected', -3);
+        } else if (candidateId === 'rabbit-pair') {
+          add(o.housing === 'house' ? 'House selected' : 'Non-house setting', o.housing === 'house' ? 2 : 1);
+          if (o.experience === 'first') add('First-time selection', -1);
+          if (o.budget === 'low') add('Low budget', -2);
+          if (o.kids && o.kidAge < 8) add('Youngest child under 8', -2);
+        } else if (candidateId === 'guinea-pair') {
+          add('Base score', 1);
+          if (o.experience !== 'lots') add('First/some experience', 1);
+          if (o.kids) add('Children at home', 1);
+        } else if (candidateId === 'reptile-beginner') {
+          if (o.housing === 'apartment') add('Apartment selected', 1);
+          if (o.allergies) add('Allergies selected', 2);
+          if (o.kids && o.kidAge < 5) add('Youngest child under 5', -3);
+          if (o.experience === 'first') add('First-time selection', -1);
+        } else if (candidateId === 'fish-tank') {
+          add('Base score', 1);
+          if (o.allergies) add('Allergies selected', 2);
+          if (o.budget === 'low') add('Low budget', -1);
+        } else if (candidateId === 'cockatiel') {
+          if (o.hours <= 6) add(o.hours + ' hr alone', 1);
+          if (o.budget === 'low') add('Low budget', -1);
+          if (o.allergies) add('Allergies selected', -1);
+          if (o.experience !== 'first') add('Some/lots experience', 1);
+        }
+        var total = factors.reduce(function(sum, factor) { return sum + factor.delta; }, 0);
+        if (total !== expectedScore) {
+          return [{ label: 'Current computed score', delta: expectedScore }];
+        }
+        factors.sort(function(a, b) {
+          return Math.abs(b.delta) - Math.abs(a.delta);
+        });
+        return factors.length ? factors : [{ label: 'No input bonus or penalty', delta: 0 }];
+      }
+
+      function renderPickerSilhouette(candidate) {
+        var id = candidate.id;
+        var titleId = 'pets-picker-silhouette-' + id + '-title';
+        var descId = 'pets-picker-silhouette-' + id + '-desc';
+        var drawing;
+        if (id === 'dog-large' || id === 'dog-small') {
+          var smallDog = id === 'dog-small';
+          drawing = h('g', { transform: smallDog ? 'translate(18 16) scale(.82)' : null },
+            h('ellipse', { cx: 94, cy: 55, rx: 48, ry: 25 }),
+            h('circle', { cx: 47, cy: 43, r: 22 }),
+            h('path', { d: 'M 34 29 L 29 7 L 48 25 Z M 53 27 L 67 10 L 68 36 Z' }),
+            h('path', { d: 'M 130 49 Q 166 26 169 45', fill: 'none', stroke: 'currentColor', strokeWidth: 12, strokeLinecap: 'round' }),
+            h('path', { d: 'M 66 70 L 62 97 M 92 73 L 91 99 M 115 71 L 120 98', fill: 'none', stroke: 'currentColor', strokeWidth: 10, strokeLinecap: 'round' }),
+            h('circle', { cx: 41, cy: 40, r: 3, fill: '#172033' })
+          );
+        } else if (id === 'cat') {
+          drawing = h('g', null,
+            h('ellipse', { cx: 96, cy: 61, rx: 48, ry: 25 }),
+            h('circle', { cx: 53, cy: 43, r: 22 }),
+            h('path', { d: 'M 37 29 L 39 8 L 51 27 Z M 57 27 L 69 8 L 72 33 Z' }),
+            h('path', { d: 'M 135 60 Q 170 45 158 15 Q 153 5 164 6', fill: 'none', stroke: 'currentColor', strokeWidth: 11, strokeLinecap: 'round' }),
+            h('path', { d: 'M 70 76 L 68 97 M 100 77 L 104 98', fill: 'none', stroke: 'currentColor', strokeWidth: 9, strokeLinecap: 'round' }),
+            h('circle', { cx: 47, cy: 41, r: 3, fill: '#172033' })
+          );
+        } else if (id === 'rabbit-pair') {
+          drawing = h('g', null,
+            h('ellipse', { cx: 104, cy: 65, rx: 48, ry: 27 }),
+            h('circle', { cx: 58, cy: 51, r: 22 }),
+            h('ellipse', { cx: 47, cy: 20, rx: 9, ry: 27, transform: 'rotate(-12 47 20)' }),
+            h('ellipse', { cx: 67, cy: 19, rx: 9, ry: 28, transform: 'rotate(9 67 19)' }),
+            h('circle', { cx: 150, cy: 57, r: 12 }),
+            h('circle', { cx: 52, cy: 48, r: 3, fill: '#172033' }),
+            h('path', { d: 'M 75 82 L 63 96 M 119 83 L 139 94', fill: 'none', stroke: 'currentColor', strokeWidth: 10, strokeLinecap: 'round' })
+          );
+        } else if (id === 'guinea-pair') {
+          drawing = h('g', null,
+            h('ellipse', { cx: 92, cy: 62, rx: 61, ry: 32 }),
+            h('circle', { cx: 45, cy: 49, r: 22 }),
+            h('circle', { cx: 36, cy: 28, r: 10 }),
+            h('circle', { cx: 50, cy: 45, r: 3, fill: '#172033' }),
+            h('path', { d: 'M 43 80 L 40 96 M 104 85 L 111 98', fill: 'none', stroke: 'currentColor', strokeWidth: 9, strokeLinecap: 'round' })
+          );
+        } else if (id === 'reptile-beginner') {
+          drawing = h('g', null,
+            h('ellipse', { cx: 85, cy: 58, rx: 45, ry: 17 }),
+            h('circle', { cx: 38, cy: 54, r: 15 }),
+            h('path', { d: 'M 127 58 Q 156 58 171 35', fill: 'none', stroke: 'currentColor', strokeWidth: 11, strokeLinecap: 'round' }),
+            h('path', { d: 'M 65 67 L 47 88 M 77 68 L 92 90 M 103 66 L 118 86', fill: 'none', stroke: 'currentColor', strokeWidth: 7, strokeLinecap: 'round' }),
+            h('circle', { cx: 34, cy: 51, r: 2.5, fill: '#172033' })
+          );
+        } else if (id === 'fish-tank') {
+          drawing = h('g', null,
+            h('ellipse', { cx: 87, cy: 57, rx: 49, ry: 29 }),
+            h('path', { d: 'M 130 57 L 171 29 L 168 85 Z' }),
+            h('path', { d: 'M 82 30 L 105 12 L 111 38 Z M 81 83 L 107 99 L 111 75 Z' }),
+            h('circle', { cx: 61, cy: 51, r: 4, fill: '#172033' }),
+            h('circle', { cx: 36, cy: 26, r: 6, fill: 'none', stroke: 'currentColor', strokeWidth: 3 }),
+            h('circle', { cx: 24, cy: 10, r: 4, fill: 'none', stroke: 'currentColor', strokeWidth: 3 })
+          );
+        } else {
+          drawing = h('g', null,
+            h('path', { d: 'M 38 88 H 164', fill: 'none', stroke: 'currentColor', strokeWidth: 8, strokeLinecap: 'round' }),
+            h('ellipse', { cx: 98, cy: 54, rx: 36, ry: 39 }),
+            h('circle', { cx: 64, cy: 34, r: 21 }),
+            h('path', { d: 'M 47 31 L 20 43 L 48 49 Z' }),
+            h('path', { d: 'M 122 62 L 157 96 L 118 84 Z' }),
+            h('path', { d: 'M 59 17 L 50 2 M 67 15 L 68 0 M 74 18 L 84 4', fill: 'none', stroke: 'currentColor', strokeWidth: 5, strokeLinecap: 'round' }),
+            h('path', { d: 'M 83 84 L 81 91 M 104 84 L 107 91', fill: 'none', stroke: 'currentColor', strokeWidth: 4 }),
+            h('circle', { cx: 59, cy: 31, r: 3, fill: '#172033' })
+          );
+        }
+        return h('svg', {
+          viewBox: '0 0 180 110',
+          role: 'img',
+          focusable: 'false',
+          'aria-labelledby': titleId + ' ' + descId
+        },
+          h('title', { id: titleId }, 'Top match: ' + candidate.name),
+          h('desc', { id: descId }, 'Simplified ' + candidate.name + ' silhouette highlighting the current top-ranked match.'),
+          h('g', { fill: 'currentColor', stroke: '#3b2419', strokeWidth: 2, strokeLinejoin: 'round' }, drawing)
+        );
+      }
+
+      function renderPickerFitBar(candidate) {
+        var minScore = -7, maxScore = 7, threshold = 2;
+        var clamped = Math.max(minScore, Math.min(maxScore, candidate.score));
+        var markerPct = 5 + ((clamped - minScore) / (maxScore - minScore)) * 90;
+        var zeroPct = 50;
+        var thresholdPct = 5 + ((threshold - minScore) / (maxScore - minScore)) * 90;
+        var segmentLeft = Math.min(markerPct, zeroPct);
+        var segmentWidth = Math.abs(markerPct - zeroPct);
+        var signedScore = candidate.score > 0 ? '+' + candidate.score : String(candidate.score);
+        return h('div', {
+          className: 'petslab-picker-fit',
+          role: 'img',
+          'aria-label': candidate.name + ' fit score ' + signedScore +
+            ' on a scale from minus 7 to plus 7. Zero is neutral. Plus 2 is the good-fit threshold.'
+        },
+          h('div', { className: 'petslab-picker-fit-key', 'aria-hidden': 'true' },
+            '0 = neutral  |  +2 = good-fit threshold'),
+          h('div', { className: 'petslab-picker-fit-track', 'aria-hidden': 'true' },
+            h('span', { className: 'petslab-picker-fit-zero', style: { left: zeroPct + '%' } }),
+            h('span', { className: 'petslab-picker-fit-threshold', style: { left: thresholdPct + '%' } }),
+            h('span', {
+              className: 'petslab-picker-fit-segment' + (candidate.score < 0 ? ' is-negative' : ''),
+              style: { left: segmentLeft + '%', width: segmentWidth + '%' }
+            }),
+            h('span', { className: 'petslab-picker-fit-marker', style: { left: markerPct + '%' } },
+              h('span', { className: 'petslab-picker-fit-value' }, signedScore)
+            )
+          ),
+          h('div', { className: 'petslab-picker-fit-ends', 'aria-hidden': 'true' },
+            h('span', null, '-7 less fit'),
+            h('span', null, '+7 stronger fit')
+          )
+        );
+      }
       function radio(name, val, current, label, onChange) {
         var picked = current === val;
         return h('label', { htmlFor: 'pp-' + name + '-' + val,
@@ -3483,18 +4930,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             radio('exp', 'first', pickExperience, 'First-time owner', function(v) { upd('pickExperience', v); }),
             radio('exp', 'some', pickExperience, 'Some experience', function(v) { upd('pickExperience', v); }),
             radio('exp', 'lots', pickExperience, 'Experienced (multiple species)', function(v) { upd('pickExperience', v); }))),
-        h('div', { style: { padding: 14, borderRadius: 12, background: T.cardAlt, border: '1px solid ' + T.accent, marginBottom: 14 } },
-          h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, '🎯 Your matches'),
-          scored.slice(0, 5).map(function(s, i) {
-            var color = i === 0 ? T.accent : i < 3 ? T.accentHi : T.dim;
-            var label = i === 0 ? 'TOP MATCH' : (s.score >= 2 ? 'good' : s.score >= 0 ? 'consider' : 'probably not');
-            return h('div', { key: s.id, style: { padding: 10, borderRadius: 8, background: T.card, border: '1px solid ' + T.border, marginBottom: 8 } },
-              h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
-                h('span', { 'aria-hidden': 'true', style: { fontSize: 20 } }, s.icon),
-                h('strong', { style: { color: color, fontSize: 14, flex: 1 } }, s.name),
-                h('span', { style: { fontSize: 10, color: color, fontFamily: 'monospace', fontWeight: 700 } }, label + ' · ' + s.score)),
-              h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.55 } }, s.note));
-          })),
+        h('section', {
+          className: 'petslab-picker-results',
+          role: 'region',
+          'aria-labelledby': 'pets-picker-results-title'
+        },
+          h('div', { className: 'petslab-picker-results-head' },
+            h('h3', { id: 'pets-picker-results-title' }, '\uD83C\uDFAF Your matches'),
+            h('div', { className: 'petslab-picker-scale-copy' }, 'Fixed fit scale: -7 to +7')),
+          h('ol', { className: 'petslab-picker-list' },
+            scored.slice(0, 5).map(function(s, i) {
+              var isTopScore = s.score === scored[0].score;
+              var topScoreIsTied = scored.length > 1 && scored[1].score === scored[0].score;
+              var label = isTopScore
+                ? (topScoreIsTied ? 'TIED TOP' : 'TOP MATCH')
+                : (s.score >= 2 ? 'good' : (s.score >= 0 ? 'consider' : 'probably not'));
+              return h('li', {
+                key: s.id,
+                className: 'petslab-picker-card' + (i === 0 ? ' petslab-picker-card--top' : ''),
+                'aria-label': 'Rank ' + (i + 1) + ': ' + s.name + '. ' + label + '. Fit score ' + s.score + '.'
+              },
+                i === 0 && h('div', { className: 'petslab-picker-top-art' }, renderPickerSilhouette(s)),
+                h('div', { className: 'petslab-picker-card-main' },
+                  h('div', { className: 'petslab-picker-card-head' },
+                    h('span', { className: 'petslab-picker-rank', 'aria-hidden': 'true' }, String(i + 1)),
+                    h('span', { style: { display: 'flex', alignItems: 'center', gap: 7, minWidth: 0 } },
+                      h('span', { className: 'petslab-picker-icon', 'aria-hidden': 'true' }, s.icon),
+                      h('strong', { className: 'petslab-picker-name' }, s.name)),
+                    h('span', { className: 'petslab-picker-status' }, label + ' \u00b7 ' + s.score)),
+                  renderPickerFitBar(s),
+                  h('ul', { className: 'petslab-picker-reasons', 'aria-label': 'All score factors for ' + s.name },
+                    (s.reasons || []).map(function(reason, reasonIndex) {
+                      var signed = reason.delta > 0 ? '+' + reason.delta : String(reason.delta);
+                      return h('li', {
+                        key: s.id + '-reason-' + reasonIndex,
+                        className: 'petslab-picker-reason' + (reason.delta < 0 ? ' is-negative' : '')
+                      },
+                        h('strong', null, signed),
+                        h('span', null, reason.label));
+                    })),
+                  h('div', { className: 'petslab-picker-note' }, s.note))
+              );
+            }))
+        ),
         h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '1px dashed ' + T.border } },
           h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 6 } }, '🤔 Honest checks before any pet'),
           h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.65 } },
@@ -3548,16 +5026,348 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         ]}
       ];
       // Flatten all signals for quiz mode
+      // Observable pose metadata drives the quiz illustration without changing
+      // the canonical signal or meaning text used by scoring and mastery.
+      var BODY_POSE_META = [
+        { pose: 'dog-relaxed', cues: [['Soft eyes', 176, 86], ['Loose stance', 300, 130], ['Mid-height tail', 430, 104]] },
+        { pose: 'dog-warning', cues: [['Hard stare', 176, 82], ['Stiff body', 306, 112], ['High slow tail', 430, 68]] },
+        { pose: 'dog-whale-eye', cues: [['Eye white visible', 174, 82], ['Head turns away', 200, 98], ['Body holds still', 320, 124]] },
+        { pose: 'dog-calming', cues: [['Head lowered', 188, 130], ['Quick tongue flick', 168, 151], ['Nose near ground', 145, 159]] },
+        { pose: 'dog-play-bow', cues: [['Front end low', 214, 146], ['Hindquarters high', 350, 94], ['Tail stays loose', 438, 83]] },
+        { pose: 'dog-fear', cues: [['Ears pinned back', 186, 105], ['Body carried low', 304, 143], ['Tail tucked under', 407, 145]] },
+        { pose: 'dog-belly', cues: [['Belly exposed', 306, 127], ['Limbs stay loose', 326, 87], ['Face stays soft', 187, 132]] },
+        { pose: 'dog-teeth', cues: [['Lips lifted', 159, 105], ['Hard direct gaze', 179, 84], ['Frozen stance', 312, 121]] },
+        { pose: 'cat-slow-blink', cues: [['Eyes half closed', 178, 82], ['Body stays loose', 302, 124], ['Tail rests softly', 428, 133]] },
+        { pose: 'cat-tail-up', cues: [['Tail held upright', 429, 54], ['Ears face forward', 179, 69], ['Easy walking stance', 304, 133]] },
+        { pose: 'cat-tail-flick', cues: [['Tail tip sweeps', 438, 106], ['Body grows tense', 306, 116], ['Ears track back', 181, 72]] },
+        { pose: 'cat-wide-pupils', cues: [['Pupils fill the eyes', 178, 84], ['Ears aim forward', 181, 67], ['Weight shifts ready', 304, 132]] },
+        { pose: 'cat-flat-ears', cues: [['Ears flatten sideways', 179, 73], ['Head draws low', 188, 93], ['Tail stays low', 430, 139]] },
+        { pose: 'cat-crouch', cues: [['Belly near floor', 307, 146], ['Tail wraps tightly', 373, 151], ['Head tucked down', 191, 126]] },
+        { pose: 'cat-knead', cues: [['Paws press in turn', 257, 151], ['Eyes remain soft', 181, 83], ['Body remains loose', 307, 119]] },
+        { pose: 'cat-meow', cues: [['Mouth opens toward you', 157, 103], ['Head faces the person', 181, 88], ['Tail stays neutral', 429, 127]] },
+        { pose: 'rabbit-binky', cues: [['All feet leave ground', 312, 145], ['Body twists midair', 306, 91], ['Ears stay loose', 190, 62]] },
+        { pose: 'rabbit-thump', cues: [['Rear foot strikes', 407, 151], ['Ears stand alert', 190, 55], ['Body braces', 306, 119]] },
+        { pose: 'rabbit-tooth-purr', cues: [['Tiny jaw motion', 166, 105], ['Eyes look soft', 181, 85], ['Body forms a loose loaf', 309, 126]] },
+        { pose: 'rabbit-tooth-grind', cues: [['Large jaw motion', 163, 111], ['Eyes pinch closed', 181, 86], ['Back stays hunched', 302, 103]] },
+        { pose: 'rabbit-flop', cues: [['Body lies on its side', 306, 137], ['Feet extend loosely', 390, 118], ['Ears rest on floor', 189, 137]] },
+        { pose: 'rabbit-hunched', cues: [['Back rounds tightly', 306, 94], ['Eyes stay closed', 181, 105], ['Food remains untouched', 448, 148]] },
+        { pose: 'bird-crest', cues: [['Crest feathers raised', 210, 52], ['Body feathers relaxed', 298, 112], ['Feet stay steady', 293, 151]] },
+        { pose: 'bird-eye-pin', cues: [['Pupil rapidly narrows', 194, 82], ['Head points forward', 202, 94], ['Body context stays visible', 304, 117]] },
+        { pose: 'bird-beak-grind', cues: [['Beak moves softly', 166, 103], ['Eye looks relaxed', 196, 83], ['Feet settle on perch', 292, 151]] },
+        { pose: 'bird-tail-bob', cues: [['Tail moves with each breath', 376, 145], ['Chest effort is visible', 291, 115], ['Feet grip the perch', 292, 151]] },
+        { pose: 'bird-feather-pluck', cues: [['Bare feather patch', 304, 111], ['Beak works at the wing', 257, 108], ['Loose feathers collect', 423, 157]] }
+      ];
       var allSignals = [];
       sets.forEach(function(g) {
         g.items.forEach(function(it) {
-          allSignals.push({ species: g.species, signal: it.signal, meaning: it.meaning, color: it.color });
+          var poseMeta = BODY_POSE_META[allSignals.length] || {
+            pose: 'body-neutral', cues: [['Head', 185, 82], ['Body', 305, 120], ['Tail or wings', 420, 125]]
+          };
+          allSignals.push({ species: g.species, signal: it.signal, meaning: it.meaning,
+            color: it.color, pose: poseMeta.pose, cues: poseMeta.cues });
         });
       });
       var blMode = d.blMode || 'read';
       // Quiz state
       var blQuiz = d.blQuiz || null;  // { idx, qs, answers, score }
       function setMode(m) { upd('blMode', m); petsAnnounce(m === 'quiz' ? 'Body language quiz mode' : 'Reference reading mode'); }
+      function bodySpeciesKey(species) {
+        var name = String(species || '');
+        if (name.indexOf('Cats') !== -1) return 'cat';
+        if (name.indexOf('Rabbits') !== -1) return 'rabbit';
+        if (name.indexOf('Birds') !== -1) return 'bird';
+        return 'dog';
+      }
+      function renderBodyLanguagePose(item, compact) {
+        var speciesKey = bodySpeciesKey(item && item.species);
+        var speciesLabel = speciesKey === 'cat' ? 'Cat'
+          : speciesKey === 'rabbit' ? 'Rabbit'
+          : speciesKey === 'bird' ? 'Bird'
+          : 'Dog';
+        var pose = item && item.pose;
+        var cues = item && item.cues;
+        if (!pose || !cues || !cues.length) {
+          for (var pi = 0; pi < allSignals.length; pi++) {
+            if (allSignals[pi].species === item.species && allSignals[pi].signal === item.signal) {
+              pose = allSignals[pi].pose;
+              cues = allSignals[pi].cues;
+              break;
+            }
+          }
+        }
+        pose = pose || (speciesKey + '-neutral');
+        cues = cues || [];
+        var safeId = ('pets-body-' + pose).replace(/[^a-z0-9_-]/gi, '-');
+        var titleId = safeId + '-title';
+        var descId = safeId + '-desc';
+        var cueSummary = cues.map(function(c, ci) {
+          return 'Cue ' + (ci + 1) + ': ' + c[0];
+        }).join('. ');
+        var commonStroke = '#2b1b14';
+        var ground = '#34445a';
+
+        function drawDog() {
+          var belly = pose === 'dog-belly';
+          var playBow = pose === 'dog-play-bow';
+          var fearful = pose === 'dog-fear';
+          var warning = pose === 'dog-warning' || pose === 'dog-teeth';
+          var whale = pose === 'dog-whale-eye';
+          var calming = pose === 'dog-calming';
+          if (belly) {
+            return h('g', null,
+              h('ellipse', { cx: 305, cy: 157, rx: 116, ry: 13, fill: '#0b1020', opacity: 0.34 }),
+              h('ellipse', { cx: 302, cy: 126, rx: 94, ry: 37, fill: '#c98a47', stroke: commonStroke, strokeWidth: 3, transform: 'rotate(7 302 126)' }),
+              h('ellipse', { cx: 302, cy: 119, rx: 60, ry: 25, fill: '#f0c98e', opacity: 0.9, transform: 'rotate(7 302 126)' }),
+              h('path', { className: 'petslab-body-motion--lift', d: 'M 270 108 Q 250 76 269 63 M 330 105 Q 350 73 370 66 M 277 140 Q 257 161 239 151 M 337 142 Q 360 160 378 147', fill: 'none', stroke: '#b87538', strokeWidth: 18, strokeLinecap: 'round' }),
+              h('path', { className: 'petslab-body-motion--sway', d: 'M 391 129 Q 447 112 455 139', fill: 'none', stroke: '#a96731', strokeWidth: 17, strokeLinecap: 'round' }),
+              h('circle', { cx: 190, cy: 132, r: 36, fill: '#d99a55', stroke: commonStroke, strokeWidth: 3 }),
+              h('path', { d: 'M 166 111 Q 137 109 148 141 Q 161 148 174 132 Z M 209 107 Q 235 103 229 134 Q 218 142 207 127 Z', fill: '#8d542d' }),
+              h('ellipse', { cx: 174, cy: 130, rx: 4, ry: 3, fill: commonStroke }),
+              h('path', { d: 'M 164 147 Q 185 158 203 144', fill: 'none', stroke: '#6f2d25', strokeWidth: 3, strokeLinecap: 'round' })
+            );
+          }
+          var bodyY = fearful ? 136 : playBow ? 105 : warning ? 110 : 119;
+          var headX = calming ? 174 : 183;
+          var headY = calming ? 137 : playBow ? 132 : fearful ? 116 : 91;
+          var tailD = fearful ? 'M 403 130 Q 431 150 409 158'
+            : warning ? 'M 404 103 Q 448 73 458 45'
+            : playBow ? 'M 405 101 Q 450 76 459 93'
+            : 'M 404 115 Q 451 96 458 116';
+          var tailClass = (pose === 'dog-relaxed' || playBow || warning) ? 'petslab-body-motion--sway' : '';
+          var earD = fearful
+            ? 'M 163 91 Q 136 100 150 124 Q 164 121 176 106 Z M 197 90 Q 225 99 213 122 Q 198 119 190 105 Z'
+            : warning
+              ? 'M 161 74 L 166 43 L 181 73 Z M 194 72 L 208 43 L 214 79 Z'
+              : 'M 160 73 Q 137 64 141 99 Q 154 112 170 94 Z M 199 70 Q 225 64 220 100 Q 207 111 194 93 Z';
+          var earTransform = (playBow || calming) ? 'translate(' + (headX - 183) + ' ' + (headY - 91) + ')' : null;
+          return h('g', null,
+            h('ellipse', { cx: 306, cy: 158, rx: 125, ry: 12, fill: '#0b1020', opacity: 0.32 }),
+            playBow
+              ? h('path', { d: 'M 218 126 Q 287 82 393 94 Q 411 98 410 116 Q 333 122 263 144 Z', fill: '#c98a47', stroke: commonStroke, strokeWidth: 3 })
+              : h('ellipse', { cx: 306, cy: bodyY, rx: 100, ry: fearful ? 30 : 39, fill: '#c98a47', stroke: commonStroke, strokeWidth: 3 }),
+            h('ellipse', { cx: 300, cy: bodyY + 9, rx: 58, ry: fearful ? 16 : 23, fill: '#efc58a', opacity: 0.72 }),
+            h('path', { d: playBow
+              ? 'M 237 132 L 218 158 M 267 137 L 257 160 M 358 119 L 370 157 M 390 113 L 406 156'
+              : fearful
+                ? 'M 248 146 L 240 160 M 286 148 L 282 160 M 347 146 L 351 160 M 383 141 L 391 158'
+                : 'M 242 ' + (bodyY + 22) + ' L 236 158 M 281 ' + (bodyY + 28) + ' L 279 158 M 350 ' + (bodyY + 27) + ' L 354 158 M 388 ' + (bodyY + 20) + ' L 395 158',
+              fill: 'none', stroke: '#b87538', strokeWidth: 17, strokeLinecap: 'round' }),
+            h('path', { className: tailClass, d: tailD, fill: 'none', stroke: '#a96731', strokeWidth: 17, strokeLinecap: 'round' }),
+            h('circle', { cx: headX, cy: headY, r: 38, fill: '#d99a55', stroke: commonStroke, strokeWidth: 3 }),
+            h('path', { d: earD, transform: earTransform, fill: '#8d542d', stroke: commonStroke, strokeWidth: 2, strokeLinejoin: 'round' }),
+            h('ellipse', { cx: headX - 21, cy: headY + 13, rx: 25, ry: 18, fill: '#efc89a' }),
+            whale
+              ? h('g', { className: 'petslab-body-motion--pulse' },
+                  h('ellipse', { cx: headX - 5, cy: headY - 8, rx: 13, ry: 8, fill: '#fff7ed', stroke: commonStroke, strokeWidth: 2 }),
+                  h('circle', { cx: headX - 12, cy: headY - 8, r: 4, fill: commonStroke })
+                )
+              : h('ellipse', { cx: headX - 7, cy: headY - 8, rx: warning ? 6 : 4, ry: warning ? 4 : 5, fill: commonStroke }),
+            h('ellipse', { cx: headX - 39, cy: headY + 13, rx: 7, ry: 5, fill: commonStroke }),
+            pose === 'dog-teeth'
+              ? h('g', null,
+                  h('path', { d: 'M 144 108 Q 163 118 180 106', fill: '#5f1f1f', stroke: commonStroke, strokeWidth: 2 }),
+                  h('path', { d: 'M 150 110 L 155 119 L 160 111 L 166 120 L 171 109', fill: '#fff7ed', stroke: commonStroke, strokeWidth: 1 })
+                )
+              : calming
+                ? h('g', { className: 'petslab-body-motion--pulse' },
+                    h('path', { d: 'M 145 151 Q 159 158 174 151', fill: 'none', stroke: '#6f2d25', strokeWidth: 3 }),
+                    h('path', { d: 'M 156 153 Q 153 169 165 164', fill: '#e88486', stroke: '#6f2d25', strokeWidth: 2 })
+                  )
+                : h('path', { d: warning ? 'M 154 108 L 177 108' : 'M 151 ' + (headY + 25) + ' Q 169 ' + (headY + 35) + ' 185 ' + (headY + 23), fill: 'none', stroke: '#6f2d25', strokeWidth: 3, strokeLinecap: 'round' }),
+            playBow && h('path', { d: 'M 205 144 Q 185 155 166 151', fill: 'none', stroke: '#fbbf24', strokeWidth: 3, strokeDasharray: '5 5' })
+          );
+        }
+
+        function drawCat() {
+          var crouch = pose === 'cat-crouch';
+          var flatEars = pose === 'cat-flat-ears';
+          var blink = pose === 'cat-slow-blink';
+          var wide = pose === 'cat-wide-pupils';
+          var knead = pose === 'cat-knead';
+          var meow = pose === 'cat-meow';
+          var bodyY = crouch ? 142 : 119;
+          var tailD = pose === 'cat-tail-up' ? 'M 397 120 Q 451 100 432 39 Q 427 25 442 28'
+            : pose === 'cat-tail-flick' ? 'M 397 122 Q 451 105 468 128 Q 478 143 493 130'
+            : crouch ? 'M 388 142 Q 431 165 357 164 Q 321 165 302 151'
+            : 'M 395 124 Q 446 120 454 141 Q 458 151 469 145';
+          var tailClass = (pose === 'cat-tail-up' || pose === 'cat-tail-flick') ? 'petslab-body-motion--sway' : '';
+          return h('g', null,
+            h('ellipse', { cx: 306, cy: 158, rx: 124, ry: 11, fill: '#0b1020', opacity: 0.32 }),
+            h('ellipse', { cx: 310, cy: bodyY, rx: crouch ? 92 : 96, ry: crouch ? 25 : 41, fill: '#718096', stroke: commonStroke, strokeWidth: 3 }),
+            h('path', { d: 'M 267 ' + (bodyY - 31) + ' Q 301 ' + bodyY + ' 341 ' + (bodyY - 31), fill: 'none', stroke: '#9eabba', strokeWidth: 8, opacity: 0.48 }),
+            !crouch && h('path', { d: 'M 257 142 L 253 158 M 292 145 L 290 158 M 355 145 L 359 158 M 388 139 L 397 157', fill: 'none', stroke: '#667587', strokeWidth: 14, strokeLinecap: 'round' }),
+            h('path', { className: tailClass, d: tailD, fill: 'none', stroke: '#667587', strokeWidth: 18, strokeLinecap: 'round' }),
+            h('circle', { cx: 184, cy: crouch ? 125 : 89, r: 36, fill: '#7f8fa3', stroke: commonStroke, strokeWidth: 3 }),
+            flatEars
+              ? h('path', { d: 'M 163 71 Q 133 70 139 87 Q 153 94 173 87 Z M 202 70 Q 233 68 229 86 Q 215 95 196 87 Z', transform: crouch ? 'translate(0 36)' : null, fill: '#667587', stroke: commonStroke, strokeWidth: 2 })
+              : h('path', { d: 'M 159 68 L 162 35 L 179 66 Z M 196 66 L 211 35 L 216 72 Z', transform: crouch ? 'translate(0 36)' : null, fill: '#667587', stroke: commonStroke, strokeWidth: 2 }),
+            blink
+              ? h('g', { className: 'petslab-body-motion--pulse', fill: 'none', stroke: commonStroke, strokeWidth: 3, strokeLinecap: 'round' },
+                  h('path', { d: 'M 166 87 Q 174 92 182 87' }),
+                  h('path', { d: 'M 190 87 Q 198 92 206 87' })
+                )
+              : h('g', null,
+                  h('ellipse', { cx: 174, cy: crouch ? 124 : 86, rx: wide ? 8 : 5, ry: wide ? 10 : 7, fill: '#d9f99d', stroke: commonStroke, strokeWidth: 1.5 }),
+                  h('ellipse', { cx: 198, cy: crouch ? 124 : 86, rx: wide ? 8 : 5, ry: wide ? 10 : 7, fill: '#d9f99d', stroke: commonStroke, strokeWidth: 1.5 }),
+                  h('ellipse', { className: wide ? 'petslab-body-motion--pulse' : '', cx: 174, cy: crouch ? 124 : 86, rx: wide ? 6 : 1.7, ry: wide ? 8 : 5, fill: commonStroke }),
+                  h('ellipse', { className: wide ? 'petslab-body-motion--pulse' : '', cx: 198, cy: crouch ? 124 : 86, rx: wide ? 6 : 1.7, ry: wide ? 8 : 5, fill: commonStroke })
+                ),
+            h('path', { d: 'M 177 ' + (crouch ? 139 : 102) + ' L 185 ' + (crouch ? 143 : 106) + ' L 193 ' + (crouch ? 139 : 102), fill: '#d99a9a', stroke: commonStroke, strokeWidth: 1.5 }),
+            meow
+              ? h('g', null,
+                  h('ellipse', { cx: 185, cy: 113, rx: 9, ry: 12, fill: '#6f1d2a', stroke: commonStroke, strokeWidth: 2 }),
+                  h('g', { className: 'petslab-body-motion--pulse', fill: 'none', stroke: '#fde68a', strokeWidth: 3, strokeLinecap: 'round' },
+                    h('path', { d: 'M 139 91 Q 123 86 115 76' }),
+                    h('path', { d: 'M 137 104 Q 118 106 106 112' })
+                  )
+                )
+              : h('path', { d: 'M 177 ' + (crouch ? 148 : 110) + ' Q 185 ' + (crouch ? 153 : 115) + ' 193 ' + (crouch ? 148 : 110), fill: 'none', stroke: '#5f2630', strokeWidth: 2.5 }),
+            knead && h('g', { className: 'petslab-body-motion--lift' },
+              h('ellipse', { cx: 255, cy: 157, rx: 14, ry: 7, fill: '#aab6c4' }),
+              h('ellipse', { cx: 290, cy: 157, rx: 14, ry: 7, fill: '#aab6c4' }),
+              h('path', { d: 'M 247 165 L 247 172 M 290 165 L 290 172', stroke: '#fbbf24', strokeWidth: 3, strokeLinecap: 'round' })
+            )
+          );
+        }
+
+        function drawRabbit() {
+          var binky = pose === 'rabbit-binky';
+          var thump = pose === 'rabbit-thump';
+          var purr = pose === 'rabbit-tooth-purr';
+          var grind = pose === 'rabbit-tooth-grind';
+          var flop = pose === 'rabbit-flop';
+          var hunched = pose === 'rabbit-hunched';
+          if (flop) {
+            return h('g', null,
+              h('ellipse', { cx: 306, cy: 158, rx: 122, ry: 11, fill: '#0b1020', opacity: 0.32 }),
+              h('ellipse', { cx: 306, cy: 137, rx: 96, ry: 34, fill: '#aa9382', stroke: commonStroke, strokeWidth: 3, transform: 'rotate(8 306 137)' }),
+              h('circle', { cx: 190, cy: 137, r: 34, fill: '#bca797', stroke: commonStroke, strokeWidth: 3 }),
+              h('path', { d: 'M 176 118 Q 134 116 122 136 Q 151 143 184 137 M 193 114 Q 157 98 142 113 Q 162 130 199 133', fill: '#a58c7b', stroke: commonStroke, strokeWidth: 3 }),
+              h('path', { d: 'M 354 120 Q 389 96 410 112 M 359 145 Q 397 162 420 145', fill: 'none', stroke: '#967c6c', strokeWidth: 18, strokeLinecap: 'round' }),
+              h('path', { d: 'M 174 139 Q 180 143 186 139', fill: 'none', stroke: commonStroke, strokeWidth: 2.5 })
+            );
+          }
+          var animalClass = binky ? 'petslab-body-motion--lift' : '';
+          var bodyY = binky ? 94 : hunched || grind ? 111 : 121;
+          return h('g', null,
+            h('ellipse', { cx: 310, cy: 160, rx: binky ? 93 : 122, ry: 10, fill: '#0b1020', opacity: binky ? 0.2 : 0.32 }),
+            h('g', { className: animalClass },
+              h('ellipse', { cx: 310, cy: bodyY, rx: hunched || grind ? 74 : 93, ry: hunched || grind ? 53 : 40, fill: '#aa9382', stroke: commonStroke, strokeWidth: 3, transform: binky ? 'rotate(-9 310 94)' : null }),
+              h('ellipse', { cx: 369, cy: bodyY - 6, rx: 43, ry: 36, fill: '#9b8170', opacity: 0.85 }),
+              h('circle', { cx: 190, cy: binky ? 75 : hunched || grind ? 105 : 91, r: 35, fill: '#bca797', stroke: commonStroke, strokeWidth: 3 }),
+              h('path', { d: binky
+                ? 'M 175 54 Q 139 25 145 14 Q 177 29 190 57 M 198 52 Q 186 17 199 8 Q 219 31 213 62'
+                : 'M 172 67 Q 148 16 160 7 Q 187 35 188 69 M 195 66 Q 190 13 204 7 Q 221 39 211 75',
+                fill: '#aa9382', stroke: commonStroke, strokeWidth: 3, strokeLinejoin: 'round' }),
+              h('path', { d: binky
+                ? 'M 276 119 Q 250 144 232 136 M 344 118 Q 373 146 394 134'
+                : thump
+                  ? 'M 352 142 Q 397 151 424 143 M 368 132 Q 410 123 435 135'
+                  : 'M 270 143 Q 253 155 239 151 M 353 143 Q 374 155 391 150',
+                fill: 'none', stroke: '#967c6c', strokeWidth: 18, strokeLinecap: 'round' }),
+              hunched || grind
+                ? h('path', { d: 'M 173 105 Q 181 109 189 105 M 196 105 Q 204 109 212 105', fill: 'none', stroke: commonStroke, strokeWidth: 3, strokeLinecap: 'round' })
+                : h('circle', { cx: 182, cy: binky ? 75 : 91, r: 4.5, fill: commonStroke }),
+              h('path', { d: 'M 164 ' + (binky ? 92 : hunched || grind ? 123 : 108) + ' Q 177 ' + (binky ? 98 : hunched || grind ? 129 : 114) + ' 190 ' + (binky ? 92 : hunched || grind ? 123 : 108), fill: 'none', stroke: '#5f3030', strokeWidth: 2.5 }),
+              (purr || grind) && h('g', { className: 'petslab-body-motion--pulse', fill: 'none', stroke: grind ? '#fb7185' : '#fde68a', strokeWidth: grind ? 4 : 2.5, strokeLinecap: 'round' },
+                h('path', { d: grind ? 'M 145 115 L 133 107 M 145 123 L 130 123 M 147 130 L 135 139' : 'M 149 111 L 142 106 M 149 119 L 140 119' })
+              ),
+              thump && h('g', { className: 'petslab-body-motion--lift', fill: 'none', stroke: '#fbbf24', strokeWidth: 3, strokeLinecap: 'round' },
+                h('path', { d: 'M 431 145 L 449 137 M 432 152 L 454 153 M 428 159 L 448 169' })
+              )
+            ),
+            hunched && h('g', null,
+              h('ellipse', { cx: 449, cy: 154, rx: 30, ry: 8, fill: '#7c4d2d', stroke: commonStroke, strokeWidth: 2 }),
+              h('path', { d: 'M 425 151 Q 448 141 473 151', fill: 'none', stroke: '#c7d2a3', strokeWidth: 3, strokeDasharray: '4 4' })
+            )
+          );
+        }
+
+        function drawBird() {
+          var crest = pose === 'bird-crest';
+          var pin = pose === 'bird-eye-pin';
+          var grind = pose === 'bird-beak-grind';
+          var bob = pose === 'bird-tail-bob';
+          var pluck = pose === 'bird-feather-pluck';
+          return h('g', null,
+            h('path', { d: 'M 90 153 Q 280 148 470 153', fill: 'none', stroke: '#8b5e3c', strokeWidth: 14, strokeLinecap: 'round' }),
+            h('path', { d: 'M 117 160 Q 281 156 447 160', fill: 'none', stroke: '#c48a5d', strokeWidth: 3, opacity: 0.7 }),
+            h('g', { className: bob ? 'petslab-body-motion--lift' : '' },
+              h('path', { d: 'M 346 123 L 425 153 L 364 151 Z', fill: '#277c78', stroke: commonStroke, strokeWidth: 3 }),
+              h('path', { d: 'M 355 132 L 434 170 L 365 157 Z', fill: '#1d5f64', stroke: commonStroke, strokeWidth: 3 })
+            ),
+            h('ellipse', { cx: 306, cy: 113, rx: 61, ry: 48, fill: '#4aa7a0', stroke: commonStroke, strokeWidth: 3 }),
+            h('path', { d: 'M 279 91 Q 327 92 344 135 Q 299 149 269 120 Z', fill: pluck ? '#3c8883' : '#2f8c88', stroke: commonStroke, strokeWidth: 2 }),
+            pluck && h('ellipse', { cx: 304, cy: 111, rx: 19, ry: 14, fill: '#d6ad91', stroke: '#5f3b30', strokeWidth: 2, strokeDasharray: '4 3' }),
+            h('circle', { cx: 202, cy: 88, r: 39, fill: '#67b9ad', stroke: commonStroke, strokeWidth: 3 }),
+            h('path', { d: 'M 165 91 L 118 105 L 163 113 Z', fill: '#e6a847', stroke: commonStroke, strokeWidth: 3, strokeLinejoin: 'round' }),
+            h('circle', { cx: 193, cy: 81, r: 12, fill: '#f7f1dc', stroke: commonStroke, strokeWidth: 2 }),
+            h('circle', { className: pin ? 'petslab-body-motion--pulse' : '', cx: 193, cy: 81, r: pin ? 3 : 7, fill: commonStroke }),
+            crest && h('g', { className: 'petslab-body-motion--sway', fill: 'none', stroke: '#f4c95d', strokeWidth: 7, strokeLinecap: 'round' },
+              h('path', { d: 'M 188 52 L 171 19 M 199 49 L 196 10 M 209 51 L 221 18' })
+            ),
+            grind && h('g', { className: 'petslab-body-motion--pulse', fill: 'none', stroke: '#fde68a', strokeWidth: 3, strokeLinecap: 'round' },
+              h('path', { d: 'M 131 100 L 119 91 M 132 108 L 115 111' })
+            ),
+            h('path', { d: 'M 274 147 L 272 157 M 304 148 L 307 157 M 266 157 L 281 157 M 300 157 L 316 157', fill: 'none', stroke: '#4b2e22', strokeWidth: 4, strokeLinecap: 'round' }),
+            pluck && h('g', { className: 'petslab-body-motion--pulse', fill: '#9fd5ce', stroke: commonStroke, strokeWidth: 1.5 },
+              h('path', { d: 'M 408 151 Q 428 138 438 151 Q 425 157 408 151 Z' }),
+              h('path', { d: 'M 448 164 Q 464 151 476 161 Q 464 171 448 164 Z' })
+            ),
+            pluck && h('path', { d: 'M 252 97 Q 274 100 284 116', fill: 'none', stroke: '#e6a847', strokeWidth: 7, strokeLinecap: 'round' }),
+            bob && h('g', { className: 'petslab-body-motion--pulse', fill: 'none', stroke: '#fbbf24', strokeWidth: 3, strokeLinecap: 'round' },
+              h('path', { d: 'M 248 103 Q 232 113 247 125 M 237 98 Q 214 113 236 132' })
+            )
+          );
+        }
+
+        var animal = speciesKey === 'cat' ? drawCat()
+          : speciesKey === 'rabbit' ? drawRabbit()
+          : speciesKey === 'bird' ? drawBird()
+          : drawDog();
+
+        return h('figure', {
+          className: 'petslab-body-pose' + (compact ? ' petslab-body-pose--compact' : ''),
+          'data-pets-body-pose': pose,
+          style: { marginTop: compact ? 0 : 12 }
+        },
+          h('svg', {
+            viewBox: '0 0 560 200',
+            preserveAspectRatio: 'xMidYMid meet',
+            role: 'img',
+            focusable: 'false',
+            'aria-labelledby': titleId + ' ' + descId
+          },
+            h('title', { id: titleId }, speciesLabel + ' posture study: ' + (item.signal || 'body-language signal')),
+            h('desc', { id: descId },
+              (compact ? 'Reference pose illustration. ' : 'Numbered teaching illustration. ') +
+              cueSummary + '. Read the whole posture; color is decorative.'),
+            h('rect', { x: 0, y: 0, width: 560, height: 200, fill: '#172033' }),
+            h('circle', { cx: 485, cy: 44, r: 25, fill: '#fbbf24', opacity: 0.14 }),
+            h('path', { d: 'M 0 151 Q 128 137 263 151 T 560 151 V 200 H 0 Z', fill: ground }),
+            h('path', { d: 'M 0 151 Q 128 137 263 151 T 560 151', fill: 'none', stroke: '#64748b', strokeWidth: 2 }),
+            !compact && h('text', { x: 18, y: 24, fill: '#fde68a', fontSize: 13, fontWeight: 800, letterSpacing: '0.08em' }, 'WATCH THE WHOLE BODY'),
+            animal,
+            !compact && cues.map(function(cue, ci) {
+              var cx = cue[1], cy = cue[2];
+              return h('g', { key: 'body-cue-' + ci, 'aria-hidden': 'true' },
+                h('circle', { cx: cx, cy: cy, r: 17, fill: 'none', stroke: '#fbbf24', strokeWidth: 2.5, strokeDasharray: '4 3' }),
+                h('line', { x1: cx + 10, y1: cy - 11, x2: cx + 24, y2: cy - 25, stroke: '#fbbf24', strokeWidth: 2.5, strokeLinecap: 'round' }),
+                h('circle', { cx: cx + 30, cy: cy - 30, r: 14, fill: '#1f1612', stroke: '#fbbf24', strokeWidth: 2.5 }),
+                h('text', { x: cx + 30, y: cy - 24, textAnchor: 'middle', fill: '#fff7ed', fontSize: 18, fontWeight: 900 }, String(ci + 1))
+              );
+            })
+          ),
+          !compact && h('figcaption', { className: 'petslab-body-cues' },
+            cues.map(function(cue, ci) {
+              return h('span', { key: 'body-cue-label-' + ci, className: 'petslab-body-cue' },
+                h('strong', { 'aria-hidden': 'true' }, String(ci + 1)),
+                cue[0]
+              );
+            })
+          )
+        );
+      }
       function startQuiz() {
         // Pick 10 distinct signals at random; each becomes a question with 1 correct + 3 distractors from same species (where possible)
         var pool = allSignals.slice();
@@ -3588,6 +5398,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           var correctIdx = choices.indexOf(item.meaning);
           return {
             species: item.species, signal: item.signal,
+            pose: item.pose, cues: item.cues,
             choices: choices, correct: correctIdx, color: item.color
           };
         });
@@ -3778,6 +5589,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           h('div', { style: { padding: 16, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('div', { style: { fontSize: 12, color: T.accentHi, fontWeight: 700, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' } }, q.species),
             h('div', { style: { fontSize: 16, color: T.text, fontWeight: 700, lineHeight: 1.5 } }, q.signal),
+            renderBodyLanguagePose(q),
             h('div', { style: { fontSize: 12, color: T.muted, marginTop: 8, fontStyle: 'italic' } }, 'What is this animal most likely communicating?')
           ),
           // Choices
@@ -3824,16 +5636,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           }, blQuiz.idx < blQuiz.qs.length - 1 ? 'Next signal →' : 'See score ✓')
         );
       }
-      // Read mode: original listing
-      var readContent = h('div', null,
+      // Read mode: the same observable poses used by the quiz, arranged as a
+      // scan-friendly reference gallery. Compact figures keep all SVG text out
+      // of the scaled thumbnail; the readable signal and meaning stay in HTML.
+      var readContent = h('div', { className: 'petslab-body-reference' },
         sets.map(function(g) {
-          return h('div', { key: g.species, style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, g.species),
-            g.items.map(function(it, i) {
-              return h('div', { key: i, style: { padding: 8, borderRadius: 8, background: T.cardAlt, borderLeft: '3px solid ' + it.color, marginBottom: 6 } },
-                h('div', { style: { fontSize: 12, color: T.text, fontWeight: 600, marginBottom: 2 } }, it.signal),
-                h('div', { style: { fontSize: 12, color: it.color, lineHeight: 1.5 } }, '↳ ' + it.meaning));
-            }));
+          var speciesKey = bodySpeciesKey(g.species);
+          var headingId = 'pets-body-reference-' + speciesKey;
+          var referenceItems = allSignals.filter(function(item) { return item.species === g.species; });
+          return h('section', { key: g.species, className: 'petslab-body-reference-group', 'aria-labelledby': headingId },
+            h('div', { className: 'petslab-body-reference-head' },
+              h('h3', { id: headingId }, g.species),
+              h('span', { className: 'petslab-body-reference-count' }, referenceItems.length + ' observable signals')
+            ),
+            h('div', { className: 'petslab-body-reference-grid', role: 'list' },
+              referenceItems.map(function(it) {
+                return h('article', { key: it.pose, className: 'petslab-body-reference-card', role: 'listitem' },
+                  renderBodyLanguagePose(it, true),
+                  h('div', { className: 'petslab-body-reference-copy' },
+                    h('h4', { className: 'petslab-body-reference-signal' }, it.signal),
+                    h('p', { className: 'petslab-body-reference-meaning' },
+                      h('strong', { style: { color: it.color } }, 'Meaning: '),
+                      it.meaning)
+                  )
+                );
+              })
+            )
+          );
         })
       );
       return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
@@ -3887,6 +5716,118 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       var lifetimeHours = p.timeDaily * 365 * costYears;
       var dollarsPerYear = lifetimeCost / costYears;
 
+      function renderCostScale() {
+        var annualShare = lifetimeCost > 0 ? (p.annual / lifetimeCost * 100) : 100;
+        var spans = [];
+        for (var animalIndex = 0; animalIndex < costAnimals; animalIndex++) {
+          var startYear = animalIndex * p.lifespan;
+          if (startYear >= costYears) break;
+          spans.push({
+            start: startYear,
+            end: Math.min(costYears, (animalIndex + 1) * p.lifespan)
+          });
+        }
+        var W = 600;
+        var x0 = 18;
+        var usable = W - 36;
+        function xForYear(year) {
+          return x0 + (Math.max(0, Math.min(costYears, year)) / costYears) * usable;
+        }
+        var setupYears = spans.map(function(span) { return span.start; });
+        var timelineLabel = costYears + '-year commitment timeline for ' + p.name + '. ' +
+          (multiGen
+            ? 'This span covers about ' + costAnimals + ' successive animals, with a new first-year setup at years ' + setupYears.join(', ') + '.'
+            : 'This span stays within one typical animal lifespan.') +
+          ' The selected plan ends at year ' + costYears + '.';
+        return h('div', { className: 'petslab-cost-burden' },
+          h('div', { className: 'petslab-cost-burden-heading' },
+            h('strong', null, 'Annual cost versus the selected span'),
+            h('span', null, 'Same scale: one ongoing year compared with the full plan')
+          ),
+          h('div', { className: 'petslab-cost-burden-row' },
+            h('span', { className: 'petslab-cost-burden-label' }, 'One ongoing year'),
+            h('div', {
+              className: 'petslab-cost-burden-track',
+              role: 'img',
+              'aria-label': 'One ongoing year is $' + p.annual.toLocaleString() +
+                ', about ' + Math.round(annualShare) + ' percent of the selected-span cost.'
+            },
+              h('div', {
+                className: 'petslab-cost-burden-fill petslab-cost-burden-fill--annual',
+                style: { width: Math.max(3, Math.min(100, annualShare)) + '%' }
+              })
+            ),
+            h('span', { className: 'petslab-cost-burden-value' }, '$' + p.annual.toLocaleString())
+          ),
+          h('div', { className: 'petslab-cost-burden-row' },
+            h('span', { className: 'petslab-cost-burden-label' }, costYears + '-year plan'),
+            h('div', {
+              className: 'petslab-cost-burden-track',
+              role: 'img',
+              'aria-label': 'The selected ' + costYears + '-year cost is $' + lifetimeCost.toLocaleString() + '.'
+            },
+              h('div', { className: 'petslab-cost-burden-fill petslab-cost-burden-fill--span', style: { width: '100%' } })
+            ),
+            h('span', { className: 'petslab-cost-burden-value' }, '$' + lifetimeCost.toLocaleString())
+          ),
+          h('div', { className: 'petslab-cost-timeline' },
+            h('svg', {
+              viewBox: '0 0 ' + W + ' 70',
+              preserveAspectRatio: 'none',
+              role: 'img',
+              'aria-label': timelineLabel,
+              focusable: 'false'
+            },
+              h('title', null, timelineLabel),
+              h('rect', { x: x0, y: 24, width: usable, height: 22, rx: 11, fill: T.bg, stroke: T.border, strokeWidth: 2 }),
+              spans.map(function(span, spanIndex) {
+                var sx = xForYear(span.start);
+                var ex = xForYear(span.end);
+                return h('rect', {
+                  key: 'span-' + spanIndex,
+                  x: sx,
+                  y: 25,
+                  width: Math.max(2, ex - sx),
+                  height: 20,
+                  rx: 9,
+                  fill: spanIndex % 2 === 0 ? '#0e7490' : '#7c3aed',
+                  opacity: 0.82
+                });
+              }),
+              spans.map(function(span, markerIndex) {
+                var mx = xForYear(span.start);
+                return h('polygon', {
+                  key: 'setup-' + markerIndex,
+                  points: mx + ',15 ' + (mx + 7) + ',22 ' + mx + ',29 ' + (mx - 7) + ',22',
+                  fill: '#fbbf24',
+                  stroke: '#5b3408',
+                  strokeWidth: 1.5
+                });
+              }),
+              spans.slice(1).map(function(span, boundaryIndex) {
+                var bx = xForYear(span.start);
+                return h('line', {
+                  key: 'boundary-' + boundaryIndex,
+                  x1: bx, y1: 22, x2: bx, y2: 52,
+                  stroke: '#f8fafc', strokeWidth: 2, strokeDasharray: '3 3', opacity: 0.8
+                });
+              }),
+              h('circle', { cx: xForYear(costYears), cy: 35, r: 7, fill: '#f8fafc', stroke: '#0f172a', strokeWidth: 2 })
+            ),
+            h('div', { className: 'petslab-cost-timeline-labels' },
+              h('span', null, 'Year 0'),
+              h('span', null, '~' + p.lifespan + ' yr typical lifespan'),
+              h('span', null, 'Year ' + costYears)
+            ),
+            h('div', { className: 'petslab-cost-timeline-key', 'aria-hidden': 'true' },
+              h('span', null, '◆ First-year setup / new animal'),
+              h('span', null, '━ Ongoing care'),
+              h('span', null, '● Selected plan ends')
+            )
+          )
+        );
+      }
+
       function radioCost(val, label) {
         var picked = costSpecies === val;
         return h('label', { htmlFor: 'cs-' + val,
@@ -3899,7 +5840,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             style: { position: 'absolute', opacity: 0, pointerEvents: 'none' } }),
           label);
       }
-      return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+      return h('div', { className: 'petslab-cost-view', style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
         backBar('💵 Lifetime Cost & Commitment'),
         h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
           h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
@@ -3924,9 +5865,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             'aria-label': 'Commitment years',
             onChange: function(e) { upd('costYears', parseInt(e.target.value, 10)); },
             style: { width: '100%', accentColor: T.accent } })),
-        h('div', { style: { padding: 16, borderRadius: 12, background: T.cardAlt, border: '1px solid ' + T.accent, marginBottom: 14 } },
+        h('div', { className: 'petslab-cost-summary', style: { padding: 16, borderRadius: 12, background: T.cardAlt, border: '1px solid ' + T.accent, marginBottom: 14 } },
           h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, p.icon + ' ' + p.name + ' over ' + costYears + ' years'),
-          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12 } },
+          h('div', { className: 'petslab-cost-metrics' },
             h('div', null,
               h('div', { style: { fontSize: 11, color: T.dim } }, 'First year'),
               h('div', { style: { fontSize: 22, fontWeight: 800, color: T.warm, fontFamily: 'monospace' } }, '$' + p.firstYear.toLocaleString())),
@@ -3945,6 +5886,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             h('div', null,
               h('div', { style: { fontSize: 11, color: T.dim } }, 'Total time'),
               h('div', { style: { fontSize: 22, fontWeight: 800, color: T.text, fontFamily: 'monospace' } }, Math.round(lifetimeHours).toLocaleString() + ' hr'))),
+          renderCostScale(),
           // Naming what a multi-lifespan span actually is. The money is the
           // smaller half of it: a short-lived pet over a long horizon means
           // repeated loss, which the Lifespan module treats as the real
@@ -3972,20 +5914,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             var reserve = p.emergencyFund;
             var total = setup + ongoing + reserve || 1;
             var segs = [
-              { label: 'First-year setup', v: setup, color: T.warm || '#f59e0b' },
-              { label: 'Ongoing (' + Math.max(0, costYears - 1) + ' yr × $' + p.annual.toLocaleString() + ')', v: ongoing, color: T.accentHi || '#0891b2' },
-              { label: 'Emergency reserve', v: reserve, color: T.danger || '#dc2626' }
+              { id: 'setup', mark: 'SET', label: 'First-year setup', v: setup, color: T.warm || '#f59e0b' },
+              { id: 'ongoing', mark: 'RUN', label: 'Ongoing (' + Math.max(0, costYears - costAnimals) + ' yr × $' + p.annual.toLocaleString() + ')', v: ongoing, color: T.accentHi || '#0891b2' },
+              { id: 'reserve', mark: 'SAFE', label: 'Emergency reserve', v: reserve, color: T.danger || '#dc2626' }
             ];
-            return h('div', { style: { marginTop: 14 } },
+            var allocationLabel = 'True total commitment $' + total.toLocaleString() + ': ' +
+              segs.map(function(s) {
+                return s.label + ' $' + s.v.toLocaleString() + ', ' + Math.round(s.v / total * 100) + ' percent';
+              }).join('; ') + '.';
+            return h('div', { className: 'petslab-cost-allocation' },
               h('div', { style: { fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 6 } }, 'True total commitment: $' + total.toLocaleString()),
-              h('div', { style: { display: 'flex', height: 18, borderRadius: 5, overflow: 'hidden', border: '1px solid ' + T.border } },
-                segs.map(function(s) { return h('div', { key: s.label, title: s.label + ': $' + s.v.toLocaleString(), style: { width: (s.v / total * 100) + '%', background: s.color } }); })
-              ),
-              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 6 } },
+              h('div', {
+                className: 'petslab-cost-allocation-bar',
+                role: 'img',
+                'aria-label': allocationLabel
+              },
                 segs.map(function(s) {
-                  return h('div', { key: s.label, style: { display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: T.muted } },
-                    h('span', { style: { width: 10, height: 10, borderRadius: 2, background: s.color, display: 'inline-block' } }),
-                    h('span', null, s.label + ' — $' + s.v.toLocaleString() + ' (' + Math.round(s.v / total * 100) + '%)'));
+                  var share = s.v / total * 100;
+                  return h('div', {
+                    key: s.id,
+                    className: 'petslab-cost-allocation-segment petslab-cost-allocation-segment--' + s.id,
+                    title: s.label + ': $' + s.v.toLocaleString(),
+                    'aria-hidden': 'true',
+                    style: { flex: '0 0 ' + share + '%' }
+                  }, share >= 12 ? s.mark + ' ' + Math.round(share) + '%' : (share >= 7 ? s.mark : s.mark.charAt(0)));
+                })
+              ),
+              h('div', { className: 'petslab-cost-allocation-legend', role: 'list', 'aria-label': 'Cost allocation legend' },
+                segs.map(function(s) {
+                  return h('div', { key: s.id, role: 'listitem', className: 'petslab-cost-allocation-item' },
+                    h('span', { className: 'petslab-cost-allocation-mark', 'aria-hidden': 'true' }, s.mark),
+                    h('span', null,
+                      h('strong', null, s.label),
+                      '$' + s.v.toLocaleString() + ' (' + Math.round(s.v / total * 100) + '%)'
+                    )
+                  );
                 })
               ),
               h('div', { style: { marginTop: 6, fontSize: 11, color: T.muted, fontStyle: 'italic' } }, 'The "lifetime cost" figure above leaves out the emergency reserve — a real cost you should bank before adopting.')
@@ -4211,6 +6174,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         choices: ['Tradition', 'Adult deer ticks (Ixodes scapularis) are active any day above ~40°F — Maine has many such days even in January / February', 'Vets need year-round revenue', 'Lyme bacteria mutate in cold'],
         correct: 1, why: 'Adult Ixodes ticks emerge whenever temperatures briefly rise above ~40°F. Maine has plenty of warm days mid-winter. Year-round prevention has become standard for Maine dogs given Lyme + anaplasmosis density.' }
     ];
+
+    // The authored bank put 73% of correct answers in slot 2 (measured
+    // 0/11/4/0, slots 1 and 4 never) — passable by position. Rotate each
+    // question ONCE here: renderQuiz re-reads QUIZ[qIdx] on every render,
+    // so a random shuffle would deal new options mid-question. Grading is
+    // by index, so `correct` is remapped with the choices; `why` is one
+    // string. (The body-language quiz already shuffles at generation time
+    // and is untouched.)
+    (function () {
+      for (var qi = 0; qi < QUIZ.length; qi++) {
+        var q = QUIZ[qi];
+        if (!q || !Array.isArray(q.choices) || q.choices.length < 2 || typeof q.correct !== 'number') continue;
+        var n = q.choices.length;
+        var shift = ((qi * 7) + 3) % n;
+        if (shift === 0) continue;
+        var moved = new Array(n);
+        for (var i = 0; i < n; i++) moved[(i + shift) % n] = q.choices[i];
+        q.choices = moved;
+        q.correct = (q.correct + shift) % n;
+      }
+    })();
+
     function renderQuiz() {
       var qIdx = quizState.idx || 0;
       var done = qIdx >= QUIZ.length;
@@ -4484,6 +6469,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         { id: 10, species: 'Goldfish (well-cared in proper tank)', icon: '🐠', correct: 'b3',
           why: '10–20 years in proper conditions (50+ gallon filtered tank, regular water changes). The "goldfish die in 6 months" stereotype is a husbandry failure, not a species lifespan. World record is 43 years. Bowls + neglected tanks shorten this dramatically.' }
       ];
+      // Presentation-only lifespan ranges. Quiz answers and species coaching
+      // remain in V/BUCKETS; this map only gives the visuals a shared scale.
+      var LIFE_VISUALS = {
+        1: { min: 2, max: 3, label: '2-3 years' },
+        2: { min: 12, max: 18, label: '12-18 years' },
+        3: { min: 50, max: 80, label: '50-80 years' },
+        4: { min: 100, max: 100, label: '100+ years' },
+        5: { min: 6, max: 10, label: '6-10 years' },
+        6: { min: 10, max: 14, label: '10-14 years' },
+        7: { min: 15, max: 25, label: '15-25 years' },
+        8: { min: 5, max: 8, label: '5-8 years' },
+        9: { min: 20, max: 30, label: '20-30 years' },
+        10: { min: 10, max: 20, label: '10-20 years' }
+      };
 
       var lsIdx = d.lsIdx == null ? -1 : d.lsIdx;
       var lsSeed = d.lsSeed || 1;
@@ -4494,6 +6493,107 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       var lsStreak = d.lsStreak || 0;
       var lsBest = d.lsBest || 0;
       var lsShown = d.lsShown || [];
+
+      function bucketById(bucketId) {
+        return BUCKETS.filter(function(bucket) { return bucket.id === bucketId; })[0];
+      }
+      function lifeShapeText(bucketId) {
+        return ({ b1: '\u25cf', b2: '\u25a0', b3: '\u25c6', b4: '\u25b2', b5: '\u2605' })[bucketId] || '\u25cf';
+      }
+      function renderLifeStage(item, reveal) {
+        var visual = LIFE_VISUALS[item.id];
+        var bucket = bucketById(item.correct);
+        var endPct = reveal ? Math.max(0, Math.min(100, visual.max)) : 100;
+        var minPct = reveal ? Math.max(0, Math.min(100, visual.min)) : 0;
+        var youngW = endPct * 0.18;
+        var adultW = endPct * 0.54;
+        var seniorW = endPct * 0.28;
+        var timelineLabel = reveal
+          ? item.species + ' has a typical lifespan of ' + visual.label + ' on this 0-to-100-year commitment scale. The colored span is divided into illustrative young, adult, and senior-care planning stages.'
+          : 'The 0-to-100-year commitment scale for ' + item.species + ' is hidden until a lifespan range is selected.';
+        var fill = reveal ? bucket.color : T.border;
+        return h('div', { className: 'petslab-life-stage' },
+          h('div', { className: 'petslab-life-stage-heading' },
+            h('strong', null, reveal ? 'Typical commitment timeline' : 'Commitment timeline'),
+            h('span', null, reveal ? visual.label + ' typical' : 'Pick a bucket to reveal the range')
+          ),
+          h('svg', {
+            viewBox: '0 0 100 32',
+            preserveAspectRatio: 'none',
+            role: 'img',
+            'aria-label': timelineLabel,
+            focusable: 'false'
+          },
+            h('title', null, timelineLabel),
+            h('rect', { x: 1, y: 8, width: 98, height: 16, rx: 8, fill: T.bg, stroke: T.border, strokeWidth: 0.7 }),
+            h('rect', { x: 1, y: 9, width: youngW * 0.98, height: 14, rx: 7, fill: fill, opacity: reveal ? 0.42 : 0.18 }),
+            h('rect', { x: 1 + youngW * 0.98, y: 9, width: adultW * 0.98, height: 14, fill: fill, opacity: reveal ? 0.68 : 0.28 }),
+            h('rect', { x: 1 + (youngW + adultW) * 0.98, y: 9, width: seniorW * 0.98, height: 14, rx: 7, fill: fill, opacity: reveal ? 0.94 : 0.38 }),
+            reveal && h('line', { x1: 1 + minPct * 0.98, y1: 5, x2: 1 + minPct * 0.98, y2: 27, stroke: '#f8fafc', strokeWidth: 0.8, strokeDasharray: '2 1' }),
+            reveal && h('line', { x1: 1 + endPct * 0.98, y1: 4, x2: 1 + endPct * 0.98, y2: 28, stroke: '#f8fafc', strokeWidth: 1.2 })
+          ),
+          h('div', { className: 'petslab-life-stage-axis', 'aria-hidden': 'true' },
+            h('span', null, '0 years'),
+            h('span', null, '100+ years')
+          ),
+          h('div', { className: 'petslab-life-stage-key', 'aria-label': 'Illustrative life-stage key' },
+            h('span', null, h('span', { 'aria-hidden': 'true' }, '\u25cf '), 'Young / settling in'),
+            h('span', null, h('span', { 'aria-hidden': 'true' }, '\u25a0 '), 'Adult care years'),
+            h('span', null, h('span', { 'aria-hidden': 'true' }, '\u25c6 '), 'Senior-care planning')
+          ),
+          h('p', { className: 'petslab-life-stage-note' },
+            reveal
+              ? 'The dashed line marks the lower end of the typical range; the solid line marks its upper end. Life-stage proportions are a planning guide, not veterinary age cutoffs.'
+              : 'The life-stage pattern is illustrative. Its length unlocks after the choice so the visual does not give away the quiz answer.'
+          )
+        );
+      }
+      function renderSpeciesComparison() {
+        return h('section', { className: 'petslab-life-comparison', 'aria-labelledby': 'petslab-life-comparison-title' },
+          h('h4', { id: 'petslab-life-comparison-title' }, 'All species on one 100-year scale'),
+          h('p', null, 'Compare the typical commitment length directly. Each color also has a distinct shape and written range.'),
+          h('div', { className: 'petslab-life-stage-key', 'aria-label': 'Lifespan bucket legend' },
+            BUCKETS.map(function(bucket) {
+              return h('span', { key: 'legend-' + bucket.id, style: { color: bucket.color } },
+                h('span', { className: 'petslab-life-bucket-mark', 'aria-hidden': 'true' }, lifeShapeText(bucket.id)),
+                ' ' + bucket.label
+              );
+            })
+          ),
+          h('div', { className: 'petslab-life-compare-list', role: 'list' },
+            V.map(function(item) {
+              var visual = LIFE_VISUALS[item.id];
+              var bucket = bucketById(item.correct);
+              var minPct = Math.max(0, Math.min(100, visual.min));
+              var endPct = Math.max(0, Math.min(100, visual.max));
+              var rowLabel = item.species + ': ' + visual.label + ', in the ' + bucket.label + ' bucket, shown on a 0-to-100-year scale.';
+              return h('div', { key: item.id, className: 'petslab-life-compare-row', role: 'listitem' },
+                h('div', { className: 'petslab-life-compare-name' },
+                  h('span', { 'aria-hidden': 'true' }, item.icon + ' '),
+                  h('span', { className: 'petslab-life-bucket-mark', style: { color: bucket.color }, 'aria-hidden': 'true' }, lifeShapeText(bucket.id)),
+                  ' ' + item.species
+                ),
+                h('div', { className: 'petslab-life-compare-track' },
+                  h('svg', {
+                    viewBox: '0 0 100 24',
+                    preserveAspectRatio: 'none',
+                    role: 'img',
+                    'aria-label': rowLabel,
+                    focusable: 'false'
+                  },
+                    h('title', null, rowLabel),
+                    h('rect', { x: 1, y: 7, width: 98, height: 10, rx: 5, fill: T.bg, stroke: T.border, strokeWidth: 0.65 }),
+                    h('rect', { x: 1, y: 8, width: Math.max(0.8, endPct * 0.98), height: 8, rx: 4, fill: bucket.color, opacity: 0.52 }),
+                    h('rect', { x: 1 + minPct * 0.98, y: 8, width: Math.max(0.6, (endPct - minPct) * 0.98), height: 8, rx: 4, fill: bucket.color }),
+                    h('line', { x1: 1 + endPct * 0.98, y1: 4, x2: 1 + endPct * 0.98, y2: 20, stroke: '#f8fafc', strokeWidth: 1.1 })
+                  )
+                ),
+                h('span', { className: 'petslab-life-compare-range' }, visual.label)
+              );
+            })
+          )
+        );
+      }
 
       function startLs() {
         var pool = [];
@@ -4523,7 +6623,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       }
 
       if (lsIdx < 0) {
-        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+        return h('div', { className: 'petslab-life-view', style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('⏳ Lifespan Match'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 6px', fontSize: 16, color: T.text } }, '⏳ 10 species/breeds — pick the typical lifespan range'),
@@ -4557,8 +6657,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       var allDone = lsShown.length >= V.length && lsAns;
       var correctBucket = BUCKETS.filter(function(b) { return b.id === v.correct; })[0];
       var pickedBucket = lsPick ? BUCKETS.filter(function(b) { return b.id === lsPick; })[0] : null;
+      var correctAnswerLabel = v.id === 7
+        ? correctBucket.label + ' commitment bucket (cockatiels commonly span 15–25 years)'
+        : correctBucket.label;
 
-      return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+      return h('div', { className: 'petslab-life-view', style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
         backBar('⏳ Lifespan Match'),
         h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', fontSize: 12, color: T.dim, marginBottom: 12 } },
           h('span', null, 'Vignette ', h('strong', { style: { color: T.text } }, lsShown.length)),
@@ -4573,7 +6676,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           h('div', { style: { flex: 1, minWidth: 220 } },
             h('div', { style: { fontSize: 11, color: T.accentHi, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, 'Vignette ' + lsShown.length + ' of ' + V.length),
             h('div', { style: { fontSize: 18, fontWeight: 800, color: T.text } }, v.species)
-          )
+          ),
+          renderLifeStage(v, lsAns)
         ),
         // 5 picker buttons
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 }, role: 'radiogroup', 'aria-label': 'Pick the lifespan range' },
@@ -4614,8 +6718,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         },
           h('div', { style: { fontSize: 13, fontWeight: 800, marginBottom: 6, color: pickedCorrect ? '#bef264' : '#fca5a5' } },
             pickedCorrect
-              ? '✅ Correct — ' + correctBucket.label
-              : '❌ The right range is ' + correctBucket.label + (pickedBucket ? ' (you picked ' + pickedBucket.label + ')' : '')
+              ? '✅ Correct — ' + correctAnswerLabel
+              : '❌ The right range is ' + correctAnswerLabel + (pickedBucket ? ' (you picked ' + pickedBucket.label + ')' : '')
           ),
           h('p', { style: { margin: '0 0 10px', color: T.text, fontSize: 12, lineHeight: 1.55 } }, v.why),
           allDone
@@ -4628,6 +6732,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                   lsScore >= 6 ? ' — solid baseline. The four reflexes worth building: rodents = under 3, parrots = 15+ to 80, large dogs lose to small dogs by ~5 years, indoor cats outlive outdoor cats by 4–7×.' :
                   ' — these matter at adoption. Re-read the rationales on misses, then retake. Lifespan-mismatch is the #1 cause of pet surrender after the first year.'
                 ),
+                renderSpeciesComparison(),
                 h('button', { 'data-pets-focusable': true,
                   onClick: function() { upd('lsIdx', -1); upd('lsShown', []); upd('lsScore', 0); upd('lsRounds', 0); upd('lsStreak', 0); },
                   style: { marginTop: 8, padding: '6px 12px', borderRadius: 8, border: 'none', background: T.accent, color: '#0f172a', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
@@ -4864,177 +6969,667 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     ];
 
     function svgSkullCompare() {
-      return h('svg', { viewBox: '0 0 600 360', width: '100%', height: '100%',
-        role: 'img', 'aria-labelledby': 'svg-skull-title svg-skull-desc',
-        style: { background: '#181210', borderRadius: 8 } },
-        h('title', { id: 'svg-skull-title' }, 'Dog and cat skull comparison'),
-        h('desc', { id: 'svg-skull-desc' }, 'Side-by-side comparison of dog and cat skull anatomy. Dog skull is longer with more grinding molars and larger braincase. Cat skull is shorter with prominent canines, small carnassial teeth, and no flat-grinding molars (obligate carnivore signature).'),
-        // Dog skull (left)
-        h('text', { x: 150, y: 30, fill: '#fbbf24', fontSize: 14, textAnchor: 'middle', fontWeight: 700 }, '🐕 Dog (omnivore-leaning carnivore)'),
-        // Approximate dog skull silhouette
-        h('path', { d: 'M 50 180 Q 60 110 130 100 Q 200 95 250 130 Q 270 145 270 175 Q 270 200 250 215 L 220 220 L 200 245 L 170 250 L 100 245 Q 70 240 55 220 Q 50 200 50 180 Z', fill: '#3a2a1f', stroke: '#fbbf24', strokeWidth: 1.5 }),
-        // Eye socket
-        h('circle', { cx: 150, cy: 160, r: 14, fill: '#181210', stroke: '#fbbf24', strokeWidth: 1 }),
-        // Teeth row (dog: more grinding molars)
-        h('rect', { x: 195, y: 220, width: 10, height: 15, fill: '#fef3e2' }),
-        h('rect', { x: 210, y: 220, width: 10, height: 15, fill: '#fef3e2' }),
-        h('rect', { x: 225, y: 220, width: 10, height: 15, fill: '#fef3e2' }),
-        h('rect', { x: 240, y: 220, width: 10, height: 15, fill: '#fef3e2' }),
-        // Canine
-        h('polygon', { points: '180,225 175,250 185,250', fill: '#fef3e2' }),
-        // Labels
-        h('line', { x1: 110, y1: 130, x2: 80, y2: 70, stroke: '#fbbf24', strokeWidth: 1 }),
-        h('text', { x: 80, y: 60, fill: '#fbbf24', fontSize: 10, textAnchor: 'middle' }, 'Larger braincase'),
-        h('line', { x1: 220, y1: 230, x2: 250, y2: 280, stroke: '#fbbf24', strokeWidth: 1 }),
-        h('text', { x: 250, y: 295, fill: '#fbbf24', fontSize: 10, textAnchor: 'middle' }, 'Flat molars'),
-        h('text', { x: 250, y: 305, fill: '#fbbf24', fontSize: 9, textAnchor: 'middle' }, '(can grind plant matter)'),
-        h('line', { x1: 178, y1: 240, x2: 130, y2: 290, stroke: '#fbbf24', strokeWidth: 1 }),
-        h('text', { x: 110, y: 305, fill: '#fbbf24', fontSize: 10 }, 'Canine'),
-        // Cat skull (right) — shorter, more rounded
-        h('text', { x: 450, y: 30, fill: '#86efac', fontSize: 14, textAnchor: 'middle', fontWeight: 700 }, '🐈 Cat (obligate carnivore)'),
-        h('path', { d: 'M 350 180 Q 360 110 430 105 Q 490 105 530 140 Q 545 155 545 180 Q 545 205 525 220 L 500 225 L 480 250 L 450 255 L 400 250 Q 370 245 360 220 Q 350 200 350 180 Z', fill: '#3a2a1f', stroke: '#86efac', strokeWidth: 1.5 }),
-        // Eye socket — bigger relative to skull
-        h('circle', { cx: 450, cy: 160, r: 18, fill: '#181210', stroke: '#86efac', strokeWidth: 1 }),
-        // Teeth — dominant canines, small/sharp molars (carnassials only)
-        h('polygon', { points: '470,225 465,255 475,255', fill: '#fef3e2' }),
-        h('polygon', { points: '420,225 415,250 425,250', fill: '#fef3e2' }),
-        h('polygon', { points: '485,225 482,245 488,245', fill: '#fef3e2' }),
-        h('polygon', { points: '500,225 497,243 503,243', fill: '#fef3e2' }),
-        // Labels
-        h('line', { x1: 470, y1: 160, x2: 510, y2: 75, stroke: '#86efac', strokeWidth: 1 }),
-        h('text', { x: 525, y: 60, fill: '#86efac', fontSize: 10 }, 'Larger eyes'),
-        h('text', { x: 525, y: 72, fill: '#86efac', fontSize: 9 }, '(better low-light)'),
-        h('line', { x1: 470, y1: 245, x2: 500, y2: 285, stroke: '#86efac', strokeWidth: 1 }),
-        h('text', { x: 510, y: 300, fill: '#86efac', fontSize: 10, textAnchor: 'middle' }, 'Sharp canines + carnassial'),
-        h('text', { x: 510, y: 312, fill: '#86efac', fontSize: 9, textAnchor: 'middle' }, '(slicing only — no grinding)'),
-        // Caption
-        h('text', { x: 300, y: 345, fill: '#fef3e2', fontSize: 11, textAnchor: 'middle' }, 'Tooth shape reveals diet. Dogs can chew + grind plants; cats only slice. Confirms cats are obligate carnivores anatomically, not just biochemically.')
+      var titleText = 'Dog and cat skull comparison';
+      var descText = 'Responsive side-by-side comparison of dog and cat skull anatomy. The dog has a longer muzzle and flat-topped grinding molars. The cat has proportionally larger eye sockets, long canines, and blade-like carnassial teeth for shearing rather than grinding.';
+
+      function skullDefs(suffix) {
+        return h('defs', null,
+          h('pattern', { id: 'pets-skull-dog' + suffix, width: 14, height: 14, patternUnits: 'userSpaceOnUse' },
+            h('rect', { width: 14, height: 14, fill: '#3b2a1f' }),
+            h('path', { d: 'M 0 14 L 14 0 M -4 4 L 4 -4 M 10 18 L 18 10', stroke: '#fbbf24', strokeWidth: 1.2, opacity: 0.16 })
+          ),
+          h('pattern', { id: 'pets-skull-cat' + suffix, width: 12, height: 12, patternUnits: 'userSpaceOnUse' },
+            h('rect', { width: 12, height: 12, fill: '#24362c' }),
+            h('circle', { cx: 3, cy: 3, r: 1.4, fill: '#86efac', opacity: 0.22 }),
+            h('circle', { cx: 9, cy: 9, r: 1.4, fill: '#86efac', opacity: 0.22 })
+          )
+        );
+      }
+
+      function drawSkull(kind, x, y, scale) {
+        var dog = kind === 'dog';
+        var accent = dog ? '#fbbf24' : '#86efac';
+        var skullPath = dog
+          ? 'M 20 105 Q 30 42 104 34 Q 170 22 230 53 L 272 75 Q 286 91 271 112 L 229 119 L 209 143 L 151 147 L 91 136 L 35 124 Z'
+          : 'M 45 103 Q 48 42 116 31 Q 181 24 226 57 L 251 77 Q 263 96 246 113 L 211 121 L 191 144 L 129 146 L 78 134 L 51 119 Z';
+        return h('g', { transform: 'translate(' + x + ' ' + y + ') scale(' + scale + ')' },
+          h('ellipse', { cx: 151, cy: 151, rx: dog ? 135 : 112, ry: 10, fill: '#0b0a09', opacity: 0.42 }),
+          h('path', { d: skullPath, fill: '#c7b79e', stroke: accent, strokeWidth: 3, strokeLinejoin: 'round' }),
+          h('path', { d: dog ? 'M 65 118 Q 141 139 236 116' : 'M 79 119 Q 145 139 215 117', fill: 'none', stroke: '#705f4d', strokeWidth: 4 }),
+          h('ellipse', { cx: dog ? 139 : 151, cy: 79, rx: dog ? 25 : 34, ry: dog ? 22 : 31, fill: '#181210', stroke: accent, strokeWidth: 2.5 }),
+          h('path', { d: dog ? 'M 52 100 Q 25 95 19 107 Q 27 119 55 115 Z' : 'M 69 99 Q 45 95 40 106 Q 48 117 72 113 Z', fill: '#5a4939' }),
+          dog
+            ? h('g', null,
+                [0, 1, 2, 3].map(function(i) {
+                  return h('path', { key: 'dog-molar-' + i, d: 'M ' + (178 + i * 20) + ' 116 L ' + (178 + i * 20) + ' 136 L ' + (193 + i * 20) + ' 136 L ' + (193 + i * 20) + ' 116 Z', fill: '#fff8e7', stroke: '#5b4937', strokeWidth: 1.5 });
+                }),
+                h('path', { d: 'M 157 113 L 164 146 L 174 116 Z', fill: '#fff8e7', stroke: '#5b4937', strokeWidth: 1.5 })
+              )
+            : h('g', null,
+                h('path', { d: 'M 150 111 L 158 149 L 170 113 Z', fill: '#fff8e7', stroke: '#5b4937', strokeWidth: 1.5 }),
+                h('path', { d: 'M 190 115 L 198 138 L 207 116 Z M 210 116 L 216 136 L 224 116 Z', fill: '#fff8e7', stroke: '#5b4937', strokeWidth: 1.5 })
+              ),
+          h('path', { d: dog ? 'M 96 54 Q 126 34 163 38' : 'M 112 48 Q 148 27 184 43', fill: 'none', stroke: '#efe3cc', strokeWidth: 6, opacity: 0.62, strokeLinecap: 'round' })
+        );
+      }
+
+      function cueRow(cue, x, y, narrow) {
+        return h('g', { key: cue.mark + cue.label },
+          h('rect', { x: x, y: y - (narrow ? 17 : 14), width: narrow ? 29 : 24, height: narrow ? 29 : 24, rx: cue.mark === '◆' ? 4 : 12, fill: '#181210', stroke: cue.color, strokeWidth: 2 }),
+          h('text', { x: x + (narrow ? 14.5 : 12), y: y + (narrow ? 5 : 4), textAnchor: 'middle', fill: cue.color, fontSize: narrow ? 17 : 13, fontWeight: 900 }, cue.mark),
+          h('text', { x: x + (narrow ? 39 : 34), y: y, fill: '#fef3e2', fontSize: narrow ? 16 : 12, fontWeight: 800 }, cue.label),
+          h('text', { x: x + (narrow ? 39 : 34), y: y + (narrow ? 19 : 15), fill: '#c8b4a2', fontSize: narrow ? 16 : 11.5 }, cue.detail)
+        );
+      }
+
+      var dogCues = [
+        { mark: '■', label: 'Flat-topped molars', detail: 'crush and grind some plant matter', color: '#fbbf24' },
+        { mark: '◆', label: 'Longer muzzle', detail: 'more room for a mixed tooth toolkit', color: '#fbbf24' },
+        { mark: '●', label: 'Smaller eye socket ratio', detail: 'compared with the cat skull', color: '#fbbf24' }
+      ];
+      var catCues = [
+        { mark: '▲', label: 'Blade-like carnassials', detail: 'slice meat; no flat grinding surface', color: '#86efac' },
+        { mark: '◆', label: 'Short rounded skull', detail: 'compact jaw built around shearing', color: '#86efac' },
+        { mark: '●', label: 'Larger eye socket ratio', detail: 'supports low-light hunting anatomy', color: '#86efac' }
+      ];
+
+      function skullCard(kind, x, y, width, height, narrow, suffix) {
+        var dog = kind === 'dog';
+        var accent = dog ? '#fbbf24' : '#86efac';
+        var cues = dog ? dogCues : catCues;
+        var title = dog ? 'DOG — flexible tooth toolkit' : 'CAT — obligate carnivore';
+        var drawScale = narrow ? 0.94 : 1.04;
+        return h('g', { key: kind },
+          h('rect', { x: x, y: y, width: width, height: height, rx: 14, fill: 'url(#pets-skull-' + kind + suffix + ')', stroke: accent, strokeWidth: 2 }),
+          h('text', { x: x + 18, y: y + (narrow ? 29 : 27), fill: accent, fontSize: narrow ? 18 : 15, fontWeight: 900 }, title),
+          drawSkull(kind, x + (narrow ? 28 : 43), y + 43, drawScale),
+          cues.map(function(cue, i) {
+            return cueRow(cue, x + 18, y + (narrow ? 244 : 226) + i * (narrow ? 55 : 43), narrow);
+          })
+        );
+      }
+
+      function skullSvg(narrow) {
+        var suffix = narrow ? '-narrow' : '-wide';
+        var W = narrow ? 360 : 840;
+        var H = narrow ? 942 : 500;
+        var titleId = narrow ? 'svg-skull-mobile-title' : 'svg-skull-title';
+        var descId = narrow ? 'svg-skull-mobile-desc' : 'svg-skull-desc';
+        return h('svg', {
+          className: narrow ? 'petslab-diagram-narrow' : 'petslab-diagram-wide',
+          viewBox: '0 0 ' + W + ' ' + H,
+          role: 'img', 'aria-labelledby': titleId + ' ' + descId,
+          preserveAspectRatio: 'xMidYMid meet',
+          style: { background: '#181210', borderRadius: 8 }
+        },
+          h('title', { id: titleId }, titleText),
+          h('desc', { id: descId }, descText),
+          skullDefs(suffix),
+          h('rect', { x: 0, y: 0, width: W, height: H, rx: 12, fill: '#181210' }),
+          h('text', { x: W / 2, y: narrow ? 28 : 27, textAnchor: 'middle', fill: '#fef3e2', fontSize: 18, fontWeight: 900 }, 'Dog and cat skulls reveal diet'),
+          narrow
+            ? h('g', null,
+                h('text', { x: W / 2, y: 50, textAnchor: 'middle', fill: '#c8b4a2', fontSize: 16 }, 'Compare tooth shape and eye-socket proportion'),
+                h('text', { x: W / 2, y: 70, textAnchor: 'middle', fill: '#c8b4a2', fontSize: 16 }, '— not just overall skull size')
+              )
+            : h('text', { x: W / 2, y: 49, textAnchor: 'middle', fill: '#c8b4a2', fontSize: 12 }, 'Compare tooth SHAPE and eye-socket proportion — not just skull size'),
+          narrow
+            ? h('g', null,
+                skullCard('dog', 12, 86, 336, 380, true, suffix),
+                skullCard('cat', 12, 478, 336, 380, true, suffix)
+              )
+            : h('g', null,
+                skullCard('dog', 14, 66, 397, 365, false, suffix),
+                skullCard('cat', 429, 66, 397, 365, false, suffix)
+              ),
+          narrow
+            ? h('g', null,
+                h('rect', { x: 12, y: 872, width: 336, height: 58, rx: 18, fill: '#2d2019', stroke: '#e8d5b7', strokeWidth: 1.5 }),
+                h('text', { x: W / 2, y: 895, textAnchor: 'middle', fill: '#fef3e2', fontSize: 16, fontWeight: 800 }, 'Grinding widens diet; shearing'),
+                h('text', { x: W / 2, y: 917, textAnchor: 'middle', fill: '#fef3e2', fontSize: 16, fontWeight: 800 }, 'reveals obligate carnivory.')
+              )
+            : h('g', null,
+                h('rect', { x: 145, y: 444, width: 550, height: 38, rx: 18, fill: '#2d2019', stroke: '#e8d5b7', strokeWidth: 1.5 }),
+                h('text', { x: W / 2, y: 469, textAnchor: 'middle', fill: '#fef3e2', fontSize: 12.5, fontWeight: 800 }, 'Grinding surfaces widen diet; shearing blades reveal obligate carnivory.')
+              )
+        );
+      }
+
+      return h('div', { className: 'petslab-diagram-responsive-art' },
+        skullSvg(false),
+        skullSvg(true)
       );
     }
-
     function svgAirSac() {
-      return h('svg', { viewBox: '0 0 600 360', width: '100%', height: '100%',
-        role: 'img', 'aria-labelledby': 'svg-airsac-title svg-airsac-desc',
-        style: { background: '#181210', borderRadius: 8 } },
-        h('title', { id: 'svg-airsac-title' }, 'Bird respiratory air sac system'),
-        h('desc', { id: 'svg-airsac-desc' }, 'Schematic of bird respiratory anatomy: 9 air sacs, two-cycle one-way airflow through lungs. Air enters via trachea, fills posterior sacs first (cycle 1), passes through parabronchi (oxygen exchange), then to anterior sacs (cycle 2), exits via trachea. Far more efficient than mammalian tidal-flow lungs.'),
-        // Bird outline (simplified perched profile)
-        h('path', { d: 'M 80 200 Q 100 130 200 130 Q 280 130 350 160 L 380 175 L 410 175 L 440 165 L 460 180 Q 475 195 470 220 L 450 250 L 420 280 L 380 290 L 320 295 L 250 290 L 180 280 Q 120 270 90 240 Q 75 220 80 200 Z', fill: '#2d2018', stroke: '#fbbf24', strokeWidth: 1.5 }),
-        // Trachea (input tube)
-        h('path', { d: 'M 440 165 Q 460 130 480 100', stroke: '#7dd3fc', strokeWidth: 4, fill: 'none' }),
-        h('text', { x: 495, y: 95, fill: '#7dd3fc', fontSize: 11 }, 'Trachea'),
-        // Lung (parabronchi)
-        h('rect', { x: 250, y: 175, width: 80, height: 35, fill: '#86efac', stroke: '#22c55e', strokeWidth: 1.5, rx: 6 }),
-        h('text', { x: 290, y: 198, fill: '#0f172a', fontSize: 10, textAnchor: 'middle', fontWeight: 700 }, 'Lung (parabronchi)'),
-        // Anterior air sacs (front of body — receive air on cycle 2)
-        h('ellipse', { cx: 380, cy: 200, rx: 25, ry: 18, fill: '#bfdbfe', stroke: '#3b82f6', strokeWidth: 1 }),
-        h('text', { x: 380, y: 205, fill: '#0f172a', fontSize: 9, textAnchor: 'middle' }, 'Anterior'),
-        h('ellipse', { cx: 420, cy: 220, rx: 22, ry: 15, fill: '#bfdbfe', stroke: '#3b82f6', strokeWidth: 1 }),
-        h('ellipse', { cx: 410, cy: 175, rx: 18, ry: 12, fill: '#bfdbfe', stroke: '#3b82f6', strokeWidth: 1 }),
-        // Posterior air sacs (back/tail end — receive air on cycle 1)
-        h('ellipse', { cx: 200, cy: 210, rx: 30, ry: 22, fill: '#fef3c7', stroke: '#f59e0b', strokeWidth: 1 }),
-        h('text', { x: 200, y: 215, fill: '#0f172a', fontSize: 9, textAnchor: 'middle' }, 'Posterior'),
-        h('ellipse', { cx: 150, cy: 240, rx: 28, ry: 20, fill: '#fef3c7', stroke: '#f59e0b', strokeWidth: 1 }),
-        h('ellipse', { cx: 230, cy: 260, rx: 25, ry: 18, fill: '#fef3c7', stroke: '#f59e0b', strokeWidth: 1 }),
-        h('ellipse', { cx: 290, cy: 245, rx: 22, ry: 15, fill: '#fef3c7', stroke: '#f59e0b', strokeWidth: 1 }),
-        // Airflow arrows (one-way)
-        h('text', { x: 110, y: 155, fill: '#fbbf24', fontSize: 10, fontWeight: 700 }, 'CYCLE 1 (inhale): air → posterior sacs (yellow)'),
-        h('text', { x: 110, y: 320, fill: '#7dd3fc', fontSize: 10, fontWeight: 700 }, 'CYCLE 2 (exhale): posterior → lung → anterior (blue) → out'),
-        // Labels
-        h('text', { x: 300, y: 30, fill: '#fef3e2', fontSize: 14, textAnchor: 'middle', fontWeight: 700 }, 'Bird respiratory system'),
-        h('text', { x: 300, y: 50, fill: '#a89180', fontSize: 11, textAnchor: 'middle' }, '9 air sacs · two-cycle one-way airflow · ~2× more efficient than mammals'),
-        // Caption
-        h('text', { x: 300, y: 350, fill: '#fb923c', fontSize: 11, textAnchor: 'middle', fontWeight: 700 }, '⚠ This efficiency is why birds die from PTFE / smoke / aerosols in MINUTES.')
+      var titleText = 'Bird respiratory air sac system';
+      var descText = 'Schematic of bird respiratory anatomy: 9 air sacs, two-cycle one-way airflow through lungs. Air enters via trachea, fills posterior sacs first (cycle 1), passes through parabronchi (oxygen exchange), then to anterior sacs (cycle 2), exits via trachea. Far more efficient than mammalian tidal-flow lungs.';
+      var subtitleText = '9 air sacs · two-cycle one-way airflow · ~2× more efficient than mammals';
+      var cycleOneText = 'FIRST BREATH: fresh air → posterior sacs → lung';
+      var cycleTwoText = 'SECOND BREATH: lung → anterior sacs → out';
+      var warningText = '⚠ This efficiency is why birds die from PTFE / smoke / aerosols in MINUTES.';
+
+      function airDefs(suffix) {
+        var colors = ['#fbbf24', '#86efac', '#7dd3fc', '#c4b5fd'];
+        return h('defs', null,
+          colors.map(function(color, i) {
+            return h('marker', {
+              key: 'marker-' + i,
+              id: 'pets-air-arrow-' + (i + 1) + suffix,
+              viewBox: '0 0 10 10', refX: 8.5, refY: 5,
+              markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse'
+            }, h('path', { d: 'M 0 0 L 10 5 L 0 10 Z', fill: color }));
+          }),
+          h('pattern', { id: 'pets-air-posterior' + suffix, width: 10, height: 10, patternUnits: 'userSpaceOnUse' },
+            h('rect', { width: 10, height: 10, fill: '#4a3517' }),
+            h('circle', { cx: 3, cy: 3, r: 1.7, fill: '#fbbf24' }),
+            h('circle', { cx: 8, cy: 8, r: 1.2, fill: '#fde68a' })
+          ),
+          h('pattern', { id: 'pets-air-anterior' + suffix, width: 9, height: 9, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(35)' },
+            h('rect', { width: 9, height: 9, fill: '#17374a' }),
+            h('rect', { width: 3, height: 9, fill: '#7dd3fc', opacity: 0.8 })
+          ),
+          h('pattern', { id: 'pets-air-lung' + suffix, width: 8, height: 8, patternUnits: 'userSpaceOnUse' },
+            h('rect', { width: 8, height: 8, fill: '#244530' }),
+            h('path', { d: 'M 0 8 L 8 0 M -2 2 L 2 -2 M 6 10 L 10 6', stroke: '#86efac', strokeWidth: 1.4, opacity: 0.8 })
+          )
+        );
+      }
+
+      function flowPath(d, phase, suffix, color, dash) {
+        return h('path', {
+          className: 'petslab-diagram-flow',
+          d: d, fill: 'none', stroke: color, strokeWidth: 5,
+          strokeDasharray: dash, strokeLinecap: 'round', strokeLinejoin: 'round',
+          markerEnd: 'url(#pets-air-arrow-' + phase + suffix + ')',
+          vectorEffect: 'non-scaling-stroke'
+        });
+      }
+
+      function phaseBadge(x, y, number, color) {
+        return h('g', { transform: 'translate(' + x + ' ' + y + ')' },
+          h('circle', { cx: 0, cy: 0, r: 13, fill: '#181210', stroke: color, strokeWidth: 2.5 }),
+          h('text', { x: 0, y: 5, textAnchor: 'middle', fill: '#fff8e7', fontSize: 13, fontWeight: 950 }, String(number))
+        );
+      }
+
+      function desktopAirSac() {
+        var suffix = '-wide';
+        return h('svg', {
+          className: 'petslab-diagram-wide',
+          viewBox: '0 0 760 520',
+          role: 'img', 'aria-labelledby': 'svg-airsac-title svg-airsac-desc',
+          preserveAspectRatio: 'xMidYMid meet',
+          style: { background: '#181210', borderRadius: 8 }
+        },
+          h('title', { id: 'svg-airsac-title' }, titleText),
+          h('desc', { id: 'svg-airsac-desc' }, descText),
+          airDefs(suffix),
+          h('rect', { x: 0, y: 0, width: 760, height: 520, rx: 12, fill: '#181210' }),
+          h('text', { x: 380, y: 30, fill: '#fef3e2', fontSize: 18, textAnchor: 'middle', fontWeight: 800 }, 'Bird respiratory system'),
+          h('text', { x: 380, y: 52, fill: '#c8b4a2', fontSize: 13, textAnchor: 'middle' }, subtitleText),
+          // Simplified perched bird profile and airway.
+          h('path', {
+            d: 'M 82 245 Q 105 142 226 129 Q 350 113 479 161 Q 540 183 576 215 L 606 205 L 632 216 L 609 232 Q 594 300 522 335 Q 429 371 287 351 Q 151 336 95 291 Q 75 272 82 245 Z',
+            fill: '#2d2018', stroke: '#d7aa62', strokeWidth: 2.5
+          }),
+          h('circle', { cx: 576, cy: 180, r: 45, fill: '#3a291d', stroke: '#d7aa62', strokeWidth: 2 }),
+          h('path', { d: 'M 607 178 L 652 190 L 609 201 Z', fill: '#d7aa62', stroke: '#f6d59a', strokeWidth: 1.5 }),
+          h('circle', { cx: 588, cy: 167, r: 5.5, fill: '#111827' }),
+          h('circle', { cx: 590, cy: 165, r: 1.6, fill: '#fff8e7' }),
+          h('path', { d: 'M 583 204 Q 603 157 626 112', stroke: '#d9eff7', strokeWidth: 8, fill: 'none', strokeLinecap: 'round' }),
+          h('path', { d: 'M 583 204 Q 603 157 626 112', stroke: '#315b78', strokeWidth: 2, fill: 'none', strokeDasharray: '4 5' }),
+          h('text', { x: 650, y: 108, fill: '#d9eff7', fontSize: 13, fontWeight: 800 }, 'Trachea'),
+          // Four posterior sacs: paired posterior thoracic + abdominal.
+          [[213, 252, 38, 29], [168, 294, 35, 27], [243, 316, 40, 25], [300, 286, 30, 23]].map(function(sac, i) {
+            return h('ellipse', {
+              key: 'posterior-' + i, cx: sac[0], cy: sac[1], rx: sac[2], ry: sac[3],
+              fill: 'url(#pets-air-posterior' + suffix + ')', stroke: '#fbbf24', strokeWidth: 2
+            });
+          }),
+          // Five anterior sacs: paired cervical/anterior thoracic + clavicular.
+          [[475, 205, 28, 21], [523, 232, 30, 23], [492, 274, 34, 24], [440, 178, 24, 18], [536, 178, 22, 17]].map(function(sac, i) {
+            return h('ellipse', {
+              key: 'anterior-' + i, cx: sac[0], cy: sac[1], rx: sac[2], ry: sac[3],
+              fill: 'url(#pets-air-anterior' + suffix + ')', stroke: '#7dd3fc', strokeWidth: 2
+            });
+          }),
+          h('rect', { x: 335, y: 218, width: 104, height: 54, rx: 11, fill: 'url(#pets-air-lung' + suffix + ')', stroke: '#86efac', strokeWidth: 2.5 }),
+          h('path', { d: 'M 347 230 H 427 M 347 242 H 427 M 347 254 H 427', stroke: '#d9f7df', strokeWidth: 1.5, opacity: 0.78 }),
+          h('text', { x: 387, y: 244, fill: '#f2fff4', fontSize: 12, textAnchor: 'middle', fontWeight: 900 }, 'Lung'),
+          h('text', { x: 387, y: 259, fill: '#d9f7df', fontSize: 10, textAnchor: 'middle' }, '(parabronchi)'),
+          h('g', null,
+            h('rect', { x: 126, y: 200, width: 128, height: 24, rx: 12, fill: '#181210', stroke: '#fbbf24', strokeWidth: 1.5 }),
+            h('text', { x: 190, y: 216, fill: '#fde68a', fontSize: 11, textAnchor: 'middle', fontWeight: 850 }, 'Posterior group · 4 sacs'),
+            h('rect', { x: 457, y: 304, width: 128, height: 24, rx: 12, fill: '#181210', stroke: '#7dd3fc', strokeWidth: 1.5 }),
+            h('text', { x: 521, y: 320, fill: '#bae6fd', fontSize: 11, textAnchor: 'middle', fontWeight: 850 }, 'Anterior group · 5 sacs')
+          ),
+          // Four numbered, directional phases trace two complete breaths.
+          flowPath('M 681 87 Q 645 91 625 116 Q 587 171 561 210 Q 479 322 268 309', 1, suffix, '#fbbf24', '15 7'),
+          flowPath('M 246 281 Q 294 249 342 246', 2, suffix, '#86efac', '5 5'),
+          flowPath('M 432 239 Q 465 218 500 218', 3, suffix, '#7dd3fc', '12 5 2 5'),
+          flowPath('M 515 192 Q 557 163 591 135 Q 626 103 678 79', 4, suffix, '#c4b5fd', '2 7'),
+          phaseBadge(574, 250, 1, '#fbbf24'),
+          phaseBadge(302, 257, 2, '#86efac'),
+          phaseBadge(466, 238, 3, '#7dd3fc'),
+          phaseBadge(601, 122, 4, '#c4b5fd'),
+          h('g', { transform: 'translate(37 378)' },
+            [
+              ['1', 'Inhale 1', 'fresh air → posterior sacs', '#fbbf24', '15 7'],
+              ['2', 'Exhale 1', 'posterior sacs → lung', '#86efac', '5 5'],
+              ['3', 'Inhale 2', 'lung → anterior sacs', '#7dd3fc', '12 5 2 5'],
+              ['4', 'Exhale 2', 'anterior sacs → out', '#c4b5fd', '2 7']
+            ].map(function(item, i) {
+              var x = i * 178;
+              return h('g', { key: item[0], transform: 'translate(' + x + ' 0)' },
+                h('line', { x1: 0, y1: 4, x2: 34, y2: 4, stroke: item[3], strokeWidth: 4, strokeDasharray: item[4], strokeLinecap: 'round' }),
+                h('text', { x: 43, y: 8, fill: '#fff3e2', fontSize: 11, fontWeight: 900 }, item[0] + ' ' + item[1]),
+                h('text', { x: 0, y: 27, fill: '#c8b4a2', fontSize: 10 }, item[2])
+              );
+            })
+          ),
+          h('text', { x: 380, y: 438, fill: '#fbbf24', fontSize: 12, textAnchor: 'middle', fontWeight: 800 }, cycleOneText),
+          h('text', { x: 380, y: 460, fill: '#7dd3fc', fontSize: 12, textAnchor: 'middle', fontWeight: 800 }, cycleTwoText),
+          h('text', { x: 380, y: 501, fill: '#fb923c', fontSize: 13, textAnchor: 'middle', fontWeight: 850 }, warningText)
+        );
+      }
+
+      function narrowAirSac() {
+        var suffix = '-narrow';
+        return h('svg', {
+          className: 'petslab-diagram-narrow',
+          viewBox: '0 0 360 780',
+          role: 'img', 'aria-labelledby': 'svg-airsac-mobile-title svg-airsac-mobile-desc',
+          preserveAspectRatio: 'xMidYMid meet',
+          style: { background: '#181210', borderRadius: 8 }
+        },
+          h('title', { id: 'svg-airsac-mobile-title' }, titleText),
+          h('desc', { id: 'svg-airsac-mobile-desc' }, descText),
+          airDefs(suffix),
+          h('rect', { x: 0, y: 0, width: 360, height: 780, rx: 12, fill: '#181210' }),
+          h('text', { x: 180, y: 28, fill: '#fef3e2', fontSize: 17, textAnchor: 'middle', fontWeight: 850 }, 'Bird respiratory system'),
+          h('text', { x: 180, y: 49, fill: '#c8b4a2', fontSize: 10.5, textAnchor: 'middle' }, subtitleText),
+          h('path', {
+            d: 'M 26 215 Q 45 104 142 92 Q 236 81 298 142 Q 327 172 321 232 Q 313 302 242 340 Q 157 380 70 335 Q 20 309 26 215 Z',
+            fill: '#2d2018', stroke: '#d7aa62', strokeWidth: 2.5
+          }),
+          h('circle', { cx: 290, cy: 128, r: 34, fill: '#3a291d', stroke: '#d7aa62', strokeWidth: 2 }),
+          h('path', { d: 'M 315 127 L 347 138 L 316 148 Z', fill: '#d7aa62' }),
+          h('circle', { cx: 299, cy: 118, r: 4.5, fill: '#111827' }),
+          h('path', { d: 'M 285 157 Q 304 116 318 83', stroke: '#d9eff7', strokeWidth: 7, fill: 'none', strokeLinecap: 'round' }),
+          h('text', { x: 320, y: 78, fill: '#d9eff7', fontSize: 11, textAnchor: 'end', fontWeight: 800 }, 'Trachea'),
+          [[93, 240, 27, 22], [67, 276, 25, 20], [116, 304, 29, 20], [146, 267, 23, 18]].map(function(sac, i) {
+            return h('ellipse', {
+              key: 'posterior-mobile-' + i, cx: sac[0], cy: sac[1], rx: sac[2], ry: sac[3],
+              fill: 'url(#pets-air-posterior' + suffix + ')', stroke: '#fbbf24', strokeWidth: 2
+            });
+          }),
+          [[240, 181, 23, 17], [274, 207, 24, 18], [249, 246, 26, 19], [215, 153, 19, 14], [278, 157, 18, 13]].map(function(sac, i) {
+            return h('ellipse', {
+              key: 'anterior-mobile-' + i, cx: sac[0], cy: sac[1], rx: sac[2], ry: sac[3],
+              fill: 'url(#pets-air-anterior' + suffix + ')', stroke: '#7dd3fc', strokeWidth: 2
+            });
+          }),
+          h('rect', { x: 160, y: 206, width: 72, height: 43, rx: 9, fill: 'url(#pets-air-lung' + suffix + ')', stroke: '#86efac', strokeWidth: 2 }),
+          h('text', { x: 196, y: 224, fill: '#f2fff4', fontSize: 10.5, textAnchor: 'middle', fontWeight: 900 }, 'Lung'),
+          h('text', { x: 196, y: 238, fill: '#d9f7df', fontSize: 8.5, textAnchor: 'middle' }, '(parabronchi)'),
+          flowPath('M 338 79 Q 316 87 303 112 Q 278 174 244 235 Q 200 309 116 303', 1, suffix, '#fbbf24', '15 7'),
+          flowPath('M 125 269 Q 147 242 165 232', 2, suffix, '#86efac', '5 5'),
+          flowPath('M 226 221 Q 243 202 257 198', 3, suffix, '#7dd3fc', '12 5 2 5'),
+          flowPath('M 264 173 Q 290 140 305 107 Q 318 82 342 70', 4, suffix, '#c4b5fd', '2 7'),
+          phaseBadge(202, 296, 1, '#fbbf24'),
+          phaseBadge(148, 248, 2, '#86efac'),
+          phaseBadge(241, 220, 3, '#7dd3fc'),
+          phaseBadge(303, 110, 4, '#c4b5fd'),
+          h('rect', { x: 28, y: 344, width: 130, height: 24, rx: 12, fill: '#181210', stroke: '#fbbf24', strokeWidth: 1.5 }),
+          h('text', { x: 93, y: 360, fill: '#fde68a', fontSize: 10.5, textAnchor: 'middle', fontWeight: 850 }, 'Posterior · 4 sacs'),
+          h('rect', { x: 202, y: 344, width: 130, height: 24, rx: 12, fill: '#181210', stroke: '#7dd3fc', strokeWidth: 1.5 }),
+          h('text', { x: 267, y: 360, fill: '#bae6fd', fontSize: 10.5, textAnchor: 'middle', fontWeight: 850 }, 'Anterior · 5 sacs'),
+          h('g', { transform: 'translate(16 395)' },
+            [
+              ['1', 'Inhale 1', 'fresh air → posterior sacs', '#fbbf24', '15 7'],
+              ['2', 'Exhale 1', 'posterior sacs → lung', '#86efac', '5 5'],
+              ['3', 'Inhale 2', 'lung → anterior sacs', '#7dd3fc', '12 5 2 5'],
+              ['4', 'Exhale 2', 'anterior sacs → out', '#c4b5fd', '2 7']
+            ].map(function(item, i) {
+              var y = i * 58;
+              return h('g', { key: item[0], transform: 'translate(0 ' + y + ')' },
+                h('rect', { x: 0, y: 0, width: 328, height: 48, rx: 10, fill: '#241a15', stroke: item[3], strokeWidth: 1.5 }),
+                h('circle', { cx: 22, cy: 24, r: 13, fill: '#181210', stroke: item[3], strokeWidth: 2 }),
+                h('text', { x: 22, y: 29, textAnchor: 'middle', fill: '#fff8e7', fontSize: 12, fontWeight: 950 }, item[0]),
+                h('text', { x: 45, y: 20, fill: '#fff3e2', fontSize: 11.5, fontWeight: 900 }, item[1]),
+                h('text', { x: 45, y: 36, fill: '#d5c0ad', fontSize: 10.5 }, item[2])
+              );
+            })
+          ),
+          h('text', { x: 180, y: 652, fill: '#fbbf24', fontSize: 10.5, textAnchor: 'middle', fontWeight: 800 }, cycleOneText),
+          h('text', { x: 180, y: 678, fill: '#7dd3fc', fontSize: 10.5, textAnchor: 'middle', fontWeight: 800 },
+            h('tspan', { x: 180, dy: 0 }, 'CYCLE 2 (exhale): posterior → lung'),
+            h('tspan', { x: 180, dy: 15 }, '→ anterior (blue) → out')
+          ),
+          h('text', { x: 180, y: 744, fill: '#fb923c', fontSize: 10.5, textAnchor: 'middle', fontWeight: 850 },
+            h('tspan', { x: 180, dy: 0 }, '⚠ This efficiency is why birds die from'),
+            h('tspan', { x: 180, dy: 15 }, 'PTFE / smoke / aerosols in MINUTES.')
+          )
+        );
+      }
+
+      return h('div', { className: 'petslab-diagram-responsive-art' },
+        desktopAirSac(),
+        narrowAirSac()
       );
     }
-
     function svgOperantLoop() {
-      return h('svg', { viewBox: '0 0 600 360', width: '100%', height: '100%',
-        role: 'img', 'aria-labelledby': 'svg-operant-title svg-operant-desc',
-        style: { background: '#181210', borderRadius: 8 } },
-        h('title', { id: 'svg-operant-title' }, 'Operant conditioning loop'),
-        h('desc', { id: 'svg-operant-desc' }, 'The three-term contingency: antecedent (cue) → behavior (action) → consequence (reinforcer or punisher). Reinforcement increases the behavior frequency; punishment decreases it. Modern positive-reinforcement training uses cue → desired behavior → reward.'),
-        h('text', { x: 300, y: 30, fill: '#fef3e2', fontSize: 14, textAnchor: 'middle', fontWeight: 700 }, 'Operant conditioning loop'),
-        h('text', { x: 300, y: 50, fill: '#a89180', fontSize: 11, textAnchor: 'middle' }, '(For full theory + Skinner-box sim, see BehaviorLab)'),
-        // ANTECEDENT box (left)
-        h('rect', { x: 50, y: 130, width: 130, height: 80, fill: '#3a2a1f', stroke: '#7dd3fc', strokeWidth: 2, rx: 12 }),
-        h('text', { x: 115, y: 160, fill: '#7dd3fc', fontSize: 13, textAnchor: 'middle', fontWeight: 700 }, 'ANTECEDENT'),
-        h('text', { x: 115, y: 178, fill: '#fef3e2', fontSize: 11, textAnchor: 'middle' }, '(cue / setting)'),
-        h('text', { x: 115, y: 195, fill: '#a89180', fontSize: 10, textAnchor: 'middle', fontStyle: 'italic' }, '"sit"'),
-        // BEHAVIOR box (center)
-        h('rect', { x: 235, y: 130, width: 130, height: 80, fill: '#3a2a1f', stroke: '#fbbf24', strokeWidth: 2, rx: 12 }),
-        h('text', { x: 300, y: 160, fill: '#fbbf24', fontSize: 13, textAnchor: 'middle', fontWeight: 700 }, 'BEHAVIOR'),
-        h('text', { x: 300, y: 178, fill: '#fef3e2', fontSize: 11, textAnchor: 'middle' }, '(action)'),
-        h('text', { x: 300, y: 195, fill: '#a89180', fontSize: 10, textAnchor: 'middle', fontStyle: 'italic' }, 'dog sits'),
-        // CONSEQUENCE box (right)
-        h('rect', { x: 420, y: 130, width: 130, height: 80, fill: '#3a2a1f', stroke: '#86efac', strokeWidth: 2, rx: 12 }),
-        h('text', { x: 485, y: 160, fill: '#86efac', fontSize: 13, textAnchor: 'middle', fontWeight: 700 }, 'CONSEQUENCE'),
-        h('text', { x: 485, y: 178, fill: '#fef3e2', fontSize: 11, textAnchor: 'middle' }, '(reinforcer / punisher)'),
-        h('text', { x: 485, y: 195, fill: '#a89180', fontSize: 10, textAnchor: 'middle', fontStyle: 'italic' }, 'treat + praise'),
-        // Arrows between boxes
-        h('line', { x1: 180, y1: 170, x2: 230, y2: 170, stroke: '#fef3e2', strokeWidth: 2 }),
-        h('polygon', { points: '232,170 224,166 224,174', fill: '#fef3e2' }),
-        h('line', { x1: 365, y1: 170, x2: 415, y2: 170, stroke: '#fef3e2', strokeWidth: 2 }),
-        h('polygon', { points: '417,170 409,166 409,174', fill: '#fef3e2' }),
-        // Feedback loop arrow (consequence → next antecedent)
-        h('path', { d: 'M 485 215 Q 485 290 300 290 Q 115 290 115 215', stroke: '#fb923c', strokeWidth: 2, fill: 'none', strokeDasharray: '5,3' }),
-        h('polygon', { points: '115,217 110,209 120,209', fill: '#fb923c' }),
-        h('text', { x: 300, y: 310, fill: '#fb923c', fontSize: 11, textAnchor: 'middle', fontStyle: 'italic' }, 'Reinforcement makes the behavior MORE likely next time'),
-        // Caption
-        h('text', { x: 300, y: 340, fill: '#fef3e2', fontSize: 11, textAnchor: 'middle' }, 'Pet training works the same way mouse-Skinner-box training works.'),
-        h('text', { x: 300, y: 354, fill: '#a89180', fontSize: 10, textAnchor: 'middle', fontStyle: 'italic' }, 'The pets-tile shows what changes when you swap the mouse for a real dog in your real living room.')
+      var titleText = 'Operant conditioning loop';
+      var descText = 'Responsive three-step operant-conditioning diagram. Step 1 is an antecedent cue: the trainer says sit. Step 2 is the behavior: the dog sits. Step 3 is the consequence: a treat and praise follow. The feedback arrow shows that consequences change how likely the behavior is next time. Reinforcement increases behavior; punishment decreases it.';
+
+      var steps = [
+        { id: 'cue', number: '1', mark: '●', title: 'ANTECEDENT', subtitle: 'Cue or setting', example: 'Trainer says “sit”', color: '#7dd3fc' },
+        { id: 'behavior', number: '2', mark: '■', title: 'BEHAVIOR', subtitle: 'Observable action', example: 'Dog puts rear on floor', color: '#fbbf24' },
+        { id: 'consequence', number: '3', mark: '◆', title: 'CONSEQUENCE', subtitle: 'What follows', example: 'Treat + praise arrive', color: '#86efac' }
+      ];
+
+      function operantDefs(suffix) {
+        return h('defs', null,
+          h('marker', {
+            id: 'pets-operant-arrow' + suffix,
+            viewBox: '0 0 10 10', refX: 8.5, refY: 5,
+            markerWidth: 8, markerHeight: 8, orient: 'auto-start-reverse'
+          }, h('path', { d: 'M 0 0 L 10 5 L 0 10 Z', fill: '#fef3e2' })),
+          steps.map(function(step) {
+            return h('pattern', { key: step.id, id: 'pets-operant-' + step.id + suffix, width: 14, height: 14, patternUnits: 'userSpaceOnUse', patternTransform: step.id === 'behavior' ? 'rotate(35)' : null },
+              h('rect', { width: 14, height: 14, fill: '#2d2019' }),
+              step.id === 'cue'
+                ? h('circle', { cx: 4, cy: 4, r: 1.5, fill: step.color, opacity: 0.2 })
+                : step.id === 'behavior'
+                  ? h('rect', { width: 3, height: 14, fill: step.color, opacity: 0.14 })
+                  : h('path', { d: 'M 0 7 L 7 0 L 14 7 L 7 14 Z', fill: 'none', stroke: step.color, strokeWidth: 1, opacity: 0.16 })
+            );
+          })
+        );
+      }
+
+      function stepIcon(id, x, y, scale) {
+        if (id === 'cue') {
+          return h('g', { transform: 'translate(' + x + ' ' + y + ') scale(' + scale + ')' },
+            h('path', { d: 'M 10 58 Q 25 31 50 42 L 74 55 L 67 72 L 39 61 Q 26 74 10 58 Z', fill: '#d7a979', stroke: '#2b1b14', strokeWidth: 2 }),
+            h('rect', { x: 50, y: 2, width: 62, height: 34, rx: 12, fill: '#172033', stroke: '#7dd3fc', strokeWidth: 2 }),
+            h('path', { d: 'M 65 36 L 58 48 L 80 36', fill: '#172033', stroke: '#7dd3fc', strokeWidth: 2 }),
+            h('text', { x: 81, y: 25, textAnchor: 'middle', fill: '#fef3e2', fontSize: 16, fontWeight: 900 }, 'SIT')
+          );
+        }
+        if (id === 'behavior') {
+          return h('g', { transform: 'translate(' + x + ' ' + y + ') scale(' + scale + ')' },
+            h('ellipse', { cx: 57, cy: 76, rx: 48, ry: 7, fill: '#0b0a09', opacity: 0.38 }),
+            h('ellipse', { cx: 59, cy: 48, rx: 35, ry: 27, fill: '#c98a47', stroke: '#2b1b14', strokeWidth: 2 }),
+            h('circle', { cx: 28, cy: 25, r: 20, fill: '#d99a55', stroke: '#2b1b14', strokeWidth: 2 }),
+            h('path', { d: 'M 18 11 L 10 -8 L 29 8 Z M 34 8 L 49 -7 L 48 18 Z', fill: '#8d542d', stroke: '#2b1b14', strokeWidth: 1.5 }),
+            h('path', { d: 'M 45 66 L 39 78 M 67 66 L 72 78 M 84 47 Q 110 29 112 49', fill: 'none', stroke: '#a96731', strokeWidth: 10, strokeLinecap: 'round' }),
+            h('circle', { cx: 23, cy: 23, r: 2.5, fill: '#2b1b14' })
+          );
+        }
+        return h('g', { transform: 'translate(' + x + ' ' + y + ') scale(' + scale + ')' },
+          h('path', { d: 'M 5 55 Q 29 29 55 44 L 82 56 L 74 74 L 45 62 Q 26 77 5 55 Z', fill: '#d7a979', stroke: '#2b1b14', strokeWidth: 2 }),
+          h('path', { className: 'petslab-body-motion--lift', d: 'M 54 39 Q 69 18 81 4', fill: 'none', stroke: '#fbbf24', strokeWidth: 3, strokeDasharray: '5 4' }),
+          h('circle', { cx: 83, cy: 2, r: 9, fill: '#a35b24', stroke: '#fde68a', strokeWidth: 2 }),
+          h('path', { d: 'M 97 21 C 109 5 128 13 128 29 C 128 45 110 53 97 66 C 84 53 66 45 66 29 C 66 13 85 5 97 21 Z', transform: 'scale(.48) translate(105 14)', fill: '#86efac', opacity: 0.9 })
+        );
+      }
+
+      function stepCard(step, x, y, width, height, narrow, suffix) {
+        return h('g', { key: step.id },
+          h('rect', { x: x, y: y, width: width, height: height, rx: 14, fill: 'url(#pets-operant-' + step.id + suffix + ')', stroke: step.color, strokeWidth: 2 }),
+          h('circle', { cx: x + (narrow ? 28 : 25), cy: y + (narrow ? 28 : 25), r: narrow ? 17 : 15, fill: '#181210', stroke: step.color, strokeWidth: 2.5 }),
+          h('text', { x: x + (narrow ? 28 : 25), y: y + (narrow ? 34 : 30), textAnchor: 'middle', fill: '#fff8e7', fontSize: narrow ? 18 : 14, fontWeight: 900 }, step.number),
+          h('text', { x: x + (narrow ? 54 : 47), y: y + (narrow ? 27 : 24), fill: step.color, fontSize: narrow ? 17 : 13.5, fontWeight: 900 }, step.mark + ' ' + step.title),
+          h('text', { x: x + (narrow ? 54 : 47), y: y + (narrow ? 49 : 43), fill: '#fef3e2', fontSize: narrow ? 16 : 12, fontWeight: 700 }, step.subtitle),
+          h('text', { x: x + (narrow ? 22 : 18), y: y + height - (narrow ? 19 : 16), fill: '#c8b4a2', fontSize: narrow ? 16 : 11.5, fontStyle: 'italic' }, step.example),
+          stepIcon(step.id, x + width - (narrow ? 128 : 107), y + (narrow ? 38 : 46), narrow ? 0.82 : 0.7)
+        );
+      }
+
+      function effectBox(x, y, width, title, detail, mark, color, narrow) {
+        return h('g', null,
+          h('rect', { x: x, y: y, width: width, height: narrow ? 78 : 72, rx: 12, fill: '#241a16', stroke: color, strokeWidth: 2 }),
+          h('text', { x: x + 17, y: y + (narrow ? 29 : 27), fill: color, fontSize: narrow ? 17 : 13, fontWeight: 900 }, mark + ' ' + title),
+          h('text', { x: x + 17, y: y + (narrow ? 55 : 51), fill: '#fef3e2', fontSize: narrow ? 16 : 12 }, detail)
+        );
+      }
+
+      function operantSvg(narrow) {
+        var suffix = narrow ? '-narrow' : '-wide';
+        var W = narrow ? 360 : 840;
+        var H = narrow ? 890 : 500;
+        var titleId = narrow ? 'svg-operant-mobile-title' : 'svg-operant-title';
+        var descId = narrow ? 'svg-operant-mobile-desc' : 'svg-operant-desc';
+        var arrowId = 'url(#pets-operant-arrow' + suffix + ')';
+        return h('svg', {
+          className: narrow ? 'petslab-diagram-narrow' : 'petslab-diagram-wide',
+          viewBox: '0 0 ' + W + ' ' + H,
+          role: 'img', 'aria-labelledby': titleId + ' ' + descId,
+          preserveAspectRatio: 'xMidYMid meet',
+          style: { background: '#181210', borderRadius: 8 }
+        },
+          h('title', { id: titleId }, titleText),
+          h('desc', { id: descId }, descText),
+          operantDefs(suffix),
+          h('rect', { x: 0, y: 0, width: W, height: H, rx: 12, fill: '#181210' }),
+          h('text', { x: W / 2, y: narrow ? 28 : 27, textAnchor: 'middle', fill: '#fef3e2', fontSize: 18, fontWeight: 900 }, 'Operant conditioning loop'),
+          h('text', { x: W / 2, y: narrow ? 50 : 49, textAnchor: 'middle', fill: '#c8b4a2', fontSize: narrow ? 16 : 12 }, 'Cue → action → consequence'),
+          narrow
+            ? h('g', null,
+                stepCard(steps[0], 16, 66, 328, 140, true, suffix),
+                stepCard(steps[1], 16, 236, 328, 140, true, suffix),
+                stepCard(steps[2], 16, 406, 328, 140, true, suffix),
+                h('path', { className: 'petslab-diagram-flow', d: 'M 180 208 L 180 230', fill: 'none', stroke: '#fef3e2', strokeWidth: 4, strokeDasharray: '7 5', markerEnd: arrowId }),
+                h('path', { className: 'petslab-diagram-flow', d: 'M 180 378 L 180 400', fill: 'none', stroke: '#fef3e2', strokeWidth: 4, strokeDasharray: '7 5', markerEnd: arrowId }),
+                h('path', { className: 'petslab-diagram-flow', d: 'M 329 520 C 354 520 354 82 329 82', fill: 'none', stroke: '#fb923c', strokeWidth: 3, strokeDasharray: '8 6', markerEnd: arrowId }),
+                h('text', { x: 180, y: 574, textAnchor: 'middle', fill: '#fb923c', fontSize: 16, fontWeight: 800 }, '↺ CONSEQUENCE SHAPES NEXT TRY'),
+                effectBox(16, 604, 328, 'REINFORCEMENT', 'Behavior becomes more likely next time', '↑', '#86efac', true),
+                effectBox(16, 698, 328, 'PUNISHMENT', 'Behavior becomes less likely next time', '↓', '#fca5a5', true)
+              )
+            : h('g', null,
+                stepCard(steps[0], 16, 78, 250, 178, false, suffix),
+                stepCard(steps[1], 295, 78, 250, 178, false, suffix),
+                stepCard(steps[2], 574, 78, 250, 178, false, suffix),
+                h('path', { className: 'petslab-diagram-flow', d: 'M 268 167 L 288 167', fill: 'none', stroke: '#fef3e2', strokeWidth: 4, strokeDasharray: '7 5', markerEnd: arrowId }),
+                h('path', { className: 'petslab-diagram-flow', d: 'M 547 167 L 567 167', fill: 'none', stroke: '#fef3e2', strokeWidth: 4, strokeDasharray: '7 5', markerEnd: arrowId }),
+                h('path', { className: 'petslab-diagram-flow', d: 'M 699 262 Q 699 325 420 325 Q 141 325 141 262', fill: 'none', stroke: '#fb923c', strokeWidth: 3, strokeDasharray: '8 6', markerEnd: arrowId }),
+                h('text', { x: 420, y: 314, textAnchor: 'middle', fill: '#fb923c', fontSize: 12, fontWeight: 800 }, 'CONSEQUENCE CHANGES THE NEXT TRY'),
+                effectBox(126, 354, 280, 'REINFORCEMENT', 'Behavior becomes more likely next time', '↑', '#86efac', false),
+                effectBox(434, 354, 280, 'PUNISHMENT', 'Behavior becomes less likely next time', '↓', '#fca5a5', false)
+              ),
+          narrow
+            ? h('g', null,
+                h('text', { x: W / 2, y: 846, textAnchor: 'middle', fill: '#fef3e2', fontSize: 16, fontWeight: 800 }, 'Reward is one reinforcer.'),
+                h('text', { x: W / 2, y: 870, textAnchor: 'middle', fill: '#fef3e2', fontSize: 16, fontWeight: 800 }, 'The test: did behavior increase?')
+              )
+            : h('text', { x: W / 2, y: 465, textAnchor: 'middle', fill: '#fef3e2', fontSize: 12, fontWeight: 800 }, 'Reward is one reinforcer. The defining test is whether behavior increases.')
+        );
+      }
+
+      return h('div', { className: 'petslab-diagram-responsive-art' },
+        operantSvg(false),
+        operantSvg(true)
       );
     }
-
     function svgEthogram() {
-      return h('svg', { viewBox: '0 0 600 360', width: '100%', height: '100%',
-        role: 'img', 'aria-labelledby': 'svg-ethogram-title svg-ethogram-desc',
-        style: { background: '#181210', borderRadius: 8 } },
-        h('title', { id: 'svg-ethogram-title' }, 'Dog body language ethogram'),
-        h('desc', { id: 'svg-ethogram-desc' }, 'Reading dog body language: simplified ethogram showing relaxed, alert, fearful, and warning postures via tail position, ear position, body stance, and facial expression.'),
-        h('text', { x: 300, y: 28, fill: '#fef3e2', fontSize: 14, textAnchor: 'middle', fontWeight: 700 }, '🐕 Dog body language ethogram'),
-        h('text', { x: 300, y: 46, fill: '#a89180', fontSize: 11, textAnchor: 'middle' }, 'Read the WHOLE body, not just the tail'),
-        // RELAXED (top-left, green)
-        h('rect', { x: 20, y: 60, width: 270, height: 130, fill: '#1a3320', stroke: '#86efac', strokeWidth: 1.5, rx: 8 }),
-        h('text', { x: 30, y: 80, fill: '#86efac', fontSize: 12, fontWeight: 700 }, '✓ RELAXED + happy'),
-        h('text', { x: 30, y: 100, fill: '#fef3e2', fontSize: 11 }, '• Loose, wiggly body'),
-        h('text', { x: 30, y: 116, fill: '#fef3e2', fontSize: 11 }, '• Soft eyes (almond-shaped)'),
-        h('text', { x: 30, y: 132, fill: '#fef3e2', fontSize: 11 }, '• Open, slightly hanging mouth'),
-        h('text', { x: 30, y: 148, fill: '#fef3e2', fontSize: 11 }, '• Tail mid-height, loose wag'),
-        h('text', { x: 30, y: 164, fill: '#fef3e2', fontSize: 11 }, '• Ears in neutral position'),
-        h('text', { x: 30, y: 184, fill: '#a89180', fontSize: 10, fontStyle: 'italic' }, 'Safe to greet → ask handler first'),
-        // ALERT (top-right, yellow)
-        h('rect', { x: 310, y: 60, width: 270, height: 130, fill: '#3a2a1a', stroke: '#fbbf24', strokeWidth: 1.5, rx: 8 }),
-        h('text', { x: 320, y: 80, fill: '#fbbf24', fontSize: 12, fontWeight: 700 }, '⚠ ALERT / aroused'),
-        h('text', { x: 320, y: 100, fill: '#fef3e2', fontSize: 11 }, '• Body still + forward'),
-        h('text', { x: 320, y: 116, fill: '#fef3e2', fontSize: 11 }, '• Eyes fixed on something'),
-        h('text', { x: 320, y: 132, fill: '#fef3e2', fontSize: 11 }, '• Ears pricked forward'),
-        h('text', { x: 320, y: 148, fill: '#fef3e2', fontSize: 11 }, '• Tail high, can be fast wag'),
-        h('text', { x: 320, y: 164, fill: '#fef3e2', fontSize: 11 }, '• Closed mouth'),
-        h('text', { x: 320, y: 184, fill: '#a89180', fontSize: 10, fontStyle: 'italic' }, 'Pause + assess, do NOT approach'),
-        // FEARFUL (bottom-left, orange)
-        h('rect', { x: 20, y: 200, width: 270, height: 130, fill: '#3a1f10', stroke: '#fb923c', strokeWidth: 1.5, rx: 8 }),
-        h('text', { x: 30, y: 220, fill: '#fb923c', fontSize: 12, fontWeight: 700 }, '⚠ FEARFUL / appeasing'),
-        h('text', { x: 30, y: 240, fill: '#fef3e2', fontSize: 11 }, '• Low body / tucked posture'),
-        h('text', { x: 30, y: 256, fill: '#fef3e2', fontSize: 11 }, '• "Whale eye" — whites showing'),
-        h('text', { x: 30, y: 272, fill: '#fef3e2', fontSize: 11 }, '• Ears flattened back'),
-        h('text', { x: 30, y: 288, fill: '#fef3e2', fontSize: 11 }, '• Tail tucked'),
-        h('text', { x: 30, y: 304, fill: '#fef3e2', fontSize: 11 }, '• Lip-licking, yawning, paw-lift'),
-        h('text', { x: 30, y: 324, fill: '#a89180', fontSize: 10, fontStyle: 'italic' }, 'Give space — do NOT push interaction'),
-        // WARNING / aggressive (bottom-right, red)
-        h('rect', { x: 310, y: 200, width: 270, height: 130, fill: '#3a1010', stroke: '#fca5a5', strokeWidth: 1.5, rx: 8 }),
-        h('text', { x: 320, y: 220, fill: '#fca5a5', fontSize: 12, fontWeight: 700 }, '🛑 WARNING — back off NOW'),
-        h('text', { x: 320, y: 240, fill: '#fef3e2', fontSize: 11 }, '• Stiff body, weight forward'),
-        h('text', { x: 320, y: 256, fill: '#fef3e2', fontSize: 11 }, '• Hard, direct stare'),
-        h('text', { x: 320, y: 272, fill: '#fef3e2', fontSize: 11 }, '• Closed mouth → showing teeth'),
-        h('text', { x: 320, y: 288, fill: '#fef3e2', fontSize: 11 }, '• Tail high + slow stiff wag'),
-        h('text', { x: 320, y: 304, fill: '#fef3e2', fontSize: 11 }, '• Low growl, raised hackles'),
-        h('text', { x: 320, y: 324, fill: '#fca5a5', fontSize: 10, fontStyle: 'italic' }, 'A bite is the next step. Slowly create distance.'),
-        // Caption
-        h('text', { x: 300, y: 354, fill: '#a89180', fontSize: 10, textAnchor: 'middle' }, 'Tail wagging means AROUSAL — context (rest of body) tells you which kind.')
+      var titleText = 'Dog body language ethogram';
+      var descText = 'Reading dog body language: simplified ethogram showing relaxed, alert, fearful, and warning postures via tail position, ear position, body stance, and facial expression.';
+      var states = [
+        { id: 'relaxed', number: '1', color: '#86efac', title: '✓ RELAXED + happy', posture: 'LOOSE',
+          cues: ['• Loose, wiggly body', '• Soft eyes (almond-shaped)', '• Open, slightly hanging mouth', '• Tail mid-height, loose wag', '• Ears in neutral position'],
+          action: 'Safe to greet → ask handler first' },
+        { id: 'alert', number: '2', color: '#fbbf24', title: '⚠ ALERT / aroused', posture: 'STILL',
+          cues: ['• Body still + forward', '• Eyes fixed on something', '• Ears pricked forward', '• Tail high, can be fast wag', '• Closed mouth'],
+          action: 'Pause + assess, do NOT approach' },
+        { id: 'fearful', number: '3', color: '#fb923c', title: '⚠ FEARFUL / appeasing', posture: 'LOW',
+          cues: ['• Low body / tucked posture', '• "Whale eye" — whites showing', '• Ears flattened back', '• Tail tucked', '• Lip-licking, yawning, paw-lift'],
+          action: 'Give space — do NOT push interaction' },
+        { id: 'warning', number: '4', color: '#fca5a5', title: '🛑 WARNING — back off NOW', posture: 'STIFF',
+          cues: ['• Stiff body, weight forward', '• Hard, direct stare', '• Closed mouth → showing teeth', '• Tail high + slow stiff wag', '• Low growl, raised hackles'],
+          action: 'A bite is the next step. Slowly create distance.' }
+      ];
+      var poses = {
+        relaxed: { bodyY: 60, bodyRy: 28, headX: 132, headY: 48, tail: 'M 42 58 Q 7 42 16 22', ear: 'neutral', mouth: 'open', eye: 'soft', legs: 'normal' },
+        alert: { bodyY: 57, bodyRy: 26, headX: 135, headY: 40, tail: 'M 41 53 Q 13 22 18 2', ear: 'up', mouth: 'closed', eye: 'fixed', legs: 'stiff' },
+        fearful: { bodyY: 76, bodyRy: 22, headX: 131, headY: 65, tail: 'M 39 75 Q 4 91 36 101 Q 54 99 51 84', ear: 'back', mouth: 'frown', eye: 'whale', legs: 'crouch' },
+        warning: { bodyY: 59, bodyRy: 26, headX: 140, headY: 42, tail: 'M 41 53 L 13 12', ear: 'up', mouth: 'teeth', eye: 'hard', legs: 'forward' }
+      };
+
+      function ethogramDefs(suffix) {
+        return h('defs', null,
+          h('pattern', { id: 'pets-ethogram-relaxed' + suffix, width: 16, height: 16, patternUnits: 'userSpaceOnUse' },
+            h('rect', { width: 16, height: 16, fill: '#1a3320' }),
+            h('circle', { cx: 4, cy: 4, r: 1.5, fill: '#86efac', opacity: 0.22 }),
+            h('circle', { cx: 12, cy: 12, r: 1.5, fill: '#86efac', opacity: 0.22 })
+          ),
+          h('pattern', { id: 'pets-ethogram-alert' + suffix, width: 14, height: 14, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(35)' },
+            h('rect', { width: 14, height: 14, fill: '#3a2a1a' }),
+            h('rect', { width: 3, height: 14, fill: '#fbbf24', opacity: 0.1 })
+          ),
+          h('pattern', { id: 'pets-ethogram-fearful' + suffix, width: 18, height: 12, patternUnits: 'userSpaceOnUse' },
+            h('rect', { width: 18, height: 12, fill: '#3a1f10' }),
+            h('path', { d: 'M 0 7 Q 4 2 9 7 Q 14 12 18 7', fill: 'none', stroke: '#fb923c', strokeWidth: 1, opacity: 0.17 })
+          ),
+          h('pattern', { id: 'pets-ethogram-warning' + suffix, width: 14, height: 14, patternUnits: 'userSpaceOnUse' },
+            h('rect', { width: 14, height: 14, fill: '#3a1010' }),
+            h('path', { d: 'M 0 0 L 14 14 M 14 0 L 0 14', stroke: '#fca5a5', strokeWidth: 1, opacity: 0.13 })
+          )
+        );
+      }
+
+      function dogEars(kind, hx, hy) {
+        if (kind === 'up') {
+          return h('g', null,
+            h('path', { d: 'M ' + (hx - 21) + ' ' + (hy - 15) + ' L ' + (hx - 15) + ' ' + (hy - 42) + ' L ' + (hx - 4) + ' ' + (hy - 17) + ' Z', fill: '#8f542a', stroke: '#f6e0c3', strokeWidth: 1 }),
+            h('path', { d: 'M ' + (hx + 4) + ' ' + (hy - 19) + ' L ' + (hx + 19) + ' ' + (hy - 43) + ' L ' + (hx + 18) + ' ' + (hy - 10) + ' Z', fill: '#8f542a', stroke: '#f6e0c3', strokeWidth: 1 })
+          );
+        }
+        if (kind === 'back') {
+          return h('g', null,
+            h('path', { d: 'M ' + (hx - 17) + ' ' + (hy - 11) + ' Q ' + (hx - 44) + ' ' + (hy - 16) + ' ' + (hx - 31) + ' ' + (hy + 3) + ' Q ' + (hx - 18) + ' ' + (hy + 12) + ' ' + (hx - 7) + ' ' + (hy + 1) + ' Z', fill: '#8f542a' }),
+            h('path', { d: 'M ' + (hx + 7) + ' ' + (hy - 12) + ' Q ' + (hx + 36) + ' ' + (hy - 17) + ' ' + (hx + 27) + ' ' + (hy + 4) + ' Q ' + (hx + 16) + ' ' + (hy + 11) + ' ' + (hx + 4) + ' ' + (hy + 1) + ' Z', fill: '#8f542a' })
+          );
+        }
+        return h('g', null,
+          h('path', { d: 'M ' + (hx - 20) + ' ' + (hy - 12) + ' Q ' + (hx - 34) + ' ' + (hy - 20) + ' ' + (hx - 29) + ' ' + (hy + 8) + ' Q ' + (hx - 19) + ' ' + (hy + 17) + ' ' + (hx - 8) + ' ' + (hy + 4) + ' Z', fill: '#8f542a' }),
+          h('path', { d: 'M ' + (hx + 7) + ' ' + (hy - 14) + ' Q ' + (hx + 28) + ' ' + (hy - 19) + ' ' + (hx + 21) + ' ' + (hy + 8) + ' Q ' + (hx + 13) + ' ' + (hy + 15) + ' ' + (hx + 3) + ' ' + (hy + 3) + ' Z', fill: '#8f542a' })
+        );
+      }
+
+      function drawEthogramDog(poseId, x, y, scale, narrow) {
+        var p = poses[poseId];
+        var fur = '#c98b4c';
+        var dark = '#8f542a';
+        var cream = '#f2d6b3';
+        var hx = p.headX, hy = p.headY;
+        var legPaths = p.legs === 'crouch'
+          ? 'M 53 91 Q 48 103 43 108 M 86 94 Q 87 105 91 109 M 109 91 Q 122 84 130 90'
+          : p.legs === 'forward'
+            ? 'M 54 80 L 50 106 M 87 81 L 92 106 M 112 77 Q 127 91 134 104'
+            : 'M 53 81 L 50 105 M 84 82 L 88 106 M 109 79 L 116 104';
+        return h('g', { transform: 'translate(' + x + ' ' + y + ') scale(' + scale + ')' },
+          h('ellipse', { cx: 89, cy: 109, rx: 73, ry: 8, fill: '#0f0a08', opacity: 0.3 }),
+          h('path', { d: p.tail, fill: 'none', stroke: fur, strokeWidth: 13, strokeLinecap: 'round' }),
+          poseId === 'relaxed' && h('path', { d: 'M 11 18 Q 4 12 7 5 M 18 21 Q 25 12 23 4', fill: 'none', stroke: '#86efac', strokeWidth: 2, strokeDasharray: '3 4' }),
+          poseId === 'warning' && h('path', { d: 'M 50 39 L 58 24 L 67 39 L 76 22 L 85 39 L 95 25 L 104 42', fill: fur, stroke: '#f6e0c3', strokeWidth: 1.2 }),
+          h('ellipse', { cx: 84, cy: p.bodyY, rx: 52, ry: p.bodyRy, fill: fur, stroke: '#f6e0c3', strokeWidth: 1.5 }),
+          h('ellipse', { cx: 95, cy: p.bodyY + 10, rx: 28, ry: 16, fill: cream, opacity: 0.7 }),
+          h('circle', { cx: hx, cy: hy, r: poseId === 'warning' ? 29 : 27, fill: fur, stroke: '#f6e0c3', strokeWidth: 1.5 }),
+          dogEars(p.ear, hx, hy),
+          h('ellipse', { cx: hx + 18, cy: hy + 9, rx: 18, ry: 13, fill: cream }),
+          p.eye === 'whale'
+            ? h('g', null, h('ellipse', { cx: hx + 8, cy: hy - 4, rx: 7, ry: 4.8, fill: '#fff8e7' }), h('circle', { cx: hx + 11, cy: hy - 4, r: 3, fill: '#24150f' }))
+            : p.eye === 'hard'
+              ? h('g', null, h('path', { d: 'M ' + (hx + 2) + ' ' + (hy - 7) + ' L ' + (hx + 14) + ' ' + (hy - 5), stroke: '#24150f', strokeWidth: 3.5, strokeLinecap: 'round' }), h('circle', { cx: hx + 11, cy: hy - 5, r: 2.5, fill: '#24150f' }))
+              : h('g', null, h('ellipse', { cx: hx + 8, cy: hy - 5, rx: p.eye === 'soft' ? 4.5 : 4, ry: p.eye === 'soft' ? 3.2 : 4, fill: '#24150f' }), h('circle', { cx: hx + 9.5, cy: hy - 6.5, r: 1.1, fill: '#fff8e7' })),
+          h('path', { d: 'M ' + (hx + 22) + ' ' + (hy + 5) + ' Q ' + (hx + 32) + ' ' + (hy + 6) + ' ' + (hx + 28) + ' ' + (hy + 13), fill: '#24150f' }),
+          p.mouth === 'open'
+            ? h('g', null, h('path', { d: 'M ' + (hx + 14) + ' ' + (hy + 18) + ' Q ' + (hx + 22) + ' ' + (hy + 28) + ' ' + (hx + 31) + ' ' + (hy + 18), fill: 'none', stroke: '#6b3027', strokeWidth: 2.5, strokeLinecap: 'round' }), h('path', { d: 'M ' + (hx + 21) + ' ' + (hy + 22) + ' Q ' + (hx + 24) + ' ' + (hy + 31) + ' ' + (hx + 28) + ' ' + (hy + 23), fill: '#d9787e' }))
+            : p.mouth === 'teeth'
+              ? h('g', null, h('path', { d: 'M ' + (hx + 13) + ' ' + (hy + 18) + ' Q ' + (hx + 23) + ' ' + (hy + 29) + ' ' + (hx + 34) + ' ' + (hy + 17) + ' Q ' + (hx + 25) + ' ' + (hy + 37) + ' ' + (hx + 13) + ' ' + (hy + 18) + ' Z', fill: '#5d1d1d' }), h('path', { d: 'M ' + (hx + 17) + ' ' + (hy + 19) + ' L ' + (hx + 21) + ' ' + (hy + 25) + ' L ' + (hx + 25) + ' ' + (hy + 19) + ' L ' + (hx + 29) + ' ' + (hy + 24) + ' L ' + (hx + 32) + ' ' + (hy + 18), fill: '#fff8e7' }))
+              : h('path', { d: p.mouth === 'frown' ? 'M ' + (hx + 14) + ' ' + (hy + 22) + ' Q ' + (hx + 22) + ' ' + (hy + 15) + ' ' + (hx + 30) + ' ' + (hy + 22) : 'M ' + (hx + 14) + ' ' + (hy + 20) + ' H ' + (hx + 30), fill: 'none', stroke: '#6b3027', strokeWidth: 2.5, strokeLinecap: 'round' }),
+          h('path', { d: legPaths, fill: 'none', stroke: dark, strokeWidth: 11, strokeLinecap: 'round' }),
+          poseId === 'fearful' && h('path', { d: 'M 126 89 Q 132 82 138 88', fill: 'none', stroke: '#fb923c', strokeWidth: 2, strokeDasharray: '3 3' }),
+          h('text', {
+            x: narrow ? 170 : 89, y: narrow ? 118 : 125,
+            textAnchor: narrow ? 'end' : 'middle',
+            fill: '#e4cfb8', fontSize: 10, fontWeight: 900, letterSpacing: 1.1
+          }, states.filter(function(s) { return s.id === poseId; })[0].posture)
+        );
+      }
+
+      function ethogramCard(cfg, x, y, width, height, narrow, suffix) {
+        var drawX = narrow ? x + 82 : x + 13;
+        var drawY = narrow ? y + 42 : y + 50;
+        var cueX = narrow ? x + 18 : x + 166;
+        var cueY = narrow ? y + 149 : y + 70;
+        var cueStep = narrow ? 14 : 18;
+        return h('g', { key: cfg.id },
+          h('rect', { x: x, y: y, width: width, height: height, rx: 13, fill: 'url(#pets-ethogram-' + cfg.id + suffix + ')', stroke: cfg.color, strokeWidth: 2 }),
+          h('rect', { x: x + 10, y: y + 9, width: 32, height: 24, rx: 12, fill: '#181210', stroke: cfg.color, strokeWidth: 2 }),
+          h('text', { x: x + 26, y: y + 26, textAnchor: 'middle', fill: '#fff8e7', fontSize: 12, fontWeight: 950 }, cfg.number),
+          h('text', { x: x + 50, y: y + 26, fill: cfg.color, fontSize: narrow ? 12.5 : 13.5, fontWeight: 900 }, cfg.title),
+          drawEthogramDog(cfg.id, drawX, drawY, narrow ? 1 : 0.78, narrow),
+          cfg.cues.map(function(cue, i) {
+            return h('text', { key: 'cue-' + i, x: cueX, y: cueY + i * cueStep, fill: '#fff3e2', fontSize: narrow ? 11.5 : 11.8, fontWeight: i === 0 ? 750 : 600 }, cue);
+          }),
+          h('line', {
+            x1: narrow ? x + 18 : x + 166,
+            y1: narrow ? y + height - 24 : y + height - 31,
+            x2: x + width - 18,
+            y2: narrow ? y + height - 24 : y + height - 31,
+            stroke: cfg.color, strokeWidth: 1, strokeDasharray: '3 4', opacity: 0.62
+          }),
+          h('text', {
+            x: narrow ? x + 18 : x + 166, y: narrow ? y + height - 7 : y + height - 13,
+            fill: cfg.id === 'warning' ? cfg.color : '#c8b4a2', fontSize: narrow ? 10 : 10.8,
+            fontStyle: 'italic', fontWeight: cfg.id === 'warning' ? 750 : 500
+          }, cfg.action)
+        );
+      }
+
+      function ethogramSvg(narrow) {
+        var suffix = narrow ? '-narrow' : '-wide';
+        var W = narrow ? 360 : 840;
+        var H = narrow ? 1080 : 570;
+        var titleId = narrow ? 'svg-ethogram-mobile-title' : 'svg-ethogram-title';
+        var descId = narrow ? 'svg-ethogram-mobile-desc' : 'svg-ethogram-desc';
+        return h('svg', {
+          className: narrow ? 'petslab-diagram-narrow' : 'petslab-diagram-wide',
+          viewBox: '0 0 ' + W + ' ' + H,
+          role: 'img', 'aria-labelledby': titleId + ' ' + descId,
+          preserveAspectRatio: 'xMidYMid meet',
+          style: { background: '#181210', borderRadius: 8 }
+        },
+          h('title', { id: titleId }, titleText),
+          h('desc', { id: descId }, descText),
+          ethogramDefs(suffix),
+          h('rect', { x: 0, y: 0, width: W, height: H, rx: 12, fill: '#181210' }),
+          h('text', { x: W / 2, y: 27, fill: '#fef3e2', fontSize: narrow ? 17 : 18, textAnchor: 'middle', fontWeight: 850 }, '🐕 Dog body language ethogram'),
+          h('text', { x: W / 2, y: 48, fill: '#c8b4a2', fontSize: narrow ? 11 : 13, textAnchor: 'middle' }, 'Read the WHOLE body, not just the tail'),
+          narrow
+            ? h('g', null,
+                ethogramCard(states[0], 12, 62, 336, 240, true, suffix),
+                ethogramCard(states[1], 12, 315, 336, 240, true, suffix),
+                ethogramCard(states[2], 12, 568, 336, 240, true, suffix),
+                ethogramCard(states[3], 12, 821, 336, 240, true, suffix)
+              )
+            : h('g', null,
+                ethogramCard(states[0], 15, 62, 400, 225, false, suffix),
+                ethogramCard(states[1], 425, 62, 400, 225, false, suffix),
+                ethogramCard(states[2], 15, 300, 400, 225, false, suffix),
+                ethogramCard(states[3], 425, 300, 400, 225, false, suffix)
+              ),
+          h('text', { x: W / 2, y: narrow ? 1072 : 555, fill: '#c8b4a2', fontSize: narrow ? 10.5 : 11.5, textAnchor: 'middle' }, 'Tail wagging means AROUSAL — context (rest of body) tells you which kind.')
+        );
+      }
+
+      return h('div', { className: 'petslab-diagram-responsive-art' },
+        ethogramSvg(false),
+        ethogramSvg(true)
       );
     }
-
     function renderDiagrams() {
       var current = diagramView;
       var svg, caption;
@@ -5090,9 +7685,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           })),
         h('div', { role: 'tabpanel', id: 'pets-diagram-panel-' + current,
           'aria-labelledby': 'pets-diagram-tab-' + current, tabIndex: 0,
+          className: 'petslab-diagram-panel',
           style: { padding: 12, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 12 } },
-          h('div', { style: { width: '100%', maxWidth: 920, margin: '0 auto', aspectRatio: '600 / 360' } }, svg),
-          h('p', { style: { margin: '12px 4px 0', fontSize: 13, color: T.muted, lineHeight: 1.6 } }, caption)),
+          h('div', { className: 'petslab-diagram-canvas petslab-diagram-canvas--' + current,
+            style: { width: '100%', maxWidth: 920, margin: '0 auto', aspectRatio: (current === 'airsac' || current === 'bodylang') ? 'auto' : '600 / 360' } }, svg),
+          h('p', { className: 'petslab-diagram-caption', style: { margin: '12px 4px 0', fontSize: 13, color: T.muted, lineHeight: 1.6 } }, caption)),
         h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px dashed ' + T.border, fontSize: 11, color: T.dim, lineHeight: 1.55 } },
           'Schematics are simplified for learning. For clinical anatomy + behavioral assessment, see the cited primary sources (AVMA, AAV, AVSAB).'),
         footer());
@@ -5336,6 +7933,110 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     // from numbers. Each scene is a stylized SVG built from simple
     // shapes — no external assets, no rendering loop, idle motion
     // via CSS keyframes that honor prefers-reduced-motion.
+    // Presentation-only scene cues for each scenario day. These do not affect
+    // scoring; they make the prompt feel situated in the animal's world.
+    var CARE_SCENE_EVENTS = {
+      dog: [
+        { icon: '\uD83C\uDF05', label: 'Routine morning', detail: 'Walk + breakfast set the tone', kind: 'routine' },
+        { icon: '\uD83D\uDC65', label: 'Social plans', detail: 'A walk competes with your evening', kind: 'social' },
+        { icon: '\uD83C\uDF92', label: 'Departure cue', detail: 'The bag predicts alone time', kind: 'anxiety' },
+        { icon: '\u2695\uFE0F', label: 'Vet visit', detail: 'Prevention protects future health', kind: 'vet' },
+        { icon: '\uD83C\uDF27\uFE0F', label: 'Rain day', detail: 'Indoor nose-work still counts', kind: 'rain' },
+        { icon: '\uD83E\uDDF3', label: 'Travel weekend', detail: 'Coverage keeps routines safe', kind: 'travel' },
+        { icon: '\uD83C\uDF7D\uFE0F', label: 'Family BBQ', detail: 'Guests need a safe-treat plan', kind: 'bbq' }
+      ],
+      cat: [
+        { icon: '\uD83C\uDFE0', label: 'Safe room', detail: 'A quiet landing zone lowers stress', kind: 'home' },
+        { icon: '\uD83E\uDDF9', label: 'Litter setup', detail: 'Placement changes bathroom comfort', kind: 'litter' },
+        { icon: '\uD83C\uDF3F', label: 'Window temptation', detail: 'Indoor enrichment protects wildlife', kind: 'outdoors' },
+        { icon: '\u2695\uFE0F', label: 'Health check', detail: 'A small sign deserves attention', kind: 'vet' },
+        { icon: '\uD83D\uDD0A', label: 'Noise stress', detail: 'A quiet hideaway is a resource', kind: 'noise' },
+        { icon: '\uD83C\uDFE1', label: 'Care coverage', detail: 'Familiar space beats disruption', kind: 'sitter' },
+        { icon: '\uD83C\uDF81', label: 'Holiday guests', detail: 'Choice and escape routes matter', kind: 'guests' }
+      ],
+      rabbit: [
+        { icon: '\uD83D\uDECE\uFE0F', label: 'New enclosure', detail: 'Hide spots make settling safer', kind: 'settle' },
+        { icon: '\uD83C\uDF3E', label: 'Hay first', detail: 'Fiber keeps the gut moving', kind: 'hay' },
+        { icon: '\uD83D\uDCA7', label: 'Water check', detail: 'Hydration is a daily basic', kind: 'water' },
+        { icon: '\u2695\uFE0F', label: 'Exotic vet', detail: 'Rabbit health can turn quickly', kind: 'vet' },
+        { icon: '\u2600\uFE0F', label: 'Warm afternoon', detail: 'Shade and airflow prevent heat stress', kind: 'heat' },
+        { icon: '\uD83D\uDEAA', label: 'Free-roam plan', detail: 'Safe exercise needs preparation', kind: 'space' },
+        { icon: '\uD83D\uDC65', label: 'Guest visit', detail: 'Quiet handling protects trust', kind: 'guests' }
+      ]
+    };
+
+    function renderCareTimeline(careSim, allDays) {
+      if (!careSim || !allDays) return null;
+      var clamp = function(v) { return Math.max(0, Math.min(100, v)); };
+      var running = { phys: 50, ment: 50, soc: 50, env: 50 };
+      var events = CARE_SCENE_EVENTS[careSim.species] || [];
+      var domainMeta = [
+        { key: 'phys', label: 'P', color: T.ok },
+        { key: 'ment', label: 'M', color: '#7dd3fc' },
+        { key: 'soc', label: 'S', color: T.accentHi },
+        { key: 'env', label: 'E', color: '#a78bfa' }
+      ];
+      return h('section', {
+        className: 'petslab-care-timeline',
+        role: 'region',
+        'aria-label': 'Seven-day welfare timeline. Each day shows the scenario choice and its physical, mental, social, and environmental changes.',
+        style: { marginBottom: 12 }
+      },
+        h('div', { className: 'petslab-care-timeline-head' },
+          h('div', null,
+            h('h3', null, 'Seven-day welfare timeline'),
+            h('p', null, 'Follow how each decision moves the four welfare domains. The highlighted day is your current position.')
+          ),
+          h('div', { className: 'petslab-care-timeline-legend', 'aria-label': 'Welfare domain key' },
+            domainMeta.map(function(m) { return h('span', { key: m.key, style: { color: m.color } }, m.label + ' ' + m.key); })
+          )
+        ),
+        h('div', { className: 'petslab-care-timeline-grid' },
+          allDays.map(function(day, i) {
+            var choice = (careSim.choices || [])[i] || null;
+            var ev = events[i] || { icon: '\u2022', label: day.label, detail: '' };
+            var deltas = choice && choice.effects ? choice.effects : null;
+            var before = Object.assign({}, running);
+            if (deltas) {
+              ['phys', 'ment', 'soc', 'env'].forEach(function(k) { running[k] = clamp(running[k] + (deltas[k] || 0)); });
+            }
+            var isPast = i < careSim.day || careSim.done;
+            var isNow = !careSim.done && i === careSim.day;
+            return h('article', {
+              key: i,
+              className: 'petslab-care-timeline-day' + (isNow ? ' is-now' : '') + (isPast ? ' is-past' : ''),
+              'aria-label': 'Day ' + (i + 1) + ': ' + ev.label + (choice ? '. Choice recorded.' : '. Not chosen yet.')
+            },
+              h('div', { className: 'petslab-care-timeline-daytop' },
+                h('span', { className: 'petslab-care-timeline-daynum' }, 'DAY ' + (i + 1)),
+                h('span', { className: 'petslab-care-timeline-state' }, choice ? '\u2713 chosen' : isNow ? 'current' : 'up next')
+              ),
+              h('div', { className: 'petslab-care-timeline-event' },
+                h('span', { className: 'petslab-care-timeline-icon', 'aria-hidden': 'true' }, ev.icon),
+                h('span', null,
+                  h('strong', null, ev.label),
+                  h('small', null, ev.detail)
+                )
+              ),
+              choice
+                ? h('div', { className: 'petslab-care-timeline-choice' }, choice.choiceLabel)
+                : h('div', { className: 'petslab-care-timeline-choice is-empty' }, 'Choice pending'),
+              h('div', { className: 'petslab-care-timeline-deltas' },
+                domainMeta.map(function(m) {
+                  var delta = deltas ? (deltas[m.key] || 0) : 0;
+                  var value = choice ? Math.round(running[m.key]) : Math.round(before[m.key]);
+                  return h('span', { key: m.key, style: { '--pets-domain-color': m.color }, 'aria-label': m.key + ' ' + (delta >= 0 ? '+' : '') + delta + ', ' + value + '%' },
+                    h('b', null, m.label),
+                    h('em', null, choice ? (delta >= 0 ? '+' : '') + delta : '\u2014')
+                  );
+                })
+              )
+            );
+          })
+        )
+      );
+    }
+
     function renderPetScene(species, careSim, dayIdx, totalDays, hasChosen, onInteract) {
       // Mood from average welfare. The 4 pet-welfare meters drive
       // posture; the OWNER meters (energy/money) don't change the
@@ -5343,6 +8044,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       // do next. So we ignore them here.
       var avg = (careSim.phys + careSim.ment + careSim.soc + careSim.env) / 4;
       var mood = avg >= 75 ? 'happy' : avg >= 55 ? 'content' : avg >= 35 ? 'stressed' : 'distressed';
+      var sceneEvent = ((CARE_SCENE_EVENTS[species] || [])[dayIdx]) || { icon: '\u2022', label: 'Daily care', detail: 'Notice what your pet needs', kind: 'routine' };
 
       // Time-of-day across the week. Day 0 = early dawn; final day
       // = dusk. Gives a felt sense of progress through the week.
@@ -5402,6 +8104,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             h('stop', { offset: '0%',  stopColor: '#fef3c7', stopOpacity: 1 }),
             h('stop', { offset: '60%', stopColor: '#fbbf24', stopOpacity: 0.7 }),
             h('stop', { offset: '100%', stopColor: '#fbbf24', stopOpacity: 0 })
+          ),
+          h('linearGradient', { id: 'pets-grass-' + dayIdx, x1: 0, y1: 0, x2: 0, y2: 1 },
+            h('stop', { offset: '0%', stopColor: '#86b967' }),
+            h('stop', { offset: '100%', stopColor: '#4f7d3e' })
+          ),
+          h('linearGradient', { id: 'pets-wall-' + dayIdx, x1: 0, y1: 0, x2: 1, y2: 1 },
+            h('stop', { offset: '0%', stopColor: '#efe2cf' }),
+            h('stop', { offset: '100%', stopColor: '#c8aa87' })
+          ),
+          h('linearGradient', { id: 'pets-pen-' + dayIdx, x1: 0, y1: 0, x2: 0, y2: 1 },
+            h('stop', { offset: '0%', stopColor: '#f2e8d8' }),
+            h('stop', { offset: '100%', stopColor: '#d7bea0' })
+          ),
+          h('linearGradient', { id: 'pets-dog-coat-' + dayIdx, x1: 0, y1: 0, x2: 1, y2: 1 },
+            h('stop', { offset: '0%', stopColor: '#e0ae70' }),
+            h('stop', { offset: '58%', stopColor: '#bb7b3d' }),
+            h('stop', { offset: '100%', stopColor: '#825225' })
+          ),
+          h('linearGradient', { id: 'pets-cat-coat-' + dayIdx, x1: 0, y1: 0, x2: 1, y2: 1 },
+            h('stop', { offset: '0%', stopColor: '#6e5a44' }),
+            h('stop', { offset: '55%', stopColor: '#3a3025' }),
+            h('stop', { offset: '100%', stopColor: '#201b17' })
+          ),
+          h('linearGradient', { id: 'pets-rabbit-coat-' + dayIdx, x1: 0, y1: 0, x2: 1, y2: 1 },
+            h('stop', { offset: '0%', stopColor: '#c9b3a3' }),
+            h('stop', { offset: '62%', stopColor: '#9c8272' }),
+            h('stop', { offset: '100%', stopColor: '#6f5a50' })
+          ),
+          h('filter', { id: 'pets-soft-shadow-' + dayIdx, x: '-25%', y: '-25%', width: '150%', height: '170%' },
+            h('feDropShadow', { dx: 0, dy: 5, stdDeviation: 5, floodColor: '#1f2937', floodOpacity: 0.28 })
           )
         ),
         h('rect', { x: 0, y: 0, width: W, height: H * 0.62, fill: 'url(#pets-sky-' + dayIdx + ')' }),
@@ -5414,7 +8146,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       var scene;
       if (species === 'dog') {
         // Yard scene: grass + dog + bowls + toy
-        var dogColor = '#c08a4a';
+        var dogColor = 'url(#pets-dog-coat-' + dayIdx + ')';
         var dogShade = '#8a6030';
         var earY = mood === 'happy' || mood === 'content' ? 122 : 142; // ears down when stressed
         var bodyDip = mood === 'distressed' ? 30 : mood === 'stressed' ? 14 : 0;
@@ -5427,7 +8159,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
 
         scene = h('g', null,
           // Grass ground
-          h('rect', { x: 0, y: H * 0.62, width: W, height: H * 0.38, fill: '#7aa860' }),
+          // Layered yard: clouds, distant hills, tree canopy, then grass.
+          h('g', { opacity: 0.72 },
+            h('ellipse', { cx: 170, cy: 62, rx: 48, ry: 13, fill: '#ffffff' }),
+            h('ellipse', { cx: 135, cy: 67, rx: 30, ry: 10, fill: '#ffffff' }),
+            h('ellipse', { cx: 610, cy: 82, rx: 54, ry: 14, fill: '#ffffff', opacity: 0.74 })
+          ),
+          h('path', { d: 'M 0 152 Q 100 106 205 151 Q 310 106 420 151 Q 540 102 650 151 Q 725 122 800 147 L 800 180 L 0 180 Z', fill: '#6d995b', opacity: 0.72 }),
+          h('path', { d: 'M 0 164 Q 135 126 260 165 Q 400 124 530 165 Q 680 132 800 160 L 800 184 L 0 184 Z', fill: '#507e47', opacity: 0.72 }),
+          h('g', { opacity: 0.9 },
+            h('rect', { x: 714, y: 82, width: 15, height: 95, rx: 5, fill: '#725036' }),
+            h('circle', { cx: 722, cy: 75, r: 39, fill: '#4f8547' }),
+            h('circle', { cx: 690, cy: 91, r: 27, fill: '#5d9752' }),
+            h('circle', { cx: 751, cy: 93, r: 28, fill: '#487a43' })
+          ),
+          h('rect', { x: 0, y: H * 0.62, width: W, height: H * 0.38, fill: 'url(#pets-grass-' + dayIdx + ')' }),
           h('rect', { x: 0, y: H * 0.62, width: W, height: 6, fill: '#4a7a3a', opacity: 0.4 }),
           // Distant fence
           h('path', { d: 'M 80 168 L 80 178 M 130 168 L 130 178 M 180 168 L 180 178 M 720 168 L 720 178', stroke: '#5a4a30', strokeWidth: 2 }),
@@ -5453,7 +8199,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             h('ellipse', { cx: 320, cy: 234, rx: 16, ry: 3, fill: '#7dd3fc', opacity: 0.85 })
           ),
           // ── Dog body ──
-          h('g', { className: mood !== 'distressed' ? 'petslab-breathe' : '', style: { transformOrigin: '50% 100%' } },
+          h('ellipse', { cx: 430, cy: 244, rx: 78, ry: 12, fill: '#1f2937', opacity: 0.22 }),
+          h('g', { className: mood !== 'distressed' ? 'petslab-breathe' : '', filter: 'url(#pets-soft-shadow-' + dayIdx + ')', style: { transformOrigin: '50% 100%' } },
             // Body
             h('ellipse', { cx: 430, cy: 200 + bodyDip, rx: 60, ry: 30 + bodyDip * 0.2, fill: dogColor }),
             // Belly highlight
@@ -5488,11 +8235,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             // Mouth (smile if happy, line if stressed)
             mood === 'happy'
               ? h('path', { d: 'M 354 184 Q 360 190 366 184', stroke: '#1a1a1a', strokeWidth: 1.5, fill: 'none' })
-              : h('path', { d: 'M 354 184 L 366 184', stroke: '#1a1a1a', strokeWidth: 1.5, fill: 'none' })
+              : h('path', { d: 'M 354 184 L 366 184', stroke: '#1a1a1a', strokeWidth: 1.5, fill: 'none' }),
+            mood === 'stressed' && h('ellipse', { cx: 365, cy: 186, rx: 5, ry: 2.5, fill: '#f59aa8', transform: 'rotate(-18 365 186)' })
           )
         );
       } else if (species === 'cat') {
-        var catColor = '#3a3025';
+        var catColor = 'url(#pets-cat-coat-' + dayIdx + ')';
         var catBelly = '#a89070';
         var bodyDip2 = mood === 'distressed' ? 14 : 0;
         var eyeOpen2 = mood === 'distressed' ? false : true;
@@ -5503,8 +8251,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
 
         scene = h('g', null,
           // Indoor floor (hardwood)
+          // A real interior wall replaces the shared outdoor sky.
+          h('rect', { x: 0, y: 0, width: W, height: H * 0.62, fill: 'url(#pets-wall-' + dayIdx + ')' }),
+          h('path', { d: 'M 0 128 L 800 128 M 205 128 L 205 174 M 365 128 L 365 174 M 525 128 L 525 174 M 685 128 L 685 174', stroke: '#b49372', strokeWidth: 1, opacity: 0.42 }),
+          h('rect', { x: 0, y: H * 0.62 - 8, width: W, height: 10, fill: '#f5ead8' }),
+          h('g', { opacity: 0.92 },
+            h('rect', { x: 390, y: 46, width: 76, height: 60, rx: 3, fill: '#7c573b' }),
+            h('rect', { x: 398, y: 54, width: 60, height: 44, fill: '#8db6b0' }),
+            h('circle', { cx: 427, cy: 73, r: 11, fill: '#f5c76b' }),
+            h('rect', { x: 520, y: 92, width: 104, height: 7, rx: 3, fill: '#7a5838' }),
+            h('rect', { x: 535, y: 63, width: 14, height: 29, fill: '#b4453a' }),
+            h('rect', { x: 552, y: 70, width: 13, height: 22, fill: '#315b78' }),
+            h('rect', { x: 568, y: 59, width: 16, height: 33, fill: '#d49a45' })
+          ),
+          ownerNear && h('g', { opacity: 0.82 },
+            h('rect', { x: 724, y: 82, width: 31, height: 96, rx: 10, fill: '#405168' }),
+            h('circle', { cx: 740, cy: 68, r: 15, fill: '#d6a47f' }),
+            h('path', { d: 'M 728 120 Q 682 136 651 170', fill: 'none', stroke: '#d6a47f', strokeWidth: 9, strokeLinecap: 'round' })
+          ),
           h('rect', { x: 0, y: H * 0.62, width: W, height: H * 0.38, fill: '#9a7858' }),
           h('path', { d: 'M 0 ' + (H * 0.62 + 30) + ' L ' + W + ' ' + (H * 0.62 + 30) + ' M 0 ' + (H * 0.62 + 60) + ' L ' + W + ' ' + (H * 0.62 + 60), stroke: '#7a5838', strokeWidth: 1, opacity: 0.5 }),
+          h('ellipse', { cx: 445, cy: 241, rx: 150, ry: 31, fill: '#b65b4f', opacity: 0.80 }),
+          h('ellipse', { cx: 445, cy: 241, rx: 122, ry: 24, fill: 'none', stroke: '#e4a47c', strokeWidth: 2, opacity: 0.65 }),
           // Window frame on left
           h('rect', { x: 60, y: 50, width: 110, height: 110, fill: 'none', stroke: '#5a4030', strokeWidth: 4 }),
           h('rect', { x: 60, y: 50, width: 110, height: 110, fill: skyBot, opacity: 0.7 }),
@@ -5532,14 +8300,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             h('rect', { x: 300, y: 232, width: 40, height: 12, fill: '#5a6a7a', rx: 2 }),
             bowlFull && h('ellipse', { cx: 320, cy: 234, rx: 16, ry: 3, fill: '#c0a060' })
           ),
+          h('g', null,
+            h('ellipse', { cx: 374, cy: 244, rx: 20, ry: 6, fill: '#334155' }),
+            h('rect', { x: 356, y: 233, width: 36, height: 11, fill: '#64748b', rx: 3 }),
+            h('ellipse', { cx: 374, cy: 235, rx: 14, ry: 3, fill: '#7dd3fc', opacity: 0.88 })
+          ),
           // ── Cat body — loaf when content, alert when happy, hidden when distressed ──
+          h('ellipse', { cx: mood === 'distressed' ? 130 : 430, cy: 244, rx: mood === 'distressed' ? 54 : 70, ry: 10, fill: '#1f2937', opacity: 0.20 }),
           mood === 'distressed'
-            ? h('g', null,
+            ? h('g', { filter: 'url(#pets-soft-shadow-' + dayIdx + ')' },
+                h('rect', { x: 72, y: 194, width: 122, height: 42, rx: 5, fill: '#72533d' }),
+                h('rect', { x: 66, y: 188, width: 134, height: 11, rx: 4, fill: '#8d6849' }),
+                h('rect', { x: 82, y: 230, width: 9, height: 24, rx: 2, fill: '#553b2b' }),
+                h('rect', { x: 174, y: 230, width: 9, height: 24, rx: 2, fill: '#553b2b' }),
                 // Cat hidden under bed/box — only ears show behind scratching post
                 h('ellipse', { cx: 130, cy: 234, rx: 14, ry: 6, fill: catColor, opacity: 0.6 }),
                 h('path', { d: 'M 122 230 L 124 222 L 128 228 Z M 138 230 L 136 222 L 132 228 Z', fill: catColor })
               )
-            : h('g', { className: 'petslab-breathe', style: { transformOrigin: '50% 100%' } },
+            : h('g', { className: 'petslab-breathe', filter: 'url(#pets-soft-shadow-' + dayIdx + ')', style: { transformOrigin: '50% 100%' } },
                 // Body (loaf)
                 h('ellipse', { cx: 430, cy: 215 + bodyDip2, rx: 56, ry: 26, fill: catColor }),
                 h('ellipse', { cx: 430, cy: 222 + bodyDip2, rx: 44, ry: 12, fill: catBelly }),
@@ -5548,9 +8326,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                 // Head
                 h('circle', { cx: 388, cy: 178 + bodyDip2 * 0.5, r: 26, fill: catColor }),
                 // Ears (triangle)
-                h('path', { d: 'M 370 162 L 374 144 L 382 158 Z', fill: catColor }),
-                h('path', { d: 'M 406 162 L 402 144 L 394 158 Z', fill: catColor }),
-                h('path', { d: 'M 372 158 L 376 150 L 380 156 Z', fill: '#e8c5a0' }),
+                mood === 'stressed'
+                  ? h('g', null,
+                      h('path', { d: 'M 370 164 Q 356 158 350 166 Q 363 172 380 168 Z', fill: catColor }),
+                      h('path', { d: 'M 402 164 Q 416 158 424 166 Q 412 172 396 168 Z', fill: catColor })
+                    )
+                  : h('g', null,
+                      h('path', { d: 'M 370 162 L 374 144 L 382 158 Z', fill: catColor }),
+                      h('path', { d: 'M 406 162 L 402 144 L 394 158 Z', fill: catColor }),
+                      h('path', { d: 'M 372 158 L 376 150 L 380 156 Z', fill: '#e8c5a0' })
+                    ),
                 // Eyes (almond) — slow-blink if happy
                 eyeOpen2
                   ? h('g', { className: mood === 'happy' ? 'petslab-blink' : '' },
@@ -5573,7 +8358,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         );
       } else {
         // Rabbit scene
-        var rabbColor = '#a08878';
+        var rabbColor = 'url(#pets-rabbit-coat-' + dayIdx + ')';
         var rabbBelly = '#d8c0a8';
         var bodyDip3 = mood === 'distressed' ? 16 : mood === 'stressed' ? 8 : 0;
         var earUp = mood === 'happy' || mood === 'content';
@@ -5582,7 +8367,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
 
         scene = h('g', null,
           // Hay-strewn floor
+          // Indoor free-roam pen with a warm wall, daylight window, and mat.
+          h('rect', { x: 0, y: 0, width: W, height: H * 0.62, fill: 'url(#pets-pen-' + dayIdx + ')' }),
+          h('rect', { x: 0, y: H * 0.62 - 8, width: W, height: 10, fill: '#f5ead8' }),
+          h('g', { opacity: 0.88 },
+            h('rect', { x: 278, y: 42, width: 150, height: 92, rx: 4, fill: skyBot }),
+            h('rect', { x: 272, y: 36, width: 162, height: 104, rx: 4, fill: 'none', stroke: '#86664a', strokeWidth: 7 }),
+            h('line', { x1: 353, y1: 38, x2: 353, y2: 138, stroke: '#86664a', strokeWidth: 3 }),
+            h('line', { x1: 275, y1: 88, x2: 431, y2: 88, stroke: '#86664a', strokeWidth: 3 })
+          ),
+          ownerNear && h('g', { opacity: 0.78 },
+            h('rect', { x: 725, y: 86, width: 34, height: 88, rx: 10, fill: '#5d6675' }),
+            h('circle', { cx: 742, cy: 72, r: 15, fill: '#d6a47f' }),
+            h('path', { d: 'M 728 125 Q 684 146 650 187', fill: 'none', stroke: '#d6a47f', strokeWidth: 9, strokeLinecap: 'round' })
+          ),
           h('rect', { x: 0, y: H * 0.62, width: W, height: H * 0.38, fill: '#c8a868' }),
+          h('rect', { x: 16, y: H * 0.62 + 12, width: W - 32, height: H * 0.38 - 22, rx: 22, fill: '#d8c8a0', opacity: 0.72 }),
+          h('path', { d: 'M 20 174 L 20 272 M 75 174 L 75 272 M 725 174 L 725 272 M 780 174 L 780 272', stroke: '#818895', strokeWidth: 3, opacity: 0.50 }),
           // Hay strands
           h('path', { d: 'M 30 230 L 50 222 M 70 244 L 88 234 M 700 224 L 720 220 M 760 240 L 780 232', stroke: '#a08438', strokeWidth: 1.5 }),
           // Cage edges (very subtle vertical bars at far left/right)
@@ -5608,7 +8409,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           // Toy / chew block if enrichment
           hasToy && h('rect', { x: 600, y: 232, width: 24, height: 16, fill: '#d4a060', rx: 2, transform: 'rotate(-8 612 240)' }),
           // ── Rabbit body — loaf when content, hopping when happy, hunched when stressed ──
-          h('g', { className: bodyClass, style: { transformOrigin: '50% 100%' } },
+          h('ellipse', { cx: mood === 'distressed' ? 240 : 430, cy: 246, rx: 67, ry: 10, fill: '#1f2937', opacity: 0.18 }),
+          h('g', { className: bodyClass, transform: mood === 'distressed' ? 'translate(-190 0)' : null, filter: 'url(#pets-soft-shadow-' + dayIdx + ')', style: { transformOrigin: '50% 100%' } },
             // Body (compact loaf shape)
             h('ellipse', { cx: 430, cy: 220 + bodyDip3, rx: 50, ry: 22, fill: rabbColor }),
             // Belly
@@ -5649,6 +8451,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       }
 
       // ── Status chips — visible call-outs of what's working / what's not ──
+      var eventArt = sceneEvent.kind === 'rain'
+        ? h('g', { opacity: 0.58, 'aria-hidden': 'true' },
+            h('path', { d: 'M 90 28 L 82 58 M 130 20 L 122 50 M 170 34 L 162 64 M 620 24 L 612 54 M 660 18 L 652 48 M 700 32 L 692 62', stroke: '#dbeafe', strokeWidth: 3, strokeLinecap: 'round' }),
+            h('ellipse', { cx: 112, cy: 228, rx: 48, ry: 7, fill: '#7dd3fc', opacity: 0.36 }),
+            h('ellipse', { cx: 660, cy: 228, rx: 42, ry: 6, fill: '#7dd3fc', opacity: 0.30 })
+          )
+        : sceneEvent.kind === 'vet'
+          ? h('g', { opacity: 0.9, 'aria-hidden': 'true' },
+              h('rect', { x: 664, y: 174, width: 58, height: 44, rx: 5, fill: '#fef3c7', stroke: '#b45309', strokeWidth: 2 }),
+              h('path', { d: 'M 693 184 L 693 207 M 681 195 L 705 195', stroke: '#dc2626', strokeWidth: 6, strokeLinecap: 'round' }),
+              h('path', { d: 'M 673 174 Q 693 162 713 174', fill: 'none', stroke: '#b45309', strokeWidth: 3 })
+            )
+          : sceneEvent.kind === 'travel'
+            ? h('g', { opacity: 0.9, 'aria-hidden': 'true' },
+                h('rect', { x: 650, y: 200, width: 78, height: 42, rx: 6, fill: '#315b78', stroke: '#172554', strokeWidth: 2 }),
+                h('path', { d: 'M 676 200 L 676 190 Q 689 182 702 190 L 702 200', fill: 'none', stroke: '#fbbf24', strokeWidth: 4 }),
+                h('line', { x1: 689, y1: 202, x2: 689, y2: 241, stroke: '#fbbf24', strokeWidth: 2 })
+              )
+            : sceneEvent.kind === 'bbq'
+              ? h('g', { opacity: 0.88, 'aria-hidden': 'true' },
+                  h('rect', { x: 646, y: 213, width: 72, height: 16, rx: 4, fill: '#374151' }),
+                  h('path', { d: 'M 654 213 L 661 194 M 710 213 L 703 194', stroke: '#374151', strokeWidth: 4 }),
+                  h('path', { d: 'M 674 190 Q 663 176 675 164 Q 684 153 676 143 M 694 190 Q 706 175 694 163 Q 686 153 695 144', fill: 'none', stroke: '#e5e7eb', strokeWidth: 3, strokeLinecap: 'round' })
+                )
+              : sceneEvent.kind === 'noise'
+                ? h('g', { opacity: 0.88, 'aria-hidden': 'true' },
+                    h('path', { d: 'M 660 82 L 674 82 L 690 68 L 690 108 L 674 94 L 660 94 Z', fill: '#64748b' }),
+                    h('path', { d: 'M 700 74 Q 716 88 700 102 M 712 64 Q 738 88 712 112', fill: 'none', stroke: '#f59e0b', strokeWidth: 3, strokeLinecap: 'round' })
+                  )
+                : sceneEvent.kind === 'outdoors'
+                  ? h('g', { opacity: 0.82, 'aria-hidden': 'true' },
+                      h('circle', { cx: 692, cy: 68, r: 18, fill: '#fde68a' }),
+                      h('path', { d: 'M 674 68 Q 692 51 710 68', fill: 'none', stroke: '#64748b', strokeWidth: 2 }),
+                      h('path', { d: 'M 710 84 Q 724 74 738 84 Q 724 94 710 84 Z', fill: '#475569' })
+                    )
+                  : sceneEvent.kind === 'water'
+                    ? h('g', { opacity: 0.9, 'aria-hidden': 'true' },
+                        h('path', { d: 'M 690 165 C 674 185 676 198 690 201 C 704 198 706 185 690 165 Z', fill: '#7dd3fc', stroke: '#0369a1', strokeWidth: 2 })
+                      )
+                    : null;
       var chips = [
         { label: bowlFull ? 'Fed' : 'Hungry',          ok: bowlFull,    icon: '🍖' },
         { label: hasToy ? 'Enriched' : 'Bored',        ok: hasToy,      icon: '🧩' },
@@ -5656,7 +8498,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         { label: beddingClean ? 'Clean home' : 'Dirty', ok: beddingClean, icon: '🏠' }
       ];
 
-      return h('div', {
+      return h('div', { className: 'petslab-sim-stage petslab-care-stage',
         style: {
           position: 'relative',
           borderRadius: 14,
@@ -5667,14 +8509,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           marginBottom: 12
         }
       },
-        h('svg', {
+        h('svg', { preserveAspectRatio: 'xMidYMid slice',
           viewBox: '0 0 ' + W + ' ' + H,
           role: 'img',
           'aria-label': species + ' care scene. Day ' + (dayIdx + 1) + ' of ' + totalDays + '. Mood: ' + mood + '. ' + moodCaption(),
-          style: { display: 'block', width: '100%', height: 'auto', maxHeight: 280 }
+          style: { display: 'block', position: 'absolute', inset: 0, width: '100%', height: '100%' }
         },
           backdrop,
-          scene
+          scene,
+          eventArt
         ),
         // Mood caption ribbon
         h('div', {
@@ -5693,8 +8536,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
           }
         }, moodCaption()),
-        // Status chip strip (bottom)
+        hasChosen && h('div', {
+          className: 'petslab-care-decision',
+          'aria-label': 'Daily decision recorded',
+          style: {
+            position: 'absolute', right: 12, top: 12,
+            padding: '6px 9px', borderRadius: 999,
+            background: 'rgba(54,83,20,0.88)', color: '#ecfccb',
+            border: '1px solid rgba(190,242,100,0.62)',
+            boxShadow: '0 5px 16px rgba(0,0,0,0.24)',
+            fontSize: 10, fontWeight: 900, letterSpacing: '0.045em',
+            textTransform: 'uppercase'
+          }
+        }, '\u2713 Decision logged'),
         h('div', {
+          className: 'petslab-care-event',
+          role: 'note',
+          'aria-label': sceneEvent.label + ': ' + sceneEvent.detail
+        },
+          h('span', { className: 'petslab-care-event-icon', 'aria-hidden': 'true' }, sceneEvent.icon),
+          h('span', null,
+            h('strong', null, sceneEvent.label),
+            h('small', null, sceneEvent.detail)
+          )
+        ),
+        // Status chip strip (bottom)
+        h('div', { className: 'petslab-care-chips',
           style: {
             position: 'absolute',
             left: 12, right: 12, bottom: 12,
@@ -5728,13 +8595,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           var todayInts = ((careSim.dailyInteractions || {})[dayIdx]) || {};
           // Each zone: { kind, leftPct, topPct, icon, label }
           // Positions tuned to where the items appear in the per-species SVGs.
-          var zones = [
+          var zoneMaps = { dog: [
             { kind: 'pet',   leftPct: 52, topPct: 65, icon: '🤚', label: 'Pet · +bond' },
             { kind: 'feed',  leftPct: 31, topPct: 85, icon: '🍖', label: 'Feed · +phys' },
             { kind: 'water', leftPct: 40, topPct: 88, icon: '💧', label: 'Water · +phys' },
             { kind: 'play',  leftPct: 75, topPct: 85, icon: '🧩', label: 'Play · +mental' },
             { kind: 'clean', leftPct: 12, topPct: 90, icon: '🧹', label: 'Clean · +env' }
-          ];
+          ],
+            cat: [
+              { kind: 'pet', leftPct: 54, topPct: 72, icon: '\uD83E\uDD1A', label: 'Pet \u00b7 +bond' },
+              { kind: 'feed', leftPct: 40, topPct: 86, icon: '\uD83C\uDF56', label: 'Feed \u00b7 +phys' },
+              { kind: 'water', leftPct: 47, topPct: 86, icon: '\uD83D\uDCA7', label: 'Water \u00b7 +phys' },
+              { kind: 'play', leftPct: 83, topPct: 86, icon: '\uD83E\uDDE9', label: 'Play \u00b7 +mental' },
+              { kind: 'clean', leftPct: 29, topPct: 87, icon: '\uD83E\uDDF9', label: 'Clean \u00b7 +env' }
+            ],
+            rabbit: [
+              { kind: 'pet', leftPct: 54, topPct: 76, icon: '\uD83E\uDD1A', label: 'Pet \u00b7 +bond' },
+              { kind: 'feed', leftPct: 30, topPct: 86, icon: '\uD83C\uDF56', label: 'Feed \u00b7 +phys' },
+              { kind: 'water', leftPct: 85, topPct: 68, icon: '\uD83D\uDCA7', label: 'Water \u00b7 +phys' },
+              { kind: 'play', leftPct: 77, topPct: 86, icon: '\uD83E\uDDE9', label: 'Play \u00b7 +mental' },
+              { kind: 'clean', leftPct: 13, topPct: 86, icon: '\uD83E\uDDF9', label: 'Clean \u00b7 +env' }
+            ]
+          };
+          var zones = zoneMaps[species] || zoneMaps.dog;
+          var lastAction = careSim.lastInteract || null;
+          var lastZone = null;
+          if (lastAction && todayInts[lastAction.kind]) {
+            for (var zi = 0; zi < zones.length; zi++) {
+              if (zones[zi].kind === lastAction.kind) { lastZone = zones[zi]; break; }
+            }
+          }
           // Want bubble — when an individual meter is critically low,
           // float a thought icon above the animal pointing at what to do.
           var lowestKey = null, lowestVal = Infinity;
@@ -5746,6 +8636,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             : null;
 
           return h('div', { style: { position: 'absolute', inset: 0, pointerEvents: 'none' } },
+            lastZone && h('div', {
+              key: 'care-pop-' + (lastAction.t || 0),
+              className: 'petslab-action-pop',
+              'aria-hidden': 'true',
+              style: {
+                position: 'absolute',
+                left: lastZone.leftPct + '%', top: Math.max(12, lastZone.topPct - 7) + '%',
+                transform: 'translate(-50%,-42%)',
+                padding: '6px 10px', borderRadius: 999,
+                background: 'rgba(255,255,255,0.96)', color: '#365314',
+                border: '2px solid #84cc16', boxShadow: '0 8px 24px rgba(54,83,20,0.28)',
+                fontSize: 13, fontWeight: 900
+              }
+            }, lastZone.icon + ' Done'),
             // Want bubble (positioned above animal)
             wantIcon && h('div', {
               'aria-hidden': 'true',
@@ -5772,7 +8676,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             zones.map(function(z) {
               var done = !!todayInts[z.kind];
               return h('button', {
-                key: z.kind,
+                key: z.kind, className: 'petslab-care-zone petslab-care-zone--' + z.kind,
                 'data-pets-focusable': true,
                 onClick: function(ev) { ev.stopPropagation(); onInteract(z.kind); },
                 'aria-label': (done ? 'Already done today: ' : 'Care interaction: ') + z.label,
@@ -6034,8 +8938,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         );
       }
       // Active day
-      var meters = h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, marginBottom: 12 } },
-        h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: T.dim, marginBottom: 6 } },
+      var meters = h('div', { className: 'petslab-metric-grid', style: { padding: 12, borderRadius: 10, background: T.cardAlt, marginBottom: 12 } },
+        h('div', { style: { gridColumn: '1 / -1', display: 'flex', justifyContent: 'space-between', fontSize: 11, color: T.dim, marginBottom: 2 } },
           h('span', null, 'Day ' + (careSim.day + 1) + ' / ' + allDays.length),
           h('span', null,
             '⚡ ', Math.round(careSim.en), '%   ',
@@ -6049,10 +8953,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           { l: '🧑‍🤝‍🧑 Soc', v: careSim.soc,  color: T.accentHi },
           { l: '🏠 Env',   v: careSim.env,  color: '#a78bfa' }
         ].map(function(m, i) {
-          return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 } },
+          return h('div', { key: i, className: 'petslab-metric-card', style: { display: 'flex', alignItems: 'center', gap: 6 } },
             h('span', { style: { fontSize: 10, color: T.dim, minWidth: 56 } }, m.l),
-            h('div', { style: { flex: 1, height: 8, background: T.bg, borderRadius: 4, overflow: 'hidden' }, 'aria-hidden': 'true' },
-              h('div', { style: { width: m.v + '%', height: '100%', background: m.color, transition: 'width 0.3s' } })
+            h('div', { className: 'petslab-meter-track', style: { flex: 1 }, 'aria-hidden': 'true' },
+              h('div', { className: 'petslab-meter-fill', style: { width: m.v + '%', background: m.color, color: m.color } })
             ),
             h('span', { style: { fontSize: 11, color: T.text, fontFamily: 'monospace', minWidth: 32, textAlign: 'right' } }, Math.round(m.v) + '%')
           );
@@ -6078,7 +8982,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         ].map(function(c) {
           var done = !!todayInts[c.kind];
           return h('button', {
-            key: c.kind,
+            key: c.kind, className: 'petslab-sim-button',
             'data-pets-focusable': true,
             onClick: function() { petInteract(c.kind); },
             'aria-label': (done ? 'Already done today: ' : 'Do this care: ') + c.label + ' (' + c.short + ')',
@@ -6106,7 +9010,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         // status chips reflect the current welfare meters in real time.
         // The 6th arg wires up the interactive care zones (pet/feed/water/
         // play/clean buttons that overlay the scene).
+        h('div', {
+          role: 'group',
+          'aria-label': 'Week progress: day ' + (careSim.day + 1) + ' of ' + allDays.length + ', ' + dayObj.label,
+          style: { padding: '11px 13px', marginBottom: 10, borderRadius: 12, background: 'rgba(28,18,13,0.72)', border: '1px solid ' + T.border }
+        },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, marginBottom: 8, fontSize: 11, fontWeight: 800, letterSpacing: '0.05em', textTransform: 'uppercase' } },
+            h('span', { style: { color: T.muted } }, 'Seven-day care arc'),
+            h('span', { style: { color: T.accentHi } }, 'Day ' + (careSim.day + 1) + ' - ' + dayObj.label)
+          ),
+          h('div', { className: 'petslab-day-rail', 'aria-hidden': 'true', style: { marginBottom: 0 } },
+            allDays.map(function (_, dayNumber) {
+              return h('span', { key: dayNumber, className: 'petslab-day-node' + (dayNumber < careSim.day ? ' is-past' : dayNumber === careSim.day ? ' is-now' : '') });
+            })
+          )
+        ),
         renderPetScene(careSim.species, careSim, careSim.day, allDays.length, hasChosen, petInteract),
+        renderCareTimeline(careSim, allDays),
         // Tap-friendly version of the same interactions, listed below the
         // scene for keyboard / touch users who'd rather see the menu.
         careTrack,
@@ -6120,7 +9040,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           dayObj.choices.map(function(ch) {
             var isPicked = hasChosen && thisChoice.choiceId === ch.id;
             return h('button', {
-              key: ch.id, role: 'radio', 'aria-checked': isPicked ? 'true' : 'false',
+              key: ch.id, className: 'petslab-sim-choice', role: 'radio', 'aria-checked': isPicked ? 'true' : 'false',
               'data-pets-focusable': true,
               disabled: hasChosen,
               onClick: function() { chooseAction(ch.id); },
@@ -6206,7 +9126,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       // for anyone who navigates by pointer only.
       function padBtn(label, aria, onDown) {
         return h('button', {
-          key: aria, 'data-pets-focusable': true, 'aria-label': aria,
+          key: aria, className: 'petslab-sim-button', 'data-pets-focusable': true, 'aria-label': aria,
+          disabled: sensoryStatus !== 'ready',
           onPointerDown: function () { onDown(true); },
           onPointerUp: function () { onDown(false); },
           onPointerLeave: function () { onDown(false); },
@@ -6214,7 +9135,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           onKeyUp: function () { onDown(false); },
           style: {
             width: 44, height: 40, borderRadius: 8, border: '1px solid ' + T.border,
-            background: T.card, color: T.text, fontSize: 15, fontWeight: 800, cursor: 'pointer'
+            background: T.card, color: T.text, fontSize: 15, fontWeight: 800,
+            cursor: sensoryStatus === 'ready' ? 'pointer' : 'not-allowed', opacity: sensoryStatus === 'ready' ? 1 : 0.48
           }
         }, label);
       }
@@ -6311,28 +9233,78 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             style: btnPrimary({ padding: '12px 26px', fontSize: 14 })
           }, '🚪 Step into the room')
         ) : h('div', { style: { marginBottom: 12 } },
-          h('div', {
-            ref: _sensoryMountRef,
-            style: {
-              width: '100%', height: 380, borderRadius: 10, overflow: 'hidden',
-              background: '#1a1410', border: '1px solid ' + T.border, position: 'relative'
-            }
-          }),
+          h('div', { className: 'petslab-sim-stage petslab-sensory-stage' },
+            h('div', {
+              ref: _sensoryMountRef,
+              style: { position: 'absolute', inset: 0, overflow: 'hidden', background: '#1a1410' }
+            }),
+            h('div', { className: 'petslab-stage-hud petslab-stage-hud--top' },
+              h('div', { className: 'petslab-hud-stack' },
+                h('span', { className: 'petslab-hud-chip' }, sp.icon + ' ', h('strong', null, sp.name + ' view')),
+                h('span', { className: 'petslab-hud-chip' }, 'Eye line ', h('strong', null, sp.eyeHeight.toFixed(2) + ' m')),
+                h('span', { className: 'petslab-hud-chip' }, 'View ', h('strong', null, sp.totalFieldDeg + '\u00b0')),
+                h('span', { className: 'petslab-hud-chip' }, sensoryDusk ? '\uD83C\uDF19 Dusk optics' : '\u2600\uFE0F Daylight optics')
+              ),
+              h('div', { className: 'petslab-hud-objective' },
+                h('strong', { style: { display: 'block', color: '#fbbf24', marginBottom: 2 } }, 'SCIENCE MISSION'),
+                sensorySpecies === 'human' ? 'Find the red and blue balls. Then switch species without moving.'
+                  : sensorySpecies === 'dog' ? 'Compare the two balls and follow the scent motes back to their sources.'
+                  : 'Notice the lower eye line. Look up at the person, then test dusk.'
+              )
+            ),
+            h('span', { className: 'petslab-reticle', 'aria-hidden': 'true' }),
+            h('div', { className: 'petslab-stage-hud petslab-stage-hud--bottom' },
+              h('span', { className: 'petslab-hud-chip' }, 'Drag to look \u00b7 W A S D to walk'),
+              sensorySpecies === 'dog' && h('span', { className: 'petslab-hud-chip' }, '\uD83D\uDC43 ', h('strong', null, 'Scent field visible'))
+            )
+          ),
           sensoryStatus === 'failed' && h('div', { style: { fontSize: 12, color: T.warm, marginTop: 8 } },
             '⚠ This device could not open a WebGL canvas. The comparison below still carries the lesson.'),
           // Controls
-          h('div', { style: { display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap', marginTop: 10 } },
-            h('div', { style: { display: 'flex', gap: 6 } },
+          h('div', { className: 'petslab-control-dock' },
+            h('div', { className: 'petslab-control-cluster' },
+              h('span', { className: 'petslab-control-label' }, 'Navigate'),
               padBtn('↑', 'Walk forward', key('w')),
               padBtn('↓', 'Walk backward', key('s')),
               padBtn('←', 'Turn left', key('left')),
               padBtn('→', 'Turn right', key('right'))
             ),
-            h('button', { 'data-pets-focusable': true, onClick: toggleDusk,
+            h('div', { className: 'petslab-control-cluster' },
+              h('span', { className: 'petslab-control-label' }, 'Focus'),
+              [
+                { id: 'balls', label: '\uD83D\uDD34 Balls' },
+                { id: 'doorway', label: '\uD83D\uDEAA Doorway' },
+                { id: 'person', label: '\uD83E\uDDCD Person' }
+              ].map(function(target) {
+                return h('button', {
+                  key: target.id, className: 'petslab-sim-button', 'data-pets-focusable': true,
+                  disabled: sensoryStatus !== 'ready',
+                  onClick: function () {
+                    var viewer = _sensoryViewerRef.current;
+                    if (!viewer || sensoryStatus !== 'ready') return;
+                    viewer.focusTarget(target.id);
+                    petsAnnounce('View centered on ' + target.id + '.');
+                  },
+                  style: btn({ padding: '7px 10px', fontSize: 11, opacity: sensoryStatus === 'ready' ? 1 : 0.48 })
+                }, target.label);
+              }),
+              h('button', {
+                className: 'petslab-sim-button', 'data-pets-focusable': true,
+                disabled: sensoryStatus !== 'ready',
+                onClick: function () {
+                  var viewer = _sensoryViewerRef.current;
+                  if (!viewer || sensoryStatus !== 'ready') return;
+                  viewer.resetView();
+                  petsAnnounce('View reset to the room entrance.');
+                },
+                style: btn({ padding: '7px 10px', fontSize: 11, opacity: sensoryStatus === 'ready' ? 1 : 0.48 })
+              }, '\u21BA Reset')
+            ),
+            h('button', { className: 'petslab-sim-button', 'data-pets-focusable': true, onClick: toggleDusk,
               'aria-pressed': sensoryDusk ? 'true' : 'false',
               style: btn({ padding: '8px 14px', fontSize: 13 }) },
               sensoryDusk ? '🌙 Dusk — on' : '☀️ Daylight'),
-            h('button', { 'data-pets-focusable': true,
+            h('button', { className: 'petslab-sim-button', 'data-pets-focusable': true,
               'aria-pressed': sensoryReduceMotion ? 'true' : 'false',
               onClick: function () {
                 var next = !sensoryReduceMotion;
@@ -6343,7 +9315,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               },
               style: btn({ padding: '8px 14px', fontSize: 13 }) },
               sensoryReduceMotion ? '🧊 Motion reduced' : '🌀 Motion on'),
-            h('button', { 'data-pets-focusable': true,
+            h('button', { className: 'petslab-sim-button', 'data-pets-focusable': true,
               onClick: function () { upd('sensoryActive', false); petsAnnounce('Left the room.'); },
               style: btn({ padding: '8px 14px', fontSize: 13 }) }, '⏹ Leave the room'),
             h('span', { style: { fontSize: 11, color: T.dim } },

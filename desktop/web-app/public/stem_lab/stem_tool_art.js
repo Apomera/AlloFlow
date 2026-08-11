@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════
-// stem_tool_creative.js — STEM Lab Creative Tools
+// stem_tool_creative.js — STEAM Lab Creative Tools
 // 2 registered tools (dataPlot extracted → stem_tool_dataplot.js)
 // Auto-extracted (Phase 2 modularization)
 // ═══════════════════════════════════════════

@@ -1,4 +1,4 @@
-// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -88,7 +88,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
     { id: 'first_contact', name: 'First Contact', icon: '\uD83D\uDEF8', desc: 'Complete your first mission' },
     { id: 'scientist', name: 'Chief Scientist', icon: '\uD83D\uDD2C', desc: 'Earn 500 total science points' },
     { id: 'perfect_run', name: 'Flawless Commander', icon: '\u2B50', desc: 'Achieve 100% optimal decisions on any mission' },
-    { id: 'explorer', name: 'Solar System Explorer', icon: '\uD83C\uDF0C', desc: 'Complete all 6 destinations' },
+    { id: 'explorer', name: 'Solar System Explorer', icon: '\uD83C\uDF0C', desc: 'Complete every destination' },
     { id: 'techmaster', name: 'Tech Master', icon: '\u26A1', desc: 'Unlock all 8 technologies' },
     { id: 'survivor', name: 'Survivor', icon: '\uD83D\uDEE1\uFE0F', desc: 'Complete a mission with O\u2082 below 10%' },
     { id: 'marathon', name: 'Marathon', icon: '\uD83C\uDFC3', desc: 'Complete 10 total missions' },
@@ -141,7 +141,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
     },
     {
       id: 'proxima', name: 'Proxima Centauri b', emoji: '\u2728', difficulty: 5,
-      gravity: 11.0, atmosphere: 'Unknown — possibly tidally locked', temp: 'Variable',
+      gravity: 11.0, atmosphere: 'Unknown', temp: 'Variable (likely tidally locked)',
       travelDays: 73000, color: '#8e44ad', desc: 'The nearest exoplanet — 4.24 light-years away.',
       hazards: ['stellar flares', 'unknown biology', 'tidal locking', 'generation ship psychology'],
       scienceFocus: ['astrophysics', 'exoplanetology', 'generation ship sociology'],
@@ -165,8 +165,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
     },
     {
       id: 'asteroid', name: 'Asteroid 16 Psyche', emoji: '\u2604\uFE0F', difficulty: 3,
-      gravity: 0.06, atmosphere: 'None', temp: '-93\u00B0C avg',
-      travelDays: 700, color: '#71717a', desc: 'A metallic asteroid worth $10,000 quadrillion \u2014 possibly a protoplanet core.',
+      gravity: 0.14, atmosphere: 'None', temp: '-93\u00B0C avg',
+      travelDays: 700, color: '#71717a', desc: 'A metal-rich asteroid \u2014 possibly the exposed core of a protoplanet. (The famous "$10,000 quadrillion" price tag is a thought experiment, not a real valuation.)',
       hazards: ['microgravity', 'tumbling rotation', 'collision debris', 'communication blackouts'],
       scienceFocus: ['metallurgy', 'orbital mechanics', 'mining engineering'],
       unlockAt: 2
@@ -2788,7 +2788,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
             h('button', { onClick: function() { setOh({ log: (iqOh.log || []).concat([{ s: iqOh.sma, e: iqOh.ecc, d: iqOh.drag, st: ohState }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-800 text-[11px] font-bold text-slate-200 border border-slate-600' }, t('stem.spaceexplorer.log', '📋 Log')),
             h('button', { onClick: function() { setOh({ sma: 2, ecc: 0.1, drag: 10, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-transparent text-[11px] font-semibold text-slate-400 border border-slate-600' }, t('stem.spaceexplorer.reset', '↺ Reset'))
           ),
-          h('textarea', { value: iqOh.hypothesis || '', onChange: function(e) { setOh({ hypothesis: e.target.value }); }, placeholder: t('stem.spaceexplorer.hypothesis_what_combination_produces_e', 'Hypothesis: What combination produces escape?'),
+          h('textarea', { 'aria-label': t('stem.spaceexplorer.hypothesis_input', 'Orbit hypothesis'), value: iqOh.hypothesis || '', onChange: function(e) { setOh({ hypothesis: e.target.value }); }, placeholder: t('stem.spaceexplorer.hypothesis_what_combination_produces_e', 'Hypothesis: What combination produces escape?'),
             className: 'w-full text-[12px] bg-slate-800 text-slate-100 border border-slate-500 rounded p-2 font-mono leading-snug', rows: 3 }),
           !iqOh.stuckRevealed && h('button', { onClick: function() { setOh({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-700/30 text-[11px] font-bold text-amber-300 border border-amber-700' }, t('stem.spaceexplorer.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
           iqOh.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-900/20 border border-amber-700 text-[11px] text-slate-200 leading-relaxed' },

@@ -6,6 +6,9 @@ export const PILOT_SCOPES = [
 ] as const;
 export const REQUIRED_PILOT_ACCEPTANCE_VERSION =
   "institution-pilot-synthetic-v2";
+export const PILOT_DATABASE_SCHEMA_VERSION = 5;
+export const PILOT_CHECKPOINT_SCHEMA_VERSION = 1;
+export const PILOT_RUNNER_PROTOCOL_VERSION = "remediation-run-v1";
 
 
 export type PilotScope = (typeof PILOT_SCOPES)[number];
@@ -244,7 +247,9 @@ export function getPilotConfig(env: PilotEnv): PilotConfig {
     unstartedInputTtlSeconds: boundedInteger(
       env.UNSTARTED_INPUT_TTL_SECONDS,
       DEFAULTS.unstartedInputTtlSeconds,
-      5 * 60,
+      // Queue admission is intentionally more patient than the five-minute
+      // running idle lease; throttled active work must not consume this clock.
+      10 * 60,
       24 * 60 * 60,
     ),
     outputTtlSeconds: boundedInteger(
@@ -350,6 +355,7 @@ export function pilotReadiness(env: PilotEnv): {
     ["DCR_RATE_LIMITER", env.DCR_RATE_LIMITER],
     ["GEMINI_API_KEY", env.GEMINI_API_KEY],
     ["GEMINI_MODEL", env.GEMINI_MODEL],
+    ["RELEASE_CANARY_SECRET", env.RELEASE_CANARY_SECRET],
     ["RUNNER_AUTH_SECRET", env.RUNNER_AUTH_SECRET],
   ];
   for (const [name, value] of required) {
@@ -365,6 +371,7 @@ export function pilotReadiness(env: PilotEnv): {
         (env.RUNNER_AUTH_SECRET as string).length < 32 ||
         (env.GEMINI_API_KEY as string).length < 16 ||
         (env.ACCESS_CLIENT_SECRET as string).length < 16 ||
+        (env.RELEASE_CANARY_SECRET as string).length < 32 ||
         !/^[a-f0-9]{64}$/iu.test(
           env.TRANSFER_ACCESS_AUDIENCE as string,
         ) ||

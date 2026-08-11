@@ -227,13 +227,38 @@ files.forEach(function (f) {
   catch (e) { loadErrors.push({ file: f, error: (e && e.message) || String(e) }); }
 });
 
-function makeCtx(toolId) {
+// Many tools self-initialize their state on first render: they call
+// setLabToolData(...)/setToolData(...) and return a "Loading..." placeholder,
+// expecting the host to re-render once state exists. A no-op setter left those
+// tools stuck on the placeholder forever, so the audit scored their stub as a
+// clean first screen. The ctx below writes into a real store and the render
+// loop replays until the tool stops asking for state.
+function makeCtx(toolId, store, overrides) {
+  store = store || newStore();
+  function applyUpdater(key, arg) {
+    const prev = store[key] || {};
+    const next = (typeof arg === 'function') ? arg(prev) : arg;
+    if (next && next !== prev) {
+      store[key] = next;
+      store.dirty = true;
+    }
+  }
   const base = {
     React: React,
-    toolData: {},
-    setToolData: noop,
-    update: noop,
-    updateMulti: noop,
+    toolData: store.toolData,
+    setToolData: function (a) { applyUpdater('toolData', a); },
+    labToolData: store.labToolData,
+    setLabToolData: function (a) { applyUpdater('labToolData', a); },
+    update: function (k, v) {
+      applyUpdater('toolData', function (p) {
+        const n = Object.assign({}, p);
+        n[k] = v;
+        return n;
+      });
+    },
+    updateMulti: function (o) {
+      applyUpdater('toolData', function (p) { return Object.assign({}, p, o || {}); });
+    },
     setStemLabTool: noop,
     setStemLabTab: noop,
     stemLabTab: 'explore',
@@ -301,12 +326,24 @@ function makeCtx(toolId) {
     setMultTableHover: noop,
     multTableRevealed: new Set(),
     setMultTableRevealed: noop,
-    labToolData: {},
-    setLabToolData: noop,
     _renderingFlag: { current: false }
   };
+  if (overrides) Object.assign(base, overrides);
   return new Proxy(base, { get: function (o, p) { return (p in o) ? o[p] : noop; } });
 }
+
+function countInteractive(html) {
+  return (String(html).match(/<button\b|<select\b|<textarea\b|<a\s[^>]*\bhref=|role="button"|<input\b(?![^>]*type="hidden")/g) || []).length;
+}
+
+function newStore() {
+  return { toolData: {}, labToolData: {}, dirty: false };
+}
+
+// Upper bound on state-settling passes. Tools observed in this catalog settle in
+// one extra pass; the cap keeps a tool that rewrites state every render from
+// spinning here.
+const SETTLE_PASSES = 5;
 
 function attr(el, name) {
   return (el.getAttribute(name) || '').trim();
@@ -372,6 +409,71 @@ function accessibleName(el, doc) {
   const placeholder = attr(el, 'placeholder');
   if (placeholder) return placeholder;
   return text(el);
+}
+
+// Elements removed from the accessibility tree need no accessible name. The
+// common case is the hidden-file-input-behind-a-button pattern: aria-hidden +
+// tabIndex -1 + display:none. Flagging those produced false errors.
+function hiddenFromA11y(el) {
+  let cur = el;
+  while (cur && cur.tagName) {
+    if (attr(cur, 'aria-hidden') === 'true') return true;
+    if (cur.hasAttribute && cur.hasAttribute('hidden')) return true;
+    const st = attr(cur, 'style');
+    if (st && /(^|;)\s*display\s*:\s*none/i.test(st)) return true;
+    if (st && /(^|;)\s*visibility\s*:\s*hidden/i.test(st)) return true;
+    cur = cur.parentElement;
+  }
+  return false;
+}
+
+// Class names whose CSS (in the tool's own injected <style> blocks) declares
+// horizontal scrolling, e.g. `.throwlab-compendium-scroll{overflow-x:auto}`.
+// Tools whose first screen is a Three.js/WebGL surface. jsdom has no WebGL, so
+// their real UI is unreachable here by construction.
+const WEBGL_BLOCKED = {
+  coasterLab: 'needs window.StemLab.ensureThree + a real WebGL context.',
+  geoSandbox: 'waits on StemLab.ensureThree({orbit:true}) before building its UI.',
+  geometryWorld: 'builds its scene from window.THREE before rendering controls.'
+};
+
+function collectScrollClasses(doc, into) {
+  Array.from(doc.querySelectorAll('style')).forEach(function (el) {
+    const css = el.textContent || '';
+    const re = /\.([\w-]+)\s*(?:,[^{]*)?\{[^}]*overflow(?:-x)?\s*:\s*(?:auto|scroll)/g;
+    let m;
+    while ((m = re.exec(css))) into.add(m[1]);
+  });
+  return into;
+}
+
+// Several tools inject their CSS imperatively into document.head at load time
+// rather than rendering a <style> into the React tree, so those rules only
+// exist on the harness document, never in the per-tool markup.
+let GLOBAL_SCROLL_CLASSES = null;
+function globalScrollClasses() {
+  if (!GLOBAL_SCROLL_CLASSES) {
+    GLOBAL_SCROLL_CLASSES = collectScrollClasses(document, new Set());
+  }
+  return GLOBAL_SCROLL_CLASSES;
+}
+
+// A wide table/canvas is fine when it or an ancestor scrolls horizontally --
+// that is the correct pattern for wide content, not an overflow risk.
+function insideScrollContainer(el, scrollClasses) {
+  let cur = el;
+  while (cur && cur.tagName) {
+    const st = attr(cur, 'style');
+    if (st && /overflow(-x)?\s*:\s*(auto|scroll)/i.test(st)) return true;
+    const cls = attr(cur, 'class').split(/\s+/).filter(Boolean);
+    for (let i = 0; i < cls.length; i++) {
+      if (scrollClasses.has(cls[i])) return true;
+      // Tailwind utilities
+      if (cls[i] === 'overflow-x-auto' || cls[i] === 'overflow-x-scroll' || cls[i] === 'overflow-auto' || cls[i] === 'overflow-scroll') return true;
+    }
+    cur = cur.parentElement;
+  }
+  return false;
 }
 
 function meaningfulName(name) {
@@ -443,6 +545,14 @@ function issueMeta() {
     'empty-render': {
       severity: 'error',
       recommendation: 'Render a real first screen with a visible title, purpose, and starting action.'
+    },
+    'placeholder-render': {
+      severity: 'warning',
+      recommendation: 'The audit only saw a loading/gated screen. Give the harness what the tool waits on (host state, 3D loader, network stub) so the real first screen gets audited.'
+    },
+    'no-interactive-controls': {
+      severity: 'warning',
+      recommendation: 'Confirm the first screen really has no control. If it does, the audit is stuck on a placeholder and the tool is effectively unaudited.'
     },
     'duplicate-id': {
       severity: 'error',
@@ -526,6 +636,7 @@ function auditMarkup(toolId, html, tool) {
     const tag = el.tagName.toLowerCase();
     const type = attr(el, 'type').toLowerCase();
     if (tag === 'input' && type === 'hidden') return;
+    if (hiddenFromA11y(el)) return;
     const name = accessibleName(el, doc);
     if (!meaningfulName(name)) {
       issues.push(issue(toolId, 'error', 'control-name', 'Interactive control is missing a meaningful accessible name.', {
@@ -546,6 +657,7 @@ function auditMarkup(toolId, html, tool) {
   Array.from(doc.querySelectorAll('input, select, textarea')).forEach(function (el, idx) {
     const type = attr(el, 'type').toLowerCase();
     if (type === 'hidden') return;
+    if (hiddenFromA11y(el)) return;
     const name = accessibleName(el, doc);
     if (!meaningfulName(name)) {
       issues.push(issue(toolId, 'error', 'field-name', 'Form field is missing a meaningful accessible name.', {
@@ -558,6 +670,7 @@ function auditMarkup(toolId, html, tool) {
   });
 
   Array.from(doc.querySelectorAll('img')).forEach(function (el, idx) {
+    if (hiddenFromA11y(el)) return;
     if (!el.hasAttribute('alt')) {
       issues.push(issue(toolId, 'error', 'img-alt', 'Image is missing alt text. Use empty alt for decorative images.', {
         index: idx,
@@ -637,8 +750,10 @@ function auditMarkup(toolId, html, tool) {
     }));
   }
 
+  const scrollClasses = collectScrollClasses(doc, new Set(globalScrollClasses()));
   const overflowEls = Array.from(doc.querySelectorAll('[style], [width]')).filter(function (el) {
-    return hasLargeFixedWidth(attr(el, 'style'), attr(el, 'width'), 400, 700);
+    if (!hasLargeFixedWidth(attr(el, 'style'), attr(el, 'width'), 400, 700)) return false;
+    return !insideScrollContainer(el, scrollClasses);
   });
   if (overflowEls.length) {
     issues.push(issue(toolId, 'notice', 'horizontal-overflow-risk', 'Tool includes fixed-width surfaces that need mobile visual review.', {
@@ -657,6 +772,41 @@ function auditMarkup(toolId, html, tool) {
   }
   if (tool.lightBackground === true) {
     issues.push(issue(toolId, 'notice', 'light-background', 'Tool opts out of the shared dark tool shell; verify contrast across themes.'));
+  }
+
+  // A tool whose first screen is still a loading/gated placeholder has not
+  // actually been audited. Say so, rather than reporting an empty issue list
+  // that reads as a clean pass.
+  // textContent concatenates across elements ("...NavigatorLoading the text"),
+  // which eats the word boundary, so flatten the markup with tag separators.
+  const flatText = String(html).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  const interactiveCount = doc.querySelectorAll('button, [role="button"], a[href], input:not([type="hidden"]), select, textarea').length;
+  const smallRender = html.length < 2500;
+  const busyEl = doc.querySelector('[aria-busy="true"]');
+  const loadingCopy = /\b(loading|initializing|preparing|please wait|one moment)\b/i.test(flatText);
+  // A fully rendered tool may legitimately hold one busy sub-region, so
+  // aria-busy only means "placeholder" when there is nothing else on screen.
+  if ((busyEl && (smallRender || interactiveCount === 0)) || (loadingCopy && smallRender)) {
+    issues.push(issue(toolId, 'warning', 'placeholder-render', 'First screen is still a loading placeholder, so this tool was not really audited.', {
+      renderedBytes: html.length,
+      reason: busyEl ? 'aria-busy' : 'loading-copy',
+      text: flatText.slice(0, 120)
+    }));
+  }
+
+  if (interactiveCount === 0) {
+    // Deliberately NOT a suppression list: these still warn. Naming the blocker
+    // just makes the warning actionable. Faking THREE/WebGL in jsdom would
+    // produce audited-looking markup that means nothing; real coverage for
+    // these lives in the Playwright WebGL battery.
+    const blocked = WEBGL_BLOCKED[toolId];
+    issues.push(issue(toolId, 'warning', 'no-interactive-controls', blocked
+      ? 'First screen renders no interactive control: ' + blocked + ' Not auditable in jsdom — cover it with the Playwright WebGL battery.'
+      : 'First screen renders no interactive control, which usually means the audit never reached the real tool UI.', {
+      renderedBytes: html.length,
+      blocker: blocked || undefined,
+      text: flatText.slice(0, 120)
+    }));
   }
 
   const metrics = {
@@ -692,11 +842,33 @@ ids.forEach(function (id) {
       if (/error rendering/i.test(msg)) caught.push(msg);
     } catch (_) {}
   };
+  let settlePasses = 0;
+  let auditedAs = 'default';
+  function renderSettled(overrides) {
+    const store = newStore();
+    let out = '';
+    for (let pass = 0; pass < SETTLE_PASSES; pass++) {
+      store.dirty = false;
+      const ctx = makeCtx(id, store, overrides);
+      out = RDS.renderToStaticMarkup(React.createElement(function StemA11ySmoke() {
+        return window.StemLab.renderTool(id, ctx);
+      }));
+      settlePasses = pass + 1;
+      if (!store.dirty) break;
+    }
+    return out;
+  }
   try {
-    const ctx = makeCtx(id);
-    html = RDS.renderToStaticMarkup(React.createElement(function StemA11ySmoke() {
-      return window.StemLab.renderTool(id, ctx);
-    }));
+    html = renderSettled(null);
+    // Some tools render only a "turn on Teacher Mode" notice by default (forge).
+    // Escalate once so the real UI gets audited instead of the gate notice.
+    if (countInteractive(html) === 0) {
+      const teacherHtml = renderSettled({ isTeacherMode: true });
+      if (countInteractive(teacherHtml) > 0) {
+        html = teacherHtml;
+        auditedAs = 'teacher-mode';
+      }
+    }
   } catch (e) {
     renderErrors.push(issue(id, 'error', 'render-throw', (e && e.message) || String(e)));
   } finally {
@@ -717,6 +889,8 @@ ids.forEach(function (id) {
     aliases: tool.aliases || [],
     desc: tool.desc || tool.description || '',
     renderedBytes: html.length,
+    settlePasses: settlePasses,
+    auditedAs: auditedAs,
     standardShell: html.indexOf('data-stem-tool-shell="' + id + '"') >= 0,
     issueCount: issues.length,
     errorCount: issues.filter(function (i) { return i.severity === 'error'; }).length,
@@ -889,6 +1063,8 @@ function renderMarkdown(rep) {
   lines.push('## Notes');
   lines.push('');
   lines.push('- The audit renders the default first screen for every registered plugin tool. It does not click through every tab/state.');
+  lines.push('- Tools that self-initialize state on first render are replayed (up to ' + SETTLE_PASSES + ' passes) until state settles, so the real screen is audited instead of their "Loading..." placeholder.');
+  lines.push('- `placeholder-render` and `no-interactive-controls` mean the audit never reached the real UI. Treat those tools as unaudited, not as clean.');
   lines.push('- Canvas and field findings are intentionally tool-level: the STEM host has fallback labeling, but tool-authored names are still more precise and resilient.');
   lines.push('- Use `node dev-tools/check_stem_a11y.cjs --gate` if you want high-confidence errors to fail automation.');
   lines.push('');

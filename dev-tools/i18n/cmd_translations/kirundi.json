@@ -320,5 +320,8 @@
   "cmd.run_lesson_blueprint": "Remako umugambi w’isomo",
   "cmd.run_lesson_blueprint_done": "Umugambi uraremwa — ushobora gukurikirana intambwe yose ku karata.",
   "cmd.run_lesson_blueprint_hint": "Rema imitungo yose iri mu mugambi w’ubu",
-  "cmd.cancelled": "Guhagarika vyasabwe. Igikorwa kiriho kizohagarara igihe uwugitanga azogishigikira."
+  "cmd.cancelled": "Guhagarika vyasabwe. Igikorwa kiriho kizohagarara igihe uwugitanga azogishigikira.",
+  "cmd.open_share_collect": "Fungura Share & Collect",
+  "cmd.open_share_collect_hint": "Amatora, kwiyandikisha, amatohoza n'inyishu zayo",
+  "cmd.open_share_collect_done": "Share & Collect yafunguwe."
 }

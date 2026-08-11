@@ -120,7 +120,7 @@ describe('the model is told what the user is doing', () => {
     await AC.routeUtterance(ctx, 'make this easier for them', { allowAi: true, preview: false });
 
     expect(callGemini, 'the AI route ran').toHaveBeenCalled();
-    expect(prompt, 'names the open surface').toContain('STEM Lab');
+    expect(prompt, 'names the open surface').toContain('STEAM Lab');
     expect(prompt, 'names the active tool').toContain('beehive');
     expect(prompt, 'says what content is loaded').toContain('glossary');
     expect(prompt, 'identifies the audience').toMatch(/Audience: teacher/);

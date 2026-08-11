@@ -284,7 +284,7 @@ function meetdocsAnnounce(message) {
 }
 
 function MeetingDocsPanel(props) {
-  const { onClose, t, addToast = (() => {}), callGemini = null } = props;
+  const { onClose, t, addToast = (() => {}), callGemini = null, onOpenEligibility } = props;
   const tt = React.useCallback((key, fallback) => {
     if (typeof t === 'function') {
       try { const v = t(key); if (v) return v; } catch (_) {}
@@ -498,6 +498,15 @@ function MeetingDocsPanel(props) {
           </div>
         </div>
 
+          {typeof onOpenEligibility === 'function' && (
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <button type="button" onClick={() => onOpenEligibility('elig-prep-title')}
+                className="min-h-11 px-3 py-2 rounded-lg border border-violet-300 bg-violet-50 text-violet-800 text-xs font-bold hover:bg-violet-100">
+                {tt('meetdocs.eligibility_link', 'Open the meeting-preparation guide')}
+              </button>
+              <span className="text-[10px] text-slate-500">{tt('meetdocs.eligibility_link_note', 'Opens generic prompts only; no meeting record is transferred.')}</span>
+            </div>
+          )}
         <div className="p-4" role="tabpanel" id="meetdocs-tabpanel" aria-labelledby={'meetdocs-tab-' + tab} tabIndex={-1}>
           {tab === 'new' && !draft && !tplDraft && (
             <div>

@@ -1258,7 +1258,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                         const msg = `Opening ${modLabel}.`;
                         setUdlMessages(prev => [...prev, { role: 'model', text: msg }]);
                     } else {
-                        setUdlMessages(prev => [...prev, { role: 'model', text: `I'm not sure which module you mean. Try "open STEM Lab" or "open SEL Hub".` }]);
+                        setUdlMessages(prev => [...prev, { role: 'model', text: `I'm not sure which module you mean. Try "open STEAM Lab" or "open SEL Hub".` }]);
                     }
                     break;
                 }

@@ -320,5 +320,8 @@
   "cmd.run_lesson_blueprint": "পাঠ পরিকল্পনা তৈরি করুন",
   "cmd.run_lesson_blueprint_done": "পরিকল্পনা তৈরি হচ্ছে — কার্ডে প্রতিটি ধাপ দেখতে পারবেন।",
   "cmd.run_lesson_blueprint_hint": "বর্তমান পরিকল্পনার সব রিসোর্স তৈরি করে",
-  "cmd.cancelled": "বাতিলের অনুরোধ করা হয়েছে। প্রদানকারী এটি সমর্থন করলে বর্তমান কাজটি থেমে যাবে।"
+  "cmd.cancelled": "বাতিলের অনুরোধ করা হয়েছে। প্রদানকারী এটি সমর্থন করলে বর্তমান কাজটি থেমে যাবে।",
+  "cmd.open_share_collect": "Share & Collect খুলুন",
+  "cmd.open_share_collect_hint": "পোল, সাইন-আপ, জরিপ এবং সেগুলোর ফলাফল",
+  "cmd.open_share_collect_done": "Share & Collect খোলা হয়েছে।"
 }

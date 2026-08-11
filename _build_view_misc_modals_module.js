@@ -3,8 +3,8 @@
  * Build view_misc_modals_module.js from view_misc_modals_source.jsx
  * (Round 5 Tier B, May 2026).
  *
- * 4 components: GroupSessionModal, PdfDiffViewer, UDLGuideModal, AIBackendModal.
- * 1,206 lines extracted from AlloFlowANTI.txt across 4 sites.
+ * 2 modals plus shared ModelDiagnosticsSection and PlatformDiagnosticsSection.
+ * Shared diagnostics and modal UI extracted from AlloFlowANTI.txt across 4 sites.
  */
 
 const { execSync } = require('child_process');
@@ -86,9 +86,10 @@ window.AlloModules = window.AlloModules || {};
 window.AlloModules.UDLGuideModal = (typeof UDLGuideModal !== 'undefined') ? UDLGuideModal : null;
 window.AlloModules.AIBackendModal = (typeof AIBackendModal !== 'undefined') ? AIBackendModal : null;
 window.AlloModules.ModelDiagnosticsSection = (typeof ModelDiagnosticsSection !== 'undefined') ? ModelDiagnosticsSection : null;
+window.AlloModules.PlatformDiagnosticsSection = (typeof PlatformDiagnosticsSection !== 'undefined') ? PlatformDiagnosticsSection : null;
 window.AlloModules.ViewMiscModalsModule = true;
 window.AlloModules.MiscModals = true;  // satisfies loadModule('MiscModals', ...) registration check
-console.log('[CDN] ViewMiscModalsModule loaded — 2 modals + 1 shared section registered (UDLGuide, AIBackend, ModelDiagnosticsSection)');
+console.log('[CDN] ViewMiscModalsModule loaded — 2 modals + 2 shared sections registered (UDLGuide, AIBackend, ModelDiagnosticsSection, PlatformDiagnosticsSection)');
 })();
 `;
 

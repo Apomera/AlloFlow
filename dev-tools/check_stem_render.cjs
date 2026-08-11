@@ -95,11 +95,39 @@ if (typeof window.matchMedia !== 'function') {
   window.matchMedia = function () { return { matches: false, addEventListener: noop, removeEventListener: noop, addListener: noop, removeListener: noop }; };
 }
 
+function newStore(seedToolData) {
+  return { toolData: seedToolData || {}, labToolData: {}, dirty: false };
+}
+
+// Upper bound on state-settling passes (see runOne).
+const SETTLE_PASSES = 5;
+
 // Faithful stub of the ctx built by stem_lab_module.js StemPluginBridge (~4794-4950).
-function makeCtx() {
+// State setters write into a real store: many tools self-initialize by calling
+// setLabToolData(...) on first render and returning a "Loading..." placeholder.
+// With no-op setters those tools never got past the placeholder, so the smoke
+// only ever exercised their stub and any first-render crash in the real body
+// went undetected.
+function makeCtx(store) {
+  store = store || newStore();
+  function applyUpdater(key, arg) {
+    const prev = store[key] || {};
+    const next = (typeof arg === 'function') ? arg(prev) : arg;
+    if (next && next !== prev) {
+      store[key] = next;
+      store.dirty = true;
+    }
+  }
   const base = {
     React: React,
-    toolData: {}, setToolData: noop, update: noop, updateMulti: noop,
+    toolData: store.toolData,
+    setToolData: function (a) { applyUpdater('toolData', a); },
+    update: function (k, v) {
+      applyUpdater('toolData', function (p) { const n = Object.assign({}, p); n[k] = v; return n; });
+    },
+    updateMulti: function (o) {
+      applyUpdater('toolData', function (p) { return Object.assign({}, p, o || {}); });
+    },
     setStemLabTool: noop, setStemLabTab: noop, stemLabTab: '', stemLabTool: '',
     toolSnapshots: [], setToolSnapshots: noop,
     addToast: noop, awardXP: noop, getXP: function () { return 0; },
@@ -125,7 +153,9 @@ function makeCtx() {
     multTableAnswer: '', setMultTableAnswer: noop, multTableChallenge: null, setMultTableChallenge: noop,
     multTableFeedback: null, setMultTableFeedback: noop, multTableHidden: false, setMultTableHidden: noop,
     multTableHover: null, setMultTableHover: noop, multTableRevealed: new Set(), setMultTableRevealed: noop,
-    labToolData: {}, setLabToolData: noop, _renderingFlag: { current: false },
+    labToolData: store.labToolData,
+    setLabToolData: function (a) { applyUpdater('labToolData', a); },
+    _renderingFlag: { current: false },
   };
   // Unknown ctx reads → noop fn (used-as-callback safe). Real fields above cover the
   // documented contract; this only catches drift, not the tool's own render logic.
@@ -198,11 +228,17 @@ ids.forEach(function (id) {
     };
     let threwError = null;
     try {
-      const ctx = makeCtx();
-      if (toolData) ctx.toolData = toolData;
-      RDS.renderToStaticMarkup(React.createElement(function StemSmoke() {
-        return window.StemLab.renderTool(id, ctx);
-      }));
+      // Replay until the tool stops asking for state, so the smoke reaches the
+      // real body of tools that self-initialize behind a placeholder.
+      const store = newStore(toolData || {});
+      for (let pass = 0; pass < SETTLE_PASSES; pass++) {
+        store.dirty = false;
+        const ctx = makeCtx(store);
+        RDS.renderToStaticMarkup(React.createElement(function StemSmoke() {
+          return window.StemLab.renderTool(id, ctx);
+        }));
+        if (!store.dirty) break;
+      }
     } catch (e) {
       threwError = (e && e.message) || String(e);
     } finally {

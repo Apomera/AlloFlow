@@ -1,4 +1,4 @@
-// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -9497,7 +9497,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             h('p', { style: { margin: '0 0 8px', fontSize: 12, color: T.muted, lineHeight: 1.5 } },
               __alloT('stem.printingpress.for_lesson_plans_student_bibliographie', 'For lesson plans, student bibliographies, or teaching portfolios:')),
             h('div', { style: { fontSize: 12, fontFamily: 'ui-monospace, "SF Mono", Consolas, monospace', color: T.text, background: T.cardAlt, padding: 10, borderRadius: 6, border: '1px solid ' + T.border, lineHeight: 1.6 } },
-              __alloT('stem.printingpress.printingpress_an_interactive_printing_', 'PrintingPress: an interactive printing-press history and simulation tool. AlloFlow STEM Lab (Pomeranz, A., '), new Date().getFullYear(), __alloT('stem.printingpress.retrieved', '). Retrieved '), new Date().toLocaleDateString(), __alloT('stem.printingpress.from_alloflow_project', ' from https://github.com/Apomera/AlloFlow.')
+              __alloT('stem.printingpress.printingpress_an_interactive_printing_', 'PrintingPress: an interactive printing-press history and simulation tool. AlloFlow STEAM Lab (Pomeranz, A., '), new Date().getFullYear(), __alloT('stem.printingpress.retrieved', '). Retrieved '), new Date().toLocaleDateString(), __alloT('stem.printingpress.from_alloflow_project', ' from https://github.com/Apomera/AlloFlow.')
             )
           ),
           disclaimerFooter()
@@ -19806,7 +19806,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         return h('div', null,
           backBar('🎉 About This Tool'),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 24, marginBottom: 14 } },
-            dropCapPara('PrintingPress is a STEM Lab tool that started as a 13-module exploration of Gutenberg-era European printing + has grown into one of the most comprehensive printed-culture educational tools available — 80+ modules + 20,000+ lines of code + content. This page is a brief history of the tool itself.'),
+            dropCapPara('PrintingPress is a STEAM Lab tool that started as a 13-module exploration of Gutenberg-era European printing + has grown into one of the most comprehensive printed-culture educational tools available — 80+ modules + 20,000+ lines of code + content. This page is a brief history of the tool itself.'),
             sectionHeader('📜', 'The original 13 modules (May 10, 2026)'),
             h('p', { style: { color: T.muted, fontSize: 14, lineHeight: 1.7 } },
               __alloT('stem.printingpress.built_for_aaron_pomeranz_s_may_12_2026', 'Built for Aaron Pomeranz\'s May 12, 2026 demo at King Middle School (Portland, Maine). Focused on Gutenberg-era European print: press mechanism, type-setting, casting type, print run economics, before-and-after timeline, typography today, the people behind the press, broadside builder, the "same fears" parallel (1450 anti-print fears vs modern anti-internet fears), a day in the print shop, cumulative quiz, AI ask-the-printer, resources. ~9,200 lines.')),
@@ -19816,7 +19816,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             sectionHeader('📊', 'By the numbers'),
             keyPointBlock(null, [
               { k: '80+ modules', v: 'Each with multiple sub-sections + interactive content.' },
-              { k: '20,000+ lines', v: 'Of JavaScript + content. One of the most extensive educational tools in the STEM Lab.' },
+              { k: '20,000+ lines', v: 'Of JavaScript + content. One of the most extensive educational tools in the STEAM Lab.' },
               { k: '7 sections', v: 'Start here, Modules, Practice + Ask, Resources.' },
               { k: 'Interactive elements', v: 'Press mechanism animation, type-setting game, casting-type sliders, print-economics calculator, before/after timeline, broadside builder, day-in-shop role-play, apprentice\'s journey 7-year career sim, type-foundry interactive designer, font identification quiz, many sub-pickers + mini-quizzes.' },
               { k: 'AI integration', v: 'Ask-the-printer interface for AI-powered Q&A on any printing-history topic.' },

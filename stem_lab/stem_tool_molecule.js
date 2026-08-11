@@ -30,7 +30,7 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) - shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) - shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -325,7 +325,6 @@ window.StemLab = window.StemLab || {
       var srOnly = ctx.srOnly;
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
-      var props = ctx.props;
       var canvasNarrate = ctx.canvasNarrate;
 
       var useRef = React.useRef;
@@ -433,7 +432,7 @@ window.StemLab = window.StemLab || {
           const reactionCoeffs = d.reactionCoeffs || null;
           const reactionResult = d.reactionResult || null;
           const updMulti = (obj) => setLabToolData(prev => ({ ...prev, molecule: { ...prev.molecule, ...obj } }));
-          const isDark = !!(props && props.darkMode);
+          const isDark = !!ctx.isDark || !!ctx.isContrast;
 
           // ═══ Keyboard Shortcuts ═══
           // Note: these execute on every render but are lightweight
@@ -1764,7 +1763,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
             React.createElement("section", { "data-molecule-command": "true", "aria-label": "Molecule Lab command deck", className: "mb-3 rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-cyan-50 to-indigo-50 p-3 shadow-sm" },
               React.createElement("div", { className: "grid gap-3 lg:grid-cols-[minmax(230px,0.9fr)_minmax(0,1.7fr)]" },
-                React.createElement("div", { className: "rounded-xl border border-cyan-200 bg-white/80 p-3" },
+                React.createElement("div", { className: "rounded-xl border border-cyan-200 bg-white p-3" },
                   React.createElement("div", { className: "text-[11px] font-black uppercase text-cyan-700", style: { letterSpacing: 0 } }, "Molecular workbench"),
                   React.createElement("div", { className: "mt-1 text-xl font-black leading-tight text-slate-900" }, "Pick the chemistry lens first."),
                   React.createElement("p", { className: "mt-2 text-xs leading-relaxed text-slate-600" }, "The lab is easier when students choose a mode by task: inspect, combine, build, research, or balance."),
@@ -1948,7 +1947,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               (() => {
                 const teaching = getMoleculeTeachingModel(d.formula);
                 return teaching && React.createElement("section", {
-                  className: "mt-3 border border-cyan-200 bg-cyan-50/70 p-3 text-left",
+                  className: "mt-3 border border-cyan-200 bg-cyan-50 p-3 text-left",
                   style: { borderRadius: 8 },
                   "aria-labelledby": "molecule-shape-polarity-title"
                 },
@@ -2791,7 +2790,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                         React.createElement("div", { className: "flex flex-wrap gap-1" },
 
-                          (detail.uses || []).map((use, i) => React.createElement("span", { key: i, className: "px-2 py-0.5 bg-white/60 rounded-full text-[11px] font-medium text-slate-700 border border-slate-400/80" }, use))
+                          (detail.uses || []).map((use, i) => React.createElement("span", { key: i, className: "px-2 py-0.5 bg-white rounded-full text-[11px] font-medium text-slate-700 border border-slate-400" }, use))
 
                         )
 
@@ -2803,7 +2802,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                         React.createElement("div", { className: "flex flex-wrap gap-1" },
 
-                          (detail.compounds || []).map((comp, i) => React.createElement("span", { key: i, className: "px-2 py-0.5 bg-white/60 rounded-full text-[11px] font-medium text-slate-700 border border-slate-400/80" }, comp))
+                          (detail.compounds || []).map((comp, i) => React.createElement("span", { key: i, className: "px-2 py-0.5 bg-white rounded-full text-[11px] font-medium text-slate-700 border border-slate-400" }, comp))
 
                         )
 
@@ -3966,19 +3965,162 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
       }
 
       function renderBondsSection() {
-        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.bond_types_electronegativity_differenc', '⚛︎ Bond types — electronegativity difference')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.bond_character_ranges_from_purely_cova', 'Bond character ranges from purely covalent (equal sharing) to ionic (full electron transfer). The boundary is fuzzy — most real bonds have partial ionic character.')),
-          React.createElement('div', { className: 'grid gap-2 grid-cols-1 md:grid-cols-2' },
+        var h = React.createElement;
+        // Pauling electronegativity (CRC Handbook / Pauling scale). Measured values.
+        var EN = {
+          H: 2.20, Li: 0.98, Be: 1.57, B: 2.04, C: 2.55, N: 3.04, O: 3.44, F: 3.98,
+          Na: 0.93, Mg: 1.31, Al: 1.61, Si: 1.90, P: 2.19, S: 2.58, Cl: 3.16,
+          K: 0.82, Ca: 1.00, Fe: 1.83, Cu: 1.90, Zn: 1.65, Br: 2.96, I: 2.66, Cs: 0.79
+        };
+        var EN_ORDER = ['H','Li','Be','B','C','N','O','F','Na','Mg','Al','Si','P','S','Cl','K','Ca','Fe','Cu','Zn','Br','I','Cs'];
+        // Pauling's own relation: fraction of ionic character = 1 - exp(-(ΔEN)²/4).
+        function pctIonic(d) { return 100 * (1 - Math.exp(-0.25 * d * d)); }
+        function bondClass(d) {
+          if (d < 0.4) return { label: __alloT('stem.molecule.en_nonpolar', 'Nonpolar covalent'), color: '#0891b2' };
+          if (d < 1.7) return { label: __alloT('stem.molecule.en_polar', 'Polar covalent'), color: '#7c3aed' };
+          return { label: __alloT('stem.molecule.en_ionic', 'Mostly ionic'), color: '#d97706' };
+        }
+        var aSym = EN[d2.enA] !== undefined ? d2.enA : 'H';
+        var bSym = EN[d2.enB] !== undefined ? d2.enB : 'Cl';
+        var dEN = Math.abs(EN[aSym] - EN[bSym]);
+        var cls = bondClass(dEN);
+        var ionic = pctIonic(dEN);
+        // more-electronegative atom pulls the shared pair toward itself
+        var pullsRight = EN[bSym] >= EN[aSym];
+        var EN_MAX = 3.3;
+        // Real reference pairs, plotted at their actual ΔEN so the "zones" read as a continuum.
+        var REF_PAIRS = [
+          { p: 'H-H', d: 0.00 }, { p: 'C-H', d: 0.35 }, { p: 'N-H', d: 0.84 },
+          { p: 'C-O', d: 0.89 }, { p: 'H-Cl', d: 0.96 }, { p: 'O-H', d: 1.24 },
+          { p: 'C-F', d: 1.43 }, { p: 'Al-Cl', d: 1.55 }, { p: 'Mg-O', d: 2.13 },
+          { p: 'Na-Cl', d: 2.23 }, { p: 'Li-F', d: 3.00 }, { p: 'Cs-F', d: 3.19 }
+        ];
+        var SW = 560, SH = 128, PADL = 26, PADR = 16, BARY = 40, BARH = 22;
+        var plotW = SW - PADL - PADR;
+        function xOf(d) { return PADL + plotW * Math.min(d, EN_MAX) / EN_MAX; }
+
+        function announce(msg) {
+          try { var lr = document.getElementById('allo-live-molecule'); if (lr) lr.textContent = msg; } catch (e) {}
+        }
+        function pickRow(which, current) {
+          return h('div', { className: 'flex flex-wrap gap-1', role: 'group', 'aria-label': which === 'enA' ? __alloT('stem.molecule.en_pick_first', 'Choose the first atom') : __alloT('stem.molecule.en_pick_second', 'Choose the second atom') },
+            EN_ORDER.map(function (s) {
+              var on = s === current;
+              return h('button', {
+                key: which + s, type: 'button', 'aria-pressed': on ? 'true' : 'false',
+                title: s + ' (EN ' + EN[s].toFixed(2) + ')',
+                onClick: function () {
+                  var patch = {}; patch[which] = s;
+                  try { setExp(patch); } catch (e) {}
+                  var oA = which === 'enA' ? s : aSym, oB = which === 'enB' ? s : bSym;
+                  var nd = Math.abs(EN[oA] - EN[oB]);
+                  announce(oA + ' and ' + oB + ': electronegativity difference ' + nd.toFixed(2) + ', ' + bondClass(nd).label + ', about ' + Math.round(pctIonic(nd)) + ' percent ionic character.');
+                },
+                className: 'px-1.5 py-0.5 rounded text-[11px] font-bold border transition-colors ' + (on ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50')
+              }, s);
+            }));
+        }
+
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.bond_types_electronegativity_differenc', '⚛︎ Bond types — electronegativity difference')),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.bond_character_ranges_from_purely_cova', 'Bond character ranges from purely covalent (equal sharing) to ionic (full electron transfer). The boundary is fuzzy — most real bonds have partial ionic character.')),
+
+          // ── Interactive electronegativity spectrum ──
+          h('div', { className: 'rounded-xl border border-slate-200 bg-slate-50 p-3 mb-3' },
+            h('div', { className: 'text-[11.5px] font-black text-slate-800 mb-2' }, __alloT('stem.molecule.en_spectrum_title', '🎚 Build a bond: the character is a slider, not a switch')),
+            h('div', { className: 'grid gap-2 mb-2', style: { gridTemplateColumns: 'minmax(0,1fr)' } },
+              h('div', null,
+                h('div', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1' }, __alloT('stem.molecule.en_atom_a', 'Atom A')),
+                pickRow('enA', aSym)),
+              h('div', null,
+                h('div', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1' }, __alloT('stem.molecule.en_atom_b', 'Atom B')),
+                pickRow('enB', bSym))),
+
+            h('svg', {
+              viewBox: '0 0 ' + SW + ' ' + SH, width: '100%', style: { display: 'block' }, role: 'img',
+              'aria-label': aSym + ' bonded to ' + bSym + '. Electronegativity ' + EN[aSym].toFixed(2) + ' and ' + EN[bSym].toFixed(2) + ', difference ' + dEN.toFixed(2) + '. Classified ' + cls.label + ', about ' + Math.round(ionic) + ' percent ionic character. The scale runs from 0 (equal sharing) to 3.3 (near-total transfer); the same numbers appear in the readout below.'
+            },
+              h('defs', null,
+                h('linearGradient', { id: 'alloMolEnGrad', x1: '0', y1: '0', x2: '1', y2: '0' },
+                  h('stop', { offset: '0%', stopColor: '#0891b2' }),
+                  h('stop', { offset: '12%', stopColor: '#0e9488' }),
+                  h('stop', { offset: '52%', stopColor: '#7c3aed' }),
+                  h('stop', { offset: '100%', stopColor: '#d97706' }))),
+              // zone boundaries at the two conventional cutoffs
+              [0.4, 1.7].map(function (b, bi) {
+                return h('g', { key: 'zb' + bi },
+                  h('line', { x1: xOf(b), y1: BARY - 6, x2: xOf(b), y2: BARY + BARH + 6, stroke: '#334155', strokeWidth: 1, strokeDasharray: '3 2' }),
+                  h('text', { x: xOf(b), y: BARY - 9, textAnchor: 'middle', fontSize: 9, fontWeight: 700, fill: '#334155' }, b.toFixed(1)));
+              }),
+              h('rect', { x: PADL, y: BARY, width: plotW, height: BARH, rx: 5, fill: 'url(#alloMolEnGrad)' }),
+              h('text', { x: PADL + plotW * 0.06, y: BARY + 15, fontSize: 9.5, fontWeight: 800, fill: '#ffffff' }, __alloT('stem.molecule.en_zone_nonpolar', 'nonpolar')),
+              h('text', { x: PADL + plotW * 0.30, y: BARY + 15, fontSize: 9.5, fontWeight: 800, fill: '#ffffff' }, __alloT('stem.molecule.en_zone_polar', 'polar covalent')),
+              h('text', { x: PADL + plotW * 0.72, y: BARY + 15, fontSize: 9.5, fontWeight: 800, fill: '#ffffff' }, __alloT('stem.molecule.en_zone_ionic', 'mostly ionic')),
+              // scale ends, kept ABOVE the bar so the space below belongs to the pair labels alone
+              h('text', { x: PADL, y: BARY - 9, textAnchor: 'start', fontSize: 9, fontWeight: 700, fill: '#334155' }, '0'),
+              h('text', { x: PADL + plotW, y: BARY - 9, textAnchor: 'end', fontSize: 9, fontWeight: 700, fill: '#334155' }, String(EN_MAX)),
+              h('line', { x1: PADL, y1: BARY + BARH + 5, x2: PADL + plotW, y2: BARY + BARH + 5, stroke: '#94a3b8', strokeWidth: 1 }),
+              h('text', { x: PADL, y: SH - 3, fontSize: 9.5, fontWeight: 700, fill: '#475569' }, __alloT('stem.molecule.en_axis_label', 'ΔEN (Pauling)')),
+              // real reference pairs, staggered over three rows so labels never collide
+              REF_PAIRS.map(function (rp, ri) {
+                var yy = BARY + BARH + 17 + (ri % 3) * 11;
+                return h('g', { key: 'rp' + ri },
+                  h('line', { x1: xOf(rp.d), y1: BARY + BARH + 5, x2: xOf(rp.d), y2: yy - 7, stroke: '#cbd5e1', strokeWidth: 1 }),
+                  h('text', { x: xOf(rp.d), y: yy, textAnchor: 'middle', fontSize: 8.5, fill: '#64748b' }, rp.p));
+              }),
+              // the live marker for the chosen pair
+              h('g', null,
+                h('polygon', { points: (xOf(dEN) - 6) + ',' + (BARY - 4) + ' ' + (xOf(dEN) + 6) + ',' + (BARY - 4) + ' ' + xOf(dEN) + ',' + (BARY + 5), fill: '#0f172a' }),
+                h('rect', { x: xOf(dEN) - 1.5, y: BARY, width: 3, height: BARH, fill: '#0f172a' }))
+            ),
+
+            // δ+/δ− cartoon: cloud offset scales with ΔEN, so polarity is something you SEE
+            h('div', { className: 'flex flex-wrap items-center gap-3 mt-2' },
+              h('svg', { viewBox: '0 0 200 74', width: 200, height: 74, role: 'img', style: { flex: '0 0 auto' },
+                'aria-label': dEN < 0.05
+                  ? __alloT('stem.molecule.en_cartoon_even', 'Diagram: the shared electron cloud sits centred between the two atoms, so neither end carries a partial charge.')
+                  : ('Diagram: the shared electron cloud is pulled toward ' + (pullsRight ? bSym : aSym) + ', giving it a partial negative charge and leaving ' + (pullsRight ? aSym : bSym) + ' partially positive.') },
+                (function () {
+                  var ax = 58, bx = 142, cyy = 34;
+                  var shift = Math.min(dEN / EN_MAX, 1) * 26 * (pullsRight ? 1 : -1);
+                  return [
+                    h('ellipse', { key: 'cloud', cx: (ax + bx) / 2 + shift, cy: cyy, rx: 46, ry: 20, fill: '#a5b4fc', opacity: 0.55 }),
+                    h('line', { key: 'bond', x1: ax, y1: cyy, x2: bx, y2: cyy, stroke: '#475569', strokeWidth: 2 }),
+                    h('circle', { key: 'ca', cx: ax, cy: cyy, r: 17, fill: '#ffffff', stroke: '#334155', strokeWidth: 2 }),
+                    h('circle', { key: 'cb', cx: bx, cy: cyy, r: 17, fill: '#ffffff', stroke: '#334155', strokeWidth: 2 }),
+                    h('text', { key: 'ta', x: ax, y: cyy + 5, textAnchor: 'middle', fontSize: 13, fontWeight: 800, fill: '#0f172a' }, aSym),
+                    h('text', { key: 'tb', x: bx, y: cyy + 5, textAnchor: 'middle', fontSize: 13, fontWeight: 800, fill: '#0f172a' }, bSym),
+                    dEN >= 0.05 ? h('text', { key: 'da', x: ax, y: 14, textAnchor: 'middle', fontSize: 12, fontWeight: 800, fill: pullsRight ? '#dc2626' : '#2563eb' }, pullsRight ? 'δ+' : 'δ−') : null,
+                    dEN >= 0.05 ? h('text', { key: 'db', x: bx, y: 14, textAnchor: 'middle', fontSize: 12, fontWeight: 800, fill: pullsRight ? '#2563eb' : '#dc2626' }, pullsRight ? 'δ−' : 'δ+') : null,
+                    h('text', { key: 'arw', x: (ax + bx) / 2, y: 68, textAnchor: 'middle', fontSize: 9.5, fontWeight: 700, fill: '#475569' },
+                      dEN >= 0.05 ? ('e⁻ pulled toward ' + (pullsRight ? bSym : aSym)) : __alloT('stem.molecule.en_shared_evenly', 'shared evenly')),
+                    null
+                  ];
+                })()),
+              h('div', { className: 'flex-1 min-w-[200px]' },
+                h('div', { className: 'text-[13px] font-black', style: { color: cls.color } }, aSym + '–' + bSym + ' · ' + cls.label),
+                h('div', { className: 'text-[11.5px] text-slate-700 mt-0.5' },
+                  'EN ' + EN[aSym].toFixed(2) + ' vs ' + EN[bSym].toFixed(2) + '  →  ΔEN = ', h('strong', null, dEN.toFixed(2))),
+                h('div', { className: 'text-[11.5px] text-slate-700' },
+                  __alloT('stem.molecule.en_ionic_character', 'Ionic character: '), h('strong', null, ionic.toFixed(0) + '%'),
+                  h('span', { className: 'text-slate-500' }, '  (Pauling: 1 − exp(−ΔEN² / 4))')),
+                h('div', { className: 'mt-1 h-2 rounded-full bg-slate-200 overflow-hidden', role: 'presentation' },
+                  h('div', { style: { width: Math.max(1, ionic).toFixed(0) + '%', height: '100%', background: cls.color } })))),
+
+            h('div', { className: 'mt-2 p-2 rounded-lg bg-amber-50 border border-amber-200 text-[11px] text-amber-900 leading-snug' },
+              h('strong', null, __alloT('stem.molecule.en_why_17', 'Why 1.7? ')),
+              __alloT('stem.molecule.en_why_17_body', 'Put ΔEN = 1.7 into Pauling\'s formula and you get 51% ionic character. The famous cutoff is just the halfway mark, picked for convenience. Nothing snaps at 1.7: Al–Cl (1.55) and C–F (1.43) sit right below it and behave like strongly polar covalent bonds, not salts.'))),
+
+          h('div', { className: 'grid gap-2 grid-cols-1 md:grid-cols-2' },
             BOND_TYPES.map(function(b, i) {
-              return React.createElement('div', { key: 'b'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
-                React.createElement('div', { className: 'flex items-baseline gap-2 mb-1' },
-                  React.createElement('span', { className: 'text-lg' }, b.icon),
-                  React.createElement('span', { className: 'text-sm font-black text-slate-800' }, b.name),
-                  React.createElement('span', { className: 'text-[10px] font-bold px-1.5 py-0.5 rounded bg-white border border-slate-300 text-slate-700 ml-auto' }, 'ΔEN ' + b.diff)
+              return h('div', { key: 'b'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'flex items-baseline gap-2 mb-1' },
+                  h('span', { className: 'text-lg' }, b.icon),
+                  h('span', { className: 'text-sm font-black text-slate-800' }, b.name),
+                  h('span', { className: 'text-[10px] font-bold px-1.5 py-0.5 rounded bg-white border border-slate-300 text-slate-700 ml-auto' }, 'ΔEN ' + b.diff)
                 ),
-                React.createElement('div', { className: 'text-[12px] text-slate-700 leading-relaxed mb-1' }, b.desc),
-                React.createElement('div', { className: 'text-[11px] text-slate-600' }, 'Examples: ', b.examples.join(', '))
+                h('div', { className: 'text-[12px] text-slate-700 leading-relaxed mb-1' }, b.desc),
+                h('div', { className: 'text-[11px] text-slate-600' }, 'Examples: ', b.examples.join(', '))
               );
             })
           )
@@ -4425,38 +4567,325 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
       }
 
       function renderPhaseSection() {
-        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.phases_of_matter_phase_diagrams', '🧊 Phases of matter + phase diagrams')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.a_phase_diagram_plots_phase_boundaries', 'A phase diagram plots phase boundaries on a P (pressure) vs T (temperature) graph. Lines = phase transitions. Triple point: all three phases coexist. Critical point: liquid + gas become indistinguishable (supercritical fluid).')),
-          React.createElement('div', { className: 'overflow-x-auto mb-3' },
-            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
-              React.createElement('thead', null,
-                React.createElement('tr', { className: 'bg-slate-100' },
-                  ['Phase', 'Shape', 'Volume', 'Density', 'Particles', 'Examples'].map(function(h, i) {
-                    return React.createElement('th', { scope: 'col', key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, h);
+        var h = React.createElement;
+        // ── Real anchor data. Triple + critical points are measured constants; the curves
+        // between them are fits THROUGH those measurements, not hand-drawn cartoons. ──
+        var SUBSTANCES = {
+          water: {
+            id: 'water', name: __alloT('stem.molecule.phase_sub_water', 'Water (H₂O)'), formula: 'H₂O',
+            Tt: 273.16, Pt: 611.657, Tc: 647.096, Pc: 22.064e6,
+            vapAnchors: [[273.16, 611.657], [373.124, 101325], [647.096, 22.064e6]],
+            subAnchors: [[253.15, 103.26], [273.16, 611.657]],
+            fusAnchors: [[611.657, 273.16], [209e6, 251.165]],   // ice Ih / III / liquid triple point
+            Tmin: 210, Tmax: 700, logPmin: 0, logPmax: 8.2,
+            fusNote: __alloT('stem.molecule.phase_water_fus_note', 'Water\'s melting line leans LEFT: squeeze ice hard enough and it melts. Almost every other substance leans right. Push past a few thousand atmospheres and water stops making ordinary ice altogether and forms denser crystal types instead, which is where this straight line stops being a fair drawing.')
+          },
+          co2: {
+            id: 'co2', name: __alloT('stem.molecule.phase_sub_co2', 'Carbon dioxide (CO₂)'), formula: 'CO₂',
+            Tt: 216.58, Pt: 517950, Tc: 304.13, Pc: 7.377e6,
+            vapAnchors: [[216.58, 517950], [273.15, 3.4851e6], [304.13, 7.377e6]],
+            subAnchors: [[194.65, 101325], [216.58, 517950]],
+            fusAnchors: [[517950, 216.58], [100e6, 264]],
+            Tmin: 170, Tmax: 330, logPmin: 3.5, logPmax: 8.2,
+            fusNote: __alloT('stem.molecule.phase_co2_fus_note', 'CO₂\'s triple point sits at 5.1 atm. At ordinary room pressure there is no liquid band at all, which is why dry ice sublimes instead of melting.')
+          }
+        };
+        var subId = SUBSTANCES[d2.phaseSub] ? d2.phaseSub : 'water';
+        var S = SUBSTANCES[subId];
+
+        // ln P = A − B/(T + C), solved so the curve passes exactly through all three anchors.
+        function fitAntoine(a1, a2, a3) {
+          var L1 = Math.log(a1[1]), L2 = Math.log(a2[1]), L3 = Math.log(a3[1]);
+          function g(C) {
+            var u1 = 1 / (a1[0] + C), u2 = 1 / (a2[0] + C), u3 = 1 / (a3[0] + C);
+            return (L2 - L1) * (u3 - u1) - (L3 - L1) * (u2 - u1);
+          }
+          var lo = -Math.min(a1[0], a2[0], a3[0]) + 0.5, hi = 4000, i, mid;
+          if (g(lo) * g(hi) > 0) return null;
+          for (i = 0; i < 200; i++) { mid = (lo + hi) / 2; if (g(lo) * g(mid) <= 0) hi = mid; else lo = mid; }
+          var C = (lo + hi) / 2, u1 = 1 / (a1[0] + C), u2 = 1 / (a2[0] + C);
+          var B = (L2 - L1) / (u1 - u2), A = L1 + B * u1;
+          return function (T) { return Math.exp(A - B / (T + C)); };
+        }
+        // Two-point Clausius–Clapeyron for the short sublimation stretch.
+        function fitCC(a1, a2) {
+          var L1 = Math.log(a1[1]), L2 = Math.log(a2[1]);
+          var B = (L2 - L1) / (1 / a1[0] - 1 / a2[0]), A = L1 + B / a1[0];
+          return function (T) { return Math.exp(A - B / T); };
+        }
+        var Pvap = fitAntoine(S.vapAnchors[0], S.vapAnchors[1], S.vapAnchors[2]) || function () { return S.Pt; };
+        var Psub = fitCC(S.subAnchors[0], S.subAnchors[1]);
+        var fa = S.fusAnchors[0], fb = S.fusAnchors[1];
+        function Tmelt(P) { return fa[1] + (fb[1] - fa[1]) * (P - fa[0]) / (fb[0] - fa[0]); }
+
+        function phaseAt(T, P) {
+          if (T >= S.Tc && P >= S.Pc) return 'supercritical';
+          var Pb = (T < S.Tt) ? Psub(T) : (T <= S.Tc ? Pvap(T) : S.Pc);
+          if (P < Pb) return 'gas';
+          if (P <= S.Pt) return 'solid';
+          return (T < Tmelt(P)) ? 'solid' : 'liquid';
+        }
+        var PHASE_STYLE = {
+          solid:         { fill: '#c7d2fe', label: __alloT('stem.molecule.phase_solid', 'Solid'),  text: '#312e81' },
+          liquid:        { fill: '#a7f3d0', label: __alloT('stem.molecule.phase_liquid', 'Liquid'), text: '#064e3b' },
+          gas:           { fill: '#fed7aa', label: __alloT('stem.molecule.phase_gas', 'Gas'),    text: '#7c2d12' },
+          supercritical: { fill: '#e9d5ff', label: __alloT('stem.molecule.phase_supercritical', 'Supercritical fluid'), short: __alloT('stem.molecule.phase_supercritical_short', 'Supercritical'), text: '#581c87' }
+        };
+
+        // ── plot geometry (pressure on a log axis: triple → critical spans 4+ decades) ──
+        var W = 560, Hh = 300, PADL = 52, PADR = 14, PADT = 14, PADB = 40;
+        var plotW = W - PADL - PADR, plotH = Hh - PADT - PADB;
+        function xOf(T) { return PADL + plotW * (T - S.Tmin) / (S.Tmax - S.Tmin); }
+        function yOf(P) {
+          var lp = Math.log(Math.max(P, 1e-6)) / Math.LN10;
+          return PADT + plotH * (1 - (lp - S.logPmin) / (S.logPmax - S.logPmin));
+        }
+        function clampY(y) { return Math.max(PADT, Math.min(PADT + plotH, y)); }
+
+        // Region shading: one column per x-sample, split at the analytic boundaries.
+        var COLS = 96, strips = [], ci;
+        for (ci = 0; ci < COLS; ci++) {
+          var T0 = S.Tmin + (S.Tmax - S.Tmin) * ci / COLS;
+          var T1 = S.Tmin + (S.Tmax - S.Tmin) * (ci + 1) / COLS;
+          var Tm = (T0 + T1) / 2;
+          var x0 = xOf(T0), x1 = xOf(T1);
+          var cuts = [];
+          var Pb = (Tm < S.Tt) ? Psub(Tm) : (Tm <= S.Tc ? Pvap(Tm) : S.Pc);
+          cuts.push(yOf(Pb));
+          if (Tm >= S.Tt && Tm <= S.Tc) {
+            // solid/liquid divide, if the melting line crosses this column
+            var Pf = fa[0] + (fb[0] - fa[0]) * (Tm - fa[1]) / (fb[1] - fa[1]);
+            if (isFinite(Pf) && Pf > S.Pt) cuts.push(yOf(Pf));
+          }
+          if (Tm >= S.Tc) cuts.push(yOf(S.Pc));
+          cuts.push(PADT); cuts.push(PADT + plotH);
+          cuts = cuts.map(clampY).sort(function (a, b) { return a - b; });
+          for (var k = 0; k < cuts.length - 1; k++) {
+            var yA = cuts[k], yB = cuts[k + 1];
+            if (yB - yA < 0.4) continue;
+            // sample the middle of the band to name it
+            var lpMid = S.logPmin + (S.logPmax - S.logPmin) * (1 - ((yA + yB) / 2 - PADT) / plotH);
+            var ph = phaseAt(Tm, Math.pow(10, lpMid));
+            strips.push({ x: x0, w: Math.max(0.6, x1 - x0 + 0.6), y: yA, hh: yB - yA, ph: ph });
+          }
+        }
+
+        // Boundary polylines
+        function curvePts(fn, tA, tB, n) {
+          var out = [], i;
+          for (i = 0; i <= n; i++) {
+            var T = tA + (tB - tA) * i / n, P = fn(T);
+            var y = yOf(P);
+            if (y < PADT - 4 || y > PADT + plotH + 4) continue;
+            out.push(xOf(T).toFixed(1) + ',' + y.toFixed(1));
+          }
+          return out.join(' ');
+        }
+        var vapPts = curvePts(Pvap, S.Tt, S.Tc, 90);
+        var subPts = curvePts(Psub, Math.max(S.Tmin, S.Tt - 90), S.Tt, 60);
+        var fusPts = (function () {
+          var out = [], i;
+          for (i = 0; i <= 60; i++) {
+            var lp = Math.log(S.Pt) / Math.LN10 + (S.logPmax - Math.log(S.Pt) / Math.LN10) * i / 60;
+            var P = Math.pow(10, lp), T = Tmelt(P);
+            if (T < S.Tmin || T > S.Tmax) continue;
+            out.push(xOf(T).toFixed(1) + ',' + yOf(P).toFixed(1));
+          }
+          return out.join(' ');
+        })();
+
+        // ── Conditions students can actually picture ──
+        var PRESETS = subId === 'water' ? [
+          { k: 'freezer',  n: __alloT('stem.molecule.phase_p_freezer', 'Home freezer'),        T: 255.15, P: 101325,  note: __alloT('stem.molecule.phase_p_freezer_n', '−18 °C, 1 atm. Solid, comfortably.') },
+          { k: 'room',     n: __alloT('stem.molecule.phase_p_room', 'Room, sea level'),        T: 298.15, P: 101325,  note: __alloT('stem.molecule.phase_p_room_n', '25 °C, 1 atm. A glass of water.') },
+          { k: 'kettle',   n: __alloT('stem.molecule.phase_p_kettle', 'Kettle boiling'),       T: 373.12, P: 101325,  note: __alloT('stem.molecule.phase_p_kettle_n', '100 °C at 1 atm. Sitting exactly ON the vaporisation line, where liquid and vapour coexist. That is all "boiling point" means: the temperature where the line crosses your pressure. Now try Everest and the pressure cooker, which land on the same line at different heights.') },
+          { k: 'everest',  n: __alloT('stem.molecule.phase_p_everest', 'Everest summit'),      T: 344.15, P: 33700,   note: __alloT('stem.molecule.phase_p_everest_n', '71 °C at 0.33 atm. On the line again, but lower down it. Thin air means water boils at 71 °C, so a kettle up here physically cannot get hot enough to brew tea properly. The water is boiling and still too cool.') },
+          { k: 'cooker',   n: __alloT('stem.molecule.phase_p_cooker', 'Pressure cooker'),      T: 394.15, P: 202650,  note: __alloT('stem.molecule.phase_p_cooker_n', '121 °C at 2 atm. Same line, higher up. Sealing the pot lets pressure build, which drags the boiling point up with it, so the water reaches 121 °C instead of 100 °C and food cooks far faster.') },
+          { k: 'freeze',   n: __alloT('stem.molecule.phase_p_freeze', 'Freeze-dryer'),         T: 233.15, P: 8,       note: __alloT('stem.molecule.phase_p_freeze_n', '−40 °C at 8 Pa. Below the triple-point pressure there is no liquid band, so ice goes straight to vapour. This is how freeze-dried food is made.') },
+          { k: 'superc',   n: __alloT('stem.molecule.phase_p_superc', 'Supercritical steam'),  T: 673.15, P: 3.04e7,  note: __alloT('stem.molecule.phase_p_superc_n', '400 °C at 300 atm. Past the critical point liquid and gas stop being different things. Modern power-station boilers run here.') }
+        ] : [
+          { k: 'dryice',   n: __alloT('stem.molecule.phase_p_dryice', 'Dry ice in the open'),  T: 194.65, P: 101325,  note: __alloT('stem.molecule.phase_p_dryice_n', '−78.5 °C, 1 atm. Exactly on the sublimation line: solid turning straight into gas, no puddle.') },
+          { k: 'co2room',  n: __alloT('stem.molecule.phase_p_co2room', 'Room, sea level'),     T: 298.15, P: 101325,  note: __alloT('stem.molecule.phase_p_co2room_n', '25 °C, 1 atm. Gas, and nowhere near liquid.') },
+          { k: 'cart',     n: __alloT('stem.molecule.phase_p_cart', 'CO₂ cartridge, 20 °C'),   T: 293.15, P: 5.73e6,  note: __alloT('stem.molecule.phase_p_cart_n', '20 °C at about 57 atm. The cartridge sits ON the line, holding liquid and vapour together. That is why the pressure barely drops as it empties, until the last of the liquid is gone.') },
+          { k: 'extinct',  n: __alloT('stem.molecule.phase_p_extinct', 'Fire extinguisher'),   T: 293.15, P: 8.5e6,   note: __alloT('stem.molecule.phase_p_extinct_n', '20 °C at 84 atm. Compressed past the line into pure liquid. Release it and it flashes to gas, chilling so hard it makes CO₂ snow.') },
+          { k: 'decaf',    n: __alloT('stem.molecule.phase_p_decaf', 'Decaffeinating coffee'), T: 313.15, P: 2.03e7,  note: __alloT('stem.molecule.phase_p_decaf_n', '40 °C at 200 atm. Supercritical CO₂ seeps through beans like a gas but dissolves caffeine like a liquid, then simply evaporates away.') },
+          { k: 'co2frz',   n: __alloT('stem.molecule.phase_p_co2frz', 'Home freezer'),         T: 255.15, P: 101325,  note: __alloT('stem.molecule.phase_p_co2frz_n', '−18 °C, 1 atm. Still a gas. CO₂ needs −78.5 °C before it condenses at this pressure.') }
+        ];
+        var picked = null, pi;
+        for (pi = 0; pi < PRESETS.length; pi++) { if (PRESETS[pi].k === d2.phasePick) picked = PRESETS[pi]; }
+
+        var atmY = yOf(101325);
+        var markerPhase = picked ? phaseAt(picked.T, picked.P) : null;
+        // "on the line" when the point sits within a few percent of a boundary pressure
+        var onLine = false;
+        if (picked) {
+          var Pline = (picked.T < S.Tt) ? Psub(picked.T) : (picked.T <= S.Tc ? Pvap(picked.T) : S.Pc);
+          onLine = Math.abs(Math.log(picked.P / Pline)) < 0.06;
+        }
+        function atmOf(P) { return P / 101325; }
+        function fmtP(P) {
+          var a = atmOf(P);
+          if (a < 0.01) return P.toFixed(P < 100 ? 1 : 0) + ' Pa';
+          if (a < 100) return a.toFixed(a < 10 ? 2 : 1) + ' atm';
+          return Math.round(a) + ' atm';
+        }
+        function fmtT(T) { return (T - 273.15).toFixed(1) + ' °C'; }
+        function announce(msg) {
+          try { var lr = document.getElementById('allo-live-molecule'); if (lr) lr.textContent = msg; } catch (e) {}
+        }
+
+        var diagramLabel = S.name + ' phase diagram, temperature across and pressure up a logarithmic axis. '
+          + 'Triple point at ' + fmtT(S.Tt) + ' and ' + fmtP(S.Pt) + '; critical point at ' + fmtT(S.Tc) + ' and ' + fmtP(S.Pc) + '. '
+          + (picked
+              ? ('Marked point: ' + picked.n + ', ' + fmtT(picked.T) + ' and ' + fmtP(picked.P) + ', which is ' + (onLine ? 'on the boundary line' : PHASE_STYLE[markerPhase].label) + '.')
+              : 'No point marked yet. Choose a condition button to place one; the result is also written out in text below.');
+
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.phases_of_matter_phase_diagrams', '🧊 Phases of matter + phase diagrams')),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.a_phase_diagram_plots_phase_boundaries', 'A phase diagram plots phase boundaries on a P (pressure) vs T (temperature) graph. Lines = phase transitions. Triple point: all three phases coexist. Critical point: liquid + gas become indistinguishable (supercritical fluid).')),
+
+          // ── the diagram the paragraph above promises ──
+          h('div', { className: 'rounded-xl border border-slate-200 bg-slate-50 p-3 mb-3' },
+            h('div', { className: 'flex flex-wrap items-center gap-2 mb-2' },
+              h('div', { className: 'text-[11.5px] font-black text-slate-800 mr-1' }, __alloT('stem.molecule.phase_diagram_title', '🗺 Where does it sit right now?')),
+              h('div', { className: 'flex gap-1', role: 'group', 'aria-label': __alloT('stem.molecule.phase_choose_substance', 'Choose a substance') },
+                ['water', 'co2'].map(function (sid) {
+                  var on = sid === subId;
+                  return h('button', {
+                    key: sid, type: 'button', 'aria-pressed': on ? 'true' : 'false',
+                    onClick: function () { try { setExp({ phaseSub: sid, phasePick: null }); } catch (e) {} announce(SUBSTANCES[sid].name + ' phase diagram loaded.'); },
+                    className: 'px-2.5 py-1 rounded-md text-[11px] font-bold border transition-colors ' + (on ? 'bg-sky-600 text-white border-sky-600' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50')
+                  }, SUBSTANCES[sid].formula);
+                }))),
+
+            h('svg', { viewBox: '0 0 ' + W + ' ' + Hh, width: '100%', style: { display: 'block' }, role: 'img', 'aria-label': diagramLabel },
+              h('rect', { x: PADL, y: PADT, width: plotW, height: plotH, fill: '#ffffff' }),
+              strips.map(function (st, si) {
+                return h('rect', { key: 'st' + si, x: st.x, y: st.y, width: st.w, height: st.hh, fill: PHASE_STYLE[st.ph].fill });
+              }),
+              // 1 atm reference line
+              (atmY > PADT && atmY < PADT + plotH) ? h('g', null,
+                h('line', { x1: PADL, y1: atmY, x2: PADL + plotW, y2: atmY, stroke: '#64748b', strokeWidth: 1, strokeDasharray: '5 3' }),
+                h('text', { x: PADL + plotW - 3, y: atmY - 3, textAnchor: 'end', fontSize: 9, fontWeight: 700, fill: '#475569' }, '1 atm')) : null,
+              // boundaries
+              subPts ? h('polyline', { points: subPts, fill: 'none', stroke: '#0f172a', strokeWidth: 2 }) : null,
+              vapPts ? h('polyline', { points: vapPts, fill: 'none', stroke: '#0f172a', strokeWidth: 2 }) : null,
+              fusPts ? h('polyline', { points: fusPts, fill: 'none', stroke: '#0f172a', strokeWidth: 2 }) : null,
+              // past the critical point there is simply no boundary left to cross
+              h('line', { x1: xOf(S.Tc), y1: yOf(S.Pc), x2: PADL + plotW, y2: yOf(S.Pc), stroke: '#a855f7', strokeWidth: 1.5, strokeDasharray: '2 4' }),
+              // region labels: park each one in the roomiest column of its own region, then
+              // clamp so a long word like "Supercritical fluid" cannot run off the plot edge
+              (function () {
+                var best = {}, out = [];
+                strips.forEach(function (st) {
+                  var b = best[st.ph];
+                  if (!b || st.hh > b.hh) best[st.ph] = st;
+                });
+                Object.keys(best).forEach(function (ph) {
+                  var st = best[ph];
+                  if (st.hh < 17) return;
+                  var txt = PHASE_STYLE[ph].short || PHASE_STYLE[ph].label, fs = 11;
+                  var half = txt.length * fs * 0.29;
+                  var cx = Math.max(PADL + half + 3, Math.min(PADL + plotW - half - 3, st.x + st.w / 2));
+                  out.push(h('text', { key: 'lbl' + ph, x: cx, y: st.y + st.hh / 2 + 4, textAnchor: 'middle', fontSize: fs, fontWeight: 800, fill: PHASE_STYLE[ph].text, opacity: 0.92 }, txt));
+                });
+                return out;
+              })(),
+              // triple + critical
+              h('g', null,
+                h('circle', { cx: xOf(S.Tt), cy: yOf(S.Pt), r: 4.5, fill: '#ffffff', stroke: '#0f172a', strokeWidth: 2 }),
+                h('text', { x: xOf(S.Tt) + 7, y: yOf(S.Pt) + 3, fontSize: 9.5, fontWeight: 700, fill: '#0f172a' }, __alloT('stem.molecule.phase_triple', 'triple point'))),
+              h('g', null,
+                h('circle', { cx: xOf(S.Tc), cy: yOf(S.Pc), r: 4.5, fill: '#a855f7', stroke: '#ffffff', strokeWidth: 2 }),
+                // below the dot: the band above it belongs to the supercritical region label
+                h('text', { x: xOf(S.Tc) - 8, y: yOf(S.Pc) + 15, textAnchor: 'end', fontSize: 9.5, fontWeight: 700, fill: '#7e22ce' }, __alloT('stem.molecule.phase_critical', 'critical point'))),
+              // the marked condition
+              picked ? h('g', null,
+                h('circle', { cx: xOf(picked.T), cy: yOf(picked.P), r: 9, fill: 'none', stroke: '#0f172a', strokeWidth: 1, opacity: 0.35 }),
+                h('circle', { cx: xOf(picked.T), cy: yOf(picked.P), r: 5, fill: '#dc2626', stroke: '#ffffff', strokeWidth: 2 })) : null,
+              // frame + ticks
+              h('rect', { x: PADL, y: PADT, width: plotW, height: plotH, fill: 'none', stroke: '#334155', strokeWidth: 1 }),
+              (function () {
+                var out = [], lp;
+                for (lp = Math.ceil(S.logPmin); lp <= Math.floor(S.logPmax); lp++) {
+                  var yy = yOf(Math.pow(10, lp));
+                  out.push(h('g', { key: 'py' + lp },
+                    h('line', { x1: PADL - 4, y1: yy, x2: PADL, y2: yy, stroke: '#334155', strokeWidth: 1 }),
+                    h('text', { x: PADL - 6, y: yy + 3, textAnchor: 'end', fontSize: 8.5, fill: '#475569' }, '10' + String(lp).replace(/[0-9]/g, function (c) { return '⁰¹²³⁴⁵⁶⁷⁸⁹'.charAt(+c); }))));
+                }
+                return out;
+              })(),
+              (function () {
+                var out = [], step = (S.Tmax - S.Tmin) > 300 ? 100 : 40, T;
+                for (T = Math.ceil(S.Tmin / step) * step; T <= S.Tmax; T += step) {
+                  out.push(h('g', { key: 'tx' + T },
+                    h('line', { x1: xOf(T), y1: PADT + plotH, x2: xOf(T), y2: PADT + plotH + 4, stroke: '#334155', strokeWidth: 1 }),
+                    h('text', { x: xOf(T), y: PADT + plotH + 15, textAnchor: 'middle', fontSize: 8.5, fill: '#475569' }, T + ' K')));
+                }
+                return out;
+              })(),
+              h('text', { x: PADL + plotW / 2, y: Hh - 4, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: '#334155' }, __alloT('stem.molecule.phase_axis_t', 'Temperature (K)')),
+              h('text', { x: 12, y: PADT + plotH / 2, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: '#334155', transform: 'rotate(-90 12 ' + (PADT + plotH / 2) + ')' }, __alloT('stem.molecule.phase_axis_p', 'Pressure (Pa, log scale)'))
+            ),
+
+            // condition buttons
+            h('div', { className: 'flex flex-wrap gap-1.5 mt-2', role: 'group', 'aria-label': __alloT('stem.molecule.phase_choose_condition', 'Choose a real-world condition to mark on the diagram') },
+              PRESETS.map(function (p) {
+                var on = picked && p.k === picked.k;
+                return h('button', {
+                  key: p.k, type: 'button', 'aria-pressed': on ? 'true' : 'false',
+                  onClick: function () {
+                    try { setExp({ phasePick: p.k }); } catch (e) {}
+                    var ph = phaseAt(p.T, p.P);
+                    announce(p.n + ': ' + fmtT(p.T) + ', ' + fmtP(p.P) + '. ' + PHASE_STYLE[ph].label + '. ' + p.note);
+                  },
+                  className: 'px-2 py-1 rounded-md text-[11px] font-bold border transition-colors ' + (on ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50')
+                }, p.n);
+              })),
+
+            picked ? h('div', { className: 'mt-2 p-2.5 rounded-lg border', style: { background: PHASE_STYLE[markerPhase].fill + '55', borderColor: PHASE_STYLE[markerPhase].text + '44' } },
+              h('div', { className: 'text-[12px] font-black', style: { color: PHASE_STYLE[markerPhase].text } },
+                picked.n + ' → ' + (onLine ? __alloT('stem.molecule.phase_on_boundary', 'right on the boundary') : PHASE_STYLE[markerPhase].label)),
+              h('div', { className: 'text-[11px] text-slate-700 mt-0.5' }, fmtT(picked.T) + '  ·  ' + fmtP(picked.P)),
+              h('div', { className: 'text-[11.5px] text-slate-700 leading-snug mt-1' }, picked.note)
+            ) : h('div', { className: 'mt-2 p-2.5 rounded-lg bg-white border border-slate-200 text-[11.5px] text-slate-600' },
+              __alloT('stem.molecule.phase_prompt', 'Pick a condition above and watch where it lands. Try the same substance at the same temperature but two different pressures.')),
+
+            h('div', { className: 'mt-2 p-2 rounded-lg bg-slate-100 border border-slate-200 text-[10.5px] text-slate-600 leading-snug' },
+              h('strong', null, __alloT('stem.molecule.phase_provenance_label', 'Where these lines come from: ')),
+              __alloT('stem.molecule.phase_provenance', 'Triple and critical points are measured values. The vaporisation curve is a Clausius–Clapeyron fit forced through three measured points (triple, a mid-range reference, critical), so it is exact at those three and within a few percent between them. The sublimation curve is a two-point fit. The melting line is drawn straight between two measured points, and the real one curves.')),
+            h('div', { className: 'mt-1.5 p-2 rounded-lg bg-blue-50 border border-blue-200 text-[11px] text-blue-900 leading-snug' },
+              h('strong', null, '↯ '), S.fusNote)),
+
+          h('div', { className: 'overflow-x-auto mb-3' },
+            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-100' },
+                  ['Phase', 'Shape', 'Volume', 'Density', 'Particles', 'Examples'].map(function(hd, i) {
+                    return h('th', { scope: 'col', key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hd);
                   })
                 )
               ),
-              React.createElement('tbody', null,
+              h('tbody', null,
                 PHASE_POINTS.map(function(p, i) {
-                  return React.createElement('tr', { key: 'p'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-800 font-bold' }, p.phase),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-700' }, p.shape),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-700' }, p.volume),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-700' }, p.density),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-700' }, p.particles),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 italic' }, p.examples)
+                  return h('tr', { key: 'p'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    h('td', { className: 'px-2 py-1 text-slate-800 font-bold' }, p.phase),
+                    h('td', { className: 'px-2 py-1 text-slate-700' }, p.shape),
+                    h('td', { className: 'px-2 py-1 text-slate-700' }, p.volume),
+                    h('td', { className: 'px-2 py-1 text-slate-700' }, p.density),
+                    h('td', { className: 'px-2 py-1 text-slate-700' }, p.particles),
+                    h('td', { className: 'px-2 py-1 text-slate-600 italic' }, p.examples)
                   );
                 })
               )
             )
           ),
-          React.createElement('div', { className: 'grid grid-cols-2 gap-2' },
-            React.createElement('div', { className: 'p-2.5 rounded-md bg-blue-50 border border-blue-200 text-[11px] text-blue-900' },
-              React.createElement('strong', null, __alloT('stem.molecule.water_is_unusual', '💧 Water is unusual: ')), __alloT('stem.molecule.ice_is_less_dense_than_liquid_water_ic', 'Ice is LESS dense than liquid water (ice floats). Most substances: solid denser than liquid. Hydrogen bonding gives ice its open crystal structure.')
+          h('div', { className: 'grid grid-cols-2 gap-2' },
+            h('div', { className: 'p-2.5 rounded-md bg-blue-50 border border-blue-200 text-[11px] text-blue-900' },
+              h('strong', null, __alloT('stem.molecule.water_is_unusual', '💧 Water is unusual: ')), __alloT('stem.molecule.ice_is_less_dense_than_liquid_water_ic', 'Ice is LESS dense than liquid water (ice floats). Most substances: solid denser than liquid. Hydrogen bonding gives ice its open crystal structure.')
             ),
-            React.createElement('div', { className: 'p-2.5 rounded-md bg-purple-50 border border-purple-200 text-[11px] text-purple-900' },
-              React.createElement('strong', null, __alloT('stem.molecule.sublimation', '🌬 Sublimation: ')), __alloT('stem.molecule.solid_gas_without_going_through_liquid', 'Solid → gas without going through liquid (CO₂ dry ice; iodine at room temp). Reverse: deposition.')
+            h('div', { className: 'p-2.5 rounded-md bg-purple-50 border border-purple-200 text-[11px] text-purple-900' },
+              h('strong', null, __alloT('stem.molecule.sublimation', '🌬 Sublimation: ')), __alloT('stem.molecule.solid_gas_without_going_through_liquid', 'Solid → gas without going through liquid (CO₂ dry ice; iodine at room temp). Reverse: deposition.')
             )
           )
         );
@@ -4483,24 +4912,177 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
       }
 
       function renderKineticsSection() {
-        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.reaction_kinetics_what_controls_speed', '⏱ Reaction kinetics — what controls speed')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.kinetics_how_fast_thermodynamics_wheth', 'Kinetics = how fast. Thermodynamics = whether possible. A reaction can be very favorable (large negative ΔG) but slow (high Ea). Catalysts and conditions tune kinetics.')),
-          React.createElement('div', { className: 'space-y-2 mb-3' },
+        var h = React.createElement;
+        var R_GAS = 8.314;                                   // J/(mol·K)
+        function numOr(v, fb) { var n = Number(v); return (v === '' || v === null || !isFinite(n)) ? fb : n; }
+        var Ea    = numOr(d2.kinEa, 75);                      // kJ/mol, uncatalysed barrier
+        var drop  = numOr(d2.kinDrop, 30);                    // kJ/mol the catalyst removes
+        var T     = numOr(d2.kinT, 298);                      // K
+        var dH    = numOr(d2.kinDH, -50);                     // kJ/mol, reaction enthalpy
+        var showCat = d2.kinCat !== false;
+        var EaCat = Math.max(5, Ea - drop);
+        var EaRev = Ea - dH;                                   // reverse barrier: always Ea − ΔH
+
+        // Boltzmann factor: the share of collisions carrying at least Ea.
+        function boltz(ea) { return Math.exp(-ea * 1000 / (R_GAS * T)); }
+        var speedUp = Math.exp((Ea - EaCat) * 1000 / (R_GAS * T));      // k_cat / k_uncat
+        var per10K  = Math.exp((Ea * 1000 / R_GAS) * (1 / T - 1 / (T + 10)));
+        var SUPS = { '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹', '-': '⁻' };
+        function sup(v) {
+          return String(v).split('').map(function (c) { return SUPS[c] != null ? SUPS[c] : ''; }).join('');
+        }
+        function sci(x, digits) {
+          var e = Math.floor(Math.log(Math.abs(x)) / Math.LN10);
+          var m = x / Math.pow(10, e);
+          return m.toFixed(digits) + ' × 10' + sup(e);
+        }
+        function fmtBig(x) {
+          if (!isFinite(x)) return '∞';
+          if (x >= 1e5) return sci(x, 1);
+          if (x >= 100) return Math.round(x).toLocaleString();
+          return x.toFixed(x < 10 ? 2 : 1);
+        }
+        function fmtTiny(x) {
+          if (x === 0) return '0';
+          if (x >= 1e-3) return x.toFixed(5);
+          return sci(x, 1);
+        }
+
+        // ── energy profile geometry ──
+        var W = 560, Hh = 250, PADL = 54, PADR = 58, PADT = 18, PADB = 34;
+        var plotW = W - PADL - PADR, plotH = Hh - PADT - PADB;
+        var eLo = Math.min(0, dH) - 12, eHi = Math.max(Ea, dH + 5) + 18;
+        function yOf(E) { return PADT + plotH * (1 - (E - eLo) / (eHi - eLo)); }
+        function xOf(f) { return PADL + plotW * f; }
+        // flat reactant shelf, smooth climb to the transition state, smooth fall to products
+        function profile(barrier) {
+          var pts = [], i, N = 130, FA = 0.13, FB = 0.87, xp = 0.5;
+          for (i = 0; i <= N; i++) {
+            var f = i / N, E;
+            if (f <= FA) E = 0;
+            else if (f >= FB) E = dH;
+            else {
+              var u = (f - FA) / (FB - FA);
+              if (u <= xp) E = barrier * (1 - Math.cos(Math.PI * u / xp)) / 2;
+              else E = dH + (barrier - dH) * (1 + Math.cos(Math.PI * (u - xp) / (1 - xp))) / 2;
+            }
+            pts.push(xOf(f).toFixed(1) + ',' + yOf(E).toFixed(1));
+          }
+          return pts.join(' ');
+        }
+        var xPeak = xOf(0.13 + (0.87 - 0.13) * 0.5);
+
+        function slider(key, label, min, max, step, val, unit, fallback) {
+          return h('div', { className: 'mb-1.5' },
+            h('label', { className: 'flex items-baseline justify-between text-[11px] font-bold text-slate-700', htmlFor: 'allo-mol-' + key },
+              h('span', null, label),
+              h('span', { className: 'font-mono text-slate-900' }, val + ' ' + unit)),
+            h('input', {
+              id: 'allo-mol-' + key, type: 'range', min: min, max: max, step: step, value: val,
+              onChange: function (e) {
+                var patch = {}; patch[key] = numOr(e.target.value, fallback);
+                try { setExp(patch); } catch (er) {}
+              },
+              className: 'w-full h-1.5 rounded-full appearance-none cursor-pointer',
+              style: { accentColor: '#ea580c' }
+            }));
+        }
+
+        var profileLabel = 'Reaction energy profile. Reactants start at zero. The uncatalysed barrier is '
+          + Ea + ' kilojoules per mole and the products end at ' + dH + ' kilojoules per mole, so the reaction is '
+          + (dH < 0 ? 'exothermic' : (dH > 0 ? 'endothermic' : 'thermoneutral')) + '. '
+          + (showCat ? ('The catalysed path shows a lower barrier of ' + EaCat + ' kilojoules per mole, starting and ending at exactly the same two energies. ') : '')
+          + 'The reverse barrier is ' + EaRev.toFixed(0) + ' kilojoules per mole. Every number in this drawing is repeated in the readout beneath it.';
+
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.reaction_kinetics_what_controls_speed', '⏱ Reaction kinetics — what controls speed')),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.kinetics_how_fast_thermodynamics_wheth', 'Kinetics = how fast. Thermodynamics = whether possible. A reaction can be very favorable (large negative ΔG) but slow (high Ea). Catalysts and conditions tune kinetics.')),
+
+          // ── the hill every kinetics problem is secretly about ──
+          h('div', { className: 'rounded-xl border border-slate-200 bg-slate-50 p-3 mb-3' },
+            h('div', { className: 'text-[11.5px] font-black text-slate-800 mb-2' }, __alloT('stem.molecule.kin_profile_title', '⛰ The energy hill: move the sliders and watch the rate move')),
+            h('div', { className: 'grid gap-3', style: { gridTemplateColumns: 'minmax(0,1fr)' } },
+              h('svg', { viewBox: '0 0 ' + W + ' ' + Hh, width: '100%', style: { display: 'block' }, role: 'img', 'aria-label': profileLabel },
+                h('rect', { x: PADL, y: PADT, width: plotW, height: plotH, fill: '#ffffff', stroke: '#e2e8f0' }),
+                // zero line
+                h('line', { x1: PADL, y1: yOf(0), x2: PADL + plotW, y2: yOf(0), stroke: '#cbd5e1', strokeWidth: 1, strokeDasharray: '4 3' }),
+                // catalysed path first, so the solid uncatalysed curve reads on top
+                showCat ? h('polyline', { points: profile(EaCat), fill: 'none', stroke: '#059669', strokeWidth: 2.5, strokeDasharray: '6 4' }) : null,
+                h('polyline', { points: profile(Ea), fill: 'none', stroke: '#ea580c', strokeWidth: 2.5 }),
+                // barrier heights marked on the peak line; the numbers live in the legend below,
+                // so nothing has to be squeezed in next to the curves
+                h('line', { x1: xPeak, y1: yOf(0), x2: xPeak, y2: yOf(Ea), stroke: '#ea580c', strokeWidth: 1.2, strokeDasharray: '3 2' }),
+                showCat ? h('line', { x1: xPeak, y1: yOf(0), x2: xPeak, y2: yOf(EaCat), stroke: '#059669', strokeWidth: 1.2, strokeDasharray: '3 2' }) : null,
+                // ΔH bracket on the right
+                h('g', null,
+                  h('line', { x1: PADL + plotW + 8, y1: yOf(0), x2: PADL + plotW + 8, y2: yOf(dH), stroke: '#2563eb', strokeWidth: 1.5 }),
+                  h('line', { x1: PADL + plotW + 4, y1: yOf(0), x2: PADL + plotW + 12, y2: yOf(0), stroke: '#2563eb', strokeWidth: 1.5 }),
+                  h('line', { x1: PADL + plotW + 4, y1: yOf(dH), x2: PADL + plotW + 12, y2: yOf(dH), stroke: '#2563eb', strokeWidth: 1.5 }),
+                  h('text', { x: PADL + plotW + 16, y: (yOf(0) + yOf(dH)) / 2 - 4, fontSize: 10, fontWeight: 800, fill: '#1d4ed8' }, 'ΔH'),
+                  h('text', { x: PADL + plotW + 16, y: (yOf(0) + yOf(dH)) / 2 + 8, fontSize: 10, fontWeight: 700, fill: '#1d4ed8' }, (dH > 0 ? '+' : '') + dH)),
+                // shelf labels
+                h('text', { x: PADL + 6, y: yOf(0) - 6, fontSize: 10, fontWeight: 800, fill: '#334155' }, __alloT('stem.molecule.kin_reactants', 'reactants')),
+                h('text', { x: PADL + plotW - 6, y: yOf(dH) + (dH < 0 ? -6 : 14), textAnchor: 'end', fontSize: 10, fontWeight: 800, fill: '#334155' }, __alloT('stem.molecule.kin_products', 'products')),
+                h('text', { x: xPeak, y: yOf(Ea) - 8, textAnchor: 'middle', fontSize: 10, fontWeight: 800, fill: '#9a3412' }, __alloT('stem.molecule.kin_ts', 'transition state ‡')),
+                // axes
+                h('text', { x: PADL + plotW / 2, y: Hh - 4, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: '#334155' }, __alloT('stem.molecule.kin_axis_x', 'reaction coordinate →')),
+                h('text', { x: 13, y: PADT + plotH / 2, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: '#334155', transform: 'rotate(-90 13 ' + (PADT + plotH / 2) + ')' }, __alloT('stem.molecule.kin_axis_y', 'potential energy (kJ/mol)'))),
+
+              h('div', { className: 'flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] font-bold -mt-1' },
+                h('span', { style: { color: '#c2410c' } },
+                  h('span', { 'aria-hidden': 'true' }, '━ '), __alloT('stem.molecule.kin_leg_plain', 'no catalyst'), ': Ea = ' + Ea + ' kJ/mol'),
+                showCat ? h('span', { style: { color: '#047857' } },
+                  h('span', { 'aria-hidden': 'true' }, '┅ '), __alloT('stem.molecule.kin_leg_cat', 'with catalyst'), ': Ea = ' + EaCat + ' kJ/mol') : null,
+                h('span', { style: { color: '#1d4ed8' } }, 'ΔH = ' + (dH > 0 ? '+' : '') + dH + ' kJ/mol')),
+
+              h('div', { className: 'grid gap-3', style: { gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))' } },
+                h('div', null,
+                  slider('kinEa', __alloT('stem.molecule.kin_ea', 'Activation energy Ea'), 20, 200, 5, Ea, 'kJ/mol', 75),
+                  slider('kinDH', __alloT('stem.molecule.kin_dh', 'Reaction enthalpy ΔH'), -150, 150, 10, dH, 'kJ/mol', -50),
+                  slider('kinT', __alloT('stem.molecule.kin_temp', 'Temperature'), 250, 700, 5, T, 'K', 298),
+                  h('div', { className: 'flex items-center gap-3 mt-2' },
+                    h('label', { className: 'flex items-center gap-1.5 text-[11px] font-bold text-slate-700 cursor-pointer' },
+                      h('input', { type: 'checkbox', checked: showCat, onChange: function () { try { setExp({ kinCat: !showCat }); } catch (e) {} } }),
+                      __alloT('stem.molecule.kin_show_cat', 'Show catalysed path')),
+                    showCat ? h('div', { className: 'flex-1' }, slider('kinDrop', __alloT('stem.molecule.kin_drop', 'Catalyst removes'), 5, 90, 5, drop, 'kJ/mol', 30)) : null)),
+
+                h('div', { className: 'space-y-1.5' },
+                  h('div', { className: 'p-2 rounded-lg bg-white border border-slate-200' },
+                    h('div', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wide' }, __alloT('stem.molecule.kin_boltz', 'Share of collisions with enough energy')),
+                    h('div', { className: 'text-[13px] font-black text-orange-700 font-mono' }, fmtTiny(boltz(Ea))),
+                    h('div', { className: 'text-[10px] text-slate-500' }, 'exp(−Ea / RT) at ' + T + ' K')),
+                  showCat ? h('div', { className: 'p-2 rounded-lg bg-emerald-50 border border-emerald-200' },
+                    h('div', { className: 'text-[10px] font-bold text-emerald-700 uppercase tracking-wide' }, __alloT('stem.molecule.kin_speedup', 'Catalyst speed-up')),
+                    h('div', { className: 'text-[13px] font-black text-emerald-800 font-mono' }, '× ' + fmtBig(speedUp)),
+                    h('div', { className: 'text-[10px] text-emerald-700' }, __alloT('stem.molecule.kin_speedup_note', 'same reactants, same products, same ΔH'))) : null,
+                  h('div', { className: 'p-2 rounded-lg bg-white border border-slate-200' },
+                    h('div', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wide' }, __alloT('stem.molecule.kin_per10', 'Effect of +10 K')),
+                    h('div', { className: 'text-[13px] font-black text-slate-800 font-mono' }, '× ' + per10K.toFixed(2)),
+                    h('div', { className: 'text-[10px] text-slate-500' }, __alloT('stem.molecule.kin_per10_note', 'the "rate doubles per 10 °C" rule of thumb only holds near Ea ≈ 50 kJ/mol'))),
+                  h('div', { className: 'p-2 rounded-lg bg-white border border-slate-200' },
+                    h('div', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wide' }, __alloT('stem.molecule.kin_reverse', 'Reverse barrier')),
+                    h('div', { className: 'text-[13px] font-black text-slate-800 font-mono' }, EaRev.toFixed(0) + ' kJ/mol'),
+                    h('div', { className: 'text-[10px] text-slate-500' }, 'Ea(reverse) = Ea − ΔH'))))),
+
+            h('div', { className: 'mt-2 p-2 rounded-lg bg-amber-50 border border-amber-200 text-[11px] text-amber-900 leading-snug' },
+              h('strong', null, __alloT('stem.molecule.kin_bust_label', '⚠ The one to watch: ')),
+              __alloT('stem.molecule.kin_bust', 'Drag the catalyst slider as far as it goes. The hill collapses, the rate jumps by orders of magnitude, and the two ends of the curve do not budge. A catalyst changes how fast you get there, never where you end up, and never the equilibrium position.'))),
+
+          h('div', { className: 'space-y-2 mb-3' },
             KINETICS_FACTORS.map(function(k, i) {
-              return React.createElement('div', { key: 'k'+i, className: 'p-2.5 rounded-lg bg-slate-50 border border-slate-200' },
-                React.createElement('div', { className: 'flex items-baseline justify-between mb-1' },
-                  React.createElement('span', { className: 'text-sm font-black text-slate-800' }, k.factor),
-                  React.createElement('span', { className: 'text-[10px] font-bold px-2 py-0.5 rounded bg-orange-100 text-orange-800' }, k.effect)
+              return h('div', { key: 'k'+i, className: 'p-2.5 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'flex items-baseline justify-between mb-1' },
+                  h('span', { className: 'text-sm font-black text-slate-800' }, k.factor),
+                  h('span', { className: 'text-[10px] font-bold px-2 py-0.5 rounded bg-orange-100 text-orange-800' }, k.effect)
                 ),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, k.detail)
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, k.detail)
               );
             })
           ),
-          React.createElement('div', { className: 'p-3 rounded-md bg-emerald-50 border border-emerald-200' },
-            React.createElement('div', { className: 'text-[11px] font-bold text-emerald-800 mb-1' }, __alloT('stem.molecule.arrhenius_equation', '📐 Arrhenius equation')),
-            React.createElement('div', { className: 'text-[12px] text-emerald-900 font-mono leading-relaxed mb-1' }, __alloT('stem.molecule.k_a_exp_ea_rt', 'k = A · exp(−Ea / RT)')),
-            React.createElement('div', { className: 'text-[11px] text-emerald-800 leading-relaxed' },
+          h('div', { className: 'p-3 rounded-md bg-emerald-50 border border-emerald-200' },
+            h('div', { className: 'text-[11px] font-bold text-emerald-800 mb-1' }, __alloT('stem.molecule.arrhenius_equation', '📐 Arrhenius equation')),
+            h('div', { className: 'text-[12px] text-emerald-900 font-mono leading-relaxed mb-1' }, __alloT('stem.molecule.k_a_exp_ea_rt', 'k = A · exp(−Ea / RT)')),
+            h('div', { className: 'text-[11px] text-emerald-800 leading-relaxed' },
               __alloT('stem.molecule.k_rate_constant_a_collision_frequency_', 'k = rate constant · A = collision frequency factor · Ea = activation energy · R = 8.314 J/(mol·K) · T = absolute temperature (K). Plot ln(k) vs 1/T; slope = −Ea/R.')
             )
           )
@@ -4508,31 +5090,189 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
       }
 
       function renderThermoSection() {
-        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.thermodynamics_what_s_spontaneous', '🔥 Thermodynamics — what\'s spontaneous')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.spontaneity_whether_a_reaction_proceed', 'Spontaneity = whether a reaction proceeds on its own (regardless of speed). Gibbs free energy ΔG tells us: negative = spontaneous; positive = not; zero = at equilibrium.')),
-          React.createElement('div', { className: 'p-3 rounded-lg bg-orange-50 border-2 border-orange-300 mb-3 text-center' },
-            React.createElement('div', { className: 'text-[10px] font-bold text-orange-700 uppercase tracking-wide mb-1' }, __alloT('stem.molecule.master_equation', 'Master equation')),
-            React.createElement('div', { className: 'text-2xl font-black text-orange-900 font-mono tracking-tight' }, __alloT('stem.molecule.g_h_t_s', 'ΔG = ΔH − TΔS'))
-          ),
-          React.createElement('div', { className: 'space-y-2 mb-3' },
+        var h = React.createElement;
+        function numOr(v, fb) { var n = Number(v); return (v === '' || v === null || !isFinite(n)) ? fb : n; }
+        var T = numOr(d2.thermoT, 298);
+
+        // Standard-state values at 298 K, from tabulated ΔHf° and S°. One real reaction per sign pair.
+        var CASES = [
+          { id: 'perox', dH: -196.0, dS: 125.6, color: '#059669',
+            rxn: '2 H₂O₂(l) → 2 H₂O(l) + O₂(g)',
+            name: __alloT('stem.molecule.th_case_perox', 'Peroxide decomposing'),
+            quad: __alloT('stem.molecule.th_q_always', 'ΔH < 0, ΔS > 0 · spontaneous at every temperature'),
+            why: __alloT('stem.molecule.th_case_perox_why', 'Downhill in energy and up in disorder at the same time. Nothing can stop it; only the missing catalyst keeps the bottle stable on the shelf.') },
+          { id: 'haber', dH: -91.8, dS: -198.1, color: '#2563eb',
+            rxn: 'N₂(g) + 3 H₂(g) → 2 NH₃(g)',
+            name: __alloT('stem.molecule.th_case_haber', 'Ammonia synthesis'),
+            quad: __alloT('stem.molecule.th_q_low', 'ΔH < 0, ΔS < 0 · spontaneous only when cold'),
+            why: __alloT('stem.molecule.th_case_haber_why', 'Four gas molecules collapse into two, so disorder falls. Below the crossover the energy release wins. This is the squeeze at the heart of the Haber process: cold favours yield, but cold is also slow, so industry compromises and adds pressure.') },
+          { id: 'lime', dH: 179.2, dS: 160.2, color: '#d97706',
+            rxn: 'CaCO₃(s) → CaO(s) + CO₂(g)',
+            name: __alloT('stem.molecule.th_case_lime', 'Limestone to lime'),
+            quad: __alloT('stem.molecule.th_q_high', 'ΔH > 0, ΔS > 0 · spontaneous only when hot'),
+            why: __alloT('stem.molecule.th_case_lime_why', 'Uphill in energy, but it frees a gas out of a solid, so disorder climbs. Heat it past the crossover and the entropy term takes over. Real lime kilns run a little above this line.') },
+          { id: 'ozone', dH: 285.4, dS: -137.2, color: '#dc2626',
+            rxn: '3 O₂(g) → 2 O₃(g)',
+            name: __alloT('stem.molecule.th_case_ozone', 'Making ozone from oxygen'),
+            quad: __alloT('stem.molecule.th_q_never', 'ΔH > 0, ΔS < 0 · never spontaneous'),
+            why: __alloT('stem.molecule.th_case_ozone_why', 'Uphill in energy AND down in disorder. Heat cannot rescue it. The ozone layer exists because ultraviolet photons pay the bill, not because the reaction wants to happen.') }
+        ];
+        function dGof(c, temp) { return c.dH - temp * c.dS / 1000; }        // kJ/mol
+        function crossover(c) {
+          if (c.dS === 0) return null;
+          var tc = c.dH / (c.dS / 1000);
+          return (tc > 0 && isFinite(tc)) ? tc : null;
+        }
+
+        var W = 560, Hh = 240, PADL = 54, PADR = 16, PADT = 14, PADB = 34;
+        var plotW = W - PADL - PADR, plotH = Hh - PADT - PADB;
+        var Tmin = 200, Tmax = 1400, Gmin = -400, Gmax = 520;
+        function xOf(t) { return PADL + plotW * (t - Tmin) / (Tmax - Tmin); }
+        function yOf(g) { return PADT + plotH * (1 - (g - Gmin) / (Gmax - Gmin)); }
+
+        var spontaneous = CASES.filter(function (c) { return dGof(c, T) < 0; });
+        var plotLabel = 'Gibbs free energy against temperature for four reactions. Each line is ΔG = ΔH − TΔS, so its slope is minus ΔS. '
+          + 'A line below the zero axis means spontaneous at that temperature. At the marked temperature of ' + Math.round(T) + ' kelvin, '
+          + (spontaneous.length ? ('these are spontaneous: ' + spontaneous.map(function (c) { return c.name; }).join(', ') + '.') : 'none of the four are spontaneous.')
+          + ' Ammonia synthesis crosses zero at 463 kelvin and limestone decomposition crosses at 1119 kelvin. The four cards below repeat every number in words.';
+
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.thermodynamics_what_s_spontaneous', '🔥 Thermodynamics — what\'s spontaneous')),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.spontaneity_whether_a_reaction_proceed', 'Spontaneity = whether a reaction proceeds on its own (regardless of speed). Gibbs free energy ΔG tells us: negative = spontaneous; positive = not; zero = at equilibrium.')),
+          h('div', { className: 'p-3 rounded-lg bg-orange-50 border-2 border-orange-300 mb-3 text-center' },
+            h('div', { className: 'text-[10px] font-bold text-orange-700 uppercase tracking-wide mb-1' }, __alloT('stem.molecule.master_equation', 'Master equation')),
+            h('div', { className: 'text-2xl font-black text-orange-900 font-mono tracking-tight' }, __alloT('stem.molecule.g_h_t_s', 'ΔG = ΔH − TΔS'))),
+
+          // ── four sign combinations, four straight lines, two of them crossing zero ──
+          h('div', { className: 'rounded-xl border border-slate-200 bg-slate-50 p-3 mb-3' },
+            h('div', { className: 'text-[11.5px] font-black text-slate-800 mb-1' }, __alloT('stem.molecule.th_map_title', '🌡 Temperature decides. Drag it and watch two of the four lines change their mind.')),
+            h('div', { className: 'text-[11px] text-slate-600 mb-2 leading-snug' }, __alloT('stem.molecule.th_map_intro', 'ΔG = ΔH − TΔS is a straight line in T whose slope is −ΔS. Below the axis means it happens on its own. Two sign combinations never cross the axis; the other two always do, and the crossing point is just T = ΔH / ΔS.')),
+
+            h('svg', { viewBox: '0 0 ' + W + ' ' + Hh, width: '100%', style: { display: 'block' }, role: 'img', 'aria-label': plotLabel },
+              h('rect', { x: PADL, y: PADT, width: plotW, height: yOf(0) - PADT, fill: '#fef2f2' }),
+              h('rect', { x: PADL, y: yOf(0), width: plotW, height: PADT + plotH - yOf(0), fill: '#f0fdf4' }),
+              h('text', { x: PADL + 5, y: PADT + 12, fontSize: 9.5, fontWeight: 800, fill: '#b91c1c' }, __alloT('stem.molecule.th_not_spont', 'ΔG > 0 · will not happen on its own')),
+              h('text', { x: PADL + 5, y: PADT + plotH - 5, fontSize: 9.5, fontWeight: 800, fill: '#15803d' }, __alloT('stem.molecule.th_spont', 'ΔG < 0 · spontaneous')),
+              h('line', { x1: PADL, y1: yOf(0), x2: PADL + plotW, y2: yOf(0), stroke: '#0f172a', strokeWidth: 1.5 }),
+              // the four ΔG(T) lines (named in the legend below, so nothing crowds the plot edge)
+              CASES.map(function (c) {
+                return h('line', { key: 'ln' + c.id, x1: xOf(Tmin), y1: yOf(dGof(c, Tmin)), x2: xOf(Tmax), y2: yOf(dGof(c, Tmax)), stroke: c.color, strokeWidth: 2.5 });
+              }),
+              // zero crossings, labelled below the axis and nudged clear of the temperature marker
+              CASES.map(function (c) {
+                var tc = crossover(c);
+                if (tc === null || tc < Tmin || tc > Tmax) return null;
+                var near = Math.abs(xOf(tc) - xOf(T)) < 26;
+                return h('g', { key: 'cx' + c.id },
+                  h('circle', { cx: xOf(tc), cy: yOf(0), r: 4, fill: '#ffffff', stroke: c.color, strokeWidth: 2 }),
+                  h('text', { x: xOf(tc), y: yOf(0) + (near ? 27 : 16), textAnchor: 'middle', fontSize: 9, fontWeight: 700, fill: c.color }, Math.round(tc) + ' K'));
+              }),
+              // current temperature
+              h('g', null,
+                h('line', { x1: xOf(T), y1: PADT, x2: xOf(T), y2: PADT + plotH, stroke: '#0f172a', strokeWidth: 1.5, strokeDasharray: '4 3' }),
+                h('rect', { x: xOf(T) - 22, y: PADT - 1, width: 44, height: 14, rx: 3, fill: '#0f172a' }),
+                h('text', { x: xOf(T), y: PADT + 9.5, textAnchor: 'middle', fontSize: 9, fontWeight: 800, fill: '#ffffff' }, Math.round(T) + ' K')),
+              CASES.map(function (c) {
+                return h('circle', { key: 'dot' + c.id, cx: xOf(T), cy: yOf(Math.max(Gmin, Math.min(Gmax, dGof(c, T)))), r: 3.5, fill: c.color, stroke: '#ffffff', strokeWidth: 1.5 });
+              }),
+              h('rect', { x: PADL, y: PADT, width: plotW, height: plotH, fill: 'none', stroke: '#334155', strokeWidth: 1 }),
+              (function () {
+                var out = [], g;
+                for (g = -400; g <= 400; g += 200) {
+                  out.push(h('g', { key: 'gy' + g },
+                    h('line', { x1: PADL - 4, y1: yOf(g), x2: PADL, y2: yOf(g), stroke: '#334155', strokeWidth: 1 }),
+                    h('text', { x: PADL - 6, y: yOf(g) + 3, textAnchor: 'end', fontSize: 8.5, fill: '#475569' }, String(g))));
+                }
+                return out;
+              })(),
+              (function () {
+                var out = [], t;
+                for (t = 200; t <= Tmax; t += 200) {
+                  out.push(h('g', { key: 'gt' + t },
+                    h('line', { x1: xOf(t), y1: PADT + plotH, x2: xOf(t), y2: PADT + plotH + 4, stroke: '#334155', strokeWidth: 1 }),
+                    h('text', { x: xOf(t), y: PADT + plotH + 15, textAnchor: 'middle', fontSize: 8.5, fill: '#475569' }, String(t))));
+                }
+                return out;
+              })(),
+              h('text', { x: PADL + plotW / 2, y: Hh - 3, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: '#334155' }, __alloT('stem.molecule.th_axis_t', 'Temperature (K)')),
+              h('text', { x: 12, y: PADT + plotH / 2, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: '#334155', transform: 'rotate(-90 12 ' + (PADT + plotH / 2) + ')' }, __alloT('stem.molecule.th_axis_g', 'ΔG (kJ/mol)'))),
+
+            h('div', { className: 'flex flex-wrap gap-x-4 gap-y-1 mt-1 text-[10.5px] font-bold' },
+              CASES.map(function (c) {
+                var g = dGof(c, T);
+                return h('span', { key: 'leg' + c.id, style: { color: c.color } },
+                  h('span', { 'aria-hidden': 'true' }, '━ '), c.name,
+                  h('span', { className: 'font-mono font-normal' }, '  ' + (Math.abs(g) < 0.5 ? '0' : g.toFixed(0))));
+              })),
+
+            h('div', { className: 'mt-2' },
+              h('label', { className: 'flex items-baseline justify-between text-[11px] font-bold text-slate-700', htmlFor: 'allo-mol-thermoT' },
+                h('span', null, __alloT('stem.molecule.th_temp_label', 'Temperature')),
+                h('span', { className: 'font-mono text-slate-900' }, Math.round(T) + ' K  (' + Math.round(T - 273.15) + ' °C)')),
+              h('input', {
+                id: 'allo-mol-thermoT', type: 'range', min: 200, max: 1400, step: 5, value: T,
+                onChange: function (e) {
+                  var nv = numOr(e.target.value, 298);
+                  try { setExp({ thermoT: nv }); } catch (er) {}
+                },
+                className: 'w-full h-1.5 rounded-full appearance-none cursor-pointer',
+                style: { accentColor: '#ea580c' }
+              }),
+              h('div', { className: 'flex flex-wrap gap-1.5 mt-1.5' },
+                [{ t: 273, n: __alloT('stem.molecule.th_preset_ice', 'Ice point') }, { t: 298, n: __alloT('stem.molecule.th_preset_room', 'Room') }, { t: 463, n: __alloT('stem.molecule.th_preset_haber', 'Ammonia crossover') }, { t: 773, n: __alloT('stem.molecule.th_preset_furnace', 'Furnace') }, { t: 1119, n: __alloT('stem.molecule.th_preset_kiln', 'Lime kiln crossover') }].map(function (p) {
+                  return h('button', {
+                    key: 'tp' + p.t, type: 'button', 'aria-pressed': Math.round(T) === p.t ? 'true' : 'false',
+                    onClick: function () {
+                      try { setExp({ thermoT: p.t }); } catch (e) {}
+                      try {
+                        var lr = document.getElementById('allo-live-molecule');
+                        var sp = CASES.filter(function (c) { return dGof(c, p.t) < 0; });
+                        if (lr) lr.textContent = p.t + ' kelvin. ' + (sp.length ? ('Spontaneous: ' + sp.map(function (c) { return c.name; }).join(', ') + '.') : 'None of the four are spontaneous here.');
+                      } catch (e) {}
+                    },
+                    className: 'px-2 py-0.5 rounded text-[10.5px] font-bold border transition-colors ' + (Math.round(T) === p.t ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50')
+                  }, p.n + ' ' + p.t + ' K');
+                }))),
+
+            h('div', { className: 'grid gap-2 sm:grid-cols-2 mt-3' },
+              CASES.map(function (c) {
+                var g = dGof(c, T), ok = g < 0, tc = crossover(c);
+                return h('div', { key: 'card' + c.id, className: 'p-2.5 rounded-lg border-2 bg-white', style: { borderColor: ok ? '#86efac' : '#fecaca' } },
+                  h('div', { className: 'flex items-baseline gap-2 mb-0.5' },
+                    h('span', { className: 'text-[12px] font-black', style: { color: c.color } }, c.name),
+                    h('span', { className: 'ml-auto text-[10px] font-black px-1.5 py-0.5 rounded ' + (ok ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800') },
+                      ok ? __alloT('stem.molecule.th_badge_yes', 'spontaneous') : __alloT('stem.molecule.th_badge_no', 'not spontaneous'))),
+                  h('div', { className: 'text-[11px] font-mono text-slate-700' }, c.rxn),
+                  h('div', { className: 'text-[10.5px] text-slate-500 mt-0.5' }, c.quad),
+                  h('div', { className: 'text-[11px] text-slate-800 mt-1 font-mono' },
+                    'ΔG = ' + c.dH.toFixed(1) + ' − (' + Math.round(T) + ')(' + (c.dS / 1000).toFixed(4) + ') = ',
+                    h('strong', { style: { color: ok ? '#15803d' : '#b91c1c' } }, g.toFixed(1) + ' kJ/mol')),
+                  (tc !== null && tc > 0) ? h('div', { className: 'text-[10.5px] text-slate-600 mt-0.5' }, __alloT('stem.molecule.th_flips_at', 'Flips at T = ΔH/ΔS = ') + Math.round(tc) + ' K') : h('div', { className: 'text-[10.5px] text-slate-600 mt-0.5' }, __alloT('stem.molecule.th_never_flips', 'Never flips: both terms point the same way.')),
+                  h('div', { className: 'text-[11px] text-slate-700 leading-snug mt-1' }, c.why));
+              })),
+
+            h('div', { className: 'mt-2 p-2 rounded-lg bg-slate-100 border border-slate-200 text-[10.5px] text-slate-600 leading-snug' },
+              h('strong', null, __alloT('stem.molecule.th_provenance_label', 'Reading the fine print: ')),
+              __alloT('stem.molecule.th_provenance', 'ΔH and ΔS here are standard-state values measured at 298 K, and the straight lines assume they hold steady as the temperature climbs. They drift a little in reality, so treat a crossover temperature as a good estimate rather than an exact threshold. Spontaneous also does not mean fast: peroxide is spontaneous at every temperature on this chart and still sits in the bottle for months.'))),
+
+          h('div', { className: 'space-y-2 mb-3' },
             THERMO_KEY.map(function(t, i) {
-              return React.createElement('div', { key: 'th'+i, className: 'p-2.5 rounded-lg bg-slate-50 border border-slate-200' },
-                React.createElement('div', { className: 'flex items-baseline gap-2 mb-1' },
-                  React.createElement('span', { className: 'text-sm font-black text-slate-800 font-mono' }, t.sym),
-                  React.createElement('span', { className: 'text-[12px] font-bold text-slate-700' }, t.name),
-                  React.createElement('span', { className: 'text-[10px] text-slate-500 ml-auto' }, t.units)
+              return h('div', { key: 'th'+i, className: 'p-2.5 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'flex items-baseline gap-2 mb-1' },
+                  h('span', { className: 'text-sm font-black text-slate-800 font-mono' }, t.sym),
+                  h('span', { className: 'text-[12px] font-bold text-slate-700' }, t.name),
+                  h('span', { className: 'text-[10px] text-slate-500 ml-auto' }, t.units)
                 ),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, t.sign)
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, t.sign)
               );
             })
           ),
-          React.createElement('div', { className: 'grid grid-cols-2 gap-2' },
-            React.createElement('div', { className: 'p-2.5 rounded-md bg-red-50 border border-red-200 text-[11px] text-red-900' },
-              React.createElement('strong', null, __alloT('stem.molecule.exothermic_h_0', '🔥 Exothermic (ΔH < 0): ')), __alloT('stem.molecule.combustion_neutralization_condensation', 'Combustion, neutralization, condensation. Heat released to surroundings.')
+          h('div', { className: 'grid grid-cols-2 gap-2' },
+            h('div', { className: 'p-2.5 rounded-md bg-red-50 border border-red-200 text-[11px] text-red-900' },
+              h('strong', null, __alloT('stem.molecule.exothermic_h_0', '🔥 Exothermic (ΔH < 0): ')), __alloT('stem.molecule.combustion_neutralization_condensation', 'Combustion, neutralization, condensation. Heat released to surroundings.')
             ),
-            React.createElement('div', { className: 'p-2.5 rounded-md bg-blue-50 border border-blue-200 text-[11px] text-blue-900' },
-              React.createElement('strong', null, __alloT('stem.molecule.endothermic_h_0', '🧊 Endothermic (ΔH > 0): ')), __alloT('stem.molecule.photosynthesis_melting_evaporation_col', 'Photosynthesis, melting, evaporation, cold packs. Heat absorbed from surroundings.')
+            h('div', { className: 'p-2.5 rounded-md bg-blue-50 border border-blue-200 text-[11px] text-blue-900' },
+              h('strong', null, __alloT('stem.molecule.endothermic_h_0', '🧊 Endothermic (ΔH > 0): ')), __alloT('stem.molecule.photosynthesis_melting_evaporation_col', 'Photosynthesis, melting, evaporation, cold packs. Heat absorbed from surroundings.')
             )
           )
         );

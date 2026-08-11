@@ -38,8 +38,6 @@ if (isSameOrigin('http://127.0.0.1:32171/', trustedUrl)) {
 const mainSource = fs.readFileSync(path.join(__dirname, 'main.cjs'), 'utf8');
 for (const requiredBoundary of [
   "crypto.randomBytes(32).toString('base64url')",
-  "getBundledAppOrigin() + '/api/*'",
-  "urls: [getCommandCenterUrl() + '/api/*'",
   'configurePrivateApiRequestHeaders(mainWindow)',
   'details.frame.parent === null',
   "key.toLowerCase() === 'x-allo-desktop-token'",
@@ -47,6 +45,50 @@ for (const requiredBoundary of [
 ]) {
   if (!mainSource.includes(requiredBoundary)) {
     throw new Error('Electron private API boundary is missing: ' + requiredBoundary);
+  }
+}
+
+const privateApiFilterMatch = mainSource.match(
+  /function configurePrivateApiRequestHeaders\s*\([^)]*\)\s*\{[\s\S]*?const\s+filter\s*=\s*\{\s*urls\s*:\s*\[([\s\S]*?)\]\s*,?\s*\};[\s\S]*?onBeforeSendHeaders\s*\(\s*filter\s*,/
+);
+if (!privateApiFilterMatch) {
+  throw new Error('Electron private API request filter could not be located.');
+}
+const privateApiFilterUrls = privateApiFilterMatch[1];
+for (const requiredPrivateApiUrl of [
+  "getBundledAppOrigin() + '/api/*'",
+  "getCommandCenterUrl() + '/api/*'",
+]) {
+  if (!privateApiFilterUrls.includes(requiredPrivateApiUrl)) {
+    throw new Error(
+      'Electron private API request filter is missing scoped URL: ' + requiredPrivateApiUrl
+    );
+  }
+}
+
+for (const requiredContextMenuBoundary of [
+  "Menu.buildFromTemplate(template)",
+  "contents.on('context-menu'",
+  "params.dictionarySuggestions",
+  "contents.replaceMisspelling(suggestion)",
+  "contents.session.addWordToSpellCheckerDictionary(misspelledWord)",
+  "frame: contextFrame",
+  "sourceType: params.menuSourceType",
+  "app.on('browser-window-created'",
+  "editableContextMenuWebContents.has(contents)",
+  "contents.on('did-attach-webview'",
+]) {
+  if (!mainSource.includes(requiredContextMenuBoundary)) {
+    throw new Error('Electron editable context menu is missing: ' + requiredContextMenuBoundary);
+  }
+}
+for (const role of ['undo', 'redo', 'cut', 'copy', 'paste', 'delete', 'selectAll']) {
+  if (!mainSource.includes("role: '" + role + "'")) {
+    throw new Error('Electron editable context menu is missing standard edit role: ' + role);
+  }
+  const flag = 'can' + role.charAt(0).toUpperCase() + role.slice(1);
+  if (!mainSource.includes("editFlag(params, '" + flag + "'")) {
+    throw new Error('Electron editable context menu does not honor edit flag: ' + flag);
   }
 }
 

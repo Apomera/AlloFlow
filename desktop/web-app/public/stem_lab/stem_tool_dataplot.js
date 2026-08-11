@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
-// stem_tool_dataplot.js — STEM Lab Data Plotter (Enhanced v2)
+// stem_tool_dataplot.js — STEAM Lab Data Plotter (Enhanced v2)
 // Interactive data visualization with scatter, bar, line, pie,
 // histogram, box plot, ogive, confidence intervals, residual plot,
 // z-score calculator, stem-and-leaf, data transformations,
@@ -16,7 +16,7 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -494,12 +494,16 @@ window.StemLab = window.StemLab || {
         var stemMap = {};
         sortedY.forEach(function(y) {
           var val = Math.round(y);
-          var stem = Math.floor(val / 10);
-          var leaf = Math.abs(val % 10);
-          if (!stemMap[stem]) stemMap[stem] = [];
-          stemMap[stem].push(leaf);
+          // Truncate toward zero: floor(-23/10) = -3 filed -23 under stem -3 (reads as -33).
+          // -23 belongs to stem -2 leaf 3; values in (-10, 0) get their own '-0' stem row.
+          var stem = val < 0 ? -Math.floor(-val / 10) : Math.floor(val / 10);
+          var stemKey = (val < 0 && stem === 0) ? '-0' : String(stem);
+          var leaf = Math.abs(val) % 10;
+          if (!stemMap[stemKey]) stemMap[stemKey] = [];
+          stemMap[stemKey].push(leaf);
         });
-        Object.keys(stemMap).sort(function(a, b) { return parseInt(a) - parseInt(b); }).forEach(function(stem) {
+        var stemSortVal = function(k) { return k === '-0' ? -0.5 : parseInt(k, 10); };
+        Object.keys(stemMap).sort(function(a, b) { return stemSortVal(a) - stemSortVal(b); }).forEach(function(stem) {
           stemLeafData.push({ stem: stem, leaves: stemMap[stem].sort(function(a, b) { return a - b; }) });
         });
       }
@@ -731,13 +735,25 @@ window.StemLab = window.StemLab || {
       // ══════════════════════════════════════════════════════════════
       // ── Quiz System (4 types) ──
       // ══════════════════════════════════════════════════════════════
+      // Unbiased Fisher-Yates; the Math.random()-0.5 comparator it replaces left
+      // correct answers clustered near their authored position.
+      var fyShuffle = function(arr) {
+        for (var fi = arr.length - 1; fi > 0; fi--) {
+          var fj = Math.floor(Math.random() * (fi + 1));
+          var ft = arr[fi]; arr[fi] = arr[fj]; arr[fj] = ft;
+        }
+        return arr;
+      };
       var makeQuiz = function() {
         var used = Object.assign({}, quizTypesUsed);
         used[quizType] = true;
+        // Quizzes replace the plotted data — record an undo entry so the
+        // student's own dataset is recoverable afterwards.
+        var quizUndo = pushUndo();
         if (quizType === 'correlation') {
           var s = correlationScenarios[Math.floor(Math.random() * correlationScenarios.length)];
           var pts = s.gen();
-          updMulti({ dpQuiz: { type: 'correlation', text: s.q, answer: s.a, pts: pts, opts: ['Positive', 'Negative', 'None'].sort(function() { return Math.random() - 0.5; }), answered: false }, points: pts, quizTypesUsed: used });
+          updMulti({ dpQuiz: { type: 'correlation', text: s.q, answer: s.a, pts: pts, opts: fyShuffle(['Positive', 'Negative', 'None']), answered: false }, points: pts, undoStack: quizUndo, quizTypesUsed: used });
         } else if (quizType === 'guessR2') {
           var sc = guessR2Scenarios[Math.floor(Math.random() * guessR2Scenarios.length)];
           var pts2 = generateCorrelated(sc.r, 15);
@@ -754,15 +770,15 @@ window.StemLab = window.StemLab || {
             var fake = Math.round(Math.random() * 100) / 100;
             if (opts2.indexOf(fake) === -1 && Math.abs(fake - actualR2) > 0.1) opts2.push(fake);
           }
-          opts2.sort(function() { return Math.random() - 0.5; });
-          updMulti({ dpQuiz: { type: 'guessR2', text: t('stem.dataplot.estimate_the_r_for_this_scatter_plot', 'Estimate the R\u00B2 for this scatter plot'), answer: actualR2.toFixed(2), pts: pts2, opts: opts2.map(function(o) { return o.toFixed(2); }), answered: false }, points: pts2, quizTypesUsed: used });
+          fyShuffle(opts2);
+          updMulti({ dpQuiz: { type: 'guessR2', text: t('stem.dataplot.estimate_the_r_for_this_scatter_plot', 'Estimate the R\u00B2 for this scatter plot'), answer: actualR2.toFixed(2), pts: pts2, opts: opts2.map(function(o) { return o.toFixed(2); }), answered: false }, points: pts2, undoStack: quizUndo, quizTypesUsed: used });
         } else if (quizType === 'matchChart') {
           var mc = matchChartScenarios[Math.floor(Math.random() * matchChartScenarios.length)];
-          updMulti({ dpQuiz: { type: 'matchChart', text: mc.q, answer: mc.a, opts: mc.opts.slice().sort(function() { return Math.random() - 0.5; }), answered: false }, quizTypesUsed: used });
+          updMulti({ dpQuiz: { type: 'matchChart', text: mc.q, answer: mc.a, opts: fyShuffle(mc.opts.slice()), answered: false }, quizTypesUsed: used });
         } else if (quizType === 'outlier') {
           var os = outlierScenarios[Math.floor(Math.random() * outlierScenarios.length)];
           var result = os.gen();
-          updMulti({ dpQuiz: { type: 'outlier', text: 'Which point is the outlier in ' + os.label + '?', answer: result.outlierIdx, pts: result.pts, answered: false }, points: result.pts, quizTypesUsed: used });
+          updMulti({ dpQuiz: { type: 'outlier', text: 'Which point is the outlier in ' + os.label + '?', answer: result.outlierIdx, pts: result.pts, answered: false }, points: result.pts, undoStack: quizUndo, quizTypesUsed: used });
         }
         checkBadges({ quizTypesUsed: used });
       };
@@ -976,7 +992,7 @@ window.StemLab = window.StemLab || {
           ),
 
           // ── SVG Chart (scatter / line / bar) ──
-          (chartType === 'scatter' || chartType === 'line' || chartType === 'bar') && h('svg', {
+          (chartType === 'scatter' || chartType === 'line' || chartType === 'bar') && h('svg', { role: 'img', 'aria-label': t('stem.dataplot.chart_img_label', 'Chart of the current data set'),
             viewBox: '0 0 ' + W + ' ' + H, className: 'w-full bg-white rounded-xl border border-teal-200 cursor-crosshair', style: { maxHeight: '340px' },
             'data-dataplot-svg': true, onClick: handleSvgClick
           },
@@ -1038,7 +1054,7 @@ window.StemLab = window.StemLab || {
             var rToSY = function(r) { return rH/2 + 10 - (r / maxR) * (rH/2 - 15); };
             return h('div', { className: 'space-y-1' },
               h('div', { className: 'text-[11px] font-bold text-violet-600 uppercase' }, t('stem.dataplot.residual_plot', '\uD83D\uDCC9 Residual Plot')),
-              h('svg', { viewBox: '0 0 ' + W + ' ' + rH, className: 'w-full bg-white rounded-lg border border-violet-200', style: { maxHeight: '140px' } },
+              h('svg', { role: 'img', 'aria-label': t('stem.dataplot.residual_img_label', 'Residual plot'), viewBox: '0 0 ' + W + ' ' + rH, className: 'w-full bg-white rounded-lg border border-violet-200', style: { maxHeight: '140px' } },
                 // Zero line
                 h('line', { x1: pad, y1: rH/2+10, x2: W-pad, y2: rH/2+10, stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '4 4' }),
                 h('text', { x: pad-5, y: rH/2+13, textAnchor: 'end', fill: '#94a3b8', style: { fontSize: '8px' } }, '0'),
@@ -1054,7 +1070,7 @@ window.StemLab = window.StemLab || {
 
           // ── Pie chart ──
           chartType === 'pie' && n > 0 && h('div', { className: 'bg-white rounded-xl border border-teal-200 p-4 flex justify-center' },
-            h('svg', { viewBox: '0 0 300 300', width: 260, height: 260, 'data-dataplot-svg': true },
+            h('svg', { role: 'img', 'aria-label': t('stem.dataplot.pie_img_label', 'Pie chart of the current data set'), viewBox: '0 0 300 300', width: 260, height: 260, 'data-dataplot-svg': true },
               (function() {
                 var total = allY.reduce(function(s,v) { return s + Math.abs(v); }, 0) || 1;
                 var cols = ['#0d9488','#3b82f6','#8b5cf6','#f43f5e','#f59e0b','#10b981','#6366f1','#ec4899','#14b8a6','#ef4444','#84cc16','#06b6d4'];
@@ -1079,7 +1095,7 @@ window.StemLab = window.StemLab || {
           ),
 
           // ── Histogram (with normal overlay + mean/median/mode lines) ──
-          chartType === 'histogram' && n > 0 && h('svg', {
+          chartType === 'histogram' && n > 0 && h('svg', { role: 'img', 'aria-label': t('stem.dataplot.histogram_img_label', 'Histogram of the current data set'),
             viewBox: '0 0 ' + W + ' ' + H, className: 'w-full bg-white rounded-xl border border-teal-200', style: { maxHeight: '340px' }, 'data-dataplot-svg': true
           },
             h('line', { x1: pad, y1: H-pad, x2: W-pad, y2: H-pad, stroke: '#94a3b8', strokeWidth: 1.5 }),
@@ -1124,7 +1140,7 @@ window.StemLab = window.StemLab || {
           ),
 
           // ── Box plot ──
-          chartType === 'boxplot' && n > 0 && h('svg', {
+          chartType === 'boxplot' && n > 0 && h('svg', { role: 'img', 'aria-label': t('stem.dataplot.boxplot_img_label', 'Box plot of the current data set'),
             viewBox: '0 0 ' + W + ' 160', className: 'w-full bg-white rounded-xl border border-teal-200', 'data-dataplot-svg': true
           },
             (function() {
@@ -1154,7 +1170,7 @@ window.StemLab = window.StemLab || {
             var oToX = function(v) { return pad + ((v - oMin) / oRange) * (W - 2*pad); };
             var oToY = function(v) { return (oH - pad) - (v / n) * (oH - 2*pad); };
             var pathD = cumulativeFreq.map(function(pt, i) { return (i === 0 ? 'M' : 'L') + oToX(pt.x).toFixed(1) + ',' + oToY(pt.y).toFixed(1); }).join(' ');
-            return h('svg', { viewBox: '0 0 ' + W + ' ' + oH, className: 'w-full bg-white rounded-xl border border-teal-200', style: { maxHeight: '300px' }, 'data-dataplot-svg': true },
+            return h('svg', { role: 'img', 'aria-label': t('stem.dataplot.ogive_img_label', 'Cumulative frequency graph'), viewBox: '0 0 ' + W + ' ' + oH, className: 'w-full bg-white rounded-xl border border-teal-200', style: { maxHeight: '300px' }, 'data-dataplot-svg': true },
               // Grid
               [0, 25, 50, 75, 100].map(function(pct) {
                 var gy = oToY(n * pct / 100);
@@ -1318,13 +1334,16 @@ window.StemLab = window.StemLab || {
                     n >= 3 ? { name: t('stem.dataplot.quadratic', 'Quadratic'), eq: 'y = ' + quadA.toFixed(4) + 'x\u00B2 + ' + quadB.toFixed(2) + 'x + ' + quadC.toFixed(2), r2: quadR2 } : null,
                     expA ? { name: t('stem.dataplot.exponential', 'Exponential'), eq: 'y = ' + expA.toFixed(2) + 'e^(' + expB.toFixed(4) + 'x)', r2: expR2 } : null,
                     logB ? { name: t('stem.dataplot.logarithmic', 'Logarithmic'), eq: 'y = ' + logA.toFixed(2) + ' + ' + logB.toFixed(2) + 'ln(x)', r2: logR2 } : null
-                  ].filter(Boolean).sort(function(a, b) { return Math.abs(b.r2) - Math.abs(a.r2); }).map(function(reg) {
+                  // Sort and color by RAW R\u00B2, not |R\u00B2|: a negative R\u00B2 means the fit is
+                  // WORSE than the mean line \u2014 abs() ranked catastrophic fits first
+                  // and painted them green.
+                  ].filter(Boolean).sort(function(a, b) { return b.r2 - a.r2; }).map(function(reg) {
                     var best = reg.r2 === Math.max(r2, quadR2, expR2, logR2);
                     return h('div', { key: reg.name, className: 'flex items-center gap-2 p-2 rounded-lg ' + (best ? 'bg-emerald-50 border border-emerald-200' : 'bg-slate-50') },
                       best && h('span', { className: 'text-[11px] font-bold text-emerald-600' }, t('stem.dataplot.best', '\u2B50 Best')),
                       h('span', { className: 'text-xs font-bold text-slate-700 w-20' }, reg.name),
                       h('span', { className: 'text-[11px] font-mono text-slate-600 flex-1' }, reg.eq),
-                      h('span', { className: 'text-xs font-bold ' + (Math.abs(reg.r2) > 0.8 ? 'text-emerald-600' : 'text-yellow-600') }, 'R\u00B2=' + reg.r2.toFixed(4))
+                      h('span', { className: 'text-xs font-bold ' + (reg.r2 > 0.8 ? 'text-emerald-600' : reg.r2 > 0.3 ? 'text-yellow-600' : 'text-red-500') }, 'R\u00B2=' + reg.r2.toFixed(4))
                     );
                   })
                 )
@@ -1405,7 +1424,7 @@ window.StemLab = window.StemLab || {
                       h('span', { className: 'text-slate-600 tracking-wider' }, row.leaves.join(' '))
                     );
                   }),
-                  h('div', { className: 'text-[11px] text-slate-600 font-sans mt-2' }, t('stem.dataplot.key_stem_leaf_stem_10_leaf_e_g_7_3_73', 'Key: stem|leaf = stem\u00D710 + leaf (e.g. 7|3 = 73)'))
+                  h('div', { className: 'text-[11px] text-slate-600 font-sans mt-2' }, t('stem.dataplot.key_stem_leaf_stem_10_leaf_e_g_7_3_73', 'Key: 7|3 = 73. Negative stems read away from zero: -2|3 = -23.'))
                 )
               )
             )
@@ -1673,7 +1692,7 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-[10px] opacity-85 mb-2 leading-snug' }, t('stem.dataplot.set_true_population_r_sample_size_nois', 'Set true population r, sample size, noise, outliers. Predict how far observed r drifts. No score, no reveal.')),
             h('div', { className: 'inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2', style: { background: sm.color, color: '#000' } }, sm.label + ' \u00B7 true r=' + iq.trueR.toFixed(2) + ', observed r=' + observedR.toFixed(2)),
             h('p', { className: 'text-[10px] opacity-80 mb-2' }, sm.desc),
-            h('svg', { width: '100%', height: 200, viewBox: '0 0 320 200', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
+            h('svg', { role: 'img', 'aria-label': t('stem.dataplot.sampling_img_label', 'Sampling distribution chart'), width: '100%', height: 200, viewBox: '0 0 320 200', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
               h('line', { x1: 30, y1: 100, x2: 310, y2: 100, stroke: '#1e293b' }),
               h('line', { x1: 160, y1: 10, x2: 160, y2: 190, stroke: '#1e293b' }),
               xs.map(function(xv, k) {
@@ -1714,7 +1733,7 @@ window.StemLab = window.StemLab || {
               iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' \u00B7 tr' + e.tr + ' n' + e.n + ' sd' + e.sd + ' out' + e.out + ' \u2192 obs ' + e.obs); })
             ),
             h('label', { className: 'block text-[10px] font-bold opacity-85 mb-1' }, t('stem.dataplot.your_hypothesis_which_single_change_mo', 'Your hypothesis (which single change most distorts the observed r?)')),
-            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: t('stem.dataplot.e_g_2_outliers_at_n_20_do_more_damage_', 'e.g., 2 outliers at n=20 do more damage than 10 outliers at n=200...'), className: 'w-full p-1.5 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+            h('textarea', { 'aria-label': t('stem.dataplot.hypothesis_input', 'Outlier impact hypothesis'), value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: t('stem.dataplot.e_g_2_outliers_at_n_20_do_more_damage_', 'e.g., 2 outliers at n=20 do more damage than 10 outliers at n=200...'), className: 'w-full p-1.5 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
             !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded text-[10px] font-bold mb-2', style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, t('stem.dataplot.i_m_stuck_show_open_questions', "\uD83E\uDD14 I'm stuck - show open questions")),
             iq.stuckRevealed && h('div', { className: 'p-2 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
               h('div', { className: 'font-bold mb-1', style: { color: sm.color } }, t('stem.dataplot.open_questions_no_answer_key', 'Open questions (no answer key)')),
@@ -1729,7 +1748,7 @@ window.StemLab = window.StemLab || {
               h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
               h('span', null, t('stem.dataplot.i_can_explain_why_this_combination_of_', 'I can explain why this combination of n, noise, and outliers produces this divergence.'))
             ),
-            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: t('stem.dataplot.explain_in_your_own_words', 'Explain in your own words...'), className: 'w-full p-1.5 rounded text-[10px] mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+            iq.understood && h('textarea', { 'aria-label': t('stem.dataplot.explanation_input', 'Outlier impact explanation'), value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: t('stem.dataplot.explain_in_your_own_words', 'Explain in your own words...'), className: 'w-full p-1.5 rounded text-[10px] mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
             h('p', { className: 'm-0 text-[9px] italic opacity-60' }, t('stem.dataplot.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget - no score, no reveal, no answer dump. Synthetic data uses a deterministic seed from sliders, so the same slider position always reproduces the same draw. Real studies see one draw and have to reason about uncertainty.'))
           );
         })()

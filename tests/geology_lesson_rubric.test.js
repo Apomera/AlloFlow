@@ -55,6 +55,29 @@ describe('Geology Explorer lesson guide and CER rubric', () => {
     expect(result.criteria.map((criterion) => criterion.feedback).join(' ')).toContain('at least two observations');
   });
 
+  it('uses a complete Evidence Map when scoring the evidence criterion', () => {
+    const mission = P.missions().crust;
+    const result = P.evaluateCER(mission, {
+      evidence: [{ id: 'a' }, { id: 'b' }, { id: 'c' }],
+      evidenceMapStatus: { ready: false },
+      missionComplete: true
+    }, { claim: 'The layers record a sequence.', explanation: 'The layers support this because the sequence is visible.' });
+    expect(result.criteria.find((criterion) => criterion.id === 'evidence').met).toBe(false);
+    expect(result.criteria.find((criterion) => criterion.id === 'evidence').feedback).toContain('Observation, Process, and Outcome');
+  });
+
+  it('drafts an editable CER response from mapped evidence', () => {
+    const draft = P.evidenceMapDraft(P.missions().crust, [
+      { id: 'obs', label: 'Shale layer', detail: 'lies below sandstone' },
+      { id: 'proc', label: 'Sediment settles', detail: 'builds layers over time' },
+      { id: 'out', label: 'Relative order', detail: 'deeper layers are older' }
+    ], { obs: 'observation', proc: 'process', out: 'outcome' });
+    expect(draft.ready).toBe(true);
+    expect(draft.claim).toContain('deeper layers are older');
+    expect(draft.explanation).toContain('because');
+    expect(draft.usedIds).toEqual(['obs', 'proc', 'out']);
+  });
+
   it('keeps both app mirrors identical', () => {
     expect(fs.readFileSync(deployPath, 'utf8')).toBe(fs.readFileSync(sourcePath, 'utf8'));
   });

@@ -1,0 +1,98 @@
+{
+  "ok": true,
+  "page": "home.html",
+  "audit": {
+    "axe": {
+      "available": true,
+      "violations": [
+        {
+          "id": "landmark-one-main",
+          "impact": "moderate",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/landmark-one-main?application=axeAPI",
+          "wcag": [],
+          "nodes": 1,
+          "targets": [
+            "html"
+          ]
+        },
+        {
+          "id": "region",
+          "impact": "moderate",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/region?application=axeAPI",
+          "wcag": [],
+          "nodes": 14,
+          "targets": [
+            "#logos",
+            "#meta-header > h1",
+            ".subline",
+            "#mnav",
+            "#startcontent",
+            ".skip:nth-child(2)",
+            "#header > a",
+            "img[src$=\"weather.png\"]"
+          ]
+        }
+      ],
+      "incomplete": 1
+    },
+    "keyboard": {
+      "interactiveElements": 57,
+      "reached": 57,
+      "unreachable": [],
+      "suspectedTrap": false
+    },
+    "outline": {
+      "title": "Welcome to CityLights! [Accessible Home Page]",
+      "lang": "en",
+      "headings": [
+        {
+          "level": 1,
+          "text": "Accessible Home Page - Before and After Demonstration"
+        },
+        {
+          "level": 2,
+          "text": "Navigation menu:"
+        },
+        {
+          "level": 1,
+          "text": "Welcome to CityLights"
+        },
+        {
+          "level": 2,
+          "text": "Heat wave linked to temperatures"
+        },
+        {
+          "level": 2,
+          "text": "Man Gets Nine Months in Violin Case"
+        },
+        {
+          "level": 2,
+          "text": "Lack of brains hinders research"
+        },
+        {
+          "level": 2,
+          "text": "Elsewhere on the Web"
+        },
+        {
+          "level": 2,
+          "text": "Citylights Concert"
+        },
+        {
+          "level": 2,
+          "text": "Citylights Survey"
+        }
+      ],
+      "landmarks": [],
+      "imagesWithoutAlt": 0,
+      "unlabeledControls": 0
+    },
+    "text": {
+      "sha256": "320baa6a4277635e3bfd70aabc2c153b775de008bf717553bd26e8c7f40e60ac",
+      "chars": 2740
+    }
+  },
+  "blockedNetworkRequests": 0,
+  "networkPolicy": "deny",
+  "note": "axe automates only part of WCAG; keyboard reachability is evidence, not usability judgement. A person must still operate the page.",
+  "createdAt": "2026-08-11T16:50:33Z"
+}

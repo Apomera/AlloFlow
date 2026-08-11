@@ -320,5 +320,8 @@
   "cmd.run_lesson_blueprint": "Wygeneruj plan lekcji",
   "cmd.run_lesson_blueprint_done": "Generowanie planu — możesz obserwować każdy krok na karcie.",
   "cmd.run_lesson_blueprint_hint": "Generuje wszystkie zasoby w bieżącym planie",
-  "cmd.cancelled": "Poproszono o anulowanie. Bieżąca operacja zatrzyma się, gdy dostawca ją obsłuży."
+  "cmd.cancelled": "Poproszono o anulowanie. Bieżąca operacja zatrzyma się, gdy dostawca ją obsłuży.",
+  "cmd.open_share_collect": "Otwórz Share & Collect",
+  "cmd.open_share_collect_hint": "Ankiety, zapisy, kwestionariusze i ich wyniki",
+  "cmd.open_share_collect_done": "Share & Collect otwarte."
 }

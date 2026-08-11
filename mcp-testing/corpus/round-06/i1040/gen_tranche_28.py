@@ -195,8 +195,10 @@ para(
     "If you chose to apply part or all of the refund to your 2025 estimated "
     "state or local income tax, the amount applied is treated as received in "
     "2025. If the refund was for a tax you paid in 2024 and you deducted state "
-    "and local income taxes on your 2024 Schedule A, use the «State and Local "
-    "Income Tax Refund Worksheet» in these instructions to see if any of your "
+    # The worksheet name is set in regular roman here in the source — no «»
+    # (independent verification 2026-08-10, checked against the font program).
+    "and local income taxes on your 2024 Schedule A, use the State and Local "
+    "Income Tax Refund Worksheet in these instructions to see if any of your "
     "refund is taxable."
 )
 

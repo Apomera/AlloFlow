@@ -1,0 +1,200 @@
+{
+  "alloflowPortableVersion": "0.2.5",
+  "artifacts": {
+    "accessibilityReport": "usgs-water-cycle-accessibility-report.json",
+    "accessibleHtml": "usgs-water-cycle-accessible.html",
+    "privacyReceipt": "usgs-water-cycle-privacy-receipt.json",
+    "taggedPdf": "usgs-water-cycle-alloflow-accessible.pdf"
+  },
+  "checks": {
+    "humanSourceComparison": {
+      "status": "required"
+    },
+    "independentVerification": {
+      "how": "Run verify-init to derive a worksheet, have a fresh-context reader fill it, then verify-check to stamp the verification report.",
+      "status": "not_run"
+    },
+    "outputTextRecall": {
+      "planTokens": 16596,
+      "recall": 1.0,
+      "status": "completed"
+    },
+    "pdfUaValidation": {
+      "compliant": true,
+      "failedRuleCount": 0,
+      "failedRules": [],
+      "identifierWithheld": false,
+      "processExitCode": 0,
+      "standard": "PDF/UA-1",
+      "status": "completed",
+      "validator": "veraPDF"
+    },
+    "repairPlan": {
+      "metrics": {
+        "block_count": 452,
+        "embedded_image_characters": 1781338,
+        "image_blocks": 17,
+        "plan_internal_token_recall": null,
+        "text_characters": 107652,
+        "unresolved_images": 0
+      },
+      "sourceBinding": {
+        "algorithm": "sha256",
+        "matched": true
+      },
+      "status": "completed",
+      "warnings": []
+    },
+    "semanticHtml": {
+      "status": "completed"
+    },
+    "sourceTextRecall": {
+      "missingTokens": 527,
+      "recall": 0.9685,
+      "sourceTokens": 16734,
+      "status": "completed",
+      "topMissingTokens": [
+        {
+          "count": 17,
+          "token": "deposit"
+        },
+        {
+          "count": 17,
+          "token": "teacher"
+        },
+        {
+          "count": 17,
+          "token": "guide"
+        },
+        {
+          "count": 16,
+          "token": "life"
+        },
+        {
+          "count": 16,
+          "token": "cycle"
+        },
+        {
+          "count": 15,
+          "token": "s"
+        },
+        {
+          "count": 14,
+          "token": "ing"
+        },
+        {
+          "count": 10,
+          "token": "activities"
+        },
+        {
+          "count": 10,
+          "token": "min"
+        },
+        {
+          "count": 9,
+          "token": "hands"
+        },
+        {
+          "count": 8,
+          "token": "mineral"
+        },
+        {
+          "count": 8,
+          "token": "com"
+        },
+        {
+          "count": 7,
+          "token": "tion"
+        },
+        {
+          "count": 6,
+          "token": "4"
+        },
+        {
+          "count": 6,
+          "token": "3"
+        },
+        {
+          "count": 6,
+          "token": "o"
+        },
+        {
+          "count": 5,
+          "token": "ment"
+        },
+        {
+          "count": 4,
+          "token": "2"
+        },
+        {
+          "count": 4,
+          "token": "con"
+        },
+        {
+          "count": 4,
+          "token": "cal"
+        }
+      ]
+    },
+    "staticHtmlAudit": {
+      "counts": {
+        "headings": 38,
+        "images": 17,
+        "links": 24,
+        "tables": 8
+      },
+      "errors": [],
+      "ok": true,
+      "status": "completed",
+      "warnings": []
+    },
+    "taggedPdfGeneration": {
+      "blockedNetworkRequests": 0,
+      "bytes": 2330602,
+      "pdfUaFinalization": {
+        "linkContentsAdded": 24,
+        "metadataAdded": true,
+        "pdfuaIdentifierClaimed": true,
+        "wrappedContentStreams": 69
+      },
+      "pdfUaIdentifierClaimed": true,
+      "status": "completed",
+      "structuralMarkers": {
+        "language": true,
+        "markInfo": true,
+        "marked": true,
+        "structTreeRoot": true,
+        "title": true,
+        "xmpMetadata": true
+      }
+    }
+  },
+  "complianceClaim": false,
+  "createdAt": "2026-08-10T07:03:38Z",
+  "manualReview": [
+    "SOURCE IDENTITY. The corpus file is catalogued as usgs-water-cycle.pdf, but the document itself is USGS General Information Product 17, “The Life Cycle of a Mineral Deposit—A Teacher’s Guide for Hands-On Mineral Education Activities” (Frank, Galloway, and Assmus, 2005). The rebuild reflects the actual document.",
+    "PAGE FURNITURE EXCLUDED BY DESIGN. Running heads (the report title on even pages, the current section name on odd pages), page folio numbers, and the Contents pages’ dot leaders are not carried. Every content-bearing line is.",
+    "IMAGES REUSED FROM THE SOURCE. All photographs and raster figures are the source PDF’s own images, downscaled from print resolution to screen resolution to fit the embedded-image budget. Images the source paints through luminosity soft masks (the gold-pan photograph, the orange, the pennies, the talc-activity mask, the flash cards, and figure 6) were composited with their masks and flattened onto white, matching their printed appearance. The figure 4 raster is stored rotated in the PDF and was rotated upright; its page (and the figure 7/8 pages) are landscape in the source.",
+    "TWO FIGURES CARRY TEXT THAT EXISTS NOWHERE IN THE PDF TEXT LAYER. The Activity 6 tin-man element labels (Potassium, Calcium, Carbon, Molybdenum, Magnesium, Sulfur, Chromium, Nickel, Iodine, Zinc) and the Activity 7 cosmetic labels (Blush, Eyeliner, Eyeshadow, Lipstick, Makeup, Powder) are artwork only. Their alt text is the only machine-readable carrier of those words in this rebuild, and each alt text lists them exhaustively. The tin-man is vector art in the source with no embedded raster; it is the one figure re-rasterized from a rendered page rather than extracted.",
+    "FIGURE 6 IS COPYRIGHTED THIRD-PARTY MATERIAL. The source states “© 2004 Mineral Information Institute” and “used with permission.” The credit is preserved in the caption and inside the alt text; the image is reused here exactly as the source embeds it, consistent with the imprint page’s notice that copyrighted items are noted in the text.",
+    "FIGURES 5, 7, 8, AND 9 ARE PICTURES OF TEXT AND TABLES in the source (vector line art). They are rebuilt as real blockquotes and real tables so their content is machine-readable instead of being re-embedded as images. The spanned worksheet headers (“Amount used per American in a lifetime” over Pounds/Metric tons; the column-letter row) are flattened into the column names as “A: …” through “F: …”. The worksheets’ decorative cut-out affordance (dashed border and scissors icon) is not carried.",
+    "TABLE HEADER FLATTENING IS A GLOBAL POLICY, and every flattened spanner is still carried: table 3’s “National Science Content Standards” spanner over columns A–G is carried by the caption’s final sentence (a disclosed one-sentence caption extension; the rest of the caption is verbatim); table 4’s “ELEMENT” spanner over Name/Symbol is folded into the column names “Element Name”/“Element Symbol”; the worksheet spanners are folded into the “A: …” column names as already noted. The blank worksheets’ preprinted “$” currency prompts are carried as “$” cell values (columns D/E/F and the TOTAL row of worksheet 1; columns A/C/D/E of worksheet 2).",
+    "TWO CAPTIONS ARE COMPOSED, NOT VERBATIM: “Worksheet 1 (completed example)” and “Worksheet 2 (completed example)” on printed page 26 distinguish the figure 9 examples from the blank figure 7/8 worksheets; the source’s own labels “Worksheet 1”/“Worksheet 2” also appear as bold paragraphs immediately above each table, and the verbatim figure 9 caption follows them.",
+    "SUBSCRIPTS AND SUPERSCRIPTS ARE RENDERED AS PLAIN CHARACTERS: chemical formulas (H2SO4, CuCO3, Cu(OH)2, Mg3Si4O10(OH)2, CaCO3, (Fe,Mg)2SiO4, MgCO3, CaMg(CO3)2, (Mn,Si)2O3, MnO2, BaMn9O18•2H2O, Co3S4, (Fe,Ni,Co)1-xSx, (Mg,Fe)(Cr,Al,Fe)2O4) and the trademark sign in WebElementsTM. Exceptions kept as Unicode superscripts: the table 4 footnote markers (¹ ² ³) and the page 7 (printed page 13) footnote marker on “activities¹”.",
+    "SOURCE NUMBERING CARRIED VERBATIM. Numbered lists embed the source’s own numerals (lists are marked unordered) so renderer numbering can never diverge from the source. This matters: the Activity 10 evaluation list runs …6, 7, 9, 10 — the source itself has no item 8. Activity 7 likewise has two “Evaluation and Discussion:” labels, as printed.",
+    "SOURCE DATA INCONSISTENCY, CARRIED AS PRINTED: figure 6 gives Salt 29,336 lbs per lifetime while worksheet 1 (figures 7 and 9) lists Salt 32,061 pounds. Only stone/sand/gravel is documented (Activity 10, STEP 1) as deliberately combined; the salt difference is unexplained in the source and both values are preserved where they appear.",
+    "SOURCE TYPOS PRESERVED (fidelity over correction), including: “Covergent boundary” (glossary), “astenoshere” (glossary, Tectonic plate), “surfical processes” (Mineral Deposit Models), “preformed” (Activity 5), “cadium” (figure 5 cards), “sanitary wear” (Clays), “Californian” (references), and “P. Patrick Leahy , Acting Director” (imprint spacing).",
+    "LINKS. URLs in the imprint, the activities, and How to Obtain Mineral Specimens are live links (line-wrap hyphenation joined). The Selected References URLs are carried verbatim as text.",
+    "STYLING OVERLAY IS PARTIAL AND DELIBERATE. Structural labels (Objective/Materials/Instructions/STEP markers, category labels), glossary and appendix run-in terms, and the page 7 definition terms carry bold/italic runs. Incidental typography that could not be re-verified against the print was left unstyled rather than guessed.",
+    "THE COVER TITLE IS PART OF THE COVER ARTWORK and is also the document’s single H1. The cover alt text incorporates the source’s own cover description from the imprint page.",
+    "Compare every page of the rebuild with the source; automated checks cannot verify meaning."
+  ],
+  "schemaVersion": "1.0",
+  "source": {
+    "basename": "usgs-water-cycle.pdf",
+    "bytes": 4478406,
+    "kind": "pdf",
+    "sha256": "d0a3b06606378733a2ec96cfa01e3b12c111d13059d070e3e039b751347a4529"
+  },
+  "verdict": "pdf_generated_validation_passed_review_required"
+}

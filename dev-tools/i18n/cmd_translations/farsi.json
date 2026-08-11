@@ -320,5 +320,8 @@
   "cmd.run_lesson_blueprint": "تولید برنامهٔ درس",
   "cmd.run_lesson_blueprint_done": "برنامه در حال تولید است — می‌توانی هر مرحله را روی کارت ببینی.",
   "cmd.run_lesson_blueprint_hint": "همهٔ منابع برنامهٔ فعلی را تولید می‌کند",
-  "cmd.cancelled": "لغو درخواست شد. عملیات فعلی زمانی متوقف می‌شود که ارائه‌دهنده آن را پشتیبانی کند."
+  "cmd.cancelled": "لغو درخواست شد. عملیات فعلی زمانی متوقف می‌شود که ارائه‌دهنده آن را پشتیبانی کند.",
+  "cmd.open_share_collect": "باز کردن Share & Collect",
+  "cmd.open_share_collect_hint": "نظرسنجی‌ها، ثبت‌نام‌ها، پرسشنامه‌ها و نتایج آنها",
+  "cmd.open_share_collect_done": "Share & Collect باز شد."
 }

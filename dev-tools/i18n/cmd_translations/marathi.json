@@ -42,5 +42,8 @@
   "cmd.run_lesson_blueprint": "धड्याची योजना तयार करा",
   "cmd.run_lesson_blueprint_done": "योजना तयार होत आहे — कार्डवर प्रत्येक टप्पा पाहू शकता.",
   "cmd.run_lesson_blueprint_hint": "सध्याच्या योजनेतील सर्व संसाधने तयार करते",
-  "cmd.cancelled": "रद्द करण्याची विनंती केली आहे. प्रदाता त्याला समर्थन देईल तेव्हा सध्याचे काम थांबेल."
+  "cmd.cancelled": "रद्द करण्याची विनंती केली आहे. प्रदाता त्याला समर्थन देईल तेव्हा सध्याचे काम थांबेल.",
+  "cmd.open_share_collect": "Share & Collect उघडा",
+  "cmd.open_share_collect_hint": "मतदान, नोंदणी, सर्वेक्षणे आणि त्यांचे निकाल",
+  "cmd.open_share_collect_done": "Share & Collect उघडले."
 }

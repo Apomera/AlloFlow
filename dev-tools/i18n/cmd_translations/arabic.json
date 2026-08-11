@@ -320,5 +320,8 @@
   "cmd.run_lesson_blueprint": "إنشاء خطة الدرس",
   "cmd.run_lesson_blueprint_done": "جارٍ إنشاء الخطة — يمكنك متابعة كل خطوة على البطاقة.",
   "cmd.run_lesson_blueprint_hint": "ينشئ جميع موارد الخطة الحالية",
-  "cmd.cancelled": "تم طلب الإلغاء. ستتوقف العملية الحالية عندما يدعمها موفّرها."
+  "cmd.cancelled": "تم طلب الإلغاء. ستتوقف العملية الحالية عندما يدعمها موفّرها.",
+  "cmd.open_share_collect": "فتح Share & Collect",
+  "cmd.open_share_collect_hint": "استطلاعات وقوائم تسجيل واستبيانات ونتائجها",
+  "cmd.open_share_collect_done": "تم فتح Share & Collect."
 }

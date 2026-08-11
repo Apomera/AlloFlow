@@ -253,7 +253,7 @@ function meetdocsAnnounce(message) {
 }
 function MeetingDocsPanel(props) {
   const { onClose, t, addToast = (() => {
-  }), callGemini = null } = props;
+  }), callGemini = null, onOpenEligibility } = props;
   const tt = React.useCallback((key, fallback) => {
     if (typeof t === "function") {
       try {
@@ -493,7 +493,15 @@ function MeetingDocsPanel(props) {
     /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, tb.icon),
     " ",
     tb.label
-  )))), /* @__PURE__ */ React.createElement("div", { className: "p-4", role: "tabpanel", id: "meetdocs-tabpanel", "aria-labelledby": "meetdocs-tab-" + tab, tabIndex: -1 }, tab === "new" && !draft && !tplDraft && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700 mb-2" }, tt("meetdocs.pick_template", "Pick a format")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" }, allTemplates.map((tpl) => /* @__PURE__ */ React.createElement(
+  )))), typeof onOpenEligibility === "function" && /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: () => onOpenEligibility("elig-prep-title"),
+      className: "min-h-11 px-3 py-2 rounded-lg border border-violet-300 bg-violet-50 text-violet-800 text-xs font-bold hover:bg-violet-100"
+    },
+    tt("meetdocs.eligibility_link", "Open the meeting-preparation guide")
+  ), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-500" }, tt("meetdocs.eligibility_link_note", "Opens generic prompts only; no meeting record is transferred."))), /* @__PURE__ */ React.createElement("div", { className: "p-4", role: "tabpanel", id: "meetdocs-tabpanel", "aria-labelledby": "meetdocs-tab-" + tab, tabIndex: -1 }, tab === "new" && !draft && !tplDraft && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700 mb-2" }, tt("meetdocs.pick_template", "Pick a format")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" }, allTemplates.map((tpl) => /* @__PURE__ */ React.createElement(
     "button",
     {
       key: tpl.id,

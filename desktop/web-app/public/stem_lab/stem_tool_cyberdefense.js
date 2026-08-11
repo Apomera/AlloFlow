@@ -1,4 +1,4 @@
-// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -173,10 +173,53 @@
 
   if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
 
+  // ── Cipher functions + decode-challenge bank (module scope, pure) ──
+  // Exposed on window.__cyberDefensePure so tests machine-verify that every
+  // challenge ciphertext actually decodes to its expected answer (two of the
+  // original ciphertexts did not: 'JVILY' decoded to COBER, 'QRIRE' to DEVER).
+  // Answers are intentionally NOT translated: the decoded plaintext is fixed by
+  // the ciphertext, so a translated answer would make a challenge unsolvable.
+  function caesarCipher(text, shift, encode) {
+    var s = encode ? shift : (26 - shift) % 26;
+    return text.split('').map(function(ch) {
+      var c = ch.charCodeAt(0);
+      if (c >= 65 && c <= 90) return String.fromCharCode(((c - 65 + s) % 26) + 65);
+      if (c >= 97 && c <= 122) return String.fromCharCode(((c - 97 + s) % 26) + 97);
+      return ch;
+    }).join('');
+  }
+  function atbashCipher(text) {
+    return text.split('').map(function(ch) {
+      var c = ch.charCodeAt(0);
+      if (c >= 65 && c <= 90) return String.fromCharCode(90 - (c - 65));
+      if (c >= 97 && c <= 122) return String.fromCharCode(122 - (c - 97));
+      return ch;
+    }).join('');
+  }
+  function xorCipher(text, key) {
+    var k = key || 42;
+    return text.split('').map(function(ch) {
+      return String.fromCharCode(ch.charCodeAt(0) ^ k);
+    }).join('');
+  }
+  var CIPHER_CHALLENGES = [
+    { type: 'caesar', shift: 3, encoded: 'FRPSXWHU VFLHQFH LV IXQ', answer: 'COMPUTER SCIENCE IS FUN', hintKey: 'stem.cyberdefense.shift_of_3_classic_caesar', hintFallback: 'Shift of 3 (classic Caesar)' },
+    { type: 'caesar', shift: 7, encoded: 'JFILY KLMLUZL', answer: 'CYBER DEFENSE', hintKey: 'stem.cyberdefense.shift_of_7', hintFallback: 'Shift of 7' },
+    { type: 'atbash', shift: 0, encoded: 'KZHHDLIW HZUVGB', answer: 'PASSWORD SAFETY', hintKey: 'stem.cyberdefense.a_z_b_y_c_x', hintFallback: 'A=Z, B=Y, C=X...' },
+    { type: 'caesar', shift: 13, encoded: 'ARIRE FGNGR LBHE CNFFJBEQ', answer: 'NEVER STATE YOUR PASSWORD', hintKey: 'stem.cyberdefense.rot13_shift_of_13', hintFallback: 'ROT13 - shift of 13' },
+    { type: 'atbash', shift: 0, encoded: 'GSRMP YVULIV BLF XORXP', answer: 'THINK BEFORE YOU CLICK', hintKey: 'stem.cyberdefense.reverse_the_alphabet', hintFallback: 'Reverse the alphabet' },
+    { type: 'caesar', shift: 5, encoded: 'ZUIFYJ DTZW XTKYBFWJ', answer: 'UPDATE YOUR SOFTWARE', hintKey: 'stem.cyberdefense.shift_of_5', hintFallback: 'Shift of 5' },
+    { type: 'caesar', shift: 10, encoded: 'VYMU IYEB CMBOOX', answer: 'LOCK YOUR SCREEN', hintKey: 'stem.cyberdefense.shift_of_10', hintFallback: 'Shift of 10' },
+    { type: 'atbash', shift: 0, encoded: 'HGZB HZUV LMORMV', answer: 'STAY SAFE ONLINE', hintKey: 'stem.cyberdefense.mirror_the_alphabet', hintFallback: 'Mirror the alphabet (A=Z)' }
+  ];
+  try { window.__cyberDefensePure = { caesarCipher: caesarCipher, atbashCipher: atbashCipher, xorCipher: xorCipher, CIPHER_CHALLENGES: CIPHER_CHALLENGES }; } catch (_e) {}
+
   window.StemLab.registerTool('cyberDefense', {
     name: 'Cyber Defense Lab',
     icon: '\uD83D\uDEE1\uFE0F',
-    category: 'tech',
+    desc: 'Practice spotting phishing, making strong passwords, and solving ciphers through digital-citizenship challenges.',
+    category: 'technology',
+    aliases: ['cybersecurity', 'phishing', 'passwords', 'digital citizenship'],
     questHooks: [
       { id: 'phish_score_3', label: 'Identify 3 phishing emails correctly', icon: '\uD83C\uDFA3', check: function(d) { return (d.phishScore || 0) >= 3; }, progress: function(d) { return (d.phishScore || 0) + '/3'; } },
       { id: 'phish_score_5', label: 'Identify 5 phishing emails correctly', icon: '\uD83D\uDEE1\uFE0F', check: function(d) { return (d.phishScore || 0) >= 5; }, progress: function(d) { return (d.phishScore || 0) + '/5'; } },
@@ -216,7 +259,10 @@
           var caesarShift      = d.caesarShift != null ? d.caesarShift : 3;
           var cipherEncode    = d.cipherEncode != null ? d.cipherEncode : true;
           var cipherChallenge = d.cipherChallenge || '';
-          var challengeSolved = d.challengeSolved || false;
+          // Solved state is per-challenge (keyed by ciphertext): the active
+          // challenge rotates with phishScore + caesarShift, so a single global
+          // flag leaked "solved" onto challenges the student never decoded.
+          var solvedCiphers = d.solvedCiphers || {};
           var difficulty      = d.difficulty || 'medium';
           var pwChallengeDone = d.pwChallengeDone || false;
           var phishMode       = d.phishMode || 'investigate';
@@ -455,6 +501,82 @@
                 { zone: 'link', icon: '\uD83D\uDD17', label: t('stem.cyberdefense.shortened_url', 'Shortened URL'), desc: t('stem.cyberdefense.bit_ly_hides_the_real_destination_neve', 'bit.ly hides the real destination \u2014 never click shortened links from unexpected messages'), suspicious: true },
                 { zone: 'subject', icon: '\u26A1', label: t('stem.cyberdefense.urgency_tactic_3', 'Urgency Tactic'), desc: t('stem.cyberdefense.before_they_take_it_down_creates_fomo_', '"Before they take it down" creates FOMO to make you click without thinking'), suspicious: true },
                 { zone: 'headers', icon: '\uD83D\uDD0D', label: t('stem.cyberdefense.header_alignment_10', 'Header Alignment'), desc: t('stem.cyberdefense.sender_domain_is_gmail_com_but_return_', 'Sender domain is gmail.com, but Return-Path points to freehoster-xyz.xyz (mismatch).'), suspicious: true }
+              ] },
+            // \u2500\u2500 2026-08 bank expansion: modern lure taxonomy. Keep the
+            // phish/legit ratio inside 40-70% (test-pinned) and give every
+            // difficulty both classes so no filter becomes all-phish. \u2500\u2500
+            { from: 'support@fortnite-vbucks-free.com', fromDisplay: 'Epic Games Rewards', subject: '\uD83C\uDFAE Claim your FREE 10,000 V-Bucks!', body: t('stem.cyberdefense.congratulations_player_you_qualify_for', 'Congratulations player! You qualify for 10,000 FREE V-Bucks. Just sign in with your account name and password on our claim page and the V-Bucks will be added instantly!'), link: 'http://fortnite-vbucks-free.com/claim', isPhish: true, difficulty: 'easy',
+              headers: { returnPath: 'blast@bulk-mailer-77.click', spf: 'fail', dkim: 'fail', dmarc: 'fail' },
+              flags: ['Free game currency = classic kid-targeted bait', 'Asks for your account password', 'Not the real epicgames.com domain', 'HTTP link', 'Header Validation: SPF/DKIM/DMARC all fail; Return-Path is a bulk mailer.'],
+              clues: [
+                { zone: 'subject', icon: '\u26A1', label: t('stem.cyberdefense.free_stuff_bait', 'Free Stuff Bait'), desc: t('stem.cyberdefense.free_game_currency_is_the_most_common_', 'Free game currency is the most common lure aimed at students \u2014 real giveaways happen inside the game, not by email'), suspicious: true },
+                { zone: 'body', icon: '\uD83D\uDCDD', label: t('stem.cyberdefense.password_request', 'Password Request'), desc: t('stem.cyberdefense.it_asks_you_to_sign_in_with_your_passw', 'It asks you to "sign in" with your password on their page \u2014 that IS the theft'), suspicious: true },
+                { zone: 'sender', icon: '\uD83D\uDCE7', label: t('stem.cyberdefense.lookalike_game_domain', 'Lookalike Domain'), desc: t('stem.cyberdefense.the_real_company_uses_epicgames_com_no', 'The real company uses epicgames.com, not fortnite-vbucks-free.com'), suspicious: true },
+                { zone: 'headers', icon: '\uD83D\uDD0D', label: t('stem.cyberdefense.header_alignment_11', 'Header Alignment'), desc: t('stem.cyberdefense.every_authentication_check_fails_and_t', 'Every authentication check fails and the Return-Path is a bulk-mail domain.'), suspicious: true }
+              ] },
+            { from: 'coach.rivera@myschool.edu', fromDisplay: 'Coach Rivera', subject: 'Soccer practice moved to 4pm Thursday', body: t('stem.cyberdefense.hi_team_practice_this_thursday_moves_f', 'Hi team! Practice this Thursday moves from 3pm to 4pm because the field is being mowed. Same place, bring water. See you there! - Coach Rivera'), link: null, isPhish: false, difficulty: 'easy',
+              headers: { returnPath: 'coach.rivera@myschool.edu', spf: 'pass', dkim: 'pass', dmarc: 'pass' },
+              flags: ['Legitimate school domain', 'Specific, expected details', 'No links, no requests for info', 'Header Validation: SPF, DKIM, and DMARC pass and align.'],
+              clues: [
+                { zone: 'sender', icon: '\uD83D\uDCE7', label: t('stem.cyberdefense.known_school_sender', 'Known School Sender'), desc: t('stem.cyberdefense.myschool_edu_matches_your_real_school_', 'myschool.edu matches your real school domain and the coach you know'), suspicious: false },
+                { zone: 'body', icon: '\uD83D\uDCDD', label: t('stem.cyberdefense.specific_expected_details', 'Specific Details'), desc: t('stem.cyberdefense.a_concrete_time_change_with_a_mundane_', 'A concrete time change with a mundane reason \u2014 nothing asked of you except showing up'), suspicious: false },
+                { zone: 'link', icon: '\uD83D\uDD17', label: t('stem.cyberdefense.no_links_at_all', 'No Links'), desc: t('stem.cyberdefense.no_links_no_attachments_nothing_to_cli', 'No links, no attachments, nothing to click \u2014 nothing to steal with'), suspicious: false },
+                { zone: 'headers', icon: '\uD83D\uDD0D', label: t('stem.cyberdefense.header_alignment_12', 'Header Alignment'), desc: t('stem.cyberdefense.all_checks_pass_and_the_return_path_ma', 'All checks pass and the Return-Path matches the sender exactly.'), suspicious: false }
+              ] },
+            { from: 'tracking@usps-redelivery-center.info', fromDisplay: 'USPS Delivery', subject: 'Your package could not be delivered', body: t('stem.cyberdefense.we_attempted_to_deliver_your_package_t', 'We attempted to deliver your package today but no one was home. Pay a $0.30 redelivery fee within 24 hours or the package will be returned to sender.'), link: 'http://usps-redelivery-center.info/pay', isPhish: true, difficulty: 'medium',
+              headers: { returnPath: 'send@notify-batch-04.top', spf: 'softfail', dkim: 'fail', dmarc: 'fail' },
+              flags: ['Tiny "fee" harvests your card number', 'Lookalike .info domain, not usps.com', '24-hour pressure', 'HTTP payment link', 'Header Validation: Return-Path on an unrelated .top domain; DKIM/DMARC fail.'],
+              clues: [
+                { zone: 'body', icon: '\uD83D\uDCDD', label: t('stem.cyberdefense.micro_fee_trick', 'Micro-Fee Trick'), desc: t('stem.cyberdefense.the_0_30_isn_t_the_point_entering_your', 'The $0.30 isn\'t the point \u2014 entering your card number is. Real carriers don\'t collect fees this way'), suspicious: true },
+                { zone: 'sender', icon: '\uD83D\uDCE7', label: t('stem.cyberdefense.lookalike_carrier_domain', 'Lookalike Domain'), desc: t('stem.cyberdefense.the_real_postal_service_is_usps_com_no', 'The real postal service is usps.com, not usps-redelivery-center.info'), suspicious: true },
+                { zone: 'subject', icon: '\u26A1', label: t('stem.cyberdefense.deadline_pressure', 'Deadline Pressure'), desc: t('stem.cyberdefense.a_24_hour_or_else_deadline_is_designed', 'A 24-hour "or else" deadline is designed to make you act before you think'), suspicious: true },
+                { zone: 'link', icon: '\uD83D\uDD17', label: t('stem.cyberdefense.http_payment_page', 'HTTP Payment Page'), desc: t('stem.cyberdefense.a_payment_page_over_plain_http_no_carr', 'A payment page over plain HTTP \u2014 no real carrier does that'), suspicious: true },
+                { zone: 'headers', icon: '\uD83D\uDD0D', label: t('stem.cyberdefense.header_alignment_13', 'Header Alignment'), desc: t('stem.cyberdefense.return_path_lives_on_notify_batch_04_t', 'Return-Path lives on notify-batch-04.top \u2014 nothing to do with the postal service.'), suspicious: true }
+              ] },
+            { from: 'no-reply@forms.office.com', fromDisplay: 'Microsoft Forms', subject: 'Permission slip: Science Museum field trip', body: t('stem.cyberdefense.ms_lopez_shared_the_form_science_museu', 'Ms. Lopez shared the form "Science Museum Field Trip - Permission" with you. Your teacher mentioned this form in class today. Open it to fill in your parent contact details.'), link: 'https://forms.office.com/r/aB3xY9', isPhish: false, difficulty: 'medium',
+              headers: { returnPath: 'no-reply@forms.office.com', spf: 'pass', dkim: 'pass', dmarc: 'pass' },
+              flags: ['Real forms.office.com service domain', 'Expected \u2014 teacher announced it in class', 'HTTPS link to the genuine service', 'Header Validation: fully aligned SPF/DKIM/DMARC.'],
+              clues: [
+                { zone: 'sender', icon: '\uD83D\uDCE7', label: t('stem.cyberdefense.genuine_service_domain', 'Genuine Service Domain'), desc: t('stem.cyberdefense.forms_office_com_is_microsoft_s_real_f', 'forms.office.com is Microsoft\'s real Forms domain \u2014 automated notices from it are normal'), suspicious: false },
+                { zone: 'body', icon: '\uD83D\uDCDD', label: t('stem.cyberdefense.expected_context', 'Expected Context'), desc: t('stem.cyberdefense.your_teacher_announced_this_form_in_cl', 'Your teacher announced this form in class \u2014 expected messages are far more trustworthy than surprises'), suspicious: false },
+                { zone: 'link', icon: '\uD83D\uDD17', label: t('stem.cyberdefense.https_to_known_service', 'HTTPS To Known Service'), desc: t('stem.cyberdefense.the_link_goes_to_the_same_official_dom', 'The link goes to the same official domain the email came from, over HTTPS'), suspicious: false },
+                { zone: 'headers', icon: '\uD83D\uDD0D', label: t('stem.cyberdefense.header_alignment_14', 'Header Alignment'), desc: t('stem.cyberdefense.spf_dkim_and_dmarc_all_pass_for_the_re', 'SPF, DKIM, and DMARC all pass for the real Microsoft service.'), suspicious: false }
+              ] },
+            { from: 'updates@scholastic.com', fromDisplay: 'Scholastic Book Fairs', subject: 'The Book Fair is coming to your school Oct 12-16!', body: t('stem.cyberdefense.the_scholastic_book_fair_arrives_at_yo', 'The Scholastic Book Fair arrives at your school October 12-16 in the library. Browse this year\'s catalog online, and ask your teacher about volunteer sign-ups. Happy reading!'), link: 'https://www.scholastic.com/bookfairs', isPhish: false, difficulty: 'medium',
+              headers: { returnPath: 'updates@scholastic.com', spf: 'pass', dkim: 'pass', dmarc: 'pass' },
+              flags: ['Real scholastic.com domain', 'Announcement only \u2014 asks for nothing', 'HTTPS link to the official site', 'Header Validation: all checks pass and align.'],
+              clues: [
+                { zone: 'sender', icon: '\uD83D\uDCE7', label: t('stem.cyberdefense.official_org_domain', 'Official Org Domain'), desc: t('stem.cyberdefense.scholastic_com_is_the_company_s_real_d', 'scholastic.com is the company\'s real domain, matching the Return-Path'), suspicious: false },
+                { zone: 'body', icon: '\uD83D\uDCDD', label: t('stem.cyberdefense.no_action_demanded', 'No Action Demanded'), desc: t('stem.cyberdefense.it_announces_dates_and_invites_you_to_', 'It announces dates and invites you to browse \u2014 no account, payment, or personal info requested'), suspicious: false },
+                { zone: 'link', icon: '\uD83D\uDD17', label: t('stem.cyberdefense.official_https_link', 'Official HTTPS Link'), desc: t('stem.cyberdefense.https_www_scholastic_com_is_the_real_s', 'https://www.scholastic.com is the real site \u2014 the domain in the link matches the sender'), suspicious: false },
+                { zone: 'headers', icon: '\uD83D\uDD0D', label: t('stem.cyberdefense.header_alignment_15', 'Header Alignment'), desc: t('stem.cyberdefense.spf_dkim_dmarc_pass_and_the_return_pat', 'SPF/DKIM/DMARC pass and the Return-Path matches scholastic.com.'), suspicious: false }
+              ] },
+            { from: 'principal.smith@gmail.com', fromDisplay: 'Principal Smith', subject: 'Quick favor needed', body: t('stem.cyberdefense.are_you_free_right_now_i_need_you_to_p', 'Are you free right now? I need you to pick up some gift cards for a staff surprise. Keep this between us for now \u2014 reply as soon as you see this and I\'ll tell you which cards.'), link: null, isPhish: true, difficulty: 'hard',
+              headers: { returnPath: 'principal.smith@gmail.com', spf: 'pass', dkim: 'pass', dmarc: 'pass' },
+              flags: ['Authority figure on a PERSONAL gmail, not the school domain', 'Gift cards + secrecy = classic impersonation scam', 'Headers PASS \u2014 they only prove Gmail sent it, not that it\'s your principal', 'No link: the scam happens over reply'],
+              clues: [
+                { zone: 'sender', icon: '\uD83D\uDCE7', label: t('stem.cyberdefense.freemail_impersonation', 'Freemail Impersonation'), desc: t('stem.cyberdefense.your_principal_writes_from_the_school_', 'Your principal writes from the school domain. Anyone can make "principal.smith" at gmail.com'), suspicious: true },
+                { zone: 'body', icon: '\uD83D\uDCDD', label: t('stem.cyberdefense.gift_cards_plus_secrecy', 'Gift Cards + Secrecy'), desc: t('stem.cyberdefense.urgent_gift_cards_and_keep_this_betwee', 'Urgent gift cards and "keep this between us" is the signature move of impersonation scams'), suspicious: true },
+                { zone: 'subject', icon: '\u26A1', label: t('stem.cyberdefense.vague_urgent_favor', 'Vague Urgent Favor'), desc: t('stem.cyberdefense.a_vague_quick_favor_from_an_authority_', 'A vague "quick favor" from an authority figure pressures you to comply before checking'), suspicious: true },
+                { zone: 'headers', icon: '\uD83D\uDD0D', label: t('stem.cyberdefense.passing_headers_trap', 'Passing Headers Trap'), desc: t('stem.cyberdefense.spf_dkim_pass_because_gmail_really_sen', 'SPF/DKIM pass because Gmail really sent it \u2014 authentication proves the mailbox, NOT the person. The wrong domain is the tell'), suspicious: true }
+              ] },
+            { from: 'security@accounts.google.com.verify-session.net', fromDisplay: 'Google Accounts', subject: 'New sign-in on Windows', body: t('stem.cyberdefense.we_detected_a_new_sign_in_to_your_goog', 'We detected a new sign-in to your Google Account on a Windows device. If this wasn\'t you, your account may be at risk. Review your recent activity now to secure your account.'), link: 'https://accounts.google.com.verify-session.net/review', isPhish: true, difficulty: 'hard',
+              headers: { returnPath: 'bounce@verify-session.net', spf: 'pass', dkim: 'fail', dmarc: 'fail' },
+              flags: ['Real domain is the RIGHTMOST part: verify-session.net, not google.com', 'HTTPS does not mean safe \u2014 it only encrypts the connection', 'Copies Google\'s real alert wording', 'Header Validation: DMARC fails; Return-Path is verify-session.net.'],
+              clues: [
+                { zone: 'link', icon: '\uD83D\uDD17', label: t('stem.cyberdefense.subdomain_disguise', 'Subdomain Disguise'), desc: t('stem.cyberdefense.read_domains_right_to_left_accounts_go', 'Read domains right-to-left: accounts.google.com.verify-session.net really belongs to verify-session.net'), suspicious: true },
+                { zone: 'sender', icon: '\uD83D\uDCE7', label: t('stem.cyberdefense.https_is_not_safety', 'HTTPS \u2260 Safe'), desc: t('stem.cyberdefense.the_padlock_only_means_the_connection_', 'The padlock only means the connection is encrypted \u2014 scammers get HTTPS certificates too'), suspicious: true },
+                { zone: 'body', icon: '\uD83D\uDCDD', label: t('stem.cyberdefense.copied_alert_wording', 'Copied Alert Wording'), desc: t('stem.cyberdefense.the_text_is_copied_from_real_google_al', 'The text is copied from real Google alerts \u2014 polished wording is not proof of a real sender'), suspicious: true },
+                { zone: 'headers', icon: '\uD83D\uDD0D', label: t('stem.cyberdefense.header_alignment_16', 'Header Alignment'), desc: t('stem.cyberdefense.dmarc_fails_against_google_com_and_the', 'DMARC fails against google.com and the Return-Path is the scammer\'s own domain.'), suspicious: true }
+              ] },
+            { from: 'no-reply@accounts.google.com', fromDisplay: 'Google', subject: 'Security alert: new sign-in on your account', body: t('stem.cyberdefense.a_new_sign_in_on_chrome_on_windows_we_', 'A new sign-in on Chrome on Windows. We noticed a new sign-in to your Google Account. If this was you, you don\'t need to do anything. If not, we\'ll help you secure your account.'), link: 'https://myaccount.google.com/notifications', isPhish: false, difficulty: 'hard',
+              headers: { returnPath: 'no-reply@accounts.google.com', spf: 'pass', dkim: 'pass', dmarc: 'pass' },
+              flags: ['Exact real domain: accounts.google.com (nothing after .com)', '"If this was you, do nothing" \u2014 no forced action', 'Link goes to myaccount.google.com', 'Header Validation: fully aligned SPF/DKIM/DMARC for google.com.'],
+              clues: [
+                { zone: 'sender', icon: '\uD83D\uDCE7', label: t('stem.cyberdefense.exact_real_domain', 'Exact Real Domain'), desc: t('stem.cyberdefense.accounts_google_com_ends_at_google_com', 'accounts.google.com ends at google.com \u2014 no extra domain glued on after it'), suspicious: false },
+                { zone: 'body', icon: '\uD83D\uDCDD', label: t('stem.cyberdefense.no_forced_action', 'No Forced Action'), desc: t('stem.cyberdefense.real_security_alerts_say_if_this_was_y', 'Real security alerts say "if this was you, do nothing" \u2014 scams always demand action'), suspicious: false },
+                { zone: 'link', icon: '\uD83D\uDD17', label: t('stem.cyberdefense.real_destination_check', 'Real Destination'), desc: t('stem.cyberdefense.myaccount_google_com_is_google_s_genui', 'myaccount.google.com is Google\'s genuine account page, reachable by typing it yourself'), suspicious: false },
+                { zone: 'headers', icon: '\uD83D\uDD0D', label: t('stem.cyberdefense.header_alignment_17', 'Header Alignment'), desc: t('stem.cyberdefense.all_three_checks_pass_and_align_with_g', 'All three checks pass and align with google.com \u2014 and the content asks nothing of you.'), suspicious: false }
               ] }
           ];
 
@@ -563,6 +685,9 @@
           }
           if (cyberTab === 'warroom' && !(warRoomA11y && warRoomA11y.noShortcuts)) {
             window._cyberWarRoomKeydown = function(e) {
+              // Tab-switch removes this listener, but unmount while on the War Room
+              // tab does not — refuse to act once the tool left the DOM.
+              if (!document.getElementById('cyber-defense-region')) return;
               // Ignore if user is typing in a form field or modifier keys are held
               var tag = (e.target && e.target.tagName) || '';
               if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.ctrlKey || e.metaKey || e.altKey) return;
@@ -845,41 +970,9 @@
             return { score: score, label: labels[score], color: colors[score], entropy: Math.round(entropy), crackTime: crackTime, checks: { length: len, hasLower: hasLower, hasUpper: hasUpper, hasDigit: hasDigit, hasSymbol: hasSymbol, isCommon: isCommon, poolSize: poolSize } };
           }
 
-          // ── Cipher Functions ──
-          function caesarCipher(text, shift, encode) {
-            var s = encode ? shift : (26 - shift) % 26;
-            return text.split('').map(function(ch) {
-              var c = ch.charCodeAt(0);
-              if (c >= 65 && c <= 90) return String.fromCharCode(((c - 65 + s) % 26) + 65);
-              if (c >= 97 && c <= 122) return String.fromCharCode(((c - 97 + s) % 26) + 97);
-              return ch;
-            }).join('');
-          }
-          function atbashCipher(text) {
-            return text.split('').map(function(ch) {
-              var c = ch.charCodeAt(0);
-              if (c >= 65 && c <= 90) return String.fromCharCode(90 - (c - 65));
-              if (c >= 97 && c <= 122) return String.fromCharCode(122 - (c - 97));
-              return ch;
-            }).join('');
-          }
-          function xorCipher(text, key) {
-            var k = key || 42;
-            return text.split('').map(function(ch) {
-              return String.fromCharCode(ch.charCodeAt(0) ^ k);
-            }).join('');
-          }
-
-          // Cipher challenges
-          var cipherChallenges = [
-            { type: 'caesar', shift: 3, encoded: 'FRPSXWHU VFLHQFH LV IXQ', answer: t('stem.cyberdefense.computer_science_is_fun', 'COMPUTER SCIENCE IS FUN'), hint: t('stem.cyberdefense.shift_of_3_classic_caesar', 'Shift of 3 (classic Caesar)') },
-            { type: 'caesar', shift: 7, encoded: 'JVILY KLMLUZL', answer: t('stem.cyberdefense.cyber_defense', 'CYBER DEFENSE'), hint: t('stem.cyberdefense.shift_of_7', 'Shift of 7') },
-            { type: 'atbash', shift: 0, encoded: 'KZHHDLIW HZUVGB', answer: t('stem.cyberdefense.password_safety', 'PASSWORD SAFETY'), hint: t('stem.cyberdefense.a_z_b_y_c_x', 'A=Z, B=Y, C=X...') },
-            { type: 'caesar', shift: 13, encoded: 'QRIRE FGNGR LBHE CNFFJBEQ', answer: t('stem.cyberdefense.never_state_your_password', 'NEVER STATE YOUR PASSWORD'), hint: t('stem.cyberdefense.rot13_shift_of_13', 'ROT13 - shift of 13') },
-            { type: 'atbash', shift: 0, encoded: 'GSRMP YVULIV BLF XORXP', answer: t('stem.cyberdefense.think_before_you_click', 'THINK BEFORE YOU CLICK'), hint: t('stem.cyberdefense.reverse_the_alphabet', 'Reverse the alphabet') }
-          ];
-
-          var activeChallengeData = cipherChallenges[Math.abs(phishScore + caesarShift) % cipherChallenges.length];
+          // Cipher functions + challenge bank live at module scope (pure,
+          // test-exposed via window.__cyberDefensePure).
+          var activeChallengeData = CIPHER_CHALLENGES[Math.abs(phishScore + caesarShift) % CIPHER_CHALLENGES.length];
 
           var pwStrength = calcPasswordStrength(pwInput);
 
@@ -2637,7 +2730,16 @@
             return { label: t('stem.cyberdefense.junior_analyst', 'Junior Analyst'), icon: '\uD83D\uDD0D', color: '#22c55e' };
           })();
 
-          return el('div', { className: 'animate-in fade-in duration-300', style: { background: 'linear-gradient(135deg, #0f172a 0%, #16172e 50%, var(--allo-stem-canvas, #0f172a) 100%)', borderRadius: 16, minHeight: '70vh', padding: 0, boxShadow: '0 0 40px rgba(99,102,241,0.15)' } },
+          return el('div', { id: 'cyber-defense-region', className: 'animate-in fade-in duration-300', style: { background: 'linear-gradient(135deg, #0f172a 0%, #16172e 50%, var(--allo-stem-canvas, #0f172a) 100%)', borderRadius: 16, minHeight: '70vh', padding: 0, boxShadow: '0 0 40px rgba(99,102,241,0.15)' } },
+            // Dark-designed tool on a hardcoded #0f172a surface: rebind the theme
+            // palette variables for THIS SUBTREE ONLY so surface and text come
+            // from the same palette. Without this, light theme resolves
+            // --allo-stem-text to #0f172a on the #0f172a root = 1.00:1 invisible
+            // across ~215 text sites (kitchenLab/archStudio class). The second
+            // rule keeps high-contrast yellow from being flattened by the first.
+            el('style', null,
+              '#cyber-defense-region{--allo-stem-text:#e2e8f0;--allo-stem-text-soft:#94a3b8;--allo-stem-canvas:#0f172a;}' +
+              '.theme-contrast #cyber-defense-region{--allo-stem-text:#ffff00;--allo-stem-text-soft:#ffff00;--allo-stem-canvas:#000000;}'),
             // Header
             el('div', { style: { padding: '20px 24px 16px', borderBottom: '1px solid rgba(99,102,241,0.2)', display: 'flex', alignItems: 'center', gap: 12 } },
               el('button', { onClick: function() { ctx.setStemLabTool(null); }, 'aria-label': t('stem.cyberdefense.back_to_stem_tools', 'Back to STEM tools'), title: t('stem.cyberdefense.back', 'Back'), style: { background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 16 } }, '\u2190'),
@@ -3149,16 +3251,29 @@
                 // Challenge Mode
                 el('div', { style: { padding: 16, borderRadius: 12, background: 'linear-gradient(135deg, rgba(245,158,11,0.08), rgba(234,179,8,0.08))', border: '1px solid rgba(245,158,11,0.2)' } },
                   el('div', { style: { color: '#fbbf24', fontSize: 14, fontWeight: 900, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 } }, '\uD83C\uDFC6 Decode Challenge'),
-                  el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, marginBottom: 6 } }, 'Cipher: ' + (activeChallengeData.type === 'caesar' ? 'Caesar (shift ' + activeChallengeData.shift + ')' : 'Atbash') + ' \u2022 Hint: ' + activeChallengeData.hint),
+                  el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, marginBottom: 6 } }, 'Cipher: ' + (activeChallengeData.type === 'caesar' ? 'Caesar (shift ' + activeChallengeData.shift + ')' : 'Atbash') + ' \u2022 Hint: ' + t(activeChallengeData.hintKey, activeChallengeData.hintFallback)),
                   el('div', { style: { padding: '10px 14px', borderRadius: 8, background: 'rgba(0,0,0,0.3)', fontFamily: 'monospace', fontSize: 14, fontWeight: 700, color: '#fbbf24', letterSpacing: 2, marginBottom: 10 } }, activeChallengeData.encoded),
-                  el('input', { value: cipherChallenge, onChange: function(e) {
-                    var val = e.target.value.toUpperCase();
-                    upd('cipherChallenge', val);
-                    if (val.trim() === activeChallengeData.answer) { upd('challengeSolved', true); ctx.awardXP('cyberDefense', 5); if (ctx.addToast) ctx.addToast('\uD83D\uDD11 +5 XP! Cipher cracked!', 'success'); if (announceToSR) announceToSR('Cipher cracked! Plus 5 XP.'); }
-                    else { upd('challengeSolved', false); }
-                  }, placeholder: t('stem.cyberdefense.type_the_decoded_message', 'Type the decoded message...'), 'aria-label': t('stem.cyberdefense.cipher_challenge_answer', 'Cipher challenge answer'), disabled: challengeSolved,
-                    style: { width: '100%', padding: '10px 14px', borderRadius: 8, border: '2px solid ' + (challengeSolved ? '#22c55e' : 'rgba(255,255,255,0.1)'), background: challengeSolved ? 'rgba(34,197,94,0.1)' : 'rgba(255,255,255,0.06)', color: challengeSolved ? '#4ade80' : '#e2e8f0', fontSize: 13, fontFamily: 'monospace', fontWeight: 600, boxSizing: 'border-box' }, className: 'outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
-                  challengeSolved && el('div', { style: { marginTop: 8, color: '#4ade80', fontSize: 13, fontWeight: 800, textAlign: 'center' } }, '\u2705 Decoded! The message is: "' + activeChallengeData.answer + '"')
+                  (function() {
+                    var activeChallengeSolved = !!solvedCiphers[activeChallengeData.encoded];
+                    return el(React.Fragment, null,
+                      el('input', { value: cipherChallenge, onChange: function(e) {
+                        var val = e.target.value.toUpperCase();
+                        upd('cipherChallenge', val);
+                        // Whitespace-tolerant compare; case already normalized above.
+                        var normalized = val.trim().replace(/\s+/g, ' ');
+                        if (!activeChallengeSolved && normalized === activeChallengeData.answer) {
+                          var nextSolved = Object.assign({}, solvedCiphers);
+                          nextSolved[activeChallengeData.encoded] = true;
+                          upd('solvedCiphers', nextSolved);
+                          ctx.awardXP('cyberDefense', 5);
+                          if (ctx.addToast) ctx.addToast('\uD83D\uDD11 +5 XP! Cipher cracked!', 'success');
+                          if (announceToSR) announceToSR('Cipher cracked! Plus 5 XP.');
+                        }
+                      }, placeholder: t('stem.cyberdefense.type_the_decoded_message', 'Type the decoded message...'), 'aria-label': t('stem.cyberdefense.cipher_challenge_answer', 'Cipher challenge answer'), disabled: activeChallengeSolved,
+                        style: { width: '100%', padding: '10px 14px', borderRadius: 8, border: '2px solid ' + (activeChallengeSolved ? '#22c55e' : 'rgba(255,255,255,0.1)'), background: activeChallengeSolved ? 'rgba(34,197,94,0.1)' : 'rgba(255,255,255,0.06)', color: activeChallengeSolved ? '#4ade80' : '#e2e8f0', fontSize: 13, fontFamily: 'monospace', fontWeight: 600, boxSizing: 'border-box' }, className: 'outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
+                      activeChallengeSolved && el('div', { style: { marginTop: 8, color: '#4ade80', fontSize: 13, fontWeight: 800, textAlign: 'center' } }, '\u2705 Decoded! The message is: "' + activeChallengeData.answer + '"')
+                    );
+                  })()
                 )
               ),
 

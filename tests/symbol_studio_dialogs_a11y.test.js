@@ -33,14 +33,16 @@ describe('Symbol Studio decision dialog accessibility', () => {
   });
 
   it('routes every decision and template-name flow through the accessible service', () => {
-    expect(source.match(/askSymbolStudioConfirmation\(/g)).toHaveLength(7);
+    expect(source.match(/askSymbolStudioConfirmation\(/g)).toHaveLength(9);
     expect(source.match(/askSymbolStudioText\(/g)).toHaveLength(2);
     for (const title of [
       'Replace familiar symbol',
-      'Clear symbol gallery',
+      'Clear Symbol Bank',
       'Download confidential full backup',
       'Enable AI word prediction',
       'Replace current board',
+      'Delete Visual Pack',
+      'Export shareable Visual Pack',
       'Save story template',
     ]) expect(source).toContain(`title: '${title}'`);
     expect(source).toContain("title: 'Recompute \"' + g.text + '\" from clinician trials only?'");

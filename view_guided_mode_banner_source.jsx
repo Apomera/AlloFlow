@@ -869,7 +869,7 @@ function GuidedModeBanner({
   // panel was clicked, before Analyze had even run. Completion signal = a new history item appeared
   // since we arrived at this step. (2026-06-30)
   // Interaction-only steps create no generated history item, so they keep a real-but-coarse signal:
-  // the source step keys on actual entered text; Word Sounds / STEM Lab / Adventure / the final
+  // the source step keys on actual entered text; Word Sounds / STEAM Lab / Adventure / the final
   // download fall back to the click (`guidedEngaged`) — the best signal available for those.
   const GUIDED_CLICK_STEPS = ['math'];
   // Which history types complete each generate step. Without this, ANY new history item

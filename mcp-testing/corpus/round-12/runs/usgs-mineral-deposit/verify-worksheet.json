@@ -1,0 +1,4109 @@
+{
+  "binding": {
+    "html_sha256": "3b60cbeddcc22585f9bafcb690b5ee38bdc7bd585ebfd2d92ac3757da16562c0",
+    "plan_sha256": "1ce6097bdfd40a8bde4df94db5fa16ca309f4f2de75a31e178703e7c3a4bd75a",
+    "source_sha256": "d0a3b06606378733a2ec96cfa01e3b12c111d13059d070e3e039b751347a4529"
+  },
+  "createdAt": "2026-08-10T06:18:09Z",
+  "instructions": "You are the independent verifier. You must NOT be the model instance that authored the repair plan, and you must read the source document and the rebuilt HTML directly. Fill status for every item: 'verified', 'discrepancy', or 'unreadable'. Every 'discrepancy' or 'unreadable' needs a specific note (>= 20 characters) naming what and where. Then fill the verifier block: model, context_isolation='fresh-context', read_source_directly=true, and a statement (>= 40 characters) of what you read and how.",
+  "items": [
+    {
+      "id": "page-001",
+      "instruction": "Read source page 1 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 1,
+      "status": null
+    },
+    {
+      "id": "page-002",
+      "instruction": "Read source page 2 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 2,
+      "status": null
+    },
+    {
+      "id": "page-003",
+      "instruction": "Read source page 3 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 3,
+      "status": null
+    },
+    {
+      "id": "page-004",
+      "instruction": "Read source page 4 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 4,
+      "status": null
+    },
+    {
+      "id": "page-005",
+      "instruction": "Read source page 5 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 5,
+      "status": null
+    },
+    {
+      "id": "page-006",
+      "instruction": "Read source page 6 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 6,
+      "status": null
+    },
+    {
+      "id": "page-007",
+      "instruction": "Read source page 7 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 7,
+      "status": null
+    },
+    {
+      "id": "page-008",
+      "instruction": "Read source page 8 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 8,
+      "status": null
+    },
+    {
+      "id": "page-009",
+      "instruction": "Read source page 9 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 9,
+      "status": null
+    },
+    {
+      "id": "page-010",
+      "instruction": "Read source page 10 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 10,
+      "status": null
+    },
+    {
+      "id": "page-011",
+      "instruction": "Read source page 11 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 11,
+      "status": null
+    },
+    {
+      "id": "page-012",
+      "instruction": "Read source page 12 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 12,
+      "status": null
+    },
+    {
+      "id": "page-013",
+      "instruction": "Read source page 13 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 13,
+      "status": null
+    },
+    {
+      "id": "page-014",
+      "instruction": "Read source page 14 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 14,
+      "status": null
+    },
+    {
+      "id": "page-015",
+      "instruction": "Read source page 15 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 15,
+      "status": null
+    },
+    {
+      "id": "page-016",
+      "instruction": "Read source page 16 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 16,
+      "status": null
+    },
+    {
+      "id": "page-017",
+      "instruction": "Read source page 17 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 17,
+      "status": null
+    },
+    {
+      "id": "page-018",
+      "instruction": "Read source page 18 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 18,
+      "status": null
+    },
+    {
+      "id": "page-019",
+      "instruction": "Read source page 19 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 19,
+      "status": null
+    },
+    {
+      "id": "page-020",
+      "instruction": "Read source page 20 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 20,
+      "status": null
+    },
+    {
+      "id": "page-021",
+      "instruction": "Read source page 21 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 21,
+      "status": null
+    },
+    {
+      "id": "page-022",
+      "instruction": "Read source page 22 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 22,
+      "status": null
+    },
+    {
+      "id": "page-023",
+      "instruction": "Read source page 23 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 23,
+      "status": null
+    },
+    {
+      "id": "page-024",
+      "instruction": "Read source page 24 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 24,
+      "status": null
+    },
+    {
+      "id": "page-025",
+      "instruction": "Read source page 25 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 25,
+      "status": null
+    },
+    {
+      "id": "page-026",
+      "instruction": "Read source page 26 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 26,
+      "status": null
+    },
+    {
+      "id": "page-027",
+      "instruction": "Read source page 27 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 27,
+      "status": null
+    },
+    {
+      "id": "page-028",
+      "instruction": "Read source page 28 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 28,
+      "status": null
+    },
+    {
+      "id": "page-029",
+      "instruction": "Read source page 29 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 29,
+      "status": null
+    },
+    {
+      "id": "page-030",
+      "instruction": "Read source page 30 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 30,
+      "status": null
+    },
+    {
+      "id": "page-031",
+      "instruction": "Read source page 31 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 31,
+      "status": null
+    },
+    {
+      "id": "page-032",
+      "instruction": "Read source page 32 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 32,
+      "status": null
+    },
+    {
+      "id": "page-033",
+      "instruction": "Read source page 33 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 33,
+      "status": null
+    },
+    {
+      "id": "page-034",
+      "instruction": "Read source page 34 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 34,
+      "status": null
+    },
+    {
+      "id": "page-035",
+      "instruction": "Read source page 35 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 35,
+      "status": null
+    },
+    {
+      "id": "page-036",
+      "instruction": "Read source page 36 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 36,
+      "status": null
+    },
+    {
+      "id": "page-037",
+      "instruction": "Read source page 37 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 37,
+      "status": null
+    },
+    {
+      "id": "page-038",
+      "instruction": "Read source page 38 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 38,
+      "status": null
+    },
+    {
+      "id": "page-039",
+      "instruction": "Read source page 39 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 39,
+      "status": null
+    },
+    {
+      "id": "page-040",
+      "instruction": "Read source page 40 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 40,
+      "status": null
+    },
+    {
+      "id": "heading-001",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 1,
+      "note": "",
+      "source_page": 1,
+      "status": null,
+      "text": "The Life Cycle of a Mineral Deposit—A Teacher’s Guide for Hands-On Mineral Education Activities"
+    },
+    {
+      "alt": "A thin slice of an igneous rock viewed under a polarizing microscope, filling the whole cover. Interlocking mineral grains appear in vivid polarization colors: large purple-red and orange-brown crystals, a bright blue grain along the right edge, and smaller tan, gray, and black grains, many crossed by fine fracture lines. The imprint page notes this rock is from South Africa, contains economically important deposits of Platinum Group Elements (PGE), and that similar rock types are used as decorative facing for buildings and countertops. The USGS logo and the report title are overprinted on the photograph.",
+      "id": "image-001",
+      "instruction": "Look at the source image and judge whether this alt text is accurate and sufficient (not merely plausible).",
+      "kind": "image_alt",
+      "note": "",
+      "source_page": 1,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "The Life Cycle of a Mineral Deposit—A Teacher’s Guide for Hands-On Mineral Education Activities"
+      ],
+      "id": "emphasis-001",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 2,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "U.S. Department of the Interior"
+      ],
+      "id": "emphasis-002",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 3,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "U.S. Geological Survey"
+      ],
+      "id": "emphasis-003",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 3,
+      "status": null
+    },
+    {
+      "id": "linkrun-001",
+      "instruction": "For each linked span: does the source really carry a link here (annotation or written-out URL), does the destination match, and is the link text meaningful out of context?",
+      "kind": "inline_link",
+      "links": [
+        {
+          "href": "http://pubs.usgs.gov/gip/2005/17/",
+          "text": "http://pubs.usgs.gov/gip/2005/17/"
+        }
+      ],
+      "note": "",
+      "source_page": 3,
+      "status": null
+    },
+    {
+      "emphasised": [],
+      "id": "emphasis-004",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 3,
+      "status": null
+    },
+    {
+      "id": "linkrun-002",
+      "instruction": "For each linked span: does the source really carry a link here (annotation or written-out URL), does the destination match, and is the link text meaningful out of context?",
+      "kind": "inline_link",
+      "links": [
+        {
+          "href": "http://geology.usgs.gov/products.html",
+          "text": "http://geology.usgs.gov/products.html"
+        }
+      ],
+      "note": "",
+      "source_page": 3,
+      "status": null
+    },
+    {
+      "emphasised": [],
+      "id": "emphasis-005",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 3,
+      "status": null
+    },
+    {
+      "id": "linkrun-003",
+      "instruction": "For each linked span: does the source really carry a link here (annotation or written-out URL), does the destination match, and is the link text meaningful out of context?",
+      "kind": "inline_link",
+      "links": [
+        {
+          "href": "http://www.usgs.gov/",
+          "text": "http://www.usgs.gov/"
+        }
+      ],
+      "note": "",
+      "source_page": 3,
+      "status": null
+    },
+    {
+      "emphasised": [],
+      "id": "emphasis-006",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 3,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Cataloging-in-publication data are on file with the Library of Congress (URL http://www.loc.gov/)."
+      ],
+      "id": "emphasis-007",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 3,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Cover."
+      ],
+      "id": "emphasis-008",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 3,
+      "status": null
+    },
+    {
+      "id": "heading-002",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 4,
+      "status": null,
+      "text": "Contents"
+    },
+    {
+      "id": "list-001",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 32,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 4,
+      "status": null
+    },
+    {
+      "id": "heading-003",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 3,
+      "note": "",
+      "source_page": 4,
+      "status": null,
+      "text": "Figures"
+    },
+    {
+      "id": "list-002",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 5,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 4,
+      "status": null
+    },
+    {
+      "id": "list-003",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 4,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 5,
+      "status": null
+    },
+    {
+      "id": "heading-004",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 3,
+      "note": "",
+      "source_page": 5,
+      "status": null,
+      "text": "Tables"
+    },
+    {
+      "id": "list-004",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 4,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 5,
+      "status": null
+    },
+    {
+      "id": "heading-005",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 3,
+      "note": "",
+      "source_page": 5,
+      "status": null,
+      "text": "Appendixes"
+    },
+    {
+      "id": "list-005",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 5,
+      "status": null
+    },
+    {
+      "id": "heading-006",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 6,
+      "status": null,
+      "text": "Preface"
+    },
+    {
+      "emphasised": [
+        "The Life Cycle of a Mineral Deposit—A Teacher’s Guide for Hands-On Mineral Education Activities"
+      ],
+      "id": "emphasis-009",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 7,
+      "status": null
+    },
+    {
+      "id": "heading-007",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 7,
+      "status": null,
+      "text": "Introduction"
+    },
+    {
+      "id": "heading-008",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 7,
+      "status": null,
+      "text": "What is a Mineral Deposit?"
+    },
+    {
+      "emphasised": [
+        "Aggregate",
+        "Alloy",
+        "Element",
+        "Metal",
+        "Ore",
+        "Rock"
+      ],
+      "id": "emphasis-010",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 7,
+      "status": null
+    },
+    {
+      "id": "list-006",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 6,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 7,
+      "status": null
+    },
+    {
+      "id": "list-007",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 3,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 7,
+      "status": null
+    },
+    {
+      "id": "heading-009",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 7,
+      "status": null,
+      "text": "Where and How Do Mineral Deposits Occur?"
+    },
+    {
+      "id": "heading-010",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 3,
+      "note": "",
+      "source_page": 7,
+      "status": null,
+      "text": "The Rock Cycle and Plate Tectonics"
+    },
+    {
+      "id": "list-008",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 4,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 8,
+      "status": null
+    },
+    {
+      "alt": "Panel A: a color cross-section of the Earth’s crust and upper mantle from open ocean to a continent, with three small block diagrams above it showing plates sliding past each other, pulling apart, and colliding over the asthenosphere. Across the main section, labeled features are: a convergent plate boundary at an island arc with a trench and strato-volcano; a transform plate boundary; a divergent plate boundary at an oceanic spreading ridge; a shield volcano over a hot spot; a second convergent plate boundary where an oceanic plate subducts beneath the continent at a trench (labeled subducting plate); and a continental rift zone (a young divergent plate boundary) inside the continent. The rigid lithosphere, including oceanic crust and continental crust, rides on the plastic asthenosphere, shown in oranges and yellows below; white arrows show relative plate motion, and red conduits show magma rising under volcanoes and ridges.",
+      "id": "image-002",
+      "instruction": "Look at the source image and judge whether this alt text is accurate and sufficient (not merely plausible).",
+      "kind": "image_alt",
+      "note": "",
+      "source_page": 8,
+      "status": null
+    },
+    {
+      "id": "heading-011",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 3,
+      "note": "",
+      "source_page": 9,
+      "status": null,
+      "text": "Mineral Deposits"
+    },
+    {
+      "caption": "Table 1. Abundances of the elements in the Earth’s crust (modified from Nave, 2000).",
+      "columns": 2,
+      "id": "table-001",
+      "instruction": "Compare EVERY cell of this table against the source, including header assignment and row/column order.",
+      "kind": "table",
+      "note": "",
+      "rows": 9,
+      "source_page": 9,
+      "status": null
+    },
+    {
+      "alt": "Panel B: a diagram titled “The Rock Cycle” showing five stations connected by double-headed arrows. At the top, loose sediments (gravel, sand, silt, mud, clay, soil) form from weathering and erosion and from mineral dissolution and mineral precipitation (which also yield vein quartz, vein calcite, chert, and travertine). Transport and deposition carry material to sediments; compaction and cementation turn sediments into sedimentary rocks (conglomerate, sandstone, siltstone, mudstone, graywacke, marl, shale, chert, coal, salt, gypsum, limestone, dolostone). Heat and pressure (metamorphism) turn sedimentary rocks into metamorphic rocks (slate, argillite, gneiss, marble, metasandstone, quartzite, greenstone, greenschist, blueschist, serpentinite, metachert). Melting produces magma, and crystallization of magma produces igneous rocks, either by volcanism (rhyolite, dacite, andesite, basalt) or by plutonism (granite, granodiorite, diorite, gabbro, pyroxenite, peridotite). Arrows also connect igneous and metamorphic rocks back to weathering, erosion, and burial, so every rock type can become any other.",
+      "id": "image-003",
+      "instruction": "Look at the source image and judge whether this alt text is accurate and sufficient (not merely plausible).",
+      "kind": "image_alt",
+      "note": "",
+      "source_page": 9,
+      "status": null
+    },
+    {
+      "caption": "Table 2. Average abundance of geochemically scarce metals from ore deposits in continental crust (modified from Skinner, 1976).",
+      "columns": 2,
+      "id": "table-002",
+      "instruction": "Compare EVERY cell of this table against the source, including header assignment and row/column order.",
+      "kind": "table",
+      "note": "",
+      "rows": 10,
+      "source_page": 10,
+      "status": null
+    },
+    {
+      "id": "heading-012",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 10,
+      "status": null,
+      "text": "Mineral Deposit Models"
+    },
+    {
+      "id": "heading-013",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 10,
+      "status": null,
+      "text": "How Are Mineral Deposits Found?"
+    },
+    {
+      "id": "heading-014",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 3,
+      "note": "",
+      "source_page": 10,
+      "status": null,
+      "text": "Geology"
+    },
+    {
+      "id": "heading-015",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 3,
+      "note": "",
+      "source_page": 10,
+      "status": null,
+      "text": "Geophysics"
+    },
+    {
+      "id": "heading-016",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 3,
+      "note": "",
+      "source_page": 10,
+      "status": null,
+      "text": "Geochemistry"
+    },
+    {
+      "id": "heading-017",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 3,
+      "note": "",
+      "source_page": 10,
+      "status": null,
+      "text": "Satellite Imagery"
+    },
+    {
+      "id": "heading-018",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 11,
+      "status": null,
+      "text": "How Big is the Deposit and How Much is it Worth?"
+    },
+    {
+      "id": "heading-019",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 11,
+      "status": null,
+      "text": "Examples of Mining Methods"
+    },
+    {
+      "alt": "A black-and-white photograph from 1910. A metal gold pan holding several rough nuggets sits propped upright on a cloth-covered box or table in a mining camp, with canvas tent walls behind it and a large metal triangle (a camp dinner gong) hanging above the pan.",
+      "id": "image-004",
+      "instruction": "Look at the source image and judge whether this alt text is accurate and sufficient (not merely plausible).",
+      "kind": "image_alt",
+      "note": "",
+      "source_page": 11,
+      "status": null
+    },
+    {
+      "alt": "Inset: a close-up color photograph of a single gold nugget with a rough, lumpy surface, shown against a black background.",
+      "id": "image-005",
+      "instruction": "Look at the source image and judge whether this alt text is accurate and sufficient (not merely plausible).",
+      "kind": "image_alt",
+      "note": "",
+      "source_page": 11,
+      "status": null
+    },
+    {
+      "alt": "A color aerial photograph of a phosphate mining area set in forested mountains. Benched cuts and gray waste-rock slopes step down a hillside on the left; the surrounding slopes are green with regrowth and conifer forest, small ponds sit in the valley floor, and a dirt road winds through the site toward mountains on the horizon.",
+      "id": "image-006",
+      "instruction": "Look at the source image and judge whether this alt text is accurate and sufficient (not merely plausible).",
+      "kind": "image_alt",
+      "note": "",
+      "source_page": 12,
+      "status": null
+    },
+    {
+      "id": "heading-020",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 12,
+      "status": null,
+      "text": "Recovery Methods"
+    },
+    {
+      "id": "heading-021",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 12,
+      "status": null,
+      "text": "Reclamation Processes"
+    },
+    {
+      "id": "heading-022",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 13,
+      "status": null,
+      "text": "Hands-On Activities"
+    },
+    {
+      "emphasised": [
+        "Basic Geology—Concepts"
+      ],
+      "id": "emphasis-011",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 13,
+      "status": null
+    },
+    {
+      "id": "list-009",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 13,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Exploring for Minerals"
+      ],
+      "id": "emphasis-012",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 13,
+      "status": null
+    },
+    {
+      "id": "list-010",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 13,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Extracting Minerals"
+      ],
+      "id": "emphasis-013",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 13,
+      "status": null
+    },
+    {
+      "id": "list-011",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 13,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Uses of Minerals"
+      ],
+      "id": "emphasis-014",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 13,
+      "status": null
+    },
+    {
+      "id": "list-012",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 5,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 13,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Mineral Resources and Economics"
+      ],
+      "id": "emphasis-015",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 13,
+      "status": null
+    },
+    {
+      "id": "list-013",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 3,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 13,
+      "status": null
+    },
+    {
+      "id": "heading-023",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 3,
+      "note": "",
+      "source_page": 13,
+      "status": null,
+      "text": "Note to Teachers—Safety Issues"
+    },
+    {
+      "caption": "Table 3. National Science Standards matrix for grades 5 through 8, showing the content standard(s) addressed by each activity; the complete standards are available from the National Research Council (1996).",
+      "columns": 9,
+      "id": "table-003",
+      "instruction": "Compare EVERY cell of this table against the source, including header assignment and row/column order.",
+      "kind": "table",
+      "note": "",
+      "rows": 10,
+      "source_page": 14,
+      "status": null
+    },
+    {
+      "id": "list-014",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 14,
+      "status": null
+    },
+    {
+      "id": "list-015",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 14,
+      "status": null
+    },
+    {
+      "id": "list-016",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 14,
+      "status": null
+    },
+    {
+      "id": "list-017",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 14,
+      "status": null
+    },
+    {
+      "id": "list-018",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 14,
+      "status": null
+    },
+    {
+      "id": "list-019",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 4,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 14,
+      "status": null
+    },
+    {
+      "id": "list-020",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 3,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 14,
+      "status": null
+    },
+    {
+      "id": "heading-024",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 3,
+      "note": "",
+      "source_page": 15,
+      "status": null,
+      "text": "Activity 1—Orange Peel Plate Tectonics"
+    },
+    {
+      "emphasised": [
+        "Suggested Grade Level: 5 through 8"
+      ],
+      "id": "emphasis-016",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 15,
+      "status": null
+    },
+    {
+      "alt": "A peeled orange reassembled from several pieces of its own peel, with a small pile of round toothpicks lying in front of it.",
+      "id": "image-007",
+      "instruction": "Look at the source image and judge whether this alt text is accurate and sufficient (not merely plausible).",
+      "kind": "image_alt",
+      "note": "",
+      "source_page": 15,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Objective:"
+      ],
+      "id": "emphasis-017",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 15,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Materials:"
+      ],
+      "id": "emphasis-018",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 15,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Instructions:"
+      ],
+      "id": "emphasis-019",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 15,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "STEP 1.",
+        "STEP 2.",
+        "STEP 3.",
+        "STEP 4.",
+        "STEP 5."
+      ],
+      "id": "emphasis-020",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 15,
+      "status": null
+    },
+    {
+      "id": "list-021",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 5,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 15,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Evaluation and Discussion:"
+      ],
+      "id": "emphasis-021",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 15,
+      "status": null
+    },
+    {
+      "id": "list-022",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 6,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 15,
+      "status": null
+    },
+    {
+      "id": "linkrun-004",
+      "instruction": "For each linked span: does the source really carry a link here (annotation or written-out URL), does the destination match, and is the link text meaningful out of context?",
+      "kind": "inline_link",
+      "links": [
+        {
+          "href": "http://pubs.usgs.gov/pdf/planet.html",
+          "text": "http://pubs.usgs.gov/pdf/planet.html"
+        },
+        {
+          "href": "http://pubs.usgs.gov/publications/text/dynamic.html",
+          "text": "http://pubs.usgs.gov/publications/text/dynamic.html"
+        }
+      ],
+      "note": "",
+      "source_page": 15,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "http://pubs.usgs.gov/pdf/planet.html",
+        "http://pubs.usgs.gov/publications/text/dynamic.html"
+      ],
+      "id": "emphasis-022",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 15,
+      "status": null
+    },
+    {
+      "id": "heading-025",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 3,
+      "note": "",
+      "source_page": 16,
+      "status": null,
+      "text": "Activity 2—Peanut Butter and Jelly Geology"
+    },
+    {
+      "emphasised": [
+        "Suggested Grade Level: 5 through 8"
+      ],
+      "id": "emphasis-023",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 16,
+      "status": null
+    },
+    {
+      "alt": "A three-layer sandwich seen from the side: a slice of white bread on the bottom, a layer of chunky peanut butter, a slice of whole wheat bread, a dark layer of jam, and a slice of dark rye bread on top, standing in for layered rock strata.",
+      "id": "image-008",
+      "instruction": "Look at the source image and judge whether this alt text is accurate and sufficient (not merely plausible).",
+      "kind": "image_alt",
+      "note": "",
+      "source_page": 16,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Objective:"
+      ],
+      "id": "emphasis-024",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 16,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Materials (for each pair of students):"
+      ],
+      "id": "emphasis-025",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 16,
+      "status": null
+    },
+    {
+      "id": "list-023",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 8,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 16,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Instructions:"
+      ],
+      "id": "emphasis-026",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 16,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "STEP 1.",
+        "STEP 2.",
+        "STEP 3.",
+        "STEP 4.",
+        "STEP 5."
+      ],
+      "id": "emphasis-027",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 16,
+      "status": null
+    },
+    {
+      "id": "list-024",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 5,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 16,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Evaluation and Discussion:"
+      ],
+      "id": "emphasis-028",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 16,
+      "status": null
+    },
+    {
+      "id": "list-025",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 3,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 16,
+      "status": null
+    },
+    {
+      "id": "list-026",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 5,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 16,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Additional Resources:"
+      ],
+      "id": "emphasis-029",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 16,
+      "status": null
+    },
+    {
+      "id": "linkrun-005",
+      "instruction": "For each linked span: does the source really carry a link here (annotation or written-out URL), does the destination match, and is the link text meaningful out of context?",
+      "kind": "inline_link",
+      "links": [
+        {
+          "href": "http://wrgis.wr.usgs.gov/docs/parks/deform/7modelsa.html",
+          "text": "http://wrgis.wr.usgs.gov/docs/parks/deform/7modelsa.html"
+        }
+      ],
+      "note": "",
+      "source_page": 16,
+      "status": null
+    },
+    {
+      "emphasised": [],
+      "id": "emphasis-030",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 16,
+      "status": null
+    },
+    {
+      "id": "linkrun-006",
+      "instruction": "For each linked span: does the source really carry a link here (annotation or written-out URL), does the destination match, and is the link text meaningful out of context?",
+      "kind": "inline_link",
+      "links": [
+        {
+          "href": "http://interactive2.usgs.gov/learningweb/teachers/faults.htm",
+          "text": "http://interactive2.usgs.gov/learningweb/teachers/faults.htm"
+        }
+      ],
+      "note": "",
+      "source_page": 16,
+      "status": null
+    },
+    {
+      "emphasised": [],
+      "id": "emphasis-031",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 16,
+      "status": null
+    },
+    {
+      "id": "heading-026",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 3,
+      "note": "",
+      "source_page": 17,
+      "status": null,
+      "text": "Activity 3—Cupcake Core Sampling"
+    },
+    {
+      "emphasised": [
+        "Suggested Grade Level: 5 through 8"
+      ],
+      "id": "emphasis-032",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 17,
+      "status": null
+    },
+    {
+      "alt": "A frosted cupcake in a foil baking cup with a clear plastic straw stuck into the top of the white frosting.",
+      "id": "image-009",
+      "instruction": "Look at the source image and judge whether this alt text is accurate and sufficient (not merely plausible).",
+      "kind": "image_alt",
+      "note": "",
+      "source_page": 17,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Objective:"
+      ],
+      "id": "emphasis-033",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 17,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Materials:"
+      ],
+      "id": "emphasis-034",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 17,
+      "status": null
+    },
+    {
+      "id": "list-027",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 8,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 17,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Instructions:"
+      ],
+      "id": "emphasis-035",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 17,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "STEP 1.",
+        "STEP 2.",
+        "STEP 3.",
+        "STEP 4.",
+        "STEP 5.",
+        "STEP 6.",
+        "STEP 7.",
+        "STEP 8."
+      ],
+      "id": "emphasis-036",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 17,
+      "status": null
+    },
+    {
+      "id": "list-028",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 8,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 17,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Evaluation and Discussion:"
+      ],
+      "id": "emphasis-037",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 17,
+      "status": null
+    },
+    {
+      "id": "list-029",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 5,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 17,
+      "status": null
+    },
+    {
+      "alt": "A full-page worksheet template titled “Cupcake Core Drilling,” divided into four equal panels, each containing the same empty cupcake outline in cross section. Panel A, “Imagine Section,” is blank for drawing a first guess. Panel B, “One Drill Hole Section,” shows one dashed vertical core hole labeled 1 through the center. Panel C, “Three Drill Hole Section,” shows three dashed core holes labeled 2, 1, and 3 across the cupcake. Panel D, “Cut Section,” is blank again for drawing the real interior after cutting the cupcake open. The source page is bound sideways (landscape); the image is shown upright here.",
+      "id": "image-010",
+      "instruction": "Look at the source image and judge whether this alt text is accurate and sufficient (not merely plausible).",
+      "kind": "image_alt",
+      "note": "",
+      "source_page": 18,
+      "status": null
+    },
+    {
+      "id": "heading-027",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 3,
+      "note": "",
+      "source_page": 19,
+      "status": null,
+      "text": "Activity 4—Chocolate Chip Cookie Mining"
+    },
+    {
+      "emphasised": [
+        "Suggested Grade Level: 5 through 8"
+      ],
+      "id": "emphasis-038",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 19,
+      "status": null
+    },
+    {
+      "alt": "Three chocolate chip cookies of different brands stacked in an overlapping pile: a small light-brown cookie, a large pale rough cookie, and a dark chocolate cookie.",
+      "id": "image-011",
+      "instruction": "Look at the source image and judge whether this alt text is accurate and sufficient (not merely plausible).",
+      "kind": "image_alt",
+      "note": "",
+      "source_page": 19,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Objective:"
+      ],
+      "id": "emphasis-039",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 19,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Materials:"
+      ],
+      "id": "emphasis-040",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 19,
+      "status": null
+    },
+    {
+      "id": "list-030",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 7,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 19,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Instructions:"
+      ],
+      "id": "emphasis-041",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 19,
+      "status": null
+    },
+    {
+      "id": "list-031",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 3,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 19,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Cookies for sale are:"
+      ],
+      "id": "emphasis-042",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 19,
+      "status": null
+    },
+    {
+      "id": "list-032",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 3,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 19,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "STEP 1.",
+        "STEP 2.",
+        "STEP 3."
+      ],
+      "id": "emphasis-043",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 19,
+      "status": null
+    },
+    {
+      "id": "list-033",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 3,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 19,
+      "status": null
+    },
+    {
+      "id": "list-034",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 3,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 19,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "STEP 4."
+      ],
+      "id": "emphasis-044",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 19,
+      "status": null
+    },
+    {
+      "id": "list-035",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 19,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Rules:"
+      ],
+      "id": "emphasis-045",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 19,
+      "status": null
+    },
+    {
+      "id": "list-036",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 10,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 19,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Evaluation and Discussion:"
+      ],
+      "id": "emphasis-046",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 19,
+      "status": null
+    },
+    {
+      "id": "list-037",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 7,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 19,
+      "status": null
+    },
+    {
+      "id": "heading-028",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 3,
+      "note": "",
+      "source_page": 20,
+      "status": null,
+      "text": "Activity 5—Extracting Metal (Copper) From A Rock"
+    },
+    {
+      "emphasised": [
+        "Suggested Grade Level: 5 through 8"
+      ],
+      "id": "emphasis-047",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 20,
+      "status": null
+    },
+    {
+      "alt": "Two overlapping United States pennies, shown heads side up, each with Abraham Lincoln’s profile in bright copper.",
+      "id": "image-012",
+      "instruction": "Look at the source image and judge whether this alt text is accurate and sufficient (not merely plausible).",
+      "kind": "image_alt",
+      "note": "",
+      "source_page": 20,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Objective:"
+      ],
+      "id": "emphasis-048",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 20,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Materials:"
+      ],
+      "id": "emphasis-049",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 20,
+      "status": null
+    },
+    {
+      "id": "list-038",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 8,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 20,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Instructions:"
+      ],
+      "id": "emphasis-050",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 20,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "STEP 1.",
+        "STEP 2.",
+        "STEP 3.",
+        "STEP 4.",
+        "STEP 5."
+      ],
+      "id": "emphasis-051",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 20,
+      "status": null
+    },
+    {
+      "id": "list-039",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 5,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 20,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Evaluation and Discussion:"
+      ],
+      "id": "emphasis-052",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 20,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Group questions:"
+      ],
+      "id": "emphasis-053",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 20,
+      "status": null
+    },
+    {
+      "id": "list-040",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 5,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 20,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Additional Resources:"
+      ],
+      "id": "emphasis-054",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 20,
+      "status": null
+    },
+    {
+      "id": "linkrun-007",
+      "instruction": "For each linked span: does the source really carry a link here (annotation or written-out URL), does the destination match, and is the link text meaningful out of context?",
+      "kind": "inline_link",
+      "links": [
+        {
+          "href": "http://www.wpbschoolhouse.btinternet.co.uk/page04/Mextract.htm#copper/",
+          "text": "http://www.wpbschoolhouse.btinternet.co.uk/page04/Mextract.htm#copper/"
+        }
+      ],
+      "note": "",
+      "source_page": 20,
+      "status": null
+    },
+    {
+      "emphasised": [],
+      "id": "emphasis-055",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 20,
+      "status": null
+    },
+    {
+      "id": "linkrun-008",
+      "instruction": "For each linked span: does the source really carry a link here (annotation or written-out URL), does the destination match, and is the link text meaningful out of context?",
+      "kind": "inline_link",
+      "links": [
+        {
+          "href": "http://www.sepup.com/docs1/SnS_print_samples.pdf/SnS_TG-24_Copier_Extraction.pdf",
+          "text": "http://www.sepup.com/docs1/SnS_print_samples.pdf/SnS_TG-24_Copier_Extraction.pdf"
+        }
+      ],
+      "note": "",
+      "source_page": 20,
+      "status": null
+    },
+    {
+      "emphasised": [],
+      "id": "emphasis-056",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 20,
+      "status": null
+    },
+    {
+      "id": "linkrun-009",
+      "instruction": "For each linked span: does the source really carry a link here (annotation or written-out URL), does the destination match, and is the link text meaningful out of context?",
+      "kind": "inline_link",
+      "links": [
+        {
+          "href": "http://minerals.usgs.gov/minerals/",
+          "text": "http://minerals.usgs.gov/minerals/"
+        }
+      ],
+      "note": "",
+      "source_page": 20,
+      "status": null
+    },
+    {
+      "emphasised": [],
+      "id": "emphasis-057",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 20,
+      "status": null
+    },
+    {
+      "id": "heading-029",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 3,
+      "note": "",
+      "source_page": 21,
+      "status": null,
+      "text": "Activity 6—Minerals in Your Body"
+    },
+    {
+      "emphasised": [
+        "Suggested Grade Level: 5 through 8"
+      ],
+      "id": "emphasis-058",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 21,
+      "status": null
+    },
+    {
+      "alt": "A cartoon tin man standing with hands on hips, drawn in shiny silver-gray metal with a small red heart on his chest, a funnel spout on his head, and rivets down his body. Ten element names in assorted decorative lettering surround him: Potassium above his head, then clockwise Carbon, Magnesium, Chromium, Iodine, Zinc, Nickel, Sulfur, Molybdenum, and Calcium. These labels appear only in this illustration; they name elements found in the human body.",
+      "id": "image-013",
+      "instruction": "Look at the source image and judge whether this alt text is accurate and sufficient (not merely plausible).",
+      "kind": "image_alt",
+      "note": "",
+      "source_page": 21,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Objective:"
+      ],
+      "id": "emphasis-059",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 21,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Materials:"
+      ],
+      "id": "emphasis-060",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 21,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Instructions:"
+      ],
+      "id": "emphasis-061",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 21,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "STEP 1.",
+        "STEP 2."
+      ],
+      "id": "emphasis-062",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 21,
+      "status": null
+    },
+    {
+      "id": "list-041",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 21,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Evaluation and Discussion:"
+      ],
+      "id": "emphasis-063",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 21,
+      "status": null
+    },
+    {
+      "id": "list-042",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 5,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 21,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Additional Resources:"
+      ],
+      "id": "emphasis-064",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 21,
+      "status": null
+    },
+    {
+      "id": "linkrun-010",
+      "instruction": "For each linked span: does the source really carry a link here (annotation or written-out URL), does the destination match, and is the link text meaningful out of context?",
+      "kind": "inline_link",
+      "links": [
+        {
+          "href": "http://www.saltinstitute.org/15.html",
+          "text": "http://www.saltinstitute.org/15.html"
+        }
+      ],
+      "note": "",
+      "source_page": 21,
+      "status": null
+    },
+    {
+      "emphasised": [],
+      "id": "emphasis-065",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 21,
+      "status": null
+    },
+    {
+      "id": "linkrun-011",
+      "instruction": "For each linked span: does the source really carry a link here (annotation or written-out URL), does the destination match, and is the link text meaningful out of context?",
+      "kind": "inline_link",
+      "links": [
+        {
+          "href": "http://www.mii.org/periodic/LifeElement.html",
+          "text": "http://www.mii.org/periodic/LifeElement.html"
+        }
+      ],
+      "note": "",
+      "source_page": 21,
+      "status": null
+    },
+    {
+      "emphasised": [],
+      "id": "emphasis-066",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 21,
+      "status": null
+    },
+    {
+      "id": "linkrun-012",
+      "instruction": "For each linked span: does the source really carry a link here (annotation or written-out URL), does the destination match, and is the link text meaningful out of context?",
+      "kind": "inline_link",
+      "links": [
+        {
+          "href": "http://www.webelements.com/",
+          "text": "http://www.webelements.com/"
+        }
+      ],
+      "note": "",
+      "source_page": 21,
+      "status": null
+    },
+    {
+      "emphasised": [],
+      "id": "emphasis-067",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 21,
+      "status": null
+    },
+    {
+      "caption": "Table 4. The most common elements in the human body (data derived from Winters, 2005).",
+      "columns": 5,
+      "id": "table-004",
+      "instruction": "Compare EVERY cell of this table against the source, including header assignment and row/column order.",
+      "kind": "table",
+      "note": "",
+      "rows": 14,
+      "source_page": 22,
+      "status": null
+    },
+    {
+      "id": "heading-030",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 3,
+      "note": "",
+      "source_page": 23,
+      "status": null,
+      "text": "Activity 7—The Mineral Talc or “Rocks on Your Face”"
+    },
+    {
+      "emphasised": [
+        "Suggested Grade Level: 5 through 8"
+      ],
+      "id": "emphasis-068",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 23,
+      "status": null
+    },
+    {
+      "alt": "A porcelain jester’s head with a white painted face, rouged cheeks and red lips, wearing a two-tone red and green jester’s hat with bells and a wide ruffled white collar, framed inside a black oval. Six cosmetic words in assorted decorative lettering curve around the oval: Blush, Eyeliner, Eyeshadow, Lipstick, Makeup, and Powder. These labels appear only in this illustration; they name cosmetic products that contain talc.",
+      "id": "image-014",
+      "instruction": "Look at the source image and judge whether this alt text is accurate and sufficient (not merely plausible).",
+      "kind": "image_alt",
+      "note": "",
+      "source_page": 23,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Objective:"
+      ],
+      "id": "emphasis-069",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 23,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Materials:"
+      ],
+      "id": "emphasis-070",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 23,
+      "status": null
+    },
+    {
+      "id": "list-043",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 6,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 23,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Instructions:"
+      ],
+      "id": "emphasis-071",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 23,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "STEP 1.",
+        "STEP 2.",
+        "STEP 3.",
+        "STEP 4.",
+        "STEP 5.",
+        "STEP 6."
+      ],
+      "id": "emphasis-072",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 23,
+      "status": null
+    },
+    {
+      "id": "list-044",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 6,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 23,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Evaluation and Discussion:"
+      ],
+      "id": "emphasis-073",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 23,
+      "status": null
+    },
+    {
+      "id": "list-045",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 3,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 23,
+      "status": null
+    },
+    {
+      "id": "list-046",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 7,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 23,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Evaluation and Discussion:"
+      ],
+      "id": "emphasis-074",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 23,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Additional Resources:"
+      ],
+      "id": "emphasis-075",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 23,
+      "status": null
+    },
+    {
+      "id": "linkrun-013",
+      "instruction": "For each linked span: does the source really carry a link here (annotation or written-out URL), does the destination match, and is the link text meaningful out of context?",
+      "kind": "inline_link",
+      "links": [
+        {
+          "href": "http://www.minsocam.org/MSA/collectors_corner/id/mineral_id_keyi1.htm",
+          "text": "http://www.minsocam.org/MSA/collectors_corner/id/mineral_id_keyi1.htm"
+        }
+      ],
+      "note": "",
+      "source_page": 23,
+      "status": null
+    },
+    {
+      "emphasised": [],
+      "id": "emphasis-076",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 23,
+      "status": null
+    },
+    {
+      "id": "linkrun-014",
+      "instruction": "For each linked span: does the source really carry a link here (annotation or written-out URL), does the destination match, and is the link text meaningful out of context?",
+      "kind": "inline_link",
+      "links": [
+        {
+          "href": "http://minerals.usgs.gov/minerals/",
+          "text": "http://minerals.usgs.gov/minerals/"
+        }
+      ],
+      "note": "",
+      "source_page": 23,
+      "status": null
+    },
+    {
+      "emphasised": [],
+      "id": "emphasis-077",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 23,
+      "status": null
+    },
+    {
+      "id": "linkrun-015",
+      "instruction": "For each linked span: does the source really carry a link here (annotation or written-out URL), does the destination match, and is the link text meaningful out of context?",
+      "kind": "inline_link",
+      "links": [
+        {
+          "href": "http://www.dnr.state.oh.us/geosurvey/pdf/ho06.pdf",
+          "text": "http://www.dnr.state.oh.us/geosurvey/pdf/ho06.pdf"
+        }
+      ],
+      "note": "",
+      "source_page": 23,
+      "status": null
+    },
+    {
+      "emphasised": [],
+      "id": "emphasis-078",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 23,
+      "status": null
+    },
+    {
+      "id": "heading-031",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 3,
+      "note": "",
+      "source_page": 24,
+      "status": null,
+      "text": "Activity 8—Make Your Own Toothpaste"
+    },
+    {
+      "emphasised": [
+        "Suggested Grade Level: 5 through 8"
+      ],
+      "id": "emphasis-079",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 24,
+      "status": null
+    },
+    {
+      "alt": "A small tan mortar and pestle heaped with pastel-colored antacid tablets in pink, yellow, green, and orange, with more tablets scattered around its base.",
+      "id": "image-015",
+      "instruction": "Look at the source image and judge whether this alt text is accurate and sufficient (not merely plausible).",
+      "kind": "image_alt",
+      "note": "",
+      "source_page": 24,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Objective:"
+      ],
+      "id": "emphasis-080",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 24,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Materials:"
+      ],
+      "id": "emphasis-081",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 24,
+      "status": null
+    },
+    {
+      "id": "list-047",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 5,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 24,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Instructions:"
+      ],
+      "id": "emphasis-082",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 24,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "STEP 1.",
+        "STEP 2.",
+        "STEP 3.",
+        "STEP 4.",
+        "STEP 5."
+      ],
+      "id": "emphasis-083",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 24,
+      "status": null
+    },
+    {
+      "id": "list-048",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 5,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 24,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Evaluation and Discussion:"
+      ],
+      "id": "emphasis-084",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 24,
+      "status": null
+    },
+    {
+      "id": "list-049",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 5,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 24,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Additional Resources:"
+      ],
+      "id": "emphasis-085",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 24,
+      "status": null
+    },
+    {
+      "id": "linkrun-016",
+      "instruction": "For each linked span: does the source really carry a link here (annotation or written-out URL), does the destination match, and is the link text meaningful out of context?",
+      "kind": "inline_link",
+      "links": [
+        {
+          "href": "http://pubs.acs.org/hotartcl/chemtech/95/dec/dec.html",
+          "text": "http://pubs.acs.org/hotartcl/chemtech/95/dec/dec.html"
+        }
+      ],
+      "note": "",
+      "source_page": 24,
+      "status": null
+    },
+    {
+      "emphasised": [],
+      "id": "emphasis-086",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 24,
+      "status": null
+    },
+    {
+      "id": "linkrun-017",
+      "instruction": "For each linked span: does the source really carry a link here (annotation or written-out URL), does the destination match, and is the link text meaningful out of context?",
+      "kind": "inline_link",
+      "links": [
+        {
+          "href": "http://www.dnr.state.oh.us/geosurvey/pdf/ho06.pdf",
+          "text": "http://www.dnr.state.oh.us/geosurvey/pdf/ho06.pdf"
+        }
+      ],
+      "note": "",
+      "source_page": 24,
+      "status": null
+    },
+    {
+      "emphasised": [],
+      "id": "emphasis-087",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 24,
+      "status": null
+    },
+    {
+      "id": "heading-032",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 3,
+      "note": "",
+      "source_page": 25,
+      "status": null,
+      "text": "Activity 9—Mineral Flash Cards"
+    },
+    {
+      "emphasised": [
+        "Suggested Grade Level: 5 through 8"
+      ],
+      "id": "emphasis-088",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 25,
+      "status": null
+    },
+    {
+      "alt": "Three 5 by 7 inch flash cards fanned out in a pile. Two show an ornate orange sunburst card-back pattern around a photograph of a purple mineral specimen; the top card is turned face up with handwritten text reading “#26 Fe Iron, essential to plant and animal life.”",
+      "id": "image-016",
+      "instruction": "Look at the source image and judge whether this alt text is accurate and sufficient (not merely plausible).",
+      "kind": "image_alt",
+      "note": "",
+      "source_page": 25,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Objective:"
+      ],
+      "id": "emphasis-089",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 25,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Materials:"
+      ],
+      "id": "emphasis-090",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 25,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Instructions:"
+      ],
+      "id": "emphasis-091",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 25,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "STEP 1.",
+        "STEP 2.",
+        "STEP 3."
+      ],
+      "id": "emphasis-092",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 25,
+      "status": null
+    },
+    {
+      "id": "list-050",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 3,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 25,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "For grades 5 to 8 have the students answer the following five questions, which should be listed on each card."
+      ],
+      "id": "emphasis-093",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 25,
+      "status": null
+    },
+    {
+      "id": "list-051",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 5,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 25,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "For grades 9 to 12, have the students use an additional card and answer the following 6 questions."
+      ],
+      "id": "emphasis-094",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 25,
+      "status": null
+    },
+    {
+      "id": "list-052",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 6,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 25,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Evaluation and Discussion:"
+      ],
+      "id": "emphasis-095",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 25,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Additional Resources:"
+      ],
+      "id": "emphasis-096",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 25,
+      "status": null
+    },
+    {
+      "id": "linkrun-018",
+      "instruction": "For each linked span: does the source really carry a link here (annotation or written-out URL), does the destination match, and is the link text meaningful out of context?",
+      "kind": "inline_link",
+      "links": [
+        {
+          "href": "http://webmineral.com/index.shtml",
+          "text": "http://webmineral.com/index.shtml"
+        }
+      ],
+      "note": "",
+      "source_page": 25,
+      "status": null
+    },
+    {
+      "emphasised": [],
+      "id": "emphasis-097",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 25,
+      "status": null
+    },
+    {
+      "id": "linkrun-019",
+      "instruction": "For each linked span: does the source really carry a link here (annotation or written-out URL), does the destination match, and is the link text meaningful out of context?",
+      "kind": "inline_link",
+      "links": [
+        {
+          "href": "http://www.webelements.com/",
+          "text": "http://www.webelements.com/"
+        }
+      ],
+      "note": "",
+      "source_page": 25,
+      "status": null
+    },
+    {
+      "emphasised": [],
+      "id": "emphasis-098",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 25,
+      "status": null
+    },
+    {
+      "id": "linkrun-020",
+      "instruction": "For each linked span: does the source really carry a link here (annotation or written-out URL), does the destination match, and is the link text meaningful out of context?",
+      "kind": "inline_link",
+      "links": [
+        {
+          "href": "http://minerals.usgs.gov/minerals/",
+          "text": "http://minerals.usgs.gov/minerals/"
+        }
+      ],
+      "note": "",
+      "source_page": 25,
+      "status": null
+    },
+    {
+      "emphasised": [],
+      "id": "emphasis-099",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 25,
+      "status": null
+    },
+    {
+      "id": "heading-033",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 3,
+      "note": "",
+      "source_page": 28,
+      "status": null,
+      "text": "Activity 10—Personal Mineral Consumption"
+    },
+    {
+      "emphasised": [
+        "Suggested Grade Level: 5 through 8"
+      ],
+      "id": "emphasis-100",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 28,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Objective:"
+      ],
+      "id": "emphasis-101",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 28,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Materials:"
+      ],
+      "id": "emphasis-102",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 28,
+      "status": null
+    },
+    {
+      "id": "list-053",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 28,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Instructions:"
+      ],
+      "id": "emphasis-103",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 28,
+      "status": null
+    },
+    {
+      "id": "list-054",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 3,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 28,
+      "status": null
+    },
+    {
+      "alt": "A black-and-white cartoon titled “Every American Born Will Need . . .” of a baby lying on its back, surrounded by fifteen labeled quantities of minerals, metals, and fuels: 1,390 lbs. Copper; 20,226 lbs. Clays; 29,336 lbs. Salt; 772 lbs. Zinc; 1.55 million lbs. Stone, Sand, & Gravel; 81,518 gallons Petroleum; 65,543 lbs. Cement; 1.279 Troy oz. Gold; 573,056 lbs. Coal; +48,096 lbs. Other Minerals & Metals; 21,848 lbs. Phosphate Rock; 4,864 lbs. Bauxite (Aluminum); 849 lbs. Lead; 32,810 lbs. Iron Ore; and 5.78 million cu. ft. of Natural Gas. A line beneath the drawing reads “3.5 million pounds of minerals, metals, and fuels in a lifetime,” with the credit “© 2004 Mineral Information Institute Golden, Colorado.”",
+      "id": "image-017",
+      "instruction": "Look at the source image and judge whether this alt text is accurate and sufficient (not merely plausible).",
+      "kind": "image_alt",
+      "note": "",
+      "source_page": 28,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Using Worksheet 1:"
+      ],
+      "id": "emphasis-104",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 28,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "STEP 1.",
+        "STEP 2.",
+        "STEP 3.",
+        "STEP 4.",
+        "STEP 5."
+      ],
+      "id": "emphasis-105",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 28,
+      "status": null
+    },
+    {
+      "id": "list-055",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 5,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 28,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Using Worksheet 2:"
+      ],
+      "id": "emphasis-106",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 28,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "STEP 1.",
+        "STEP 2.",
+        "STEP 3.",
+        "STEP 4.",
+        "STEP 5."
+      ],
+      "id": "emphasis-107",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 28,
+      "status": null
+    },
+    {
+      "id": "list-056",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 5,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 28,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Evaluation and Discussion:"
+      ],
+      "id": "emphasis-108",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 28,
+      "status": null
+    },
+    {
+      "id": "list-057",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 28,
+      "status": null
+    },
+    {
+      "id": "list-058",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 7,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 29,
+      "status": null
+    },
+    {
+      "caption": "Figure 7. Worksheet 1 Activity 10—personal mineral consumption.",
+      "columns": 7,
+      "id": "table-005",
+      "instruction": "Compare EVERY cell of this table against the source, including header assignment and row/column order.",
+      "kind": "table",
+      "note": "",
+      "rows": 9,
+      "source_page": 30,
+      "status": null
+    },
+    {
+      "caption": "Figure 8. Worksheet 2 Activity 10—personal mineral consumption.",
+      "columns": 5,
+      "id": "table-006",
+      "instruction": "Compare EVERY cell of this table against the source, including header assignment and row/column order.",
+      "kind": "table",
+      "note": "",
+      "rows": 4,
+      "source_page": 31,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Worksheet 1"
+      ],
+      "id": "emphasis-109",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 32,
+      "status": null
+    },
+    {
+      "caption": "Worksheet 1 (completed example)",
+      "columns": 7,
+      "id": "table-007",
+      "instruction": "Compare EVERY cell of this table against the source, including header assignment and row/column order.",
+      "kind": "table",
+      "note": "",
+      "rows": 9,
+      "source_page": 32,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Worksheet 2"
+      ],
+      "id": "emphasis-110",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 32,
+      "status": null
+    },
+    {
+      "caption": "Worksheet 2 (completed example)",
+      "columns": 5,
+      "id": "table-008",
+      "instruction": "Compare EVERY cell of this table against the source, including header assignment and row/column order.",
+      "kind": "table",
+      "note": "",
+      "rows": 4,
+      "source_page": 32,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Values set at 1992 prices. Current prices can be found at http://minerals.usgs.gov/minerals/pubs/mcs/."
+      ],
+      "id": "emphasis-111",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 32,
+      "status": null
+    },
+    {
+      "id": "heading-034",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 33,
+      "status": null,
+      "text": "How to Obtain Mineral Specimens"
+    },
+    {
+      "id": "linkrun-021",
+      "instruction": "For each linked span: does the source really carry a link here (annotation or written-out URL), does the destination match, and is the link text meaningful out of context?",
+      "kind": "inline_link",
+      "links": [
+        {
+          "href": "http://minerals.usgs.gov/minerals",
+          "text": "http://minerals.usgs.gov/minerals"
+        },
+        {
+          "href": "http://www.stategeologists.org/",
+          "text": "http://www.stategeologists.org/"
+        }
+      ],
+      "note": "",
+      "source_page": 33,
+      "status": null
+    },
+    {
+      "emphasised": [],
+      "id": "emphasis-112",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 33,
+      "status": null
+    },
+    {
+      "id": "heading-035",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 33,
+      "status": null,
+      "text": "Selected References"
+    },
+    {
+      "id": "heading-036",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 35,
+      "status": null,
+      "text": "Appendixes 1–2"
+    },
+    {
+      "id": "heading-037",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 36,
+      "status": null,
+      "text": "Appendix 1.—Glossary"
+    },
+    {
+      "emphasised": [
+        "Aggregates"
+      ],
+      "id": "emphasis-113",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 36,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Anticline"
+      ],
+      "id": "emphasis-114",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 36,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Asthenosphere"
+      ],
+      "id": "emphasis-115",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 36,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Average crustal abundance"
+      ],
+      "id": "emphasis-116",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 36,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Bedrock"
+      ],
+      "id": "emphasis-117",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 36,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Beneficiation"
+      ],
+      "id": "emphasis-118",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 36,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Byproduct"
+      ],
+      "id": "emphasis-119",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 36,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Commodity"
+      ],
+      "id": "emphasis-120",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 36,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Covergent boundary"
+      ],
+      "id": "emphasis-121",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 36,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Divergent boundary"
+      ],
+      "id": "emphasis-122",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 36,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Erosion"
+      ],
+      "id": "emphasis-123",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 36,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Fault"
+      ],
+      "id": "emphasis-124",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 36,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Grade of ore"
+      ],
+      "id": "emphasis-125",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 36,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Hydrosphere"
+      ],
+      "id": "emphasis-126",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 36,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Igneous rock"
+      ],
+      "id": "emphasis-127",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 36,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Lithosphere"
+      ],
+      "id": "emphasis-128",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 36,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Mafic"
+      ],
+      "id": "emphasis-129",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 36,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Metallic mineral"
+      ],
+      "id": "emphasis-130",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 36,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Metamorphic rock"
+      ],
+      "id": "emphasis-131",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 36,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Mineral"
+      ],
+      "id": "emphasis-132",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 36,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Mineralization"
+      ],
+      "id": "emphasis-133",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 36,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Mineral deposit"
+      ],
+      "id": "emphasis-134",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 36,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Mineral occurrence"
+      ],
+      "id": "emphasis-135",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 36,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Mining life-cycle"
+      ],
+      "id": "emphasis-136",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 36,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Muck"
+      ],
+      "id": "emphasis-137",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 37,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Non-metallic mineral"
+      ],
+      "id": "emphasis-138",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 37,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Ore deposit"
+      ],
+      "id": "emphasis-139",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 37,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Reclamation"
+      ],
+      "id": "emphasis-140",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 37,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Sedimentary rock"
+      ],
+      "id": "emphasis-141",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 37,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Spreading center"
+      ],
+      "id": "emphasis-142",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 37,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Subduction zone"
+      ],
+      "id": "emphasis-143",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 37,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Syncline"
+      ],
+      "id": "emphasis-144",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 37,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Tectonic plate"
+      ],
+      "id": "emphasis-145",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 37,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Tectonics"
+      ],
+      "id": "emphasis-146",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 37,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Ultramafic"
+      ],
+      "id": "emphasis-147",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 37,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Unconformity"
+      ],
+      "id": "emphasis-148",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 37,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Vein"
+      ],
+      "id": "emphasis-149",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 37,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Weight percent"
+      ],
+      "id": "emphasis-150",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 37,
+      "status": null
+    },
+    {
+      "id": "heading-038",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 38,
+      "status": null,
+      "text": "Appendix 2.—Minerals and Their Uses"
+    },
+    {
+      "emphasised": [
+        "Aggregates"
+      ],
+      "id": "emphasis-151",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 38,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Aluminum"
+      ],
+      "id": "emphasis-152",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 38,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Asbestos"
+      ],
+      "id": "emphasis-153",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 38,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Basalt"
+      ],
+      "id": "emphasis-154",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 38,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Barium"
+      ],
+      "id": "emphasis-155",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 38,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Beryllium"
+      ],
+      "id": "emphasis-156",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 38,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Bromine"
+      ],
+      "id": "emphasis-157",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 38,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Cadmium"
+      ],
+      "id": "emphasis-158",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 38,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Cement"
+      ],
+      "id": "emphasis-159",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 38,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Chromium"
+      ],
+      "id": "emphasis-160",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 38,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Clays"
+      ],
+      "id": "emphasis-161",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 38,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Cobalt"
+      ],
+      "id": "emphasis-162",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 38,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Copper"
+      ],
+      "id": "emphasis-163",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 38,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Diatomite"
+      ],
+      "id": "emphasis-164",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 38,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Dolomite"
+      ],
+      "id": "emphasis-165",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 38,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Feldspar"
+      ],
+      "id": "emphasis-166",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 38,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Fluorite"
+      ],
+      "id": "emphasis-167",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 39,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Garnet"
+      ],
+      "id": "emphasis-168",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 39,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Germanium"
+      ],
+      "id": "emphasis-169",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 39,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Gold"
+      ],
+      "id": "emphasis-170",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 39,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Granite"
+      ],
+      "id": "emphasis-171",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 39,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Graphite"
+      ],
+      "id": "emphasis-172",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 39,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Gypsum"
+      ],
+      "id": "emphasis-173",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 39,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Halite"
+      ],
+      "id": "emphasis-174",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 39,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Industrial Diamond"
+      ],
+      "id": "emphasis-175",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 39,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Iron Ore"
+      ],
+      "id": "emphasis-176",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 39,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Lead"
+      ],
+      "id": "emphasis-177",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 39,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Limestone"
+      ],
+      "id": "emphasis-178",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 39,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Magnesium"
+      ],
+      "id": "emphasis-179",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 39,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Manganese"
+      ],
+      "id": "emphasis-180",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 39,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Mercury"
+      ],
+      "id": "emphasis-181",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 39,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Mica"
+      ],
+      "id": "emphasis-182",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 39,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Molybdenum"
+      ],
+      "id": "emphasis-183",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 39,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Nickel"
+      ],
+      "id": "emphasis-184",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 39,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Phosphate rock"
+      ],
+      "id": "emphasis-185",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 39,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Platinum Group Metals (PGMs)"
+      ],
+      "id": "emphasis-186",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 40,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Potash"
+      ],
+      "id": "emphasis-187",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 40,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Pyrite"
+      ],
+      "id": "emphasis-188",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 40,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Quartz"
+      ],
+      "id": "emphasis-189",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 40,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Sandstone"
+      ],
+      "id": "emphasis-190",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 40,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Silica"
+      ],
+      "id": "emphasis-191",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 40,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Silicon"
+      ],
+      "id": "emphasis-192",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 40,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Silver"
+      ],
+      "id": "emphasis-193",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 40,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Sulfur"
+      ],
+      "id": "emphasis-194",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 40,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Talc"
+      ],
+      "id": "emphasis-195",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 40,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Tin"
+      ],
+      "id": "emphasis-196",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 40,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Titanium"
+      ],
+      "id": "emphasis-197",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 40,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Trona"
+      ],
+      "id": "emphasis-198",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 40,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Tungsten"
+      ],
+      "id": "emphasis-199",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 40,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Uranium"
+      ],
+      "id": "emphasis-200",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 40,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Zeolites"
+      ],
+      "id": "emphasis-201",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 40,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Zinc"
+      ],
+      "id": "emphasis-202",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 40,
+      "status": null
+    },
+    {
+      "emphasised": [
+        "Zirconium"
+      ],
+      "id": "emphasis-203",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "",
+      "source_page": 40,
+      "status": null
+    },
+    {
+      "id": "global-completeness",
+      "instruction": "After reading all pages: is any source content absent from the rebuild without a disclosed review note?",
+      "kind": "global",
+      "note": "",
+      "status": null
+    },
+    {
+      "id": "global-no-invention",
+      "instruction": "Is there any content in the rebuild that does not exist in the source?",
+      "kind": "global",
+      "note": "",
+      "status": null
+    },
+    {
+      "id": "global-reading-order",
+      "instruction": "Does the rebuild's linear order preserve or improve the source's logical reading order, with any relocation disclosed?",
+      "kind": "global",
+      "note": "",
+      "status": null
+    },
+    {
+      "id": "global-review-notes",
+      "instruction": "Does every transformation you observed (moved content, dropped furniture, rejoined sentences) appear in the review notes, and is every note accurate?",
+      "kind": "global",
+      "note": "",
+      "status": null
+    }
+  ],
+  "schemaVersion": "1.0",
+  "verifier": {
+    "context_isolation": "",
+    "model": "",
+    "read_source_directly": null,
+    "statement": ""
+  }
+}

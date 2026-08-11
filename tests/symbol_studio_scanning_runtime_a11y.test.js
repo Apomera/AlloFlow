@@ -30,6 +30,7 @@ afterEach(() => {
     host = null;
   }
   window.localStorage.clear();
+  delete window.alloDeviceStorage;
 });
 
 function seedScanningBoard() {
@@ -58,6 +59,12 @@ async function flushTimer() {
 describe('Symbol Studio scanning runtime accessibility', () => {
   it('contains focus, isolates switch shortcuts, closes with Escape, and restores the Scan button', async () => {
     seedScanningBoard();
+    window.alloDeviceStorage = {
+      ready: vi.fn(async () => ({ connected: true })),
+      get: vi.fn(async () => null),
+      set: vi.fn(async () => true),
+      remove: vi.fn(async () => true),
+    };
     host = document.createElement('div');
     document.body.appendChild(host);
     root = ReactDOMClient.createRoot(host);
@@ -107,13 +114,23 @@ describe('Symbol Studio scanning runtime accessibility', () => {
     expect(onCallTTS).not.toHaveBeenCalled();
     dialog.focus();
     act(() => dialog.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', code: 'Space', bubbles: true })));
-    expect(onCallTTS).toHaveBeenCalledWith('One', 'Kore');
+    await flushTimer();
+    expect(onCallTTS).toHaveBeenCalledWith(
+      'One',
+      'Kore',
+      1,
+      expect.objectContaining({
+        priority: 'interactive',
+        reason: 'symbol-studio-scan',
+        onResolvedProfile: expect.any(Function),
+      }),
+    );
 
     act(() => firstControl.click());
     await act(async () => { await Promise.resolve(); });
     dialog.focus();
     act(() => dialog.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', code: 'ArrowRight', bubbles: true })));
-    expect(dialog.querySelector('[role="status"]').textContent).toContain('Two (2 of 2)');
+    expect(dialog.querySelector('[role="status"]').textContent).toContain('Two, Choices (2 of 2)');
 
     act(() => firstControl.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', bubbles: true })));
     await flushTimer();

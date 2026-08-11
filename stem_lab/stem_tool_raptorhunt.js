@@ -30,13 +30,79 @@
 // Category: Ecology & Migration (sister to BirdLab)
 // ═══════════════════════════════════════════════════════════════
 
-// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
   var st = document.createElement('style');
   st.id = 'allo-stem-motion-reduce-css';
   st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+  if (document.head) document.head.appendChild(st);
+})();
+
+// Raptor Hunt contrast contract: slate-500 is too dim on the tool's dark
+// panels, while the printable white cards need a darker muted foreground.
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('raptorhunt-contrast-css')) return;
+  var st = document.createElement('style');
+  st.id = 'raptorhunt-contrast-css';
+  st.textContent = '[data-raptorhunt-root="true"] .text-slate-500 { color: #94a3b8 !important; } [data-raptorhunt-root="true"] .bg-white .text-slate-500 { color: #475569 !important; } [data-raptorhunt-root="true"] [class*="border-slate-700"], [data-raptorhunt-root="true"] [class*="border-slate-600"] { border-color: #64748b !important; }';
+  if (document.head) document.head.appendChild(st);
+})();
+
+// Hunt simulator layout contract: keep the 3D viewport dominant while the
+// controls remain reachable below it on touch, keyboard, embedded, and
+// fullscreen surfaces.
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('raptorhunt-simulator-css')) return;
+  var st = document.createElement('style');
+  st.id = 'raptorhunt-simulator-css';
+  st.textContent = [
+    '[data-raptor-sim-shell="true"]{overflow:hidden;}',
+    '[data-raptor-flight-stage="true"]{position:relative;isolation:isolate;height:clamp(460px,62vh,760px);min-height:460px;background:linear-gradient(180deg,#0c4a6e,#0f172a);}',
+    '[data-raptor-flight-stage="true"] canvas{touch-action:none;}',
+    '[data-raptor-flight-stage="true"] canvas:focus-visible{outline:3px solid #67e8f9!important;outline-offset:-5px!important;box-shadow:inset 0 0 0 6px rgba(8,47,73,.75);}',
+    '.rh-flight-controls{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:rgba(2,6,23,.96);border-top:1px solid #64748b;}',
+    '.rh-flight-controls-group{display:flex;flex-wrap:wrap;align-items:center;gap:8px;}',
+    '.rh-flight-btn{min-height:44px;min-width:44px;padding:8px 11px;border:1px solid #64748b;border-radius:9px;background:#172033;color:#f8fafc;font:700 12px/1.15 ui-sans-serif,system-ui;cursor:pointer;transition:background-color .15s,border-color .15s,transform .15s;}',
+    '.rh-flight-btn:hover{background:#263449;border-color:#94a3b8;}',
+    '.rh-flight-btn:disabled{cursor:not-allowed;opacity:.55;filter:saturate(.55);}',
+    '.rh-flight-btn:active{transform:translateY(1px);}',
+    '.rh-flight-btn:focus-visible{outline:3px solid #67e8f9;outline-offset:2px;}',
+    '.rh-flight-btn[aria-pressed="true"],.rh-flight-btn[data-active="true"]{background:#0e7490;border-color:#67e8f9;color:#ecfeff;}',
+    '.rh-flight-btn-primary{background:#92400e;border-color:#fbbf24;color:#fffbeb;}',
+    '.rh-flight-btn-strike{background:#854d0e;border-color:#fde047;color:#fffde7;min-width:88px;}',
+    '.rh-flight-btn-danger{border-color:#fca5a5;color:#fee2e2;}',
+    '.rh-flight-control-label{color:#cbd5e1;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;}',
+    '.rh-flight-pause{position:absolute;inset:0;z-index:20;display:none;align-items:center;justify-content:center;background:rgba(2,6,23,.72);backdrop-filter:blur(3px);pointer-events:none;}',
+    '.rh-flight-pause[data-visible="true"]{display:flex;}',
+    '.rh-flight-pause-card{border:2px solid #67e8f9;border-radius:14px;background:rgba(15,23,42,.96);padding:18px 24px;color:#ecfeff;text-align:center;box-shadow:0 18px 50px rgba(0,0,0,.4);}',
+    '.rh-flight-mission-hud{position:absolute;right:10px;bottom:12px;z-index:8;max-width:min(330px,48%);border:2px solid #fbbf24;border-radius:10px;background:rgba(15,23,42,.94);padding:9px 12px;color:#f8fafc;font:700 11px/1.35 ui-sans-serif,system-ui;pointer-events:none;}',
+    '.rh-active-flight-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 12px;border:1px solid #64748b;border-radius:12px;background:linear-gradient(100deg,rgba(15,23,42,.96),rgba(8,47,73,.78));}',
+    '.rh-flight-telemetry-strip{position:absolute;z-index:12;top:10px;left:50%;transform:translateX(-50%);display:flex;max-width:calc(100% - 20px);overflow:hidden;border:1px solid rgba(103,232,249,.72);border-radius:11px;background:rgba(2,6,23,.86);box-shadow:0 8px 24px rgba(0,0,0,.28);backdrop-filter:blur(6px);pointer-events:none;}',
+    '.rh-flight-metric{min-width:84px;padding:7px 10px;text-align:center;border-right:1px solid rgba(100,116,139,.55);}',
+    '.rh-flight-metric:last-child{border-right:0;}.rh-flight-metric-label{display:block;color:#a5f3fc;font:800 9px/1.1 ui-sans-serif,system-ui;text-transform:uppercase;letter-spacing:.08em;}.rh-flight-metric-value{display:block;margin-top:3px;color:#fff;font:800 13px/1.1 ui-monospace,Menlo,monospace;white-space:nowrap;}',
+    '.rh-flight-settings{position:relative;}.rh-flight-settings>summary{list-style:none;}.rh-flight-settings>summary::-webkit-details-marker{display:none;}.rh-flight-settings-panel{position:absolute;right:0;bottom:calc(100% + 10px);z-index:30;display:flex;flex-wrap:wrap;gap:8px;width:min(330px,calc(100vw - 24px));padding:10px;border:1px solid #67e8f9;border-radius:11px;background:rgba(2,6,23,.98);box-shadow:0 18px 50px rgba(0,0,0,.45);}.rh-flight-quality{display:flex;align-items:center;justify-content:space-between;gap:10px;flex:1 1 100%;color:#cffafe;font:800 11px/1.2 ui-sans-serif,system-ui;}.rh-flight-quality select{min-height:44px;border:1px solid #67e8f9;border-radius:9px;background:#0f172a;padding:8px 30px 8px 10px;color:#fff;font:800 12px/1.2 ui-sans-serif,system-ui;}',
+    '.rh-flight-result{position:absolute;inset:0;z-index:25;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(2,6,23,.66);backdrop-filter:blur(4px);}.rh-flight-result-card{max-width:460px;border:2px solid #fbbf24;border-radius:16px;background:rgba(15,23,42,.98);padding:22px;color:#f8fafc;text-align:center;box-shadow:0 24px 70px rgba(0,0,0,.5);}',
+    '.rh-flight-coach{position:absolute;left:10px;bottom:12px;z-index:18;width:min(330px,calc(100% - 20px));border:2px solid #67e8f9;border-radius:12px;background:rgba(2,6,23,.95);padding:12px;color:#f8fafc;box-shadow:0 14px 40px rgba(0,0,0,.4);}.rh-flight-coach-head{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#a5f3fc;font:800 11px/1.2 ui-sans-serif,system-ui;text-transform:uppercase;letter-spacing:.06em;}.rh-flight-coach-title{margin-top:5px;color:#fff;font:800 15px/1.25 ui-sans-serif,system-ui;}.rh-flight-coach-copy{margin-top:4px;color:#dbeafe;font:600 12px/1.4 ui-sans-serif,system-ui;}.rh-flight-coach-actions{display:flex;justify-content:flex-end;gap:7px;margin-top:9px;}.rh-flight-target-cue{position:absolute;left:50%;top:58px;z-index:14;transform:translateX(-50%);max-width:calc(100% - 24px);border:1px solid #fca5a5;border-radius:9px;background:rgba(15,23,42,.9);padding:6px 10px;color:#fee2e2;font:800 11px/1.25 ui-sans-serif,system-ui;text-align:center;pointer-events:none;}.rh-flight-target-cue[data-target-state="ready"]{border-color:#86efac;color:#dcfce7;background:rgba(20,83,45,.94);}.rh-flight-target-cue[data-target-state="close"]{border-color:#fde047;color:#fef9c3;}',
+    '.rh-flight-telemetry,.rh-flight-status,.rh-flight-weather,.rh-flight-energy{display:none!important;}',
+    '.rh-flight-marker{position:absolute;left:50%;top:50%;z-index:7;width:88px;height:32px;transform:translate(-50%,-50%);pointer-events:none;}',
+    '.rh-flight-marker::before{content:"";position:absolute;left:0;right:0;top:15px;border-top:2px solid rgba(254,240,138,.9);box-shadow:0 1px 3px rgba(0,0,0,.8);}',
+    '.rh-flight-marker::after{content:"";position:absolute;left:43px;top:5px;height:20px;border-left:2px solid rgba(254,240,138,.95);}',
+    '[data-raptor-sim-shell="true"]:fullscreen,[data-raptor-sim-shell="true"]:-webkit-full-screen,[data-raptor-sim-shell="true"][data-allo-fullscreen-active="true"]{display:flex!important;flex-direction:column;width:100vw!important;height:100vh!important;max-height:none!important;background:#020617;}',
+    '[data-raptor-sim-shell="true"]:fullscreen [data-raptor-flight-stage="true"],[data-raptor-sim-shell="true"]:-webkit-full-screen [data-raptor-flight-stage="true"],[data-raptor-sim-shell="true"][data-allo-fullscreen-active="true"] [data-raptor-flight-stage="true"]{flex:1 1 auto;height:auto!important;min-height:0!important;}',
+    '[data-raptor-sim-shell="true"]:fullscreen canvas,[data-raptor-sim-shell="true"]:-webkit-full-screen canvas,[data-raptor-sim-shell="true"][data-allo-fullscreen-active="true"] canvas{width:100%!important;height:100%!important;}',
+    '[data-raptor-sim-shell="true"]:fullscreen .rh-flight-controls,[data-raptor-sim-shell="true"]:-webkit-full-screen .rh-flight-controls,[data-raptor-sim-shell="true"][data-allo-fullscreen-active="true"] .rh-flight-controls{flex:0 0 auto;}',
+    '[data-raptor-flight-stage="true"]:fullscreen,[data-raptor-flight-stage="true"]:-webkit-full-screen,[data-raptor-flight-stage="true"][data-allo-fullscreen-active="true"]{width:100vw!important;height:100vh!important;min-height:0!important;max-height:none!important;background:#020617;}',
+    '[data-raptor-flight-stage="true"]:fullscreen canvas,[data-raptor-flight-stage="true"]:-webkit-full-screen canvas,[data-raptor-flight-stage="true"][data-allo-fullscreen-active="true"] canvas{width:100%!important;height:100%!important;}',
+    '@media(max-width:760px){[data-raptor-flight-stage="true"]{height:58vh;min-height:390px;}.rh-flight-controls{display:grid;grid-template-columns:1fr;align-items:stretch;gap:8px;max-height:42vh;overflow-y:auto;overscroll-behavior:contain;}.rh-flight-controls-group{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));width:100%;gap:7px;}.rh-flight-controls-run{grid-template-columns:repeat(3,minmax(0,1fr));}.rh-flight-control-label{grid-column:1/-1;}.rh-flight-btn{width:100%;min-width:0;padding-left:6px;padding-right:6px;}.rh-flight-mission-hud{top:104px;left:auto;right:8px;bottom:auto;max-width:min(280px,calc(100% - 16px));}.rh-flight-coach{left:8px;right:8px;bottom:8px;width:auto;}.rh-flight-weather{display:none!important;}.rh-flight-status{display:none!important;}}',
+    '@media(max-width:760px){.rh-flight-telemetry-strip{top:8px;}.rh-flight-metric{min-width:68px;padding:6px 7px;}.rh-flight-metric:nth-child(5){display:none;}.rh-flight-settings{width:100%;}.rh-flight-settings>summary{width:100%;}.rh-flight-settings-panel{position:static;width:100%;margin-top:8px;}.rh-active-flight-bar{align-items:flex-start;}}',
+    '@media(max-width:430px){[data-raptor-flight-stage="true"]{height:54vh;min-height:350px;}.rh-flight-telemetry{transform:scale(.86);transform-origin:top left;}.rh-flight-energy{display:none!important;}.rh-flight-btn{font-size:11px;padding:8px 4px;}.rh-flight-target-cue{top:54px;font-size:10px;}.rh-flight-mission-hud{top:91px;font-size:10px;}.rh-flight-coach-copy{font-size:11px;}.rh-flight-coach-actions .rh-flight-btn{width:auto;min-width:68px;}}',
+    '@media(max-width:430px){.rh-flight-metric{min-width:61px}.rh-flight-metric:nth-child(4){display:none;}.rh-flight-metric-value{font-size:12px;}}',
+    '@media(prefers-reduced-motion:reduce){.rh-flight-btn{transition:none;}.rh-flight-pause{backdrop-filter:none;}}'
+  ].join('');
   if (document.head) document.head.appendChild(st);
 })();
 
@@ -6804,7 +6870,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       var webglErrState = React.useState(false);
       var webglError = webglErrState[0];
       var setWebglError = webglErrState[1];
+      var threeLoadState = React.useState(window.THREE ? 'ready' : 'idle');
+      var threeLoadStatus = threeLoadState[0];
+      var setThreeLoadStatus = threeLoadState[1];
+      var threeRetryState = React.useState(0);
+      var threeRetryToken = threeRetryState[0];
+      var setThreeRetryToken = threeRetryState[1];
+      var huntCanvasRef = useRef(null);
+      var simRevisionState = React.useState(0);
+      var simRevision = simRevisionState[0];
+      var setSimRevision = simRevisionState[1];
+      var simUIState = React.useState({
+        ready: false,
+        paused: false,
+        camera: 'chase',
+        zoom: false,
+        assist: true,
+        sound: false,
+        missionState: 'active',
+        missionMessage: '',
+        strikeReady: true,
+        tutorialSignals: {},
+        targetState: 'search',
+        targetHint: 'Scan ahead for prey'
+      });
+      var simUI = simUIState[0];
+      var setSimUI = simUIState[1];
       var rh = (toolData && toolData.raptorHunt) || {};
+      var tutorialStepState = React.useState(rh.huntTutorialDismissed ? -1 : 0);
+      var tutorialStep = tutorialStepState[0];
+      var setTutorialStep = tutorialStepState[1];
+      var flightSession = rh.flightSession || null;
       function setRH(patch) {
         ctx.setToolData(function(prev) {
           var cur = (prev && prev.raptorHunt) || {};
@@ -6814,7 +6910,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       }
       var activeSection = rh.activeSection || 'hub';
       var selectedSpecies = rh.selectedSpecies || 'peregrine';
-      var huntSimRunning = !!rh.huntSimRunning;
+      var activeMissionId = rh.activeMission || 'open';
+      var graphicsQuality = /^(low|balanced|high)$/.test(rh.graphicsQuality || '') ? rh.graphicsQuality : 'balanced';
       var huntStats = rh.huntStats || {};
       var visionView = rh.visionView || 'overview';
       var stoopSimVars = rh.stoopSimVars || { mass: 0.95, cd: 0.18, area: 0.018, altitudeM: 600 };
@@ -6825,6 +6922,137 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         return SPECIES[0];
       }
       var sp = findSpecies(selectedSpecies);
+      function patchSimUI(patch) {
+        setSimUI(function(prev) { return Object.assign({}, prev, patch || {}); });
+      }
+      var HUNT_TUTORIAL = [
+        { signal: 'steer', title: 'Steer the bird', copy: 'Drag across the sky, or use A and D, to turn toward open terrain.' },
+        { signal: 'altitude', title: 'Manage altitude', copy: 'Use Dive or Pull up. Q and E provide precise altitude trim.' },
+        { signal: 'target', title: 'Acquire prey', copy: 'Turn until the target assist brackets prey. Follow the text cue above.' },
+        { signal: 'strike', title: 'Commit to the strike', copy: 'Close the distance and press Strike when the cue says Strike ready.' }
+      ];
+      function finishHuntTutorial(message) {
+        setTutorialStep(-1);
+        setRH({ huntTutorialDismissed: true });
+        rhAnnounce(message || 'Flight tutorial complete');
+      }
+      function replayHuntTutorial() {
+        setRH({ huntTutorialDismissed: false });
+        patchSimUI({ tutorialSignals: {} });
+        setTutorialStep(0);
+        sendHuntCommand('resetTutorial');
+        rhAnnounce('Flight tutorial restarted');
+      }
+      useEffect(function() {
+        if (!flightSession || tutorialStep < 0) return;
+        var current = HUNT_TUTORIAL[tutorialStep];
+        var signals = simUI.tutorialSignals || {};
+        if (!current || !signals[current.signal]) return;
+        if (tutorialStep >= HUNT_TUTORIAL.length - 1) finishHuntTutorial();
+        else {
+          setTutorialStep(tutorialStep + 1);
+          rhAnnounce('Tutorial step complete. ' + HUNT_TUTORIAL[tutorialStep + 1].title);
+        }
+      }, [flightSession && flightSession.speciesId, tutorialStep, simUI.tutorialSignals]);
+      function sendHuntCommand(action, value) {
+        var canvas = huntCanvasRef.current;
+        if (canvas && typeof canvas._rhCommand === 'function') {
+          canvas._rhCommand(action, value);
+        }
+      }
+      function startHuntFlight() {
+        var nextSession = { speciesId: selectedSpecies, missionId: activeMissionId };
+        setRH({ flightSession: nextSession });
+        patchSimUI({ ready: false, paused: false, missionState: 'active', missionMessage: '', strikeReady: true });
+        rhAnnounce(findSpecies(selectedSpecies).name + ' flight ready');
+      }
+      function editHuntFlight() {
+        setRH({ flightSession: null });
+        patchSimUI({ ready: false, paused: false, missionState: 'active', missionMessage: '', strikeReady: true });
+        rhAnnounce('Flight setup opened');
+      }
+      function restartHuntRun() {
+        if (!flightSession) return;
+        patchSimUI({ ready: false, paused: false, missionState: 'active', missionMessage: '', strikeReady: true });
+        setSimRevision(function(value) { return value + 1; });
+        rhAnnounce('Flight restarted');
+      }
+      function advanceHuntMission() {
+        if (!flightSession) return;
+        var index = MISSIONS.findIndex(function(item) { return item.id === flightSession.missionId; });
+        var nextMission = MISSIONS[(index + 1 + MISSIONS.length) % MISSIONS.length] || MISSIONS[0];
+        var nextSpeciesId = nextMission.recommendedSpecies || flightSession.speciesId;
+        setRH({
+          activeMission: nextMission.id,
+          selectedSpecies: nextSpeciesId,
+          flightSession: { speciesId: nextSpeciesId, missionId: nextMission.id }
+        });
+        patchSimUI({ ready: false, paused: false, missionState: 'active', missionMessage: '', strikeReady: true });
+        setSimRevision(function(value) { return value + 1; });
+        rhAnnounce(nextMission.name + ' started');
+      }
+      function requestHuntFullscreen() {
+        var canvas = huntCanvasRef.current;
+        var stage = canvas && canvas.closest
+          ? canvas.closest('[data-raptor-sim-shell="true"]')
+          : (canvas && canvas.parentElement);
+        if (!stage) return;
+        if (typeof window.__alloStemFS === 'function') {
+          window.__alloStemFS(stage);
+          return;
+        }
+        var active = document.fullscreenElement || document.webkitFullscreenElement;
+        if (active) {
+          var exit = document.exitFullscreen || document.webkitExitFullscreen;
+          if (exit) exit.call(document);
+        } else {
+          var enter = stage.requestFullscreen || stage.webkitRequestFullscreen;
+          if (enter) enter.call(stage);
+        }
+      }
+      var threeReady = threeLoadStatus === 'ready' && !!window.THREE;
+
+      // Load Three.js as soon as the Hunt section opens. Readiness is ephemeral:
+      // persisted tool data must never claim a missing global is ready.
+      useEffect(function() {
+        if (activeSection !== 'hunt') return;
+        if (window.THREE) {
+          setThreeLoadStatus('ready');
+          return;
+        }
+        var cancelled = false;
+        setThreeLoadStatus('loading');
+        ensureThreeJS(
+          function() {
+            if (!cancelled) setThreeLoadStatus(window.THREE ? 'ready' : 'error');
+          },
+          function() {
+            if (!cancelled) setThreeLoadStatus('error');
+          }
+        );
+        return function() { cancelled = true; };
+      }, [activeSection, threeRetryToken]);
+
+      // Own the simulator lifecycle in one effect so species/mission changes,
+      // explicit restarts, and unmounts all use the same teardown.
+      useEffect(function() {
+        if (activeSection !== 'hunt' || !flightSession || !threeReady || webglError) return;
+        var canvas = huntCanvasRef.current;
+        if (!canvas) return;
+        var missionList = Array.isArray(MISSIONS) ? MISSIONS : [];
+        var mission = missionList.filter(function(item) { return item.id === flightSession.missionId; })[0] || missionList[0];
+        if (canvas._rhCleanup) {
+          try { canvas._rhCleanup(); } catch (e) {}
+          canvas._rhCleanup = null;
+        }
+        initHuntSim(canvas, findSpecies(flightSession.speciesId), mission, patchSimUI, graphicsQuality);
+        return function() {
+          if (canvas._rhCleanup) {
+            try { canvas._rhCleanup(); } catch (e) {}
+            canvas._rhCleanup = null;
+          }
+        };
+      }, [activeSection, flightSession && flightSession.speciesId, flightSession && flightSession.missionId, threeReady, webglError, simRevision, graphicsQuality]);
 
       // ── Section nav config ──
       var SECTIONS = [
@@ -6949,6 +7177,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         { id: 'specialty', label: __alloT('stem.raptorhunt.specialty_reflection', 'Specialty & Reflection'), icon: '✨', desc: __alloT('stem.raptorhunt.pellets_feeders_meditations_finale', 'Pellets, feeders, meditations, finale'), color: 'rose',
           sections: ['meditations', 'farewell', 'finale', 'finale_master', 'twenty_k_finale', 'pellet', 'pelletkey', 'feeder', 'fieldnat'] }
       ];
+
+      // Literal utility classes keep every category theme in the generated CSS
+      // and pin AA-safe foregrounds. The enhancement pass had accidentally
+      // inserted transition-colors inside several dynamic class tokens.
+      var CATEGORY_NAV_CLASSES = {
+        amber: {
+          card: 'border-amber-400 hover:border-amber-300', title: 'text-amber-200', meta: 'text-amber-200',
+          active: 'bg-gradient-to-r from-amber-700 to-amber-800 text-white shadow',
+          inactive: 'bg-slate-800/80 text-amber-200 border border-slate-600 hover:bg-slate-700/80'
+        },
+        cyan: {
+          card: 'border-cyan-400 hover:border-cyan-300', title: 'text-cyan-200', meta: 'text-cyan-200',
+          active: 'bg-gradient-to-r from-cyan-700 to-cyan-800 text-white shadow',
+          inactive: 'bg-slate-800/80 text-cyan-200 border border-slate-600 hover:bg-slate-700/80'
+        },
+        emerald: {
+          card: 'border-emerald-400 hover:border-emerald-300', title: 'text-emerald-200', meta: 'text-emerald-200',
+          active: 'bg-gradient-to-r from-emerald-700 to-emerald-800 text-white shadow',
+          inactive: 'bg-slate-800/80 text-emerald-200 border border-slate-600 hover:bg-slate-700/80'
+        },
+        teal: {
+          card: 'border-teal-400 hover:border-teal-300', title: 'text-teal-200', meta: 'text-teal-200',
+          active: 'bg-gradient-to-r from-teal-700 to-teal-800 text-white shadow',
+          inactive: 'bg-slate-800/80 text-teal-200 border border-slate-600 hover:bg-slate-700/80'
+        },
+        lime: {
+          card: 'border-lime-400 hover:border-lime-300', title: 'text-lime-200', meta: 'text-lime-200',
+          active: 'bg-gradient-to-r from-lime-700 to-lime-800 text-white shadow',
+          inactive: 'bg-slate-800/80 text-lime-200 border border-slate-600 hover:bg-slate-700/80'
+        },
+        purple: {
+          card: 'border-purple-400 hover:border-purple-300', title: 'text-purple-200', meta: 'text-purple-200',
+          active: 'bg-gradient-to-r from-purple-700 to-purple-800 text-white shadow',
+          inactive: 'bg-slate-800/80 text-purple-200 border border-slate-600 hover:bg-slate-700/80'
+        },
+        indigo: {
+          card: 'border-indigo-400 hover:border-indigo-300', title: 'text-indigo-200', meta: 'text-indigo-200',
+          active: 'bg-gradient-to-r from-indigo-700 to-indigo-800 text-white shadow',
+          inactive: 'bg-slate-800/80 text-indigo-200 border border-slate-600 hover:bg-slate-700/80'
+        },
+        blue: {
+          card: 'border-blue-400 hover:border-blue-300', title: 'text-blue-200', meta: 'text-blue-200',
+          active: 'bg-gradient-to-r from-blue-700 to-blue-800 text-white shadow',
+          inactive: 'bg-slate-800/80 text-blue-200 border border-slate-600 hover:bg-slate-700/80'
+        },
+        rose: {
+          card: 'border-rose-400 hover:border-rose-300', title: 'text-rose-200', meta: 'text-rose-200',
+          active: 'bg-gradient-to-r from-rose-700 to-rose-800 text-white shadow',
+          inactive: 'bg-slate-800/80 text-rose-200 border border-slate-600 hover:bg-slate-700/80'
+        }
+      };
 
       // Map every section id → category id for back-navigation when entering directly
       var SECTION_TO_CATEGORY = (function() {
@@ -7811,6 +8090,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         },
         {
           id: 'crossDesert',
+          recommendedSpecies: 'redTail',
           name: __alloT('stem.raptorhunt.cross_the_desert', 'Cross the Desert'),
           icon: '🏜',
           difficulty: 'Medium',
@@ -7825,6 +8105,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         },
         {
           id: 'silentStrike',
+          recommendedSpecies: 'greatHorned',
           name: __alloT('stem.raptorhunt.silent_strike_owl_mission', 'Silent Strike (owl mission)'),
           icon: '🌙',
           difficulty: 'Medium',
@@ -7839,6 +8120,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         },
         {
           id: 'thermalKettle',
+          recommendedSpecies: 'redTail',
           name: __alloT('stem.raptorhunt.ride_the_thermal', 'Ride the Thermal'),
           icon: '🌀',
           difficulty: 'Medium',
@@ -7854,6 +8136,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         },
         {
           id: 'avoidPredator',
+          recommendedSpecies: 'kestrel',
           name: __alloT('stem.raptorhunt.evade_the_goshawk', 'Evade the Goshawk'),
           icon: '👁',
           difficulty: 'Hard',
@@ -7868,11 +8151,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         },
         {
           id: 'highStoop',
+          recommendedSpecies: 'peregrine',
           name: __alloT('stem.raptorhunt.high_stoop', 'High Stoop'),
           icon: '🚀',
           difficulty: 'Hard',
           intro: __alloT('stem.raptorhunt.drop_from_1000m_altitude_hit_a_moving_', 'Drop from 1000m altitude. Hit a moving pigeon at terminal velocity. One strike to win.'),
-          objective: 'Climb to 1000m, then stoop. Strike must happen during dive at speed >180 mph. 3-minute time limit.',
+          objective: 'Begin at 1000m, then commit to a stoop. Strike during the dive above 180 mph within 3 minutes.',
           timeLimit: 180,
           calorieGoal: 0,
           forbidden: [],
@@ -7882,178 +8166,321 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         }
       ];
       function renderHunt() {
-        var threeLoaded = !!window.THREE || (rh._threeLoaded === true);
-        // Stats
         var allStats = huntStats[selectedSpecies] || { catches: 0, attempts: 0, bestRun: 0 };
-        var tutorialDismissed = !!rh.huntTutorialDismissed;
-        var activeMission = rh.activeMission || 'open';
+        var activeMission = activeMissionId;
         var mission = MISSIONS.filter(function(m) { return m.id === activeMission; })[0] || MISSIONS[0];
+        var flightSpecies = flightSession ? findSpecies(flightSession.speciesId) : null;
+        var flightMission = flightSession
+          ? (MISSIONS.filter(function(item) { return item.id === flightSession.missionId; })[0] || MISSIONS[0])
+          : null;
+        function holdFlightButton(label, keyName, extraClass, ariaLabel) {
+          function setHeld(pressed) {
+            sendHuntCommand('hold', { key: keyName, pressed: pressed });
+          }
+          function releasePointer(event) {
+            if (event && event.currentTarget && event.pointerId !== undefined && event.currentTarget.hasPointerCapture && event.currentTarget.hasPointerCapture(event.pointerId)) {
+              event.currentTarget.releasePointerCapture(event.pointerId);
+            }
+            setHeld(false);
+          }
+          return h('button', {
+            type: 'button',
+            className: 'rh-flight-btn ' + (extraClass || ''),
+            'aria-label': ariaLabel || label,
+            onPointerDown: function(event) {
+              event.preventDefault();
+              if (event.currentTarget.setPointerCapture) event.currentTarget.setPointerCapture(event.pointerId);
+              setHeld(true);
+            },
+            onPointerUp: releasePointer,
+            onPointerCancel: releasePointer,
+            onLostPointerCapture: function() { setHeld(false); },
+            onKeyDown: function(event) {
+              if ((event.key === ' ' || event.key === 'Enter') && !event.repeat) {
+                event.preventDefault();
+                setHeld(true);
+              }
+            },
+            onKeyUp: function(event) {
+              if (event.key === ' ' || event.key === 'Enter') {
+                event.preventDefault();
+                setHeld(false);
+              }
+            },
+            onBlur: function() { setHeld(false); }
+          }, label);
+        }
+        function simToggleButton(label, action, pressed, ariaLabel) {
+          return h('button', {
+            type: 'button',
+            className: 'rh-flight-btn',
+            onClick: function() { sendHuntCommand(action); },
+            'aria-pressed': !!pressed,
+            'aria-label': ariaLabel || label
+          }, label);
+        }
         return h('div', { className: 'space-y-3' },
           // ── NEW v0.29: Mission Selector ──
-          h('div', { className: 'bg-gradient-to-br from-amber-900/40 to-orange-900/40 border-2 border-amber-600 rounded-xl p-4' },
-            h('div', { className: 'flex items-center justify-between gap-3 mb-3 flex-wrap' },
+          !flightSession ? h('section', {
+            className: 'bg-gradient-to-br from-amber-950/55 via-slate-900/70 to-cyan-950/45 border border-amber-600/70 rounded-xl p-4',
+            'data-raptor-flight-setup': 'true',
+            'aria-labelledby': 'rh-flight-setup-title'
+          },
+            h('div', { className: 'flex items-start justify-between gap-3 flex-wrap mb-3' },
               h('div', null,
-                h('div', { className: 'text-sm font-bold text-amber-200' }, __alloT('stem.raptorhunt.mission_select', '🎯 Mission Select')),
-                h('div', { className: 'text-xs text-amber-100/80 mt-1' }, __alloT('stem.raptorhunt.choose_a_scenario_open_mode_no_constra', 'Choose a scenario. Open mode = no constraints. Missions teach specific concepts via gameplay.'))
+                h('h3', { id: 'rh-flight-setup-title', className: 'text-base font-bold text-amber-200' }, 'Flight setup'),
+                h('div', { className: 'text-xs text-slate-300 mt-1' }, 'Choose a raptor and mission, review the objective, then start when you are ready.')
+              ),
+              h('div', { className: 'flex gap-2 text-xs flex-wrap' },
+                h('span', { className: 'px-2 py-1 rounded bg-emerald-950/70 border border-emerald-500/60 text-emerald-100' }, 'Catches ' + allStats.catches),
+                h('span', { className: 'px-2 py-1 rounded bg-blue-950/70 border border-blue-400/60 text-blue-100' }, 'Attempts ' + allStats.attempts),
+                h('span', { className: 'px-2 py-1 rounded bg-amber-950/70 border border-amber-400/60 text-amber-100' }, 'Best ' + allStats.bestRun)
               )
             ),
-            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2' },
-              MISSIONS.map(function(m) {
-                var isActive = activeMission === m.id;
-                var diffColor = m.difficulty === 'Easy' ? 'emerald' : m.difficulty === 'Medium' ? 'amber' : m.difficulty === 'Hard' ? 'red' : 'slate';
-                return h('button', {
-                  key: m.id,
-                  onClick: function() { setRH({ activeMission: m.id }); rhAnnounce(m.name + ' selected'); },
-                  className: 'text-left p-3 rounded-lg border-2 transition-all ' + (isActive
-                    ? 'bg-amber-700/40 border-amber-400 ring-2 ring-amber-300/40'
-                    : 'transition-colors bg-slate-800/50 border-slate-700 hover:border-amber-600/60 hover:bg-slate-700/50 active:scale-[0.97]'),
-                  'aria-label': 'Select mission: ' + m.name + ' — ' + m.difficulty,
-                  'aria-pressed': isActive
+            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
+              h('label', { className: 'block text-xs font-bold text-amber-100' },
+                h('span', { className: 'block mb-1' }, 'Raptor'),
+                h('select', {
+                  value: selectedSpecies,
+                  onChange: function(event) {
+                    setRH({ selectedSpecies: event.target.value });
+                    rhAnnounce(findSpecies(event.target.value).name + ' selected');
+                  },
+                  className: 'w-full px-3 py-2 rounded-lg bg-slate-950 text-slate-50 border border-slate-500 text-sm',
+                  'data-raptor-species-select': 'true',
+                  'aria-label': 'Raptor flight species'
                 },
-                  h('div', { className: 'flex items-baseline justify-between gap-2 mb-1' },
-                    h('div', { className: 'text-sm font-bold text-amber-200' }, m.icon + ' ' + m.name),
-                    h('div', { className: 'text-[10px] px-2 py-0.5 rounded font-mono bg-' + diffColor + '-900/40 text-' + diffColor + '-300 border border-' + diffColor + '-700/40' }, m.difficulty)
-                  ),
-                  h('div', { className: 'text-[10px] text-slate-300 leading-relaxed' }, m.intro)
-                );
-              })
-            ),
-            // Active mission detail
-            h('div', { className: 'mt-3 bg-slate-900/50 border border-amber-700/30 rounded-lg p-3' },
-              h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.objective', '📋 OBJECTIVE')),
-              h('div', { className: 'text-xs text-slate-200 leading-relaxed mb-2' }, mission.objective),
-              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.pedagogy', '🧠 PEDAGOGY')),
-              h('div', { className: 'text-xs text-slate-200 leading-relaxed italic' }, mission.pedagogy)
-            )
-          ),
-          // ── NEW v0.16: Tutorial overlay (dismissible) ──
-          !tutorialDismissed && h('div', { className: 'bg-gradient-to-br from-cyan-900/40 to-indigo-900/40 border-2 border-cyan-500 rounded-xl p-4' },
-            h('div', { className: 'flex items-start justify-between gap-3' },
-              h('div', { className: 'flex-1' },
-                h('div', { className: 'flex items-center gap-2 mb-2' },
-                  h('div', { className: 'text-2xl' }, '🎓'),
-                  h('div', { className: 'text-base font-bold text-cyan-300' }, __alloT('stem.raptorhunt.first_time_quick_tutorial', 'First time? Quick tutorial'))
-                ),
-                h('div', { className: 'text-xs text-cyan-100/90 leading-relaxed mb-3' },
-                  __alloT('stem.raptorhunt.you_play_a', 'You play a '), h('span', { className: 'font-bold text-amber-300' }, sp.emoji + ' ' + sp.name), __alloT('stem.raptorhunt.in_third_person_view_goal_dive_on_prey', ' in third-person view. Goal: dive on prey + strike. Each species has different physics — peregrines stoop at terminal velocity, owls glide silently with smaller detection radius.')
-                ),
-                h('div', { className: 'grid grid-cols-1 md:grid-cols-5 gap-2' },
-                  [
-                    { keys: 'W A S D', desc: __alloT('stem.raptorhunt.steer_yaw_pitch', 'Steer (yaw + pitch)') },
-                    { keys: 'Q / E', desc: __alloT('stem.raptorhunt.altitude_down_up', 'Altitude down/up') },
-                    { keys: 'Shift', desc: __alloT('stem.raptorhunt.dive_accelerate', 'DIVE (accelerate)') },
-                    { keys: 'Space', desc: __alloT('stem.raptorhunt.pull_up_climb', 'PULL UP (climb)') },
-                    { keys: 'F', desc: __alloT('stem.raptorhunt.strike_prey_in_front', 'STRIKE prey in front') }
-                  ].map(function(ctrl, i) {
-                    return h('div', { key: i, className: 'bg-slate-900/60 rounded p-2 text-center' },
-                      h('div', { className: 'font-mono text-amber-300 font-bold text-xs' }, ctrl.keys),
-                      h('div', { className: 'text-[10px] text-slate-300 mt-1' }, ctrl.desc)
-                    );
+                  SPECIES.map(function(item) {
+                    return h('option', { key: item.id, value: item.id }, item.name + ' - ' + item.stoopMph + ' mph stoop');
                   })
-                ),
-                h('div', { className: 'text-[10px] text-cyan-200/70 italic mt-2' },
-                  __alloT('stem.raptorhunt.tip_click_the_canvas_first_to_give_it_', '🦅 Tip: Click the canvas first to give it keyboard focus. Then start with a slow level glide before trying to dive. Prey flees on sight — sneak up from behind or above.')
                 )
               ),
-              h('button', {
-                onClick: function() { setRH({ huntTutorialDismissed: true }); rhAnnounce('Tutorial dismissed'); },
-                className: 'transition-colors flex-shrink-0 text-cyan-300 hover:text-cyan-100 text-xs',
-                'aria-label': __alloT('stem.raptorhunt.dismiss_tutorial', 'Dismiss tutorial')
-              }, __alloT('stem.raptorhunt.got_it', '✕ Got it'))
-            )
-          ),
-          h('div', { className: 'bg-slate-900/50 border border-slate-700/50 rounded-xl p-4' },
-            h('div', { className: 'flex items-center justify-between gap-3 flex-wrap' },
-              h('div', null,
-                h('div', { className: 'text-sm font-bold text-amber-200' }, 'Hunt Sim · ' + sp.emoji + ' ' + sp.name),
-                h('div', { className: 'text-xs text-slate-400' }, __alloT('stem.raptorhunt.wasd_to_fly_q_e_for_altitude_shift_to_', 'WASD to fly · Q/E for altitude · Shift to DIVE · Space to PULL UP · F to STRIKE'))
-              ),
-              h('div', { className: 'flex items-center gap-2 text-xs' },
-                h('div', { className: 'px-2 py-1 rounded bg-emerald-900/30 border border-emerald-700/40' },
-                  h('span', { className: 'text-slate-400' }, 'Catches: '), h('span', { className: 'font-bold text-emerald-300' }, allStats.catches)
-                ),
-                h('div', { className: 'px-2 py-1 rounded bg-blue-900/30 border border-blue-700/40' },
-                  h('span', { className: 'text-slate-400' }, 'Attempts: '), h('span', { className: 'font-bold text-blue-300' }, allStats.attempts)
-                ),
-                h('div', { className: 'px-2 py-1 rounded bg-amber-900/30 border border-amber-700/40' },
-                  h('span', { className: 'text-slate-400' }, __alloT('stem.raptorhunt.best_run', 'Best run: ')), h('span', { className: 'font-bold text-amber-300' }, allStats.bestRun + ' caught')
+              h('label', { className: 'block text-xs font-bold text-cyan-100' },
+                h('span', { className: 'block mb-1' }, 'Mission'),
+                h('select', {
+                  value: activeMission,
+                  onChange: function(event) {
+                    var nextMission = MISSIONS.filter(function(item) { return item.id === event.target.value; })[0] || MISSIONS[0];
+                    var nextPatch = { activeMission: nextMission.id };
+                    if (nextMission.recommendedSpecies) nextPatch.selectedSpecies = nextMission.recommendedSpecies;
+                    setRH(nextPatch);
+                    rhAnnounce(nextMission.name + ' selected. Start when ready.');
+                  },
+                  className: 'w-full px-3 py-2 rounded-lg bg-slate-950 text-slate-50 border border-slate-500 text-sm',
+                  'data-raptor-mission-select': 'true',
+                  'aria-label': 'Raptor flight mission'
+                },
+                  MISSIONS.map(function(item) {
+                    return h('option', { key: item.id, value: item.id }, item.name + ' - ' + item.difficulty);
+                  })
                 )
               )
-            )
-          ),
-          !threeLoaded && h('div', { className: 'bg-blue-900/30 border border-blue-700/40 rounded-xl p-6 text-center' },
-            h('div', { className: 'text-3xl mb-2' }, '⏳'),
-            h('div', { className: 'text-sm text-blue-200 mb-3' }, __alloT('stem.raptorhunt.loading_3d_engine_three_js_r128', 'Loading 3D engine (Three.js r128)...')),
-            h('button', {
-              onClick: function() {
-                ensureThreeJS(
-                  function() { setRH({ _threeLoaded: true }); rhAnnounce('3D engine loaded'); },
-                  function() { setRH({ _threeLoadError: true }); rhAnnounce('3D engine failed to load'); }
-                );
-              },
-              className: 'px-4 py-2 rounded-lg text-sm font-bold bg-gradient-to-r from-blue-600 to-cyan-700 text-white hover:from-blue-700 hover:to-cyan-700',
-              'aria-label': __alloT('stem.raptorhunt.load_three_js_engine', 'Load Three.js engine')
-            }, __alloT('stem.raptorhunt.load_3d_engine', '🚀 Load 3D Engine')),
-            rh._threeLoadError && h('div', { className: 'text-xs text-red-300 mt-2' }, __alloT('stem.raptorhunt.failed_to_load_three_js_from_cdn_check', '⚠ Failed to load Three.js from CDN. Check your internet connection or try again.'))
-          ),
-          threeLoaded && (
-            webglError
-              ? h('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, var(--allo-stem-panel, #1e293b), var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '32px', height: '60vh', minHeight: '420px' } },
-                  h('div', { style: { textAlign: 'center', maxWidth: '400px' } },
-                    h('div', { style: { fontSize: '48px', marginBottom: '12px' } }, '🦅'),
-                    h('div', { style: { color: 'var(--allo-stem-text, #f1f5f9)', fontSize: '16px', fontWeight: 700, marginBottom: '8px' } }, __alloT('stem.raptorhunt.webgl_not_available', 'WebGL Not Available')),
-                    h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '12px', lineHeight: '1.6', marginBottom: '16px' } },
-                      __alloT('stem.raptorhunt.raptor_hunt_requires_webgl_for_3d_rend', 'Raptor Hunt requires WebGL for 3D rendering. This environment may not support it. Try opening AlloFlow directly in Chrome, Firefox, or Edge instead of within an embedded frame.')
-                    ),
-                    h('button', {
-                      onClick: function() {
-                        setWebglError(false);
-                      },
-                      style: {
-                        padding: '8px 16px',
-                        background: '#7c3aed',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '6px',
-                        cursor: 'pointer',
-                        fontWeight: 600
-                      }
-                    }, __alloT('stem.raptorhunt.retry_3d_mode', 'Retry 3D Mode'))
-                  )
+            ),
+            h('div', { className: 'mt-3 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto] gap-3 items-start' },
+              h('div', { className: 'bg-slate-950/65 border border-amber-500/50 rounded-lg p-3' },
+                h('div', { className: 'text-[11px] uppercase tracking-wider font-bold text-amber-300 mb-1' }, 'Objective'),
+                h('div', { className: 'text-sm text-slate-100 leading-relaxed' }, mission.objective)
+              ),
+              h('details', { className: 'bg-slate-950/65 border border-cyan-500/50 rounded-lg p-3 text-xs text-slate-200 lg:max-w-sm' },
+                h('summary', { className: 'font-bold text-cyan-200 cursor-pointer' }, 'Controls and science'),
+                h('div', { id: 'rh-flight-instructions', className: 'mt-2 leading-relaxed' },
+                  h('div', { className: 'font-mono text-amber-200 mb-1' }, 'W/S pitch - A/D turn - Q/E altitude trim'),
+                  h('div', { className: 'font-mono text-amber-200 mb-2' }, 'Shift dive - Space pull up - F strike - P pause'),
+                  h('div', { className: 'text-slate-300' }, mission.pedagogy)
                 )
-              : h('div', { className: 'bg-gradient-to-b from-sky-900/40 to-slate-900/40 border border-amber-700/40 rounded-xl overflow-hidden' },
-                  h('div', { className: 'relative', style: { height: '60vh', minHeight: '420px', maxHeight: '720px' } },
+              )
+            ),
+            h('div', { className: 'mt-4 flex items-center justify-between gap-3 flex-wrap' },
+              h('div', { className: 'text-xs text-slate-300' }, 'The flight will not begin until you choose Start Flight.'),
+              h('button', {
+                type: 'button',
+                onClick: startHuntFlight,
+                className: 'px-5 py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-slate-950 border border-amber-200 font-black shadow-lg',
+                'data-raptor-start-flight': 'true'
+              }, 'Start Flight')
+            )
+          ) : h('div', { className: 'rh-active-flight-bar', 'data-raptor-active-flight': 'true' },
+            h('div', { className: 'text-3xl', 'aria-hidden': 'true' }, flightSpecies.emoji),
+            h('div', { className: 'min-w-0 flex-1' },
+              h('div', { className: 'text-sm font-bold text-white' }, flightSpecies.name + ' · ' + flightMission.name),
+              h('div', { className: 'text-xs text-cyan-100 mt-0.5 truncate' }, flightMission.objective)
+            ),
+            h('span', { className: 'px-2 py-1 rounded-lg border border-amber-400/70 bg-amber-950/70 text-xs font-bold text-amber-100' }, flightMission.difficulty),
+            h('button', {
+              type: 'button',
+              onClick: editHuntFlight,
+              className: 'px-3 py-2 rounded-lg border border-slate-400 bg-slate-800 text-xs font-bold text-white hover:bg-slate-700',
+              'data-raptor-edit-flight': 'true'
+            }, 'Edit setup')
+          ),
+          flightSession && threeLoadStatus !== 'ready' && h('div', {
+            className: 'bg-blue-950/55 border border-blue-400/60 rounded-xl p-6 text-center',
+            role: threeLoadStatus === 'error' ? 'alert' : 'status',
+            'data-raptor-engine-state': threeLoadStatus
+          },
+            h('div', { className: 'text-sm font-bold text-blue-100' },
+              threeLoadStatus === 'error' ? 'The 3D engine could not start.' : 'Preparing the 3D flight engine...'
+            ),
+            h('div', { className: 'text-xs text-blue-100/80 mt-2' },
+              threeLoadStatus === 'error'
+                ? 'Check the connection, then retry. The rest of Raptor Lab remains available.'
+                : 'Loading terrain, flight physics, and accessible controls.'
+            ),
+            threeLoadStatus === 'error' && h('button', {
+              type: 'button',
+              onClick: function() {
+                setThreeLoadStatus('idle');
+                setThreeRetryToken(function(value) { return value + 1; });
+                rhAnnounce('Retrying the 3D engine');
+              },
+              className: 'mt-4 px-4 py-2 rounded-lg text-sm font-bold bg-blue-700 text-white border border-blue-300 hover:bg-blue-600'
+            }, 'Retry 3D engine')
+          ),
+          flightSession && threeReady && (
+            webglError
+              ? h('div', { className: 'bg-slate-950 border border-red-400 rounded-xl p-8 text-center', role: 'alert' },
+                  h('div', { className: 'text-base font-bold text-red-100' }, 'WebGL is not available'),
+                  h('div', { className: 'text-xs text-slate-200 mt-2' }, 'Try a current Chrome, Firefox, or Edge window with hardware acceleration enabled.'),
+                  h('button', {
+                    type: 'button',
+                    onClick: function() {
+                      setWebglError(false);
+                      setSimRevision(function(value) { return value + 1; });
+                    },
+                    className: 'mt-4 px-4 py-2 rounded-lg bg-red-800 text-white border border-red-300 font-bold'
+                  }, 'Retry 3D mode')
+                )
+              : h('div', {
+                  className: 'bg-slate-950 border border-amber-500/70 rounded-xl',
+                  'data-raptor-sim-shell': 'true'
+                },
+                  h('div', {
+                    'data-raptor-flight-stage': 'true',
+                    id: 'raptor-flight-stage'
+                  },
                     h('canvas', {
+                      ref: huntCanvasRef,
                       'data-raptor-canvas': 'true',
                       role: 'application',
-                      'aria-label': __alloT('stem.raptorhunt.3d_raptor_hunt_simulator_press_wasd_to', '3D raptor hunt simulator. Press WASD to steer, Q E to change altitude, Shift to dive, Space to pull up, F to strike.'),
+                      'aria-label': '3D raptor flight. W and S pitch, A and D turn, Q and E trim altitude, Shift dives, Space pulls up, F strikes, P pauses, V changes camera, Z zooms, and T toggles target assist.',
+                      'aria-describedby': 'rh-flight-instructions',
                       tabIndex: 0,
-                      style: { width: '100%', height: '100%', display: 'block', cursor: 'crosshair', outline: 'none' },
-                      ref: function(canvasEl) {
-                        if (!canvasEl) return;
-                        // If species changed, reinit
-                        if (canvasEl._rhInit && canvasEl._rhSpecies === selectedSpecies) return;
-                        // Cleanup previous run
-                        if (canvasEl._rhCleanup) { try { canvasEl._rhCleanup(); } catch(e) {} canvasEl._rhCleanup = null; }
-                        canvasEl._rhInit = true;
-                        canvasEl._rhSpecies = selectedSpecies;
-                        initHuntSim(canvasEl, sp);
-                      }
-                    })
+                      style: { width: '100%', height: '100%', display: 'block', cursor: 'crosshair' }
+                    }),
+                    simUI.targetHint && h('div', {
+                      className: 'rh-flight-target-cue',
+                      'data-target-state': simUI.targetState,
+                      'data-raptor-target-guidance': 'true',
+                      'aria-label': 'Target guidance: ' + simUI.targetHint
+                    }, simUI.targetHint),
+                    tutorialStep >= 0 && HUNT_TUTORIAL[tutorialStep] && h('aside', {
+                      className: 'rh-flight-coach',
+                      'data-raptor-flight-tutorial': HUNT_TUTORIAL[tutorialStep].signal,
+                      'aria-labelledby': 'rh-flight-coach-title'
+                    },
+                      h('div', { className: 'rh-flight-coach-head' },
+                        h('span', null, 'Flight school ' + (tutorialStep + 1) + ' of ' + HUNT_TUTORIAL.length),
+                        h('span', null, 'Try it now')
+                      ),
+                      h('div', { id: 'rh-flight-coach-title', className: 'rh-flight-coach-title' }, HUNT_TUTORIAL[tutorialStep].title),
+                      h('div', { className: 'rh-flight-coach-copy' }, HUNT_TUTORIAL[tutorialStep].copy),
+                      h('div', { className: 'rh-flight-coach-actions' },
+                        tutorialStep > 0 && h('button', { type: 'button', className: 'rh-flight-btn', onClick: function() { setTutorialStep(tutorialStep - 1); } }, 'Back'),
+                        h('button', { type: 'button', className: 'rh-flight-btn', onClick: function() { finishHuntTutorial('Flight tutorial skipped'); } }, 'Skip')
+                      )
+                    ),
+                    simUI.missionState !== 'active' && h('div', {
+                      className: 'rh-flight-result',
+                      role: 'dialog',
+                      'aria-modal': 'true',
+                      'aria-labelledby': 'rh-flight-result-title',
+                      'data-raptor-flight-result': simUI.missionState
+                    },
+                      h('div', { className: 'rh-flight-result-card' },
+                        h('div', { className: 'text-4xl mb-2', 'aria-hidden': 'true' }, simUI.missionState === 'success' ? '🏆' : '🪶'),
+                        h('h3', { id: 'rh-flight-result-title', className: 'text-xl font-black text-amber-200' }, simUI.missionState === 'success' ? 'Mission complete' : 'Mission ended'),
+                        h('p', { className: 'text-sm text-slate-200 mt-2 mb-5' }, simUI.missionMessage || 'Review the objective and try another flight.'),
+                        h('div', { className: 'flex justify-center gap-2 flex-wrap' },
+                          h('button', { type: 'button', onClick: restartHuntRun, className: 'rh-flight-btn rh-flight-btn-primary' }, 'Fly again'),
+                          h('button', { type: 'button', onClick: advanceHuntMission, className: 'rh-flight-btn' }, 'Next mission'),
+                          h('button', { type: 'button', onClick: editHuntFlight, className: 'rh-flight-btn' }, 'Change setup')
+                        )
+                      )
+                    )
                   ),
-                  h('div', { className: 'bg-slate-900/60 border-t border-slate-700/50 p-3 text-xs text-slate-300' },
-                    h('div', { className: 'flex gap-4 flex-wrap' },
-                      h('div', null, '⬆⬇⬅➡: ', h('span', { className: 'text-amber-300' }, 'WASD')),
-                      h('div', null, 'Altitude: ', h('span', { className: 'text-amber-300' }, __alloT('stem.raptorhunt.q_down_e_up', 'Q (down) / E (up)'))),
-                      h('div', null, 'Dive: ', h('span', { className: 'text-amber-300' }, __alloT('stem.raptorhunt.shift', 'Shift'))),
-                      h('div', null, __alloT('stem.raptorhunt.pull_up', 'Pull up: '), h('span', { className: 'text-amber-300' }, __alloT('stem.raptorhunt.space', 'Space'))),
-                      h('div', null, 'Strike: ', h('span', { className: 'text-amber-300' }, 'F'))
+                  h('div', {
+                    className: 'rh-flight-controls',
+                    'data-raptor-controls': 'true',
+                    role: 'group',
+                    'aria-label': 'Raptor flight controls'
+                  },
+                    h('div', { className: 'rh-flight-controls-group rh-flight-controls-run' },
+                      h('span', { className: 'rh-flight-control-label' }, 'Run'),
+                      h('button', {
+                        type: 'button',
+                        className: 'rh-flight-btn rh-flight-btn-primary',
+                        onClick: function() { sendHuntCommand('pause'); },
+                        'aria-pressed': !!simUI.paused,
+                        'aria-label': simUI.paused ? 'Resume flight' : 'Pause flight'
+                      }, simUI.paused ? 'Resume' : 'Pause'),
+                      h('button', {
+                        type: 'button',
+                        className: 'rh-flight-btn rh-flight-btn-danger',
+                        onClick: restartHuntRun,
+                        'aria-label': 'Restart this flight'
+                      }, 'Restart'),
+                      h('button', {
+                        type: 'button',
+                        className: 'rh-flight-btn',
+                        onClick: requestHuntFullscreen,
+                        'aria-label': 'Toggle fullscreen flight view'
+                      }, 'Fullscreen')
+                    ),
+                    h('details', { className: 'rh-flight-settings', 'data-raptor-flight-settings': 'true' },
+                      h('summary', { className: 'rh-flight-btn', 'aria-label': 'Open flight view and sound settings' }, 'Settings'),
+                      h('div', { className: 'rh-flight-settings-panel', role: 'group', 'aria-label': 'Flight view and sound settings' },
+                        simToggleButton(simUI.camera === 'fp' ? 'First person' : 'Chase view', 'view', simUI.camera === 'fp', 'Toggle chase and first-person camera'),
+                        simToggleButton('Zoom', 'zoom', simUI.zoom, 'Toggle raptor acuity zoom'),
+                        simToggleButton('Target assist', 'assist', simUI.assist, 'Toggle target assist'),
+                        simToggleButton(simUI.sound ? 'Sound on' : 'Sound off', 'sound', simUI.sound, 'Toggle flight sound'),
+                        h('button', { type: 'button', className: 'rh-flight-btn', onClick: replayHuntTutorial }, 'Replay tutorial'),
+                        h('label', { className: 'rh-flight-quality' },
+                          h('span', null, 'Graphics quality'),
+                          h('select', {
+                            value: graphicsQuality,
+                            'data-raptor-graphics-quality': 'true',
+                            'aria-label': 'Graphics quality',
+                            onChange: function(event) {
+                              var nextQuality = event.target.value;
+                              setRH({ graphicsQuality: nextQuality });
+                              rhAnnounce('Graphics quality set to ' + nextQuality);
+                            }
+                          },
+                            h('option', { value: 'low' }, 'Low'),
+                            h('option', { value: 'balanced' }, 'Balanced'),
+                            h('option', { value: 'high' }, 'High')
+                          )
+                        )
+                      )
+                    ),
+                    h('div', { className: 'rh-flight-controls-group rh-flight-controls-flight' },
+                      h('span', { className: 'rh-flight-control-label' }, 'Flight'),
+                      holdFlightButton('\u2193 Alt', 'q', '', 'Hold to descend'),
+                      holdFlightButton('\u2191 Alt', 'e', '', 'Hold to climb'),
+                      holdFlightButton('Dive', 'shift', 'rh-flight-btn-primary', 'Hold to dive and accelerate'),
+                      holdFlightButton('Pull up', ' ', '', 'Hold to pull up'),
+                      h('button', {
+                        type: 'button',
+                        className: 'rh-flight-btn rh-flight-btn-strike',
+                        onClick: function() { sendHuntCommand('strike'); },
+                        disabled: simUI.strikeReady === false,
+                        'aria-label': simUI.strikeReady === false ? 'Strike recovering' : 'Strike target'
+                      }, simUI.strikeReady === false ? 'Recovering' : 'Strike')
                     )
                   )
                 )
           ),
 
-          // ── NEW v0.14: Achievement Panel ──
           (function() {
             // Aggregate stats across all species
             var allCatches = 0, allAttempts = 0, bestRunAllSpecies = 0;
@@ -8083,8 +8510,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               { id: 'allSpecies', icon: '🏆', label: __alloT('stem.raptorhunt.master_of_all', 'Master of All'), desc: __alloT('stem.raptorhunt.catch_with_all_8_species', 'Catch with all 8 species'), cond: speciesHunted >= 8 }
             ];
             var earnedCount = achievements.filter(function(a) { return a.cond; }).length;
-            return h('div', { className: 'bg-slate-900/40 border border-amber-700/40 rounded-xl p-4' },
-              h('div', { className: 'flex items-center justify-between gap-2 mb-3' },
+            return h('details', {
+              className: 'bg-slate-900/40 border border-amber-700/40 rounded-xl p-4',
+              'data-raptor-achievements': 'collapsed'
+            },
+              h('summary', { className: 'flex items-center justify-between gap-2 mb-3 cursor-pointer list-none' },
                 h('div', { className: 'text-sm font-bold text-amber-300' }, __alloT('stem.raptorhunt.achievements', '🏅 Achievements')),
                 h('div', { className: 'text-xs font-mono text-amber-300' }, earnedCount + ' / ' + achievements.length + ' earned')
               ),
@@ -8123,7 +8553,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     key: a.id,
                     className: 'flex items-start gap-2 p-2 rounded ' + (a.cond
                       ? 'bg-amber-900/30 border border-amber-700/50'
-                      : 'bg-slate-800/30 border border-slate-700/40 opacity-40'),
+                      : 'bg-slate-800/45 border border-slate-600/70'),
                     'aria-label': a.label + (a.cond ? ' (earned)' : ' (locked)')
                   },
                     h('div', { className: 'text-2xl flex-shrink-0' }, a.cond ? a.icon : '🔒'),
@@ -8158,9 +8588,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // ────────────────────────────────────────────────────────
       // THREE.JS HUNT SIM — terrain + prey + raptor + physics
       // ────────────────────────────────────────────────────────
-      function initHuntSim(canvasEl, species) {
+      function initHuntSim(canvasEl, species, missionConfig, onUIState, qualitySetting) {
         var THREE = window.THREE;
-        if (!THREE) return;
+        if (!THREE) {
+          setThreeLoadStatus('error');
+          return;
+        }
+        var mission = missionConfig || MISSIONS[0];
+        var notifyUI = typeof onUIState === 'function' ? onUIState : function() {};
+        var disposed = false;
+        var graphicsQuality = /^(low|balanced|high)$/.test(qualitySetting || '') ? qualitySetting : 'balanced';
+        var qualityProfile = {
+          low: { pixelRatio: 1, bloom: false, particles: 0.35, clouds: 0.5, stars: 0.35, waterSegments: 32 },
+          balanced: { pixelRatio: 1.5, bloom: true, particles: 0.7, clouds: 0.75, stars: 0.65, waterSegments: 48 },
+          high: { pixelRatio: 2, bloom: true, particles: 1, clouds: 1, stars: 1, waterSegments: 64 }
+        }[graphicsQuality];
+        function dampingAlpha(response, deltaSeconds) {
+          return 1 - Math.exp(-response * Math.max(0, deltaSeconds));
+        }
         var W = canvasEl.clientWidth || 800;
         var H = canvasEl.clientHeight || 500;
 
@@ -8174,7 +8619,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           setWebglError(true);
           return;
         }
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, qualityProfile.pixelRatio));
         renderer.setSize(W, H);
 
         // ── Bloom: glow on the sun + bright sky highlights (guarded) ──
@@ -8183,7 +8628,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         // renderer.render. Kill-switch + low-power/reduced-motion tier.
         var composer = null;
         (function setupBloom() {
-          if (window.AlloPostFXEnabled === false) return;
+          if (!qualityProfile.bloom || window.AlloPostFXEnabled === false) return;
           var ensure = function (cb) {
             if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
             var urls = [
@@ -8203,6 +8648,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             })();
           };
           ensure(function () {
+            if (disposed) return;
             try {
               var T = window.THREE;
               if (!T || !T.EffectComposer || !T.RenderPass || !T.UnrealBloomPass) return;
@@ -8292,6 +8738,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var isNight = (species.biome === 'forest-night');
         var ambient = new THREE.AmbientLight(0xffffff, isNight ? 0.25 : 0.55);
         scene.add(ambient);
+        // Cool sky fill + warm opposing rim light separate the bird, terrain,
+        // and distant silhouettes without flattening the biome palette.
+        var skyFill = new THREE.HemisphereLight(isNight ? 0x818cf8 : 0xdbeafe, bc.ground, isNight ? 0.42 : 0.32);
+        scene.add(skyFill);
+        var rimLight = new THREE.DirectionalLight(isNight ? 0xa5b4fc : 0xffedd5, isNight ? 0.50 : 0.28);
+        rimLight.position.set(-100, 70, -130);
+        scene.add(rimLight);
         var sun = new THREE.DirectionalLight(0xfff8e1, isNight ? 0.4 : 0.95);
         // Light direction matches the visible sun sprite so highlight/shadow
         // direction reads as coming *from the sun in the sky*, not from a
@@ -8306,9 +8759,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
         // ─── NEW v0.27: Starfield for night biome ───
         var starsList = null;
-        if (isNight) {
+        if (qualityProfile.stars > 0) {
           var starGeo = new THREE.BufferGeometry();
-          var starCount = 600;
+          var starCount = Math.max(120, Math.round(600 * qualityProfile.stars));
           var starPos = new Float32Array(starCount * 3);
           var starTwinkle = [];
           for (var stIdx = 0; stIdx < starCount; stIdx++) {
@@ -8322,7 +8775,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             starTwinkle.push({ phase: Math.random() * Math.PI * 2, freq: 0.5 + Math.random() * 2.5 });
           }
           starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
-          var starMat = new THREE.PointsMaterial({ color: 0xfefce8, size: 1.5, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true, fog: false });
+          var starMat = new THREE.PointsMaterial({ color: 0xfefce8, size: 1.5, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true, fog: false });
           var stars = new THREE.Points(starGeo, starMat);
           scene.add(stars);
           starsList = { points: stars, twinkle: starTwinkle, count: starCount };
@@ -8377,7 +8830,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           }
           var cloudTex = new THREE.CanvasTexture(cloudCanvas);
           // Spawn 8-14 clouds at various positions in the sky
-          var numClouds = species.biome === 'cliff' || species.biome === 'mountain' ? 6 : 12;
+          var numClouds = Math.max(3, Math.round((species.biome === 'cliff' || species.biome === 'mountain' ? 6 : 12) * qualityProfile.clouds));
           var clouds = [];
           for (var clI = 0; clI < numClouds; clI++) {
             var cloud = new THREE.Sprite(new THREE.SpriteMaterial({ map: cloudTex, transparent: true, depthWrite: false, opacity: 0.55 + Math.random() * 0.35 }));
@@ -8398,28 +8851,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
         // ─── Terrain: large displaced plane ───
         var terrainSize = 800;
-        var terrainSegs = 96;
+        var terrainSegs = graphicsQuality === 'high' ? 112 : graphicsQuality === 'low' ? 72 : 96;
+        // The terrain mesh and every physics query share this exact sampler.
+        // This removes repeated raycasts through ~18k terrain triangles.
+        function terrainDisplacementAt(localX, localY) {
+          var height = 0;
+          height += Math.sin(localX * 0.02) * Math.cos(localY * 0.018) * 8;
+          height += Math.sin(localX * 0.05 + 1.7) * Math.cos(localY * 0.06 + 0.8) * 3;
+          height += Math.sin(localX * 0.13) * Math.cos(localY * 0.11) * 0.8;
+          if (species.biome === 'mountain') height *= 2.5;
+          if (species.biome === 'cliff' || species.biome === 'urban-cliff') {
+            if (localX < -50) height += 35 - Math.min(35, Math.abs(localX + 50) * 0.3);
+          }
+          if (species.biome === 'lake') {
+            var lakeDistance = Math.sqrt(localX * localX + localY * localY);
+            if (lakeDistance < 120) height -= (120 - lakeDistance) * 0.15;
+          }
+          return height;
+        }
         var terrainGeo = new THREE.PlaneGeometry(terrainSize, terrainSize, terrainSegs, terrainSegs);
         var tPos = terrainGeo.attributes.position.array;
         for (var i = 0; i < tPos.length; i += 3) {
           var x = tPos[i], y = tPos[i + 1];
-          var hh = 0;
-          // Multi-octave displacement
-          hh += Math.sin(x * 0.02) * Math.cos(y * 0.018) * 8;
-          hh += Math.sin(x * 0.05 + 1.7) * Math.cos(y * 0.06 + 0.8) * 3;
-          hh += Math.sin(x * 0.13) * Math.cos(y * 0.11) * 0.8;
-          // Biome bias
-          if (species.biome === 'mountain') hh *= 2.5;
-          if (species.biome === 'cliff' || species.biome === 'urban-cliff') {
-            // Big cliff in one direction
-            if (x < -50) hh += 35 - Math.min(35, Math.abs(x + 50) * 0.3);
-          }
-          if (species.biome === 'lake') {
-            // Bowl out the middle
-            var rd = Math.sqrt(x * x + y * y);
-            if (rd < 120) hh -= (120 - rd) * 0.15;
-          }
-          tPos[i + 2] = hh;
+          tPos[i + 2] = terrainDisplacementAt(x, y);
         }
         terrainGeo.computeVertexNormals();
         // Procedural ground texture (color-noise canvas)
@@ -8433,6 +8887,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           tCx.fillStyle = '#' + col.getHexString();
           tCx.fillRect(Math.random() * 512, Math.random() * 512, 2 + Math.random() * 4, 2 + Math.random() * 4);
         }
+        // Add larger biome-shaped texture marks so the ground reads as terrain rather than noise.
+        var terrainAccent = new THREE.Color(bc.ground).offsetHSL(species.biome === 'tundra' ? 0.02 : 0.08, 0.12, species.biome === 'forest-night' ? -0.12 : 0.06);
+        tCx.globalAlpha = 0.22;
+        for (var terrainMark = 0; terrainMark < (qualityProfile.particles > 0.5 ? 180 : 90); terrainMark++) {
+          tCx.fillStyle = '#' + terrainAccent.clone().offsetHSL((Math.random() - 0.5) * 0.04, 0, (Math.random() - 0.5) * 0.16).getHexString();
+          tCx.beginPath();
+          tCx.ellipse(Math.random() * 512, Math.random() * 512, 5 + Math.random() * 18, 2 + Math.random() * 7, Math.random() * Math.PI, 0, Math.PI * 2);
+          tCx.fill();
+        }
+        tCx.globalAlpha = 1;
         var terrainTex = new THREE.CanvasTexture(tCv);
         terrainTex.wrapS = terrainTex.wrapT = THREE.RepeatWrapping;
         terrainTex.repeat.set(12, 12);
@@ -8441,18 +8905,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         );
         terrain.rotation.x = -Math.PI / 2;
         scene.add(terrain);
-        var _trayRay = new THREE.Raycaster();
+        // Distant landmark ring gives the horizon readable scale and hides the hard world edge.
+        var horizonGroup = new THREE.Group();
+        var horizonCount = qualityProfile.clouds >= 1 ? 8 : qualityProfile.clouds >= 0.7 ? 6 : 4;
+        var horizonMaterial = new THREE.MeshStandardMaterial({
+          color: new THREE.Color(bc.ground).offsetHSL(0, -0.05, species.biome === 'forest-night' ? -0.16 : -0.08),
+          roughness: 1,
+          metalness: 0,
+          fog: true
+        });
+        for (var horizonIndex = 0; horizonIndex < horizonCount; horizonIndex++) {
+          var horizonAngle = (horizonIndex / horizonCount) * Math.PI * 2 + 0.2;
+          var horizonPeak = 54 + Math.random() * 38;
+          var horizonRock = new THREE.Mesh(new THREE.ConeGeometry(46 + Math.random() * 24, horizonPeak, 5), horizonMaterial);
+          var horizonRadius = 410 + Math.random() * 70;
+          horizonRock.position.set(Math.cos(horizonAngle) * horizonRadius, horizonPeak * 0.42 - 4, Math.sin(horizonAngle) * horizonRadius);
+          horizonRock.rotation.y = Math.random() * Math.PI;
+          horizonGroup.add(horizonRock);
+        }
+        scene.add(horizonGroup);
         function terrainHeightAt(wx, wz) {
-          _trayRay.set(new THREE.Vector3(wx, 200, wz), new THREE.Vector3(0, -1, 0));
-          var hits = _trayRay.intersectObject(terrain);
-          return hits.length > 0 ? hits[0].point.y : 0;
+          // PlaneGeometry local Y maps to negative world Z after rotation.
+          return terrainDisplacementAt(wx, -wz);
         }
 
         // ─── NEW v0.26: Animated water for lake biome (vertex-displaced ripples) ───
         var lake = null;
         var lakeOriginalY = null;
         if (species.biome === 'lake') {
-          var lakeGeo = new THREE.CircleGeometry(110, 64);  // higher segment count for vertex animation
+          var lakeGeo = new THREE.CircleGeometry(110, qualityProfile.waterSegments);  // higher segment count for vertex animation
           // Save original Y of each vertex (all 0 initially since it's a circle, but we add noise)
           var lakePos = lakeGeo.attributes.position.array;
           lakeOriginalY = new Float32Array(lakePos.length / 3);
@@ -8487,78 +8968,82 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                         species.biome === 'tundra' ? 4 :
                         species.biome === 'mountain' ? 30 :
                         species.biome === 'grassland' ? 25 : 50;
+        var treePlacements = [[], [], []];
         for (var ti2 = 0; ti2 < treeCount; ti2++) {
           var tx = (Math.random() - 0.5) * terrainSize * 0.85;
           var tz = (Math.random() - 0.5) * terrainSize * 0.85;
-          // Don't place trees in the lake
           if (species.biome === 'lake' && Math.sqrt(tx * tx + tz * tz) < 115) continue;
           var ty = terrainHeightAt(tx, tz);
           var treeHeight = 8 + Math.random() * 14;
           if (species.biome === 'rainforest') treeHeight = 20 + Math.random() * 20;
           if (species.biome === 'mountain') treeHeight = 5 + Math.random() * 5;
-          // ── NEW v0.26: 3 tree variants per biome — randomly picked ──
-          var treeType = Math.floor(Math.random() * 3);  // 0=conifer, 1=deciduous, 2=tall-thin
-          // Adjust based on biome
-          if (species.biome === 'boreal-forest' || species.biome === 'tundra') treeType = Math.random() < 0.85 ? 0 : 2;  // mostly conifers
-          if (species.biome === 'rainforest') treeType = 1;  // mostly tall round
+          var treeType = Math.floor(Math.random() * 3);
+          if (species.biome === 'boreal-forest' || species.biome === 'tundra') treeType = Math.random() < 0.85 ? 0 : 2;
+          if (species.biome === 'rainforest') treeType = 1;
           if (species.biome === 'cliff' || species.biome === 'mountain') treeType = Math.random() < 0.6 ? 0 : 2;
-          // Trunk
-          var trunkR = treeHeight * 0.04;
-          var trunkGeo = new THREE.CylinderGeometry(trunkR * 0.7, trunkR, treeHeight * 0.55, 6);
-          var trunkColor = species.biome === 'tundra' ? 0x44403c : 0x4a2c1a;
-          var trunkMat = new THREE.MeshStandardMaterial({ color: trunkColor, roughness: 0.95 });
-          var trunk = new THREE.Mesh(trunkGeo, trunkMat);
-          trunk.position.set(tx, ty + treeHeight * 0.275, tz);
-          scene.add(trunk);
-          // Foliage — different geometry per type
-          var folGeo, folHeight, folR;
-          if (treeType === 0) {
-            // Conifer — tall narrow cone (multiple stacked cones for layered look)
-            folHeight = treeHeight * 0.75;
-            folR = treeHeight * 0.22;
-            folGeo = new THREE.ConeGeometry(folR, folHeight, 7);
-          } else if (treeType === 1) {
-            // Deciduous — round sphere/cluster
-            folHeight = treeHeight * 0.55;
-            folR = treeHeight * 0.32;
-            folGeo = new THREE.SphereGeometry(folR, 10, 7);
-          } else {
-            // Tall-thin (poplar/columnar)
-            folHeight = treeHeight * 0.85;
-            folR = treeHeight * 0.14;
-            folGeo = new THREE.ConeGeometry(folR, folHeight, 6);
-          }
-          var folColor = species.biome === 'rainforest' ? 0x14532d :
-                         species.biome === 'forest-night' ? 0x14532d :
-                         species.biome === 'boreal-forest' ? (treeType === 0 ? 0x064e3b : 0x166534) :
-                         species.biome === 'forest' ? (treeType === 0 ? 0x166534 : 0x16a34a) :
-                         species.biome === 'tundra' ? (treeType === 0 ? 0xe2e8f0 : 0xcbd5e1) :
-                         species.biome === 'mountain' ? 0x166534 : 0x166534;
-          // Slight color variation per tree
-          var folColorObj = new THREE.Color(folColor);
-          folColorObj.offsetHSL(0, 0, (Math.random() - 0.5) * 0.06);
-          var folMat = new THREE.MeshStandardMaterial({ color: folColorObj.getHex(), roughness: 0.95 });
-          var foliage = new THREE.Mesh(folGeo, folMat);
-          foliage.position.set(tx, ty + treeHeight * 0.55 + folHeight * 0.45, tz);
-          scene.add(foliage);
-          // Conifer second layer for visual richness
-          if (treeType === 0) {
-            var topCone = new THREE.Mesh(
-              new THREE.ConeGeometry(folR * 0.55, folHeight * 0.6, 6),
-              folMat
-            );
-            topCone.position.set(tx, ty + treeHeight * 0.55 + folHeight * 0.8, tz);
-            scene.add(topCone);
-          }
-          // Save sway data for animation
-          trees.push({
-            mesh: trunk, foliage: foliage, x: tx, z: tz, y: ty, height: treeHeight,
-            swayPhase: Math.random() * Math.PI * 2,
-            swayAmount: 0.02 + Math.random() * 0.04  // radians of max sway
+          treePlacements[treeType].push({
+            x: tx, y: ty, z: tz, height: treeHeight,
+            shade: 0.88 + Math.random() * 0.18
           });
         }
+        var trunkCount = treePlacements.reduce(function(total, batch) { return total + batch.length; }, 0);
+        var trunkMaterial = new THREE.MeshStandardMaterial({
+          color: species.biome === 'tundra' ? 0x44403c : 0x4a2c1a,
+          roughness: 0.95
+        });
+        var trunkInstances = new THREE.InstancedMesh(
+          new THREE.CylinderGeometry(0.7, 1, 1, 6),
+          trunkMaterial,
+          trunkCount
+        );
+        trunkInstances.name = 'instanced-forest-trunks';
+        var treeDummy = new THREE.Object3D();
+        var trunkIndex = 0;
+        treePlacements.forEach(function(batch) {
+          batch.forEach(function(tree) {
+            var trunkHeight = tree.height * 0.55;
+            var trunkRadius = tree.height * 0.04;
+            treeDummy.position.set(tree.x, tree.y + trunkHeight * 0.5, tree.z);
+            treeDummy.scale.set(trunkRadius, trunkHeight, trunkRadius);
+            treeDummy.rotation.set(0, 0, 0);
+            treeDummy.updateMatrix();
+            trunkInstances.setMatrixAt(trunkIndex++, treeDummy.matrix);
+          });
+        });
+        trunkInstances.instanceMatrix.needsUpdate = true;
+        scene.add(trunkInstances);
 
-        // ─── Cliff for cliff biomes ───
+        var foliageBaseColor = species.biome === 'tundra' ? 0xcbd5e1 :
+                               species.biome === 'forest-night' ? 0x14532d :
+                               species.biome === 'rainforest' ? 0x14532d :
+                               species.biome === 'boreal-forest' ? 0x064e3b :
+                               species.biome === 'forest' ? 0x16a34a : 0x166534;
+        var foliageGeometries = [
+          new THREE.ConeGeometry(1, 1, 7),
+          new THREE.SphereGeometry(1, 8, 6),
+          new THREE.ConeGeometry(1, 1, 6)
+        ];
+        treePlacements.forEach(function(batch, typeIndex) {
+          if (!batch.length) return;
+          var foliageMaterial = new THREE.MeshStandardMaterial({ color: foliageBaseColor, roughness: 0.95 });
+          var foliageInstances = new THREE.InstancedMesh(foliageGeometries[typeIndex], foliageMaterial, batch.length);
+          foliageInstances.name = 'instanced-forest-foliage-' + typeIndex;
+          batch.forEach(function(tree, instanceIndex) {
+            var foliageHeight = tree.height * (typeIndex === 0 ? 0.75 : typeIndex === 1 ? 0.55 : 0.85);
+            var foliageRadius = tree.height * (typeIndex === 0 ? 0.22 : typeIndex === 1 ? 0.32 : 0.14);
+            treeDummy.position.set(tree.x, tree.y + tree.height * 0.55 + foliageHeight * 0.45, tree.z);
+            treeDummy.scale.set(foliageRadius, foliageHeight, foliageRadius);
+            treeDummy.rotation.set(0, Math.random() * Math.PI * 2, 0);
+            treeDummy.updateMatrix();
+            foliageInstances.setMatrixAt(instanceIndex, treeDummy.matrix);
+            if (foliageInstances.setColorAt) {
+              foliageInstances.setColorAt(instanceIndex, new THREE.Color(foliageBaseColor).multiplyScalar(tree.shade));
+            }
+          });
+          foliageInstances.instanceMatrix.needsUpdate = true;
+          if (foliageInstances.instanceColor) foliageInstances.instanceColor.needsUpdate = true;
+          scene.add(foliageInstances);
+        });
         if (species.biome === 'cliff' || species.biome === 'urban-cliff') {
           var cliffGeo = new THREE.BoxGeometry(20, 100, 200);
           var cliffMat = new THREE.MeshStandardMaterial({ color: 0x57534e, roughness: 0.85 });
@@ -8647,6 +9132,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         // ─── Player raptor mesh (procedural bird) ───
         // ─── NEW v0.24: Detailed raptor mesh (replaces simple boxes) ───
         var raptorGroup = new THREE.Group();
+        // The procedural model is authored nose-first along local +Z, while
+        // flight yaw 0 travels toward world -Z. Three.js also rotates +Y in
+        // the opposite sign from this compass-style yaw convention.
+        var RAPTOR_MODEL_FORWARD_OFFSET = Math.PI;
+        function modelYawForFlightHeading(yaw) {
+          return RAPTOR_MODEL_FORWARD_OFFSET - yaw;
+        }
         var bodyColor = species.id === 'baldEagle' ? 0x2a2418 :
                         species.id === 'osprey' ? 0xfafaf5 :
                         species.id === 'greatHorned' ? 0x6b4f2a :
@@ -8678,7 +9170,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         // Body — elongated using stretched sphere (more bird-like than capsule)
         var bodyGeo = new THREE.SphereGeometry(0.35, 16, 12);
         bodyGeo.scale(0.7, 0.7, 1.8);  // stretch along z = flight direction
-        var body = new THREE.Mesh(bodyGeo, new THREE.MeshStandardMaterial({ color: bodyColor, roughness: 0.85, flatShading: false }));
+        var body = new THREE.Mesh(bodyGeo, new THREE.MeshStandardMaterial({ color: bodyColor, roughness: 0.78, metalness: 0.02, emissive: new THREE.Color(bodyColor).multiplyScalar(0.035), flatShading: false }));
         raptorGroup.add(body);
         // Breast (ventral side, slightly forward — lighter color)
         var breastGeo = new THREE.SphereGeometry(0.33, 16, 12);
@@ -8692,6 +9184,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           new THREE.MeshStandardMaterial({ color: species.id === 'baldEagle' ? 0xfff9e0 : species.id === 'snowyOwl' ? 0xffffff : bodyColor, roughness: 0.75 })
         );
         head.position.set(0, 0.06, 0.62);
+
         raptorGroup.add(head);
         // Eye markings (white sclera + dark pupil) — 2 sides for visible eye contact
         var eyeMat = new THREE.MeshBasicMaterial({ color: 0xfefce8 });
@@ -8722,33 +9215,96 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         raptorGroup.add(cere);
 
         // Wings — broken into multiple pieces per wing (shoulder + main + 3 finger primaries)
-        var wingSpan = Math.max(1.5, Math.min(3.5, species.wingspanM));
-        var isOwlOrAccip = species.isOwl || species.family === 'Accipitridae';
-        var wingDepth = isOwlOrAccip ? 0.55 : 0.40;  // broader wings for eagles + owls
+        function getRaptorSilhouetteProfile(raptorSpecies) {
+          if (raptorSpecies.isOwl) return {
+            kind: 'owl', spanScale: 1.35, wingDepth: 0.76, sweep: -0.10,
+            tipWidth: 0.82, primaryFingers: 0, tailWidth: 0.78,
+            tailLength: 0.54, fanScale: 0.76, headScale: 1.24
+          };
+          if (raptorSpecies.family === 'Pandionidae') return {
+            kind: 'osprey', spanScale: 1.48, wingDepth: 0.50, sweep: 0.34,
+            tipWidth: 0.46, primaryFingers: 4, tailWidth: 0.62,
+            tailLength: 0.68, fanScale: 0.56, headScale: 1.0
+          };
+          if (raptorSpecies.family === 'Falconidae') return {
+            kind: 'falcon', spanScale: 1.55, wingDepth: 0.36, sweep: -0.82,
+            tipWidth: 0.22, primaryFingers: 0, tailWidth: 0.46,
+            tailLength: 0.68, fanScale: 0.40, headScale: 0.92
+          };
+          if (raptorSpecies.id === 'northernGoshawk' || raptorSpecies.id === 'coopersHawk') return {
+            kind: 'accipiter', spanScale: 1.28, wingDepth: 0.63, sweep: -0.08,
+            tipWidth: 0.62, primaryFingers: 2, tailWidth: 0.64,
+            tailLength: 1.08, fanScale: 0.72, headScale: 0.95
+          };
+          if (raptorSpecies.id === 'redTail' || raptorSpecies.id === 'roughLegged') return {
+            kind: 'buteo', spanScale: 1.40, wingDepth: 0.72, sweep: -0.18,
+            tipWidth: 0.68, primaryFingers: 4, tailWidth: 0.82,
+            tailLength: 0.66, fanScale: 0.82, headScale: 1.0
+          };
+          return {
+            kind: 'eagle', spanScale: 1.46, wingDepth: 0.64, sweep: -0.26,
+            tipWidth: 0.58, primaryFingers: 5, tailWidth: 0.72,
+            tailLength: 0.72, fanScale: 0.68, headScale: 1.05
+          };
+        }
+        var silhouetteProfile = getRaptorSilhouetteProfile(species);
+        function flightAnimationProfileFor(kind) {
+          var profiles = {
+            falcon:    { flapRate: 0.024, flapDepth: 0.42, burstCycle: 5.2, glideDihedral: 0.02, tuck: 0.48, tailGain: 0.07 },
+            owl:       { flapRate: 0.014, flapDepth: 0.62, burstCycle: 8.5, glideDihedral: 0.11, tuck: 0.26, tailGain: 0.11 },
+            osprey:    { flapRate: 0.017, flapDepth: 0.54, burstCycle: 7.0, glideDihedral: 0.16, tuck: 0.34, tailGain: 0.10 },
+            accipiter: { flapRate: 0.026, flapDepth: 0.68, burstCycle: 4.6, glideDihedral: 0.05, tuck: 0.42, tailGain: 0.16 },
+            buteo:     { flapRate: 0.015, flapDepth: 0.52, burstCycle: 8.0, glideDihedral: 0.13, tuck: 0.34, tailGain: 0.13 },
+            eagle:     { flapRate: 0.012, flapDepth: 0.58, burstCycle: 9.5, glideDihedral: 0.15, tuck: 0.38, tailGain: 0.11 }
+          };
+          return profiles[kind] || profiles.eagle;
+        }
+        var flightAnimationProfile = flightAnimationProfileFor(silhouetteProfile.kind);
+        head.scale.setScalar(silhouetteProfile.headScale);
+        var wingSpan = Math.max(1.15, Math.min(3.4, species.wingspanM * silhouetteProfile.spanScale));
+        var wingDepth = silhouetteProfile.wingDepth;
         var leftWingGroup = new THREE.Group();
         var rightWingGroup = new THREE.Group();
         // Main inner wing (secondary feathers area)
-        var wingMat = new THREE.MeshStandardMaterial({ color: wingColor, roughness: 0.85, flatShading: false });
-        var innerWingGeo = new THREE.BoxGeometry(wingSpan * 0.5, 0.04, wingDepth);
-        // Pivot wing at root by attaching to a group anchored at the body
-        var leftInner = new THREE.Mesh(innerWingGeo, wingMat);
-        leftInner.position.set(-wingSpan * 0.25, 0.05, 0.05);
-        leftWingGroup.add(leftInner);
-        var rightInner = new THREE.Mesh(innerWingGeo, wingMat);
-        rightInner.position.set(wingSpan * 0.25, 0.05, 0.05);
-        rightWingGroup.add(rightInner);
-        // Outer wing (primaries area, narrower toward tip)
-        var outerWingGeo = new THREE.BoxGeometry(wingSpan * 0.45, 0.035, wingDepth * 0.7);
-        var leftOuter = new THREE.Mesh(outerWingGeo, wingMat);
-        leftOuter.position.set(-wingSpan * 0.7, 0.05, -0.05);
-        leftWingGroup.add(leftOuter);
-        var rightOuter = new THREE.Mesh(outerWingGeo, wingMat);
-        rightOuter.position.set(wingSpan * 0.7, 0.05, -0.05);
-        rightWingGroup.add(rightOuter);
-        // Finger primaries (visible on eagles + buteos) — 3 per wing
-        if (isOwlOrAccip || species.family === 'Pandionidae') {
+        var wingMat = new THREE.MeshStandardMaterial({
+          color: wingColor,
+          roughness: 0.74,
+          metalness: 0.01,
+          emissive: new THREE.Color(wingColor).multiplyScalar(0.025),
+          side: THREE.DoubleSide
+        });
+        var isFalconWing = species.family === 'Falconidae';
+        var isOspreyWing = species.family === 'Pandionidae';
+        function createTaperedWing(side) {
+          var halfSpan = wingSpan;
+          var elbowZ = isOspreyWing ? -wingDepth * 0.75 : silhouetteProfile.sweep * wingDepth * 0.35;
+          var tipZ = silhouetteProfile.sweep * wingDepth;
+          var tipWidth = silhouetteProfile.tipWidth;
+          var positions = [
+            0, 0.05, wingDepth * 0.42,
+            side * halfSpan * 0.52, 0.06, wingDepth * 0.5 + elbowZ,
+            side * halfSpan, 0.04, tipZ + wingDepth * tipWidth,
+            side * halfSpan, 0.04, tipZ - wingDepth * tipWidth,
+            side * halfSpan * 0.5, 0.04, -wingDepth * 0.62 + elbowZ,
+            0, 0.04, -wingDepth * 0.36
+          ];
+          var geometry = new THREE.BufferGeometry();
+          geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+          geometry.setIndex([0, 1, 5, 1, 4, 5, 1, 2, 4, 2, 3, 4]);
+          geometry.computeVertexNormals();
+          return geometry;
+        }
+        var leftWingSurface = new THREE.Mesh(createTaperedWing(-1), wingMat);
+        var rightWingSurface = new THREE.Mesh(createTaperedWing(1), wingMat);
+        leftWingSurface.name = 'left-tapered-wing';
+        rightWingSurface.name = 'right-tapered-wing';
+        leftWingGroup.add(leftWingSurface);
+        rightWingGroup.add(rightWingSurface);
+
+        // Finger primaries remain distinct on broad-winged soaring families.
+        if (silhouetteProfile.primaryFingers > 0) {
           var fingerMat = new THREE.MeshStandardMaterial({ color: 0x1c1917, roughness: 0.85 });
-          for (var fi = 0; fi < 3; fi++) {
+          for (var fi = 0; fi < silhouetteProfile.primaryFingers; fi++) {
             var fingerGeo = new THREE.BoxGeometry(wingSpan * 0.18, 0.03, wingDepth * 0.5);
             var lF = new THREE.Mesh(fingerGeo, fingerMat);
             lF.position.set(-wingSpan * (0.92 + fi * 0.02), 0.05, -0.18 - fi * 0.04);
@@ -8760,20 +9316,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             rightWingGroup.add(rF);
           }
         }
+        var dorsalMarkColor = species.id === 'osprey' || species.id === 'baldEagle' ? 0xfef3c7 :
+                              species.isOwl ? 0xd6d3d1 :
+                              species.family === 'Falconidae' ? 0x9ca3af : 0xd6b46a;
+        var dorsalMarkMat = new THREE.MeshStandardMaterial({ color: dorsalMarkColor, roughness: 0.8 });
+        [-1, 1].forEach(function(side) {
+          var shoulderMark = new THREE.Mesh(
+            new THREE.BoxGeometry(wingSpan * 0.34, 0.025, 0.075),
+            dorsalMarkMat
+          );
+          shoulderMark.position.set(side * wingSpan * 0.34, 0.09, wingDepth * 0.10);
+          shoulderMark.rotation.y = side * silhouetteProfile.sweep * 0.18;
+          (side < 0 ? leftWingGroup : rightWingGroup).add(shoulderMark);
+          var wingEdgeMark = new THREE.Mesh(new THREE.BoxGeometry(wingSpan * 0.22, 0.018, 0.045), dorsalMarkMat);
+          wingEdgeMark.position.set(side * wingSpan * 0.78, 0.075, silhouetteProfile.sweep * wingDepth * 0.72);
+          wingEdgeMark.rotation.y = side * (0.18 + silhouetteProfile.sweep * 0.12);
+          (side < 0 ? leftWingGroup : rightWingGroup).add(wingEdgeMark);
+        });
         raptorGroup.add(leftWingGroup);
         raptorGroup.add(rightWingGroup);
-        // Tail — wider fan or longer rect depending on species
-        var tailWidth = species.family === 'Accipitridae' ? 0.7 : 0.55;
-        var tailLength = (species.family === 'Accipitridae' && !species.isOwl) ? 0.8 : 0.55;
-        if (species.id === 'northernGoshawk' || species.id === 'coopersHawk') tailLength = 0.95;  // accipiter long tail
+        // Tail proportions are profile-specific.
+        var tailWidth = silhouetteProfile.tailWidth;
+        var tailLength = silhouetteProfile.tailLength;
         var tailColor = species.id === 'redTail' ? 0xb45309 : species.id === 'snowyOwl' ? 0xffffff : wingColor;
+        var fanScale = silhouetteProfile.fanScale;
+        var tailGeometry = new THREE.BufferGeometry();
+        tailGeometry.setAttribute('position', new THREE.Float32BufferAttribute([
+          -tailWidth * 0.22, 0.02, -0.42,
+          tailWidth * 0.22, 0.02, -0.42,
+          tailWidth * fanScale, 0.02, -0.58 - tailLength,
+          0, 0.02, -0.48 - tailLength * 0.9,
+          -tailWidth * fanScale, 0.02, -0.58 - tailLength
+        ], 3));
+        tailGeometry.setIndex([0, 1, 3, 1, 2, 3, 0, 3, 4]);
+        tailGeometry.computeVertexNormals();
         var tail = new THREE.Mesh(
-          new THREE.BoxGeometry(tailWidth, 0.04, tailLength),
-          new THREE.MeshStandardMaterial({ color: tailColor, roughness: 0.85 })
+          tailGeometry,
+          new THREE.MeshStandardMaterial({ color: tailColor, roughness: 0.75, metalness: 0.01, emissive: new THREE.Color(tailColor).multiplyScalar(0.02), side: THREE.DoubleSide })
         );
-        tail.position.set(0, 0.02, -0.6 - tailLength * 0.25);
+        tail.name = 'fan-tail-silhouette';
         raptorGroup.add(tail);
-        // Tail bands (for accipiters + buteos that have banded tails)
+        // Tail bands retain the field-marking cues used for identification.
         if (species.family === 'Accipitridae' && species.id !== 'baldEagle' && species.id !== 'redTail') {
           for (var bi = 0; bi < 3; bi++) {
             var band = new THREE.Mesh(
@@ -8859,7 +9442,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var particleData = null;
         if (species.biome === 'tundra' || species.biome === 'boreal-forest') {
           // Snow particles
-          var snowCount = 400;
+          var snowCount = Math.max(80, Math.round(400 * qualityProfile.particles));
           var snowGeo = new THREE.BufferGeometry();
           var snowPos = new Float32Array(snowCount * 3);
           particleData = { type: 'snow', velocities: [] };
@@ -8874,7 +9457,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           scene.add(particleSystem);
         } else if (species.biome === 'forest' || species.biome === 'rainforest') {
           // Drifting leaves
-          var leafCount = 200;
+          var leafCount = Math.max(50, Math.round(200 * qualityProfile.particles));
           var leafGeo = new THREE.BufferGeometry();
           var leafPos = new Float32Array(leafCount * 3);
           particleData = { type: 'leaves', velocities: [] };
@@ -8889,7 +9472,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           scene.add(particleSystem);
         } else if (species.biome === 'mountain' || species.biome === 'grassland') {
           // Dust motes / pollen
-          var dustCount = 150;
+          var dustCount = Math.max(40, Math.round(150 * qualityProfile.particles));
           var dustGeo = new THREE.BufferGeometry();
           var dustPos = new Float32Array(dustCount * 3);
           particleData = { type: 'dust', velocities: [] };
@@ -8929,6 +9512,133 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         // ─── Prey spawn ───
         var preyList = SPECIES_PREY[species.id] || ['rodent'];
         var preyMeshes = [];
+        function preyKindFor(preyData) {
+          if (preyData.id === 'fish') return 'fish';
+          if (preyData.id === 'snake') return 'snake';
+          if (preyData.id === 'cicada' || preyData.id === 'dragonfly' || preyData.id === 'largeInsect') return 'insect';
+          if (preyData.id === 'songbird' || preyData.id === 'pigeon' || preyData.id === 'mourningDove' ||
+              preyData.id === 'ptarmigan' || preyData.id === 'grouse' || preyData.id === 'duck' ||
+              preyData.id === 'waterfowl' || preyData.id === 'shorebird' || preyData.id === 'smallOwl') return 'bird';
+          if (preyData.id === 'rabbit' || preyData.id === 'hare' || preyData.id === 'arcticHare') return 'rabbit';
+          if (preyData.id === 'rodent' || preyData.id === 'lemming' || preyData.id === 'groundSquirrel' || preyData.id === 'squirrel') return 'rodent';
+          return 'mammal';
+        }
+        function preyEscapeProfile(preyData) {
+          var kind = preyKindFor(preyData);
+          if (kind === 'bird') return { mode: 'burst-flight', detectionScale: 1.3, zigzag: 0.48, climb: 6, seekCover: false };
+          if (kind === 'fish') return { mode: 'dive-school', detectionScale: 1.15, zigzag: 0.75, climb: -2.5, seekCover: false };
+          if (kind === 'rabbit') return { mode: 'bound-zigzag', detectionScale: 1.1, zigzag: 0.85, climb: 0, seekCover: true };
+          if (kind === 'rodent') return { mode: 'freeze-dash', detectionScale: 0.8, zigzag: 0.65, climb: 0, seekCover: true };
+          if (kind === 'insect') return { mode: 'jink', detectionScale: 1.4, zigzag: 1.1, climb: 2, seekCover: false };
+          if (kind === 'snake') return { mode: 'slither', detectionScale: 0.75, zigzag: 0.55, climb: 0, seekCover: true };
+          return { mode: 'sprint-cover', detectionScale: 1.0, zigzag: 0.32, climb: 0, seekCover: true };
+        }
+        function buildPreyVisual(preyData, size) {
+          var kind = preyKindFor(preyData);
+          var root = new THREE.Group();
+          root.name = 'prey-' + kind + '-' + preyData.id;
+          var material = new THREE.MeshStandardMaterial({
+            color: preyData.color, roughness: 0.72,
+            emissive: preyData.color, emissiveIntensity: 0.08
+          });
+          var darkMaterial = new THREE.MeshStandardMaterial({ color: 0x1c1917, roughness: 0.82 });
+          var paleMaterial = new THREE.MeshStandardMaterial({ color: 0xe7e5e4, roughness: 0.82 });
+          var wings = [];
+          var legs = [];
+          var tail = null;
+          var body;
+          if (kind === 'bird') {
+            body = new THREE.Mesh(new THREE.SphereGeometry(size * 0.42, 10, 8), material);
+            body.scale.set(0.78, 0.72, 1.35);
+            root.add(body);
+            var birdHead = new THREE.Mesh(new THREE.SphereGeometry(size * 0.24, 8, 6), material);
+            birdHead.position.set(0, size * 0.10, size * 0.52);
+            root.add(birdHead);
+            [-1, 1].forEach(function(side) {
+              var wing = new THREE.Mesh(new THREE.BoxGeometry(size * 0.82, 0.035, size * 0.30), darkMaterial);
+              wing.position.set(side * size * 0.50, size * 0.04, 0);
+              wing.rotation.z = side * -0.12;
+              root.add(wing);
+              wings.push(wing);
+            });
+            tail = new THREE.Mesh(new THREE.ConeGeometry(size * 0.24, size * 0.62, 4), darkMaterial);
+            tail.position.z = -size * 0.68;
+            tail.rotation.x = Math.PI / 2;
+            root.add(tail);
+          } else if (kind === 'fish') {
+            body = new THREE.Mesh(new THREE.SphereGeometry(size * 0.38, 10, 7), material);
+            body.scale.set(0.65, 0.55, 1.55);
+            root.add(body);
+            tail = new THREE.Mesh(new THREE.ConeGeometry(size * 0.34, size * 0.52, 3), material);
+            tail.position.z = -size * 0.66;
+            tail.rotation.x = -Math.PI / 2;
+            root.add(tail);
+            var dorsal = new THREE.Mesh(new THREE.ConeGeometry(size * 0.12, size * 0.32, 3), darkMaterial);
+            dorsal.position.set(0, size * 0.28, 0);
+            root.add(dorsal);
+          } else if (kind === 'insect') {
+            body = new THREE.Mesh(new THREE.SphereGeometry(size * 0.24, 8, 6), darkMaterial);
+            body.scale.set(0.65, 0.65, 1.8);
+            root.add(body);
+            [-1, 1].forEach(function(side) {
+              var insectWing = new THREE.Mesh(new THREE.BoxGeometry(size * 0.65, 0.018, size * 0.22), paleMaterial);
+              insectWing.position.set(side * size * 0.38, size * 0.04, 0);
+              root.add(insectWing);
+              wings.push(insectWing);
+            });
+          } else if (kind === 'snake') {
+            for (var snakeIndex = 0; snakeIndex < 6; snakeIndex++) {
+              var segment = new THREE.Mesh(new THREE.SphereGeometry(size * (0.15 - snakeIndex * 0.01), 7, 5), material);
+              segment.position.set(Math.sin(snakeIndex * 0.9) * size * 0.13, 0, (snakeIndex - 2.5) * size * 0.28);
+              root.add(segment);
+            }
+          } else {
+            body = new THREE.Mesh(new THREE.SphereGeometry(size * 0.38, 10, 7), material);
+            body.scale.set(kind === 'rabbit' ? 0.72 : 0.80, 0.66, kind === 'mammal' ? 1.55 : 1.30);
+            root.add(body);
+            var mammalHead = new THREE.Mesh(new THREE.SphereGeometry(size * 0.24, 8, 6), material);
+            mammalHead.position.set(0, size * 0.12, size * 0.48);
+            root.add(mammalHead);
+            if (kind === 'rabbit') {
+              [-1, 1].forEach(function(side) {
+                var ear = new THREE.Mesh(new THREE.ConeGeometry(size * 0.08, size * 0.48, 6), material);
+                ear.position.set(side * size * 0.12, size * 0.46, size * 0.43);
+                root.add(ear);
+              });
+              tail = new THREE.Mesh(new THREE.SphereGeometry(size * 0.13, 7, 5), paleMaterial);
+              tail.position.set(0, size * 0.10, -size * 0.50);
+              root.add(tail);
+            } else {
+              tail = new THREE.Mesh(new THREE.ConeGeometry(size * 0.11, size * 0.65, 6), material);
+              tail.position.set(0, size * 0.10, -size * 0.58);
+              tail.rotation.x = -Math.PI / 2;
+              root.add(tail);
+            }
+            [-1, 1].forEach(function(side) {
+              var leg = new THREE.Mesh(new THREE.CylinderGeometry(size * 0.045, size * 0.055, size * 0.30, 5), darkMaterial);
+              leg.position.set(side * size * 0.20, -size * 0.27, size * 0.12);
+              root.add(leg);
+              legs.push(leg);
+            });
+          }
+          return { root: root, kind: kind, body: body, wings: wings, legs: legs, tail: tail };
+        }
+        function nearestPreyCoverTarget(x, z) {
+          var best = null;
+          var bestDistanceSq = Infinity;
+          treePlacements.forEach(function(batch) {
+            batch.forEach(function(tree) {
+              var dx = tree.x - x;
+              var dz = tree.z - z;
+              var distanceSq = dx * dx + dz * dz;
+              if (distanceSq < bestDistanceSq) {
+                bestDistanceSq = distanceSq;
+                best = { x: tree.x, z: tree.z };
+              }
+            });
+          });
+          return best;
+        }
         function spawnPrey() {
           var preyId = preyList[Math.floor(Math.random() * preyList.length)];
           var pd = PREY[preyId];
@@ -8959,35 +9669,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var size = Math.max(0.6, pd.sizeM * sizeBoost);  // floor at 0.6m so nothing is invisible
           // ── NEW v0.24: Group with prey mesh + beacon for visibility ──
           var preyGroup = new THREE.Group();
-          var geo = pd.id === 'snake'
-            ? new THREE.CylinderGeometry(size * 0.15, size * 0.15, size * 1.8, 6)
-            : pd.id === 'fish'
-              ? new THREE.ConeGeometry(size * 0.4, size * 1.4, 6)
-              : pd.id === 'cicada' || pd.id === 'dragonfly' || pd.id === 'largeInsect'
-                ? new THREE.SphereGeometry(size * 0.7, 8, 6)  // insects = round
-                : pd.id === 'songbird' || pd.id === 'pigeon' || pd.id === 'sparrow' || pd.id === 'mourningDove' || pd.id === 'ptarmigan'
-                  ? new THREE.SphereGeometry(size * 0.55, 10, 8)  // birds = rounded
-                  : new THREE.BoxGeometry(size, size * 0.55, size * 1.2);
-          var mat = new THREE.MeshStandardMaterial({ color: pd.color, roughness: 0.7, emissive: pd.color, emissiveIntensity: 0.15 });
-          var mesh = new THREE.Mesh(geo, mat);
-          if (pd.id === 'snake') { mesh.rotation.x = Math.PI / 2; mesh.rotation.z = Math.random() * Math.PI; }
-          if (pd.id === 'fish') { mesh.rotation.x = Math.PI / 2; }
+          var preyVisual = buildPreyVisual(pd, size);
+          var mesh = preyVisual.root;
           preyGroup.add(mesh);
           // ── Beacon: thin vertical glow above prey so it's spotted at distance ──
-          var beaconMat = new THREE.MeshBasicMaterial({ color: 0xfde047, transparent: true, opacity: 0.45 });
+          var beaconMat = new THREE.MeshBasicMaterial({
+            color: 0xfde047,
+            transparent: true,
+            opacity: 0.72,
+            side: THREE.DoubleSide,
+            depthWrite: false
+          });
           var beacon = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.15, 0.05, 8, 5),
+            new THREE.TorusGeometry(Math.max(0.75, size * 0.9), 0.08, 6, 32),
             beaconMat
           );
-          beacon.position.y = 4.5;
+          beacon.rotation.x = Math.PI / 2;
+          beacon.position.y = 0.12;
           preyGroup.add(beacon);
-          // Tiny crown sphere at top for extra visibility
           var beaconCap = new THREE.Mesh(
-            new THREE.SphereGeometry(0.35, 8, 6),
-            new THREE.MeshBasicMaterial({ color: 0xfde047, transparent: true, opacity: 0.85 })
+            new THREE.SphereGeometry(0.18, 8, 6),
+            new THREE.MeshBasicMaterial({ color: 0xfde047, transparent: true, opacity: 0.9, depthWrite: false })
           );
-          beaconCap.position.y = 8.5;
+          beaconCap.position.y = Math.max(0.9, size);
           preyGroup.add(beaconCap);
+          var assistVisible = targetLockOn !== false;
+          beacon.visible = assistVisible;
+          beaconCap.visible = assistVisible;
           preyGroup.position.set(px, py + size * 0.5, pz);
           scene.add(preyGroup);
           return {
@@ -8996,12 +9704,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             beacon: beacon,
             beaconCap: beaconCap,
             data: pd,
+            animation: preyVisual,
+            escapeProfile: preyEscapeProfile(pd),
             vx: (Math.random() - 0.5) * pd.speedMps * 0.3,
             vz: (Math.random() - 0.5) * pd.speedMps * 0.3,
             spawnedAt: performance.now(),
             alerted: false,
             fleeBoost: 1.0,
-            bobPhase: Math.random() * Math.PI * 2  // animation phase
+            flightHeight: 0,
+            depthOffset: 0,
+            coverTarget: null,
+            escapePhase: Math.random() * Math.PI * 2,
+            bobPhase: Math.random() * Math.PI * 2
           };
         }
         for (var pi = 0; pi < 12; pi++) {
@@ -9023,11 +9737,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         // dayPhase 0-1: 0 = midnight, 0.25 = dawn, 0.5 = noon, 0.75 = dusk
         var dayPhase = species.biome === 'forest-night' ? 0.0 : (species.id === 'kestrel' || species.id === 'snowyOwl' ? 0.35 : 0.5);
         var dayCycleSpeed = 0.0025;  // % per second — full day = ~400 seconds
+        var nightSkyColor = new THREE.Color(0x07111f);
+        var nightFogColor = new THREE.Color(0x111827);
+        var daySkyColor = new THREE.Color(bc.sky);
+        var dayFogColor = new THREE.Color(bc.fog);
+        var twilightColor = new THREE.Color(0xf97316);
+        var skyFrameColor = new THREE.Color();
+        var fogFrameColor = new THREE.Color();
+        var skyTintColor = new THREE.Color();
+        var daylightTintColor = new THREE.Color(0xffffff);
+        var starVisibility = 0;
+        function updateEnvironmentalLight(phase) {
+          var solarAngle = (phase - 0.25) * Math.PI * 2;
+          var sunHeight = Math.sin(solarAngle);
+          var daylight = Math.max(0, Math.min(1, (sunHeight + 0.16) / 0.76));
+          var twilight = Math.max(0, 1 - Math.abs(sunHeight) / 0.28) * (1 - daylight * 0.35);
+          skyFrameColor.copy(nightSkyColor).lerp(daySkyColor, daylight).lerp(twilightColor, twilight * 0.28);
+          fogFrameColor.copy(nightFogColor).lerp(dayFogColor, daylight).lerp(twilightColor, twilight * 0.18);
+          scene.background.copy(skyFrameColor);
+          scene.fog.color.copy(fogFrameColor);
+          skyTintColor.setHex(0x263244).lerp(daylightTintColor, daylight);
+          skyDome.material.color.copy(skyTintColor);
+          ambient.intensity = 0.14 + daylight * 0.43;
+          skyFill.intensity = 0.16 + daylight * 0.26;
+          rimLight.intensity = 0.18 + daylight * 0.22 + twilight * 0.22;
+          rimLight.color.setHex(twilight > 0.25 ? 0xfdba74 : (daylight < 0.25 ? 0xa5b4fc : 0xffedd5));
+          sun.intensity = 0.08 + daylight * 0.92;
+          sun.color.setHex(twilight > 0.25 ? 0xfbbf24 : 0xfff8e1);
+          sunDir.set(Math.cos(solarAngle) * 0.72, Math.max(-0.12, sunHeight), Math.sin(solarAngle) * 0.62).normalize();
+          sun.position.copy(sunDir).multiplyScalar(180);
+          sunSprite.material.opacity = Math.max(0.06, daylight + twilight * 0.55);
+          starVisibility = Math.max(0, Math.min(1, 1 - daylight * 1.35));
+        }
+        updateEnvironmentalLight(dayPhase);
 
         // ─── NEW v0.30: Web Audio sound synthesis (no external files) ───
         var audioCtx = null;
         var windNode = null, windGain = null;
-        var soundEnabled = (rh.soundEnabled !== false);
+        var soundEnabled = false;
         function initAudio() {
           if (audioCtx) return;
           try {
@@ -9056,7 +9803,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             soundEnabled = false;
           }
         }
-        if (soundEnabled) initAudio();
         // Play species call (synthesized)
         function playSpeciesCall(callType) {
           if (!soundEnabled || !audioCtx) return;
@@ -9095,7 +9841,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         }
 
         // ─── State + Physics ───
-        var startY = 30 + (species.biome === 'cliff' || species.biome === 'mountain' ? 30 : 0);
+        var startY = mission.id === 'highStoop' ? 1050 : mission.id === 'thermalKettle' ? 90 : 30 + (species.biome === 'cliff' || species.biome === 'mountain' ? 30 : 0);
+        var missionCeiling = mission.id === 'highStoop' ? 1250 : mission.id === 'thermalKettle' ? 650 : 500;
         // NEW v0.29: Daily energy budget per species. Real raptors need ~7-15% of body mass per day in calories.
         // 1 kg fresh meat ≈ 1300 kcal. Average raptor needs ~120 kcal/kg/day.
         var dailyCaloriesNeeded = Math.round(species.massKg * 120);
@@ -9121,244 +9868,483 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           caloriesMax: dailyCaloriesNeeded,
           stamina: 100,        // 0-100 burst capacity for hard flapping
           staminaMax: 100,
-          exhausted: false     // when stamina hits 0, can't flap
+          exhausted: false,    // when stamina hits 0, can't flap
+          visualBank: 0,
+          visualYawLast: Math.PI
         };
+        // Start the chase camera behind the actual flight heading. This avoids
+        // the first-frame sweep from the world origin and makes depth readable
+        // immediately when the simulator appears.
+        var initialCamDistance = 6;
+        camera.position.set(
+          raptor.x - Math.sin(raptor.yaw) * initialCamDistance,
+          raptor.y + 2.2,
+          raptor.z + Math.cos(raptor.yaw) * initialCamDistance
+        );
+        camera.lookAt(
+          raptor.x + Math.sin(raptor.yaw) * 3,
+          raptor.y + 0.3,
+          raptor.z - Math.cos(raptor.yaw) * 3
+        );
         var gravity = 9.81;
         var runStart = performance.now();
+        var runElapsed = 0;
         var runCatches = 0;
+        var missionElapsed = 0;
+        var missionCatches = 0;
+        var missionCalories = 0;
+        var missionAlerts = 0;
+        var missionOutcome = 'active';
+        var missionOutcomeText = '';
+        var thermalActive = false;
+        var hunterDistance = Infinity;
         var runMaxSpeed = 0;
         var lastStrike = 0;
+        var strikeReady = true;
         var lastSpawn = performance.now();
         // NEW v0.29: Track recent flight state for energy burn
         var energyEventLog = [];  // pulse events for HUD ("+120 kcal Pigeon", "-5 cal flapping")
 
+        var pendingTimers = [];
+        function queueTimer(callback, delay) {
+          var timerId = setTimeout(function() {
+            pendingTimers = pendingTimers.filter(function(id) { return id !== timerId; });
+            if (!disposed) callback();
+          }, delay);
+          pendingTimers.push(timerId);
+          return timerId;
+        }
+
+        // Mission-specific landmarks make each objective readable in the world,
+        // instead of relying on text alone.
+        var thermalOrigin = { x: 0, z: 150 };
+        var thermalGroup = null;
+        if (mission.id === 'thermalKettle') {
+          thermalGroup = new THREE.Group();
+          thermalGroup.name = 'mission-thermal-column';
+          thermalGroup.position.set(
+            thermalOrigin.x,
+            terrainHeightAt(thermalOrigin.x, thermalOrigin.z),
+            thermalOrigin.z
+          );
+          for (var thermalIndex = 0; thermalIndex < 8; thermalIndex++) {
+            var thermalRing = new THREE.Mesh(
+              new THREE.TorusGeometry(23 + (thermalIndex % 2) * 2.5, 0.55, 8, 64),
+              new THREE.MeshBasicMaterial({
+                color: thermalIndex % 2 ? 0x67e8f9 : 0xfbbf24,
+                transparent: true,
+                opacity: 0.58,
+                side: THREE.DoubleSide,
+                depthWrite: false
+              })
+            );
+            thermalRing.rotation.x = Math.PI / 2;
+            thermalRing.position.y = 55 + thermalIndex * 65;
+            thermalRing.userData.phase = thermalIndex * 0.7;
+            thermalGroup.add(thermalRing);
+          }
+          scene.add(thermalGroup);
+        }
+
+        var hunterGroup = null;
+        if (mission.id === 'avoidPredator') {
+          hunterGroup = new THREE.Group();
+          hunterGroup.name = 'mission-pursuing-goshawk';
+          var hunterMaterial = new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.8, side: THREE.DoubleSide });
+          var hunterBody = new THREE.Mesh(new THREE.SphereGeometry(0.45, 12, 8), hunterMaterial);
+          hunterBody.scale.set(0.7, 0.65, 1.7);
+          hunterGroup.add(hunterBody);
+          var hunterWingGeometry = new THREE.BufferGeometry();
+          hunterWingGeometry.setAttribute('position', new THREE.Float32BufferAttribute([
+            0, 0, 0.25, -4.2, 0, -0.2, -2.5, 0, -1.1,
+            0, 0, 0.25, 4.2, 0, -0.2, 2.5, 0, -1.1
+          ], 3));
+          hunterWingGeometry.setIndex([0, 1, 2, 3, 4, 5]);
+          hunterWingGeometry.computeVertexNormals();
+          hunterGroup.add(new THREE.Mesh(hunterWingGeometry, hunterMaterial));
+          var hunterEye = new THREE.Mesh(
+            new THREE.SphereGeometry(0.11, 8, 6),
+            new THREE.MeshBasicMaterial({ color: 0xf87171 })
+          );
+          hunterEye.position.set(0, 0.12, 0.72);
+          hunterGroup.add(hunterEye);
+          hunterGroup.position.set(raptor.x, raptor.y + 15, raptor.z - 125);
+          scene.add(hunterGroup);
+        }
+
         // ─── Input ───
         var keys = {};
-        // ── NEW: Camera + targeting state ──
-        // Player-toggleable via V (view), Z (zoom), T (target lock display).
-        // Target-lock + reticle simulate eagle vision (2 foveae, ~8x acuity vs human).
-        var camMode = 'chase';   // 'chase' or 'fp' (first-person from head)
-        var zoomActive = false;  // toggle 3x zoom (FOV 70° → 25°)
-        var targetLockOn = true; // show reticle on nearest forward prey
-        function onKeyDown(e) {
-          var raw = e.key.toLowerCase();
-          // Arrow keys → WASD aliases so left/right turn the BIRD (not scroll the page)
-          var k = raw;
-          if (raw === 'arrowleft')  k = 'a';
-          else if (raw === 'arrowright') k = 'd';
-          else if (raw === 'arrowup')    k = 'w';
-          else if (raw === 'arrowdown')  k = 's';
-          keys[k] = true;
-          if (k === 'f') { strike(); e.preventDefault(); }
-          if (k === ' ' || k === 'shift') e.preventDefault();
-          if (['w','a','s','d','q','e'].indexOf(k) !== -1) e.preventDefault();
-          if (['arrowleft','arrowright','arrowup','arrowdown'].indexOf(raw) !== -1) e.preventDefault();
-          // V / Z / T are one-shot toggles (ignore key-repeat)
-          if ((raw === 'v' || raw === 'z' || raw === 't') && !e.repeat) {
-            e.preventDefault();
-            if (raw === 'v') {
-              camMode = (camMode === 'chase') ? 'fp' : 'chase';
-              rhAnnounce(camMode === 'fp' ? 'First-person eagle vision' : 'Chase camera');
-            } else if (raw === 'z') {
-              zoomActive = !zoomActive;
-              rhAnnounce(zoomActive ? 'Zoomed in (3x acuity)' : 'Zoom off');
-            } else if (raw === 't') {
-              targetLockOn = !targetLockOn;
-              rhAnnounce(targetLockOn ? 'Target lock on' : 'Target lock off');
-            }
-          }
-        }
-        function onKeyUp(e) {
-          var raw = e.key.toLowerCase();
-          var k = raw;
-          if (raw === 'arrowleft')  k = 'a';
-          else if (raw === 'arrowright') k = 'd';
-          else if (raw === 'arrowup')    k = 'w';
-          else if (raw === 'arrowdown')  k = 's';
-          keys[k] = false;
-        }
-        canvasEl.addEventListener('keydown', onKeyDown);
-        canvasEl.addEventListener('keyup', onKeyUp);
-        canvasEl.focus();
-
-        // ─── NEW v0.19: Touch + Mouse drag controls ───
-        // Drag-to-steer (touch + mouse). Horizontal drag = yaw delta; vertical drag = pitch delta.
+        var camMode = 'chase';
+        var zoomActive = false;
+        var targetLockOn = true;
+        var simPaused = false;
         var dragState = { active: false, lastX: 0, lastY: 0, pointerId: null };
-        var touchYawSensitivity = 0.005;   // radians per pixel
+        var touchYawSensitivity = 0.005;
         var touchPitchSensitivity = 0.003;
-        function onPointerDown(e) {
-          canvasEl.focus();
-          var p = e.touches ? e.touches[0] : e;
-          dragState.active = true;
-          dragState.lastX = p.clientX;
-          dragState.lastY = p.clientY;
-          if (e.pointerId !== undefined) dragState.pointerId = e.pointerId;
-          if (e.cancelable && e.touches) e.preventDefault();
+        var tutorialSignals = {};
+        var lastTargetState = '';
+        var lastTargetHint = '';
+
+        function markTutorialSignal(signal) {
+          if (tutorialSignals[signal]) return;
+          tutorialSignals[signal] = true;
+          notifyUI({ tutorialSignals: Object.assign({}, tutorialSignals) });
         }
-        function onPointerMove(e) {
-          if (!dragState.active) return;
-          var p = e.touches ? e.touches[0] : e;
-          var dx = p.clientX - dragState.lastX;
-          var dy = p.clientY - dragState.lastY;
-          dragState.lastX = p.clientX;
-          dragState.lastY = p.clientY;
-          // Apply directly to raptor (need access to raptor — it's in scope here)
-          raptor.yaw -= dx * touchYawSensitivity;
-          raptor.pitch = Math.max(-0.8, Math.min(0.8, raptor.pitch - dy * touchPitchSensitivity));
-          if (e.cancelable && e.touches) e.preventDefault();
-        }
-        function onPointerUp(e) {
+        function clearHeldInputs() {
+          Object.keys(keys).forEach(function(key) { keys[key] = false; });
           dragState.active = false;
           dragState.pointerId = null;
         }
-        canvasEl.addEventListener('mousedown', onPointerDown);
-        canvasEl.addEventListener('mousemove', onPointerMove);
-        canvasEl.addEventListener('mouseup', onPointerUp);
-        canvasEl.addEventListener('mouseleave', onPointerUp);
-        canvasEl.addEventListener('touchstart', onPointerDown, { passive: false });
-        canvasEl.addEventListener('touchmove', onPointerMove, { passive: false });
-        canvasEl.addEventListener('touchend', onPointerUp);
-        canvasEl.addEventListener('touchcancel', onPointerUp);
-
-        // ─── NEW v0.19: On-screen action buttons (touch-friendly) ───
-        // Floating button cluster at the bottom of the canvas parent.
-        // Buttons: ↑ altitude, ↓ altitude, DIVE (hold), PULL (hold), STRIKE (tap)
-        var hudParent2 = canvasEl.parentElement;
-        var btnDock = document.createElement('div');
-        btnDock.style.cssText = 'position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:6px;pointer-events:auto;flex-wrap:wrap;justify-content:center;max-width:95%';
-        hudParent2.appendChild(btnDock);
-        function makeBtn(label, color, holdKey, isStrike) {
-          var b = document.createElement('button');
-          b.textContent = label;
-          b.style.cssText = 'background:rgba(15,23,42,0.85);border:2px solid ' + color + ';border-radius:10px;padding:10px 14px;color:' + color + ';font-weight:bold;font-size:13px;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none;min-width:54px;font-family:ui-monospace,Menlo,monospace;';
-          b.setAttribute('aria-label', label);
-          if (isStrike) {
-            var doStrike = function(e) { e && e.preventDefault && e.preventDefault(); strike(); };
-            b.addEventListener('click', doStrike);
-            b.addEventListener('touchstart', doStrike, { passive: false });
-          } else if (holdKey) {
-            var press = function(e) { e && e.preventDefault && e.preventDefault(); keys[holdKey] = true; b.style.background = color; b.style.color = '#0f172a'; };
-            var release = function(e) { e && e.preventDefault && e.preventDefault(); keys[holdKey] = false; b.style.background = 'rgba(15,23,42,0.85)'; b.style.color = color; };
-            b.addEventListener('mousedown', press);
-            b.addEventListener('mouseup', release);
-            b.addEventListener('mouseleave', release);
-            b.addEventListener('touchstart', press, { passive: false });
-            b.addEventListener('touchend', release);
-            b.addEventListener('touchcancel', release);
+        function publishControlState() {
+          notifyUI({
+            ready: true,
+            paused: simPaused,
+            camera: camMode,
+            zoom: zoomActive,
+            assist: targetLockOn,
+            sound: soundEnabled,
+            strikeReady: strikeReady
+          });
+        }
+        function setPaused(nextPaused, announcement) {
+          simPaused = !!nextPaused;
+          clearHeldInputs();
+          pauseOverlay.setAttribute('data-visible', simPaused ? 'true' : 'false');
+          pauseOverlay.setAttribute('aria-hidden', simPaused ? 'false' : 'true');
+          if (windGain && simPaused) windGain.gain.value = 0;
+          publishControlState();
+          if (announcement !== false) rhAnnounce(simPaused ? 'Flight paused' : 'Flight resumed');
+        }
+        function normalizedKey(event) {
+          var raw = String(event.key || '').toLowerCase();
+          if (raw === 'arrowleft') return 'a';
+          if (raw === 'arrowright') return 'd';
+          if (raw === 'arrowup') return 'w';
+          if (raw === 'arrowdown') return 's';
+          return raw;
+        }
+        function toggleView() {
+          camMode = camMode === 'chase' ? 'fp' : 'chase';
+          publishControlState();
+          rhAnnounce(camMode === 'fp' ? 'First-person raptor vision' : 'Chase camera');
+        }
+        function toggleZoom() {
+          zoomActive = !zoomActive;
+          publishControlState();
+          rhAnnounce(zoomActive ? 'Raptor acuity zoom on' : 'Raptor acuity zoom off');
+        }
+        function toggleAssist() {
+          targetLockOn = !targetLockOn;
+          preyMeshes.forEach(function(prey) {
+            if (prey.beacon) prey.beacon.visible = targetLockOn;
+            if (prey.beaconCap) prey.beaconCap.visible = targetLockOn;
+          });
+          publishControlState();
+          rhAnnounce(targetLockOn ? 'Target assist on' : 'Target assist off');
+        }
+        function toggleSound() {
+          soundEnabled = !soundEnabled;
+          if (soundEnabled) {
+            if (!audioCtx) initAudio();
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+          } else if (windGain) {
+            windGain.gain.value = 0;
           }
-          return b;
+          setRH({ soundEnabled: soundEnabled });
+          publishControlState();
+          rhAnnounce(soundEnabled ? 'Sound on' : 'Sound off');
         }
-        var btnDown = makeBtn('⬇ Alt', '#60a5fa', 'q');
-        var btnUp = makeBtn('⬆ Alt', '#60a5fa', 'e');
-        var btnDive = makeBtn('🚀 DIVE', '#fca5a5', 'shift');
-        var btnPull = makeBtn('🪂 PULL', '#67e8f9', ' ');
-        var btnStrike = makeBtn('🎯 STRIKE', '#fde047', null, true);
-        // NEW: tap-style toggle buttons for view / zoom / target-lock (synthesize a keydown)
-        function makeToggleBtn(label, color, rawKey) {
-          var b = document.createElement('button');
-          b.textContent = label;
-          b.style.cssText = 'background:rgba(15,23,42,0.85);border:2px solid ' + color + ';border-radius:10px;padding:10px 14px;color:' + color + ';font-weight:bold;font-size:13px;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none;min-width:54px;font-family:ui-monospace,Menlo,monospace;';
-          b.setAttribute('aria-label', label);
-          var doToggle = function(e) {
-            e && e.preventDefault && e.preventDefault();
-            // Synthesize a one-shot key event into the same handler
-            onKeyDown({ key: rawKey, repeat: false, preventDefault: function(){} });
-          };
-          b.addEventListener('click', doToggle);
-          b.addEventListener('touchstart', doToggle, { passive: false });
-          return b;
+        function onKeyDown(event) {
+          var raw = String(event.key || '').toLowerCase();
+          var key = normalizedKey(event);
+          if ((raw === 'p' || raw === 'escape') && !event.repeat) {
+            if (raw !== 'escape' || !(document.fullscreenElement || document.webkitFullscreenElement)) {
+              event.preventDefault();
+              setPaused(!simPaused);
+            }
+            return;
+          }
+          if ((raw === 'v' || raw === 'z' || raw === 't' || raw === 'm') && !event.repeat) {
+            event.preventDefault();
+            if (raw === 'v') toggleView();
+            else if (raw === 'z') toggleZoom();
+            else if (raw === 't') toggleAssist();
+            else toggleSound();
+            return;
+          }
+          if (simPaused) return;
+          keys[key] = true;
+          if (key === 'a' || key === 'd') markTutorialSignal('steer');
+          if (key === 'q' || key === 'e' || key === 'shift' || key === ' ' || key === 'w' || key === 's') markTutorialSignal('altitude');
+          if (key === 'f' && !event.repeat) strike();
+          if (['w','a','s','d','q','e','f',' ','shift','arrowleft','arrowright','arrowup','arrowdown'].indexOf(raw) !== -1 || key === ' ') {
+            event.preventDefault();
+          }
         }
-        var btnView = makeToggleBtn('👁 VIEW', '#a78bfa', 'v');
-        var btnZoom = makeToggleBtn('🔍 ZOOM', '#a78bfa', 'z');
-        var btnLock = makeToggleBtn('🎯 LOCK', '#fbbf24', 't');
-        [btnDown, btnUp, btnDive, btnPull, btnStrike, btnView, btnZoom, btnLock].forEach(function(b) { btnDock.appendChild(b); });
-        // Touch hint
-        var touchHint = document.createElement('div');
-        touchHint.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(15,23,42,0.7);border:1px solid rgba(251,191,36,0.4);border-radius:8px;padding:8px 12px;color:#fbbf24;font-size:11px;pointer-events:none;font-family:ui-sans-serif,system-ui;text-align:center;opacity:0.9';
-        touchHint.innerHTML = '✋ Drag canvas to steer · Tap buttons below to dive/strike';
-        hudParent2.appendChild(touchHint);
-        setTimeout(function() { if (touchHint.parentElement) touchHint.style.transition = 'opacity 1s'; touchHint.style.opacity = '0'; setTimeout(function() { if (touchHint.parentElement) touchHint.parentElement.removeChild(touchHint); }, 1000); }, 4000);
+        function onKeyUp(event) {
+          keys[normalizedKey(event)] = false;
+        }
+        function onCanvasBlur() {
+          clearHeldInputs();
+        }
+        function onWindowBlur() {
+          clearHeldInputs();
+        }
+        function onVisibilityChange() {
+          clearHeldInputs();
+          if (document.hidden && !simPaused) setPaused(true, false);
+        }
+        function onPointerDown(event) {
+          if (simPaused) return;
+          canvasEl.focus({ preventScroll: true });
+          dragState.active = true;
+          dragState.lastX = event.clientX;
+          dragState.lastY = event.clientY;
+          dragState.pointerId = event.pointerId;
+          if (canvasEl.setPointerCapture) canvasEl.setPointerCapture(event.pointerId);
+          event.preventDefault();
+        }
+        function onPointerMove(event) {
+          if (!dragState.active || event.pointerId !== dragState.pointerId || simPaused) return;
+          var dx = event.clientX - dragState.lastX;
+          var dy = event.clientY - dragState.lastY;
+          dragState.lastX = event.clientX;
+          dragState.lastY = event.clientY;
+          raptor.yaw += dx * touchYawSensitivity;
+          raptor.pitch = Math.max(-0.8, Math.min(0.8, raptor.pitch - dy * touchPitchSensitivity));
+          if (Math.abs(dx) > 3) markTutorialSignal('steer');
+          if (Math.abs(dy) > 3) markTutorialSignal('altitude');
+          event.preventDefault();
+        }
+        function onPointerUp(event) {
+          if (event.pointerId !== undefined && dragState.pointerId !== null && event.pointerId !== dragState.pointerId) return;
+          dragState.active = false;
+          if (event.pointerId !== undefined && canvasEl.hasPointerCapture && canvasEl.hasPointerCapture(event.pointerId)) {
+            canvasEl.releasePointerCapture(event.pointerId);
+          }
+          dragState.pointerId = null;
+        }
 
-        // ─── Strike ───
-        function strike() {
-          var now = performance.now();
-          if (now - lastStrike < 400) return; // cooldown
-          lastStrike = now;
-          // Find prey within reach (in front of bird, within ~4m)
-          var reachDist = 5 + (raptor.diving ? 2 : 0);
-          var forward = new THREE.Vector3(
+        var hudParent2 = canvasEl.parentElement;
+        var pauseOverlay = document.createElement('div');
+        pauseOverlay.className = 'rh-flight-pause';
+        pauseOverlay.setAttribute('data-visible', 'false');
+        pauseOverlay.setAttribute('aria-hidden', 'true');
+        var pauseCard = document.createElement('div');
+        pauseCard.className = 'rh-flight-pause-card';
+        pauseCard.innerHTML = '<div style="font-size:18px;font-weight:800">Flight paused</div><div style="font-size:12px;margin-top:5px;color:#cbd5e1">Press P or use Resume below.</div>';
+        pauseOverlay.appendChild(pauseCard);
+        hudParent2.appendChild(pauseOverlay);
+
+        var flightMarker = document.createElement('div');
+        flightMarker.className = 'rh-flight-marker';
+        flightMarker.setAttribute('aria-hidden', 'true');
+        hudParent2.appendChild(flightMarker);
+
+        var missionPanel = document.createElement('div');
+        missionPanel.className = 'rh-flight-mission-hud';
+        missionPanel.setAttribute('data-raptor-mission-progress', mission.id);
+        missionPanel.setAttribute('role', 'group');
+        missionPanel.setAttribute('aria-label', 'Mission progress');
+        hudParent2.appendChild(missionPanel);
+        function finishMission(success, message) {
+          if (missionOutcome !== 'active') return;
+          missionOutcome = success ? 'success' : 'failed';
+          missionOutcomeText = message || (success ? mission.successText : 'Mission incomplete.');
+          missionPanel.style.borderColor = success ? '#34d399' : '#fca5a5';
+          missionPanel.setAttribute('data-mission-state', missionOutcome);
+          setPaused(true, false);
+          notifyUI({ missionState: missionOutcome, missionMessage: missionOutcomeText });
+          energyEventLog.push({
+            msg: (success ? 'MISSION COMPLETE - ' : 'MISSION FAILED - ') + missionOutcomeText,
+            t: performance.now(),
+            color: success ? '#34d399' : '#fca5a5'
+          });
+          rhAnnounce((success ? 'Mission complete. ' : 'Mission failed. ') + missionOutcomeText);
+        }
+        function missionProgressText() {
+          if (missionOutcome !== 'active') return missionOutcomeText;
+          if (mission.id === 'open') return runCatches + ' catches - free flight';
+          if (mission.id === 'feedChicks') return Math.round(missionCalories) + ' / ' + mission.calorieGoal + ' kcal delivered';
+          if (mission.id === 'crossDesert') return missionCatches + ' / 1 refuel catch - ' + Math.max(0, Math.ceil(mission.timeLimit - missionElapsed)) + 's remaining';
+          if (mission.id === 'silentStrike') return missionCatches + ' / 3 silent catches - ' + missionAlerts + ' alerts';
+          if (mission.id === 'thermalKettle') return Math.max(0, Math.round(raptor.y - terrainHeightAt(raptor.x, raptor.z))) + ' / 500m - ' + (thermalActive ? 'inside lift' : 'find the thermal rings');
+          if (mission.id === 'avoidPredator') return missionCatches + ' / 2 catches - hunter ' + (isFinite(hunterDistance) ? Math.round(hunterDistance) + 'm away' : 'searching');
+          if (mission.id === 'highStoop') return Math.round(raptor.speed * 2.237) + ' / 180 mph - strike while diving';
+          return Math.max(0, Math.ceil((mission.timeLimit || 0) - missionElapsed)) + 's remaining';
+        }
+        function evaluateMission() {
+          if (missionOutcome !== 'active' || mission.id === 'open') return;
+          if (mission.id === 'feedChicks' && missionCalories >= mission.calorieGoal) {
+            finishMission(true, mission.successText);
+          } else if (mission.id === 'silentStrike') {
+            if (missionAlerts > 0) finishMission(false, 'Prey heard the approach. Glide before the next attempt.');
+            else if (missionCatches >= 3) finishMission(true, mission.successText);
+          } else if (mission.id === 'thermalKettle' && raptor.y - terrainHeightAt(raptor.x, raptor.z) >= 500) {
+            finishMission(true, mission.successText);
+          } else if (mission.id === 'avoidPredator') {
+            if (hunterDistance < 30) finishMission(false, 'The goshawk closed inside 30m.');
+            else if (missionCatches >= 2) finishMission(true, mission.successText);
+          } else if (mission.id === 'crossDesert' && raptor.calories <= -50) {
+            finishMission(false, 'Energy reserves were exhausted before the crossing ended.');
+          }
+          if (missionOutcome === 'active' && mission.timeLimit > 0 && missionElapsed >= mission.timeLimit) {
+            if (mission.id === 'crossDesert') {
+              finishMission(missionCatches >= 1 && raptor.calories > 0, missionCatches >= 1 ? mission.successText : 'The crossing ended without a refuel catch.');
+            } else if (mission.id === 'avoidPredator') {
+              finishMission(missionCatches >= 2 && hunterDistance >= 30, missionCatches >= 2 ? mission.successText : 'Survival required two catches while keeping distance.');
+            } else {
+              finishMission(false, 'Time expired before the objective was complete.');
+            }
+          }
+        }
+
+        canvasEl.addEventListener('keydown', onKeyDown);
+        canvasEl.addEventListener('keyup', onKeyUp);
+        canvasEl.addEventListener('blur', onCanvasBlur);
+        canvasEl.addEventListener('pointerdown', onPointerDown);
+        canvasEl.addEventListener('pointermove', onPointerMove);
+        canvasEl.addEventListener('pointerup', onPointerUp);
+        canvasEl.addEventListener('pointercancel', onPointerUp);
+        canvasEl.addEventListener('lostpointercapture', onPointerUp);
+        window.addEventListener('blur', onWindowBlur);
+        document.addEventListener('visibilitychange', onVisibilityChange);
+
+        canvasEl._rhCommand = function(action, value) {
+          if (disposed) return;
+          if (action === 'hold' && value) {
+            keys[value.key] = !!value.pressed && !simPaused;
+          } else if (action === 'strike') {
+            if (!simPaused) strike();
+          } else if (action === 'pause') {
+            setPaused(!simPaused);
+          } else if (action === 'view') {
+            toggleView();
+          } else if (action === 'zoom') {
+            toggleZoom();
+          } else if (action === 'assist') {
+            toggleAssist();
+          } else if (action === 'sound') {
+            toggleSound();
+          } else if (action === 'resetTutorial') {
+            tutorialSignals = {};
+            notifyUI({ tutorialSignals: {} });
+          }
+        };
+        publishControlState();
+
+        function flightForwardVector() {
+          return new THREE.Vector3(
             Math.sin(raptor.yaw) * Math.cos(raptor.pitch),
-            -Math.sin(raptor.pitch),
+            Math.sin(raptor.pitch),
             -Math.cos(raptor.yaw) * Math.cos(raptor.pitch)
           ).normalize();
-          var hitIdx = -1, bestDot = 0.7;
-          for (var pi2 = 0; pi2 < preyMeshes.length; pi2++) {
-            var pm = preyMeshes[pi2];
-            var dx = pm.mesh.position.x - raptor.x;
-            var dy = pm.mesh.position.y - raptor.y;
-            var dz = pm.mesh.position.z - raptor.z;
-            var d = Math.sqrt(dx * dx + dy * dy + dz * dz);
-            if (d > reachDist) continue;
-            // dot product with forward
-            var dot = (dx * forward.x + dy * forward.y + dz * forward.z) / d;
-            if (dot > bestDot) { bestDot = dot; hitIdx = pi2; }
+        }
+
+        function evaluatePreyTarget(prey, index) {
+          var dx = prey.mesh.position.x - raptor.x;
+          var dy = prey.mesh.position.y - raptor.y;
+          var dz = prey.mesh.position.z - raptor.z;
+          var distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+          var forward = flightForwardVector();
+          var dot = distance > 0.001
+            ? (dx * forward.x + dy * forward.y + dz * forward.z) / distance
+            : 1;
+          var reach = 5 + (raptor.diving ? 2 : 0);
+          return {
+            prey: prey,
+            index: index,
+            distance: distance,
+            verticalOffset: dy,
+            dot: dot,
+            reach: reach,
+            canStrike: distance <= reach && dot >= 0.7
+          };
+        }
+
+        function acquireTarget() {
+          var best = null;
+          var bestScore = Infinity;
+          for (var index = 0; index < preyMeshes.length; index++) {
+            var candidate = evaluatePreyTarget(preyMeshes[index], index);
+            if (candidate.distance > 300 || candidate.dot < 0.5) continue;
+            var score = candidate.distance / Math.max(0.25, candidate.dot);
+            if (score < bestScore) {
+              best = candidate;
+              bestScore = score;
+            }
           }
+          return best;
+        }
+
+        function strike() {
+          markTutorialSignal('strike');
+          var now = performance.now();
+          if (now - lastStrike < 400) return;
+          lastStrike = now;
+          strikeReady = false;
+          publishControlState();
+          queueTimer(function() {
+            strikeReady = true;
+            publishControlState();
+          }, 400);
+          var targetInfo = acquireTarget();
+          var hitIdx = targetInfo && targetInfo.canStrike ? targetInfo.index : -1;
           if (hitIdx >= 0) {
-            // Catch!
             var caught = preyMeshes[hitIdx];
-            // ── NEW v0.27: Spawn catch FX at prey position before removal ──
             spawnCatchFx(caught.mesh.position.x, caught.mesh.position.y, caught.mesh.position.z, caught.data.color || 0xfde047);
             scene.remove(caught.mesh);
-            caught.mesh.traverse(function(o) { if (o.geometry) o.geometry.dispose(); if (o.material) { if (Array.isArray(o.material)) o.material.forEach(function(m){m.dispose();}); else o.material.dispose(); } });
+            caught.mesh.traverse(function(object) {
+              if (object.geometry) object.geometry.dispose();
+              if (object.material) {
+                if (Array.isArray(object.material)) object.material.forEach(function(material) { material.dispose(); });
+                else object.material.dispose();
+              }
+            });
             preyMeshes.splice(hitIdx, 1);
             runCatches++;
-            // ── NEW v0.29: Calorie restoration based on prey size + biomass ──
-            // Bigger prey = more calories. 1 kg meat ≈ 1300 kcal.
-            // Use prey sizeM as proxy for biomass (cubed for volume * meat density).
-            var preyMassKg = Math.max(0.01, Math.pow(caught.data.sizeM, 2.5) * 4);  // rough biomass estimate
-            var caloriesGained = preyMassKg * 1300;
-            // But raptors can only consume ~30% of their body mass in one meal
-            var maxMealKcal = species.massKg * 0.3 * 1300;
-            caloriesGained = Math.min(caloriesGained, maxMealKcal);
+            missionCatches += 1;
+
+            var preyMassKg = Math.max(0.01, Math.pow(caught.data.sizeM, 2.5) * 4);
+            var caloriesGained = Math.min(preyMassKg * 1300, species.massKg * 0.3 * 1300);
+            missionCalories += caloriesGained;
             raptor.calories = Math.min(raptor.caloriesMax * 1.5, raptor.calories + caloriesGained);
             raptor.starving = false;
-            energyEventLog.push({ msg: '+' + Math.round(caloriesGained) + ' kcal — ' + caught.data.label, t: now, color: '#10b981' });
+            energyEventLog.push({ msg: '+' + Math.round(caloriesGained) + ' kcal - ' + caught.data.label, t: now, color: '#10b981' });
             rhAnnounce('Strike! Caught ' + caught.data.label + ' for ' + Math.round(caloriesGained) + ' calories');
             playSpeciesCall('strike');
-            // Plus a victory screech 100ms later
-            setTimeout(function() { playSpeciesCall('screech'); }, 200);
+            queueTimer(function() { playSpeciesCall('screech'); }, 200);
             if (ctx.awardXP) ctx.awardXP(caught.data.points, 'Raptor Hunt: caught ' + caught.data.label);
-            // Update stats
             setRH(function(prev) {
               var stats = (prev.huntStats && prev.huntStats[species.id]) || { catches: 0, attempts: 0, bestRun: 0 };
-              var ns = { catches: stats.catches + 1, attempts: stats.attempts + 1, bestRun: Math.max(stats.bestRun, runCatches) };
+              var nextStats = { catches: stats.catches + 1, attempts: stats.attempts + 1, bestRun: Math.max(stats.bestRun, runCatches) };
               var allStats = Object.assign({}, prev.huntStats || {});
-              allStats[species.id] = ns;
+              allStats[species.id] = nextStats;
               return Object.assign({}, prev, { huntStats: allStats });
             });
-            // Spawn replacement
-            setTimeout(function() {
+            queueTimer(function() {
               var newPrey = spawnPrey();
               if (newPrey) preyMeshes.push(newPrey);
             }, 1500);
-            // Bird "lift" reaction
             raptor.y += 1.5;
+            if (mission.id === 'highStoop' && raptor.diving && raptor.speed * 2.237 >= 180) {
+              finishMission(true, mission.successText);
+            }
+            evaluateMission();
           } else {
-            // Miss — update attempts
-            rhAnnounce('Missed');
+            rhAnnounce(targetInfo ? 'Target is not yet in the strike envelope' : 'No target ahead');
             setRH(function(prev) {
               var stats = (prev.huntStats && prev.huntStats[species.id]) || { catches: 0, attempts: 0, bestRun: 0 };
-              var ns = { catches: stats.catches, attempts: stats.attempts + 1, bestRun: Math.max(stats.bestRun, runCatches) };
+              var nextStats = { catches: stats.catches, attempts: stats.attempts + 1, bestRun: Math.max(stats.bestRun, runCatches) };
               var allStats = Object.assign({}, prev.huntStats || {});
-              allStats[species.id] = ns;
+              allStats[species.id] = nextStats;
               return Object.assign({}, prev, { huntStats: allStats });
             });
           }
         }
 
-        // ─── HUD overlay (DOM div) — v0.29 WCAG-compliant rewrite ───
-        // High-contrast colors (all bgs use 0.85+ alpha + explicit text colors with >7:1 ratio against bg).
-        // Every numeric value gets aria-live region.
+        // HUD overlay. Telemetry is deliberately non-live; only discrete events
+        // are announced through the event log and the shared Raptor Lab announcer.
         var hudParent = canvasEl.parentElement;
 
         // ── Dive-FX vignette (signature FX) ── darkened edges that swell with stoop
@@ -9366,12 +10352,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         // FIRST so every HUD element paints above it. Fully disabled under
         // prefers-reduced-motion (_rmFX); opacity driven per frame in the loop from
         // the same dive-intensity normalization the existing speed-lines use.
-        var _rmFX = (function(){ try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch(e){ return false; } })();
+        var reducedMotionMedia = null;
+        var _rmFX = false;
+        try {
+          reducedMotionMedia = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
+          _rmFX = !!(reducedMotionMedia && reducedMotionMedia.matches);
+        } catch (reducedMotionError) {}
+        function onReducedMotionChange(event) {
+          _rmFX = !!event.matches;
+          if (_rmFX) speedLineMat.opacity = 0;
+        }
+        if (reducedMotionMedia && reducedMotionMedia.addEventListener) {
+          reducedMotionMedia.addEventListener('change', onReducedMotionChange);
+        }
         var diveVig = document.createElement('div');
         diveVig.style.cssText = 'position:absolute;inset:0;pointer-events:none;opacity:0;background:radial-gradient(ellipse at center, rgba(0,0,0,0) 52%, rgba(6,10,22,0.62) 100%);';
         hudParent.appendChild(diveVig);
         var hud = document.createElement('div');
-        hud.setAttribute('role', 'status');
+        hud.className = 'rh-flight-telemetry';
+        hud.setAttribute('role', 'group');
         hud.setAttribute('aria-label', 'Flight telemetry HUD');
         hud.style.cssText = 'position:absolute;top:10px;left:10px;background:rgba(15,23,42,0.92);border:2px solid #fbbf24;border-radius:10px;padding:10px 14px;color:#fef3c7;font-family:ui-monospace,Menlo,monospace;font-size:12px;pointer-events:none;line-height:1.5;text-shadow:0 0 4px rgba(0,0,0,0.85);min-width:210px;font-weight:500';
         hudParent.appendChild(hud);
@@ -9405,53 +10404,62 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         hudParent.appendChild(reticle);
         // Status panel (top-right)
         var status = document.createElement('div');
-        status.setAttribute('role', 'status');
+        status.className = 'rh-flight-status';
+        status.setAttribute('role', 'group');
         status.setAttribute('aria-label', 'Run statistics + nearest prey');
         status.style.cssText = 'position:absolute;top:10px;right:10px;background:rgba(15,23,42,0.92);border:2px solid #10b981;border-radius:10px;padding:10px 14px;color:#d1fae5;font-family:ui-monospace,Menlo,monospace;font-size:12px;pointer-events:none;line-height:1.5;text-shadow:0 0 4px rgba(0,0,0,0.85);min-width:180px;font-weight:500';
         hudParent.appendChild(status);
         // ── NEW v0.30: Weather panel (top-center, below event log) ──
         var weatherPanel = document.createElement('div');
-        weatherPanel.setAttribute('role', 'status');
+        weatherPanel.className = 'rh-flight-weather';
+        weatherPanel.setAttribute('role', 'group');
         weatherPanel.setAttribute('aria-label', 'Weather + time of day');
         weatherPanel.style.cssText = 'position:absolute;top:80px;left:50%;transform:translateX(-50%);background:rgba(15,23,42,0.92);border:2px solid #67e8f9;border-radius:10px;padding:6px 12px;color:#cffafe;font-family:ui-monospace,Menlo,monospace;font-size:11px;pointer-events:none;line-height:1.4;text-shadow:0 0 4px rgba(0,0,0,0.85);font-weight:500;display:flex;gap:14px';
         hudParent.appendChild(weatherPanel);
 
         // ── NEW v0.30: Sound toggle button ──
-        var soundBtn = document.createElement('button');
-        soundBtn.setAttribute('aria-label', soundEnabled ? 'Mute sound' : 'Enable sound');
-        soundBtn.style.cssText = 'position:absolute;top:10px;right:200px;background:rgba(15,23,42,0.92);border:2px solid #a78bfa;border-radius:50%;width:38px;height:38px;color:#ddd6fe;font-size:16px;cursor:pointer;pointer-events:auto';
-        soundBtn.textContent = soundEnabled ? '🔊' : '🔇';
-        soundBtn.addEventListener('click', function() {
-          soundEnabled = !soundEnabled;
-          if (soundEnabled) {
-            if (!audioCtx) initAudio();
-            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-          } else if (windGain) {
-            windGain.gain.value = 0;
-          }
-          soundBtn.textContent = soundEnabled ? '🔊' : '🔇';
-          soundBtn.setAttribute('aria-label', soundEnabled ? 'Mute sound' : 'Enable sound');
-          setRH({ soundEnabled: soundEnabled });
-          rhAnnounce(soundEnabled ? 'Sound on' : 'Sound off');
-        });
-        hudParent.appendChild(soundBtn);
-
-        // ── NEW v0.29: Energy + Stamina bars panel (bottom-left, above controls) ──
         var energyPanel = document.createElement('div');
-        energyPanel.setAttribute('role', 'status');
+        energyPanel.className = 'rh-flight-energy';
+        energyPanel.setAttribute('role', 'group');
         energyPanel.setAttribute('aria-label', 'Energy + stamina bars');
         energyPanel.style.cssText = 'position:absolute;bottom:110px;left:10px;background:rgba(15,23,42,0.92);border:2px solid #f97316;border-radius:10px;padding:10px 14px;color:#fed7aa;font-family:ui-monospace,Menlo,monospace;font-size:11px;pointer-events:none;line-height:1.4;text-shadow:0 0 4px rgba(0,0,0,0.85);min-width:200px;font-weight:500';
         hudParent.appendChild(energyPanel);
         // ── NEW v0.29: Event log (transient calorie + state messages, top-center) ──
+        var telemetryStrip = document.createElement('div');
+        telemetryStrip.className = 'rh-flight-telemetry-strip';
+        telemetryStrip.setAttribute('role', 'group');
+        telemetryStrip.setAttribute('aria-label', 'Flight telemetry');
+        function addTelemetryMetric(label) {
+          var metric = document.createElement('div');
+          metric.className = 'rh-flight-metric';
+          var labelNode = document.createElement('span');
+          labelNode.className = 'rh-flight-metric-label';
+          labelNode.textContent = label;
+          var valueNode = document.createElement('span');
+          valueNode.className = 'rh-flight-metric-value';
+          valueNode.textContent = '—';
+          metric.appendChild(labelNode);
+          metric.appendChild(valueNode);
+          telemetryStrip.appendChild(metric);
+          return valueNode;
+        }
+        var telemetrySpeed = addTelemetryMetric('Speed');
+        var telemetryAltitude = addTelemetryMetric('Altitude');
+        var telemetryEnergy = addTelemetryMetric('Energy');
+        var telemetryTarget = addTelemetryMetric('Target');
+        var telemetryMission = addTelemetryMetric('Mission');
+        hudParent.appendChild(telemetryStrip);
+
+        // Visual event messages are not a live region; discrete events already
+        // use the tool's dedicated announcement channel.
         var eventLogEl = document.createElement('div');
-        eventLogEl.setAttribute('aria-live', 'polite');
-        eventLogEl.setAttribute('aria-atomic', 'false');
-        eventLogEl.style.cssText = 'position:absolute;top:10px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:4px;pointer-events:none;align-items:center';
+        eventLogEl.style.cssText = 'position:absolute;top:64px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:4px;pointer-events:none;align-items:center';
         hudParent.appendChild(eventLogEl);
 
         // ─── Animate ───
         var lastT = performance.now();
         var animId;
+        var lastHudPaint = 0;
         function loop() {
           // Stop the rAF chain (and tear down the whole sim) once the
           // canvas leaves the DOM — happens when the user navigates away
@@ -9475,47 +10483,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           lastT = now;
 
           // ── Controls ──
-          if (keys['a']) raptor.yaw += 1.5 * dt;
-          if (keys['d']) raptor.yaw -= 1.5 * dt;
+          // Compass yaw increases to the bird's right: A/left must subtract,
+          // while D/right must add. Combining the keys also prevents drift if
+          // both are held together.
+          if (simPaused) {
+            speedLineMat.opacity = 0;
+            if (composer) {
+              try { composer.render(); } catch (pausedRenderError) { composer = null; renderer.render(scene, camera); }
+            } else {
+              renderer.render(scene, camera);
+            }
+            return;
+          }
+          runElapsed += dt;
+          missionElapsed += dt;
+
+          // Compass yaw increases to the bird's right: A/left subtracts and
+          // D/right adds. Holding both cancels cleanly.
+          var turnInput = (keys['d'] ? 1 : 0) - (keys['a'] ? 1 : 0);
+          raptor.yaw += turnInput * 1.5 * dt;
           if (keys['w']) raptor.pitch = Math.min(raptor.pitch + 0.8 * dt, 0.8);
           if (keys['s']) raptor.pitch = Math.max(raptor.pitch - 0.8 * dt, -0.8);
           if (keys['q']) raptor.y -= 8 * dt;
-          if (keys['e']) raptor.y += 8 * dt;
+          if (keys['e'] && mission.id !== 'thermalKettle') raptor.y += 8 * dt;
 
-          // ── Dive / pull-up ──
           var diveKey = !!keys['shift'];
           var pullUpKey = !!keys[' '];
           raptor.diving = diveKey;
           raptor.pullingUp = pullUpKey;
 
-          // Speed
           var targetSpeed;
           if (diveKey) {
-            // Dive: pitch tucks forward, speed approaches stoopMax
             targetSpeed = raptor.stoopMax;
             raptor.pitch = Math.max(raptor.pitch - 1.2 * dt, -1.0);
           } else if (pullUpKey) {
-            // Pull up: lose speed
             targetSpeed = Math.max(8, raptor.maxLevel * 0.5);
             raptor.pitch = Math.min(raptor.pitch + 1.5 * dt, 0.6);
           } else {
-            // Coast at level cruise
             targetSpeed = raptor.maxLevel * 0.7;
-            // gentle pitch back to 0
-            raptor.pitch = raptor.pitch * 0.96;
+            if (!keys['w'] && !keys['s']) {
+              raptor.pitch += (0 - raptor.pitch) * (1 - Math.exp(-2.5 * dt));
+            }
           }
-          // Smooth approach (different rates for dive vs pull-up)
           var accel = diveKey ? 12 : pullUpKey ? 8 : 4;
-          // ── NEW v0.29: Exhaustion reduces top speed + climb effectiveness ──
           if (raptor.exhausted) {
             targetSpeed = Math.min(targetSpeed, raptor.maxLevel * 0.45);
             accel *= 0.4;
           }
-          raptor.speed += (targetSpeed - raptor.speed) * Math.min(1, accel * dt);
+          raptor.speed += (targetSpeed - raptor.speed) * (1 - Math.exp(-accel * dt));
           runMaxSpeed = Math.max(runMaxSpeed, raptor.speed);
 
-          // ── NEW v0.29: Energy + stamina dynamics ──
-          // Determine current activity for burn rate
+          // Energy and stamina use the same physical activity state as motion.
           var burnPerSecPerKg;
           var staminaBurn;
           if (diveKey) {
@@ -9544,7 +10562,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (raptor.stamina <= 0 && !raptor.exhausted) {
             raptor.exhausted = true;
             rhAnnounce('Exhausted! Glide to recover.');
-            energyEventLog.push({ msg: '⚠ EXHAUSTED — glide to recover', t: now, color: '#ef4444' });
+            energyEventLog.push({ msg: '⚠ EXHAUSTED — glide to recover', t: now, color: '#fca5a5' });
           } else if (raptor.stamina > 30 && raptor.exhausted) {
             raptor.exhausted = false;
             rhAnnounce('Recovered.');
@@ -9554,7 +10572,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (raptor.calories <= 0 && !raptor.starving) {
             raptor.starving = true;
             rhAnnounce('Critical hunger! Hunt or land.');
-            energyEventLog.push({ msg: '⚠ STARVING — eat or land!', t: now, color: '#dc2626' });
+            energyEventLog.push({ msg: '⚠ STARVING — eat or land!', t: now, color: '#fca5a5' });
           }
           raptor.calories = Math.max(-100, raptor.calories);  // can go slightly negative before forced down
           // Prune old energy events
@@ -9582,44 +10600,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           raptor.x += windPushX;
           raptor.z += windPushZ;
           // Apply thermal lift if gliding low + over warm ground
-          if (!diveKey && !pullUpKey && raptor.y < 100 && raptor.y > 5) {
-            var thermalLift = weather.thermalQuality * 0.4 * dt;
-            raptor.y += thermalLift;
+          // Mission lift is spatial: the student must find and remain inside
+          // the visible thermal column. Other missions retain only gentle lift.
+          thermalActive = false;
+          if (mission.id === 'thermalKettle' && thermalGroup) {
+            var thermalDx = raptor.x - thermalOrigin.x;
+            var thermalDz = raptor.z - thermalOrigin.z;
+            thermalActive = thermalDx * thermalDx + thermalDz * thermalDz <= 38 * 38;
+            for (var ringIndex = 0; ringIndex < thermalGroup.children.length; ringIndex++) {
+              var ring = thermalGroup.children[ringIndex];
+              var ringPulse = _rmFX ? 1 : 1 + Math.sin(now * 0.002 + ring.userData.phase) * 0.045;
+              ring.scale.set(ringPulse, ringPulse, ringPulse);
+            }
+            if (thermalActive && !diveKey) {
+              raptor.y += (8 + weather.thermalQuality * 12) * dt;
+              raptor.stamina = Math.min(raptor.staminaMax, raptor.stamina + 10 * dt);
+            }
+          } else if (!diveKey && !pullUpKey && raptor.y < 100 && raptor.y > 5) {
+            raptor.y += weather.thermalQuality * 0.4 * dt;
           }
 
-          // ── NEW v0.30: Time of day advance ──
+          // Advance one coherent sky-light cycle: color, fog, sun, fill, rim, and stars.
           dayPhase = (dayPhase + dayCycleSpeed * dt) % 1;
-          // Apply lighting changes based on dayPhase
-          var dayBrightness = 0.55;
-          if (dayPhase < 0.2 || dayPhase > 0.85) dayBrightness = 0.18;  // night
-          else if (dayPhase < 0.3) dayBrightness = 0.18 + (dayPhase - 0.2) * 3.7;  // dawn
-          else if (dayPhase > 0.7) dayBrightness = 0.55 - (dayPhase - 0.7) * 2.5;  // dusk
-          ambient.intensity = dayBrightness;
+          updateEnvironmentalLight(dayPhase);
 
           // ── NEW v0.30: Wind sound modulation ──
           if (windGain && audioCtx) {
             // Wind volume scales with raptor speed + ambient wind
             var targetVol = soundEnabled ? Math.min(0.35, raptor.speed * 0.004 + weather.windSpeed * 0.015) : 0;
-            windGain.gain.value += (targetVol - windGain.gain.value) * 0.05;
+            windGain.gain.value += (targetVol - windGain.gain.value) * dampingAlpha(3, dt);
           }
 
           // ── Position update (forward in yaw direction, vertical from pitch + gravity at dive) ──
           var horizSpeed = raptor.speed * Math.cos(raptor.pitch);
           raptor.x += Math.sin(raptor.yaw) * horizSpeed * dt;
           raptor.z -= Math.cos(raptor.yaw) * horizSpeed * dt;
-          if (diveKey) {
-            // Pitched dive: lose altitude proportional to pitch
-            raptor.y -= (raptor.speed * Math.sin(Math.abs(raptor.pitch))) * dt;
-          } else if (pullUpKey) {
-            raptor.y += Math.abs(Math.sin(raptor.pitch)) * raptor.speed * dt;
-            // Bleed speed for the climb
-            raptor.speed = Math.max(8, raptor.speed - gravity * 0.5 * dt);
-          } else {
-            // Level glide — bleed a little altitude
+          var verticalFlightSpeed = Math.sin(raptor.pitch) * raptor.speed;
+          if (mission.id === 'thermalKettle' && !thermalActive && verticalFlightSpeed > 0) {
+            verticalFlightSpeed = 0;
+          }
+          raptor.y += verticalFlightSpeed * dt;
+          if (!diveKey && !pullUpKey) {
             raptor.y -= 1.5 * dt;
           }
+          if (pullUpKey) {
+            raptor.speed = Math.max(8, raptor.speed - gravity * 0.5 * dt);
+          }
 
-          // Hard floor + ceiling — realistic landing/crash physics
+          // Hard floor and mission-aware ceiling.
           var groundY = terrainHeightAt(raptor.x, raptor.z);
           var minY = groundY + 1.5;
           if (raptor.y < minY || raptor.landed || raptor.crashed) {
@@ -9652,7 +10680,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             } else if (verticalSpeed > 18 || raptor.speed > 50) {
               // HARD CRASH — fast vertical impact OR very high overall speed
               rhAnnounce('Crash! Stunned. Wait, then SPACE to take off.');
-              energyEventLog.push({ msg: '💥 CRASH — stunned ~3s', t: now, color: '#ef4444' });
+              energyEventLog.push({ msg: '💥 CRASH — stunned ~3s', t: now, color: '#fca5a5' });
               raptor.crashed = true;
               raptor.crashTimer = 3.0;
               raptor.y = minY;
@@ -9672,7 +10700,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               raptor.pitch = 0;
             }
           }
-          if (raptor.y > 300) raptor.y = 300;
+          if (raptor.y > missionCeiling) raptor.y = missionCeiling;
 
           // Wrap around if drifting off-map (true torus wrap).
           // Previously: `raptor.x = -raptor.x * 0.9` — this flipped the
@@ -9687,26 +10715,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           // transition is visually continuous and direction stays sensible.
           var wrapBoundary = terrainSize * 0.45;
           var wrapSpan = wrapBoundary * 2;
-          if (raptor.x > wrapBoundary)  raptor.x -= wrapSpan;
-          else if (raptor.x < -wrapBoundary) raptor.x += wrapSpan;
-          if (raptor.z > wrapBoundary)  raptor.z -= wrapSpan;
-          else if (raptor.z < -wrapBoundary) raptor.z += wrapSpan;
+          var wrapDeltaX = 0;
+          var wrapDeltaZ = 0;
+          if (raptor.x > wrapBoundary) wrapDeltaX = -wrapSpan;
+          else if (raptor.x < -wrapBoundary) wrapDeltaX = wrapSpan;
+          if (raptor.z > wrapBoundary) wrapDeltaZ = -wrapSpan;
+          else if (raptor.z < -wrapBoundary) wrapDeltaZ = wrapSpan;
+          if (wrapDeltaX || wrapDeltaZ) {
+            raptor.x += wrapDeltaX;
+            raptor.z += wrapDeltaZ;
+            camera.position.x += wrapDeltaX;
+            camera.position.z += wrapDeltaZ;
+          }
 
           // ── Update raptor mesh ──
+          if (hunterGroup) {
+            var hunterDx = raptor.x - hunterGroup.position.x;
+            var hunterDy = raptor.y - hunterGroup.position.y;
+            var hunterDz = raptor.z - hunterGroup.position.z;
+            hunterDistance = Math.sqrt(hunterDx * hunterDx + hunterDy * hunterDy + hunterDz * hunterDz);
+            if (hunterDistance > 0.001) {
+              var hunterSpeed = Math.max(13, raptor.speed * 0.9 + 3);
+              var hunterStep = Math.min(hunterDistance, hunterSpeed * dt);
+              hunterGroup.position.x += hunterDx / hunterDistance * hunterStep;
+              hunterGroup.position.y += hunterDy / hunterDistance * hunterStep;
+              hunterGroup.position.z += hunterDz / hunterDistance * hunterStep;
+              hunterGroup.lookAt(raptor.x, raptor.y, raptor.z);
+              hunterDistance -= hunterStep;
+            }
+          }
+
           raptorGroup.position.set(raptor.x, raptor.y, raptor.z);
-          raptorGroup.rotation.set(0, raptor.yaw, 0);
-          raptorGroup.rotation.x = -raptor.pitch * 0.6;
+          var visualYawDelta = raptor.yaw - raptor.visualYawLast;
+          while (visualYawDelta > Math.PI) visualYawDelta -= Math.PI * 2;
+          while (visualYawDelta < -Math.PI) visualYawDelta += Math.PI * 2;
+          raptor.visualYawLast = raptor.yaw;
+          var visualTurnRate = visualYawDelta / Math.max(dt, 0.001);
+          var bankTarget = Math.max(-0.32, Math.min(0.32, visualTurnRate * 0.18));
+          raptor.visualBank += (bankTarget - raptor.visualBank) * dampingAlpha(8, dt);
+          raptorGroup.rotation.set(
+            -raptor.pitch * 0.6,
+            modelYawForFlightHeading(raptor.yaw),
+            raptor.visualBank
+          );
           // ── NEW v0.24: Realistic flight cycle (mostly glide, periodic flap bursts) ──
           if (diveKey) {
             // Tucked dive — wings folded back tight
-            leftWingGroup.rotation.z = 0.45;
-            rightWingGroup.rotation.z = -0.45;
-            leftWingGroup.rotation.y = -0.3;
-            rightWingGroup.rotation.y = 0.3;
+            leftWingGroup.rotation.z = flightAnimationProfile.tuck;
+            rightWingGroup.rotation.z = -flightAnimationProfile.tuck;
+            leftWingGroup.rotation.y = -0.3 - silhouetteProfile.sweep * 0.08;
+            rightWingGroup.rotation.y = 0.3 + silhouetteProfile.sweep * 0.08;
           } else if (pullUpKey || raptor.speed < raptor.maxLevel * 0.55) {
             // Pull-up or low-speed — ACTIVE FLAPPING (this is where real raptors flap)
             // Faster, deeper flap
-            var flap = Math.sin(now * 0.018) * 0.55;
+            var flap = _rmFX ? flightAnimationProfile.glideDihedral :
+              Math.sin(now * flightAnimationProfile.flapRate) * flightAnimationProfile.flapDepth;
             leftWingGroup.rotation.z = flap;
             rightWingGroup.rotation.z = -flap;
             leftWingGroup.rotation.y = 0;
@@ -9716,20 +10779,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             // Flap "phase" is mostly 0 (glide). Every ~6-10 seconds, do a 2-flap burst.
             // Use deterministic flap timing seeded by raptor speed so it looks more natural
             var t = now / 1000;
-            var burstCycle = 6 + (species.massKg);  // heavier birds flap less often
+            var burstCycle = flightAnimationProfile.burstCycle;
             var burstPhase = (t % burstCycle) / burstCycle;  // 0..1 over cycle
-            var inBurst = burstPhase < 0.10;  // 10% of cycle = ~0.6-0.9s of flapping
+            var inBurst = !_rmFX && burstPhase < 0.10;
             if (inBurst) {
               // Brief 2-flap burst — smoother + slightly less amplitude than active flap
-              var burstFlap = Math.sin(now * 0.020) * 0.42;
+              var burstFlap = Math.sin(now * flightAnimationProfile.flapRate) * flightAnimationProfile.flapDepth * 0.78;
               leftWingGroup.rotation.z = burstFlap;
               rightWingGroup.rotation.z = -burstFlap;
             } else {
               // GLIDE — wings nearly flat with subtle dihedral oscillation
               // Small wobble simulating thermal turbulence
-              var wobble = Math.sin(now * 0.001) * 0.04;
-              leftWingGroup.rotation.z = 0.05 + wobble;
-              rightWingGroup.rotation.z = -0.05 - wobble;
+              var wobble = _rmFX ? 0 : Math.sin(now * 0.001) * 0.04;
+              leftWingGroup.rotation.z = flightAnimationProfile.glideDihedral + wobble;
+              rightWingGroup.rotation.z = -flightAnimationProfile.glideDihedral - wobble;
             }
             leftWingGroup.rotation.y = 0;
             rightWingGroup.rotation.y = 0;
@@ -9741,6 +10804,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           // (a separate writer would fight the zoom lerp). Same 0..1 normalization
           // the speed-lines use. Vignette opacity rides the same intensity. Both
           // disabled under prefers-reduced-motion (_rmFX); zoom always wins.
+          var tailSteerTarget = Math.max(-0.34, Math.min(0.34, -visualTurnRate * flightAnimationProfile.tailGain));
+          tail.rotation.y += (tailSteerTarget - tail.rotation.y) * dampingAlpha(10, dt);
+          var tailSpreadTarget = pullUpKey ? 1.35 : diveKey ? 0.70 : 1;
+          tail.scale.x += (tailSpreadTarget - tail.scale.x) * dampingAlpha(9, dt);
+
           var _diveFrac = 0;
           try {
             if (raptor.diving && !zoomActive && !_rmFX) {
@@ -9751,7 +10819,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           } catch (e) { _diveFrac = 0; }
           var targetFov = zoomActive ? 25 : (70 + _diveFrac * 16);
           if (Math.abs(camera.fov - targetFov) > 0.1) {
-            camera.fov += (targetFov - camera.fov) * 0.18;
+            camera.fov += (targetFov - camera.fov) * dampingAlpha(12, dt);
             camera.updateProjectionMatrix();
           }
           // ── Camera follow: chase (3rd person) OR first-person (from head) ──
@@ -9781,10 +10849,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             var camTargetX = raptor.x - Math.sin(raptor.yaw) * camDist;
             var camTargetY = raptor.y + camHeight + Math.sin(raptor.pitch) * camDist;
             var camTargetZ = raptor.z + Math.cos(raptor.yaw) * camDist;
-            camera.position.x += (camTargetX - camera.position.x) * 0.18;
-            camera.position.y += (camTargetY - camera.position.y) * 0.18;
-            camera.position.z += (camTargetZ - camera.position.z) * 0.18;
-            camera.lookAt(raptor.x, raptor.y + 0.3, raptor.z);
+            var cameraFollowAlpha = dampingAlpha(12, dt);
+            camera.position.x += (camTargetX - camera.position.x) * cameraFollowAlpha;
+            camera.position.y += (camTargetY - camera.position.y) * cameraFollowAlpha;
+            camera.position.z += (camTargetZ - camera.position.z) * cameraFollowAlpha;
+            // Lead the gaze into the direction of travel so the bird sits
+            // against receding terrain instead of blocking the vanishing point.
+            var chaseLead = diveKey ? 5 : 2.5;
+            var chaseLookX = raptor.x + Math.sin(raptor.yaw) * chaseLead;
+            var chaseLookY = raptor.y + 0.3 + Math.sin(raptor.pitch) * chaseLead;
+            var chaseLookZ = raptor.z - Math.cos(raptor.yaw) * chaseLead;
+            camera.lookAt(chaseLookX, chaseLookY, chaseLookZ);
             // ── NEW v0.28: Camera banking roll (tilts when turning fast) ──
             if (raptor.lastYaw === undefined) raptor.lastYaw = raptor.yaw;
             var yawDelta = raptor.yaw - raptor.lastYaw;
@@ -9793,61 +10868,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             while (yawDelta < -Math.PI) yawDelta += Math.PI * 2;
             raptor.lastYaw = raptor.yaw;
             // Map yaw rate to camera roll (cap at ±0.3 rad ~ 17°)
-            var rollTarget = Math.max(-0.3, Math.min(0.3, -yawDelta * 12));
+            var rollTarget = _rmFX ? 0 : Math.max(-0.3, Math.min(0.3, -yawDelta * 12));
             raptor.cameraRoll = (raptor.cameraRoll || 0);
-            raptor.cameraRoll += (rollTarget - raptor.cameraRoll) * 0.12;
+            raptor.cameraRoll += (rollTarget - raptor.cameraRoll) * dampingAlpha(8, dt);
             // Apply roll via camera.up vector tilt
             var rollSin = Math.sin(raptor.cameraRoll), rollCos = Math.cos(raptor.cameraRoll);
             camera.up.set(rollSin, rollCos, 0);
-            camera.lookAt(raptor.x, raptor.y + 0.3, raptor.z);  // re-lookAt with new up vector
+            camera.lookAt(chaseLookX, chaseLookY, chaseLookZ);  // re-lookAt with new up vector
           }
 
           // ── NEW: Target-lock reticle projection ──
           // Pick nearest prey in the forward 120° cone (covers what the bird can see)
-          var lockTarget = null, lockDist = Infinity;
-          if (targetLockOn) {
-            for (var lki = 0; lki < preyMeshes.length; lki++) {
-              var lkm = preyMeshes[lki];
-              var lkdx = lkm.mesh.position.x - raptor.x;
-              var lkdz = lkm.mesh.position.z - raptor.z;
-              var lkAngle = Math.atan2(lkdx, -lkdz);
-              var lkRel = lkAngle - raptor.yaw;
-              while (lkRel > Math.PI) lkRel -= Math.PI * 2;
-              while (lkRel < -Math.PI) lkRel += Math.PI * 2;
-              // Within ±60° of heading + within 300m
-              if (Math.abs(lkRel) > 1.05) continue;
-              var lkd2 = lkdx * lkdx + lkdz * lkdz;
-              if (lkd2 > 90000) continue;
-              if (lkd2 < lockDist) { lockDist = lkd2; lockTarget = lkm; }
-            }
+          var targetInfo = targetLockOn ? acquireTarget() : null;
+          var lockTarget = targetInfo ? targetInfo.prey : null;
+          if (targetInfo) markTutorialSignal('target');
+          var nextTargetState = !targetLockOn ? 'off' : !targetInfo ? 'search' : targetInfo.canStrike ? 'ready' : targetInfo.distance > targetInfo.reach ? 'close' : 'align';
+          var nextTargetHint = nextTargetState === 'off' ? 'Target assist is off' : nextTargetState === 'search' ? 'Scan ahead for prey' : nextTargetState === 'ready' ? 'Strike ready - press Strike' : nextTargetState === 'close' ? 'Close distance - ' + targetInfo.distance.toFixed(0) + ' m' : (targetInfo.verticalOffset > 0 ? 'Pull up to align' : 'Dive to align');
+          if (nextTargetState !== lastTargetState || nextTargetHint !== lastTargetHint) {
+            lastTargetState = nextTargetState;
+            lastTargetHint = nextTargetHint;
+            notifyUI({ targetState: nextTargetState, targetHint: nextTargetHint });
           }
           if (lockTarget) {
-            // Project target world position onto screen
-            var _tv = new THREE.Vector3(
+            var targetVector = new THREE.Vector3(
               lockTarget.mesh.position.x,
-              lockTarget.mesh.position.y + 1.2,
+              lockTarget.mesh.position.y + 0.6,
               lockTarget.mesh.position.z
             );
-            _tv.project(camera);
-            if (_tv.z < 1 && _tv.z > -1) {
-              var screenW = canvasEl.clientWidth, screenH = canvasEl.clientHeight;
-              var sx = (_tv.x * 0.5 + 0.5) * screenW;
-              var sy = (-_tv.y * 0.5 + 0.5) * screenH;
-              var distM = Math.sqrt(lockDist);
-              var inStrikeRange = distM < 8;
+            targetVector.project(camera);
+            if (targetVector.z < 1 && targetVector.z > -1) {
+              var screenW = canvasEl.clientWidth;
+              var screenH = canvasEl.clientHeight;
+              var screenX = (targetVector.x * 0.5 + 0.5) * screenW;
+              var screenY = (-targetVector.y * 0.5 + 0.5) * screenH;
+              var inStrikeRange = targetInfo.canStrike;
               reticle.style.display = 'block';
-              reticle.style.left = sx + 'px';
-              reticle.style.top = sy + 'px';
-              reticle.style.borderColor = inStrikeRange ? '#22c55e' : '#ef4444';
-              reticle.style.boxShadow = '0 0 12px ' + (inStrikeRange ? 'rgba(34,197,94,0.7)' : 'rgba(239,68,68,0.55)');
-              // Reticle corner brackets also need to recolor
-              for (var rcI = 0; rcI < reticle.children.length; rcI++) {
-                if (reticle.children[rcI] !== reticleLabel) {
-                  reticle.children[rcI].style.borderColor = inStrikeRange ? '#22c55e' : '#ef4444';
+              reticle.style.left = screenX + 'px';
+              reticle.style.top = screenY + 'px';
+              reticle.style.borderColor = inStrikeRange ? '#22c55e' : '#f87171';
+              reticle.style.boxShadow = '0 0 12px ' + (inStrikeRange ? 'rgba(34,197,94,0.75)' : 'rgba(248,113,113,0.6)');
+              for (var bracketIndex = 0; bracketIndex < reticle.children.length; bracketIndex++) {
+                if (reticle.children[bracketIndex] !== reticleLabel) {
+                  reticle.children[bracketIndex].style.borderColor = inStrikeRange ? '#22c55e' : '#f87171';
                 }
               }
-              var lkName = lockTarget.data ? lockTarget.data.label : 'prey';
-              reticleLabel.textContent = (inStrikeRange ? '🎯 STRIKE · ' : '') + lkName + ' · ' + distM.toFixed(0) + 'm';
+              var targetName = lockTarget.data ? lockTarget.data.label : 'prey';
+              reticleLabel.textContent = (inStrikeRange ? 'STRIKE READY - ' : '') + targetName + ' - ' + targetInfo.distance.toFixed(0) + 'm';
               reticleLabel.style.color = inStrikeRange ? '#bbf7d0' : '#fee2e2';
             } else {
               reticle.style.display = 'none';
@@ -9856,7 +10922,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             reticle.style.display = 'none';
           }
 
-          // ── NEW v0.28: Distant flock silhouettes drift ──
+          // Distant flock silhouettes.
           for (var fbi = 0; fbi < flockBirds.length; fbi++) {
             var fbird = flockBirds[fbi];
             fbird.sprite.position.x += Math.sin(fbird.heading) * fbird.speed * dt;
@@ -9877,7 +10943,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var groundBelowBird = terrainHeightAt(raptor.x, raptor.z);
           var altAboveGround = raptor.y - groundBelowBird;
           birdShadow.position.set(raptor.x, groundBelowBird + 0.05, raptor.z);
-          birdShadow.rotation.z = -raptor.yaw;  // shadow rotates with bird heading
+          birdShadow.rotation.z = modelYawForFlightHeading(raptor.yaw);  // shadow matches the corrected model heading
           // Scale + fade with altitude (smaller + fainter when higher)
           var shadowScale = Math.max(1.5, 4 - altAboveGround * 0.04);
           birdShadow.scale.set(shadowScale, shadowScale * 0.55, 1);
@@ -9915,7 +10981,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (starsList) {
             // Twinkle by modulating opacity of the entire points material with a slow flicker
             // (per-vertex opacity needs custom shader; simple amplitude pulse is fine)
-            starsList.points.material.opacity = 0.7 + Math.sin(now * 0.002) * 0.2;
+            starsList.points.material.opacity = starVisibility * (0.7 + Math.sin(now * 0.002) * 0.2);
             // Keep stars positioned around raptor (so they stay visible)
             starsList.points.position.set(raptor.x, raptor.y - 50, raptor.z);
           }
@@ -9929,6 +10995,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           // horizon line slide up/down with altitude, which looks broken.
           skyDome.position.x = raptor.x;
           skyDome.position.z = raptor.z;
+          horizonGroup.position.x = raptor.x;
+          horizonGroup.position.z = raptor.z;
           sunSprite.position.x = raptor.x + sunDir.x * sunDistance;
           sunSprite.position.y = sunDir.y * sunDistance;  // sun y stays absolute
           sunSprite.position.z = raptor.z + sunDir.z * sunDistance;
@@ -9952,10 +11020,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               // Clamp head rotation to plausible neck range (~75° each side for raptors)
               hRel = Math.max(-1.3, Math.min(1.3, hRel));
               // Smooth toward target rotation
-              headMesh.rotation.y += (hRel - headMesh.rotation.y) * 0.08;
+              headMesh.rotation.y += ((-hRel) - headMesh.rotation.y) * dampingAlpha(5, dt);
             } else {
               // Slowly return to forward
-              headMesh.rotation.y += (0 - headMesh.rotation.y) * 0.03;
+              headMesh.rotation.y += (0 - headMesh.rotation.y) * dampingAlpha(2, dt);
             }
           }
 
@@ -9976,15 +11044,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           }
 
           // ── NEW v0.26: Tree sway (gentle wind motion) ──
-          var windPhase = now * 0.001;
-          for (var tsi = 0; tsi < trees.length; tsi++) {
-            var tr = trees[tsi];
-            // Subtle rotation around base for trunk + foliage matches
-            var sway = Math.sin(windPhase + tr.swayPhase) * tr.swayAmount;
-            // Apply to foliage only (trunk stays fixed); foliage offsets slightly
-            tr.foliage.rotation.z = sway;
-            tr.foliage.position.x = tr.x + Math.sin(sway) * tr.height * 0.05;
-          }
+          // Forest instances remain static, avoiding hundreds of per-frame
+          // matrix writes while preserving the biome silhouette.
 
           // ── NEW v0.25: Drifting clouds ──
           if (typeof cloudList !== 'undefined' && cloudList) {
@@ -9995,7 +11056,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           }
 
           // ── NEW v0.25: Ambient particles drift ──
-          if (particleSystem && particleData) {
+          if (!_rmFX && particleSystem && particleData) {
             var pos = particleSystem.geometry.attributes.position.array;
             var vels = particleData.velocities;
             for (var ppi = 0; ppi < vels.length; ppi++) {
@@ -10037,7 +11098,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           }
 
           // ── NEW v0.25: Dive speed-lines (visible only during stoop, intensity scales with speed) ──
-          if (diveKey && raptor.speed > raptor.maxLevel * 0.8) {
+          if (!_rmFX && diveKey && raptor.speed > raptor.maxLevel * 0.8) {
             // Position the speed-lines mesh in front of the camera, aligned with travel direction
             speedLines.position.copy(camera.position);
             speedLines.lookAt(raptor.x, raptor.y, raptor.z);
@@ -10055,35 +11116,90 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             var pdx = pm2.mesh.position.x - raptor.x;
             var pdz = pm2.mesh.position.z - raptor.z;
             var pd2 = Math.sqrt(pdx * pdx + pdz * pdz);
-            if (pd2 < detectionR && pm2.data.behavior === 'flee-on-sight') {
+            var preyDetectionRadius = detectionR * pm2.escapeProfile.detectionScale;
+            if (pd2 < preyDetectionRadius && pm2.data.behavior === 'flee-on-sight') {
+              if (!pm2.alerted && pm2.escapeProfile.seekCover) {
+                pm2.coverTarget = nearestPreyCoverTarget(pm2.mesh.position.x, pm2.mesh.position.z);
+              }
               pm2.alerted = true;
               pm2.fleeBoost = 2.0;
             }
+            if (mission.id === 'silentStrike' && pullUpKey && pd2 < 30 && !pm2.missionAlerted) {
+              pm2.missionAlerted = true;
+              missionAlerts++;
+              energyEventLog.push({ msg: 'Prey alert - glide silently near the target', t: now, color: '#fca5a5' });
+              evaluateMission();
+            }
             if (pm2.alerted) {
-              // Flee away from raptor
               var fleeAngle = Math.atan2(pdz, pdx);
-              pm2.vx = Math.cos(fleeAngle) * pm2.data.speedMps * pm2.fleeBoost * 0.6;
-              pm2.vz = Math.sin(fleeAngle) * pm2.data.speedMps * pm2.fleeBoost * 0.6;
+              if (pm2.coverTarget) {
+                var coverDx = pm2.coverTarget.x - pm2.mesh.position.x;
+                var coverDz = pm2.coverTarget.z - pm2.mesh.position.z;
+                var coverDistance = Math.sqrt(coverDx * coverDx + coverDz * coverDz);
+                if (coverDistance > 2) {
+                  var awayX = Math.cos(fleeAngle);
+                  var awayZ = Math.sin(fleeAngle);
+                  fleeAngle = Math.atan2(awayZ * 0.65 + coverDz / coverDistance * 0.35,
+                                         awayX * 0.65 + coverDx / coverDistance * 0.35);
+                }
+              }
+              var jink = _rmFX ? 0 : Math.sin(now * 0.006 + pm2.escapePhase) * pm2.escapeProfile.zigzag;
+              var escapeAngle = fleeAngle + jink;
+              var dashScale = pm2.escapeProfile.mode === 'freeze-dash'
+                ? (Math.sin(now * 0.009 + pm2.escapePhase) > -0.2 ? 1 : 0.08)
+                : 1;
+              pm2.vx = Math.cos(escapeAngle) * pm2.data.speedMps * pm2.fleeBoost * 0.6 * dashScale;
+              pm2.vz = Math.sin(escapeAngle) * pm2.data.speedMps * pm2.fleeBoost * 0.6 * dashScale;
               pm2.fleeBoost = Math.max(1, pm2.fleeBoost - 0.5 * dt);
-              if (pd2 > 80) { pm2.alerted = false; pm2.fleeBoost = 1; }
+              if (pd2 > 80) {
+                pm2.alerted = false;
+                pm2.fleeBoost = 1;
+                pm2.coverTarget = null;
+              }
             } else if (pm2.data.behavior === 'wander') {
-              if (Math.random() < 0.02) {
+              if (Math.random() < 1 - Math.exp(-1.2 * dt)) {
                 pm2.vx = (Math.random() - 0.5) * pm2.data.speedMps;
                 pm2.vz = (Math.random() - 0.5) * pm2.data.speedMps;
               }
             }
             pm2.mesh.position.x += pm2.vx * dt;
             pm2.mesh.position.z += pm2.vz * dt;
-            // Keep on terrain
-            if (pm2.data.id !== 'fish') {
-              pm2.mesh.position.y = terrainHeightAt(pm2.mesh.position.x, pm2.mesh.position.z) + pm2.data.sizeM * 0.6;
+
+            var flightTarget = pm2.alerted ? Math.max(0, pm2.escapeProfile.climb) : 0;
+            pm2.flightHeight += (flightTarget - pm2.flightHeight) * dampingAlpha(4, dt);
+            var depthTarget = pm2.alerted && pm2.animation.kind === 'fish' ? -2.5 : 0;
+            pm2.depthOffset += (depthTarget - pm2.depthOffset) * dampingAlpha(3, dt);
+            if (pm2.animation.kind === 'fish') {
+              var fishTargetY = -3.5 + pm2.depthOffset;
+              pm2.mesh.position.y += (fishTargetY - pm2.mesh.position.y) * dampingAlpha(4, dt);
+            } else if (pm2.data.id === 'duck' || pm2.data.id === 'waterfowl') {
+              pm2.mesh.position.y = -1.4 + pm2.flightHeight;
+            } else {
+              pm2.mesh.position.y = terrainHeightAt(pm2.mesh.position.x, pm2.mesh.position.z) +
+                pm2.data.sizeM * 0.6 + pm2.flightHeight;
             }
-            // ── NEW v0.24: Bobbing animation + beacon pulse for visibility ──
-            if (pm2.visual) {
-              pm2.visual.position.y = Math.sin(now * 0.003 + pm2.bobPhase) * 0.15 + (pm2.data.sizeM * 0.5);
+
+            if (pm2.visual && pm2.animation) {
+              var motionRate = pm2.alerted ? 0.018 : 0.008;
+              var motionPhase = now * motionRate + pm2.bobPhase;
+              pm2.visual.position.y = _rmFX ? pm2.data.sizeM * 0.5 :
+                Math.sin(motionPhase) * (pm2.animation.kind === 'rabbit' ? 0.22 : 0.08) + pm2.data.sizeM * 0.5;
+              if (pm2.vx * pm2.vx + pm2.vz * pm2.vz > 0.01) {
+                pm2.visual.rotation.y = Math.atan2(pm2.vx, pm2.vz);
+              }
+              pm2.animation.wings.forEach(function(wing, wingIndex) {
+                var wingSide = wingIndex === 0 ? 1 : -1;
+                wing.rotation.z = wingSide * (_rmFX ? 0.08 : Math.sin(motionPhase * 1.7) * (pm2.alerted ? 0.70 : 0.24));
+              });
+              pm2.animation.legs.forEach(function(leg, legIndex) {
+                leg.rotation.x = _rmFX ? 0 : Math.sin(motionPhase * 1.4 + legIndex * Math.PI) * 0.55;
+              });
+              if (pm2.animation.tail) {
+                pm2.animation.tail.rotation.z = _rmFX ? 0 : Math.sin(motionPhase * 0.8) * 0.22;
+              }
             }
             if (pm2.beaconCap) {
-              var pulse = 0.6 + Math.sin(now * 0.005 + pm2.bobPhase) * 0.4;
+              var pulse = _rmFX ? 1 : 0.6 + Math.sin(now * 0.005 + pm2.bobPhase) * 0.4;
               pm2.beaconCap.scale.set(pulse, pulse, pulse);
             }
             // Despawn ancient prey
@@ -10101,7 +11217,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           }
 
           // ── HUD (v0.29 WCAG rewrite — explicit labels, bars, high contrast) ──
-          var mph = (raptor.speed * 2.237).toFixed(0);
+          evaluateMission();
+          if (now - lastHudPaint >= 100) {
+            lastHudPaint = now;
+            missionPanel.textContent = mission.name + ': ' + missionProgressText();
+            var mph = (raptor.speed * 2.237).toFixed(0);
           var alt = (raptor.y - groundY).toFixed(0);
           var stateLabel = diveKey ? 'STOOP' : pullUpKey ? 'PULL UP' : raptor.exhausted ? 'EXHAUSTED' : 'GLIDE';
           var stateColor = diveKey ? '#fca5a5' : pullUpKey ? '#67e8f9' : raptor.exhausted ? '#f87171' : '#fcd34d';
@@ -10116,8 +11236,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           // ── NEW v0.29: Energy + Stamina bars ──
           var calPct = Math.max(0, Math.min(100, (raptor.calories / raptor.caloriesMax) * 100));
           var stamPct = Math.max(0, Math.min(100, (raptor.stamina / raptor.staminaMax) * 100));
-          var calColor = calPct > 50 ? '#10b981' : calPct > 25 ? '#fbbf24' : '#dc2626';
-          var stamColor = stamPct > 50 ? '#06b6d4' : stamPct > 25 ? '#fbbf24' : '#dc2626';
+          var telemetryTargetInfo = targetLockOn ? acquireTarget() : null;
+          telemetrySpeed.textContent = mph + ' mph';
+          telemetryAltitude.textContent = alt + ' m';
+          telemetryEnergy.textContent = Math.round(calPct) + '%';
+          telemetryTarget.textContent = telemetryTargetInfo ? telemetryTargetInfo.distance.toFixed(0) + ' m' : 'None';
+          telemetryMission.textContent = missionProgressText();
+          var calColor = calPct > 50 ? '#10b981' : calPct > 25 ? '#fbbf24' : '#fca5a5';
+          var stamColor = stamPct > 50 ? '#06b6d4' : stamPct > 25 ? '#fbbf24' : '#fca5a5';
           energyPanel.innerHTML =
             '<div style="font-weight:bold;border-bottom:1px solid #f97316;padding-bottom:4px;margin-bottom:6px;color:#fdba74">⚡ Energy + Stamina</div>' +
             '<div style="margin-bottom:6px">' +
@@ -10188,53 +11314,117 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           status.innerHTML =
             '<div style="font-weight:bold;border-bottom:1px solid rgba(16,185,129,0.4);padding-bottom:4px;margin-bottom:4px">RUN</div>' +
             'CATCHES &nbsp;<span style="color:#fff;font-weight:bold">' + runCatches + '</span><br/>' +
-            'TIME &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#fff">' + ((now - runStart) / 1000).toFixed(0) + 's</span><br/>' +
+            'TIME &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#fff">' + runElapsed.toFixed(0) + 's</span><br/>' +
             'PREY &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#fff">' + preyMeshes.length + '</span><br/>' +
             (nearestPrey
               ? '<div style="margin-top:4px;padding-top:4px;border-top:1px solid rgba(16,185,129,0.4)">NEAREST &nbsp;<span style="color:' + nearestColor + ';font-size:14px;font-weight:bold">' + arrowChar + ' ' + nearestDist.toFixed(0) + 'm</span></div>'
               : '');
 
+          }
           if (composer) { try { composer.render(); } catch (e) { composer = null; renderer.render(scene, camera); } }
           else { renderer.render(scene, camera); }
         }
         loop();
 
         // ─── Cleanup hook ───
+        var onResize = function() {
+          if (disposed) return;
+          var width = canvasEl.clientWidth;
+          var height = canvasEl.clientHeight;
+          if (!width || !height) return;
+          renderer.setSize(width, height, false);
+          camera.aspect = width / height;
+          camera.updateProjectionMatrix();
+          if (composer) {
+            try { composer.setSize(width, height); } catch (resizeComposerError) {}
+          }
+        };
+        var resizeObserver = null;
+        window.addEventListener('resize', onResize);
+        if (typeof ResizeObserver !== 'undefined') {
+          resizeObserver = new ResizeObserver(onResize);
+          resizeObserver.observe(canvasEl.parentElement || canvasEl);
+        }
+
+        var cleanupComplete = false;
         canvasEl._rhCleanup = function() {
+          if (cleanupComplete) return;
+          cleanupComplete = true;
+          disposed = true;
           cancelAnimationFrame(animId);
+          pendingTimers.forEach(function(timerId) { clearTimeout(timerId); });
+          pendingTimers = [];
+          clearHeldInputs();
+
           window.removeEventListener('resize', onResize);
+          window.removeEventListener('blur', onWindowBlur);
+          document.removeEventListener('visibilitychange', onVisibilityChange);
           canvasEl.removeEventListener('keydown', onKeyDown);
           canvasEl.removeEventListener('keyup', onKeyUp);
-          if (hud.parentElement) hud.parentElement.removeChild(hud);
-          if (crossHair.parentElement) crossHair.parentElement.removeChild(crossHair);
-          if (crossHairDot.parentElement) crossHairDot.parentElement.removeChild(crossHairDot);
-          if (status.parentElement) status.parentElement.removeChild(status);
-          if (energyPanel.parentElement) energyPanel.parentElement.removeChild(energyPanel);
-          if (diveVig && diveVig.parentElement) diveVig.parentElement.removeChild(diveVig);
-          if (eventLogEl.parentElement) eventLogEl.parentElement.removeChild(eventLogEl);
-          if (weatherPanel.parentElement) weatherPanel.parentElement.removeChild(weatherPanel);
-          if (soundBtn.parentElement) soundBtn.parentElement.removeChild(soundBtn);
-          // Stop wind audio
-          if (windNode) { try { windNode.stop(); } catch (e) {} }
-          if (audioCtx) { try { audioCtx.close(); } catch (e) {} }
-          // Dispose meshes
-          scene.traverse(function(obj) {
-            if (obj.geometry) obj.geometry.dispose();
-            if (obj.material) {
-              if (Array.isArray(obj.material)) obj.material.forEach(function(m) { m.dispose(); });
-              else obj.material.dispose();
-            }
-          });
-          if (composer) { try { (composer.passes || []).forEach(function (p) { if (p && p.dispose) p.dispose(); }); } catch (e) {} composer = null; }
-          renderer.dispose();
-        };
+          canvasEl.removeEventListener('blur', onCanvasBlur);
+          canvasEl.removeEventListener('pointerdown', onPointerDown);
+          canvasEl.removeEventListener('pointermove', onPointerMove);
+          canvasEl.removeEventListener('pointerup', onPointerUp);
+          canvasEl.removeEventListener('pointercancel', onPointerUp);
+          canvasEl.removeEventListener('lostpointercapture', onPointerUp);
+          if (resizeObserver) resizeObserver.disconnect();
+          if (reducedMotionMedia && reducedMotionMedia.removeEventListener) {
+            reducedMotionMedia.removeEventListener('change', onReducedMotionChange);
+          }
+          canvasEl._rhCommand = null;
+          canvasEl._rhInit = false;
 
-        // Handle resize
-        var onResize = function() {
-          var nw = canvasEl.clientWidth, nh = canvasEl.clientHeight;
-          if (nw && nh) { renderer.setSize(nw, nh, false); camera.aspect = nw / nh; camera.updateProjectionMatrix(); if (composer) { try { composer.setSize(nw, nh); } catch (e) {} } }
+          [
+            pauseOverlay,
+            flightMarker,
+            missionPanel,
+            hud,
+            crossHair,
+            crossHairDot,
+            reticle,
+            status,
+            energyPanel,
+            diveVig,
+            eventLogEl,
+            telemetryStrip,
+            weatherPanel
+          ].forEach(function(node) {
+            if (node && node.parentElement) node.parentElement.removeChild(node);
+          });
+
+          if (windNode) {
+            try { windNode.stop(); } catch (windStopError) {}
+          }
+          if (audioCtx) {
+            try { audioCtx.close(); } catch (audioCloseError) {}
+          }
+
+          function disposeMaterial(material) {
+            if (!material) return;
+            ['map', 'alphaMap', 'aoMap', 'bumpMap', 'emissiveMap', 'envMap', 'lightMap', 'metalnessMap', 'normalMap', 'roughnessMap'].forEach(function(key) {
+              if (material[key] && material[key].dispose) material[key].dispose();
+            });
+            if (material.dispose) material.dispose();
+          }
+          scene.traverse(function(object) {
+            if (object.geometry && object.geometry.dispose) object.geometry.dispose();
+            if (Array.isArray(object.material)) object.material.forEach(disposeMaterial);
+            else disposeMaterial(object.material);
+          });
+          if (composer) {
+            try {
+              (composer.passes || []).forEach(function(pass) {
+                if (pass && pass.dispose) pass.dispose();
+              });
+            } catch (composerDisposeError) {}
+            composer = null;
+          }
+          if (renderer.renderLists && renderer.renderLists.dispose) renderer.renderLists.dispose();
+          if (renderer.dispose) renderer.dispose();
+          if (renderer.forceContextLoss) {
+            try { renderer.forceContextLoss(); } catch (contextLossError) {}
+          }
         };
-        window.addEventListener('resize', onResize);
       }
 
       // ────────────────────────────────────────────────────────
@@ -17899,7 +19089,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             )
           ),
           h('div', { className: 'text-center text-xs text-slate-500 italic mt-6' },
-            __alloT('stem.raptorhunt.raptor_hunt_predator_physics_biology_a', 'Raptor Hunt: Predator Physics + Biology · AlloFlow STEM Lab · Built with rigor + care.')
+            __alloT('stem.raptorhunt.raptor_hunt_predator_physics_biology_a', 'Raptor Hunt: Predator Physics + Biology · AlloFlow STEAM Lab · Built with rigor + care.')
           )
         );
       }
@@ -19003,7 +20193,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             __alloT('stem.raptorhunt.raptor_hunt_predator_physics_biology_2', 'Raptor Hunt: Predator Physics + Biology')
           ),
           h('div', { className: 'text-center text-xs text-slate-500 italic' },
-            __alloT('stem.raptorhunt.alloflow_stem_lab', 'AlloFlow STEM Lab')
+            __alloT('stem.raptorhunt.alloflow_stem_lab', 'AlloFlow STEAM Lab')
           ),
           h('div', { className: 'text-center text-xs text-slate-500 italic' },
             __alloT('stem.raptorhunt.built_with_rigor_care_love_for_these_m', 'Built with rigor, care, + love for these magnificent birds.')
@@ -19245,7 +20435,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           ),
           h('div', { className: 'text-center mt-8 space-y-1' },
             h('div', { className: 'text-xs text-slate-500 italic' }, __alloT('stem.raptorhunt.raptor_hunt_predator_physics_biology_3', '🦅 Raptor Hunt: Predator Physics + Biology')),
-            h('div', { className: 'text-xs text-slate-500 italic' }, __alloT('stem.raptorhunt.alloflow_stem_lab_20k_lines_90_section', '🎓 AlloFlow STEM Lab · 20K+ Lines · 90+ Sections')),
+            h('div', { className: 'text-xs text-slate-500 italic' }, __alloT('stem.raptorhunt.alloflow_stem_lab_20k_lines_90_section', '🎓 AlloFlow STEAM Lab · 20K+ Lines · 90+ Sections')),
             h('div', { className: 'text-xs text-slate-500 italic' }, __alloT('stem.raptorhunt.built_with_rigor_care_reverence_for_th', '🌅 Built with rigor, care, + reverence for these magnificent birds.')),
             h('div', { className: 'text-xs text-slate-500 italic mt-3' }, __alloT('stem.raptorhunt.thank_you_for_completing_this_journey', 'Thank you for completing this journey.'))
           )
@@ -20351,14 +21541,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // ────────────────────────────────────────────────────────
       // MAIN RENDER — Tab nav + active section
       // ────────────────────────────────────────────────────────
-      return h('div', { className: 'space-y-4', role: 'region', 'aria-label': __alloT('stem.raptorhunt.raptor_hunt_tool', 'Raptor Hunt tool') },
+      return h('div', { className: 'space-y-4 text-slate-200', 'data-raptorhunt-root': 'true', role: 'region', 'aria-label': __alloT('stem.raptorhunt.raptor_hunt_tool', 'Raptor Hunt tool') },
         // Tool subtitle (updated for 9-category hub)
-        h('div', { className: 'text-[11px] text-slate-500 uppercase tracking-wider' }, __alloT('stem.raptorhunt.9_categories_100_sections_25_species_6', '9 categories · 100+ sections · 25 species · 6 labs · 70-Q quiz')),
+        activeSection === 'hub' && h('div', { className: 'text-[11px] text-slate-500 uppercase tracking-wider' }, __alloT('stem.raptorhunt.9_categories_100_sections_25_species_6', '9 categories · 100+ sections · 25 species · 6 labs · 70-Q quiz')),
         // Category-aware navigation
         (function() {
           var activeCategoryId = rh.activeCategory || null;
           var searchTerm = (rh.sectionSearch || '').toLowerCase();
-          var atHub = !activeCategoryId && !searchTerm;
+          var atHub = activeSection === 'hub' && !activeCategoryId && !searchTerm;
           // If user is in a section, infer its category so breadcrumb is correct
           var inferredCat = activeCategoryId || SECTION_TO_CATEGORY[activeSection] || null;
           var activeCategory = CATEGORIES.find(function(c) { return c.id === inferredCat; });
@@ -20396,7 +21586,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             }, __alloT('stem.raptorhunt.hub', '🏠 Hub')),
             activeCategory && h('span', { className: 'text-xs text-slate-400' }, '/'),
             activeCategory && h('span', { className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800/60 text-amber-200' }, activeCategory.icon + ' ' + activeCategory.label),
-            h('div', { className: 'ml-auto flex items-center gap-2' },
+            activeSection !== 'hub' && h('label', { className: 'ml-auto flex items-center gap-2 text-xs text-slate-300' },
+              h('span', null, 'Switch lab'),
+              h('select', {
+                value: activeSection,
+                onChange: function(event) { goSection(event.target.value); },
+                className: 'max-w-[220px] px-2 py-1.5 rounded-lg bg-slate-900 text-white border border-slate-500 font-bold',
+                'data-raptor-section-switcher': 'true',
+                'aria-label': 'Switch Raptor Lab section'
+              }, SECTIONS.filter(function(section) { return section.id !== 'hub'; }).map(function(section) {
+                return h('option', { key: section.id, value: section.id }, section.label);
+              }))
+            ),
+            activeSection === 'hub' && h('div', { className: 'ml-auto flex items-center gap-2' },
               h('input', {
                 type: 'text',
                 placeholder: __alloT('stem.raptorhunt.search_all_90_sections', 'Search all 90+ sections...'),
@@ -20428,23 +21630,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (atHub) {
             elements.push(h('div', { key: 'hub-cards', className: 'grid grid-cols-2 md:grid-cols-3 gap-3 mb-4' },
               CATEGORIES.map(function(c) {
+                var theme = CATEGORY_NAV_CLASSES[c.color] || CATEGORY_NAV_CLASSES.amber;
                 return h('button', {
                   key: c.id,
                   onClick: function() { setCategory(c.id); goSection(c.sections[0]); },
-                  className: 'transition-colors text-left p-3 rounded-xl bg-slate-800/40 hover:bg-slate-700/60 border border- active:scale-[0.97]' + c.color + 'transition-colors -700/40 hover:border-' + c.color + '-500 transition-all'
+                  className: 'text-left p-3 rounded-xl bg-slate-800/70 hover:bg-slate-700/80 border active:scale-[0.97] transition-all ' + theme.card
                 },
                   h('div', { className: 'text-2xl mb-1' }, c.icon),
-                  h('div', { className: 'text-sm font-bold text-' + c.color + '-200 mb-1' }, c.label),
+                  h('div', { className: 'text-sm font-bold mb-1 ' + theme.title }, c.label),
                   h('div', { className: 'text-[10px] text-slate-400 italic mb-1' }, c.desc),
-                  h('div', { className: 'text-[10px] text-' + c.color + '-300 font-mono' }, c.sections.length + ' sections')
+                  h('div', { className: 'text-[10px] font-mono ' + theme.meta }, c.sections.length + ' sections')
                 );
               })
             ));
           }
 
           // Category open: show that category's sections only
-          if (!atHub && activeCategory) {
+          if (activeSection === 'hub' && !atHub && activeCategory) {
             var catSecs = activeCategory.sections.map(findSection).filter(Boolean);
+            var activeTheme = CATEGORY_NAV_CLASSES[activeCategory.color] || CATEGORY_NAV_CLASSES.amber;
             elements.push(h('div', { key: 'cat-secs', className: 'flex flex-wrap gap-1.5 mb-3 p-2 bg-slate-900/30 rounded' },
               catSecs.map(function(s) {
                 var active = activeSection === s.id;
@@ -20454,9 +21658,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   'aria-selected': active,
                   onClick: function() { goSection(s.id); },
                   className: 'px-2.5 py-1.5 rounded text-[11px] font-bold transition-all ' +
-                    (active
-                      ? 'bg-gradient-to-r from-' + activeCategory.color + '-600 to-' + activeCategory.color + '-700 text-white shadow'
-                      : 'bg-slate-800/60 text-' + activeCategory.color + 'transition-colors -200/80 hover:bg-slate-700/60 active:scale-[0.97]')
+                    (active ? activeTheme.active : activeTheme.inactive + ' active:scale-[0.97]')
                 }, s.icon + ' ' + s.label);
               })
             ));

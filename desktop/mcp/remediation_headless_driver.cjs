@@ -192,6 +192,9 @@ const VERAPDF_URL_OVERRIDE = process.env.ALLOFLOW_MCP_VERAPDF_URL || '';
 
 const DEFAULT_MODEL = process.env.ALLOFLOW_MCP_GEMINI_MODEL || 'gemini-3-flash-preview';
 const FALLBACK_MODEL = process.env.ALLOFLOW_MCP_GEMINI_FALLBACK_MODEL || 'gemini-2.5-flash-lite';
+const DEFAULT_MODEL_RETRY_BUDGET = 6;
+const MAX_MODEL_RETRY_BUDGET = 20;
+const MAX_PROVIDER_RETRY_AFTER_MS = 10 * 60 * 1000;
 // Lazy + env-overridable so tests can point the transport at a scripted loopback model
 // (ALLOFLOW_MCP_GEMINI_BASE) even after this module is loaded.
 function geminiBase() { return process.env.ALLOFLOW_MCP_GEMINI_BASE || 'https://generativelanguage.googleapis.com/v1beta/models'; }
@@ -283,13 +286,55 @@ function resolveGeminiApiKey() {
 // The in-page wrapper re-throws the error envelope with its flags attached so
 // doc_pipeline's classifier-driven paths (per-day permanence, burst retry,
 // transient breaker feed) behave exactly as they do in the app.
-function classifyHttpFailure(status, bodyText) {
+function retryDelayMs(value) {
+  if (typeof value === 'string') {
+    const match = /^(\d+)(?:\.(\d{1,9}))?s$/.exec(value.trim());
+    if (!match) return null;
+    const fraction = (match[2] || '').padEnd(9, '0');
+    const milliseconds = Number(match[1]) * 1000 + Math.ceil(Number(fraction || 0) / 1e6);
+    return Number.isSafeInteger(milliseconds) ? milliseconds : null;
+  }
+  if (!value || typeof value !== 'object') return null;
+  const seconds = Number(value.seconds || 0);
+  const nanos = Number(value.nanos || 0);
+  if (!Number.isFinite(seconds) || !Number.isFinite(nanos) || seconds < 0 || nanos < 0) return null;
+  const milliseconds = seconds * 1000 + Math.ceil(nanos / 1e6);
+  return Number.isSafeInteger(milliseconds) ? milliseconds : null;
+}
+
+function providerRetryAfterMs(headers, bodyText, now = Date.now()) {
+  const candidates = [];
+  const header = headers && typeof headers.get === 'function' ? headers.get('retry-after') : null;
+  if (typeof header === 'string' && /^\d+$/.test(header.trim())) {
+    candidates.push(Number(header.trim()) * 1000);
+  } else if (typeof header === 'string' && header.trim()) {
+    const date = Date.parse(header);
+    if (Number.isFinite(date)) candidates.push(Math.max(0, date - now));
+  }
+  try {
+    const body = JSON.parse(String(bodyText || ''));
+    const details = body && body.error && Array.isArray(body.error.details) ? body.error.details : [];
+    for (const detail of details) {
+      if (!detail || typeof detail !== 'object' || !/google\.rpc\.RetryInfo$/.test(String(detail['@type'] || detail.type || ''))) continue;
+      const parsed = retryDelayMs(detail.retryDelay);
+      if (parsed !== null) candidates.push(parsed);
+    }
+  } catch (_) {}
+  const finite = candidates.filter((value) => Number.isFinite(value) && value >= 0);
+  if (!finite.length) return null;
+  return Math.min(MAX_PROVIDER_RETRY_AFTER_MS, Math.max(0, Math.ceil(Math.max(...finite))));
+}
+
+function classifyHttpFailure(status, bodyText, headers) {
   const raw = 'HTTP ' + status + ': ' + String(bodyText || '').slice(0, 2000);
   if (status === 429 || /RESOURCE_EXHAUSTED|quota/i.test(bodyText || '')) {
     const perDay = /per\s*day|daily|PerDay/i.test(bodyText || '');
+    const retryAfterMs = providerRetryAfterMs(headers, bodyText);
     return {
       message: 'API_QUOTA_EXHAUSTED', originalMessage: raw,
-      isQuota: true, classification: { kind: 'quota', perMinute: !perDay, perDay },
+      isQuota: true, code: perDay ? 'model_quota_exhausted' : 'model_throttled',
+      retryAfterMs,
+      classification: { kind: 'quota', perMinute: !perDay, perDay },
     };
   }
   if (status === 401 || status === 403 || /API key not valid|API_KEY_INVALID|PERMISSION_DENIED/i.test(bodyText || '')) {
@@ -304,20 +349,153 @@ function classifyHttpFailure(status, bodyText) {
   return { message: raw, originalMessage: raw, classification: { kind: 'transient' } };
 }
 
-async function geminiGenerate({ apiKey, model, parts, log }) {
+function abortEnvelope() {
+  return {
+    message: 'Gemini request aborted',
+    code: 'request_aborted',
+    isAbort: true,
+    classification: { kind: 'abort' },
+  };
+}
+
+function abortableDelay(ms, signal) {
+  if (!(ms > 0)) return Promise.resolve();
+  if (signal && signal.aborted) return Promise.reject(signal.reason || new Error('aborted'));
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    let timer = null;
+    const finish = (error) => {
+      if (settled) return;
+      settled = true;
+      if (timer) clearTimeout(timer);
+      signal?.removeEventListener?.('abort', onAbort);
+      if (error) reject(error); else resolve();
+    };
+    const onAbort = () => finish(signal.reason || new Error('aborted'));
+    timer = setTimeout(() => finish(), ms);
+    timer.unref?.();
+    signal?.addEventListener?.('abort', onAbort, { once: true });
+  });
+}
+
+function abortablePromise(value, signal, onLateResolve) {
+  const pending = Promise.resolve(value);
+  if (!signal) return pending;
+  const abortError = () => signal.reason || new Error('aborted');
+  const cleanupLateResult = (result) => {
+    if (typeof onLateResolve !== 'function') return;
+    try { Promise.resolve(onLateResolve(result)).catch(() => {}); } catch (_) {}
+  };
+  if (signal.aborted) {
+    pending.then(cleanupLateResult, () => {});
+    return Promise.reject(abortError());
+  }
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    const onAbort = () => {
+      if (settled) return;
+      settled = true;
+      signal.removeEventListener('abort', onAbort);
+      reject(abortError());
+    };
+    signal.addEventListener('abort', onAbort, { once: true });
+    pending.then(
+      (result) => {
+        if (settled) {
+          cleanupLateResult(result);
+          return;
+        }
+        settled = true;
+        signal.removeEventListener('abort', onAbort);
+        resolve(result);
+      },
+      (error) => {
+        if (settled) return;
+        settled = true;
+        signal.removeEventListener('abort', onAbort);
+        reject(error);
+      },
+    );
+  });
+}
+
+function modelRetryBudget(value) {
+  const configured = Number(value);
+  if (Number.isInteger(configured) && configured >= 0) return Math.min(MAX_MODEL_RETRY_BUDGET, configured);
+  const fromEnv = Number(process.env.ALLOFLOW_MCP_MODEL_RETRY_BUDGET);
+  if (Number.isInteger(fromEnv) && fromEnv >= 0) return Math.min(MAX_MODEL_RETRY_BUDGET, fromEnv);
+  return DEFAULT_MODEL_RETRY_BUDGET;
+}
+
+async function withTransportGate(state, signal, operation) {
+  if (!state) return operation();
+  const previous = Promise.resolve(state.gateTail).catch(() => {});
+  let release;
+  const slot = new Promise((resolve) => { release = resolve; });
+  state.gateTail = previous.then(() => slot);
+  try {
+    await abortablePromise(previous, signal);
+    return await operation();
+  } finally {
+    release();
+  }
+}
+
+async function geminiGenerateLocked({ apiKey, model, parts, log, signal, transportState }) {
   const url = geminiBase() + '/' + model + ':generateContent?key=' + encodeURIComponent(apiKey);
+  const state = transportState || null;
+  if (signal && signal.aborted) return { ok: false, error: abortEnvelope() };
+  if (state && state.throttled) {
+    if (state.retryBudgetRemaining <= 0) {
+      return {
+        ok: false,
+        error: {
+          message: 'API_QUOTA_EXHAUSTED',
+          code: 'model_throttled',
+          isQuota: true,
+          retryAfterMs: state.retryAfterMs,
+          retryBudgetExhausted: true,
+          classification: { kind: 'quota', perMinute: true, perDay: false },
+        },
+      };
+    }
+    state.retryBudgetRemaining -= 1;
+    try {
+      await abortableDelay(Math.max(0, state.notBeforeAt - Date.now()), signal);
+    } catch (_) {
+      return { ok: false, error: abortEnvelope() };
+    }
+  }
   let res;
   try {
     res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ contents: [{ parts }] }),
+      signal,
     });
   } catch (e) {
+    if (signal && signal.aborted) return { ok: false, error: abortEnvelope() };
     return { ok: false, error: { message: 'Network error calling Gemini: ' + (e && e.message ? e.message : 'fetch failed'), classification: { kind: 'transient' } } };
   }
   const bodyText = await res.text().catch(() => '');
-  if (!res.ok) return { ok: false, error: classifyHttpFailure(res.status, bodyText) };
+  if (signal && signal.aborted) return { ok: false, error: abortEnvelope() };
+  if (!res.ok) {
+    const error = classifyHttpFailure(res.status, bodyText, res.headers);
+    if (state && error.code === 'model_throttled') {
+      const delay = Number.isFinite(error.retryAfterMs) ? error.retryAfterMs : 2500;
+      state.throttled = true;
+      state.retryAfterMs = delay;
+      state.notBeforeAt = Math.max(state.notBeforeAt, Date.now() + delay);
+      error.retryBudgetExhausted = state.retryBudgetRemaining <= 0;
+    }
+    return { ok: false, error };
+  }
+  if (state) {
+    state.throttled = false;
+    state.retryAfterMs = null;
+    state.notBeforeAt = 0;
+  }
   let body;
   try { body = JSON.parse(bodyText); } catch (_) { return { ok: true, text: '' }; } // empty/garbled 200 → empty (pipeline counts it transient by design)
   const cand = body && body.candidates && body.candidates[0];
@@ -329,6 +507,22 @@ async function geminiGenerate({ apiKey, model, parts, log }) {
     .join('');
   if (!text && log) log('Gemini returned an empty body (finishReason=' + ((cand && cand.finishReason) || 'none') + ')');
   return { ok: true, text };
+}
+
+async function geminiGenerate(options) {
+  const state = options && options.transportState;
+  try {
+    return await withTransportGate(
+      state,
+      options && options.signal,
+      () => geminiGenerateLocked(options),
+    );
+  } catch (error) {
+    if (options && options.signal && options.signal.aborted) {
+      return { ok: false, error: abortEnvelope() };
+    }
+    throw error;
+  }
 }
 
 // One model-level fallback, mirroring the app's default→fallback behavior:
@@ -348,7 +542,7 @@ function createDriver(options) {
   const o = options || {};
   const log = typeof o.log === 'function' ? o.log : defaultLog;
   let browser = null;
-  let activeContext = null; // the in-flight run's browser context (single-flight callers only)
+  let activeRun = null; // context + abortable Node transports for the single in-flight run
   let documentEpochSeq = 0; // one document-ownership epoch per run page (see newPipelinePage)
 
   function requireModuleFiles() {
@@ -356,23 +550,58 @@ function createDriver(options) {
     if (missing.length) throw new Error('Pipeline module file(s) missing from ' + ASSETS_ROOT + ': ' + missing.join(', '));
   }
 
-  async function getBrowser() {
+  async function getBrowser(signal) {
     if (browser) return browser;
+    if (signal && signal.aborted) throw signal.reason || new Error('Run cancelled');
+    if (typeof o.browserFactory === 'function') {
+      browser = await abortablePromise(
+        o.browserFactory(),
+        signal,
+        (lateBrowser) => lateBrowser && lateBrowser.close && lateBrowser.close(),
+      );
+      browser.on?.('disconnected', () => { browser = null; });
+      return browser;
+    }
     // resolveChromium prefers @playwright/test (the repo e2e's browser revision) and falls
     // back to the plain playwright package (what the MCPB bundle ships).
     const res = resolveChromium();
     if (!res.chromium) throw new Error('Playwright is not installed. From the AlloFlow repo run: npm install && npx playwright install chromium');
     if (!res.installed) throw new Error('The Chromium browser binary is not installed yet. Call the remediation_setup tool (one-time ~200MB download), or run: npx playwright install chromium');
     const chromium = res.chromium;
-    browser = await chromium.launch({
+    browser = await abortablePromise(chromium.launch({
       headless: process.env.ALLOFLOW_MCP_HEADFUL !== '1',
       // CheerpJ (the veraPDF JVM) boots via timer/rAF loops that Chromium throttles for
       // backgrounded/occluded content — in headless that throttling stalled the boot
       // indefinitely ("CheerpJ runtime ready", then silence). These flags disable it.
       args: ['--disable-background-timer-throttling', '--disable-backgrounding-occluded-windows', '--disable-renderer-backgrounding'],
-    });
+    }), signal, (lateBrowser) => lateBrowser && lateBrowser.close && lateBrowser.close());
     browser.on('disconnected', () => { browser = null; });
     return browser;
+  }
+
+  function trackRunContext(runState, context) {
+    if (runState && runState.contexts && context) runState.contexts.add(context);
+    return context;
+  }
+
+  async function closeRunResources(runState) {
+    if (!runState) return;
+    const closing = [];
+    if (runState.page) {
+      try {
+        closing.push(runState.page.evaluate(
+          () => window.__mcpRunAbortController && window.__mcpRunAbortController.abort(),
+        ).catch(() => {}));
+      } catch (_) {}
+    }
+    const contexts = new Set(runState.contexts || []);
+    if (runState.context) contexts.add(runState.context);
+    for (const context of contexts) {
+      if (context && typeof context.close === 'function') {
+        closing.push(Promise.resolve(context.close()).catch(() => {}));
+      }
+    }
+    await Promise.allSettled(closing);
   }
 
   // ── Page rendering: the PDF as pictures ─────────────────────────────────────
@@ -397,14 +626,26 @@ function createDriver(options) {
   async function renderPdfToPageImages(b64, opts) {
     const o = opts || {};
     const rlog = typeof o.onLog === 'function' ? o.onLog : log;
-    const b = await getBrowser();
-    const context = await b.newContext();
+    const signal = o.signal;
+    const runState = o.runState;
+    const b = await getBrowser(signal);
+    const context = trackRunContext(
+      runState,
+      await abortablePromise(
+        b.newContext(),
+        signal,
+        (lateContext) => lateContext && lateContext.close && lateContext.close(),
+      ),
+    );
     try {
-      const page = await context.newPage();
-      await installVendorRuntime(page, { loadPdfjs: true });
-      const loaded = await page.evaluate(() => !!(window.pdfjsLib && window.pdfjsLib.getDocument));
+      const page = await abortablePromise(context.newPage(), signal);
+      await abortablePromise(installVendorRuntime(page, { loadPdfjs: true }), signal);
+      const loaded = await abortablePromise(
+        page.evaluate(() => !!(window.pdfjsLib && window.pdfjsLib.getDocument)),
+        signal,
+      );
       if (!loaded) throw new Error('Could not load pdf.js from any CDN — page rendering needs it.');
-      const out = await page.evaluate(async ({ b64: data, workers, targetWidth, maxPages }) => {
+      const out = await abortablePromise(page.evaluate(async ({ b64: data, workers, targetWidth, maxPages }) => {
         for (const w of workers) { try { window.pdfjsLib.GlobalWorkerOptions.workerSrc = w; break; } catch (_) {} }
         const bin = atob(data);
         const bytes = new Uint8Array(bin.length);
@@ -424,7 +665,7 @@ function createDriver(options) {
           canvas.width = 0; canvas.height = 0; // release the backing store now, not at GC
         }
         return { pages, totalPages: total };
-      }, { b64, workers: [vendorAssetUrl(PDFJS_WORKER_ASSET)], targetWidth: RENDER_TARGET_WIDTH, maxPages: RENDER_MAX_PAGES });
+      }, { b64, workers: [vendorAssetUrl(PDFJS_WORKER_ASSET)], targetWidth: RENDER_TARGET_WIDTH, maxPages: RENDER_MAX_PAGES }), signal);
 
       const bytes = out.pages.reduce((n, p) => n + Math.round(p.length * 0.75), 0);
       const truncated = out.totalPages > out.pages.length;
@@ -433,6 +674,7 @@ function createDriver(options) {
       return { pages: out.pages, totalPages: out.totalPages, renderedPages: out.pages.length, bytes, truncated };
     } finally {
       try { await context.close(); } catch (_) {}
+      runState?.contexts?.delete(context);
     }
   }
 
@@ -445,9 +687,32 @@ function createDriver(options) {
     // Per-run log sink: job-based callers route a run's telemetry into that job's record;
     // everything still lands on the driver-level log (stderr) too via the caller's sink.
     const rlog = typeof runOpts.onLog === 'function' ? runOpts.onLog : log;
-    const b = await getBrowser();
-    const context = await b.newContext();
-    const page = await context.newPage();
+    const runState = runOpts.runState;
+    const transportState = runOpts.transportState;
+    const signal = runOpts.signal;
+    const trackTransport = (factory) => {
+      const pending = Promise.resolve().then(factory);
+      if (runState && runState.inFlight) {
+        runState.inFlight.add(pending);
+        pending.then(
+          () => runState.inFlight.delete(pending),
+          () => runState.inFlight.delete(pending),
+        );
+      }
+      return pending;
+    };
+    const b = await getBrowser(signal);
+    const context = trackRunContext(
+      runState,
+      await abortablePromise(
+        b.newContext(),
+        signal,
+        (lateContext) => lateContext && lateContext.close && lateContext.close(),
+      ),
+    );
+    if (runState) runState.context = context;
+    const page = await abortablePromise(context.newPage(), signal);
+    if (runState) runState.page = page;
     page.on('console', (msg) => {
       const t = msg.text();
       // The pipeline's own telemetry IS the diagnostic — forward the load-bearing lines.
@@ -458,10 +723,13 @@ function createDriver(options) {
     // pipeline binds verification evidence to the exact HTML with SHA-256, so boot on a
     // browser-trustworthy loopback origin. Route fulfillment keeps this entirely in-process:
     // no listener, DNS, network request, cookie scope, or document data leaves the machine.
-    await installVendorRuntime(page, { loadCore: true });
+    await abortablePromise(installVendorRuntime(page, { loadCore: true }), signal);
 
     await page.exposeFunction('__mcpGeminiText', async (prompt) => {
-      return geminiCallWithFallback({ apiKey, model: DEFAULT_MODEL, parts: [{ text: String(prompt) }], log: rlog });
+      return trackTransport(() => geminiCallWithFallback({
+        apiKey, model: DEFAULT_MODEL, parts: [{ text: String(prompt) }], log: rlog,
+        signal: runOpts.signal, transportState,
+      }));
     });
     await page.exposeFunction('__mcpGeminiVision', async (prompt, base64Data, mimeType) => {
       const mime = mimeType || 'application/pdf';
@@ -470,19 +738,26 @@ function createDriver(options) {
       // point is to remove the PDF content type, not to re-encode everything.
       const pageImages = runOpts.pageImages;
       if (pageImages && pageImages.length && mime === 'application/pdf') {
-        return geminiCallWithFallback({
+        return trackTransport(() => geminiCallWithFallback({
           apiKey, model: DEFAULT_MODEL, log: rlog,
           parts: [{ text: String(prompt) }].concat(
             pageImages.map((p) => ({ inline_data: { mime_type: 'image/png', data: p } }))
           ),
-        });
+          signal: runOpts.signal, transportState,
+        }));
       }
-      return geminiCallWithFallback({
+      return trackTransport(() => geminiCallWithFallback({
         apiKey, model: DEFAULT_MODEL, log: rlog,
         parts: [{ text: String(prompt) }, { inline_data: { mime_type: mime, data: String(base64Data || '') } }],
-      });
+        signal: runOpts.signal, transportState,
+      }));
     });
     await page.exposeFunction('__mcpProgress', async (line) => { rlog('progress: ' + String(line).slice(0, 300)); });
+    if (typeof runOpts.onCheckpoint === 'function') {
+      await page.exposeFunction('__mcpCheckpoint', async (snapshot) => {
+        return runOpts.onCheckpoint(snapshot);
+      });
+    }
 
     for (const f of MODULE_FILES) await page.addScriptTag({ path: path.join(ASSETS_ROOT, f) });
     await page.waitForFunction(
@@ -505,12 +780,22 @@ function createDriver(options) {
       // puts the epoch on the run's telemetry and warning envelopes.
       w.__alloPdfDocumentEpoch = cfg.documentEpoch;
       const rethrow = (envelope) => {
-        const err = new Error(envelope && envelope.message ? envelope.message : 'Gemini call failed');
+        let message = envelope && envelope.message ? envelope.message : 'Gemini call failed';
+        if (envelope && envelope.code === 'model_throttled') {
+          const retryAfterMs = Number.isFinite(Number(envelope.retryAfterMs))
+            ? Math.max(0, Math.round(Number(envelope.retryAfterMs))) : 0;
+          message += ' [model_throttled retryAfterMs=' + retryAfterMs
+            + ' retryBudgetExhausted=' + (envelope.retryBudgetExhausted === true) + ']';
+        } else if (envelope && envelope.code === 'model_quota_exhausted') {
+          message += ' [model_quota_exhausted]';
+        }
+        const err = new Error(message);
         if (envelope) {
-          ['isQuota', 'isAuth', 'isConfig', 'originalMessage', 'classification'].forEach((k) => {
+          ['code', 'isQuota', 'isAuth', 'isConfig', 'isAbort', 'retryAfterMs', 'retryBudgetExhausted', 'originalMessage', 'classification'].forEach((k) => {
             if (envelope[k] !== undefined) err[k] = envelope[k];
           });
         }
+        if (envelope && envelope.isAbort) err.name = 'AbortError';
         throw err;
       };
       const callGemini = async (prompt) => {
@@ -534,6 +819,8 @@ function createDriver(options) {
         getDefaultTitle: () => cfg.fileName || 'Document',
         state: {},
       });
+      w.__mcpRunAbortController = new AbortController();
+      w.__alloPdfAbortSignal = w.__mcpRunAbortController.signal;
     }, { ocrLanguage: runOpts.ocrLanguage || '', fileName: runOpts.fileName || '', documentEpoch: ++documentEpochSeq });
 
     return { page, context };
@@ -570,25 +857,93 @@ function createDriver(options) {
       (runOpts.onLog || log)('vision mode "images" ignored — page rendering applies to PDFs only');
       return runOpts;
     }
-    const rendered = await renderPdfToPageImages(runOpts.base64ForRender, { onLog: runOpts.onLog });
+    const rendered = await renderPdfToPageImages(runOpts.base64ForRender, {
+      onLog: runOpts.onLog,
+      signal: runOpts.signal,
+      runState: runOpts.runState,
+    });
     return Object.assign({}, runOpts, { pageImages: rendered.pages, renderReport: rendered });
   }
 
   async function withRunPage(runOptsIn, fn) {
-    const runOpts = await prepareVisionMode(runOptsIn);
-    const maxMs = Math.max(60000, (Number(runOpts.maxRunMinutes) || Number(process.env.ALLOFLOW_MCP_MAX_RUN_MINUTES) || 30) * 60000);
-    const { page, context } = await newPipelinePage(runOpts);
-    activeContext = context;
+    if (activeRun) throw new Error('A remediation run is already active.');
+    const parentSignal = runOptsIn && runOptsIn.signal;
+    const abort = new AbortController();
+    const parentAbort = () => abort.abort(parentSignal.reason || new Error('Run cancelled'));
+    if (parentSignal) {
+      if (parentSignal.aborted) parentAbort();
+      else parentSignal.addEventListener('abort', parentAbort, { once: true });
+    }
+    const configuredMaxMs = Math.max(
+      60000,
+      (Number(runOptsIn.maxRunMinutes) || Number(process.env.ALLOFLOW_MCP_MAX_RUN_MINUTES) || 30) * 60000,
+    );
+    const requestedDeadline = Number(runOptsIn.deadlineAt);
+    const deadlineAt = Number.isFinite(requestedDeadline) && requestedDeadline > 0
+      ? Math.min(requestedDeadline, Date.now() + configuredMaxMs)
+      : Date.now() + configuredMaxMs;
+    const runState = {
+      abort,
+      context: null,
+      page: null,
+      contexts: new Set(),
+      inFlight: new Set(),
+      operation: null,
+    };
+    const transportState = {
+      retryBudgetRemaining: modelRetryBudget(runOptsIn.modelRetryBudget),
+      throttled: false,
+      retryAfterMs: null,
+      notBeforeAt: 0,
+    };
+    activeRun = runState;
+    const remainingMs = deadlineAt - Date.now();
     let timer = null;
+    const deadlinePromise = new Promise((_, reject) => {
+      timer = setTimeout(() => {
+        const error = new Error('remediation_deadline_reached');
+        if (!abort.signal.aborted) abort.abort(error);
+        closeRunResources(runState).catch(() => {});
+        reject(error);
+      }, Math.max(0, remainingMs));
+      timer.unref?.();
+    });
+    let operation = null;
+    let context = null;
+    let page = null;
     try {
-      return await Promise.race([
-        fn(page),
-        new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('Run exceeded the ' + Math.round(maxMs / 60000) + '-minute wall clock and was stopped. Partial console telemetry is on stderr.')), maxMs); }),
-      ]);
+      operation = (async () => {
+        if (abort.signal.aborted) {
+          throw abort.signal.reason || new Error('Run cancelled');
+        }
+        const runOpts = await abortablePromise(
+          prepareVisionMode(Object.assign({}, runOptsIn, {
+            signal: abort.signal, runState, transportState,
+          })),
+          abort.signal,
+        );
+        const opened = await abortablePromise(
+          newPipelinePage(runOpts),
+          abort.signal,
+        );
+        page = opened.page;
+        context = opened.context;
+        runState.page = page;
+        runState.context = context;
+        return abortablePromise(fn(page), abort.signal);
+      })();
+      runState.operation = operation;
+      return await Promise.race([operation, deadlinePromise]);
     } finally {
       clearTimeout(timer);
-      if (activeContext === context) activeContext = null;
-      try { await context.close(); } catch (_) {}
+      parentSignal?.removeEventListener?.('abort', parentAbort);
+      if (!abort.signal.aborted) abort.abort(new Error('Run transport closed'));
+      await closeRunResources(runState);
+      await Promise.allSettled([
+        ...(operation ? [operation] : []),
+        ...Array.from(runState.inFlight),
+      ]);
+      if (activeRun === runState) activeRun = null;
     }
   }
 
@@ -596,10 +951,14 @@ function createDriver(options) {
   // page.evaluate reject immediately, and with it every queued/in-flight Gemini bridge call.
   // Page-per-run isolation means nothing else is affected. Returns false when idle.
   async function cancelActiveRun() {
-    const c = activeContext;
-    if (!c) return false;
-    activeContext = null;
-    try { await c.close(); } catch (_) {}
+    const run = activeRun;
+    if (!run) return false;
+    if (!run.abort.signal.aborted) run.abort.abort(new Error('Run cancelled'));
+    await closeRunResources(run);
+    await Promise.allSettled([
+      ...(run.operation ? [run.operation] : []),
+      ...Array.from(run.inFlight),
+    ]);
     return true;
   }
 
@@ -645,7 +1004,7 @@ function createDriver(options) {
     const _isPdfInput = /\.pdf$/i.test(fileName);
     (opts.onLog || log)('remediate: ' + fileName + ' (' + Math.round(b64.length * 0.75 / 1024) + ' KB, target ' + (opts.targetScore || 95) + ')');
     return withRunPage(Object.assign({ fileName, base64ForRender: b64 }, opts), (page) =>
-      page.evaluate(async ({ b64, fileName, targetScore, fixPasses, polishPasses, wantTaggedPdf, wantAutoContinue, autoContinueRounds, pdfLibCdn, auditorCount }) => {
+      page.evaluate(async ({ b64, fileName, targetScore, fixPasses, polishPasses, wantTaggedPdf, wantAutoContinue, autoContinueRounds, pdfLibCdn, auditorCount, resumeCheckpoint }) => {
         const pipeline = window.__mcpPipeline;
         const progress = (stage, msg) => { try { window.__mcpProgress(stage + ' — ' + msg); } catch (_) {} };
         const loopPolicy = window.AlloModules
@@ -662,14 +1021,172 @@ function createDriver(options) {
         )) {
           throw new Error('Canonical remediation loop policy is unavailable.');
         }
-        progress('audit', 'opening accessibility audit');
-        const audit = await pipeline.runPdfAccessibilityAudit(b64, { skipUiUpdates: true, skipCache: true, fileName, auditorCount });
-        progress('audit', 'before-score ' + (audit && audit.score));
-        const result = await pipeline.fixAndVerifyPdf({
-          base64: b64, fileName, auditResult: audit,
-          targetScore: targetScore, autoFixPasses: fixPasses, polishPasses: polishPasses, auditorCount,
-          onProgress: (step, msg) => progress('fix', (typeof step === 'number' ? 'step ' + step + ': ' : '') + (msg || '')),
+        const checkpointEnabled = typeof window.__mcpCheckpoint === 'function';
+        const checkpointAuditView = (value) => {
+          if (!value || typeof value !== 'object') return null;
+          const requestedAuditors = Number.isSafeInteger(value.requestedAuditors) ? value.requestedAuditors : null;
+          const completedAuditors = Number.isSafeInteger(value.auditorCount) ? value.auditorCount : null;
+          if (requestedAuditors === null || requestedAuditors < 3 || requestedAuditors > auditorCount
+            || completedAuditors === null || completedAuditors < requestedAuditors || completedAuditors > auditorCount
+            || value._slicedAudit === true || value.sliced === true) return null;
+          return {
+            score: typeof value.score === 'number' && Number.isFinite(value.score) ? value.score : null,
+            documentLanguage: typeof value.documentLanguage === 'string' ? value.documentLanguage.slice(0, 32) : null,
+            requestedAuditors,
+            auditorCount: completedAuditors,
+            sliced: false,
+          };
+        };
+        const auditFromCheckpoint = (value) => {
+          const view = checkpointAuditView(value);
+          return view ? {
+            score: view.score,
+            documentLanguage: view.documentLanguage,
+            requestedAuditors: view.requestedAuditors,
+            auditorCount: view.auditorCount,
+            _slicedAudit: false,
+          } : null;
+        };
+        let audit = null;
+        let cur = null;
+        let roundsRun = 0;
+        let roundLog = [];
+        let nextRound = 0;
+        let lastViolations = Infinity;
+        let lastDet = -1;
+        let lastIssues = Infinity;
+        let stagnant = 0;
+        let autoContinueDone = false;
+        let resumeExtractionApplied = false;
+        const checkpointLoopState = () => ({
+          lastViolations: Number.isFinite(lastViolations) ? lastViolations : null,
+          lastDet: Number.isFinite(lastDet) ? lastDet : null,
+          lastIssues: Number.isFinite(lastIssues) ? lastIssues : null,
+          stagnant,
         });
+        const isComplete = (r) => !!(r
+          && r.verificationState === 'complete'
+          && r.afterScoreVerified === true
+          && !r.requiresManualReview
+          && pipeline.isLiveVerificationHtmlBound(r, r.accessibleHtml));
+        const emitCheckpoint = async (snapshot) => {
+          if (!checkpointEnabled) return null;
+          const auditView = checkpointAuditView(audit);
+          if (!auditView) throw new Error('checkpoint_snapshot_invalid');
+          let portable;
+          try {
+            portable = JSON.parse(JSON.stringify(Object.assign({}, snapshot, { audit: auditView })));
+          } catch (_) {
+            throw new Error('checkpoint_snapshot_invalid');
+          }
+          return window.__mcpCheckpoint(portable);
+        };
+        const resume = resumeCheckpoint && typeof resumeCheckpoint === 'object'
+          ? resumeCheckpoint : null;
+        if (resume && resume.schema === 1 && resume.stage === 'extraction'
+          && resume.extraction && typeof resume.extraction === 'object') {
+          const restoredAudit = auditFromCheckpoint(resume.audit);
+          const extraction = resume.extraction;
+          if (restoredAudit
+            && extraction.fileName === fileName
+            && /^sha256:[a-f0-9]{64}$/.test(String(extraction.documentDigest || ''))
+            && typeof extraction.text === 'string' && extraction.text.length > 0) {
+            // The checkpoint carries only bounded audit identity/evidence. The full
+            // baseline audit is rerun before fixAndVerifyPdf consumes auditResult.
+            window.__resumeExtractedText = {
+              fileName: extraction.fileName,
+              text: extraction.text,
+              extractedText: extraction.text,
+              docKey: extraction.documentDigest,
+              groundTruthCharCount: extraction.groundTruthCharCount || extraction.text.length,
+              groundTruthPages: Array.isArray(extraction.groundTruthPages) ? extraction.groundTruthPages : null,
+              groundTruthMethod: extraction.groundTruthMethod || null,
+              ocrMethod: extraction.ocrMethod || null,
+              ocrTesseractText: extraction.ocrTesseractText || '',
+              ocrVisionText: extraction.ocrVisionText || '',
+              ocrDisagreements: Array.isArray(extraction.ocrDisagreements) ? extraction.ocrDisagreements : [],
+              ocrPageErrors: Array.isArray(extraction.ocrPageErrors) ? extraction.ocrPageErrors : [],
+              ocrLowConfidencePages: Array.isArray(extraction.ocrLowConfidencePages) ? extraction.ocrLowConfidencePages : [],
+              detectedFolios: Array.isArray(extraction.detectedFolios) ? extraction.detectedFolios : [],
+              ocrDupeCollapses: Array.isArray(extraction.ocrDupeCollapses) ? extraction.ocrDupeCollapses : [],
+              ocrColumnReorders: Array.isArray(extraction.ocrColumnReorders) ? extraction.ocrColumnReorders : [],
+              strippedEdgeLines: Array.isArray(extraction.strippedEdgeLines) ? extraction.strippedEdgeLines : [],
+              visionStripTrail: Array.isArray(extraction.visionStripTrail) ? extraction.visionStripTrail : [],
+            };
+            resumeExtractionApplied = true;
+          }
+        } else if (resume && resume.schema === 1
+          && (resume.stage === 'primary' || resume.stage === 'round')
+          && resume.remediation && typeof resume.remediation.accessibleHtml === 'string') {
+          const restoredAudit = auditFromCheckpoint(resume.audit);
+          try {
+            const rebound = await pipeline.rehydrateVerificationHtmlBinding(resume.remediation);
+            const progressValid = resume.stage === 'primary'
+              ? resume.nextRound === 0 && resume.roundsRun === 0
+              : resume.nextRound > 0 && resume.nextRound === resume.roundsRun;
+            if (restoredAudit && progressValid
+              && pipeline.isLiveVerificationHtmlBound(rebound, rebound.accessibleHtml)) {
+              audit = restoredAudit;
+              cur = rebound;
+              roundsRun = resume.roundsRun;
+              nextRound = resume.nextRound;
+              roundLog = Array.isArray(resume.roundLog) ? resume.roundLog.slice(0, 64) : [];
+              const loop = resume.loopState && typeof resume.loopState === 'object' ? resume.loopState : {};
+              lastViolations = Number.isFinite(loop.lastViolations) ? loop.lastViolations : Infinity;
+              lastDet = Number.isFinite(loop.lastDet) ? loop.lastDet : -1;
+              lastIssues = Number.isFinite(loop.lastIssues) ? loop.lastIssues : Infinity;
+              stagnant = Number.isSafeInteger(loop.stagnant) ? Math.max(0, Math.min(10, loop.stagnant)) : 0;
+              autoContinueDone = resume.autoContinueDone === true;
+              progress('checkpoint', 'resumed ' + resume.stage + ' boundary');
+            }
+          } catch (_) {
+            audit = null;
+            cur = null;
+          }
+        }
+        if (!audit) {
+          progress('audit', 'opening accessibility audit');
+          audit = await pipeline.runPdfAccessibilityAudit(b64, { skipUiUpdates: true, skipCache: true, fileName, auditorCount });
+          progress('audit', 'before-score ' + (audit && audit.score));
+        }
+        if (!cur) {
+          const fixOptions = {
+            base64: b64, fileName, auditResult: audit,
+            targetScore: targetScore, autoFixPasses: fixPasses, polishPasses: polishPasses, auditorCount,
+            onProgress: (step, msg) => progress('fix', (typeof step === 'number' ? 'step ' + step + ': ' : '') + (msg || '')),
+          };
+          if (checkpointEnabled && !resumeExtractionApplied) {
+            fixOptions.onCheckpoint = async (snapshot) => {
+              if (!snapshot || snapshot.schema !== 1 || snapshot.stage !== 'extraction'
+                || !snapshot.extraction || typeof snapshot.extraction.text !== 'string') throw new Error('checkpoint_snapshot_invalid');
+              return emitCheckpoint({
+                schema: 1,
+                stage: 'extraction',
+                extraction: snapshot.extraction,
+              });
+            };
+          }
+          cur = await pipeline.fixAndVerifyPdf(fixOptions);
+          if (cur && typeof cur.accessibleHtml === 'string') {
+            cur = await pipeline.rehydrateVerificationHtmlBinding(cur);
+          }
+          if (!cur || !pipeline.isLiveVerificationHtmlBound(cur, cur.accessibleHtml)) {
+            throw new Error('Canonical verification binding could not be restored.');
+          }
+          autoContinueDone = !wantAutoContinue || isComplete(cur);
+          await emitCheckpoint({
+            schema: 1,
+            stage: 'primary',
+            remediation: cur,
+            nextRound: 0,
+            roundsRun: 0,
+            roundLog: [],
+            loopState: checkpointLoopState(),
+            autoContinueDone,
+          });
+        }
+        if (wantAutoContinue && !autoContinueDone && cur && typeof cur.accessibleHtml === 'string') {
+          for (let round = nextRound; round < autoContinueRounds; round++) {
         // ── AUTO-CONTINUE (#6-full payoff): the SAME improvement loop the app runs, merging every
         // accepted round through the ONE canonical reducer (finalizeRemediationRound) — so the
         // connector and the app can never disagree about what a round means. Branch fidelity
@@ -678,19 +1195,6 @@ function createDriver(options) {
         // verification incomplete → ONE audit-only evidence refresh. Loop POLICY mirrors the host
         // too: wait-not-stop calm gate per round, noise-aware revert on a REAL deterministic
         // regression (the reducer's _detScore), two-stall abandon.
-        let cur = result;
-        if (cur && typeof cur.accessibleHtml === 'string') {
-          cur = await pipeline.rehydrateVerificationHtmlBinding(cur);
-        }
-        let roundsRun = 0;
-        const roundLog = [];
-        if (wantAutoContinue && cur && typeof cur.accessibleHtml === 'string') {
-          const isComplete = (r) => r.verificationState === 'complete' && r.afterScoreVerified === true && !r.requiresManualReview && pipeline.isLiveVerificationHtmlBound(r, r.accessibleHtml);
-          let lastViolations = Infinity;
-          let lastDet = -1;
-          let lastIssues = Infinity;
-          let stagnant = 0;
-          for (let round = 0; round < autoContinueRounds; round++) {
             if ((cur.afterScore || 0) >= targetScore && isComplete(cur)) break;
             const _vio = (cur.axeAudit && cur.axeAudit.totalViolations) || 0;
             const _aiIssues = (cur.verificationAudit && Array.isArray(cur.verificationAudit.issues)) ? cur.verificationAudit.issues : [];
@@ -773,6 +1277,19 @@ function createDriver(options) {
             }
             roundLog.push('round ' + (round + 1) + ' accepted: score ' + (cur.afterScore || 0) + ' → ' + (merged.afterScore || 0) + ' (det ' + _det + ', state ' + merged.verificationState + ')');
             cur = merged;
+            autoContinueDone = !!roundOut._auditOnly
+              || round + 1 >= autoContinueRounds
+              || ((cur.afterScore || 0) >= targetScore && isComplete(cur));
+            await emitCheckpoint({
+              schema: 1,
+              stage: 'round',
+              remediation: cur,
+              nextRound: round + 1,
+              roundsRun,
+              roundLog: roundLog.slice(-64).map((line) => String(line).slice(0, 1000)),
+              loopState: checkpointLoopState(),
+              autoContinueDone,
+            });
             if (roundOut._auditOnly) break; // evidence refresh is deliberately single-shot
           }
         }
@@ -891,6 +1408,7 @@ function createDriver(options) {
         wantTaggedPdf: opts.taggedPdf !== false && _isPdfInput,
         wantAutoContinue: !!opts.autoContinue,
         autoContinueRounds: Math.max(1, Math.min(5, Number(opts.autoContinueRounds) || 3)),
+        resumeCheckpoint: opts.resumeCheckpoint || null,
         pdfLibCdn: vendorAssetUrl('pdf-lib.min.js'),
         auditorCount: HEADLESS_AUDITOR_COUNT,
       })
@@ -1026,7 +1544,7 @@ function createDriver(options) {
   // loopback IFRAME is silently blocked by Chromium's Private Network Access rules, and
   // readiness is visible in the page's own #status line. Needs NO Gemini key and touches NO
   // pipeline globals, so it runs in its own context OUTSIDE the single-flight lane and
-  // deliberately never occupies activeContext (a job cancel must not kill a validation).
+  // deliberately never occupies activeRun (a job cancel must not kill a validation).
   async function validatePdfUa(opts) {
     const rlog = typeof opts.onLog === 'function' ? opts.onLog : log;
     const fileName = path.basename(opts.filePath);
@@ -1741,7 +2259,7 @@ function createDriver(options) {
   }
 
   async function close() {
-    activeContext = null;
+    if (activeRun) await cancelActiveRun();
     if (verapdfServer) { try { verapdfServer.close(); } catch (_) {} verapdfServer = null; }
     if (browser) { try { await browser.close(); } catch (_) {} browser = null; }
   }
@@ -1801,7 +2319,20 @@ async function verifyGeminiApiKey({ timeoutMs = 15000 } = {}) {
   }
 }
 
-module.exports = { createDriver, classifyHttpFailure, resolveGeminiApiKey, verifyGeminiApiKey, resolveChromium, installChromium, verifyVendorBundle, REPO_ROOT, ASSETS_ROOT, MODULE_FILES };
+module.exports = {
+  createDriver,
+  classifyHttpFailure,
+  providerRetryAfterMs,
+  geminiGenerate,
+  resolveGeminiApiKey,
+  verifyGeminiApiKey,
+  resolveChromium,
+  installChromium,
+  verifyVendorBundle,
+  REPO_ROOT,
+  ASSETS_ROOT,
+  MODULE_FILES,
+};
 
 // ── Direct CLI (for manual testing without an MCP client) ──────────────────
 //   GEMINI_API_KEY=... node desktop/mcp/remediation_headless_driver.cjs audit <file.pdf>

@@ -80,6 +80,24 @@ test("a fully isolated staging copy passes offline preflight", () => {
   assert.deepEqual(validatePilotConfig(config, raw), []);
 });
 
+test("release metadata and privacy-safe metrics bindings are mandatory", () => {
+  const missingMetrics = configuredTemplate();
+  delete missingMetrics.config.analytics_engine_datasets;
+  assert.ok(
+    validatePilotConfig(missingMetrics.config, missingMetrics.raw).some(
+      (error) => error.includes("PILOT_METRICS"),
+    ),
+  );
+
+  const missingVersion = configuredTemplate();
+  delete missingVersion.config.version_metadata;
+  assert.ok(
+    validatePilotConfig(missingVersion.config, missingVersion.raw).some(
+      (error) => error.includes("CF_VERSION_METADATA"),
+    ),
+  );
+});
+
 test("synthetic acceptance requires an explicit second switch", () => {
   const { raw, config } = configuredTemplate();
   config.vars.PILOT_ACCEPTANCE_VERSION = ACCEPTANCE_VERSION;

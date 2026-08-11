@@ -1,4 +1,4 @@
-// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -4175,6 +4175,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
   // ─────────────────────────────────────────────────────────
   // SECTION 10: KNOWLEDGE QUIZ — 10 questions covering safety, diagnostic, repair
   // ─────────────────────────────────────────────────────────
+  // The authored banks put the correct answer in slot 2 for 108 of 113
+  // questions and never in slot 4, so a student could score by position
+  // instead of by diagnosis. Rotate each question by a per-question offset.
+  //
+  // Deterministic and applied once to the banks: questions are re-read from
+  // the bank by index on every render, so a render-time Math.random() would
+  // deal new options under the student mid-question.
+  //
+  // Both banks grade by INDEX (i === question.correct) and explain with a
+  // single string, so only the option array and `correct` move.
+  function arRotateChoices(list, correctIdx, seedIdx) {
+    var n = list.length;
+    var shift = ((seedIdx * 7) + 3) % n;
+    if (!n || shift === 0) return null;
+    var moved = new Array(n);
+    for (var i = 0; i < n; i++) moved[(i + shift) % n] = list[i];
+    return { list: moved, correct: (correctIdx + shift) % n };
+  }
+  function arRotateQuizBank(bank) {
+    return bank.map(function (q, i) {
+      if (!q || !Array.isArray(q.choices) || typeof q.correct !== "number") return q;
+      var r = arRotateChoices(q.choices, q.correct, i);
+      if (!r) return q;
+      var out = Object.assign({}, q);
+      out.choices = r.list; out.correct = r.correct;
+      return out;
+    });
+  }
+  function arRotateCaseBank(bank) {
+    var seed = 0;
+    return bank.map(function (c) {
+      if (!c) return c;
+      var out = Object.assign({}, c);
+      ["part", "cause", "sev"].forEach(function (k) {
+        var sub = c[k];
+        if (!sub || !Array.isArray(sub.a) || typeof sub.correct !== "number") return;
+        var r = arRotateChoices(sub.a, sub.correct, seed++);
+        if (!r) return;
+        out[k] = Object.assign({}, sub, { a: r.list, correct: r.correct });
+      });
+      return out;
+    });
+  }
   var QUIZ = [
     { id: 'q1', icon: '🛡️',
       stem: 'You need to get under your car for an oil change. What do you do AFTER lifting it with the floor jack?',
@@ -4460,6 +4503,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
   // SECTION 11: TOOL REGISTRATION + RENDER
   // ─────────────────────────────────────────────────────────
 
+  QUIZ = arRotateQuizBank(QUIZ);
+  DAMAGE_CASES = arRotateCaseBank(DAMAGE_CASES);
   window.StemLab.registerTool('autoRepair', {
     name: 'Auto Repair Shop',
     icon: '🔧',

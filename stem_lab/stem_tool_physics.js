@@ -5,7 +5,7 @@
 // ═══════════════════════════════════════════
 
 // ═══════════════════════════════════════════
-// stem_tool_science.js — STEM Lab Science Tools
+// stem_tool_science.js — STEAM Lab Science Tools
 // 29 registered tools
 // Auto-extracted (Phase 2 modularization)
 // ═══════════════════════════════════════════
@@ -38,7 +38,7 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -153,7 +153,9 @@ window.StemLab = window.StemLab || {
                 isPlayerTurn: true, battleConstraint: null, battleFeedback: null, battleLog: []
               }});
             });
-            return React.createElement('div', { className: 'p-8 text-center text-slate-600' }, __alloT('stem.physics.loading', 'Loading...'));
+            // text-slate-600 on the dark tool shell is ~2:1. Use the theme var so the
+            // placeholder stays readable in light, dark and high-contrast.
+            return React.createElement('div', { className: 'p-8 text-center', style: { color: 'var(--allo-stem-text-soft, #475569)' } }, __alloT('stem.physics.loading', 'Loading...'));
           }
 const d = labToolData.physics;
 
@@ -1993,7 +1995,7 @@ const d = labToolData.physics;
                     ].map(function(metric) {
                       return React.createElement("div", { key: metric.label, className: "min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center" },
                         React.createElement("div", { className: "truncate text-sm font-black text-white", title: metric.value }, metric.value),
-                        React.createElement("div", { className: "mt-1 text-[9px] font-bold uppercase tracking-wider text-cyan-200" }, metric.label)
+                        React.createElement("div", { className: "mt-1 text-[10px] leading-snug font-bold uppercase tracking-wider text-cyan-200" }, metric.label)
                       );
                     })
                   )

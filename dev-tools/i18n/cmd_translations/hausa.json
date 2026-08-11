@@ -320,5 +320,8 @@
   "cmd.run_lesson_blueprint": "Ƙirƙiri tsarin darasi",
   "cmd.run_lesson_blueprint_done": "Ana ƙirƙirar tsarin — za ka iya kallon kowane mataki a katin.",
   "cmd.run_lesson_blueprint_hint": "Yana ƙirƙirar dukkan albarkatun tsarin yanzu",
-  "cmd.cancelled": "An nemi soke aikin. Aikin yanzu zai tsaya idan mai samar da shi ya goyi bayansa."
+  "cmd.cancelled": "An nemi soke aikin. Aikin yanzu zai tsaya idan mai samar da shi ya goyi bayansa.",
+  "cmd.open_share_collect": "Buɗe Share & Collect",
+  "cmd.open_share_collect_hint": "Zaɓen ra’ayi, rajista, tambayoyi da sakamakonsu",
+  "cmd.open_share_collect_done": "An buɗe Share & Collect."
 }

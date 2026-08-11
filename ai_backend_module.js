@@ -1122,12 +1122,19 @@ function normalizeLocalTaskSupport(value = {}) {
         remediationJson: normalizeLocalTaskState(support.remediationJson || support.remediation || probeSupport.remediationJson),
     };
 }
-function localModelSupportsTask(profile = {}, task = 'simple-text') {
+// Raw probe verdict: 'pass' | 'fail' | 'partial' | 'unknown' | 'unavailable'.
+// Callers that GATE on capability must use this rather than the boolean below —
+// localModelSupportsTask() is true only for 'pass', so treating false as "cannot
+// do it" would block every model that has simply never been probed.
+function localTaskState(profile = {}, task = 'simple-text') {
     const support = normalizeLocalTaskSupport(profile.taskSupport || {});
     const normalizedTask = String(task || 'simple-text').toLowerCase();
-    if (normalizedTask === 'remediation' || normalizedTask === 'remediation-json') return support.remediationJson === 'pass';
-    if (normalizedTask === 'json' || normalizedTask === 'strict-json') return support.strictJson === 'pass';
-    return support.simpleText === 'pass';
+    if (normalizedTask === 'remediation' || normalizedTask === 'remediation-json') return support.remediationJson;
+    if (normalizedTask === 'json' || normalizedTask === 'strict-json') return support.strictJson;
+    return support.simpleText;
+}
+function localModelSupportsTask(profile = {}, task = 'simple-text') {
+    return localTaskState(profile, task) === 'pass';
 }
 function buildLocalModelProfile(config = {}) {
     const backend = config.backend || 'local';
@@ -1195,6 +1202,115 @@ function tuneLocalTextOptions(prompt, opts = {}, profile = buildLocalModelProfil
         promptLikelyTooLarge: approxPromptTokens + profile.reserveTokens >= profile.contextWindow,
     };
 }
+// ─── Constrained decoding for small local models ───────────────────────────
+// response_format:{type:'json_object'} buys a GENERIC JSON grammar: the output
+// is syntactically valid but its SHAPE is unconstrained, so a 3B/4B model
+// happily returns well-formed JSON with the wrong keys. llama.cpp (the pinned
+// b9878 build behind alloflow-local) and LM Studio both accept a json_schema,
+// which they compile to a GBNF grammar — making the wrong shape structurally
+// impossible to emit rather than merely discouraged.
+//
+// ★ These schemas are load-bearing in a way prompt text is not: a constrained
+// model CANNOT deviate from them, so an inaccurate schema silently truncates
+// real fields instead of producing a visible error. Every schema therefore
+// lists the FULL property set the dispatcher's normalizer reads, and requires
+// only the fields the resource genuinely cannot render without.
+const LOCAL_SCHEMA_STRING = { type: 'string' };
+const LOCAL_STRING_LIST = { type: 'array', items: { type: 'string' } };
+// ★ Each schema below is transcribed from the LOCAL branch's own prompt in
+// generate_dispatcher_source.jsx and its normalizer, NOT from the cloud prompt
+// and not from the resource's display shape. Those differ: the local glossary
+// prompt asks for { "terms": [...] } with a "tier" field, the local FAQ prompt
+// asks for { "faqs": [...] }, and brainstorm asks for { "ideas": [...] } with a
+// "connection". A schema copied from the wrong one would constrain the model
+// into a shape unwrapArray() then reads as empty. Resource types whose local
+// path reuses the shared cloud prompt (anchor-chart, dbq, note-taking) are
+// deliberately ABSENT until their shape is verified the same way.
+const LOCAL_RESOURCE_SCHEMAS = {
+    glossary: {
+        type: 'object',
+        properties: {
+            terms: {
+                type: 'array',
+                items: {
+                    type: 'object',
+                    properties: {
+                        term: LOCAL_SCHEMA_STRING,
+                        def: LOCAL_SCHEMA_STRING,
+                        tier: { type: 'string', enum: ['Academic', 'Domain-Specific'] },
+                        translations: { type: 'object' },
+                    },
+                    required: ['term', 'def', 'tier'],
+                },
+            },
+        },
+        required: ['terms'],
+    },
+    faq: {
+        type: 'object',
+        properties: {
+            faqs: {
+                type: 'array',
+                items: {
+                    type: 'object',
+                    properties: { question: LOCAL_SCHEMA_STRING, answer: LOCAL_SCHEMA_STRING },
+                    required: ['question', 'answer'],
+                },
+            },
+        },
+        required: ['faqs'],
+    },
+    brainstorm: {
+        type: 'object',
+        properties: {
+            ideas: {
+                type: 'array',
+                items: {
+                    type: 'object',
+                    properties: {
+                        title: LOCAL_SCHEMA_STRING,
+                        description: LOCAL_SCHEMA_STRING,
+                        connection: LOCAL_SCHEMA_STRING,
+                    },
+                    required: ['title', 'description'],
+                },
+            },
+        },
+        required: ['ideas'],
+    },
+    'lesson-plan': {
+        type: 'object',
+        properties: {
+            essentialQuestion: LOCAL_SCHEMA_STRING,
+            objectives: LOCAL_STRING_LIST,
+            hook: LOCAL_SCHEMA_STRING,
+            directInstruction: LOCAL_SCHEMA_STRING,
+            guidedPractice: LOCAL_SCHEMA_STRING,
+            independentPractice: LOCAL_SCHEMA_STRING,
+            closure: LOCAL_SCHEMA_STRING,
+            extensions: LOCAL_STRING_LIST,
+        },
+        required: ['essentialQuestion', 'objectives'],
+    },
+};
+// Off by default. The schemas above have NOT been validated against a live
+// GGUF yet (see the local-engine audit), and a wrong schema under constrained
+// decoding is worse than no schema at all — it drops real fields with no error.
+// Opt in per-device with localStorage.alloflow_local_json_schema = '1', or
+// globally once a live run confirms each shape.
+function localSchemaModeEnabled() {
+    try {
+        if (typeof window === 'undefined') return false;
+        if (window.__alloLocalJsonSchema === true) return true;
+        return window.localStorage && window.localStorage.getItem('alloflow_local_json_schema') === '1';
+    } catch (_) {
+        return false;
+    }
+}
+function resourceSchemaFor(type) {
+    if (!localSchemaModeEnabled()) return null;
+    return LOCAL_RESOURCE_SCHEMAS[String(type || '')] || null;
+}
 // Terminal-marker sentinel for OpenAI SSE ("data: [DONE]"); a Symbol can never
 // collide with real streamed content.
 const STREAM_DONE = (typeof Symbol === 'function') ? Symbol('alloflow.stream.done') : ' __ALLO_STREAM_DONE__';
@@ -1206,6 +1322,10 @@ if (typeof window !== 'undefined') {
         tuneLocalTextOptions,
         buildLocalTaskSupportFromProbe,
         localModelSupportsTask,
+        localTaskState,
+        LOCAL_RESOURCE_SCHEMAS,
+        localSchemaModeEnabled,
+        resourceSchemaFor,
     };
 }
 
@@ -1305,7 +1425,20 @@ class AIProvider {
     // 2026-07-16), and its json_schema variant needs a full schema this
     // generic layer doesn't have. So for LM Studio send NO response_format
     // and lean on the prompt's JSON instruction (see _jsonPromptSuffix).
-    _openaiJsonFormat() {
+    _openaiJsonFormat(schema = null) {
+        // With a real schema in hand, the backends that compile one to a grammar
+        // should get it — including LM Studio, whose 2026-07-16 rejection was
+        // specifically that json_schema is the only object form it accepts and
+        // this layer had no schema to give it. Servers we do not control
+        // ('custom', 'localai') keep the conservative json_object behaviour.
+        if (schema && (this.backend === 'alloflow-local' || this.backend === 'lmstudio')) {
+            return {
+                response_format: {
+                    type: 'json_schema',
+                    json_schema: { name: 'alloflow_resource', strict: false, schema },
+                },
+            };
+        }
         if (this.backend === 'lmstudio') return {};
         return { response_format: { type: 'json_object' } };
     }
@@ -1368,7 +1501,7 @@ class AIProvider {
      * @param {number} [opts.maxTokens=8192] - Max output tokens
      * @returns {Promise<string|Object>} Generated text (or {text, groundingMetadata} if search=true)
      */
-    async generateText(prompt, { json = false, search = false, temperature = null, maxTokens = 8192, onProgress = null, signal = null } = {}) {
+    async generateText(prompt, { json = false, search = false, temperature = null, maxTokens = 8192, onProgress = null, signal = null, schema = null } = {}) {
         if (signal && signal.aborted) {
             const error = new Error('Text generation cancelled.');
             error.name = 'AbortError';
@@ -1403,14 +1536,14 @@ class AIProvider {
             case 'alloflow-local':
             case 'custom':
             default:
-                return this._openaiGenerateText(prompt, { json, search, temperature, maxTokens: effectiveMaxTokens, onProgress, localProfile: this.localModelProfile, localUsage, signal });
+                return this._openaiGenerateText(prompt, { json, search, temperature, maxTokens: effectiveMaxTokens, onProgress, localProfile: this.localModelProfile, localUsage, signal, schema });
         }
     }
 
     async _geminiGenerateText(prompt, { json, search, temperature, maxTokens, signal }) {
         const buildUrl = (model) => {
             this._debugLog(`[AIProvider] ✉ Using model: ${model}`);
-            const keyParam = this.apiKey ? `?key=${this.apiKey}` : '';
+        const keyParam = this.apiKey ? `?key=${this.apiKey}` : '';
             return `${this.baseUrl}/models/${model}:generateContent${keyParam}`;
         };
 
@@ -1507,7 +1640,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         return text || '';
     }
 
-    async _openaiGenerateText(prompt, { json, search, temperature, maxTokens, onProgress, localProfile = null, localUsage = null, signal = null } = {}) {
+    async _openaiGenerateText(prompt, { json, search, temperature, maxTokens, onProgress, localProfile = null, localUsage = null, signal = null, localRetryDepth = 0, schema = null } = {}) {
         // ── Additive local-only streaming progress (opt-in; Phase 1) ──────────
         // Cloud is untouched: gemini/claude use their own methods, and hosted
         // 'openai' is excluded by isLocalTextBackend(). This branch engages ONLY
@@ -1534,8 +1667,15 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         };
         if (_sink && !search && isLocalTextBackend(this.backend)) {
             try {
-                const streamed = await this._openaiStreamText(prompt, { json, temperature, maxTokens, localProfile, localUsage, signal }, _sink);
-                if (typeof streamed === 'string') return streamed;
+                const streamMeta = {};
+                const streamed = await this._openaiStreamText(prompt, { json, temperature, maxTokens, localProfile, localUsage, signal, schema }, _sink, streamMeta);
+                if (typeof streamed === 'string') {
+                    return await this._finalizeLocalText(streamed, {
+                        prompt, json, temperature, maxTokens, localProfile, localUsage, signal, schema,
+                        finishReason: streamMeta.finishReason || null,
+                        depth: localRetryDepth,
+                    });
+                }
             } catch (streamErr) {
                 if (streamErr && streamErr.name === 'AbortError') throw streamErr;
                 this._warnLog('[AIProvider] local stream progress failed — falling back to non-stream:', streamErr && streamErr.message ? streamErr.message : streamErr);
@@ -1564,7 +1704,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 model: this.models.default,
                 messages: [{ role: 'user', content: effectivePrompt }],
                 stream: false,
-                ...(json ? { format: 'json' } : {}),
+                ...(json ? { format: (schema && this.backend === 'ollama') ? schema : 'json' } : {}),
                 options: {
                     num_predict: maxTokens,
                     ...(temperature !== null ? { temperature } : {}),
@@ -1574,7 +1714,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 model: this.models.default,
                 messages: [{ role: 'user', content: effectivePrompt }],
                 max_tokens: maxTokens,
-                ...(json ? this._openaiJsonFormat() : {}),
+                ...(json ? this._openaiJsonFormat(schema) : {}),
                 ...(temperature !== null ? { temperature } : {}),
             };
 
@@ -1606,6 +1746,116 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         if (search) {
             return { text, groundingMetadata: requestSearchMetadata };
         }
+        return await this._finalizeLocalText(text, {
+            prompt, json, temperature, maxTokens, localProfile, localUsage, signal, schema,
+            finishReason: this._readFinishReason(data),
+            depth: localRetryDepth,
+        });
+    }
+
+    // ── Local-only truncation detection + self-healing JSON repair ────────────
+    // The Gemini path has read finishReason and self-healed malformed JSON since
+    // it was written (see _geminiGenerateText). The local path had NEITHER, which
+    // is backwards: a 3B/4B model is far likelier than Gemini to run out of output
+    // budget mid-object or emit a stray token, and the downstream salvage in the
+    // dispatcher (parseJsonLenient) slices to the outermost bracket pair — which
+    // can never repair a truncation, because the closing brace was never emitted.
+    // The teacher saw an empty resource and no reason for it. Everything here is
+    // gated on isLocalTextBackend(), so cloud and hosted 'openai' are untouched.
+
+    // finish_reason for an OpenAI-compatible body, or done_reason for Ollama.
+    _readFinishReason(data) {
+        if (!data) return null;
+        if (this.backend === 'ollama') return data.done_reason || null;
+        const choice = data.choices && data.choices[0];
+        return (choice && (choice.finish_reason || choice.finishReason)) || null;
+    }
+
+    // Would the dispatcher be able to parse this? Mirrors parseJsonLenient's
+    // bracket-slicing salvage so we only spend a repair round-trip on text that
+    // genuinely cannot be recovered downstream.
+    _localJsonRecoverable(text) {
+        const cleaned = String(text || '')
+            .replace(/```(?:json|javascript|js)?/gi, '')
+            .replace(/```/g, '')
+            .trim();
+        if (!cleaned) return false;
+        const attempts = [cleaned];
+        const arrStart = cleaned.indexOf('[');
+        const arrEnd = cleaned.lastIndexOf(']');
+        if (arrStart >= 0 && arrEnd > arrStart) attempts.push(cleaned.slice(arrStart, arrEnd + 1));
+        const objStart = cleaned.indexOf('{');
+        const objEnd = cleaned.lastIndexOf('}');
+        if (objStart >= 0 && objEnd > objStart) attempts.push(cleaned.slice(objStart, objEnd + 1));
+        for (const candidate of attempts) {
+            try { JSON.parse(candidate); return true; } catch (_) { /* try the next slice */ }
+        }
+        return false;
+    }
+
+    // How much bigger can the output budget get without overrunning the context
+    // window? tuneLocalTextOptions clamps to the model PROFILE's ceiling, which is
+    // deliberately conservative; on a truncation we are allowed to spend the real
+    // headroom instead, but never more than the caller originally asked for.
+    _localGrownTokenBudget(maxTokens, localUsage, localProfile) {
+        const usage = localUsage || {};
+        const profile = localProfile || {};
+        const contextWindow = Number(usage.contextWindow || profile.contextWindow || 0);
+        const promptTokens = Number(usage.promptTokens || 0);
+        const reserve = Number(profile.reserveTokens || 384);
+        const ceiling = Number(usage.requestedMaxTokens || 8192);
+        const room = contextWindow - promptTokens - reserve;
+        if (!(room > 0)) return 0;
+        const grown = Math.min(Math.max(maxTokens * 2, maxTokens + 512), room, ceiling);
+        return grown > maxTokens ? Math.floor(grown) : 0;
+    }
+
+    async _finalizeLocalText(text, { prompt, json, temperature, maxTokens, localProfile, localUsage, signal, schema = null, finishReason, depth = 0 } = {}) {
+        if (!isLocalTextBackend(this.backend)) return text;
+        const truncated = String(finishReason || '').toLowerCase() === 'length';
+        if (!truncated && (!json || this._localJsonRecoverable(text))) return text;
+
+        // One retry only. depth is threaded through _openaiGenerateText so a
+        // model that truncates every single time cannot spin the classroom
+        // laptop forever.
+        if (depth >= 1) {
+            if (truncated) this._warnLog('[AIProvider] local generation truncated again after retry — returning the partial result.');
+            return text;
+        }
+
+        if (truncated) {
+            const grown = this._localGrownTokenBudget(maxTokens, localUsage, localProfile);
+            if (grown) {
+                this._warnLog(`[AIProvider] local generation hit the output ceiling (${maxTokens} tokens) — retrying with ${grown}.`);
+                return this._openaiGenerateText(prompt, {
+                    json, search: false, temperature, maxTokens: grown,
+                    onProgress: null, localProfile,
+                    localUsage: { ...(localUsage || {}), maxTokens: grown },
+                    signal, schema, localRetryDepth: depth + 1,
+                });
+            }
+            this._warnLog('[AIProvider] local generation truncated with no context headroom left to retry in.');
+            if (!json || this._localJsonRecoverable(text)) return text;
+        }
+
+        // Malformed JSON with budget to spare: repair it, exactly as the Gemini
+        // path does on MALFORMED_FUNCTION_CALL.
+        this._warnLog('[AIProvider] local model returned unparseable JSON — initiating self-healing repair...');
+        const repairPrompt = `SYSTEM ALERT: You just generated malformed JSON that crashed the application.
+Your Malformed Output: """${text || '(empty response)'}"""
+TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, trailing commas) and return ONLY the valid JSON. If the output was cut off mid-structure, complete it as briefly as possible. Do not explain or add any text.`;
+        try {
+            const repaired = await this._openaiGenerateText(repairPrompt, {
+                json: true, search: false, temperature: 0.1,
+                maxTokens: this._localGrownTokenBudget(maxTokens, localUsage, localProfile) || maxTokens,
+                onProgress: null, localProfile, localUsage, signal, schema, localRetryDepth: depth + 1,
+            });
+            if (this._localJsonRecoverable(repaired)) return repaired;
+            this._warnLog('[AIProvider] local JSON repair did not produce parseable JSON — returning the original.');
+        } catch (repairErr) {
+            if (repairErr && repairErr.name === 'AbortError') throw repairErr;
+            this._warnLog('[AIProvider] local JSON repair failed:', repairErr && repairErr.message ? repairErr.message : repairErr);
+        }
         return text;
     }
 
@@ -1614,7 +1864,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     // firing `sink({ phase, backend, receivedChars, chunks, done })` as deltas
     // arrive, and returns the SAME final string the non-stream path produces.
     // Throws on any transport/parse problem so the caller falls back cleanly.
-    async _openaiStreamText(prompt, { json, temperature, maxTokens, localProfile = null, localUsage = null, signal = null }, sink) {
+    async _openaiStreamText(prompt, { json, temperature, maxTokens, localProfile = null, localUsage = null, signal = null, schema = null }, sink, outMeta = null) {
         const isOllama = this.backend === 'ollama';
         const url = isOllama
             ? `${this.baseUrl}/api/chat`
@@ -1637,7 +1887,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 model: this.models.default,
                 messages: [{ role: 'user', content: streamPrompt }],
                 stream: true,
-                ...(json ? { format: 'json' } : {}),
+                ...(json ? { format: (schema && this.backend === 'ollama') ? schema : 'json' } : {}),
                 options: {
                     num_predict: maxTokens,
                     ...(temperature != null ? { temperature } : {}),
@@ -1648,7 +1898,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 messages: [{ role: 'user', content: streamPrompt }],
                 max_tokens: maxTokens,
                 stream: true,
-                ...(json ? this._openaiJsonFormat() : {}),
+                ...(json ? this._openaiJsonFormat(schema) : {}),
                 ...(temperature != null ? { temperature } : {}),
             };
 
@@ -1682,6 +1932,15 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             } catch (_) { /* a broken sink must never break generation */ }
         };
         const consume = (line) => {
+            // A streamed truncation is only visible in the terminal chunk's
+            // finish_reason/done_reason; the delta parsers below intentionally
+            // return content only, so sniff it here and hand it to the caller
+            // through outMeta (the return value stays the plain string every
+            // existing caller expects).
+            if (outMeta) {
+                const reason = this._sniffStreamFinishReason(line, isOllama);
+                if (reason) outMeta.finishReason = reason;
+            }
             const piece = isOllama ? this._parseOllamaStreamLine(line) : this._parseOpenAiStreamLine(line);
             if (piece === STREAM_DONE || !piece) return;
             acc += piece;
@@ -1709,6 +1968,24 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
 
         emit(true);
         return acc;
+    }
+
+    // finish_reason (OpenAI SSE) / done_reason (Ollama NDJSON) from one streamed
+    // line, or '' when the line carries none. Only the terminal chunk has one.
+    _sniffStreamFinishReason(line, isOllama) {
+        let payload = String(line || '');
+        if (!isOllama) {
+            if (payload.indexOf('data:') === 0) payload = payload.slice(5).trim();
+            if (!payload || payload === '[DONE]') return '';
+        }
+        try {
+            const obj = JSON.parse(payload);
+            if (!obj) return '';
+            if (isOllama) return obj.done_reason || '';
+            const choice = obj.choices && obj.choices[0];
+            return (choice && (choice.finish_reason || choice.finishReason)) || '';
+        } catch (_) { /* keep-alive / comment / partial line — no reason to read */ }
+        return '';
     }
 
     // Parse one line of an Ollama /api/chat streaming response (NDJSON).
@@ -1815,20 +2092,24 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         return Boolean(err.isConfigState || err.isRateLimited || /401|403|429|503|quota|RESOURCE_EXHAUSTED|Rate limited|rate limit/i.test(msg));
     }
 
-    async _trySdTurboImage(prompt, width, quality) {
+    async _trySdTurboImage(prompt, width, quality, signal = null) {
         const win = (typeof globalThis !== 'undefined' && globalThis.window)
             ? globalThis.window
             : ((typeof window !== 'undefined' && window.document) ? window : null);
         if (this.isCanvasEnv || !win) return null;
+        if (signal && signal.aborted) { const abortError = new Error('Image generation cancelled.'); abortError.name = 'AbortError'; throw abortError; }
         try {
             if (win._sdTurbo?.ready && typeof win._sdTurbo.generate === 'function') {
                 const localUrl = await win._sdTurbo.generate(prompt);
                 if (localUrl) {
                     this._debugLog('[AIProvider] ✅ Image generated via local SD-Turbo');
-                    return await this._optimizeImage(localUrl, width, quality);
+                    const optimized = await this._optimizeImage(localUrl, width, quality);
+                    if (signal && signal.aborted) { const abortError = new Error('Image generation cancelled.'); abortError.name = 'AbortError'; throw abortError; }
+                    return optimized;
                 }
             }
         } catch (err) {
+            if ((err && err.name === 'AbortError') || (signal && signal.aborted)) throw err;
             this._warnLog(`[AIProvider] Local SD-Turbo image generation failed: ${err?.message || err}`);
         }
         return null;
@@ -1853,10 +2134,10 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         return true;
     }
 
-    async _generateImageByBackend(prompt, width, quality) {
+    async _generateImageByBackend(prompt, width, quality, signal = null) {
         switch (this.backend) {
             case 'gemini':
-                return this._geminiGenerateImage(prompt, width, quality);
+                return this._geminiGenerateImage(prompt, width, quality, signal);
             case 'claude':
             // Claude doesn't support image generation — fall through to OpenAI-compatible
             case 'openai':
@@ -1866,19 +2147,20 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             case 'alloflow-local':
             case 'custom':
             default:
-                return this._openaiGenerateImage(prompt, width, quality);
+                return this._openaiGenerateImage(prompt, width, quality, signal);
         }
     }
 
-    async generateImage(prompt, { width = 300, quality = 0.7 } = {}) {
+    async generateImage(prompt, { width = 300, quality = 0.7, signal = null } = {}) {
         this._debugLog(`[AIProvider] generateImage: ${prompt?.substring(0, 50)}`);
+        if (signal && signal.aborted) { const abortError = new Error('Image generation cancelled.'); abortError.name = 'AbortError'; throw abortError; }
 
         // Check imageProvider override from AI Backend Settings
         const _imgOvr = this._imageProvider || null;
         if (_imgOvr === 'off') throw new Error('Image generation is disabled in AI Backend Settings');
 
         if (_imgOvr === 'sd-local') {
-            const local = await this._trySdTurboImage(prompt, width, quality);
+            const local = await this._trySdTurboImage(prompt, width, quality, signal);
             if (local) return local;
             this._kickoffSdTurboLoad();
             if (!this.apiKey && this.backend === 'gemini') {
@@ -1889,16 +2171,16 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         }
 
         const runPrimary = () => {
-            if (_imgOvr === 'imagen') return this._geminiGenerateImage(prompt, width, quality);
-            if (_imgOvr === 'flux') return this._openaiGenerateImage(prompt, width, quality);
-            return this._generateImageByBackend(prompt, width, quality);
+            if (_imgOvr === 'imagen') return this._geminiGenerateImage(prompt, width, quality, signal);
+            if (_imgOvr === 'flux') return this._openaiGenerateImage(prompt, width, quality, signal);
+            return this._generateImageByBackend(prompt, width, quality, signal);
         };
 
         try {
             return await runPrimary();
         } catch (err) {
             if (this._isSdTurboEligibleImageError(err)) {
-                const local = await this._trySdTurboImage(prompt, width, quality);
+                const local = await this._trySdTurboImage(prompt, width, quality, signal);
                 if (local) return local;
                 if (_imgOvr === 'sd-local') this._kickoffSdTurboLoad();
             }
@@ -1906,8 +2188,13 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         }
     }
 
-    async _geminiGenerateImage(prompt, width, quality) {
+    async _geminiGenerateImage(prompt, width, quality, signal = null) {
         const keyParam = this.apiKey ? `?key=${this.apiKey}` : '';
+        const throwIfAborted = () => {
+            if (!signal || !signal.aborted) return;
+            const abortError = new Error('Image generation cancelled.'); abortError.name = 'AbortError'; throw abortError;
+        };
+        throwIfAborted();
         const url = `${this.baseUrl}/models/${this.models.imagen}:predict${keyParam}`;
         const payload = {
             instances: [{ prompt }],
@@ -1915,10 +2202,12 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         };
 
         const executeRequest = async () => {
+            throwIfAborted();
             const response = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
+                ... (signal ? { signal } : {})
             });
 
             if (response.status === 401 || response.status === 429 || response.status === 503) {
@@ -1949,34 +2238,63 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             }
 
             const rawUrl = `data:image/png;base64,${base64}`;
-            return await this._optimizeImage(rawUrl, width, quality);
+            const optimized = await this._optimizeImage(rawUrl, width, quality);
+            throwIfAborted();
+            return optimized;
         };
 
+        const waitForImageRetry = (delayMs) => new Promise((resolve, reject) => {
+            let timer = null;
+            const cleanup = () => { if (signal) signal.removeEventListener('abort', onAbort); };
+            const onAbort = () => {
+                if (timer) clearTimeout(timer);
+                cleanup();
+                const abortError = new Error('Image generation aborted');
+                abortError.name = 'AbortError';
+                reject(abortError);
+            };
+            if (signal && signal.aborted) return onAbort();
+            if (signal) signal.addEventListener('abort', onAbort, { once: true });
+            timer = setTimeout(() => { cleanup(); resolve(); }, Math.max(0, delayMs));
+        });
         const executeWithRetry = async (attempt = 0, maxAttempts = 3) => {
             try {
                 return await executeRequest();
             } catch (err) {
+                if ((err && err.name === 'AbortError') || (signal && signal.aborted)) throw err;
                 if (err.message && (err.message.includes('Safety') || err.message.includes('Block') || err.message.includes('400'))) {
                     throw err;
                 }
                 if (attempt < maxAttempts - 1) {
-                    this._warnLog(`⏳ Image gen retry ${attempt + 1}/${maxAttempts}...`);
+                    const retryAfterMs = Number(err && err.retryAfterMs);
+                    const exponentialMs = Math.min(8000, 1000 * Math.pow(2, attempt));
+                    const jitterMs = Math.floor(Math.random() * 350);
+                    const delayMs = Number.isFinite(retryAfterMs) && retryAfterMs > 0 ? retryAfterMs : exponentialMs + jitterMs;
+                    this._warnLog(`Image gen retry ${attempt + 1}/${maxAttempts} in ${delayMs}ms...`);
+                    throwIfAborted();
+                    await waitForImageRetry(delayMs);
+                    throwIfAborted();
                     return executeWithRetry(attempt + 1, maxAttempts);
                 }
                 throw err;
             }
         };
-
         if (this._imagenRateLimited) {
-            const queued = this._imagenQueue.then(executeWithRetry, () => executeWithRetry());
+            const queued = this._imagenQueue.then(() => { throwIfAborted(); return executeWithRetry(); }, () => { throwIfAborted(); return executeWithRetry(); });
             this._imagenQueue = queued.catch(() => { });
             return queued;
         }
+        throwIfAborted();
         return executeWithRetry();
     }
 
-    async _openaiGenerateImage(prompt, width, quality) {
+    async _openaiGenerateImage(prompt, width, quality, signal = null) {
         // ── Try dedicated Flux image server first (port 7860) ──
+        const throwIfAborted = () => {
+            if (!signal || !signal.aborted) return;
+            const abortError = new Error('Image generation cancelled.'); abortError.name = 'AbortError'; throw abortError;
+        };
+        throwIfAborted();
         const fluxUrl = 'http://localhost:7860/v1/images/generations';
         try {
             const fluxResp = await fetch(fluxUrl, {
@@ -1989,7 +2307,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                     size: `${width}x${width}`,
                     response_format: 'b64_json',
                 }),
-                signal: AbortSignal.timeout((window.AlloFlowConfig && window.AlloFlowConfig.timeouts && window.AlloFlowConfig.timeouts.aiImageMs) || 180000), // user-configurable; default 3 min
+                signal: signal || (typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function' ? AbortSignal.timeout((window.AlloFlowConfig && window.AlloFlowConfig.timeouts && window.AlloFlowConfig.timeouts.aiImageMs) || 180000) : undefined), // user-configurable; default 3 min
             });
             if (fluxResp.ok) {
                 const fluxData = await fluxResp.json();
@@ -2000,6 +2318,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 }
             }
         } catch (fluxErr) {
+            if ((fluxErr && fluxErr.name === 'AbortError') || (signal && signal.aborted)) throw fluxErr;
             this._debugLog(`[AIProvider] Flux server not available (${fluxErr.message}), trying fallback...`);
         }
 
@@ -2015,10 +2334,12 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             ? { model: this.models.image, prompt, stream: false }
             : { model: this.models.image, prompt, n: 1, size: `${width}x${width}`, response_format: 'b64_json' };
 
+        throwIfAborted();
         const response = await this._fetchWithRetry(url, {
             method: 'POST',
             headers,
             body: JSON.stringify(payload),
+            signal: signal || undefined,
         });
         const data = await response.json();
 
@@ -2031,7 +2352,9 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
 
         if (!base64) throw new Error('No image generated');
         const rawUrl = `data:image/png;base64,${base64}`;
-        return await this._optimizeImage(rawUrl, width, quality);
+        const optimized = await this._optimizeImage(rawUrl, width, quality);
+        throwIfAborted();
+        return optimized;
     }
 
     // ─── IMAGE EDITING ────────────────────────────────────────────────
@@ -2048,12 +2371,12 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
      * @param {string} [opts.referenceBase64] - Reference image for style matching
      * @returns {Promise<string>} Edited image as data:image URL
      */
-    async editImage(prompt, base64Image, { width = 800, quality = 0.9, referenceBase64 = null } = {}) {
+    async editImage(prompt, base64Image, { width = 800, quality = 0.9, referenceBase64 = null, signal = null } = {}) {
         this._debugLog(`[AIProvider] editImage: ${prompt?.substring(0, 50)}`);
 
         switch (this.backend) {
             case 'gemini':
-                return this._geminiEditImage(prompt, base64Image, width, quality, referenceBase64);
+                return this._geminiEditImage(prompt, base64Image, width, quality, referenceBase64, signal);
             case 'openai':
             case 'localai':
             case 'lmstudio':
@@ -2062,12 +2385,17 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             case 'alloflow-local':
             case 'custom':
             default:
-                return this._openaiEditImage(prompt, base64Image, width, quality, referenceBase64);
+                return this._openaiEditImage(prompt, base64Image, width, quality, referenceBase64, signal);
         }
     }
 
-    async _geminiEditImage(prompt, base64Image, width, quality, referenceBase64) {
+    async _geminiEditImage(prompt, base64Image, width, quality, referenceBase64, signal = null) {
         const keyParam = this.apiKey ? `?key=${this.apiKey}` : '';
+        const throwIfAborted = () => {
+            if (!signal || !signal.aborted) return;
+            const abortError = new Error('Image editing cancelled.'); abortError.name = 'AbortError'; throw abortError;
+        };
+        throwIfAborted();
         const url = `${this.baseUrl}/models/${this.models.image}:generateContent${keyParam}`;
 
         const parts = [
@@ -2085,24 +2413,34 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         };
 
         try {
+            throwIfAborted();
             const response = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
+                ...(signal ? { signal } : {})
             });
+            throwIfAborted();
             const data = await response.json();
             const imagePart = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
             if (!imagePart) throw new Error('No image generated in response');
             const rawUrl = `data:image/png;base64,${imagePart.inlineData.data}`;
-            return await this._optimizeImage(rawUrl, width, quality);
+            const optimized = await this._optimizeImage(rawUrl, width, quality);
+            throwIfAborted();
+            return optimized;
         } catch (err) {
             this._warnLog('[AIProvider] Image Edit Error', err);
             throw err;
         }
     }
 
-    async _openaiEditImage(prompt, base64Image, width, quality, _referenceBase64) {
+    async _openaiEditImage(prompt, base64Image, width, quality, _referenceBase64, signal = null) {
         // ── Try dedicated Flux image server first (port 7860) ──
+        const throwIfAborted = () => {
+            if (!signal || !signal.aborted) return;
+            const abortError = new Error('Image editing cancelled.'); abortError.name = 'AbortError'; throw abortError;
+        };
+        throwIfAborted();
         const fluxEditUrl = 'http://localhost:7860/v1/images/edits';
         try {
             const fluxResp = await fetch(fluxEditUrl, {
@@ -2117,7 +2455,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                     response_format: 'b64_json',
                     strength: 0.75,
                 }),
-                signal: AbortSignal.timeout((window.AlloFlowConfig && window.AlloFlowConfig.timeouts && window.AlloFlowConfig.timeouts.aiImageMs) || 180000),
+                signal: signal || (typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function' ? AbortSignal.timeout((window.AlloFlowConfig && window.AlloFlowConfig.timeouts && window.AlloFlowConfig.timeouts.aiImageMs) || 180000) : undefined),
             });
             if (fluxResp.ok) {
                 const fluxData = await fluxResp.json();
@@ -2128,6 +2466,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 }
             }
         } catch (fluxErr) {
+            if ((fluxErr && fluxErr.name === 'AbortError') || (signal && signal.aborted)) throw fluxErr;
             this._debugLog(`[AIProvider] Flux edit server not available (${fluxErr.message}), trying fallback...`);
         }
 
@@ -2146,16 +2485,20 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             response_format: 'b64_json',
         };
 
+        throwIfAborted();
         const response = await this._fetchWithRetry(url, {
             method: 'POST',
             headers,
             body: JSON.stringify(payload),
+            signal: signal || undefined,
         });
         const data = await response.json();
         const base64 = data.data?.[0]?.b64_json;
         if (!base64) throw new Error('No edited image generated');
         const rawUrl = `data:image/png;base64,${base64}`;
-        return await this._optimizeImage(rawUrl, width, quality);
+        const optimized = await this._optimizeImage(rawUrl, width, quality);
+        throwIfAborted();
+        return optimized;
     }
 
     // ─── VISION / IMAGE ANALYSIS ──────────────────────────────────────
@@ -2338,27 +2681,29 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
      * @param {string} [opts.language] - Language hint for TTS tiering
      * @returns {Promise<string|null>} Audio URL or null
      */
-    async textToSpeech(text, { voice = 'Puck', speed = 1, language = null, signal = null } = {}) {
+    async textToSpeech(text, { voice = 'Puck', speed = 1, language = null, locale = null, dialect = null, signal = null, force = false } = {}) {
+        const speechProfile = this._normalizeTtsSpeechProfile(language, locale, dialect);
+        const forceRefresh = force === true;
         if (!text) return null;
         const _ttsOvr = this._ttsProvider || null;
         if (_ttsOvr === 'off') return null;
 
         // Canvas mode: always use browser speechSynthesis
         if (this.isCanvasEnv) {
-            return this._browserSpeechSynthesis(text, speed, language);
+            return this._browserSpeechSynthesis(text, speed, speechProfile.locale || speechProfile.baseLanguage);
         }
 
         this._debugLog(`[AIProvider] textToSpeech: "${text?.substring(0, 30)}..." voice=${voice}`);
 
         // Check ttsProvider override from AI Backend Settings
-        if (_ttsOvr === 'browser') return this._browserSpeechSynthesis(text, speed, language);
-        if (_ttsOvr === 'gemini') return this._geminiTTS(text, voice, speed, language, signal);
-        if (_ttsOvr === 'local') return this._openaiTTS(text, voice, speed, language, signal);
+        if (_ttsOvr === 'browser') return this._browserSpeechSynthesis(text, speed, speechProfile.locale || speechProfile.baseLanguage);
+        if (_ttsOvr === 'gemini') return this._geminiTTS(text, voice, speed, speechProfile, signal, forceRefresh);
+        if (_ttsOvr === 'local') return this._openaiTTS(text, voice, speed, speechProfile, signal, forceRefresh);
 
         // Default: route by backend
         switch (this.backend) {
             case 'gemini':
-                return this._geminiTTS(text, voice, speed, language, signal);
+                return this._geminiTTS(text, voice, speed, speechProfile, signal, forceRefresh);
             case 'openai':
             case 'localai':
             case 'lmstudio':
@@ -2367,7 +2712,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             case 'alloflow-local':
             case 'custom':
             default:
-                return this._openaiTTS(text, voice, speed, language, signal);
+                return this._openaiTTS(text, voice, speed, speechProfile, signal, forceRefresh);
         }
     }
 
@@ -2378,9 +2723,57 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         error.useBrowserTts = true;
         throw error;
     }
+    _normalizeTtsSpeechProfile(languageValue, localeValue = null, dialectValue = null) {
+        const supplied = languageValue && typeof languageValue === 'object' ? languageValue : null;
+        const clean = (value, maxLength) => String(value == null ? '' : value)
+            .trim().replace(/\s+/g, ' ').slice(0, maxLength);
+        let baseLanguage = clean(supplied ? supplied.baseLanguage : languageValue, 80) || 'English';
+        let inferredDialect = '';
+        const parenthetical = baseLanguage.match(/^(.+?)\s*\(([^()]*)\)\s*$/);
+        if (parenthetical) {
+            baseLanguage = clean(parenthetical[1], 80) || 'English';
+            inferredDialect = clean(parenthetical[2], 80);
+        }
+        let locale = clean(localeValue || (supplied && supplied.locale), 40).replace(/_/g, '-');
+        if (locale) {
+            try {
+                if (typeof Intl !== 'undefined' && typeof Intl.getCanonicalLocales === 'function') {
+                    locale = Intl.getCanonicalLocales(locale)[0] || '';
+                }
+            } catch (_) {
+                locale = '';
+            }
+            if (locale && !/^[A-Za-z]{2,8}(?:-[A-Za-z0-9]{1,8})*$/.test(locale)) locale = '';
+            if (locale && !(typeof Intl !== 'undefined' && typeof Intl.getCanonicalLocales === 'function')) {
+                locale = locale.split('-').map((part, index) => {
+                    if (index === 0) return part.toLowerCase();
+                    if (/^[A-Za-z]{2}$/.test(part)) return part.toUpperCase();
+                    if (/^[A-Za-z]{4}$/.test(part)) return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+                    return part;
+                }).join('-');
+            }
+        }
+        const dialect = clean(dialectValue || (supplied && supplied.dialect) || inferredDialect, 80);
+        const cacheIdentity = (!locale && !dialect)
+            ? baseLanguage
+            : [baseLanguage.toLowerCase(), locale.toLowerCase(), dialect.toLowerCase()].join('\u241f');
+        return { baseLanguage, locale, dialect, cacheIdentity };
+    }
+
+    _cloudTtsPrompt(text, speechProfile) {
+        const profile = this._normalizeTtsSpeechProfile(speechProfile);
+        if (/^english$/i.test(profile.baseLanguage) && !profile.locale && !profile.dialect) return text;
+        const qualifiers = [];
+        if (profile.locale) qualifiers.push('locale ' + profile.locale);
+        if (profile.dialect) qualifiers.push('the ' + profile.dialect + ' dialect or regional variety');
+        return 'Pronounce the following ' + profile.baseLanguage + ' text'
+            + (qualifiers.length ? ' using ' + qualifiers.join(' and ') : '')
+            + ' with native ' + profile.baseLanguage + ' phonology: ' + text;
+    }
 
     _ttsCacheKey(text, voice, _speed, language) {
-        return JSON.stringify([String(text || ''), String(voice || ''), String(language || ''), 'natural-rate-v1']);
+        const profile = this._normalizeTtsSpeechProfile(language);
+        return JSON.stringify([String(text || ''), String(voice || ''), profile.cacheIdentity, 'natural-rate-v1']);
     }
 
     _cacheTtsUrl(cacheKey, audioUrl) {
@@ -2472,7 +2865,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         });
     }
 
-    async _geminiTTS(text, voice, speed, language = null, signal = null) {
+    async _geminiTTS(text, voice, speed, speechProfile, signal = null, forceRefresh = false) {
         // Rate limit check
         if (Date.now() < this._ttsRateLimitedUntil) {
             this._warnLog('[AIProvider TTS] Skipping — rate-limit cooldown active');
@@ -2480,8 +2873,8 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         }
 
         // Cache check
-        const cacheKey = this._ttsCacheKey(text, voice, speed, language);
-        if (this._ttsCache.has(cacheKey)) {
+        const cacheKey = this._ttsCacheKey(text, voice, speed, speechProfile);
+        if (!forceRefresh && this._ttsCache.has(cacheKey)) {
             this._debugLog('⚡ TTS cache HIT:', text?.substring(0, 30));
             const cachedUrl = this._ttsCache.get(cacheKey);
             this._ttsCache.delete(cacheKey); this._ttsCache.set(cacheKey, cachedUrl);
@@ -2490,11 +2883,11 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
 
         // Queue for serialization
         const task = this._ttsQueue.then(async () => {
-            const keyParam = this.apiKey ? `?key=${this.apiKey}` : '';
+        const keyParam = this.apiKey ? `?key=${this.apiKey}` : '';
             const url = `${this.baseUrl}/models/${this.models.tts}:generateContent${keyParam}`;
 
             const payload = {
-                contents: [{ parts: [{ text }] }],
+                contents: [{ parts: [{ text: this._cloudTtsPrompt(text, speechProfile) }] }],
                 generationConfig: {
                     responseModalities: ['AUDIO'],
                     speechConfig: {
@@ -2575,7 +2968,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         });
     }
 
-    async _openaiTTS(text, voice, speed, language = null, signal = null) {
+    async _openaiTTS(text, voice, speed, speechProfile, signal = null, forceRefresh = false) {
         // TTS tiering: Kokoro (high quality) → Edge TTS (wide language) → browser fallback
         const ttsEndpoints = [
             'http://localhost:8880/v1/audio/speech',  // Kokoro (high quality, 8 langs)
@@ -2584,8 +2977,8 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         ];
 
         // Cache check
-        const cacheKey = this._ttsCacheKey(text, voice, speed, language);
-        if (this._ttsCache.has(cacheKey)) {
+        const cacheKey = this._ttsCacheKey(text, voice, speed, speechProfile);
+        if (!forceRefresh && this._ttsCache.has(cacheKey)) {
             this._debugLog('⚡ TTS cache HIT:', text?.substring(0, 30));
             const cachedUrl = this._ttsCache.get(cacheKey);
             this._ttsCache.delete(cacheKey); this._ttsCache.set(cacheKey, cachedUrl);
@@ -2632,7 +3025,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
 
         // All TTS servers failed — use browser speech as final fallback
         this._warnLog('[AIProvider TTS] All TTS servers unavailable, using browser speech');
-        return this._browserSpeechSynthesis(text, speed, language);
+        return this._browserSpeechSynthesis(text, speed, speechProfile.locale || speechProfile.baseLanguage);
     }
 
     // ─── SAFETY ───────────────────────────────────────────────────────
@@ -2824,6 +3217,10 @@ if (typeof module !== 'undefined' && module.exports) {
         tuneLocalTextOptions,
         buildLocalTaskSupportFromProbe,
         localModelSupportsTask,
+        localTaskState,
+        LOCAL_RESOURCE_SCHEMAS,
+        localSchemaModeEnabled,
+        resourceSchemaFor,
     };
 }
 

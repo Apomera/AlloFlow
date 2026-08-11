@@ -1,4 +1,4 @@
-// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -2585,6 +2585,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       choices: ['Procedural only — concepts are fluff', 'Conceptual only — procedures are rote', 'BOTH matter, integrated. Procedure-only students crash on novel problems; concept-only students can\'t reliably compute. Strong students have integrated both.', 'Neither matters'],
       correct: 2, why: 'Hiebert + Lefevre 1986. The integration is the goal. Procedure-only instruction (the old "drill + kill" model) leaves students unable to reason. Concept-only instruction leaves students unable to compute. The goal is BOTH, integrated — and that takes intentional design.' }
   ];
+
+  // The authored bank put 84% of correct answers in slot 2 (measured
+  // 2/54/5/3 by the position-bias scanner). Rotate each question ONCE here:
+  // the exam re-reads QUIZ[qIdx] on every render, so a random shuffle would
+  // deal new options mid-question. Grading is by index, so `correct` is
+  // remapped with the choices; `why` is one string. (The Dunlosky card-sort
+  // shuffle elsewhere in this file is unrelated to this bank.)
+  (function () {
+    for (var qi = 0; qi < QUIZ.length; qi++) {
+      var q = QUIZ[qi];
+      if (!q || !Array.isArray(q.choices) || q.choices.length < 2 || typeof q.correct !== 'number') continue;
+      var n = q.choices.length;
+      var shift = ((qi * 7) + 3) % n;
+      if (shift === 0) continue;
+      var moved = new Array(n);
+      for (var i = 0; i < n; i++) moved[(i + shift) % n] = q.choices[i];
+      q.choices = moved;
+      q.correct = (q.correct + shift) % n;
+    }
+  })();
 
   // ─────────────────────────────────────────────────────────
   // SECTION 14: TOOL REGISTRATION + RENDER

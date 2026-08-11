@@ -6,7 +6,7 @@
   // simplest possible plugin: no game logic of its own, no rules, no
   // state. Its only job is to validate the plugin contract end-to-end
   // and give students a token-time gateway into the existing AlloBot
-  // Starbound Sage tool that lives in STEM Lab.
+  // Starbound Sage tool that lives in STEAM Lab.
   //
   // Plugin contract (mirrors stem_lab_module.js:23-54):
   //   window.AlloHavenArcade.registerMode(id, config)
@@ -61,7 +61,7 @@
   window.AlloHavenArcade.registerMode('sage-launcher', {
     label: 'AlloBot Sage',
     icon: '⚔️',
-    blurb: 'Combat-flavored retrieval-practice RPG (in STEM Lab). Your token-time deducts here; play happens there.',
+    blurb: 'Combat-flavored retrieval-practice RPG (in STEAM Lab). Your token-time deducts here; play happens there.',
     timeCost: 5,            // default minutes per launch — overridable in UI
     partnerRequired: false,
     ready: true,
@@ -90,13 +90,13 @@
         if (disabled) return;
         var ok = ctx.onLaunch(minutes);
         if (!ok) return;
-        // Sage lives in STEM Lab. If the host wired setStemLabTool we
+        // Sage lives in STEAM Lab. If the host wired setStemLabTool we
         // deep-link straight to it; otherwise give the student a clear
-        // "go to STEM Lab → AlloBot Sage" instruction.
+        // "go to STEAM Lab → AlloBot Sage" instruction.
         if (typeof ctx.setStemLabTool === 'function') {
           // Close the arcade hub first so the deep-link isn't covered.
           ctx.onClose();
-          // Best-effort — if STEM Lab isn't already open, the student
+          // Best-effort — if STEAM Lab isn't already open, the student
           // may need a second click. The host module decides.
           setTimeout(function () {
             try { ctx.setStemLabTool('alloBotSage'); } catch (e) { /* ignore */ }
@@ -106,7 +106,7 @@
           // toast already announced the session.
           ctx.onClose();
           if (typeof ctx.addToast === 'function') {
-            ctx.addToast('Open STEM Lab → AlloBot Sage to start playing.');
+            ctx.addToast('Open STEAM Lab → AlloBot Sage to start playing.');
           }
         }
       }
@@ -137,7 +137,7 @@
                 marginTop: '3px'
               }
             },
-              'Combat-flavored retrieval-practice RPG. Your token-time deducts here; play happens in STEM Lab.')
+              'Combat-flavored retrieval-practice RPG. Your token-time deducts here; play happens in STEAM Lab.')
           )
         ),
 

@@ -26,6 +26,18 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     await act(async () => { root.render(React.createElement(Component)); await Promise.resolve(); });
   }
 
+  async function mountDroneFlight({ paused = true } = {}) {
+    await mount({ viewMode: 'drone', drone: { active: false, difficulty: 'easy' } });
+    const launch = host.querySelector('[data-mobile-rail=drone-difficulty] button');
+    expect(launch).toBeTruthy();
+    await act(async () => { launch.click(); await Promise.resolve(); await Promise.resolve(); });
+    if (paused) {
+      const pause = Array.from(host.querySelectorAll('button')).find((button) => button.textContent.includes('Pause flight'));
+      expect(pause).toBeTruthy();
+      await act(async () => { pause.click(); await Promise.resolve(); });
+    }
+  }
+
   beforeEach(() => {
     resetStemLab();
     config = loadTool('stem_lab/stem_tool_beehive.js', 'beehive');
@@ -88,10 +100,11 @@ describe('Beehive WCAG 2.2 accessibility', () => {
   for (const testCase of [
     { name: 'Beekeeper', state: { viewMode: 'beekeeper', day: 8, motionPaused: true, badges: { first_day: { earned: true, day: 1 } } } },
     { name: 'Queen RTS', state: { viewMode: 'queen', queen: { active: true, paused: true } } },
-    { name: 'Drone Flight', state: { viewMode: 'drone', drone: { active: true, paused: true, difficulty: 'easy' } } },
+    { name: 'Drone Flight', state: { viewMode: 'drone', drone: { active: false, difficulty: 'easy' } }, liveDrone: true },
   ]) {
     it(testCase.name + ' has no serious or critical axe findings', async () => {
-      await mount(testCase.state);
+      if (testCase.liveDrone) await mountDroneFlight({ paused: true });
+      else await mount(testCase.state);
       const results = await axe.run(host, {
         runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] },
         rules: {
@@ -209,7 +222,7 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     const cases = [
       [{ viewMode: 'beekeeper', beeView: 'scene', day: 5, motionPaused: true }, 'beehive-canvas-wrap'],
       [{ viewMode: 'queen', queen: { active: true, paused: true } }, 'beehive-queen-playfield'],
-      [{ viewMode: 'drone', drone: { active: true, paused: true, difficulty: 'easy' } }, 'beehive-drone-playfield'],
+      [{ viewMode: 'drone', drone: { active: false, difficulty: 'easy' } }, 'beehive-drone-playfield'],
     ];
     for (const [state, playTarget] of cases) {
       await mount(state);
@@ -339,7 +352,7 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     expect(eventPanel.scrollIntoView).toHaveBeenCalled();
     expect(document.activeElement).toBe(eventPanel);
 
-    await mount({ viewMode: 'drone', drone: { active: true, paused: true, difficulty: 'easy' } });
+    await mountDroneFlight({ paused: true });
     const resume = host.querySelector('[data-beehive-coach-action="resume-flight"] button');
     expect(resume.className).toContain('min-h-[44px]');
     expect(resume.getAttribute('aria-keyshortcuts')).toBe('P');
@@ -372,10 +385,50 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     expect(window.requestAnimationFrame.mock.calls.length).toBeGreaterThan(scheduledBeforePause);
   });
 
+  // WCAG 2.5.3 Label in Name. A speech-input user says the words they can SEE,
+  // so a button whose visible text is not inside its accessible name is simply
+  // unreachable by voice. Both 3D-bay buttons change their visible text with
+  // state (Open/Close hive, Find the queen / Queen in cluster), and the winter
+  // case shipped announcing "Find the queen" over a button reading "Queen in
+  // cluster" until an end-to-end test tried to click it by its visible name.
+  it('keeps every 3D hive control reachable by the words on it', async () => {
+    const states = [
+      { label: 'summer', state: { viewMode: 'beekeeper', beeView: 'scene', day: 45, motionPaused: true } },
+      { label: 'winter', state: { viewMode: 'beekeeper', beeView: 'scene', day: 105, motionPaused: true } },
+      { label: 'opened', state: { viewMode: 'beekeeper', beeView: 'scene', day: 45, motionPaused: true, hive3dExploded: true } },
+      { label: 'queen selected', state: { viewMode: 'beekeeper', beeView: 'scene', day: 45, motionPaused: true, hive3dPart: 'queen' } }
+    ];
+    for (const { label, state } of states) {
+      await mount(state);
+      const bay = host.querySelector('[data-beehive-3d-bay="hive"]');
+      expect(bay, `no 3D hive bay in the ${label} state`).toBeTruthy();
+      const buttons = Array.from(bay.querySelectorAll('button'));
+      expect(buttons.length).toBeGreaterThan(0);
+      // Both sides go through the SAME normaliser. Stripping punctuation from
+      // the visible text alone made "Entrance & landing board" fail against an
+      // accessible name that did contain it.
+      const normalise = (text) => (text || '')
+        .replace(/[^\p{L}\p{N}\s]/gu, ' ')       // drop glyphs, emoji and punctuation
+        .replace(/\s+/g, ' ')
+        .trim()
+        .toLowerCase();
+      for (const button of buttons) {
+        const visible = normalise(button.textContent);
+        if (!visible) continue;                   // icon-only controls carry the name themselves
+        const accessible = normalise(button.getAttribute('aria-label') || button.textContent);
+        expect(
+          accessible.includes(visible),
+          `${label}: button reads "${visible}" but announces "${accessible}"`
+        ).toBe(true);
+      }
+    }
+  });
+
   it('gives every canvas a meaningful text alternative and equivalent controls', async () => {
     await mount({ viewMode: 'beekeeper', beeView: 'scene', day: 5, motionPaused: true });
     const keeperCanvas = host.querySelector('[data-beehive-canvas="true"]');
     expect(keeperCanvas.hasAttribute('tabindex')).toBe(false);
+    expect(keeperCanvas.getAttribute('data-a11y-static')).toBe('true');
     expect(document.getElementById(keeperCanvas.getAttribute('aria-describedby'))).toBeTruthy();
     expect(document.getElementById('beehive-canvas-wrap').getAttribute('role')).toBe('tabpanel');
     expect(host.querySelectorAll('[data-beehive-scene-actions="true"] button')).toHaveLength(3);
@@ -397,10 +450,11 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     await mount({ viewMode: 'queen', queen: { active: true, paused: true, buildMode: 'guard' } });
     const queenCanvas = host.querySelector('[data-beehive-queen-canvas="true"]');
     expect(queenCanvas.hasAttribute('tabindex')).toBe(false);
+    expect(queenCanvas.getAttribute('data-a11y-static')).toBe('true');
     expect(document.getElementById(queenCanvas.getAttribute('aria-describedby'))).toBeTruthy();
     expect(host.textContent).toContain('Place without the canvas');
 
-    await mount({ viewMode: 'drone', drone: { active: true, paused: true, difficulty: 'easy' } });
+    await mountDroneFlight({ paused: true });
     const droneCanvas = host.querySelector('[data-beehive-drone-canvas="true"]');
     expect(droneCanvas.tabIndex).toBe(0);
     expect(document.getElementById(droneCanvas.getAttribute('aria-describedby'))).toBeTruthy();

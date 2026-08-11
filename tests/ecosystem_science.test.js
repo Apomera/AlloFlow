@@ -15,8 +15,8 @@ describe('Ecosystem logistic predator-prey model', () => {
   it('uses the signed logistic term and permits zero-abundance outcomes', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_ecosystem.js', 'utf8');
     expect(source).toContain('var logisticFactor = 1 - prey / K;');
-    expect(source).toContain('var newPrey = Math.max(0, prey + preyBirth * prey * logisticFactor');
-    expect(source).toContain('var newPred = Math.max(0, pred + predBirth * prey * pred - predDeath * pred);');
+    expect(source).toContain('var newPrey = prey + SIM_TIME_STEP * (preyBirth * prey * logisticFactor - preyDeath * prey * pred);');
+    expect(source).toContain('var newPred = pred + SIM_TIME_STEP * (predBirth * prey * pred - predDeath * pred);');
     expect(source).not.toContain('Math.max(0, 1 - prey / K)');
     expect(source).not.toContain('Math.max(1, prey + preyBirth');
   });
@@ -26,22 +26,38 @@ describe('Ecosystem logistic predator-prey model', () => {
     expect(html).toContain('Prey intrinsic growth (r)');
     expect(html).toContain('Predation coefficient (a)');
     expect(html).toContain('Predator conversion (b)');
-    expect(html).toContain('one-step Euler updates with rounded counts');
+    expect(html).toContain('Euler updates use a 0.1 time step');
     expect(html).toContain('separate stochastic rules');
   });
 
+  it('calibrates the baseline and keeps chart and canvas capacities aligned', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_ecosystem.js', 'utf8');
+    expect(source).toContain('var pred0 = d.pred0 !== undefined ? d.pred0 : 12;');
+    expect(source).toContain('var SIM_TIME_STEP = 0.1;');
+    expect(source).toContain('var PREY_POOL_SIZE = 200;');
+    expect(source).toContain('var PRED_POOL_SIZE = 80;');
+    expect(source).toContain('syncLivePopulationTargets();');
+  });
   it('names analytical charts for assistive technology', () => {
-    const html = renderEcosystem({
+    const data = [
+      { step: 0, prey: 80, pred: 30 },
+      { step: 1, prey: 58, pred: 51 },
+      { step: 2, prey: 28, pred: 76 }
+    ];
+    const populationHtml = renderEcosystem({
       tab: 'explore',
-      data: [
-        { step: 0, prey: 80, pred: 30 },
-        { step: 1, prey: 58, pred: 51 },
-        { step: 2, prey: 28, pred: 76 }
-      ],
+      analysisView: 'population',
+      data,
       steps: 3
     });
-    expect(html).toContain('Predator and prey population trajectories over 2 modeled time steps');
-    expect(html).toContain('Phase portrait of predator abundance versus prey abundance');
+    const phaseHtml = renderEcosystem({
+      tab: 'explore',
+      analysisView: 'phase',
+      data,
+      steps: 3
+    });
+    expect(populationHtml).toContain('Predator and prey population trajectories over 2 modeled time steps');
+    expect(phaseHtml).toContain('Phase portrait of predator abundance versus prey abundance');
   });
 });
 

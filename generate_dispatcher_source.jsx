@@ -1481,8 +1481,44 @@ function normalizeStandardsDimension(rawReports, configuredStandards, options) {
 
 
 const handleGenerate = async (type, langOverride = null, keepLoading = false, textOverride = null, configOverride = {}, switchView = true, deps) => {
-  const { gradeLevel, outlineType, visualStyle, visualCustomStyle, visualLayoutMode, quizMcqCount, persistedLessonDNA, leveledTextCustomInstructions, quizCustomInstructions, glossaryCustomInstructions, frameCustomInstructions, adventureCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, lessonCustomAdditions, timelineTopic, sourceTopic, history, inputText, differentiationRange, leveledTextLanguage, selectedLanguages, studentInterests: _ambientStudentInterests, guidedMode, guidedStep, standardsInput, standardsContext: _ambientStandardsContext, targetStandards, dokLevel, sourceLength, sourceTone, textFormat, useEmojis, fullPackTargetGroup, rosterKey, imageGenerationStyle, imageAspectRatio, enableEmojiInline, cellGameDifficulty, includeSourceCitations, includeBibliography, currentUiLanguage, sourceCustomInstructions, sourceVocabulary, sourceLevel, generatedContent, mathSubject, mathMode, mathInput, mathQuantity, isAutoConfigEnabled, resourceCount, isParentMode, isIndependentMode, isTeacherMode, frameType, fillInTheBlank, vocabularyType, enableFactionResources, factionResourceMode, isAdventureStoryMode, isSocialStoryMode, isImmersiveMode, adventureChanceMode, adventureConsistentCharacters, adventureFreeResponseEnabled, adventureLanguageMode, adventureInputMode, apiKey, setIsMapLocked, setIsProcessing, setGenerationStep, setInteractionMode, setDefinitionData, setSelectionMenu, setRevisionData, setIsReviewGame, setReviewGameState, setGuidedStep, setGeneratedContent, setActiveView, setHistory, setError, setShowKokoroOfferModal, alloBotRef, pdfFixResult, addToast, t, warnLog, debugLog, callGemini, cleanJson, safeJsonParse, callImagen, extractSourceTextForProcessing, formatLessonDNA, getDifferentiationGrades, getGroupDifferentiationContext, flyToElement, fisherYatesShuffle, sanitizeTruncatedCitations, normalizeCitationPlacement, fixCitationPlacement, generateBibliographyString, processGrounding, parseFlowChartData, verifyMathProblems, normalizeResourceLinks, detectClimaxArchetype, handleGenerateLessonPlan, handleGenerateMath, handleGenerateSource, autoConfigureSettings, applyDetailedAutoConfig, getAssetManifest, getLessonContext, buildLessonPlanPrompt, buildStudyGuidePrompt, buildParentGuidePrompt, GUIDED_STEPS, LENGTH_THRESHOLDS, TIMELINE_MODE_DEFINITIONS, audioRef, autoRemoveWords, bridgeSimType, bridgeStepCount, conceptImageMode, conceptItemCount, conceptSortImageStyle, creativeMode, faqCount, glossaryDefinitionLevel, glossaryImageStyle, glossaryTier2Count, glossaryTier3Count, includeCharts, includeEtymology, includeTimelineVisuals, isBotVisible, isMathGraphEnabled, keepCitations, leveledTextLength, noText, passAnalysisToQuiz, quizReflectionCount, selectedConcepts: _ambientSelectedConcepts, standardsPromptString: _ambientStandardsPromptString, timelineImageStyle, timelineItemCount, timelineMode, useLowQualityVisuals, setGameMode, setGlossarySearchTerm, setIsConceptMapReady, setIsEditingAnalysis, setIsEditingBrainstorm, setIsEditingFaq, setIsEditingGlossary, setIsEditingLeveledText, setIsEditingOutline, setIsEditingQuiz, setIsEditingScaffolds, setIsGeneratingPersona, setIsInteractiveVenn, setIsMatchingGame, setIsMemoryGame, setIsPlaying, setIsPresentationMode, setIsSideBySide, setIsStudentBingoGame, setIsVennPlaying, setPersonaState, setPresentationState, setProcessingProgress, setShowQuizAnswers, setStickers, calculateReadability, callGeminiImageEdit, checkAccuracyWithSearch, chunkText, countWords, executeVisualPlan, filterEducationalSources, formatMathQuestion, generateHelpfulHint, generateVisualPlan, getDefaultTitle, performDeepVerification, repairGeneratedText, resetPersonaInterviewState, validateSequenceStructure, universalImageStyle, conceptSortCustomInstructions, dbqCustomInstructions, noteTakingCustomInstructions, anchorChartCustomInstructions, personaCustomInstructions, differentiationTypes, differentiationCustomGrades } = deps;
+  const { gradeLevel, outlineType, visualStyle, visualCustomStyle, visualLayoutMode, quizMcqCount, persistedLessonDNA, leveledTextCustomInstructions, quizCustomInstructions, glossaryCustomInstructions, frameCustomInstructions, adventureCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, lessonCustomAdditions, timelineTopic, sourceTopic, history, inputText, differentiationRange, leveledTextLanguage, selectedLanguages, studentInterests: _ambientStudentInterests, guidedMode, guidedStep, standardsInput, standardsContext: _ambientStandardsContext, targetStandards, dokLevel, sourceLength, sourceTone, textFormat, useEmojis, fullPackTargetGroup, rosterKey, imageGenerationStyle, imageAspectRatio, enableEmojiInline, cellGameDifficulty, includeSourceCitations, includeBibliography, currentUiLanguage, sourceCustomInstructions, sourceVocabulary, sourceLevel, generatedContent, mathSubject, mathMode, mathInput, mathQuantity, isAutoConfigEnabled, resourceCount, isParentMode, isIndependentMode, isTeacherMode, frameType, fillInTheBlank, vocabularyType, enableFactionResources, factionResourceMode, isAdventureStoryMode, isSocialStoryMode, isImmersiveMode, adventureChanceMode, adventureConsistentCharacters, adventureFreeResponseEnabled, adventureLanguageMode, adventureInputMode, apiKey, setIsMapLocked, setIsProcessing, setGenerationStep, setInteractionMode, setDefinitionData, setSelectionMenu, setRevisionData, setIsReviewGame, setReviewGameState, setGuidedStep, setGeneratedContent, setActiveView, setHistory, setError, setShowKokoroOfferModal, alloBotRef, pdfFixResult, addToast, t, warnLog, debugLog, callGemini: callGeminiBase, cleanJson, safeJsonParse, callImagen, extractSourceTextForProcessing, formatLessonDNA, getDifferentiationGrades, getGroupDifferentiationContext, flyToElement, fisherYatesShuffle, sanitizeTruncatedCitations, normalizeCitationPlacement, fixCitationPlacement, generateBibliographyString, processGrounding, parseFlowChartData, verifyMathProblems, normalizeResourceLinks, detectClimaxArchetype, handleGenerateLessonPlan, handleGenerateMath, handleGenerateSource, autoConfigureSettings, applyDetailedAutoConfig, getAssetManifest, getLessonContext, buildLessonPlanPrompt, buildStudyGuidePrompt, buildParentGuidePrompt, GUIDED_STEPS, LENGTH_THRESHOLDS, TIMELINE_MODE_DEFINITIONS, audioRef, autoRemoveWords, bridgeSimType, bridgeStepCount, conceptImageMode, conceptItemCount, conceptSortImageStyle, creativeMode, faqCount, glossaryDefinitionLevel, glossaryImageStyle, glossaryTier2Count, glossaryTier3Count, includeCharts, includeEtymology, includeTimelineVisuals, isBotVisible, isMathGraphEnabled, keepCitations, leveledTextLength, noText, passAnalysisToQuiz, quizReflectionCount, selectedConcepts: _ambientSelectedConcepts, standardsPromptString: _ambientStandardsPromptString, timelineImageStyle, timelineItemCount, timelineMode, useLowQualityVisuals, setGameMode, setGlossarySearchTerm, setIsConceptMapReady, setIsEditingAnalysis, setIsEditingBrainstorm, setIsEditingFaq, setIsEditingGlossary, setIsEditingLeveledText, setIsEditingOutline, setIsEditingQuiz, setIsEditingScaffolds, setIsGeneratingPersona, setIsInteractiveVenn, setIsMatchingGame, setIsMemoryGame, setIsPlaying, setIsPresentationMode, setIsSideBySide, setIsStudentBingoGame, setIsVennPlaying, setPersonaState, setPresentationState, setProcessingProgress, setShowQuizAnswers, setStickers, calculateReadability, callGeminiImageEdit, checkAccuracyWithSearch, chunkText, countWords, executeVisualPlan, filterEducationalSources, formatMathQuestion, generateHelpfulHint, generateVisualPlan, getDefaultTitle, performDeepVerification, repairGeneratedText, resetPersonaInterviewState, validateSequenceStructure, universalImageStyle, conceptSortCustomInstructions, dbqCustomInstructions, noteTakingCustomInstructions, anchorChartCustomInstructions, personaCustomInstructions, differentiationTypes, differentiationCustomGrades } = deps;
   try { if (window._DEBUG_GEN_DISPATCHER) console.log("[GenDispatcher] handleGenerate fired:", type); } catch(_) {}
+    // Batch callers pass a run-local history snapshot so later resources see
+    // earlier resources even though React state updates are asynchronous.
+    const generationHistory = Array.isArray(configOverride && configOverride.historyOverride)
+        ? configOverride.historyOverride
+        : (Array.isArray(history) ? history : []);
+    // Batch runners use one cooperative signal for every resource. Keep the
+    // existing call sites stable while ensuring text requests can be cancelled
+    // between resources instead of waiting for the full retry budget.
+    const generationSignal = deps && deps.generationSignal;
+    const throwIfGenerationAborted = () => {
+        if (generationSignal && generationSignal.aborted) {
+            const abortError = new Error('Generation aborted');
+            abortError.name = 'AbortError';
+            throw abortError;
+        }
+    };
+    const callGemini = (...args) => {
+        if (generationSignal && args[5] == null) args[5] = generationSignal;
+        return callGeminiBase(...args);
+    };
+    const callImagenWithSignal = (...args) => {
+        if (!generationSignal) return callImagen(...args);
+        const options = args[3];
+        args[3] = options && typeof options === 'object'
+            ? Object.assign({}, options, { signal: options.signal || generationSignal })
+            : { signal: generationSignal };
+        return callImagen(...args);
+    };
+    const callGeminiImageEditWithSignal = (...args) => {
+        if (!generationSignal) return callGeminiImageEdit(...args);
+        const options = args[5];
+        args[5] = options && typeof options === 'object'
+            ? Object.assign({}, options, { signal: options.signal || generationSignal })
+            : { signal: generationSignal };
+        return callGeminiImageEdit(...args);
+    };
     // ── DA CLINICAL ISOLATION ────────────────────────────────────────────
     // Dynamic Assessment supports (visual organizers, sentence frames) route
     // through this shared dispatcher and pass { isolatedContext: true }. A DA
@@ -1540,6 +1576,52 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             return false;
         }
     })();
+    // Constrained decoding for small local models: llama.cpp and LM Studio
+    // compile a JSON schema to a GBNF grammar, so the shape becomes impossible
+    // to get wrong rather than merely requested in prose. Returns null unless
+    // the device has opted in AND this type has a verified schema, in which
+    // case the extra arg is inert and the call behaves exactly as before.
+    const localSchemaArg = (schemaType) => {
+        try {
+            const helpers = typeof window !== 'undefined' ? window.AIBackendLocal : null;
+            if (!usesLocalTextBackend || !helpers || typeof helpers.resourceSchemaFor !== 'function') return null;
+            const schema = helpers.resourceSchemaFor(schemaType);
+            return schema ? { schema } : null;
+        } catch (_) {
+            return null;
+        }
+    };
+    // The engine probe has always measured whether the loaded model can hold a
+    // strict-JSON shape, and /api/engine/status has always reported it — but
+    // nothing ever read it, so an unfit model was handed strict-JSON work anyway
+    // and failed later as "Failed to parse … JSON. The AI response was not
+    // valid." That message blames the response; the real answer is that this
+    // model cannot do this job. Fail up front, and say which model and what to do.
+    //
+    // ★ Gates on a definite 'fail' ONLY. localModelSupportsTask() is true just
+    // for 'pass', so gating on it would also block every model that has simply
+    // never been probed ('unknown') — the common case on a fresh install.
+    const assertLocalTaskSupported = (task, resourceLabel) => {
+        if (!usesLocalTextBackend) return;
+        try {
+            const w = typeof window !== 'undefined' ? window : null;
+            const helpers = w && w.AIBackendLocal;
+            const active = w && w.__alloActiveAIBackend;
+            const profile = active && active.localModelProfile;
+            if (!helpers || typeof helpers.localTaskState !== 'function' || !profile) return;
+            if (helpers.localTaskState(profile, task) !== 'fail') return;
+            const modelName = profile.modelId || (active && active.model) || 'the local model';
+            const err = new Error(
+                `${resourceLabel} needs structured output, and the model check found that ${modelName} could not produce it. ` +
+                'Run the model check again from Settings, choose a larger local model, or switch to a cloud backend for this resource.'
+            );
+            err.alloLocalCapability = task;
+            throw err;
+        } catch (capabilityErr) {
+            if (capabilityErr && capabilityErr.alloLocalCapability) throw capabilityErr;
+            // A malformed profile must never block generation.
+        }
+    };
     const emitLocalTaskProgress = (current, total, label) => {
         if (!usesLocalTextBackend) return;
         try {
@@ -1647,7 +1729,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
     let textToProcess = textOverride;
     let carriedInputReferences = '';
     if (textToProcess === null) {
-        const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
+        const latestAnalysis = generationHistory.slice().reverse().find(h => h && h.type === 'analysis');
         if (type !== 'analysis' && latestAnalysis?.data?.originalText) {
             const rawText = latestAnalysis.data.originalText;
             const analysisReferenceParts = splitAdaptationReferences(rawText);
@@ -1657,7 +1739,15 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             textToProcess = inputText;
         }
     }
-    if (!textToProcess || !textToProcess.trim()) return;
+    if (!textToProcess || !textToProcess.trim()) {
+        const noSourceError = new Error('No source text is available for ' + type + ' generation.');
+        noSourceError.code = 'allo/source-missing';
+        // Interactive buttons keep the old fail-soft behavior. Unattended
+        // blueprint/pack callers opt in to rethrow so the exact row is logged
+        // instead of being reported as a successful no-op.
+        if (configOverride && configOverride.rethrowErrors) throw noSourceError;
+        return;
+    }
     if (textToProcess.includes('--- ENGLISH TRANSLATION ---')) {
         const bilingualReferenceParts = splitAdaptationReferences(textToProcess);
         if (!carriedInputReferences && bilingualReferenceParts.references) {
@@ -1929,7 +2019,8 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             `;
             setGenerationStep(t('status_steps.extracting_vocab'));
             setGenerationTaskProgress(0, 2, t('status_steps.extracting_vocab'));
-            const result = await callGemini(prompt, true);
+            assertLocalTaskSupported('strict-json', 'The glossary');
+            const result = await callGemini(prompt, true, false, null, null, null, localSchemaArg('glossary'));
             setGenerationTaskProgress(1, 2, t('status_steps.extracting_vocab'));
             const parsed = parseJsonLenient(result, {});
             const parsedContent = unwrapArray(parsed, ['terms', 'items', 'glossary']).slice(0, localTermLimit)
@@ -2074,9 +2165,9 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             }
             addToast(autoRemoveWords ? t('status_steps.refining_icons') : t('status_steps.generating_icons'), "info");
             setGenerationStep(autoRemoveWords ? t('status_steps.refining_icons') : t('status_steps.generating_icons'));
-            const BATCH_SIZE = 10;
+            const BATCH_SIZE = 3;
             const BATCH_DELAY_MS = 500;
-            const MAX_RETRIES = 3;
+            const MAX_RETRIES = 1;
             const processedContent = [];
             const generateImageWithRetry = async (item, index, total) => {
                 try {
@@ -2090,19 +2181,21 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                                 debugLog(`⏳ Retry ${attempt + 1}/${MAX_RETRIES} for "${item.term}" after ${backoffMs}ms...`);
                                 await new Promise(r => setTimeout(r, backoffMs));
                             }
-                            let imageUrl = await callImagen(imgPrompt);
+                            let imageUrl = await callImagenWithSignal(imgPrompt);
                             if (autoRemoveWords && imageUrl) {
                                 try {
                                     const rawBase64 = imageUrl.split(',')[1];
                                     const editPrompt = "Remove all text, labels, letters, and words from the image. Keep the illustration clean.";
-                                    imageUrl = await callGeminiImageEdit(editPrompt, rawBase64);
+                                    imageUrl = await callGeminiImageEditWithSignal(editPrompt, rawBase64);
                                 } catch (editErr) {
+                                    if ((editErr && editErr.name === 'AbortError') || (generationSignal && generationSignal.aborted)) throw editErr;
                                     warnLog("Auto-remove text failed for term:", item.term, editErr);
                                 }
                             }
                             debugLog(`✅ Image ${index + 1}/${total} generated for: ${item.term}`);
                             return { ...item, image: imageUrl };
                         } catch (e) {
+                            if ((e && e.name === 'AbortError') || (generationSignal && generationSignal.aborted)) throw e;
                             const is401 = e.message && e.message.includes('401');
                             if (is401 && attempt < MAX_RETRIES - 1) {
                                 warnLog(`⚠️ Rate limited on "${item.term}", will retry...`);
@@ -2557,8 +2650,13 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                   repaired = guardedRepair.text.trim();
               }
           }
+          // Declared OUTSIDE both blocks: the second `if (repaired)` below both
+          // reads and reassigns it. It was `let`-scoped to the first block, so
+          // every non-English refine threw ReferenceError at the citation
+          // sanitize step. The two blocks stay separate because the first one
+          // can set `repaired = null` to bail out of the second.
+          let repairedEnglish = '';
           if (repaired) {
-              let repairedEnglish = '';
               if (effectiveLanguage !== 'English') {
                   setGenerationStep(t('status_steps.translating') || 'Translating refined text...');
                   const repairedTranslation = await translateCitationSafe(repaired, 'length-repair-translation');
@@ -2772,11 +2870,11 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         if (visualLayoutMode !== 'single') {
             try {
                 if (visualLayoutMode === 'auto') {
-                    visualPlan = await generateVisualPlan(imageSourceText.substring(0, 500), effectiveGrade, effectiveLanguage, effectiveVisualStyle, effCustomInstructions);
+                    visualPlan = await generateVisualPlan(imageSourceText.substring(0, 500), effectiveGrade, effectiveLanguage, effectiveVisualStyle, effCustomInstructions, generationSignal);
                 } else {
                     const templateHint = `You MUST use layout: "${visualLayoutMode}".`;
                     const concept = imageSourceText.substring(0, 500);
-                    visualPlan = await generateVisualPlan(concept + '\n\n' + templateHint, effectiveGrade, effectiveLanguage, effectiveVisualStyle, effCustomInstructions);
+                    visualPlan = await generateVisualPlan(concept + '\n\n' + templateHint, effectiveGrade, effectiveLanguage, effectiveVisualStyle, effCustomInstructions, generationSignal);
                     if (visualPlan) visualPlan.layout = visualLayoutMode;
                 }
             } catch (planErr) {
@@ -2786,7 +2884,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         }
         if (visualPlan && visualPlan.layout !== 'single' && visualPlan.panels.length > 1) {
             setGenerationStep(t('visual_director.generating_panels') || 'Generating multi-panel illustration...');
-            const executedPlan = await executeVisualPlan(visualPlan, targetWidth, targetQual, effectiveVisualStyle);
+            const executedPlan = await executeVisualPlan(visualPlan, targetWidth, targetQual, effectiveVisualStyle, generationSignal);
             if (!executedPlan?.panels?.some(p => p?.imageUrl)) {
                 console.error('[VisualDebug] executeVisualPlan returned all-null panels:', executedPlan);
             }
@@ -2802,7 +2900,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         setGenerationStep(t('status_steps.rendering_diagram'));
         let imageBase64;
         try {
-            imageBase64 = await callImagen(finalPrompt, targetWidth, targetQual);
+            imageBase64 = await callImagenWithSignal(finalPrompt, targetWidth, targetQual);
         } catch(e) {
             console.error('[VisualDebug] callImagen threw:', e);
             warnLog('Image generation failed:', e);
@@ -2827,7 +2925,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                      refinePrompt = "Enhance this image to make it significantly more eye-catching and visually appealing. Increase contrast, vibrancy, and lighting effects while maintaining the educational clarity of the diagram. Make it look like a high-quality textbook illustration.";
                  }
                  if (refinePrompt) {
-                     const refinedImage = await callGeminiImageEdit(refinePrompt, rawBase64, targetWidth, targetQual);
+                     const refinedImage = await callGeminiImageEditWithSignal(refinePrompt, rawBase64, targetWidth, targetQual);
                      if (refinedImage) {
                          imageBase64 = refinedImage;
                          addToast(t('visuals.actions.enhanced_success'), "success");
@@ -2860,7 +2958,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         // earlier history items rather than today's source.
         let analysisContext = "";
         if (passAnalysisToQuiz || _quizMode === 'pre-check' || _quizMode === 'review') {
-             const analysisItem = history.slice().reverse().find(h => h && h.type === 'analysis');
+             const analysisItem = generationHistory.slice().reverse().find(h => h && h.type === 'analysis');
              if (analysisItem && analysisItem.data) {
                  const { concepts, readingLevel } = analysisItem.data;
                  const levelStr = typeof readingLevel === 'object' ? readingLevel.range : readingLevel;
@@ -2868,7 +2966,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                      analysisContext = `\n                 SOURCE ANALYSIS (for prerequisite identification):\n                 - Key Concepts the Lesson Will Teach: ${concepts ? concepts.join(', ') : 'N/A'}\n                 - Lesson Reading Level: ${levelStr}\n                 INSTRUCTION: For EACH key concept above, identify ONE source-specific prerequisite the student should already know to access that concept, then write a probe testing that prerequisite. Probes should test PRIOR knowledge while making the connection to the source concept obvious (e.g., for "photosynthesis" the prerequisite might be "what plants need to grow"). Do not assess full lesson outcomes directly.\n                 `;
                  } else if (_quizMode === 'review') {
                      // Pull historical concepts from prior history items too (multiple analyses)
-                     const allAnalyses = history.filter(h => h && h.type === 'analysis');
+                     const allAnalyses = generationHistory.filter(h => h && h.type === 'analysis');
                      const allConcepts = allAnalyses.flatMap(h => (h.data && h.data.concepts) || []).filter(Boolean);
                      analysisContext = `\n                 PRIOR LESSON CONCEPTS FOR SPACED RETRIEVAL:\n                 - Earlier Concepts Across History: ${allConcepts.length > 0 ? allConcepts.join(', ') : 'N/A (use today\'s source as fallback)'}\n                 - Today's Concepts: ${concepts ? concepts.join(', ') : 'N/A'}\n                 INSTRUCTION: Probe retention of EARLIER concepts when available. If only today's concepts are available, quiz today's source directly from a spaced-review angle. Do not switch to unrelated review topics.\n                 `;
                  } else {
@@ -2912,8 +3010,8 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             if (_explicitMcqCount > 0) _resolvedMix.mcq = _explicitMcqCount;
             else delete _resolvedMix.mcq;
         }
-        const _hasTimelineArtifact = Array.isArray(history) && history.some(function (h) { return h && h.type === 'timeline'; });
-        const _hasGlossaryArtifact = Array.isArray(history) && history.some(function (h) { return h && h.type === 'glossary'; });
+        const _hasTimelineArtifact = Array.isArray(generationHistory) && generationHistory.some(function (h) { return h && h.type === 'timeline'; });
+        const _hasGlossaryArtifact = Array.isArray(generationHistory) && generationHistory.some(function (h) { return h && h.type === 'glossary'; });
         const _smartSkips = [];
         if (!_hasExplicitItemTypes && _hasTimelineArtifact && _resolvedMix['sequence-sense']) {
             delete _resolvedMix['sequence-sense'];
@@ -3281,7 +3379,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                     // the view falls back to text-only rendering. Never blocks the quiz.
                     await Promise.all(_imgTasks.map(async function (task) {
                         try {
-                            const url = await callImagen(task.prompt);
+                            const url = await callImagenWithSignal(task.prompt);
                             if (task.key === 'imageUrl') {
                                 task.target.imageUrl = url || '';
                             } else if (task.key === 'optionImageUrls') {
@@ -3729,7 +3827,8 @@ ${_itemsBlock}`;
             `;
             setGenerationStep(t('status_steps.identifying_misconceptions'));
             setGenerationTaskProgress(0, 1, t('status_steps.identifying_misconceptions'));
-            const result = await callGemini(prompt, true);
+            assertLocalTaskSupported('strict-json', 'The FAQ');
+            const result = await callGemini(prompt, true, false, null, null, null, localSchemaArg('faq'));
             const parsed = parseJsonLenient(result, {});
             content = unwrapArray(parsed, ['faqs', 'questions', 'items']).slice(0, localFaqCount)
                 .map(item => ({
@@ -3803,7 +3902,8 @@ ${_itemsBlock}`;
                 """
              `;
              setGenerationTaskProgress(0, 1, t('status_steps.brainstorming') || "Brainstorming ideas...");
-             const result = await callGemini(prompt, true);
+             assertLocalTaskSupported('strict-json', 'The brainstorm list');
+             const result = await callGemini(prompt, true, false, null, null, null, localSchemaArg('brainstorm'));
              const parsed = parseJsonLenient(result, {});
              content = unwrapArray(parsed, ['ideas', 'activities', 'items']).slice(0, 8)
                  .map(item => ({
@@ -3956,7 +4056,7 @@ ${_itemsBlock}`;
          // Plan O Step 1.5: ungated. The audit runs even without target standards
          // — the standards-alignment LLM call is skipped (see line 1935 below)
          // and the comprehensive dimensions still produce a meaningful report.
-         const auditScopeSelection = selectCurriculumArtifacts(history, configOverride || {});
+         const auditScopeSelection = selectCurriculumArtifacts(generationHistory, configOverride || {});
          const artifactsToAudit = auditScopeSelection.artifacts;
          if (artifactsToAudit.length === 0) {
              throw new Error("No resources found to audit. Please generate a Lesson Plan, Text, or Quiz first.");
@@ -4698,8 +4798,8 @@ ${modeListForAuto}
              setGenerationStep(t('timeline.visuals.generating') || 'Generating sequence visuals...');
              addToast(t('timeline.visuals.generating') || 'Generating sequence visuals...', 'info');
              let failCount = 0;
-             const POOL_SIZE = 5;
-             const MAX_RETRIES = 3;
+             const POOL_SIZE = 2;
+             const MAX_RETRIES = 1;
              const progression = content.progressionLabel || 'sequential order';
              const generateOne = async (item) => {
                  const _timelineStyle = (timelineImageStyle || '').trim() || (universalImageStyle || '').trim();
@@ -4708,18 +4808,20 @@ ${modeListForAuto}
                  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
                      try {
                          if (attempt > 0) await new Promise(r => setTimeout(r, 1000 * Math.pow(2, attempt)));
-                         let imageUrl = await callImagen(imgPrompt);
+                         let imageUrl = await callImagenWithSignal(imgPrompt);
                          if (autoRemoveWords && imageUrl) {
                              try {
                                  const rawBase64 = imageUrl.split(',')[1];
                                  const editPrompt = "Remove all text, labels, letters, and words from the image. Keep the illustration clean.";
-                                 imageUrl = await callGeminiImageEdit(editPrompt, rawBase64);
+                                 imageUrl = await callGeminiImageEditWithSignal(editPrompt, rawBase64);
                              } catch (editErr) {
+                                 if ((editErr && editErr.name === 'AbortError') || (generationSignal && generationSignal.aborted)) throw editErr;
                                  warnLog("Timeline batch auto-remove text failed for:", item.event, editErr);
                              }
                          }
                          return { ...item, image: imageUrl };
                      } catch (e) {
+                         if ((e && e.name === 'AbortError') || (generationSignal && generationSignal.aborted)) throw e;
                          if (attempt === MAX_RETRIES - 1) { failCount++; warnLog('Timeline image gen failed', e); return item; }
                      }
                  }
@@ -5013,7 +5115,7 @@ ${modeListForAuto}
                  setGenerationStep('Generating card visuals...');
                  addToast(t('toasts.generating_card_visuals'), "info");
                  // POOL_SIZE was 5, dropped to 2 to reduce concurrent rate-limit
-                 // triggers on Imagen. callImagen has its own 3-retry exponential
+                 // triggers on Imagen. callImagen has its own centralized 3-attempt exponential
                  // backoff (1s/2s/4s, see AlloFlowANTI.txt:13021), but when 5
                  // requests fire at once and the first hits a 429, the others
                  // are already in flight and exhaust their retries within ~7s.
@@ -5024,9 +5126,10 @@ ${modeListForAuto}
                          const _csDeckStyle = (conceptSortImageStyle || '').trim() || (universalImageStyle || '').trim();
                          const styleInstruction = _csDeckStyle ? `Style: ${_csDeckStyle}.` : 'Educational style.';
                          const imgPrompt = `Simple, clear vector icon or illustration of: "${item.content}". White background. ${styleInstruction} No text.`;
-                         const imageUrl = await callImagen(imgPrompt);
+                         const imageUrl = await callImagenWithSignal(imgPrompt);
                          return { ...item, image: imageUrl };
                      } catch (e) {
+                         if ((e && e.name === 'AbortError') || (generationSignal && generationSignal.aborted)) throw e;
                          warnLog("Card image gen failed", e);
                          return item;
                      }
@@ -5334,7 +5437,8 @@ Return ONLY JSON:
              `;
              setGenerationTaskProgress(0, 1, isIndependentMode ? t('lesson_plan.status_creating_study') : (isParentMode ? t('lesson_plan.status_creating_family') : t('lesson_plan.status_synthesizing')));
          }
-         const result = await callGemini(prompt, true);
+         assertLocalTaskSupported('strict-json', 'The lesson plan');
+         const result = await callGemini(prompt, true, false, null, null, null, localSchemaArg('lesson-plan'));
          if (usesLocalTextBackend) setGenerationTaskProgress(1, 1, isIndependentMode ? t('lesson_plan.status_creating_study') : (isParentMode ? t('lesson_plan.status_creating_family') : t('lesson_plan.status_synthesizing')));
          try {
              content = usesLocalTextBackend ? parseJsonLenient(result, null) : safeJsonParse(result);
@@ -5773,7 +5877,7 @@ Return ONLY JSON:
       }
       let itemTitle = getDefaultTitle(type);
       if (type === 'analysis') {
-          const existingCount = history.filter(h => h.type === 'analysis').length;
+          const existingCount = generationHistory.filter(h => h.type === 'analysis').length;
           if (existingCount > 0) {
               itemTitle += ` (V${existingCount + 1})`;
           }

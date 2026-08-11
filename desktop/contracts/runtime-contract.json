@@ -99,7 +99,12 @@
       "implementation": {
         "status": "SHIPPED 2026-07-05 (E2E-verified on Windows ARM64)",
         "server": "llama.cpp llama-server, pinned CPU build per-arch (b9878), downloaded on first start (~11-17MB)",
-        "model": "config localEngine.modelUrl GGUF, default Qwen2.5-3B-Instruct Q4_K_M (~2GB); swap URL + a CUDA/Vulkan binaryUrl for GPU boxes — zero code changes",
+        "model": "config localEngine.modelUrl GGUF, default Qwen2.5-3B-Instruct Q4_K_M (~2GB); swap URL + a CUDA/Vulkan binaryUrl for GPU boxes",
+        "gpuOffload": "localEngine.gpuLayers passes -ngl to llama-server. It is 0 by default and the bundled binaries are CPU-only, so a GPU build needs BOTH a binaryUrl (Vulkan covers NVIDIA/AMD/Intel) and gpuLayers > 0 — a GPU binary with gpuLayers 0 offloads nothing and runs at CPU speed",
+        "binaryPinning": "A custom localEngine.binaryUrl set through /api/config is rejected without a matching binarySha256, because verifyDownloadIntegrity() no-ops on an unknown checksum and the binary is extracted and spawned",
+        "extraArgs": "localEngine.extraArgs is config-file-only and NOT settable via /api/config: llama.cpp lets a later flag override an earlier one, so an injected --host would move the engine off loopback",
+        "hardwareSizing": "threads default to logical cores minus 2 (clamped 1-8) so the UI keeps a core; contextSize 0 picks a size from total RAM between the model profile's floor and its architectural maximum, and an explicit contextSize or a size in the model name still wins",
+        "kvCache": "localEngine.kvCacheType (q8_0 etc) halves KV-cache memory versus f16, which raises the context the same RAM can hold",
         "archFallback": "On Windows ARM64 a native loader failure (missing VC++ ARM64 runtime, exit 0xC000007B/0xC0000135) automatically falls back to the x64 build under emulation and surfaces a one-line advisory with the vc_redist.arm64 link",
         "diskPreflight": "Downloads require the file size plus 1.5GB free or they refuse with a plain-language message",
         "cloudFallback": "config localEngine.cloudFallbackEnabled defaults false. When enabled, the app may use the private local text engine after a cloud quota/rate-limit only for task shapes passed by /api/engine/probe",

@@ -57,6 +57,8 @@ function completePilotEnv(
     ACCESS_CLIENT_SECRET: "0123456789abcdef0123456789abcdef",
     GEMINI_API_KEY: "0123456789abcdef0123456789abcdef",
     GEMINI_MODEL: "gemini-approved-model",
+    RELEASE_CANARY_SECRET:
+      "0123456789abcdef0123456789abcdef0123456789abcdef",
     RUNNER_AUTH_SECRET:
       "0123456789abcdef0123456789abcdef0123456789abcdef",
     TRANSFER_ACCESS_AUDIENCE:
@@ -221,6 +223,15 @@ describe("institution pilot security primitives", () => {
     expect(
       pilotReadiness(
         completePilotEnv({ RUNNER_AUTH_SECRET: "too-short" }),
+      ),
+    ).toMatchObject({
+      enabled: true,
+      ready: false,
+      missing: ["INVALID_CONFIGURATION"],
+    });
+    expect(
+      pilotReadiness(
+        completePilotEnv({ RELEASE_CANARY_SECRET: "too-short" }),
       ),
     ).toMatchObject({
       enabled: true,
@@ -553,4 +564,3 @@ describe("institution pilot security primitives", () => {
     });
   });
 });
-

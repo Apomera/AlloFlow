@@ -149,14 +149,15 @@ describe('layer 4 — storage-id migration is wired (ship-blocker #2, 2026-06-02
     });
   });
 
-  it('top-level ABC + obs auto-save use studentKey, not raw selectedStudent', () => {
+  it('top-level auto-save passes student-scoped keys to the crash-consistent helper', () => {
     const src = H.BehaviorLens.toString();
-    expect(src).toMatch(/localStorage\.setItem\(studentKey\('behaviorLens_abc_'\)/);
-    expect(src).toMatch(/localStorage\.setItem\(studentKey\('behaviorLens_obs_'\)/);
-    // The raw `behaviorLens_abc_${selectedStudent}` setItem pattern (the
-    // bug) must no longer exist as a WRITE path. We allow it as a legacy
-    // READ fallback — that pattern lives inside the migration / load path
-    // string-templated as a read, not a setItem.
+    expect(src).toMatch(/getBehaviorLensWorkspaceRuntime\(\)\.persistLocalWorkspace\(\{/);
+    expect(src).toMatch(/workspaceKey:\s*studentKey\('behaviorLens_workspace_'\)/);
+    expect(src).toMatch(/dirtyKey:\s*studentKey\('behaviorLens_workspace_dirty_'\)/);
+    expect(src).toMatch(/abcKey:\s*studentKey\('behaviorLens_abc_'\)/);
+    expect(src).toMatch(/observationKey:\s*studentKey\('behaviorLens_obs_'\)/);
+    // The raw codename-keyed writes that caused student collisions must not
+    // return, even though the actual writes now live in the helper module.
     expect(src).not.toMatch(/localStorage\.setItem\(`behaviorLens_abc_\$\{selectedStudent\}`/);
     expect(src).not.toMatch(/localStorage\.setItem\(`behaviorLens_obs_\$\{selectedStudent\}`/);
   });

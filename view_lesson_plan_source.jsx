@@ -313,7 +313,7 @@ function LessonPlanView(props) {
                             <div className="mt-6 mb-4 border-2 border-emerald-200 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 p-5 animate-in fade-in duration-300">
                                 <div className="flex items-center justify-between mb-3">
                                     <h3 className="text-base font-black text-emerald-900 flex items-center gap-2">
-                                        🔬 Recommended STEM Lab Tools
+                                        🔬 Recommended STEAM Lab Tools
                                     </h3>
                                     <button
                                         onClick={() => {
@@ -330,7 +330,7 @@ function LessonPlanView(props) {
                                             existing.push(station);
                                             localStorage.setItem('alloflow_stem_stations', JSON.stringify(existing));
                                             setActiveStation(station);
-                                            addToast && addToast('✅ STEM Station created! Open STEM Lab to see your curated tools.');
+                                            addToast && addToast('✅ STEM Station created! Open STEAM Lab to see your curated tools.');
                                         }}
                                         className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-full shadow-md hover:shadow-lg transition-all"
                                     >

@@ -439,7 +439,8 @@ describe('Water Cycle 3D Droplet Journey', () => {
       expect(source).toContain('var precipitationFieldActive3d =');
       expect(source).toContain('var liquidRainActive3d = precipitationFieldActive3d && tempVisual3d >= 0;');
       expect(source).toContain('var snowDriftActive3d = precipitationFieldActive3d && tempVisual3d < 0;');
-      expect(source).toContain('var rainWindSlant3d = windVisual3d * 0.11;');
+      expect(source).toContain('var rainWindDirection3d = precipLabSource3d ? precipWindSign3d : 1;');
+      expect(source).toContain('var rainWindSlant3d = rainWindDirection3d * windVisual3d * 0.11;');
       expect(source).toContain('rainCurtainPosition3d.setXYZ');
       expect(source).toContain('rainImpactPosition3d.setXYZ');
       expect(source).toContain("canvasEl.dataset.hydrometeorMode = snowDriftActive3d ? 'snow-drift'");

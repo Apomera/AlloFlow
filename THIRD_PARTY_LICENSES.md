@@ -153,7 +153,7 @@ uses an open range.
 | [axe-core](https://github.com/dequelabs/axe-core) | accessibility rule checks | MPL-2.0 | Copyright (c) Deque Systems, Inc. |
 | [IBM Equal Access](https://github.com/IBMa/equal-access) | second accessibility checker | Apache-2.0 | Copyright (c) IBM Corp. |
 | [DOMPurify](https://github.com/cure53/DOMPurify) | HTML sanitizing | Apache-2.0 / MPL-2.0 | Copyright (c) 2015 Dr.-Ing. Mario Heiderich, Cure53 |
-| [Harper](https://writewithharper.com) | grammar & spelling checks | Apache-2.0 | Copyright 2024 Elijah Potter |
+| [Harper](https://writewithharper.com) | grammar & spelling checks; v2.4.0 runtime vendored under `vendor/harper/2.4.0/` | Apache-2.0 ([vendored license](./vendor/harper/2.4.0/LICENSE)) | Copyright 2024 Elijah Potter |
 | [Free Dictionary API](https://dictionaryapi.dev) | word definitions/pronunciation | API free; data CC BY-SA (Wiktionary) | Definitions © Wiktionary contributors (CC BY-SA) |
 | [liblouis](https://liblouis.io) | UEB Grade 2 braille (.brf) translation | GPLv3 (engine) / LGPL-2.1+ (tables) | Copyright (c) liblouis contributors |
 | [Open Board Format (OBF/OBZ)](https://www.openboardformat.org) | AAC board interchange (Symbol Studio) | open specification | © Open AAC / CoughDrop |
@@ -184,6 +184,7 @@ uses an open range.
 | [Mol*](https://molstar.org) | 3D molecular-structure viewer | MIT | Copyright (c) 2017-present Mol* contributors |
 | [CODAP](https://codap.concord.org) | data-science workspace (Data Lab; iframe) | MIT | Copyright (c) 2010-present Concord Consortium |
 | [PhET Interactive Simulations](https://phet.colorado.edu) | science & math sims (iframe) | GPLv3 (code) / CC-BY (content) | © University of Colorado Boulder |
+| [Human Reference Atlas kidney v1.3](https://cdn.humanatlas.io/digital-objects/ref-organ/kidney-female-left/v1.3/) | bundled female-left 3D reference organ and ontology crosswalk (Anatomy Clinical Atlas; see [`ATTRIBUTION.md`](./stem_lab/assets/anatomy/clinical-atlas/ATTRIBUTION.md)) | CC BY 4.0 | Copyright 2024 Kristen Browne and Heidi Schlehlein; Human Reference Atlas / HuBMAP; derived from the NLM Visible Human Dataset |
 | [iframe-phone](https://github.com/concord-consortium/iframe-phone) | bridge to the CODAP window | MIT | Copyright (c) 2014 Concord Consortium |
 | [OpenSeadragon](https://openseadragon.github.io) | deep-zoom image viewer (Zoom Gallery) | BSD-3-Clause | Copyright (C) 2009 CodePlex Foundation; (C) 2010-present OpenSeadragon contributors |
 | [Smithsonian Open Access](https://www.si.edu/openaccess) | museum images (Zoom Gallery) | CC0 1.0 | Public domain (CC0) — Smithsonian Institution |

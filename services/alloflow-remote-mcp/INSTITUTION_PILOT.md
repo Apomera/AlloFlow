@@ -240,6 +240,15 @@ Configured cleanup eligibility targets:
 - successful input: deletion is attempted after verified output publication;
 - failed or cancelled input and partial outputs: deletion is attempted during
   terminal cleanup;
+- in-flight checkpoints: validated extraction evidence and accepted
+  remediation rounds are stored as immutable gzip objects under an opaque
+  per-job R2 prefix. D1 stores only the current sequence, object pointer,
+  hashes, stage, schema, and timestamp. Checkpoint content is deleted after
+  successful publication or terminal cleanup; prefix cleanup also removes
+  crash-before-pointer or stale-attempt objects. A snapshot is bounded to
+  128 MiB before gzip and 32 MiB after gzip; exceeding either limit fails with
+  the explicit non-retryable `checkpoint_snapshot_too_large` policy instead
+  of silently continuing past a false durability boundary;
 - output: eligible after 24 hours;
 - after first download: the eligibility deadline moves forward to one hour;
 - pseudonymous operational metadata: eligible after seven days;
@@ -251,9 +260,13 @@ These are not guaranteed deletion instants or absolute maxima. The hourly
 scheduled handler reconciles Workflows, retries cleanup, deletes eligible R2
 objects, and purges eligible D1/OAuth data in bounded batches. Cron delay,
 transient failures, and backlog can extend physical retention beyond the
-eligibility time. Configure an R2 one- or two-day lifecycle rule as a delayed
-backstop, monitor cleanup failures/backlog, and use the institution-approved
-upper bound in privacy notices.
+eligibility time. The checked `config/r2-lifecycle.json` policy is an
+independent delayed backstop: it expires every `tenant/` object after two days
+and aborts incomplete multipart uploads after one day. `npm run
+lifecycle:check` validates that exact policy without changing Cloudflare; both
+staging deployment paths run `lifecycle:apply:staging` before Worker deploy.
+Monitor cleanup failures/backlog and use the institution-approved upper bound
+in privacy notices.
 
 D1 Time Travel can retain recoverable database history beyond application
 deletion. The institution's privacy notice must disclose the recovery window
@@ -296,6 +309,75 @@ content to the institution-approved Gemini project. The institution must
 approve that data path, model, account, contract, logging, and retention before
 real documents.
 
+## Release canary, telemetry, and alerts
+
+The checked staging template requires both a `PILOT_METRICS` Analytics Engine
+binding and a `CF_VERSION_METADATA` Worker version-metadata binding. Preflight
+rejects a staging configuration that omits either binding or changes the
+dedicated dataset name. Fixed, content-free metrics cover runner liveness,
+model throttling, lease renewal, checkpoints, cleanup, and the release canary.
+The Worker release ID is attached to each record; opaque job and attempt IDs
+remain only in structured Workers Logs and are not Analytics Engine
+dimensions. The stable column layout and incident-query details are in
+[`OPERATIONS.md`](./OPERATIONS.md).
+
+`RELEASE_CANARY_SECRET` must be one high-entropy value of at least 32
+characters, installed in two places:
+
+- as a Worker secret in the exact staging configuration; and
+- as a masked/protected `RELEASE_CANARY_SECRET` environment variable in the
+  deployment process that runs `npm run deploy:staging` or
+  `npm run deploy:staging:accepted`.
+
+Do not put the value in JSONC, source, a command argument, shell history, or
+logs. The deployment chain reads the protected process variable only to send
+an Authorization bearer token to the deployed Worker's `/readyz` endpoint.
+The endpoint compares the non-local Worker version, the Worker's declared
+database/checkpoint schema contract, runner protocol and identity, idle state,
+staged manifest, runner bytes, model route, and checkpoint-engine identity. It
+also queries D1 for every lease and checkpoint column introduced by migrations
+0004 and 0005. It returns 503 if that live schema sentinel or any runner check
+fails. The canary command retries a cold or transient failure, emits only
+bounded release identifiers and hashes, and exits non-zero if compatibility is
+not proven.
+
+The two checked deployment commands execute this order:
+
+1. rebuild and verify the staged runner closure;
+2. run `runner:canary` against the runner's checkpoint/resume contract;
+3. run staging preflight;
+4. replace the remote bucket policy with the exact checked R2 lifecycle policy
+   using Wrangler's forced lifecycle update;
+5. deploy the Worker and container definition; and
+6. run the authenticated post-deploy release canary.
+
+The lifecycle policy remains in force if a later deploy or canary step fails.
+The command stops on a failed step, but a failed post-deploy canary does not
+automatically undo the deployment. Keep admissions stopped and follow the
+coordinated rollback procedure below. The Durable Object migration declared
+in Wrangler deploys with the Worker; the five D1 SQL migrations are separate
+and must already have been applied in order.
+
+Run `npm run alerts:check` every five minutes from the institution's external
+monitor. It queries the previous 15 minutes and requires these process
+variables:
+
+- `CLOUDFLARE_ACCOUNT_ID`; and
+- protected `CLOUDFLARE_ANALYTICS_TOKEN`, scoped only to Account Analytics
+  Read.
+
+Leave `PILOT_METRICS_DATASET` unset for the checked template so the monitor
+uses `alloflow_institution_pilot_metrics`. A future reviewed dataset rename
+must update the binding, preflight, and monitor variable together. Exit 0
+means no checked threshold fired, exit 2 means alerts fired, and exit 1 means
+configuration or
+query failure; route both non-zero outcomes to the institution's normal alert
+channel. The checked policy treats any `failed` outcome, fatal
+`lease_renewal`, or unavailable `checkpoint_resume_pointer` as critical;
+three deferred `lease_renewal` records and ten `model_throttled` records in the
+window are warnings. This five-minute external monitor is separate from the
+Worker's hourly cleanup cron.
+
 ## Provisioning sequence
 
 The existing account may be used for synthetic engineering staging, but it is
@@ -307,7 +389,9 @@ resources and do not upload real documents.
 2. Copy `wrangler.pilot.example.jsonc` to the ignored exact path
    `wrangler.pilot.local.jsonc`.
 3. Create a new private OAuth KV namespace, staging D1 database, and private
-   staging R2 bucket. Never paste an existing catalog KV ID.
+   staging R2 bucket. Keep the dedicated `PILOT_METRICS` Analytics Engine
+   dataset and `CF_VERSION_METADATA` binding from the template. Never paste an
+   existing catalog KV ID.
 4. Create a Cloudflare Access for SaaS OIDC application and connect the
    institution IdP. Create a separate self-hosted Access application scoped to
    `/upload/*` and `/result/*`, require the same institution identity, and copy
@@ -320,37 +404,107 @@ resources and do not upload real documents.
    into `CHATGPT_REDIRECT_URI`. The runtime can remain Claude-only without that
    variable, but the checked staging template and preflight intentionally
    require it so ChatGPT acceptance cannot be silently skipped.
-7. Store the three declared required secrets with Wrangler; never put values in
-   the config:
+7. Store the four declared required secrets with Wrangler's interactive
+   prompt; never put values in the config:
 
    ```sh
    npx wrangler secret put ACCESS_CLIENT_SECRET --config wrangler.pilot.local.jsonc
    npx wrangler secret put GEMINI_API_KEY --config wrangler.pilot.local.jsonc
+   npx wrangler secret put RELEASE_CANARY_SECRET --config wrangler.pilot.local.jsonc
    npx wrangler secret put RUNNER_AUTH_SECRET --config wrangler.pilot.local.jsonc
    ```
 
+   Store the same `RELEASE_CANARY_SECRET` value in the deployment platform's
+   protected environment without printing it. A Worker secret alone is not
+   available to the local/CI post-deploy canary process.
 8. Generate and verify both runtime and pilot bindings: `npm run types` and
    `npm run types:check`.
-9. Run `npm run check`, `npm run runner:check`, and
-   `npm run startup:check`.
-10. Run `npm run preflight:staging`. It must fail until every placeholder and
+9. Run `npm run runner:stage`, then `npm run runner:stage:check` and
+   `npm run runner:canary`. Staging also generates the Worker-side release
+   contract used by `/readyz`.
+10. Run `npm run check`, `npm run runner:check`, and
+    `npm run startup:check`.
+11. Run `npm run preflight:staging`. It must fail until every placeholder and
     resource-isolation requirement is resolved.
-11. Apply all three D1 migrations, in order:
+12. List, apply, and re-list the D1 migrations against the remote pilot
+    database:
+
+    ```sh
+    npx wrangler d1 migrations list PILOT_DB --remote --config wrangler.pilot.local.jsonc
+    npx wrangler d1 migrations apply PILOT_DB --remote --config wrangler.pilot.local.jsonc
+    npx wrangler d1 migrations list PILOT_DB --remote --config wrangler.pilot.local.jsonc
+    ```
+
+    Inspect the first list and stop on any unexpected migration state. Require
+    the final list to show no pending migrations. The five SQL files must apply
+    in order:
     `migrations/0001_institution_pilot.sql`,
     `migrations/0002_remediation_effort_and_admission.sql`, then
-    `migrations/0003_upload_attempt_admission.sql`.
-12. Build the container as `linux/amd64` on an x64 CI host. The deny-by-default
+    `migrations/0003_upload_attempt_admission.sql`, then
+    `migrations/0004_job_attempt_leases.sql`, then
+    `migrations/0005_job_checkpoints.sql`.
+    `/readyz` verifies that the live D1 `jobs` table exposes every required
+    lease/checkpoint column. Still verify the remote migration history: the
+    sentinel does not prove migration ordering or index creation.
+13. Build the container as `linux/amd64` on an x64 CI host. The deny-by-default
     `.dockerignore` permits only runner inputs and the hash-recorded staged
     closure into the build context.
-13. Deploy staging with `npm run deploy:staging`, then configure the R2
-    lifecycle backstop.
-14. Connect Claude with the exact custom-domain `/mcp` URL.
-15. Connect a ChatGPT staging app using the exact callback copied into
+14. With the protected `RELEASE_CANARY_SECRET` available to the deployment
+    process, run `npm run deploy:staging`. It reapplies the exact checked R2
+    lifecycle policy before deploy and must finish with a compatible
+    authenticated `/readyz` response. A non-zero result is a failed release,
+    even if Wrangler already uploaded the Worker.
+15. Schedule `npm run alerts:check` every five minutes with the protected
+    Analytics credentials described above and verify that exit 1 and exit 2
+    reach the institution's notification channel.
+16. Connect Claude with the exact custom-domain `/mcp` URL.
+17. Connect a ChatGPT staging app using the exact callback copied into
     `CHATGPT_REDIRECT_URI` and complete the linking and tool-call gates below.
-16. After every synthetic acceptance gate passes, set
-    `PILOT_ACCEPTANCE_VERSION=institution-pilot-synthetic-v2` and redeploy to
-    expose the seven document tools. The local preflight additionally requires
-    the explicit `--allow-synthetic-acceptance` switch.
+18. After every synthetic acceptance gate passes, set
+    `PILOT_ACCEPTANCE_VERSION=institution-pilot-synthetic-v2` and deploy with
+    `npm run deploy:staging:accepted` to expose the seven document tools. The
+    accepted preflight requires the explicit local acceptance switch already
+    composed into that command.
+
+For an upgrade of an already-running pilot, use this order:
+
+1. Establish an institution-controlled maintenance window that prevents new
+   upload and remediation-start calls while old jobs finish. This repository
+   does not provide an admission-only runtime switch. Do not unset
+   `PILOT_ACCEPTANCE_VERSION` or set `PILOT_ENABLED=false` and call that a
+   graceful drain: those settings also remove status, cancel, delete, and
+   transfer access.
+2. Let existing work complete or cancel it through the normal fenced path,
+   then run the remote drain query:
+
+   ```sh
+   npx wrangler d1 execute PILOT_DB --remote --config wrangler.pilot.local.jsonc --command "SELECT status, COUNT(*) AS count FROM jobs WHERE status IN ('queued','running','cancelling','deleting') GROUP BY status;"
+   ```
+
+   Require zero active counts and verify no Workflow/container attempt remains
+   active. Migration 0004's one-hour legacy lease is a safety margin, not a
+   substitute for this drain.
+3. Record the currently accepted Worker version, source revision, matching
+   runner manifest/build hashes, container release, checked config, and D1
+   migration list as the rollback target. Preserve secrets through the
+   institution's normal protected backup/recovery process.
+4. List, apply, and re-list migrations 0004 and 0005 with the remote D1
+   commands above, in that order, after the drain and before deploying code
+   that reads their lease/checkpoint columns. Require no pending migrations.
+   Do not improvise a destructive down-migration during release recovery.
+5. Deploy the new Worker and container together with the checked deployment
+   command. Keep maintenance controls in place until `/readyz` succeeds and a
+   new-version synthetic job has renewed its lease, committed and resumed a
+   synthetic checkpoint, and completed successfully.
+6. If the post-deploy canary fails, keep admissions stopped. Roll the Worker
+   and container back together to a release proven compatible with the current
+   migrated D1/checkpoint schema; never roll back only the Worker across this
+   boundary. Re-deploying the recorded prior source with its matching staged
+   runner/container is the safe default; a Worker-version rollback alone does
+   not roll back bound D1, R2, KV, Durable Object, or container state. Re-run
+   the authenticated canary and synthetic checkpoint/resume job before
+   reopening admissions. The two-day R2 lifecycle privacy backstop should
+   remain in force.
 
 Wrangler bindings are non-inheritable. If staging and production use
 `env.*`, repeat KV, D1, R2, Workflow, Durable Object, Container, and route
@@ -362,21 +516,30 @@ Do not use frozen test counts as evidence; concurrent hardening changes the
 suite. From `services/alloflow-remote-mcp/`, rerun the checked entry points:
 
 ```sh
+npm run runner:stage
+npm run runner:canary
+npm run lifecycle:check
 npm run check
 npm run runner:check
 npm run startup:check
 ```
 
 For focused diagnosis, `npm run types:check`, `npm run typecheck`, `npm test`,
-and `npm run preflight:test` are the component commands already composed by the
-higher-level checks. A passing local command is not a deployment, live OAuth
-acceptance, or edge-health result.
+`npm run preflight:test`, and `npm run runner:stage:check` are component
+commands already composed by the higher-level checks. `lifecycle:check` is
+offline-only; `canary:staging` is the authenticated remote check and requires
+the protected release secret. A passing local command is not a deployment,
+live OAuth acceptance, or edge-health result.
 
 ## Required acceptance gates
 
 Use synthetic PDFs until all gates pass:
 
 - unauthenticated `/mcp` returns a 401 OAuth challenge;
+- unauthenticated `/readyz` returns 401 without disclosing compatibility data,
+  while the protected release canary returns a non-local Worker version and an
+  idle, byte-compatible runner, and proves the live D1 lease/checkpoint column
+  sentinel;
 - DCR, authorization code, PKCE S256, token exchange, refresh, and revocation;
 - Claude's exact callback remains accepted, the exact configured ChatGPT
   callback is accepted, and wildcard, query, fragment, wrong-host, or
@@ -408,6 +571,11 @@ Use synthetic PDFs until all gates pass:
 - explicit delete attempts input, result, and report removal synchronously, and
   scheduled reconciliation completes interrupted cleanup;
 - scheduled reconciliation handles dispatch and cleanup interruptions;
+- the remote bucket has the exact checked two-day `tenant/` object expiry and
+  one-day incomplete-multipart abort policy before admissions open;
+- Analytics Engine records carry the Worker release ID without job/attempt
+  dimensions, and the five-minute external alert check reaches the expected
+  notification path for both alert and query-failure exits;
 - failure logs contain no document text, filenames, bearer grants, OAuth
   tokens, cookies, or keys;
 - repeated anonymous registration receives 429 without creating unbounded

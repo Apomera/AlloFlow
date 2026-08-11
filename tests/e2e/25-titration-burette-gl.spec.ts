@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import { GlHarness } from './helpers/stem_gl_harness';
 
 /**
@@ -63,6 +64,29 @@ const seed = (extra: Record<string, unknown> = {}) => ({
   ),
 });
 
+const BURETTE_SEL = '#wrap canvas[data-titration-burette-gl]';
+
+/**
+ * Bring a bay into the viewport and let the viewer catch up.
+ *
+ * makeOrbitViewer parks its render loop while a bay is offscreen (IntersectionObserver)
+ * and consumes the queued push when it scrolls back — correct for the product, and a
+ * trap for this spec. The harness box is 760 px tall and the burette station sits at
+ * y ≈ 1250, so it is ALWAYS below the fold: the first build lands (the observer has not
+ * fired yet), then the loop parks and every later push queues unprocessed.
+ *
+ * Screenshot-based tests never notice, because locator.screenshot() scrolls the element
+ * into view for us. Tests that only read __gl() do notice, in the two worst ways:
+ * 'the scene reports the meniscus and the sight-line crossing' read a stale crossY and
+ * FAILED, and the texture-leak test below read the same stale scene twice and PASSED
+ * VACUOUSLY — it compared a scene against itself and could never have caught the leak
+ * it exists for.
+ */
+async function reveal(page: Page, selector = BURETTE_SEL) {
+  await page.locator(selector).scrollIntoViewIfNeeded();
+  await page.waitForTimeout(400);
+}
+
 test.describe('Titration Lab — burette parallax station on real WebGL', () => {
   test.afterEach(async ({ page }) => { await harness.destroy(page); });
 
@@ -83,6 +107,7 @@ test.describe('Titration Lab — burette parallax station on real WebGL', () => 
 
   test('the scene reports the meniscus and the sight-line crossing', async ({ page }) => {
     await harness.mount(page, seed({ gEyeCm: 0 }));
+    await reveal(page);
     const level = await page.evaluate(() => (window as any).__gl());
     expect(level.state).toBe('ready');
     // Eye level: the sight line meets the scale exactly at the meniscus.
@@ -152,6 +177,7 @@ test.describe('Titration Lab — burette parallax station on real WebGL', () => 
   // set per tick of the slider without the explicit dispose in buildBuretteScene.
   test('rebuilding for a new eye height does not leak label textures', async ({ page }) => {
     await harness.mount(page, seed({ gEyeCm: 0 }));
+    await reveal(page);
     await page.waitForTimeout(700);
     const first = await page.evaluate(() => (window as any).__gl());
     expect(first.labelTextures, 'the scale is not numbered').toBeGreaterThan(3);
@@ -162,6 +188,14 @@ test.describe('Titration Lab — burette parallax station on real WebGL', () => 
     }
     await page.waitForTimeout(900);
     const after = await page.evaluate(() => (window as any).__gl());
+
+    // Prove the scene actually rebuilt before comparing texture counts. Without this
+    // the assertions below are satisfied by a scene that never changed, which is
+    // exactly how this test passed while the render loop was parked offscreen.
+    expect(after.crossY,
+      'the eye moved but the scene did not rebuild — the leak check would be vacuous')
+      .not.toBe(first.crossY);
+
     expect(after.labelTextures,
       `label textures grew ${first.labelTextures} -> ${after.labelTextures} across 16 rebuilds`)
       .toBeLessThanOrEqual(first.labelTextures + 2);
@@ -200,6 +234,7 @@ test.describe('Titration Lab — glassware bench on real WebGL', () => {
 
   test('builds all six vessels in a live context', async ({ page }) => {
     await harness.mount(page, bench());
+    await reveal(page, SEL);
     await page.waitForTimeout(900);
     const dbg = await page.evaluate(() => (window as any).__alloBenchGL.debug());
     expect(dbg.state).toBe('ready');
@@ -223,6 +258,11 @@ test.describe('Titration Lab — glassware bench on real WebGL', () => {
 
   test('does not leak label textures as the selection changes', async ({ page }) => {
     await harness.mount(page, bench());
+    // The bench currently straddles the fold (top ~868 of a 900 px viewport), so its
+    // loop happens to keep running and this test happens to be meaningful. Do not
+    // leave that to layout luck — see reveal() for what parked scenes do to a leak
+    // check that reads the same numbers twice.
+    await reveal(page, SEL);
     await page.waitForTimeout(800);
     const first = (await page.evaluate(() => (window as any).__alloBenchGL.debug())).labelTextures;
     expect(first).toBeGreaterThan(4);

@@ -73,6 +73,17 @@ describe('Astronomy — sky engine (real ephemerides, checked against almanac fa
     expect(max).toBeGreaterThan(0.95);                  // reaches full
   });
 
+  it('the Sky Map Moon glyph maps new to dark and full to illuminated geometry', () => {
+    const newMoon = A.moonGlyphGeometry(0, true, 7.5);
+    const quarter = A.moonGlyphGeometry(0.5, true, 7.5);
+    const fullMoon = A.moonGlyphGeometry(1, true, 7.5);
+    expect(newMoon.innerRadius).toBeCloseTo(7.5, 8);
+    expect(newMoon.innerSweep).not.toBe(newMoon.outerSweep);
+    expect(quarter.innerRadius).toBeCloseTo(0.01, 8);
+    expect(fullMoon.innerRadius).toBeCloseTo(7.5, 8);
+    expect(fullMoon.innerSweep).toBe(fullMoon.outerSweep);
+  });
+
   it('the Moon stays near the ecliptic: |dec| never exceeds ~28.6° (23.44 + 5.14)', () => {
     for (let day = 0; day < 60; day += 1) {
       expect(Math.abs(A.moonRaDec(day).dec)).toBeLessThan(29);

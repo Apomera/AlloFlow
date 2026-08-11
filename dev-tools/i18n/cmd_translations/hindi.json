@@ -320,5 +320,8 @@
   "cmd.run_lesson_blueprint": "पाठ योजना बनाएँ",
   "cmd.run_lesson_blueprint_done": "योजना बनाई जा रही है — आप कार्ड पर हर चरण देख सकते हैं।",
   "cmd.run_lesson_blueprint_hint": "वर्तमान योजना के सभी संसाधन बनाता है",
-  "cmd.cancelled": "रद्द करने का अनुरोध किया गया है। प्रदाता द्वारा समर्थन मिलने पर वर्तमान कार्य रुक जाएगा।"
+  "cmd.cancelled": "रद्द करने का अनुरोध किया गया है। प्रदाता द्वारा समर्थन मिलने पर वर्तमान कार्य रुक जाएगा।",
+  "cmd.open_share_collect": "Share & Collect खोलें",
+  "cmd.open_share_collect_hint": "पोल, साइन-अप, सर्वेक्षण और उनके परिणाम",
+  "cmd.open_share_collect_done": "Share & Collect खुल गया।"
 }

@@ -1,11 +1,11 @@
 # STEM Visual QA Audit
 
-Generated: 2026-07-27T23:57:10.876Z
+Generated: 2026-08-10T03:09:16.339Z
 
 ## Scope
 
-- Registered STEM tools: 132
-- STEM tool files: 129
+- Registered STEM tools: 140
+- STEM tool files: 137
 - Monitored student-facing visual markers: 74
 
 ## Summary
@@ -17,9 +17,9 @@ Generated: 2026-07-27T23:57:10.876Z
 | Marker failures | 0 |
 | Monitored first-screen findings | 0 |
 | High-confidence monitored errors | 0 |
-| Source/public drift | 6 |
-| Any source/public/build drift | 15 |
-| Monitored file drift | 10 |
+| Source/public drift | 0 |
+| Any source/public/build drift | 10 |
+| Monitored file drift | 8 |
 
 ## Visual Marker Coverage
 
@@ -108,22 +108,17 @@ No monitored first-screen accessibility findings.
 
 | Status | File | Monitored | Hashes |
 | --- | --- | --- | --- |
-| build-drift | `stem_tool_archstudio.js` | no | source `040C915E4CFC`, public `040C915E4CFC`, build `F94F424C62BA` |
-| build-drift | `stem_tool_autorepair.js` | no | source `2E76E0B1712F`, public `2E76E0B1712F`, build `C88198A6E896` |
-| source-public-drift | `stem_tool_bridgelab.js` | yes | source `03CDE1E369CA`, public `3280E40D3DFE`, build `2ED7DB5BD671` |
-| build-drift | `stem_tool_dissection.js` | no | source `8B871AACD8B4`, public `8B871AACD8B4`, build `2CB4E0033204` |
-| build-drift | `stem_tool_dna.js` | yes | source `87BB6B2D9896`, public `87BB6B2D9896`, build `20B1A1F2A56C` |
-| source-public-drift | `stem_tool_epidemic.js` | yes | source `720ED09BDFDE`, public `0318957126DD`, build `0318957126DD` |
-| source-public-drift | `stem_tool_fisherlab.js` | yes | source `E20CEFD50005`, public `5ED67AA260FC`, build `0D2CD051E72B` |
-| source-public-drift | `stem_tool_geologyexplorer.js` | yes | source `C108B66AA703`, public `185421C4A9D5`, build `185421C4A9D5` |
-| build-drift | `stem_tool_geosandbox.js` | no | source `689BD521C99E`, public `689BD521C99E`, build `5495C9C164EA` |
-| source-public-drift | `stem_tool_moonmission.js` | yes | source `F13C4DD8DCD2`, public `F7E54EC9F4C6`, build `F7E54EC9F4C6` |
-| build-drift | `stem_tool_optics.js` | yes | source `D5263444B1A8`, public `D5263444B1A8`, build `BAD83A50C505` |
-| build-drift | `stem_tool_printingpress.js` | yes | source `B69ED12745C4`, public `B69ED12745C4`, build `677801B28971` |
-| build-drift | `stem_tool_roadready.js` | no | source `433E6A0745DB`, public `433E6A0745DB`, build `CC04A1FFD942` |
-| build-drift | `stem_tool_rocks.js` | yes | source `103C1349D1E3`, public `103C1349D1E3`, build `92A1CA2DB9A8` |
-| source-public-drift | `stem_tool_solarsystem.js` | yes | source `EEDE900F464F`, public `30F2E6194CF8`, build `95810FF33B96` |
+| build-drift | `stem_tool_applab.js` | no | source `C8AA03547B6E`, public `C8AA03547B6E`, build `845C12A193BD` |
+| build-drift | `stem_tool_calculus.js` | yes | source `C7D3BE16EBF6`, public `C7D3BE16EBF6`, build `49F67C4BE0FE` |
+| build-drift | `stem_tool_forge.js` | no | source `D68D49985E30`, public `D68D49985E30`, build `0D77471B1BC6` |
+| build-drift | `stem_tool_funcgrapher.js` | yes | source `8EE675EB11EF`, public `8EE675EB11EF`, build `EA9E7F963EEF` |
+| build-drift | `stem_tool_logiclab.js` | yes | source `989F59D267F9`, public `989F59D267F9`, build `96DAE95D9C72` |
+| build-drift | `stem_tool_music.js` | yes | source `2F03A1777D90`, public `2F03A1777D90`, build `75BEA08CC5B0` |
+| build-drift | `stem_tool_physics.js` | yes | source `6023919873CC`, public `6023919873CC`, build `3A1BCC569248` |
+| build-drift | `stem_tool_semiconductor.js` | yes | source `F26FDF2454E7`, public `F26FDF2454E7`, build `706171F545D3` |
+| build-drift | `stem_tool_spacecolony.js` | yes | source `BB939C5246A1`, public `BB939C5246A1`, build `1B57ABA1386B` |
+| build-drift | `stem_tool_wave.js` | yes | source `3E394E8438F9`, public `3E394E8438F9`, build `B48563F96A1A` |
 
 ## Gate Policy
 
-`--gate` fails on load errors, missing monitored markers, monitored render errors, monitored high-confidence accessibility errors, source/public drift, or drift in monitored source/public/build triplets.
+`--gate` fails on load errors, missing monitored markers, monitored render errors, monitored high-confidence accessibility errors, or source/public drift. A monitored file that differs only from `desktop/web-app/build/` is an advisory, not a failure: that directory is gitignored build output, so a stale copy means the desktop build has not been re-run, not that anything ships stale.

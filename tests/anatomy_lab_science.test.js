@@ -266,7 +266,7 @@ describe('Anatomy Lab navigation recovery', () => {
   it('falls back to a valid tab, system, orientation, and learning level', () => {
     const html = renderAnatomy({ _activeTab: 'missing-mode', system: 'missing-system', view: 'sideways', complexity: -4 });
     expect(html).toContain('Skeletal system');
-    expect(html).toContain('Anterior view');
+    expect(html).toContain('Anterior \u00b7 2D atlas');
     expect(html).toContain('19 structures');
     expect(html).toContain('aria-label="Explore" role="tab" aria-controls="anatomy-mode-panel" aria-selected="true"');
     expect(html).toContain('id="anatomy-mode-panel"');
@@ -500,8 +500,8 @@ describe('Anatomy Lab layer and quiz-state resilience', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
     expect(source).toContain('function safeBooleanMap(value, allowedIds)');
     expect(source).toContain('countStoredTrueFlags(d.visibleLayers, ANATOMY_LAYER_IDS.slice(1))');
-    expect(source).toContain('updMulti({ visibleLayers: newLayers, _layersToggled: newLayersToggled })');
-    expect(source).toContain('var searchPatch = selectionPatch(firstMatch.id);');
+    expect(source).toContain('updMulti({ visibleLayers: newLayers, _layersToggled: newLayersToggled, _xrayMode: false })');
+    expect(source).toContain('function applyAnatomySearchResult(result)');
     expect(source).toContain('var quizPatch = {');
     expect(source).toContain('_totalCorrect = totalCorrect + 1');
     expect(source).not.toContain('(d._searchFinds || 0) + 1');
@@ -591,7 +591,7 @@ describe('Anatomy Lab comparison-pair integrity', () => {
     expect(source).toContain('function selectionPatch(structureId, extraPatch)');
     expect(source).toContain('updMulti(selectionPatch(closest.id))');
     expect(source).toContain('updMulti(selectionPatch(navList[nextIdx].id))');
-    expect(source).toContain('var searchPatch = selectionPatch(firstMatch.id);');
+    expect(source).toContain('resultPatch = structureFocusPatch(result.structure.id');
     expect(source).toContain('updMulti(selectionPatch(st.id))');
     expect(source).toContain('return comparisonTrackingPatch(structureId, patch, context.systemId);');
   });
@@ -753,12 +753,12 @@ describe('Anatomy Lab visual hierarchy and canvas legibility', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
     expect(source).toContain("grid-template-columns:repeat(5,minmax(0,1fr))");
     expect(source).toContain("border-top:4px solid var(--anatomy-accent)");
-    expect(source).toContain("backgroundSize: '24px 24px,24px 24px,100% 100%'");
+    expect(source).toContain("backgroundSize: '28px 28px,28px 28px,100% 100%'");
     expect(source).toContain(".anatomy-mode-card p{display:none}");
 
     const html = renderAnatomy({ system: 'circulatory', complexity: 3 });
     expect(html).toContain('class="anatomy-mode-icon"');
-    expect(html).toContain('radial-gradient(circle at 50% 38%');
+    expect(html).toContain('radial-gradient(circle at 50% 36%');
     expect(html).toContain('border border-slate-300');
   });
 
@@ -770,11 +770,13 @@ describe('Anatomy Lab visual hierarchy and canvas legibility', () => {
     expect(source).toContain('if (htx + boxW > W - 4) htx = W - boxW - 4;');
   });
 
-  it('makes structure markers more visible without changing hit targets', () => {
+  it('keeps inactive structure pins quiet while preserving selected and study-state hierarchy', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
-    expect(source).toContain('var r = isSel ? 10 : isHover ? 8 : 6;');
-    expect(source).toContain("cCtx.strokeStyle = '#fff'; cCtx.lineWidth = 2; cCtx.stroke();");
-    expect(source).toContain("cCtx.shadowColor = 'rgba(15,23,42,0.22)'");
+    expect(source).toContain('var r = isSel ? 10 : isHover ? 8 : markerConfidence ? 6 : 4.5;');
+    expect(source).toContain('if (!isSel && !isHover && !markerConfidence) {');
+    expect(source).toContain("cCtx.fillStyle = 'rgba(255,255,255,0.92)'; cCtx.fill();");
+    expect(source).toContain("cCtx.strokeStyle = sys.accent; cCtx.lineWidth = 1.25; cCtx.stroke();");
+    expect(source).toContain("cCtx.strokeStyle = '#fff'; cCtx.lineWidth = 1.6; cCtx.stroke();");
   });
 
   it('uses neutral inactive tabs so the active learning mode is visually dominant', () => {
@@ -1823,7 +1825,8 @@ describe('Anatomy Systems in Motion', () => {
     const html = renderAnatomy({ system: 'organs', view: 'anterior', complexity: 3, _bodyView3d: true });
     expect(source).toContain('canvas._anatomy3dKeyControl');
     expect(source).toContain('markerItems');
-    expect(source).toContain('camera.position.z');
+    expect(source).toContain('function adjustCameraDistance(delta)');
+    expect(source).toContain('camera.position.copy(cameraTarget).add(cameraOffset.setLength(nextDistance))');
     expect(html).toContain('data-anatomy-view');
     expect(html).toContain('ArrowUp ArrowDown ArrowLeft ArrowRight + - [ ] R Home 0');
     expect(html).toContain('square brackets to cycle labeled markers');

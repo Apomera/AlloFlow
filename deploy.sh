@@ -5,11 +5,12 @@
 #   1. Stage your source changes:    git add <files-you-want-committed>
 #   2. Run the deploy:                ./deploy.sh "Your commit message"
 #
-# What it does (10 steps in one shot):
+# What it does (10 steps plus a pre-deploy desktop artifact gate):
 #   1.  Commits staged changes (skips if nothing staged — useful for re-deploys)
 #   2.  Pushes source commit to origin (GitHub)
 #   3.  Runs `node build.js --mode=prod --force` (rewrites CDN hash refs)
 #   4.  Runs `npm run build` in desktop/web-app/
+#   4.5 Builds the desktop flavor separately, then atomically stages + verifies it
 #   5.  Runs `firebase deploy --only hosting`
 #   6.  Auto-commits the post-deploy hash refs (the mirror files)
 #   7.  Pushes the post-deploy commit to origin
@@ -58,8 +59,9 @@ WORKFLOW:
   2. Run the script with your commit message:
        ./deploy.sh "Extract FooView into CDN module"
 
-The script handles: source commit, push, build, deploy, post-deploy
-commit (with hash refs), push, and mirror to the Codeberg backup.
+The script handles: source commit, push, hosted + desktop build staging,
+deploy, post-deploy commit (with hash refs), push, and mirror to the
+Codeberg backup.
 
 If nothing is staged, the script skips the source commit and just
 runs build + deploy + post-deploy. Useful when re-running a deploy
@@ -121,6 +123,8 @@ if [[ "${SKIP_RENDER_CHECK:-0}" != "1" ]]; then
   echo "  ✓ host↔module wrapper seams agree on arity (the playSequence deps-in-contentId class; 2026-07-20)."
   node dev-tools/check_module_freshness.cjs
   echo "  ✓ no NEW source/module drift — a *_source.jsx committed without rebuilding its hand-built module DOES NOT SHIP, and every test reads the source, so nothing else can see it (cost four remediation fixes; 2026-07-27)."
+  node dev-tools/check_deploy_mirror.cjs --quiet
+  echo "  ✓ every root file matches its desktop/web-app/public mirror. The two copies have different consumers — the CDN serves the root copy and the React/Electron build serves the mirror — so drift ships a build where the browser and the desktop app run different code for the same tool, with no symptom until someone compares them. The checker existed and had zero callers in this script: on 2026-08-10 nuclearlab (+6,919 bytes) and titration (+307 bytes) were caught by hand minutes before a deploy, and manipulatives had already shipped drifted in an earlier commit the same way."
   node _check_tool_catalog.cjs
   echo "  ✓ tool catalog ↔ dispatcher branches in sync both ways (a resource type present in one and absent from the other silently drops it from AlloBot autofill / lesson packs, or leaves a catalog entry pointing at a branch that no longer exists; the checker shipped 2026-07 telling you to 'run before deploys' and then had zero callers until 2026-07-27)."
   node dev-tools/check_agent_core_mirrors.cjs
@@ -241,6 +245,17 @@ echo "=== Step 4: npm run build (desktop/web-app) ==="
 (cd desktop/web-app && npm run build)
 echo "  ✓ npm build complete."
 
+# ── Step 4.5: Stage + verify the desktop app artifact ──────────────
+# Build the desktop flavor with its canonical keyless/local environment into an
+# isolated BUILD_PATH. This intentionally does not reuse or overwrite the hosted
+# build that Firebase consumes. The desktop builder stages atomically and refuses
+# to replace the last known-good app-build unless remediation-module parity, the
+# hashed asset manifest, and service-worker precache all validate.
+echo ""
+echo "=== Step 4.5: Build + verify desktop/app-build ==="
+(cd desktop && npm run web:build:isolated && npm run verify:web-build)
+echo "  ✓ desktop/app-build is current and internally consistent."
+
 # ── Step 5: Firebase deploy ────────────────────────────────────────
 # The public repo deliberately ships with YOUR_PROJECT_ID so a normal deploy
 # can never target the maintainer demo. District/self-hosted checkouts may set
@@ -350,7 +365,7 @@ else
   # lame.min.js: karaoke MP3 encoder — served from the REPO ROOT; if it goes
   # missing, Pages returns index.html with HTTP 200 and every karaoke capture
   # silently stores WAV instead of MP3 (2026-07-09 incident).
-  CDN_MODULES=(doc_pipeline_module.js view_pdf_audit_module.js gemini_api_module.js app/index.html app/sw.js lame.min.js)
+  CDN_MODULES=(doc_pipeline_module.js view_pdf_audit_module.js view_export_preview_module.js gemini_api_module.js app/index.html app/sw.js lame.min.js)
   CDN_RETRIES="${POST_VERIFY_CDN_RETRIES:-4}"   # freshness re-checks (Cloudflare lag)
   CDN_WAIT="${POST_VERIFY_CDN_WAIT:-20}"        # seconds between freshness re-checks
   POST_VERIFY_CACHE_BUST="${POST_VERIFY_CACHE_BUST:-${BUILD_HASH}-$(date +%s)}"

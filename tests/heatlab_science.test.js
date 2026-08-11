@@ -22,10 +22,13 @@ const SUBSTANCES = table('var SUBSTANCES = [');
 const ENGINES = table('var ENGINES = [');
 const EXPANSION = table('var EXPANSION = [');
 const WALL = table('var WALL_LAYERS = [');
+let HEAT_MODELS;
 
 beforeEach(() => {
   resetStemLab();
-  loadTool('stem_lab/stem_tool_heatlab.js', 'heatLab');
+  const tool = loadTool('stem_lab/stem_tool_heatlab.js', 'heatLab');
+  HEAT_MODELS = tool.models;
+  expect(HEAT_MODELS).toBeTruthy();
 });
 
 describe('Heat lab material constants', () => {
@@ -57,7 +60,7 @@ describe('Heat lab material constants', () => {
 });
 
 describe('Calorimetry', () => {
-  const mix = (c1, m1, t1, c2, m2, t2) => (m1 * c1 * t1 + m2 * c2 * t2) / (m1 * c1 + m2 * c2);
+  const mix = (c1, m1, t1, c2, m2, t2) => HEAT_MODELS.mixTemperature({ c: c1 }, m1, t1, { c: c2 }, m2, t2);
 
   it('lands exactly halfway for equal masses of the same substance', () => {
     expect(mix(4186, 1, 20, 4186, 1, 80)).toBeCloseTo(50, 6);
@@ -81,21 +84,21 @@ describe('Calorimetry', () => {
     expect(r).toBeGreaterThan(20);
     expect(r).toBeLessThan(35);
   });
+
+  it('explains unequal masses using total heat capacity, not specific heat alone', () => {
+    const water = SUBSTANCES.find(s => s.id === 'water');
+    const iron = SUBSTANCES.find(s => s.id === 'iron');
+    const text = HEAT_MODELS.mixExplanation(water, 0.1, 20, iron, 2, 90);
+    expect(text).toMatch(/iron has the larger total heat capacity/i);
+    expect(text).toMatch(/mass × specific heat/i);
+  });
 });
 
 describe('Water heating curve', () => {
-  function state(kJ) {
-    let e = kJ * 1000;
-    if (e < 2090 * 20) return { phase: 'Ice', temp: -20 + e / 2090 };
-    e -= 2090 * 20;
-    if (e < 334000) return { phase: 'Ice melting', temp: 0 };
-    e -= 334000;
-    if (e < 4186 * 100) return { phase: 'Liquid water', temp: e / 4186 };
-    e -= 4186 * 100;
-    if (e < 2260000) return { phase: 'Water boiling', temp: 100 };
-    e -= 2260000;
-    return { phase: 'Steam', temp: 100 + e / 2010 };
-  }
+  const state = kJ => {
+    const result = HEAT_MODELS.waterState(kJ);
+    return { phase: result.phase, temp: result.temp };
+  };
 
   it('holds temperature flat through both latent plateaus', () => {
     expect(state(200)).toEqual({ phase: 'Ice melting', temp: 0 });
@@ -120,6 +123,103 @@ describe('Water heating curve', () => {
 
   it('reaches steam within the slider range, so the badge is attainable', () => {
     expect(state(3100).phase).toBe('Steam');
+  });
+});
+
+describe('Conduction race model', () => {
+  it('keeps a ten-second copper step finite, bounded, and equivalent to safe smaller steps', () => {
+    const copper = MATERIALS.find(m => m.id === 'copper');
+    const oneStep = new Float64Array(90);
+    const splitSteps = new Float64Array(90);
+    oneStep.fill(20);
+    splitSteps.fill(20);
+
+    HEAT_MODELS.advanceBar(oneStep, copper, 200, 10, 0.20);
+    for (let i = 0; i < 10; i++) HEAT_MODELS.advanceBar(splitSteps, copper, 200, 1, 0.20);
+
+    for (const value of oneStep) {
+      expect(Number.isFinite(value)).toBe(true);
+      expect(value).toBeGreaterThanOrEqual(20 - 1e-9);
+      expect(value).toBeLessThanOrEqual(200 + 1e-9);
+    }
+    expect(oneStep[Math.floor(oneStep.length / 2)]).toBeCloseTo(splitSteps[Math.floor(splitSteps.length / 2)], 1);
+  });
+
+  it('names the same winner and positive ratio regardless of bar order', () => {
+    const copper = MATERIALS.find(m => m.id === 'copper');
+    const wood = MATERIALS.find(m => m.id === 'wood');
+    const forward = HEAT_MODELS.racePrediction(copper, wood);
+    const reverse = HEAT_MODELS.racePrediction(wood, copper);
+    expect(forward.fasterId).toBe('copper');
+    expect(reverse.fasterId).toBe('copper');
+    expect(forward.ratio).toBeGreaterThan(1);
+    expect(reverse.ratio).toBeCloseTo(forward.ratio, 12);
+  });
+
+  it('uses one shared 50 degree finish line in the model and accessible copy', () => {
+    expect(HEAT_MODELS.finishC).toBe(50);
+    const html = renderTool('heatLab', {});
+    expect(html).toContain('The finish line is 50 °C at the midpoint');
+    expect(SRC).not.toMatch(/passes 100 degrees/i);
+  });
+});
+
+describe('Heat pump boundary', () => {
+  it('marks heating COP undefined when outdoor temperature meets or exceeds the target', () => {
+    expect(HEAT_MODELS.heatPump(20, 15)).toMatchObject({
+      heating: false,
+      idealCOP: null,
+      realisticCOP: null
+    });
+    expect(HEAT_MODELS.heatPump(20, 20).heating).toBe(false);
+  });
+
+  it('keeps ordinary heating conditions finite and renders no Infinity boundary values', () => {
+    const ordinary = HEAT_MODELS.heatPump(2, 21);
+    expect(ordinary.heating).toBe(true);
+    expect(Number.isFinite(ordinary.idealCOP)).toBe(true);
+    expect(Number.isFinite(ordinary.realisticCOP)).toBe(true);
+
+    const html = renderTool('heatLab', { _heatLab: { hpOut: 20, hpIn: 15 } });
+    expect(html).toMatch(/No heating lift is required/i);
+    expect(html).not.toMatch(/Infinity|∞/);
+  });
+
+  it('keeps the practical teaching estimate plausible near zero lift while leaving Carnot uncapped', () => {
+    const mild = HEAT_MODELS.heatPump(20, 21);
+    const ordinary = HEAT_MODELS.heatPump(2, 21);
+    const veryCold = HEAT_MODELS.heatPump(-20, 21);
+    expect(mild.idealCOP).toBeGreaterThan(100);
+    expect(mild.realisticCOP).toBeLessThanOrEqual(8);
+    expect(ordinary.realisticCOP).toBeGreaterThan(veryCold.realisticCOP);
+    expect(ordinary.equipmentLiftK).toBeGreaterThan(ordinary.liftK);
+    const html = renderTool('heatLab', { _heatLab: { hpOut: 20, hpIn: 21 } });
+    expect(html).toContain('Teaching estimate COP');
+    expect(html).toMatch(/not a product rating/i);
+    expect(html).not.toMatch(/Realistic COP/);
+  });
+
+  it('keeps the COP curve above the bar-heater line the caption promises', () => {
+    // The chart draws a reference line at 1.0 and the caption under it states
+    // the curve "never touches 1.0". That sentence is only true because of how
+    // the approach temperatures and defrost penalty happen to be tuned, so it
+    // is worth pinning across the whole of both sliders rather than trusting it.
+    for (let indoor = 15; indoor <= 26; indoor++) {
+      for (let outdoor = -20; outdoor < indoor; outdoor += 0.5) {
+        const m = HEAT_MODELS.heatPump(outdoor, indoor);
+        if (!m.heating) continue;
+        expect(m.realisticCOP, `outdoor ${outdoor}, indoor ${indoor}`).toBeGreaterThan(1);
+      }
+    }
+    const html = renderTool('heatLab', { _heatLab: { hpOut: -20, hpIn: 21 } });
+    expect(html).toMatch(/never touches 1\.0/);
+  });
+
+  it('describes insulation and entropy limits without contradicting the implemented models', () => {
+    const html = renderTool('heatLab', { _heatLab: { thickness: 10, entSplit: 39 } });
+    expect(html).toMatch(/approaches a one-half reduction only when the wrap dominates/i);
+    expect(html).toMatch(/near equilibrium, not exactly at it/i);
+    expect(html).not.toMatch(/still-air film.*sets a floor/i);
   });
 });
 
@@ -176,6 +276,23 @@ describe('Composite wall', () => {
   it('shows that mass is not insulation', () => {
     const brickWall = Array(13).fill('brick');
     expect(U(brickWall), 'thirteen layers of brick').toBeGreaterThan(0.18);
+  });
+
+  it('splits the surface films for display without moving the total they contribute', () => {
+    // The cross-section drawing shows the inside and outside air films as
+    // separate bands so the arithmetic on screen adds up. Their SUM is what
+    // every U-value on the page depends on, so a change to one film that is not
+    // matched by the other would silently shift every result in this section.
+    const inside = Number(/var WALL_FILM_INSIDE = ([\d.]+)/.exec(SRC)[1]);
+    const outside = Number(/var WALL_FILM_OUTSIDE = ([\d.]+)/.exec(SRC)[1]);
+    expect(inside + outside).toBeCloseTo(SURFACE, 9);
+    // Published still-air film resistances: the inside face resists appreciably
+    // more than the wind-scoured outside face.
+    expect(inside).toBeGreaterThan(outside);
+
+    const html = renderTool('heatLab', {});
+    expect(html).toContain('Inside air film');
+    expect(html).toContain('Outside air film');
   });
 
   it('makes the 0.18 target reachable but not trivial', () => {

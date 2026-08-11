@@ -17,7 +17,7 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -359,6 +359,8 @@ window.StemLab = window.StemLab || {
           window.removeEventListener('keydown', window._areaModelKbHandler);
         }
         window._areaModelKbHandler = function(e) {
+          // Window-level handler with no unmount cleanup: refuse to act once the tool left the DOM.
+          if (!document.querySelector('[data-areamodel-root]')) return;
           if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
           if (e.key === 'b' || e.key === 'B') { sfxClick(); upd({ viewMode: 'basic' }); }
           else if (e.key === 'd' || e.key === 'D') { sfxClick(); upd({ viewMode: 'distributive' }); }
@@ -518,7 +520,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex items-center gap-2 bg-violet-50 rounded-lg p-2 border border-violet-200' },
             h('span', { className: 'text-xs font-bold text-violet-700' }, t('stem.areamodel.split_at_column', 'Split at column:')),
             h('input', {
-              type: 'range', 'aria-label': t('stem.areamodel.left_cols', 'left cols'), min: '1', max: String(cols - 1), value: leftCols,
+              type: 'range', min: '1', max: String(cols - 1), value: leftCols,
               onChange: function(e) { upd({ splitAt: parseInt(e.target.value) }); },
               'aria-label': t('stem.areamodel.split_at_column_position', 'Split at column position'),
               className: 'flex-1 accent-violet-600'
@@ -831,7 +833,7 @@ window.StemLab = window.StemLab || {
       };
 
       // ══════════ RENDER ══════════
-      return h('div', { className: 'space-y-4 w-full px-2 sm:px-4 max-w-7xl mx-auto animate-in fade-in duration-200' },
+      return h('div', { className: 'space-y-4 w-full px-2 sm:px-4 max-w-7xl mx-auto animate-in fade-in duration-200', 'data-areamodel-root': 'true' },
         // Header
         h('div', { className: 'flex items-center gap-3 mb-2' },
           h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': t('stem.areamodel.back', 'Back') },
@@ -998,7 +1000,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'bg-amber-50 rounded-lg p-3 border border-amber-100' },
             h('label', { className: 'block text-xs text-amber-700 mb-1 font-bold' }, t('stem.areamodel.rows_factor_1', 'Rows (Factor 1)')),
             h('input', {
-              type: 'range', 'aria-label': 'dims', min: '1', max: '12', value: dims.rows,
+              type: 'range', min: '1', max: '12', value: dims.rows,
               onChange: function(e) { upd({ dims: { rows: parseInt(e.target.value), cols: dims.cols }, highlight: { rows: 0, cols: 0 } }); },
               'aria-label': t('stem.areamodel.number_of_rows', 'Number of rows'),
               className: 'w-full accent-amber-600'
@@ -1008,7 +1010,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'bg-amber-50 rounded-lg p-3 border border-amber-100' },
             h('label', { className: 'block text-xs text-amber-700 mb-1 font-bold' }, t('stem.areamodel.columns_factor_2', 'Columns (Factor 2)')),
             h('input', {
-              type: 'range', 'aria-label': 'dims', min: '1', max: '12', value: dims.cols,
+              type: 'range', min: '1', max: '12', value: dims.cols,
               onChange: function(e) { upd({ dims: { rows: dims.rows, cols: parseInt(e.target.value) }, highlight: { rows: 0, cols: 0 } }); },
               'aria-label': t('stem.areamodel.number_of_columns', 'Number of columns'),
               className: 'w-full accent-amber-600'

@@ -11,25 +11,25 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "board" renders iden
 <div style="display:flex;align-items:center;gap:10px">
 <span style="font-size:22px" aria-hidden="true">🎨</span>
 <div>
-<h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Visual Supports Studio</h2>
-<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
+<h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Symbol Studio</h2>
+<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbol bank • boards • sequences • social stories</p>
 </div>
 </div>
-<button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Visual Supports Studio">×</button>
+<button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Symbol Studio">×</button>
 </div>
 <div style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:10px" role="tablist" aria-label="Studio sections">
-<button role="tab" aria-selected="false" aria-label="Symbols tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
-<span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbols</button>
+<button role="tab" aria-selected="false" aria-label="Symbol Bank tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbol Bank</button>
 <button role="tab" aria-selected="true" aria-label="Board Builder tab" tabindex="0" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:#fff;color:#7c3aed;font-weight:700;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:0 1px 4px rgba(0,0,0,0.15);transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">📋</span>Board Builder</button>
-<button role="tab" aria-selected="false" aria-label="Visual Schedule tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
-<span style="font-size:14px;position:relative" aria-hidden="true">📅</span>Visual Schedule</button>
+<button role="tab" aria-selected="false" aria-label="Sequences tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📅</span>Sequences</button>
 <button role="tab" aria-selected="false" aria-label="Social Stories tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">📖</span>Social Stories</button>
 <button role="tab" aria-selected="false" aria-label="Quick Boards tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">⚡</span>Quick Boards</button>
-<button role="tab" aria-selected="false" aria-label="Activity Sets tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
-<span style="font-size:14px;position:relative" aria-hidden="true">📚</span>Activity Sets</button>
+<button role="tab" aria-selected="false" aria-label="Visual Packs tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📚</span>Visual Packs</button>
 <button role="tab" aria-selected="false" aria-label="Symbol Quest tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">🎮</span>Symbol Quest</button>
 <button role="tab" aria-selected="false" aria-label="Symbol Search tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
@@ -250,7 +250,7 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "board" renders iden
 </select>
 </div>
 <button aria-label="From Sentence" style="padding:8px 14px;background:#f3f4f6;color:#374151;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap" title="Type a sentence and let AI map each word to an AAC symbol">🔤 From Sentence</button>
-<button aria-label="From Gallery" style="padding:8px 14px;background:#f3f4f6;color:#374151;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap" title="Add a symbol from your gallery directly to the board">🖼️ From Gallery</button>
+<button aria-label="From Symbol Bank" style="padding:8px 14px;background:#f3f4f6;color:#374151;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap" title="Add a symbol from the Symbol Bank directly to the board">🖼️ From Symbol Bank</button>
 <button aria-label="Import Board" style="padding:8px 14px;background:#f3f4f6;color:#374151;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap" title="Import a board from a .json, .obf, or .obz (Cboard / Open Board Format) file">📥 Import Board</button>
 <input type="file" accept=".json,.obf,.obz" style="display:none"/>
 </div>
@@ -277,25 +277,25 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "books" renders iden
 <div style="display:flex;align-items:center;gap:10px">
 <span style="font-size:22px" aria-hidden="true">🎨</span>
 <div>
-<h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Visual Supports Studio</h2>
-<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
+<h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Symbol Studio</h2>
+<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbol bank • boards • sequences • social stories</p>
 </div>
 </div>
-<button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Visual Supports Studio">×</button>
+<button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Symbol Studio">×</button>
 </div>
 <div style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:10px" role="tablist" aria-label="Studio sections">
-<button role="tab" aria-selected="false" aria-label="Symbols tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
-<span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbols</button>
+<button role="tab" aria-selected="false" aria-label="Symbol Bank tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbol Bank</button>
 <button role="tab" aria-selected="false" aria-label="Board Builder tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">📋</span>Board Builder</button>
-<button role="tab" aria-selected="false" aria-label="Visual Schedule tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
-<span style="font-size:14px;position:relative" aria-hidden="true">📅</span>Visual Schedule</button>
+<button role="tab" aria-selected="false" aria-label="Sequences tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📅</span>Sequences</button>
 <button role="tab" aria-selected="false" aria-label="Social Stories tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">📖</span>Social Stories</button>
 <button role="tab" aria-selected="false" aria-label="Quick Boards tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">⚡</span>Quick Boards</button>
-<button role="tab" aria-selected="true" aria-label="Activity Sets tab" tabindex="0" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:#fff;color:#7c3aed;font-weight:700;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:0 1px 4px rgba(0,0,0,0.15);transition:all 0.15s">
-<span style="font-size:14px;position:relative" aria-hidden="true">📚</span>Activity Sets</button>
+<button role="tab" aria-selected="true" aria-label="Visual Packs tab" tabindex="0" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:#fff;color:#7c3aed;font-weight:700;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:0 1px 4px rgba(0,0,0,0.15);transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📚</span>Visual Packs</button>
 <button role="tab" aria-selected="false" aria-label="Symbol Quest tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">🎮</span>Symbol Quest</button>
 <button role="tab" aria-selected="false" aria-label="Symbol Search tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
@@ -445,24 +445,23 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "books" renders iden
 </div>
 <div style="flex:1;overflow:hidden;display:flex;flex-direction:column">
 <div style="display:flex;flex-direction:column;flex:1;overflow:hidden;padding:16px;gap:14px">
+<input type="file" accept=".json,.alloflow-visual-pack.json" style="display:none"/>
 <div style="display:flex;gap:8px;align-items:flex-end;flex-shrink:0;flex-wrap:wrap">
-<div style="flex:1;min-width:200px">
-<label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px">New Activity Set Name</label>
-<input type="text" placeholder="e.g. Marcus — School Day Boards" aria-label="New activity set name" style="width:100%;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#fff;color:inherit" value=""/>
+<div style="flex:1;min-width:220px">
+<label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px">New Visual Pack Name</label>
+<input type="text" placeholder="e.g. School Day Communication Supports" aria-label="New Visual Pack name" style="width:100%;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#fff;color:inherit" value=""/>
 </div>
-<button disabled="" aria-label="Create new activity book" style="padding:8px 14px;background:#d1d5db;color:#6b7280;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:not-allowed;white-space:nowrap">+ Create Set</button>
+<button type="button" disabled="" style="padding:8px 14px;background:#d1d5db;color:#6b7280;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:not-allowed;white-space:nowrap">+ Create Pack</button>
+<button type="button" style="padding:8px 14px;background:#e0f2fe;color:#075985;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap">Import Pack</button>
 </div>
-<div style="display:flex;gap:14px;flex:1;overflow:hidden">
-<div style="width:220px;flex-shrink:0;overflow-y:auto;display:flex;flex-direction:column;gap:6px">
-<div style="color:#6b7280;font-size:13px;padding:20px 0;text-align:center">No activity sets yet.
-Create one above and add your saved boards.</div>
+<div style="display:flex;gap:14px;flex:1;min-height:0;overflow:hidden">
+<div style="width:240px;flex-shrink:0;overflow-y:auto;display:flex;flex-direction:column;gap:6px">
+<div style="color:#6b7280;font-size:13px;padding:20px 4px;text-align:center;line-height:1.6">No Visual Packs yet. Create one or import a shareable pack.</div>
 </div>
-<div style="flex:1;display:flex;align-items:center;justify-content:center;color:#6b7280;flex-direction:column;gap:10px">
+<div style="flex:1;display:flex;align-items:center;justify-content:center;color:#6b7280;flex-direction:column;gap:10px;padding:24px;text-align:center">
 <div style="font-size:52px">📚</div>
-<p style="font-weight:600">Activity Sets bundle your boards into student-specific sets</p>
-<div style="max-width:400px;font-size:13px;line-height:1.7;text-align:center">
-<p>Create a set for each student, add their boards, and print the whole set in one click — all boards in the correct order with consistent cell sizing.</p>
-</div>
+<p style="font-weight:700;color:#374151;margin:0">Build a complete visual support kit</p>
+<p style="max-width:470px;font-size:13px;line-height:1.7;margin:0">A Visual Pack combines interactive communication boards, visual sequences, and selected Symbol Bank assets. Prepared speech stays saved locally on this device and is not included in shareable exports.</p>
 </div>
 </div>
 </div>
@@ -483,25 +482,25 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "garden" renders ide
 <div style="display:flex;align-items:center;gap:10px">
 <span style="font-size:22px" aria-hidden="true">🎨</span>
 <div>
-<h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Visual Supports Studio</h2>
-<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
+<h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Symbol Studio</h2>
+<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbol bank • boards • sequences • social stories</p>
 </div>
 </div>
-<button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Visual Supports Studio">×</button>
+<button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Symbol Studio">×</button>
 </div>
 <div style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:10px" role="tablist" aria-label="Studio sections">
-<button role="tab" aria-selected="false" aria-label="Symbols tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
-<span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbols</button>
+<button role="tab" aria-selected="false" aria-label="Symbol Bank tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbol Bank</button>
 <button role="tab" aria-selected="false" aria-label="Board Builder tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">📋</span>Board Builder</button>
-<button role="tab" aria-selected="false" aria-label="Visual Schedule tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
-<span style="font-size:14px;position:relative" aria-hidden="true">📅</span>Visual Schedule</button>
+<button role="tab" aria-selected="false" aria-label="Sequences tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📅</span>Sequences</button>
 <button role="tab" aria-selected="false" aria-label="Social Stories tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">📖</span>Social Stories</button>
 <button role="tab" aria-selected="false" aria-label="Quick Boards tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">⚡</span>Quick Boards</button>
-<button role="tab" aria-selected="false" aria-label="Activity Sets tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
-<span style="font-size:14px;position:relative" aria-hidden="true">📚</span>Activity Sets</button>
+<button role="tab" aria-selected="false" aria-label="Visual Packs tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📚</span>Visual Packs</button>
 <button role="tab" aria-selected="false" aria-label="Symbol Quest tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">🎮</span>Symbol Quest</button>
 <button role="tab" aria-selected="false" aria-label="Symbol Search tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
@@ -1111,25 +1110,25 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "quest" renders iden
 <div style="display:flex;align-items:center;gap:10px">
 <span style="font-size:22px" aria-hidden="true">🎨</span>
 <div>
-<h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Visual Supports Studio</h2>
-<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
+<h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Symbol Studio</h2>
+<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbol bank • boards • sequences • social stories</p>
 </div>
 </div>
-<button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Visual Supports Studio">×</button>
+<button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Symbol Studio">×</button>
 </div>
 <div style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:10px" role="tablist" aria-label="Studio sections">
-<button role="tab" aria-selected="false" aria-label="Symbols tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
-<span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbols</button>
+<button role="tab" aria-selected="false" aria-label="Symbol Bank tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbol Bank</button>
 <button role="tab" aria-selected="false" aria-label="Board Builder tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">📋</span>Board Builder</button>
-<button role="tab" aria-selected="false" aria-label="Visual Schedule tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
-<span style="font-size:14px;position:relative" aria-hidden="true">📅</span>Visual Schedule</button>
+<button role="tab" aria-selected="false" aria-label="Sequences tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📅</span>Sequences</button>
 <button role="tab" aria-selected="false" aria-label="Social Stories tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">📖</span>Social Stories</button>
 <button role="tab" aria-selected="false" aria-label="Quick Boards tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">⚡</span>Quick Boards</button>
-<button role="tab" aria-selected="false" aria-label="Activity Sets tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
-<span style="font-size:14px;position:relative" aria-hidden="true">📚</span>Activity Sets</button>
+<button role="tab" aria-selected="false" aria-label="Visual Packs tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📚</span>Visual Packs</button>
 <button role="tab" aria-selected="true" aria-label="Symbol Quest tab" tabindex="0" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:#fff;color:#7c3aed;font-weight:700;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:0 1px 4px rgba(0,0,0,0.15);transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">🎮</span>Symbol Quest</button>
 <button role="tab" aria-selected="false" aria-label="Symbol Search tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
@@ -1281,7 +1280,7 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "quest" renders iden
 <div style="flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:#6b7280;padding:40px">
 <div style="font-size:48px">🎮</div>
 <h3 style="font-weight:700;color:#374151">Symbol Quest</h3>
-<p style="font-size:13px;text-align:center;max-width:360px">Generate at least 3 symbols in the Symbols tab first, then come back to play games that teach you the symbols!</p>
+<p style="font-size:13px;text-align:center;max-width:360px">Generate at least 3 symbols in the Symbol Bank tab first, then come back to play games that teach you the symbols!</p>
 </div>
 </div>
 </div>
@@ -1300,25 +1299,25 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "quickboards" render
 <div style="display:flex;align-items:center;gap:10px">
 <span style="font-size:22px" aria-hidden="true">🎨</span>
 <div>
-<h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Visual Supports Studio</h2>
-<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
+<h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Symbol Studio</h2>
+<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbol bank • boards • sequences • social stories</p>
 </div>
 </div>
-<button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Visual Supports Studio">×</button>
+<button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Symbol Studio">×</button>
 </div>
 <div style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:10px" role="tablist" aria-label="Studio sections">
-<button role="tab" aria-selected="false" aria-label="Symbols tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
-<span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbols</button>
+<button role="tab" aria-selected="false" aria-label="Symbol Bank tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbol Bank</button>
 <button role="tab" aria-selected="false" aria-label="Board Builder tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">📋</span>Board Builder</button>
-<button role="tab" aria-selected="false" aria-label="Visual Schedule tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
-<span style="font-size:14px;position:relative" aria-hidden="true">📅</span>Visual Schedule</button>
+<button role="tab" aria-selected="false" aria-label="Sequences tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📅</span>Sequences</button>
 <button role="tab" aria-selected="false" aria-label="Social Stories tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">📖</span>Social Stories</button>
 <button role="tab" aria-selected="true" aria-label="Quick Boards tab" tabindex="0" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:#fff;color:#7c3aed;font-weight:700;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:0 1px 4px rgba(0,0,0,0.15);transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">⚡</span>Quick Boards</button>
-<button role="tab" aria-selected="false" aria-label="Activity Sets tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
-<span style="font-size:14px;position:relative" aria-hidden="true">📚</span>Activity Sets</button>
+<button role="tab" aria-selected="false" aria-label="Visual Packs tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📚</span>Visual Packs</button>
 <button role="tab" aria-selected="false" aria-label="Symbol Quest tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">🎮</span>Symbol Quest</button>
 <button role="tab" aria-selected="false" aria-label="Symbol Search tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
@@ -1608,25 +1607,25 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "schedule" renders i
 <div style="display:flex;align-items:center;gap:10px">
 <span style="font-size:22px" aria-hidden="true">🎨</span>
 <div>
-<h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Visual Supports Studio</h2>
-<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
+<h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Symbol Studio</h2>
+<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbol bank • boards • sequences • social stories</p>
 </div>
 </div>
-<button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Visual Supports Studio">×</button>
+<button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Symbol Studio">×</button>
 </div>
 <div style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:10px" role="tablist" aria-label="Studio sections">
-<button role="tab" aria-selected="false" aria-label="Symbols tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
-<span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbols</button>
+<button role="tab" aria-selected="false" aria-label="Symbol Bank tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbol Bank</button>
 <button role="tab" aria-selected="false" aria-label="Board Builder tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">📋</span>Board Builder</button>
-<button role="tab" aria-selected="true" aria-label="Visual Schedule tab" tabindex="0" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:#fff;color:#7c3aed;font-weight:700;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:0 1px 4px rgba(0,0,0,0.15);transition:all 0.15s">
-<span style="font-size:14px;position:relative" aria-hidden="true">📅</span>Visual Schedule</button>
+<button role="tab" aria-selected="true" aria-label="Sequences tab" tabindex="0" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:#fff;color:#7c3aed;font-weight:700;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:0 1px 4px rgba(0,0,0,0.15);transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📅</span>Sequences</button>
 <button role="tab" aria-selected="false" aria-label="Social Stories tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">📖</span>Social Stories</button>
 <button role="tab" aria-selected="false" aria-label="Quick Boards tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">⚡</span>Quick Boards</button>
-<button role="tab" aria-selected="false" aria-label="Activity Sets tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
-<span style="font-size:14px;position:relative" aria-hidden="true">📚</span>Activity Sets</button>
+<button role="tab" aria-selected="false" aria-label="Visual Packs tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📚</span>Visual Packs</button>
 <button role="tab" aria-selected="false" aria-label="Symbol Quest tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">🎮</span>Symbol Quest</button>
 <button role="tab" aria-selected="false" aria-label="Symbol Search tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
@@ -1776,45 +1775,52 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "schedule" renders i
 </div>
 <div style="flex:1;overflow:hidden;display:flex;flex-direction:column">
 <div style="display:flex;flex-direction:column;flex:1;overflow:hidden;padding:16px;gap:12px">
-<p id="ss-schedule-reorder-help" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">Use Earlier and Later to change activity order. Completion moves Now to the next unfinished step.</p>
+<p id="ss-schedule-reorder-help" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">Use Earlier and Later to change step order. Completion moves Now to the next unfinished step.</p>
+<div class="ss-no-print" style="flex-shrink:0;display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;padding:10px;background:#faf5ff;border:1px solid #ddd6fe;border-radius:10px">
+<div style="flex:1;min-width:220px">
+<label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px">Topic, process, or story</label>
+<input type="text" placeholder="e.g. getting ready for school, planting a seed, beginning-middle-end" aria-label="Sequence topic or task" style="width:100%;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#fff;color:inherit" value=""/>
+</div>
+<button disabled="" aria-label="Build visual sequence from topic" style="padding:8px 14px;background:#d1d5db;color:#6b7280;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:not-allowed;white-space:nowrap">✨ Build from Topic</button>
+</div>
 <div style="flex-shrink:0;display:flex;gap:6px;align-items:center;padding:6px 10px;background:#f0fdf4;border-radius:8px;border:1px solid #d1fae5;flex-wrap:wrap">
-<span style="font-size:10px;font-weight:600;color:#059669;white-space:nowrap">🌱 Could grow in a schedule:</span>
-<button aria-label="Add Take deep breaths to schedule input" title="Add to schedule activities" style="padding:2px 8px;background:#fff;border:1px solid #4ade80;border-radius:12px;font-size:10px;font-weight:600;color:#15803d;cursor:pointer">Take deep breaths<span style="color:#9ca3af;margin-left:2px">+</span>
+<span style="font-size:10px;font-weight:600;color:#059669;white-space:nowrap">🌱 Could grow in a sequence:</span>
+<button aria-label="Add Take deep breaths to sequence input" title="Add to sequence steps" style="padding:2px 8px;background:#fff;border:1px solid #4ade80;border-radius:12px;font-size:10px;font-weight:600;color:#15803d;cursor:pointer">Take deep breaths<span style="color:#9ca3af;margin-left:2px">+</span>
 </button>
-<button aria-label="Add Count to 10 to schedule input" title="Add to schedule activities" style="padding:2px 8px;background:#fff;border:1px solid #4ade80;border-radius:12px;font-size:10px;font-weight:600;color:#15803d;cursor:pointer">Count to 10<span style="color:#9ca3af;margin-left:2px">+</span>
+<button aria-label="Add Count to 10 to sequence input" title="Add to sequence steps" style="padding:2px 8px;background:#fff;border:1px solid #4ade80;border-radius:12px;font-size:10px;font-weight:600;color:#15803d;cursor:pointer">Count to 10<span style="color:#9ca3af;margin-left:2px">+</span>
 </button>
-<button aria-label="Add Take a walk to schedule input" title="Add to schedule activities" style="padding:2px 8px;background:#fff;border:1px solid #4ade80;border-radius:12px;font-size:10px;font-weight:600;color:#15803d;cursor:pointer">Take a walk<span style="color:#9ca3af;margin-left:2px">+</span>
+<button aria-label="Add Take a walk to sequence input" title="Add to sequence steps" style="padding:2px 8px;background:#fff;border:1px solid #4ade80;border-radius:12px;font-size:10px;font-weight:600;color:#15803d;cursor:pointer">Take a walk<span style="color:#9ca3af;margin-left:2px">+</span>
 </button>
-<button aria-label="Add Squeeze a stress ball to schedule input" title="Add to schedule activities" style="padding:2px 8px;background:#fff;border:1px solid #4ade80;border-radius:12px;font-size:10px;font-weight:600;color:#15803d;cursor:pointer">Squeeze a stress ball<span style="color:#9ca3af;margin-left:2px">+</span>
+<button aria-label="Add Squeeze a stress ball to sequence input" title="Add to sequence steps" style="padding:2px 8px;background:#fff;border:1px solid #4ade80;border-radius:12px;font-size:10px;font-weight:600;color:#15803d;cursor:pointer">Squeeze a stress ball<span style="color:#9ca3af;margin-left:2px">+</span>
 </button>
-<button aria-label="Add Ask for help to schedule input" title="Add to schedule activities" style="padding:2px 8px;background:#fff;border:1px solid #4ade80;border-radius:12px;font-size:10px;font-weight:600;color:#15803d;cursor:pointer">Ask for help<span style="color:#9ca3af;margin-left:2px">+</span>
+<button aria-label="Add Ask for help to sequence input" title="Add to sequence steps" style="padding:2px 8px;background:#fff;border:1px solid #4ade80;border-radius:12px;font-size:10px;font-weight:600;color:#15803d;cursor:pointer">Ask for help<span style="color:#9ca3af;margin-left:2px">+</span>
 </button>
 </div>
 <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;flex-shrink:0">
 <div style="flex:1">
-<label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px">Activities (one per line)</label>
+<label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px">Steps (one per line)</label>
 <textarea placeholder="brush teeth
 get dressed
 eat breakfast
 board the bus
-arrive at school" aria-label="Schedule activities, one per line" style="width:100%;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:12px;box-sizing:border-box;font-family:inherit;resize:vertical;background:#fff;color:inherit;height:70px">
+arrive at school" aria-label="Sequence steps, one per line" style="width:100%;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:12px;box-sizing:border-box;font-family:inherit;resize:vertical;background:#fff;color:inherit;height:70px">
 </textarea>
 </div>
 <div style="display:flex;flex-direction:column;gap:6px">
 <div>
 <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px">Layout</label>
-<select aria-label="Schedule layout" style="width:auto;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#fff;color:inherit">
+<select aria-label="Sequence layout" style="width:auto;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#fff;color:inherit">
 <option value="horizontal" selected="">Horizontal Strip</option>
 <option value="vertical">Vertical List</option>
 </select>
 </div>
-<button disabled="" aria-label="Generate visual schedule" style="padding:8px 14px;background:#d1d5db;color:#6b7280;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:not-allowed;white-space:nowrap">✨ Generate Schedule</button>
+<button disabled="" aria-label="Generate visual sequence" style="padding:8px 14px;background:#d1d5db;color:#6b7280;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:not-allowed;white-space:nowrap">✨ Generate Sequence</button>
 </div>
 </div>
 <div style="flex:1;display:flex;align-items:center;justify-content:center;color:#6b7280;flex-direction:column;gap:10px">
 <div style="font-size:48px">📅</div>
-<p style="font-weight:600">Build a personalized visual schedule</p>
-<p style="font-size:12px;max-width:360px;text-align:center">Enter activities, generate AI symbols, then tap to mark each as complete. Print as a laminated strip for the classroom or home.</p>
+<p style="font-weight:600">Build a personalized visual sequence</p>
+<p style="font-size:12px;max-width:360px;text-align:center">Enter steps yourself or build an ordered sequence from a topic. Generate symbols, mark steps done, and print it for classroom or home use.</p>
 </div>
 </div>
 </div>
@@ -1834,25 +1840,25 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "search" renders ide
 <div style="display:flex;align-items:center;gap:10px">
 <span style="font-size:22px" aria-hidden="true">🎨</span>
 <div>
-<h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Visual Supports Studio</h2>
-<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
+<h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Symbol Studio</h2>
+<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbol bank • boards • sequences • social stories</p>
 </div>
 </div>
-<button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Visual Supports Studio">×</button>
+<button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Symbol Studio">×</button>
 </div>
 <div style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:10px" role="tablist" aria-label="Studio sections">
-<button role="tab" aria-selected="false" aria-label="Symbols tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
-<span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbols</button>
+<button role="tab" aria-selected="false" aria-label="Symbol Bank tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbol Bank</button>
 <button role="tab" aria-selected="false" aria-label="Board Builder tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">📋</span>Board Builder</button>
-<button role="tab" aria-selected="false" aria-label="Visual Schedule tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
-<span style="font-size:14px;position:relative" aria-hidden="true">📅</span>Visual Schedule</button>
+<button role="tab" aria-selected="false" aria-label="Sequences tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📅</span>Sequences</button>
 <button role="tab" aria-selected="false" aria-label="Social Stories tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">📖</span>Social Stories</button>
 <button role="tab" aria-selected="false" aria-label="Quick Boards tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">⚡</span>Quick Boards</button>
-<button role="tab" aria-selected="false" aria-label="Activity Sets tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
-<span style="font-size:14px;position:relative" aria-hidden="true">📚</span>Activity Sets</button>
+<button role="tab" aria-selected="false" aria-label="Visual Packs tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📚</span>Visual Packs</button>
 <button role="tab" aria-selected="false" aria-label="Symbol Quest tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">🎮</span>Symbol Quest</button>
 <button role="tab" aria-selected="true" aria-label="Symbol Search tab" tabindex="0" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:#fff;color:#7c3aed;font-weight:700;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:0 1px 4px rgba(0,0,0,0.15);transition:all 0.15s">
@@ -2004,7 +2010,7 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "search" renders ide
 <div style="flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:#6b7280;padding:40px">
 <div style="font-size:48px">🔍</div>
 <h3 style="font-weight:700;color:#374151">Symbol Search</h3>
-<p style="font-size:13px;text-align:center;max-width:360px">Generate at least 3 symbols in the Symbols tab first, then come back to practice finding symbols by listening!</p>
+<p style="font-size:13px;text-align:center;max-width:360px">Generate at least 3 symbols in the Symbol Bank tab first, then come back to practice finding symbols by listening!</p>
 </div>
 </div>
 </div>
@@ -2023,25 +2029,25 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "stories" renders id
 <div style="display:flex;align-items:center;gap:10px">
 <span style="font-size:22px" aria-hidden="true">🎨</span>
 <div>
-<h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Visual Supports Studio</h2>
-<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
+<h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Symbol Studio</h2>
+<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbol bank • boards • sequences • social stories</p>
 </div>
 </div>
-<button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Visual Supports Studio">×</button>
+<button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Symbol Studio">×</button>
 </div>
 <div style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:10px" role="tablist" aria-label="Studio sections">
-<button role="tab" aria-selected="false" aria-label="Symbols tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
-<span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbols</button>
+<button role="tab" aria-selected="false" aria-label="Symbol Bank tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbol Bank</button>
 <button role="tab" aria-selected="false" aria-label="Board Builder tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">📋</span>Board Builder</button>
-<button role="tab" aria-selected="false" aria-label="Visual Schedule tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
-<span style="font-size:14px;position:relative" aria-hidden="true">📅</span>Visual Schedule</button>
+<button role="tab" aria-selected="false" aria-label="Sequences tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📅</span>Sequences</button>
 <button role="tab" aria-selected="true" aria-label="Social Stories tab" tabindex="0" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:#fff;color:#7c3aed;font-weight:700;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:0 1px 4px rgba(0,0,0,0.15);transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">📖</span>Social Stories</button>
 <button role="tab" aria-selected="false" aria-label="Quick Boards tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">⚡</span>Quick Boards</button>
-<button role="tab" aria-selected="false" aria-label="Activity Sets tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
-<span style="font-size:14px;position:relative" aria-hidden="true">📚</span>Activity Sets</button>
+<button role="tab" aria-selected="false" aria-label="Visual Packs tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📚</span>Visual Packs</button>
 <button role="tab" aria-selected="false" aria-label="Symbol Quest tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">🎮</span>Symbol Quest</button>
 <button role="tab" aria-selected="false" aria-label="Symbol Search tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
@@ -2270,25 +2276,25 @@ exports[`Symbol Studio — render under each host theme (snapshot) > Canvas / FE
 <div style="display:flex;align-items:center;gap:10px">
 <span style="font-size:22px" aria-hidden="true">🎨</span>
 <div>
-<h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Visual Supports Studio</h2>
-<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
+<h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Symbol Studio</h2>
+<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbol bank • boards • sequences • social stories</p>
 </div>
 </div>
-<button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Visual Supports Studio">×</button>
+<button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Symbol Studio">×</button>
 </div>
 <div style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:10px" role="tablist" aria-label="Studio sections">
-<button role="tab" aria-selected="true" aria-label="Symbols tab" tabindex="0" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:#fff;color:#7c3aed;font-weight:700;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:0 1px 4px rgba(0,0,0,0.15);transition:all 0.15s">
-<span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbols</button>
+<button role="tab" aria-selected="true" aria-label="Symbol Bank tab" tabindex="0" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:#fff;color:#7c3aed;font-weight:700;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:0 1px 4px rgba(0,0,0,0.15);transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbol Bank</button>
 <button role="tab" aria-selected="false" aria-label="Board Builder tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">📋</span>Board Builder</button>
-<button role="tab" aria-selected="false" aria-label="Visual Schedule tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
-<span style="font-size:14px;position:relative" aria-hidden="true">📅</span>Visual Schedule</button>
+<button role="tab" aria-selected="false" aria-label="Sequences tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📅</span>Sequences</button>
 <button role="tab" aria-selected="false" aria-label="Social Stories tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">📖</span>Social Stories</button>
 <button role="tab" aria-selected="false" aria-label="Quick Boards tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">⚡</span>Quick Boards</button>
-<button role="tab" aria-selected="false" aria-label="Activity Sets tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
-<span style="font-size:14px;position:relative" aria-hidden="true">📚</span>Activity Sets</button>
+<button role="tab" aria-selected="false" aria-label="Visual Packs tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📚</span>Visual Packs</button>
 <button role="tab" aria-selected="false" aria-label="Symbol Quest tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">🎮</span>Symbol Quest</button>
 <button role="tab" aria-selected="false" aria-label="Symbol Search tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
@@ -2490,8 +2496,8 @@ exports[`Symbol Studio — render under each host theme (snapshot) > Canvas / FE
 <div style="flex:1;overflow-y:auto">
 <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px">
 <div style="display:flex;align-items:center;gap:6px">
-<span style="font-weight:600;font-size:12px;color:#374151">Gallery (0)</span>
-<input type="text" placeholder="🔍 Search symbols…" aria-label="Search symbols in gallery" style="border:1px solid #e5e7eb;border-radius:6px;padding:3px 10px;font-size:11px;flex:1" value=""/>
+<span style="font-weight:600;font-size:12px;color:#374151">Symbol Bank (0)</span>
+<input type="text" placeholder="🔍 Search symbols…" aria-label="Search symbols in the Symbol Bank" style="border:1px solid #e5e7eb;border-radius:6px;padding:3px 10px;font-size:11px;flex:1" value=""/>
 <button aria-label="Show favorite symbols only" style="padding:3px 8px;border:1px solid #e5e7eb;border-radius:12px;background:#fff;color:#6b7280;font-size:11px;cursor:pointer;font-weight:400;flex-shrink:0">⭐</button>
 </div>
 <div style="display:flex;gap:4px;flex-wrap:wrap">
@@ -2500,6 +2506,13 @@ exports[`Symbol Studio — render under each host theme (snapshot) > Canvas / FE
 <button aria-label="Filter by Verbs" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Verbs</button>
 <button aria-label="Filter by Adjectives" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Adjectives</button>
 <button aria-label="Filter by Other" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Other</button>
+</div>
+<div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
+<span style="font-size:9px;color:#6b7280;font-weight:700">Review:</span>
+<button aria-label="Filter Symbol Bank review status by All" style="padding:2px 8px;border:1px solid #7c3aed;border-radius:10px;background:#ede9fe;color:#7c3aed;font-size:10px;cursor:pointer;font-weight:700">All</button>
+<button aria-label="Filter Symbol Bank review status by Unreviewed" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Unreviewed</button>
+<button aria-label="Filter Symbol Bank review status by Approved" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Approved</button>
+<button aria-label="Filter Symbol Bank review status by Needs changes" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Needs changes</button>
 </div>
 </div>
 <div style="text-align:center;color:#6b7280;padding:30px 0;font-size:13px">Generate your first symbol using the panel on the left.</div>
@@ -2523,25 +2536,25 @@ exports[`Symbol Studio — render under each host theme (snapshot) > dark theme 
 <div style="display:flex;align-items:center;gap:10px">
 <span style="font-size:22px" aria-hidden="true">🎨</span>
 <div>
-<h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Visual Supports Studio</h2>
-<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
+<h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Symbol Studio</h2>
+<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbol bank • boards • sequences • social stories</p>
 </div>
 </div>
-<button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Visual Supports Studio">×</button>
+<button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Symbol Studio">×</button>
 </div>
 <div style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:10px" role="tablist" aria-label="Studio sections">
-<button role="tab" aria-selected="true" aria-label="Symbols tab" tabindex="0" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:#fff;color:#7c3aed;font-weight:700;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:0 1px 4px rgba(0,0,0,0.15);transition:all 0.15s">
-<span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbols</button>
+<button role="tab" aria-selected="true" aria-label="Symbol Bank tab" tabindex="0" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:#fff;color:#7c3aed;font-weight:700;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:0 1px 4px rgba(0,0,0,0.15);transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbol Bank</button>
 <button role="tab" aria-selected="false" aria-label="Board Builder tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">📋</span>Board Builder</button>
-<button role="tab" aria-selected="false" aria-label="Visual Schedule tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
-<span style="font-size:14px;position:relative" aria-hidden="true">📅</span>Visual Schedule</button>
+<button role="tab" aria-selected="false" aria-label="Sequences tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📅</span>Sequences</button>
 <button role="tab" aria-selected="false" aria-label="Social Stories tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">📖</span>Social Stories</button>
 <button role="tab" aria-selected="false" aria-label="Quick Boards tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">⚡</span>Quick Boards</button>
-<button role="tab" aria-selected="false" aria-label="Activity Sets tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
-<span style="font-size:14px;position:relative" aria-hidden="true">📚</span>Activity Sets</button>
+<button role="tab" aria-selected="false" aria-label="Visual Packs tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📚</span>Visual Packs</button>
 <button role="tab" aria-selected="false" aria-label="Symbol Quest tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">🎮</span>Symbol Quest</button>
 <button role="tab" aria-selected="false" aria-label="Symbol Search tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
@@ -2739,8 +2752,8 @@ exports[`Symbol Studio — render under each host theme (snapshot) > dark theme 
 <div style="flex:1;overflow-y:auto">
 <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px">
 <div style="display:flex;align-items:center;gap:6px">
-<span style="font-weight:600;font-size:12px;color:#374151">Gallery (0)</span>
-<input type="text" placeholder="🔍 Search symbols…" aria-label="Search symbols in gallery" style="border:1px solid #e5e7eb;border-radius:6px;padding:3px 10px;font-size:11px;flex:1" value=""/>
+<span style="font-weight:600;font-size:12px;color:#374151">Symbol Bank (0)</span>
+<input type="text" placeholder="🔍 Search symbols…" aria-label="Search symbols in the Symbol Bank" style="border:1px solid #e5e7eb;border-radius:6px;padding:3px 10px;font-size:11px;flex:1" value=""/>
 <button aria-label="Show favorite symbols only" style="padding:3px 8px;border:1px solid #e5e7eb;border-radius:12px;background:#fff;color:#6b7280;font-size:11px;cursor:pointer;font-weight:400;flex-shrink:0">⭐</button>
 </div>
 <div style="display:flex;gap:4px;flex-wrap:wrap">
@@ -2749,6 +2762,13 @@ exports[`Symbol Studio — render under each host theme (snapshot) > dark theme 
 <button aria-label="Filter by Verbs" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Verbs</button>
 <button aria-label="Filter by Adjectives" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Adjectives</button>
 <button aria-label="Filter by Other" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Other</button>
+</div>
+<div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
+<span style="font-size:9px;color:#6b7280;font-weight:700">Review:</span>
+<button aria-label="Filter Symbol Bank review status by All" style="padding:2px 8px;border:1px solid #7c3aed;border-radius:10px;background:#ede9fe;color:#7c3aed;font-size:10px;cursor:pointer;font-weight:700">All</button>
+<button aria-label="Filter Symbol Bank review status by Unreviewed" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Unreviewed</button>
+<button aria-label="Filter Symbol Bank review status by Approved" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Approved</button>
+<button aria-label="Filter Symbol Bank review status by Needs changes" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Needs changes</button>
 </div>
 </div>
 <div style="text-align:center;color:#6b7280;padding:30px 0;font-size:13px">Generate your first symbol using the panel on the left.</div>
@@ -2772,25 +2792,25 @@ exports[`Symbol Studio — render under each host theme (snapshot) > default (li
 <div style="display:flex;align-items:center;gap:10px">
 <span style="font-size:22px" aria-hidden="true">🎨</span>
 <div>
-<h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Visual Supports Studio</h2>
-<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
+<h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Symbol Studio</h2>
+<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbol bank • boards • sequences • social stories</p>
 </div>
 </div>
-<button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Visual Supports Studio">×</button>
+<button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Symbol Studio">×</button>
 </div>
 <div style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:10px" role="tablist" aria-label="Studio sections">
-<button role="tab" aria-selected="true" aria-label="Symbols tab" tabindex="0" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:#fff;color:#7c3aed;font-weight:700;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:0 1px 4px rgba(0,0,0,0.15);transition:all 0.15s">
-<span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbols</button>
+<button role="tab" aria-selected="true" aria-label="Symbol Bank tab" tabindex="0" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:#fff;color:#7c3aed;font-weight:700;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:0 1px 4px rgba(0,0,0,0.15);transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbol Bank</button>
 <button role="tab" aria-selected="false" aria-label="Board Builder tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">📋</span>Board Builder</button>
-<button role="tab" aria-selected="false" aria-label="Visual Schedule tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
-<span style="font-size:14px;position:relative" aria-hidden="true">📅</span>Visual Schedule</button>
+<button role="tab" aria-selected="false" aria-label="Sequences tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📅</span>Sequences</button>
 <button role="tab" aria-selected="false" aria-label="Social Stories tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">📖</span>Social Stories</button>
 <button role="tab" aria-selected="false" aria-label="Quick Boards tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">⚡</span>Quick Boards</button>
-<button role="tab" aria-selected="false" aria-label="Activity Sets tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
-<span style="font-size:14px;position:relative" aria-hidden="true">📚</span>Activity Sets</button>
+<button role="tab" aria-selected="false" aria-label="Visual Packs tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📚</span>Visual Packs</button>
 <button role="tab" aria-selected="false" aria-label="Symbol Quest tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">🎮</span>Symbol Quest</button>
 <button role="tab" aria-selected="false" aria-label="Symbol Search tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
@@ -2988,8 +3008,8 @@ exports[`Symbol Studio — render under each host theme (snapshot) > default (li
 <div style="flex:1;overflow-y:auto">
 <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px">
 <div style="display:flex;align-items:center;gap:6px">
-<span style="font-weight:600;font-size:12px;color:#374151">Gallery (0)</span>
-<input type="text" placeholder="🔍 Search symbols…" aria-label="Search symbols in gallery" style="border:1px solid #e5e7eb;border-radius:6px;padding:3px 10px;font-size:11px;flex:1" value=""/>
+<span style="font-weight:600;font-size:12px;color:#374151">Symbol Bank (0)</span>
+<input type="text" placeholder="🔍 Search symbols…" aria-label="Search symbols in the Symbol Bank" style="border:1px solid #e5e7eb;border-radius:6px;padding:3px 10px;font-size:11px;flex:1" value=""/>
 <button aria-label="Show favorite symbols only" style="padding:3px 8px;border:1px solid #e5e7eb;border-radius:12px;background:#fff;color:#6b7280;font-size:11px;cursor:pointer;font-weight:400;flex-shrink:0">⭐</button>
 </div>
 <div style="display:flex;gap:4px;flex-wrap:wrap">
@@ -2998,6 +3018,13 @@ exports[`Symbol Studio — render under each host theme (snapshot) > default (li
 <button aria-label="Filter by Verbs" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Verbs</button>
 <button aria-label="Filter by Adjectives" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Adjectives</button>
 <button aria-label="Filter by Other" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Other</button>
+</div>
+<div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
+<span style="font-size:9px;color:#6b7280;font-weight:700">Review:</span>
+<button aria-label="Filter Symbol Bank review status by All" style="padding:2px 8px;border:1px solid #7c3aed;border-radius:10px;background:#ede9fe;color:#7c3aed;font-size:10px;cursor:pointer;font-weight:700">All</button>
+<button aria-label="Filter Symbol Bank review status by Unreviewed" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Unreviewed</button>
+<button aria-label="Filter Symbol Bank review status by Approved" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Approved</button>
+<button aria-label="Filter Symbol Bank review status by Needs changes" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Needs changes</button>
 </div>
 </div>
 <div style="text-align:center;color:#6b7280;padding:30px 0;font-size:13px">Generate your first symbol using the panel on the left.</div>
@@ -3021,25 +3048,25 @@ exports[`Symbol Studio — render under each host theme (snapshot) > high-contra
 <div style="display:flex;align-items:center;gap:10px">
 <span style="font-size:22px" aria-hidden="true">🎨</span>
 <div>
-<h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Visual Supports Studio</h2>
-<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
+<h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Symbol Studio</h2>
+<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbol bank • boards • sequences • social stories</p>
 </div>
 </div>
-<button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Visual Supports Studio">×</button>
+<button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Symbol Studio">×</button>
 </div>
 <div style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:10px" role="tablist" aria-label="Studio sections">
-<button role="tab" aria-selected="true" aria-label="Symbols tab" tabindex="0" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:#fff;color:#7c3aed;font-weight:700;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:0 1px 4px rgba(0,0,0,0.15);transition:all 0.15s">
-<span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbols</button>
+<button role="tab" aria-selected="true" aria-label="Symbol Bank tab" tabindex="0" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:#fff;color:#7c3aed;font-weight:700;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:0 1px 4px rgba(0,0,0,0.15);transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbol Bank</button>
 <button role="tab" aria-selected="false" aria-label="Board Builder tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">📋</span>Board Builder</button>
-<button role="tab" aria-selected="false" aria-label="Visual Schedule tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
-<span style="font-size:14px;position:relative" aria-hidden="true">📅</span>Visual Schedule</button>
+<button role="tab" aria-selected="false" aria-label="Sequences tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📅</span>Sequences</button>
 <button role="tab" aria-selected="false" aria-label="Social Stories tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">📖</span>Social Stories</button>
 <button role="tab" aria-selected="false" aria-label="Quick Boards tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">⚡</span>Quick Boards</button>
-<button role="tab" aria-selected="false" aria-label="Activity Sets tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
-<span style="font-size:14px;position:relative" aria-hidden="true">📚</span>Activity Sets</button>
+<button role="tab" aria-selected="false" aria-label="Visual Packs tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📚</span>Visual Packs</button>
 <button role="tab" aria-selected="false" aria-label="Symbol Quest tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">🎮</span>Symbol Quest</button>
 <button role="tab" aria-selected="false" aria-label="Symbol Search tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
@@ -3237,8 +3264,8 @@ exports[`Symbol Studio — render under each host theme (snapshot) > high-contra
 <div style="flex:1;overflow-y:auto">
 <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px">
 <div style="display:flex;align-items:center;gap:6px">
-<span style="font-weight:600;font-size:12px;color:#374151">Gallery (0)</span>
-<input type="text" placeholder="🔍 Search symbols…" aria-label="Search symbols in gallery" style="border:1px solid #e5e7eb;border-radius:6px;padding:3px 10px;font-size:11px;flex:1" value=""/>
+<span style="font-weight:600;font-size:12px;color:#374151">Symbol Bank (0)</span>
+<input type="text" placeholder="🔍 Search symbols…" aria-label="Search symbols in the Symbol Bank" style="border:1px solid #e5e7eb;border-radius:6px;padding:3px 10px;font-size:11px;flex:1" value=""/>
 <button aria-label="Show favorite symbols only" style="padding:3px 8px;border:1px solid #e5e7eb;border-radius:12px;background:#fff;color:#6b7280;font-size:11px;cursor:pointer;font-weight:400;flex-shrink:0">⭐</button>
 </div>
 <div style="display:flex;gap:4px;flex-wrap:wrap">
@@ -3247,6 +3274,13 @@ exports[`Symbol Studio — render under each host theme (snapshot) > high-contra
 <button aria-label="Filter by Verbs" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Verbs</button>
 <button aria-label="Filter by Adjectives" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Adjectives</button>
 <button aria-label="Filter by Other" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Other</button>
+</div>
+<div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
+<span style="font-size:9px;color:#6b7280;font-weight:700">Review:</span>
+<button aria-label="Filter Symbol Bank review status by All" style="padding:2px 8px;border:1px solid #7c3aed;border-radius:10px;background:#ede9fe;color:#7c3aed;font-size:10px;cursor:pointer;font-weight:700">All</button>
+<button aria-label="Filter Symbol Bank review status by Unreviewed" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Unreviewed</button>
+<button aria-label="Filter Symbol Bank review status by Approved" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Approved</button>
+<button aria-label="Filter Symbol Bank review status by Needs changes" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Needs changes</button>
 </div>
 </div>
 <div style="text-align:center;color:#6b7280;padding:30px 0;font-size:13px">Generate your first symbol using the panel on the left.</div>

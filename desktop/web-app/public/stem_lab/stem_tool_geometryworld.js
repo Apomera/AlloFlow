@@ -13,7 +13,7 @@
  */
 (function () {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -27,7 +27,8 @@
     var uiStyle = document.createElement('style');
     uiStyle.id = 'allo-geometryworld-ui-css';
     uiStyle.textContent = [
-      '.gw-root{--gw-glass:rgba(15,23,42,0.78);--gw-line:rgba(148,163,184,0.18);}',
+      '.gw-root{--gw-glass:rgba(15,23,42,0.78);--gw-line:rgba(148,163,184,0.18);--allo-stem-canvas:#0f172a;--allo-stem-panel:#1e293b;--allo-stem-deeper:#020617;--allo-stem-text:#f8fafc;--allo-stem-text-soft:#cbd5e1;--allo-stem-border:#475569;--allo-stem-button-bg:#1e293b;--allo-stem-button-text:#f8fafc;--allo-stem-button-border:#475569;color:#f8fafc;color-scheme:dark;}',
+      '.theme-contrast .gw-root,[data-stem-theme="contrast"] .gw-root{--allo-stem-canvas:#000;--allo-stem-panel:#000;--allo-stem-deeper:#000;--allo-stem-text:#ffff00;--allo-stem-text-soft:#ffff00;--allo-stem-border:#ffff00;--allo-stem-button-bg:#000;--allo-stem-button-text:#00ff00;--allo-stem-button-border:#00ff00;color:#ffff00;color-scheme:dark;}',
       '.gw-toolbar{position:relative;z-index:40;box-shadow:0 10px 32px rgba(2,6,23,0.2);}',
       '.gw-view-presets{flex:0 1 auto;max-width:100%;}.gw-view-preset{touch-action:manipulation;}@media(max-width:420px){.gw-view-presets-label{display:none}.gw-view-preset{min-width:32px!important;padding:3px!important}}',
       '.gw-brand-mark{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,rgba(124,58,237,0.36),rgba(34,211,238,0.2));border:1px solid rgba(167,139,250,0.35);box-shadow:inset 0 1px 0 rgba(255,255,255,0.12);}',
@@ -54,7 +55,7 @@
       '.gw-measure-heading{position:sticky;top:-12px;z-index:2;margin:-12px -12px 8px;padding:10px 12px;background:linear-gradient(180deg,rgba(8,47,73,0.99),rgba(8,47,73,0.94));border-bottom:1px solid rgba(103,232,249,0.2);}',
       '.gw-measure-close{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border:1px solid rgba(148,163,184,0.26);border-radius:8px;background:rgba(15,23,42,0.6);color:#cbd5e1;font-size:18px;cursor:pointer;}',
       '@keyframes gw-float-in{from{opacity:0;transform:translate(-50%,8px) scale(0.98);}to{opacity:1;transform:translate(-50%,0) scale(1);}}',
-      '.gw-achievement-toast{top:calc(100% + 10px)!important;z-index:60!important;min-width:min(320px,calc(100vw - 24px));animation:gw-float-in 220ms ease-out!important;}',
+      '.gw-achievement-toast{top:64px!important;z-index:60!important;min-width:min(320px,calc(100vw - 24px));animation:gw-float-in 220ms ease-out!important;}',
       '.gw-return-dock{width:min(440px,calc(100vw - 24px));filter:drop-shadow(0 16px 28px rgba(2,6,23,0.42));}',
       '.gw-return-status{max-width:100%!important;border-color:rgba(167,139,250,0.34)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,0.06);}',
       '.gw-return-button{min-height:44px;border:1px solid rgba(196,181,253,0.34)!important;box-shadow:0 10px 28px rgba(91,33,182,0.42),inset 0 1px 0 rgba(255,255,255,0.18)!important;}',
@@ -63,10 +64,10 @@
       '.gw-target-hint{padding:3px 7px;border:1px solid rgba(251,191,36,0.34);border-radius:999px;background:rgba(15,23,42,0.82);backdrop-filter:blur(6px);box-shadow:0 5px 14px rgba(2,6,23,0.35);}',
       '.gw-viewport{margin:8px 10px 10px;border:1px solid rgba(148,163,184,0.2);border-radius:16px;box-shadow:0 18px 54px rgba(2,6,23,0.38),inset 0 1px 0 rgba(255,255,255,0.06);isolation:isolate;}',
       '.gw-viewport-control{position:absolute!important;top:10px!important;z-index:100!important;display:inline-flex!important;min-width:36px;min-height:36px;align-items:center!important;justify-content:center!important;gap:6px!important;border:1px solid rgba(196,181,253,.38)!important;border-radius:10px!important;background:linear-gradient(155deg,rgba(30,27,75,.9),rgba(15,23,42,.9))!important;color:#e9d5ff!important;box-shadow:0 10px 28px rgba(2,6,23,.45),inset 0 1px 0 rgba(255,255,255,.08)!important;backdrop-filter:blur(10px) saturate(120%)!important}.gw-viewport-control--fullscreen{right:10px!important}.gw-viewport-control--touch{right:48px!important}.gw-viewport-control--vr{left:10px!important;border-color:rgba(129,140,248,.48)!important;background:linear-gradient(135deg,rgba(79,70,229,.94),rgba(91,33,182,.92))!important;color:#fff!important}',
-      '.gw-touch-controls button{min-width:56px!important;min-height:56px!important;touch-action:manipulation!important}.gw-touch-toggle-label{font-size:10px;font-weight:850;letter-spacing:.02em}.gw-touch-look-zone{opacity:.62}.gw-touch-look-reticle{transition:transform 80ms ease-out;will-change:transform}.gw-touch-look-label{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:rgba(221,214,254,.62);font-size:9px;font-weight:850;letter-spacing:.12em;pointer-events:none}.gw-touch-look-panel{box-sizing:border-box;padding:7px 9px;border:1px solid rgba(196,181,253,.24);border-radius:10px;background:rgba(15,23,42,.74);box-shadow:0 8px 20px rgba(2,6,23,.26);backdrop-filter:blur(8px)}.gw-touch-look-panel > .gw-touch-look-label{position:static;display:flex;align-items:center;justify-content:space-between;gap:8px;transform:none;color:#ddd6fe;font-size:10px;font-weight:800;letter-spacing:.02em}.gw-touch-look-panel output{color:#a7f3d0;font-size:10px;font-weight:850}.gw-touch-look-panel input{display:block;width:100%;margin:6px 0 0;accent-color:#a78bfa}.gw-touch-joystick-thumb{transition:transform 80ms ease-out;will-change:transform}.gw-touch-mode-hint{position:absolute;top:50px;left:50%;z-index:2;transform:translateX(-50%);padding:5px 10px;border:1px solid rgba(167,139,250,.3);border-radius:999px;background:rgba(15,23,42,.72);color:#ddd6fe;font-size:10px;font-weight:800;letter-spacing:.02em;white-space:nowrap;pointer-events:none;backdrop-filter:blur(7px)}.gw-touch-controls{padding-bottom:env(safe-area-inset-bottom);overscroll-behavior:contain}.gw-touch-controls > [role="img"]{bottom:calc(80px + env(safe-area-inset-bottom))!important}.gw-touch-controls > [role="group"]{bottom:calc(80px + env(safe-area-inset-bottom))!important}.gw-touch-mode-hint{top:calc(50px + env(safe-area-inset-top))}.gw-action-feedback{border-color:rgba(167,139,250,.38)!important;border-radius:12px!important;background:linear-gradient(155deg,rgba(30,27,75,.94),rgba(15,23,42,.94))!important;box-shadow:0 14px 38px rgba(2,6,23,.48),inset 0 1px 0 rgba(255,255,255,.06)!important}.gw-crosshair{filter:drop-shadow(0 2px 3px rgba(2,6,23,.7));transition:transform 150ms ease,filter 150ms ease!important}.gw-crosshair[data-target="npc"],.gw-crosshair[data-target="npc_question"]{transform:translate(-50%,-50%) scale(1.12)!important}.gw-crosshair[data-target="npc_question"]{filter:drop-shadow(0 0 6px rgba(251,191,36,.65))}.gw-crosshair[data-target="block"]{filter:drop-shadow(0 0 4px rgba(255,255,255,.35))}',
-      '@media(max-width:420px){.gw-touch-toggle-label{display:none}}@media(max-width:520px){.gw-viewport-control{top:8px!important;min-width:34px;min-height:34px}.gw-viewport-control--fullscreen{right:8px!important}.gw-viewport-control--touch{right:46px!important}.gw-viewport-control--vr{left:8px!important}.gw-action-feedback{bottom:142px!important;max-width:calc(100vw - 150px)!important}}@media(max-height:520px) and (orientation:landscape){.gw-touch-controls > [role="group"]{bottom:calc(14px + env(safe-area-inset-bottom))!important;max-width:calc(100% - 140px);flex-direction:row!important;flex-wrap:wrap;justify-content:flex-end;align-content:flex-end;gap:6px!important}.gw-touch-controls > [role="img"]{bottom:calc(14px + env(safe-area-inset-bottom))!important;left:14px}.gw-touch-controls .gw-touch-mode-hint{top:calc(42px + env(safe-area-inset-top))}.gw-touch-controls button{min-width:52px!important;min-height:52px!important}}@media(prefers-reduced-motion:reduce){.gw-touch-look-reticle{transition:none!important}.gw-touch-joystick-thumb{transition:none!important}.gw-crosshair{transition:none!important}.gw-crosshair[data-target]{transform:translate(-50%,-50%)!important}}',
+      '.gw-touch-controls button{min-width:56px!important;min-height:56px!important;touch-action:manipulation!important}.gw-touch-toggle-label{font-size:10px;font-weight:850;letter-spacing:.02em}.gw-touch-look-zone{opacity:.62}.gw-touch-look-reticle{transition:transform 80ms ease-out;will-change:transform}.gw-touch-look-label{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:rgba(221,214,254,.62);font-size:9px;font-weight:850;letter-spacing:.12em;pointer-events:none}.gw-touch-look-panel{bottom:auto!important;box-sizing:border-box;padding:7px 9px;border:1px solid rgba(196,181,253,.24);border-radius:10px;background:rgba(15,23,42,.74);box-shadow:0 8px 20px rgba(2,6,23,.26);backdrop-filter:blur(8px)}.gw-touch-look-panel > .gw-touch-look-label{position:static;display:flex;align-items:center;justify-content:space-between;gap:8px;transform:none;color:#ddd6fe;font-size:10px;font-weight:800;letter-spacing:.02em}.gw-touch-look-panel output{color:#a7f3d0;font-size:10px;font-weight:850}.gw-touch-look-panel input{display:block;width:100%;margin:6px 0 0;accent-color:#a78bfa}.gw-touch-joystick-thumb{transition:transform 80ms ease-out;will-change:transform}.gw-touch-mode-hint{position:absolute;top:50px;left:50%;z-index:2;transform:translateX(-50%);padding:5px 10px;border:1px solid rgba(167,139,250,.3);border-radius:999px;background:rgba(15,23,42,.72);color:#ddd6fe;font-size:10px;font-weight:800;letter-spacing:.02em;white-space:nowrap;pointer-events:none;backdrop-filter:blur(7px)}.gw-touch-controls{padding-bottom:env(safe-area-inset-bottom);overscroll-behavior:contain}.gw-touch-controls > [role="img"]{bottom:calc(80px + env(safe-area-inset-bottom))!important}.gw-touch-controls>.gw-touch-actions{bottom:calc(80px + env(safe-area-inset-bottom))!important}.gw-touch-mode-hint{top:calc(50px + env(safe-area-inset-top))}.gw-action-feedback{border-color:rgba(167,139,250,.38)!important;border-radius:12px!important;background:linear-gradient(155deg,rgba(30,27,75,.94),rgba(15,23,42,.94))!important;box-shadow:0 14px 38px rgba(2,6,23,.48),inset 0 1px 0 rgba(255,255,255,.06)!important}.gw-crosshair{filter:drop-shadow(0 2px 3px rgba(2,6,23,.7));transition:transform 150ms ease,filter 150ms ease!important}.gw-crosshair[data-target="npc"],.gw-crosshair[data-target="npc_question"]{transform:translate(-50%,-50%) scale(1.12)!important}.gw-crosshair[data-target="npc_question"]{filter:drop-shadow(0 0 6px rgba(251,191,36,.65))}.gw-crosshair[data-target="block"]{filter:drop-shadow(0 0 4px rgba(255,255,255,.35))}',
+      '@media(max-width:420px){.gw-touch-toggle-label{display:none}}@media(max-width:520px){.gw-viewport-control{top:8px!important;min-width:34px;min-height:34px}.gw-viewport-control--fullscreen{right:8px!important}.gw-viewport-control--touch{right:46px!important}.gw-viewport-control--vr{left:8px!important}.gw-action-feedback{bottom:142px!important;max-width:calc(100vw - 150px)!important}}@media(max-height:520px) and (orientation:landscape){.gw-touch-controls>.gw-touch-actions{bottom:calc(14px + env(safe-area-inset-bottom))!important;max-width:calc(100% - 140px);flex-direction:row!important;flex-wrap:wrap;justify-content:flex-end;align-content:flex-end;gap:6px!important}.gw-touch-controls > [role="img"]{bottom:calc(14px + env(safe-area-inset-bottom))!important;left:14px}.gw-touch-controls .gw-touch-mode-hint{top:calc(42px + env(safe-area-inset-top))}.gw-touch-controls button{min-width:52px!important;min-height:52px!important}}@media(prefers-reduced-motion:reduce){.gw-touch-look-reticle{transition:none!important}.gw-touch-joystick-thumb{transition:none!important}.gw-crosshair{transition:none!important}.gw-crosshair[data-target]{transform:translate(-50%,-50%)!important}}',
       '.gw-minimap{position:absolute!important;right:10px!important;bottom:150px!important;z-index:24!important;border:1px solid rgba(167,139,250,.32)!important;border-radius:12px!important;box-shadow:0 14px 34px rgba(2,6,23,.48),0 0 0 3px rgba(15,23,42,.36);opacity:.92;transition:opacity 150ms ease,transform 150ms ease}.gw-minimap:hover{opacity:1;transform:translateY(-2px)}',
-      '.gw-collab-roster{position:absolute;top:50px;left:10px;z-index:24;display:flex;max-width:210px;flex-direction:column;gap:5px;padding:9px;border:1px solid rgba(52,211,153,.23);border-radius:12px;background:linear-gradient(155deg,rgba(6,78,59,.76),rgba(15,23,42,.88));box-shadow:0 14px 34px rgba(2,6,23,.38);backdrop-filter:blur(10px)}.gw-collab-title{margin-bottom:2px;color:#6ee7b7;font-size:10px;font-weight:800;letter-spacing:.04em}.gw-collab-player{display:flex;min-height:24px;align-items:center;gap:6px;padding:3px 7px;border:1px solid rgba(148,163,184,.18);border-radius:8px;background:rgba(15,23,42,.62);color:#cbd5e1;font-size:11px}.gw-collab-player[data-self="true"]{border-color:rgba(52,211,153,.5);background:rgba(5,150,105,.22);color:#6ee7b7}.gw-collab-dot{width:8px;height:8px;flex:0 0 auto;border-radius:50%;box-shadow:0 0 0 2px rgba(255,255,255,.12)}',
+      '.gw-collab-roster{position:absolute;top:50px;left:10px;z-index:24;box-sizing:border-box;display:flex;max-height:calc(100% - 190px);overflow:auto;max-width:210px;flex-direction:column;gap:5px;padding:9px;border:1px solid rgba(52,211,153,.23);border-radius:12px;background:linear-gradient(155deg,rgba(6,78,59,.76),rgba(15,23,42,.88));box-shadow:0 14px 34px rgba(2,6,23,.38);backdrop-filter:blur(10px)}.gw-collab-title{margin-bottom:2px;color:#6ee7b7;font-size:10px;font-weight:800;letter-spacing:.04em}.gw-collab-player{display:flex;min-height:24px;align-items:center;gap:6px;padding:3px 7px;border:1px solid rgba(148,163,184,.18);border-radius:8px;background:rgba(15,23,42,.62);color:#cbd5e1;font-size:11px}.gw-collab-player[data-self="true"]{border-color:rgba(52,211,153,.5);background:rgba(5,150,105,.22);color:#6ee7b7}.gw-collab-dot{width:8px;height:8px;flex:0 0 auto;border-radius:50%;box-shadow:0 0 0 2px rgba(255,255,255,.12)}',
       '.gw-transform-panel{position:absolute;top:52px;right:10px;z-index:30;box-sizing:border-box;width:min(260px,calc(100% - 20px));padding:12px;border:1px solid rgba(167,139,250,.34);border-radius:14px;background:linear-gradient(155deg,rgba(30,27,75,.94),rgba(15,23,42,.95));box-shadow:0 18px 48px rgba(2,6,23,.5),inset 0 1px 0 rgba(255,255,255,.06);color:#e2e8f0;backdrop-filter:blur(12px)}.gw-transform-heading{margin:0 0 8px;color:#c4b5fd;font-size:12px;font-weight:800;letter-spacing:-.01em}.gw-transform-state{margin-bottom:10px;padding:7px;border-radius:8px;text-align:center;font-size:11px;font-weight:850}.gw-transform-control{margin-bottom:8px}.gw-transform-control label{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;color:#cbd5e1;font-size:10px;font-weight:700}.gw-transform-control input{width:100%;accent-color:#8b5cf6}.gw-transform-actions{display:flex;gap:6px;margin-top:10px}.gw-transform-action{min-height:32px;padding:4px 9px;border:1px solid rgba(148,163,184,.28);border-radius:8px;background:rgba(15,23,42,.64);color:#dbeafe;font-size:10px;font-weight:700;cursor:pointer}@media(max-width:520px){.gw-minimap{right:8px!important;bottom:146px!important;width:84px;height:84px}.gw-collab-roster{left:8px;max-width:118px;padding:7px}.gw-collab-player{overflow:hidden;padding:3px 5px;white-space:nowrap;text-overflow:ellipsis}.gw-collab-player span:last-child{display:none}.gw-transform-panel{right:8px;width:min(214px,calc(100% - 134px));max-height:calc(100% - 166px);overflow:auto}}@media(prefers-reduced-motion:reduce){.gw-minimap{transition:none!important}.gw-minimap:hover{transform:none}}',
       '.gw-collab-roster{top:auto;bottom:150px}',
       '.gw-objective-panel{position:absolute;top:50px;left:10px;z-index:24;box-sizing:border-box;width:min(240px,calc(100% - 20px));max-height:calc(100% - 210px);overflow:auto;padding:12px;border:1px solid rgba(167,139,250,.26);border-radius:14px;background:linear-gradient(155deg,rgba(30,27,75,.88),rgba(15,23,42,.93));box-shadow:0 18px 48px rgba(2,6,23,.46),inset 0 1px 0 rgba(255,255,255,.06);backdrop-filter:blur(12px);scrollbar-width:thin;scrollbar-color:#64748b rgba(15,23,42,.45)}.gw-objective-header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}.gw-objective-title{color:#c4b5fd;font-size:11px;font-weight:850;letter-spacing:.02em}.gw-objective-count{padding:2px 7px;border:1px solid rgba(167,139,250,.24);border-radius:999px;background:rgba(124,58,237,.15);color:#ddd6fe;font-size:9px;font-weight:800}.gw-objective-progress{height:5px;margin-bottom:10px;overflow:hidden;border:1px solid rgba(148,163,184,.12);border-radius:999px;background:rgba(2,6,23,.55)}.gw-objective-progress-fill{height:100%;border-radius:inherit;box-shadow:0 0 12px rgba(167,139,250,.42);transition:width .5s ease}.gw-objective-list{display:flex;flex-direction:column;gap:5px}.gw-objective-item{box-sizing:border-box;display:flex;width:100%;min-height:34px;align-items:flex-start;gap:7px;padding:7px 8px;border:1px solid rgba(148,163,184,.16);border-radius:9px;background:rgba(15,23,42,.5);color:#dbeafe;text-align:left;font:inherit;cursor:pointer}.gw-objective-item:hover:not(:disabled){border-color:rgba(167,139,250,.42);background:rgba(76,29,149,.28)}.gw-objective-item[data-complete="true"]{border-color:rgba(52,211,153,.2);background:rgba(5,150,105,.1);color:#86efac;cursor:default;opacity:.74}.gw-objective-marker{flex:0 0 auto;margin-top:1px;font-size:11px}.gw-objective-copy{font-size:10px;line-height:1.45}.gw-reset-button{width:100%;min-height:34px;margin-top:10px;border:1px solid rgba(148,163,184,.22);border-radius:9px;background:rgba(15,23,42,.58);color:#cbd5e1;font-size:10px;font-weight:700;cursor:pointer}@media(max-width:520px){.gw-objective-panel{left:8px;width:118px;max-height:calc(100% - 206px);padding:7px}.gw-objective-header{align-items:flex-start;flex-direction:column;gap:3px}.gw-objective-item{padding:6px}.gw-objective-copy{font-size:9px}.gw-collab-roster{bottom:146px}}@media(prefers-reduced-motion:reduce){.gw-objective-progress-fill{transition:none!important}}',
@@ -88,9 +89,20 @@
       '.gw-root button:hover:not(:disabled){filter:brightness(1.08);}',
       '.gw-root button:active:not(:disabled){transform:translateY(1px);}',
       '.gw-root button:focus-visible,.gw-root input:focus-visible,.gw-root select:focus-visible,.gw-root textarea:focus-visible,.gw-root a[href]:focus-visible,.gw-root [tabindex]:focus-visible,.gw-focusable:focus-visible{outline:3px solid #f8fafc!important;outline-offset:2px!important;box-shadow:0 0 0 5px rgba(124,58,237,0.65)!important;}',
-      '.gw-viewport:fullscreen{margin:0;border:0;border-radius:0;}',
+      '#geoworld-fs-workspace:fullscreen .gw-viewport,#geoworld-fs-workspace:-webkit-full-screen .gw-viewport{margin:0!important;border:0!important;border-radius:0!important;}',
       '@media(max-width:720px){.gw-toolbar{padding:8px 10px!important;gap:7px!important;}.gw-toolbar>select{max-width:150px;}.gw-lesson-title{order:3;flex-basis:100%;max-width:none;padding-left:42px;margin-top:-6px;}.gw-prediction-bar{flex-basis:100%;}.gw-measure-card{top:calc(100% + 6px);right:6px;width:calc(100vw - 12px);max-height:calc(100vh - 170px);}.gw-return-dock{bottom:12px!important;}.gw-tutorial-shell{bottom:112px!important;}.gw-action-bar{left:8px!important;right:8px!important;bottom:94px!important;}.gw-hotbar{max-width:calc(100vw - 12px)!important;flex-wrap:nowrap!important;overflow-x:auto;}.gw-viewport{margin:6px;border-radius:12px;}}',
       '@media(max-width:520px){.gw-intro-card{padding:20px 16px;max-height:calc(100vh - 24px);overflow:auto;border-radius:18px;}.gw-primary-cta{width:100%;padding-left:20px!important;padding-right:20px!important;}}',
+      '.gw-toolbar{box-sizing:border-box;display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;min-height:52px;max-height:64px;overflow:visible!important;padding:7px 10px!important;gap:8px!important}.gw-status-cluster{grid-row:auto!important;width:auto!important;overflow:visible!important;padding:0!important}.gw-compact-action{display:inline-flex;min-height:34px;align-items:center;justify-content:center;gap:5px;padding:5px 10px;border:1px solid rgba(167,139,250,.38);border-radius:9px;background:rgba(76,29,149,.34);color:#f5f3ff;font-size:10px;font-weight:800;cursor:pointer;white-space:nowrap}.gw-compact-action:hover{background:rgba(91,33,182,.52)}.gw-compact-action[aria-expanded="true"]{border-color:#c4b5fd;background:rgba(124,58,237,.58);color:#fff}.gw-toolbar-collapse{width:34px;padding:5px}.gw-toolbar-reveal,.gw-fullscreen-quickbar{position:absolute;top:8px;left:50%;z-index:115;transform:translateX(-50%)}.gw-toolbar-reveal{display:inline-flex;min-height:36px;align-items:center;gap:6px;padding:6px 11px;border:1px solid rgba(196,181,253,.52);border-radius:10px;background:rgba(15,23,42,.92);box-shadow:0 10px 28px rgba(2,6,23,.48);color:#f5f3ff;font-size:10px;font-weight:850;cursor:pointer;backdrop-filter:blur(10px)}.gw-fullscreen-quickbar{display:none;align-items:center;gap:6px}.gw-fullscreen-quickbar .gw-compact-action{min-height:36px;background:rgba(15,23,42,.9);box-shadow:0 8px 24px rgba(2,6,23,.42);backdrop-filter:blur(9px)}',
+      '.gw-prediction-panel{position:absolute!important;top:64px;left:50%;z-index:46;box-sizing:border-box;width:min(680px,calc(100% - 24px))!important;max-width:none!important;transform:translateX(-50%);border:1px solid rgba(196,181,253,.38)!important;background:linear-gradient(155deg,rgba(30,27,75,.98),rgba(15,23,42,.98))!important;box-shadow:0 22px 64px rgba(2,6,23,.62),inset 0 1px 0 rgba(255,255,255,.06)!important}.gw-prediction-heading{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:6px;border-bottom:1px solid rgba(167,139,250,.2)}.gw-prediction-title{color:#f5f3ff;font-size:11px;font-weight:850}.gw-prediction-close{display:inline-flex;width:30px;height:30px;align-items:center;justify-content:center;border:1px solid rgba(196,181,253,.3);border-radius:8px;background:rgba(15,23,42,.62);color:#f8fafc;font-size:17px;cursor:pointer}',
+      '.gw-measure-card{top:64px!important}.gw-settings-backdrop{position:absolute;inset:0;z-index:150;display:flex;box-sizing:border-box;align-items:center;justify-content:center;padding:12px;background:rgba(2,6,23,.74);backdrop-filter:blur(8px)}.gw-settings-dialog{display:flex;box-sizing:border-box;width:min(920px,100%);max-height:min(760px,calc(100% - 8px));flex-direction:column;overflow:hidden;border:1px solid rgba(167,139,250,.48);border-radius:18px;background:linear-gradient(155deg,#111827,#1e1b4b);box-shadow:0 28px 90px rgba(2,6,23,.78);color:#f8fafc}.gw-settings-header{display:flex;flex:0 0 auto;align-items:flex-start;justify-content:space-between;gap:16px;padding:16px 18px 13px;border-bottom:1px solid rgba(167,139,250,.22);background:rgba(15,23,42,.82)}.gw-settings-title{margin:0;color:#f8fafc;font-size:18px;font-weight:900}.gw-settings-description{margin:4px 0 0;color:#cbd5e1;font-size:11px;line-height:1.45}.gw-settings-controls{display:flex;align-content:flex-start;align-items:center;gap:8px;overflow:auto;padding:14px 18px 20px;flex-wrap:wrap;scrollbar-color:#64748b #0f172a}.gw-settings-controls>button,.gw-settings-controls>select{min-height:40px!important;padding:7px 11px!important}.gw-settings-controls input,.gw-settings-controls select,.gw-settings-controls textarea{color:#f8fafc!important}.gw-settings-section-title{flex:1 0 100%;margin:10px 0 0;padding:9px 0 5px;border-bottom:1px solid rgba(148,163,184,.18);color:#c4b5fd;font-size:11px;font-weight:900;letter-spacing:.06em;text-transform:uppercase}.gw-settings-section-title:first-child{margin-top:0}.gw-settings-close{flex:0 0 auto}.gw-settings-controls .gw-view-presets{min-height:40px!important;padding:5px 7px!important}.gw-settings-controls .gw-quality-control{min-height:40px;padding:3px 7px 3px 10px}.gw-settings-controls>div[style*="display: flex"]{max-width:100%}',
+      '#geoworld-fs-workspace[data-toolbar-collapsed="true"]>.gw-toolbar{display:none!important}#geoworld-fs-workspace[data-fullscreen="true"]>.gw-toolbar{display:none!important}#geoworld-fs-workspace[data-fullscreen="true"]>.gw-fullscreen-quickbar{display:flex}#geoworld-fs-workspace[data-fullscreen="true"]>.gw-toolbar-reveal{display:none}#geoworld-fs-workspace[data-fullscreen="true"]>.gw-prediction-panel,#geoworld-fs-workspace[data-fullscreen="true"]>.gw-measure-card{top:56px!important}',
+      '.gw-compass-label,.gw-touch-key-label{color:#cbd5e1!important;font-size:11px!important;opacity:1!important}',
+      '@media(max-width:800px){.gw-toolbar{grid-template-columns:minmax(0,1fr) auto!important;min-height:48px;max-height:58px;padding:6px 8px!important}.gw-status-cluster{justify-content:flex-end!important}.gw-status-cluster .gw-stat-chip:first-child,.gw-status-cluster .gw-badge-strip{display:none!important}.gw-compact-action{padding:5px 8px}.gw-compact-action-label{display:none}.gw-settings-backdrop{padding:6px}.gw-settings-dialog{max-height:calc(100% - 4px);border-radius:14px}.gw-settings-header{padding:13px}.gw-settings-controls{padding:10px 12px 16px}.gw-settings-controls>button,.gw-settings-controls>select,.gw-settings-controls>label,.gw-settings-controls>div{box-sizing:border-box;max-width:100%}.gw-prediction-panel{top:58px;width:calc(100% - 12px)!important}.gw-measure-card{top:58px!important;right:6px!important;width:calc(100% - 12px)!important;max-height:calc(100% - 130px)!important}}@media(max-width:420px){.gw-title{font-size:13px}.gw-lesson-title{max-width:150px!important}.gw-status-cluster .gw-stat-chip{display:none!important}.gw-settings-title{font-size:16px}.gw-fullscreen-quickbar .gw-compact-action-label{display:inline}.gw-prediction-panel{display:flex!important;max-height:calc(100% - 132px);overflow:auto;flex-wrap:wrap!important}.gw-prediction-heading{flex:1 0 100%}}',
+      '.gw-touch-look-zone{opacity:1!important}.gw-touch-look-label{padding:3px 7px!important;border:1px solid rgba(196,181,253,.44)!important;border-radius:999px!important;background:rgba(15,23,42,.94)!important;color:#f8fafc!important;font-size:11px!important}.gw-touch-look-panel>.gw-touch-look-label{padding:0!important;border:0!important;background:transparent!important;color:#f8fafc!important;font-size:11px!important}.gw-touch-mode-hint{background:rgba(15,23,42,.92)!important;color:#f8fafc!important;font-size:11px!important}',
+      '.gw-minimap-shell{position:absolute;right:10px;bottom:150px;z-index:24;display:flex;flex-direction:column;align-items:flex-end;gap:4px}.gw-minimap-shell .gw-minimap{position:static!important;right:auto!important;bottom:auto!important;z-index:auto!important;opacity:.96}.gw-hud-panel-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}.gw-hud-panel-close{display:inline-flex;min-width:28px;min-height:28px;align-items:center;justify-content:center;padding:3px 7px;border:1px solid rgba(196,181,253,.4);border-radius:8px;background:rgba(15,23,42,.94);color:#f8fafc;font-size:10px;font-weight:850;cursor:pointer}.gw-hud-toggle[aria-pressed="true"]{border-color:#c4b5fd;background:rgba(124,58,237,.62);color:#fff}.gw-hud-toggle:disabled{cursor:not-allowed;opacity:.56}',
+      '.gw-hud-preset-fieldset{box-sizing:border-box;flex:1 0 100%;min-width:0;margin:10px 0 0;padding:0;border:0}.gw-hud-preset-fieldset>.gw-settings-section-title{box-sizing:border-box;width:100%;margin:0 0 8px}.gw-hud-preset-help{margin:0 0 8px;color:#cbd5e1;font-size:10px;line-height:1.45}.gw-hud-presets{display:grid;width:100%;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.gw-hud-preset-card{display:flex;min-height:76px!important;align-items:flex-start!important;gap:9px!important;padding:10px!important;text-align:left!important;border:1px solid rgba(148,163,184,.32)!important;border-radius:12px!important;background:rgba(15,23,42,.62)!important;color:#f8fafc!important;cursor:pointer}.gw-hud-preset-card[aria-pressed="true"]{border-color:#c4b5fd!important;background:rgba(91,33,182,.46)!important;box-shadow:inset 0 0 0 1px rgba(196,181,253,.2)}.gw-hud-preset-icon{font-size:19px;line-height:1}.gw-hud-preset-copy{display:flex;min-width:0;flex-direction:column;gap:3px}.gw-hud-preset-name{font-size:11px;font-weight:900}.gw-hud-preset-description{color:#cbd5e1;font-size:9px;line-height:1.35}',
+      '@media(max-width:800px){#geoworld-fs-workspace[data-touch-active="true"] .gw-minimap-shell{top:54px;left:8px;right:auto;bottom:auto;align-items:flex-start}#geoworld-fs-workspace[data-touch-active="true"] .gw-inventory-panel{top:54px!important;left:8px!important;right:auto!important;bottom:auto!important;width:132px}#geoworld-fs-workspace[data-touch-active="true"] .gw-transform-panel{top:54px;left:8px;right:auto;width:min(214px,calc(100% - 174px))}#geoworld-fs-workspace[data-touch-active="true"] .gw-tutorial-shell{left:8px!important;width:min(300px,calc(100% - 92px))!important;transform:none!important}}@media(max-width:520px){.gw-minimap-shell{right:8px;bottom:146px}.gw-minimap-shell .gw-minimap{width:84px;height:84px}}@media(max-width:420px){.gw-fullscreen-quickbar .gw-compact-action-label{display:none!important}}',
+      '@media(max-width:620px){.gw-hud-presets{grid-template-columns:1fr}.gw-hud-preset-card{min-height:58px!important}}@media(max-height:520px) and (orientation:landscape){.gw-prediction-panel{max-height:calc(100% - 72px)!important;overflow:auto!important}}',
       '@media(prefers-reduced-motion:reduce){.gw-root button{transition:none!important;}.gw-achievement-toast{animation:none!important;}.gw-root *{scroll-behavior:auto!important;}}'
     ].join('');
     document.head.appendChild(uiStyle);
@@ -1841,8 +1853,49 @@
       ]
     }
   };
+  // The authored lessons put the correct choice first in 82 of 83 questions,
+  // so a student could clear a lesson by always tapping the top button.
+  // Rotate each question by a per-question offset.
+  //
+  // Questions form a TREE: npcs[].question plus a recursive followUp chain,
+  // so every node is walked and counted, giving neighbouring steps different
+  // shifts. Deterministic and applied once at module scope, because a step is
+  // re-read by index on every render (a Math.random() there would re-deal the
+  // choices under the student mid-question).
+  //
+  // Grading is `ci === curQ.correct` (INDEX) and there is no per-option
+  // feedback array, so only choices + correct move. validateLesson() is NOT a
+  // hook point: it sanitises AI-generated lessons, not this authored data.
+  function gwRotateQuestionTree(node, counter) {
+    if (!node || !Array.isArray(node.choices) || typeof node.correct !== "number") return node;
+    var n = node.choices.length;
+    var out = Object.assign({}, node);
+    var shift = ((counter.i++ * 7) + 3) % n;
+    if (n > 1 && shift !== 0) {
+      var moved = new Array(n);
+      for (var i = 0; i < n; i++) moved[(i + shift) % n] = node.choices[i];
+      out.choices = moved;
+      out.correct = (node.correct + shift) % n;
+    }
+    if (Array.isArray(node.followUp)) {
+      out.followUp = node.followUp.map(function (fu) { return gwRotateQuestionTree(fu, counter); });
+    }
+    return out;
+  }
+  (function rotateAuthoredLessonQuestions() {
+    var counter = { i: 0 };
+    Object.keys(SAMPLE_LESSONS).forEach(function (key) {
+      var lesson = SAMPLE_LESSONS[key];
+      if (!lesson || !Array.isArray(lesson.npcs)) return;
+      lesson.npcs = lesson.npcs.map(function (npc) {
+        if (!npc || !npc.question) return npc;
+        return Object.assign({}, npc, { question: gwRotateQuestionTree(npc.question, counter) });
+      });
+    });
+  })();
 
-  var LESSON_ORDER = ['volumeExplorer', 'areaSurface', 'buildChallenge', 'realWorld', 'geometryGarden', 'compositeVolume', 'fractionVolume', 'volumeEstimation', 'fractionBuilder', 'base10Blocks', 'fluencyMaze'];
+
+  var LESSON_ORDER =['volumeExplorer', 'areaSurface', 'buildChallenge', 'realWorld', 'geometryGarden', 'compositeVolume', 'fractionVolume', 'volumeEstimation', 'fractionBuilder', 'base10Blocks', 'fluencyMaze'];
   var MAX_BLOCKS = 1500; // Performance safety limit
   // Radians/second for arrow-key look. ~100°/s: fast enough to sweep a structure
   // without hunting, slow enough to land the crosshair on an NPC.
@@ -2266,7 +2319,9 @@
   window.StemLab.registerTool('geometryWorld', {
     name: 'Geometry World',
     icon: '\uD83E\uDDF1',
-    category: 'explore',
+    desc: 'Explore a 3D geometry world where shape questions unlock areas, NPC conversations, and construction puzzles.',
+    category: 'math',
+    aliases: ['geometry', '3D shapes', 'spatial reasoning', 'shape puzzles'],
     questHooks: [
       { id: 'score_5', label: 'Score 5 points in Geometry World', icon: '\uD83C\uDFAF', check: function(d) { return (d.score || 0) >= 5; }, progress: function(d) { return (d.score || 0) + '/5 pts'; } },
       { id: 'complete_tutorial', label: 'Complete the Geometry World tutorial', icon: '\uD83C\uDF93', check: function(d) { return d.tutorialDismissed || (d.tutorialStep || 0) >= 4; }, progress: function(d) { return (d.tutorialStep || 0) >= 4 ? 'Done!' : 'Step ' + ((d.tutorialStep || 0) + 1) + '/4'; } },
@@ -2409,6 +2464,101 @@
         } catch (e) {}
       }
 
+      function focusGameSettingsTrigger() {
+        setTimeout(function() {
+          try {
+            var triggers = document.querySelectorAll('[data-geometry-settings-trigger="true"]');
+            var target = Array.prototype.filter.call(triggers, function(node) { return node.offsetParent !== null; })[0] || triggers[0];
+            if (target) target.focus({ preventScroll: true });
+            else focusWorldSurface();
+          } catch (e) { focusWorldSurface(); }
+        }, 0);
+      }
+
+      function closeGameSettings() {
+        upd('showGameSettings', false);
+        focusGameSettingsTrigger();
+      }
+
+      function openGameSettings() {
+        try { if (document.pointerLockElement && document.exitPointerLock) document.exitPointerLock(); } catch (e) {}
+        upd({ showGameSettings: true, showPredictionPanel: false, objectivesOpen: false });
+        announceToSR('Game settings and tools opened.');
+      }
+
+      var GW_HUD_PRESET_KEY = 'allo.geometryworld.hud.v1';
+      var GW_HUD_PRESETS = {
+        minimal: { hudPanel: '', label: 'Minimal', announcement: 'Optional HUD panels are hidden.' },
+        learning: { hudPanel: 'progress', label: 'Learning', announcement: 'Lesson progress is displayed.' },
+        builder: { hudPanel: 'inventory', label: 'Builder', announcement: 'Block inventory is displayed.' }
+      };
+      var GW_HUD_PANEL_IDS = ['', 'progress', 'map', 'history', 'inventory', 'transform'];
+
+      function gwHasOwn(value, key) {
+        return !!value && Object.prototype.hasOwnProperty.call(value, key);
+      }
+
+      function isGeometryHudPreset(value) {
+        return typeof value === 'string' && Object.prototype.hasOwnProperty.call(GW_HUD_PRESETS, value);
+      }
+
+      function normalizeGeometryHudPanel(value) {
+        return typeof value === 'string' && GW_HUD_PANEL_IDS.indexOf(value) >= 0 ? value : '';
+      }
+
+      function loadGeometryHudPreferences() {
+        try {
+          if (typeof localStorage === 'undefined') return {};
+          var raw = localStorage.getItem(GW_HUD_PRESET_KEY);
+          if (!raw) return {};
+          var parsed = JSON.parse(raw);
+          if (!parsed || parsed.version !== 1) return {};
+          return {
+            preset: isGeometryHudPreset(parsed.preset) ? parsed.preset : '',
+            toolbarCollapsed: parsed.toolbarCollapsed === true
+          };
+        } catch (e) { return {}; }
+      }
+
+      function saveGeometryHudPreferences(patch) {
+        try {
+          if (typeof localStorage === 'undefined') return false;
+          patch = patch || {};
+          var current = loadGeometryHudPreferences();
+          var nextPreset = gwHasOwn(patch, 'preset') && isGeometryHudPreset(patch.preset)
+            ? patch.preset
+            : (isGeometryHudPreset(current.preset) ? current.preset : 'minimal');
+          var nextCollapsed = gwHasOwn(patch, 'toolbarCollapsed')
+            ? !!patch.toolbarCollapsed
+            : current.toolbarCollapsed === true;
+          localStorage.setItem(GW_HUD_PRESET_KEY, JSON.stringify({ version: 1, preset: nextPreset, toolbarCollapsed: nextCollapsed }));
+          return true;
+        } catch (e) { return false; }
+      }
+
+      function applyHudPreset(preset) {
+        var selected = GW_HUD_PRESETS[preset];
+        if (!selected) return;
+        var saved = saveGeometryHudPreferences({ preset: preset });
+        setSceneMapOpen(false);
+        upd({ hudPreset: preset, hudPanel: selected.hudPanel, showGameSettings: false, showPredictionPanel: false, objectivesOpen: false });
+        announceToSR(selected.label + ' HUD selected. ' + selected.announcement + (saved ? ' Preference saved on this device.' : ' Preference applies for this session.'));
+        setTimeout(focusWorldSurface, 0);
+      }
+
+      function setHudPanel(panel, label) {
+        var next = hudPanel === panel ? '' : normalizeGeometryHudPanel(panel);
+        setSceneMapOpen(false);
+        upd({ hudPanel: next, showGameSettings: false, showPredictionPanel: false, objectivesOpen: false });
+        announceToSR(next ? label + ' HUD opened. Only one optional HUD panel is shown at a time.' : label + ' HUD hidden.');
+        setTimeout(focusWorldSurface, 0);
+      }
+
+      function closeHudPanel(label) {
+        upd('hudPanel', '');
+        announceToSR((label || 'Optional') + ' HUD hidden.');
+        focusWorldSurface();
+      }
       function announceToSR(message) {
         try {
           var lr = document.getElementById('allo-live-geometryworld');
@@ -2462,6 +2612,15 @@
       var sceneMapState = React.useState(false);
       var sceneMapOpen = sceneMapState[0];
       var setSceneMapOpen = sceneMapState[1];
+      var showGameSettings = !!d.showGameSettings;
+      var showPredictionPanel = !!d.showPredictionPanel;
+      var hudPreferences = loadGeometryHudPreferences();
+      var hudPreset = isGeometryHudPreset(d.hudPreset)
+        ? d.hudPreset
+        : (isGeometryHudPreset(hudPreferences.preset) ? hudPreferences.preset : 'minimal');
+      var toolbarCollapsed = gwHasOwn(d, 'toolbarCollapsed') ? !!d.toolbarCollapsed : hudPreferences.toolbarCollapsed === true;
+      var objectivesOpen = !!d.objectivesOpen;
+      var hudPanel = gwHasOwn(d, 'hudPanel') ? normalizeGeometryHudPanel(d.hudPanel) : GW_HUD_PRESETS[hudPreset].hudPanel;
       var showReflection = d.showReflection || false;
       var reflectionText = d.reflectionText || '';
       var lessonEditorJson = d.lessonEditorJson || '';
@@ -3888,7 +4047,7 @@
               // regardless of closure staleness (keydown handler was attached once).
               if (ev.shiftKey) {
                 ev.preventDefault();
-                upd({ showNpcDialog: false, showMyLessons: false, showLessonEditor: false, showLessonIntro: false, showReflection: false, showHelp: false, showCreatorPanel: false, showGrowthNudge: false, showTeacherView: false, showPeerWorlds: false });
+                upd({ showGameSettings: false, showPredictionPanel: false, objectivesOpen: false, showNpcDialog: false, showMyLessons: false, showLessonEditor: false, showLessonIntro: false, showReflection: false, showHelp: false, showCreatorPanel: false, showGrowthNudge: false, showTeacherView: false, showPeerWorlds: false, hudPanel: '' });
                 focusWorldSurface();
                 if (addToast) addToast('🎮 Closed all overlays — back in the game', 'info');
                 break;
@@ -3897,6 +4056,10 @@
               // Read from engine._modalState (updated each React render) to avoid stale closure.
               var ms = (engine && engine._modalState) || {};
               if (ms.showNpcDialog) { upd('showNpcDialog', false); focusWorldSurface(); break; }
+              if (ms.showGameSettings) { upd('showGameSettings', false); focusGameSettingsTrigger(); break; }
+              if (ms.showPredictionPanel) { upd('showPredictionPanel', false); focusWorldSurface(); break; }
+              if (ms.objectivesOpen) { upd('objectivesOpen', false); focusWorldSurface(); break; }
+              if (ms.hudPanel) { upd('hudPanel', ''); focusWorldSurface(); break; }
               if (ms.showHelp) { upd('showHelp', false); focusWorldSurface(); break; }
               if (ms.showGrowthNudge) { upd('showGrowthNudge', false); focusWorldSurface(); break; }
               if (ms.showPeerWorlds) { upd('showPeerWorlds', false); focusWorldSurface(); break; }
@@ -6643,6 +6806,7 @@
         // the engine on every React render so Esc/Shift+Esc always see current state.
         engine._modalState = {
           showNpcDialog: showNpcDialog, showHelp: showHelp, showGrowthNudge: showGrowthNudge,
+          showGameSettings: showGameSettings, showPredictionPanel: showPredictionPanel, objectivesOpen: objectivesOpen, hudPanel: hudPanel,
           showPeerWorlds: showPeerWorlds, showTeacherView: showTeacherView,
           showMyLessons: showMyLessons, showLessonEditor: showLessonEditor,
           showLessonIntro: showLessonIntro, showReflection: showReflection,
@@ -6667,6 +6831,7 @@
 
       // ── Modal tracking: count all open overlays so students can see/dismiss them all ──
       var OPEN_MODALS = [
+        { flag: showGameSettings, key: 'showGameSettings', label: 'Game Settings', emoji: '\u2699\uFE0F' },
         { flag: showNpcDialog,    key: 'showNpcDialog',    label: __alloT('stem.geometryworld.npc_dialog', 'NPC Dialog'),            emoji: '💬' },
         { flag: showMyLessons,    key: 'showMyLessons',    label: __alloT('stem.geometryworld.my_lessons', 'My Lessons'),            emoji: '📚' },
         { flag: showLessonEditor, key: 'showLessonEditor', label: __alloT('stem.geometryworld.lesson_editor', 'Lesson Editor'),         emoji: '✏️' },
@@ -6734,8 +6899,8 @@
         delete window[engineKey + '_failure'];
         setWebglError(false);
       }
-      return el('div', { id: 'geoworld-fs-workspace', role: 'region', 'data-geometry-fullscreen-workspace': 'true', 'data-fullscreen': isWorkspaceFullscreen ? 'true' : 'false', 'data-touch-mode': touchMode ? 'touch' : 'desktop', className: 'gw-root', 'aria-label': __alloT('stem.geometryworld.tool_name', 'Geometry World'), style: { display: 'flex', flexDirection: 'column', height: '100%', position: 'relative', background: 'var(--allo-stem-canvas, #000)' } },
-        el('style', null, '#geoworld-fs-workspace:fullscreen,#geoworld-fs-workspace:-webkit-full-screen{width:100vw;height:100vh;height:100dvh;overflow:hidden;background:#020617}#geoworld-fs-workspace:fullscreen .gw-toolbar,#geoworld-fs-workspace:-webkit-full-screen .gw-toolbar{max-height:32vh;overflow:auto;padding:calc(8px + env(safe-area-inset-top)) 10px calc(8px + env(safe-area-inset-bottom))}#geoworld-fs-workspace:fullscreen .gw-viewport,#geoworld-fs-workspace:-webkit-full-screen .gw-viewport{flex:1;min-height:0}'),
+      return el('div', { id: 'geoworld-fs-workspace', role: 'region', 'data-geometry-fullscreen-workspace': 'true', 'data-fullscreen': isWorkspaceFullscreen ? 'true' : 'false', 'data-toolbar-collapsed': toolbarCollapsed ? 'true' : 'false', 'data-hud-preset': hudPreset, 'data-touch-mode': touchMode ? 'touch' : 'desktop', 'data-touch-active': isMobile && touchMode ? 'true' : 'false', className: 'gw-root', 'aria-label': __alloT('stem.geometryworld.tool_name', 'Geometry World'), style: { display: 'flex', flexDirection: 'column', height: '100%', position: 'relative', background: 'var(--allo-stem-canvas, #000)' } },
+        el('style', null, '#geoworld-fs-workspace:fullscreen,#geoworld-fs-workspace:-webkit-full-screen{width:100vw;height:100vh;height:100dvh;overflow:hidden;background:#020617}#geoworld-fs-workspace:fullscreen>.gw-toolbar,#geoworld-fs-workspace:-webkit-full-screen>.gw-toolbar{display:none!important}#geoworld-fs-workspace:fullscreen .gw-viewport,#geoworld-fs-workspace:-webkit-full-screen .gw-viewport{flex:1;min-height:0;margin:0!important;border:0!important;border-radius:0!important}'),
         // Top bar — glass style
         el('header', { className: 'gw-toolbar', 'aria-label': 'Geometry World lesson controls', style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'linear-gradient(180deg, rgba(15,23,42,0.94), rgba(15,23,42,0.82))', backdropFilter: 'blur(14px) saturate(120%)', borderBottom: '1px solid rgba(148,163,184,0.16)', flexShrink: 0, flexWrap: 'wrap' } },
           el('div', { className: 'gw-brand-lockup' },
@@ -6745,89 +6910,75 @@
               el('span', { className: 'gw-lesson-title' }, currentLesson.title || 'Choose a lesson to begin')
             )
           ),
-          el('div', { className: 'gw-status-cluster', 'aria-label': 'Lesson status' },
-          el('label', { className: 'gw-quality-control', title: renderQualityProfile.reason },
-            el('span', { className: 'gw-quality-label' }, '3D quality'),
-            el('select', {
-              value: renderQuality,
-              'data-geometry-render-quality': 'true',
-              'aria-label': '3D graphics quality',
-              'aria-describedby': 'gw-quality-help',
-              onChange: function(ev) {
-                var preference = ev.target.value;
-                upd('renderQuality', preference);
-                var liveEngine = window[engineKey];
-                var profile = liveEngine && liveEngine.applyRenderQuality ? liveEngine.applyRenderQuality(preference) : resolveGeometryRenderProfile(preference, {});
-                announceToSR('3D graphics quality set to ' + profile.label + '.');
-              }
-            },
-              el('option', { value: 'auto' }, 'Auto (' + renderQualityProfile.label + ')'),
-              el('option', { value: 'saver' }, 'Battery saver'),
-              el('option', { value: 'balanced' }, 'Balanced'),
-              el('option', { value: 'detail' }, 'Detailed')
+          el('div', { className: 'gw-status-cluster', 'aria-label': 'Lesson status and game menu' },
+            engine && el('span', { className: 'gw-stat-chip', style: { fontSize: '11px', color: '#cbd5e1' } },
+              '\uD83E\uDDF1 ' + (engine.blocksPlaced || 0) + ' placed'
             ),
-            el('span', { className: 'gw-quality-resolved', role: 'status', 'aria-live': 'polite', 'aria-label': 'Resolved graphics mode: ' + renderQualityProfile.label }, renderQualityProfile.label),
-            el('span', { id: 'gw-quality-help', className: 'gw-quality-help' }, renderQualityProfile.reason)
-          ),
-          worldActive && tutorialDismissed && engine && el('button', {
-            type: 'button',
-            className: 'gw-tour-button gw-focusable',
-            'aria-pressed': guidedTourActive,
-            'aria-label': guidedTourActive ? 'Stop guided explore tour' : 'Start guided explore tour',
-            title: guidedTourActive ? 'Stop guided explore tour' : 'Show a guided overview of the active structure',
-            onClick: function() {
-              if (!engine) return;
-              if (guidedTourActive && engine.stopGuidedTour) engine.stopGuidedTour(false);
-              else if (engine.startGuidedTour) engine.startGuidedTour();
-            },
-            style: { minHeight: 30, padding: '4px 9px', border: guidedTourActive ? '1px solid rgba(251,191,36,0.62)' : '1px solid rgba(167,139,250,0.38)', borderRadius: 9, background: guidedTourActive ? 'rgba(120,53,15,0.5)' : 'rgba(76,29,149,0.42)', color: guidedTourActive ? '#fde68a' : '#e9d5ff', fontSize: 10, fontWeight: 800, cursor: 'pointer' }
-          }, guidedTourActive ? '\u23F9 Exit tour' : '\u2728 Explore tour'),
-          worldActive && tutorialDismissed && engine && el('div', {
-            className: 'gw-view-presets', role: 'group', 'aria-label': 'Camera views',
-            style: { display: 'inline-flex', alignItems: 'center', gap: 3, minHeight: 30, padding: '2px 4px', border: '1px solid rgba(148,163,184,0.22)', borderRadius: 9, background: 'rgba(15,23,42,0.58)' }
-          },
-            el('span', { className: 'gw-view-presets-label', style: { color: '#94a3b8', fontSize: 9, fontWeight: 800, padding: '0 3px' } }, 'View'),
-            ['front', 'side', 'top', 'free'].map(function(preset) {
-              var active = viewPreset === preset;
-              return el('button', {
-                key: preset, type: 'button', className: 'gw-view-preset gw-focusable',
-                'aria-pressed': active, 'aria-label': viewPresetLabels[preset] + ' camera view',
-                title: preset === 'free' ? 'Return to free exploration' : 'Show the ' + viewPresetLabels[preset].toLowerCase() + ' evidence view',
-                onClick: function() { if (engine && engine.setViewPreset) engine.setViewPreset(preset); },
-                style: { minHeight: 26, minWidth: 36, padding: '3px 5px', border: active ? '1px solid rgba(196,181,253,0.72)' : '1px solid transparent', borderRadius: 6, background: active ? 'rgba(124,58,237,0.58)' : 'transparent', color: active ? '#fff' : '#cbd5e1', fontSize: 9, fontWeight: 800, cursor: 'pointer' }
-              }, viewPresetLabels[preset]);
-            })
-          ),          worldActive && tutorialDismissed && engine && el('button', {
-            type: 'button', className: 'gw-scene-map-button gw-focusable',
-            'aria-expanded': sceneMapOpen, 'aria-controls': 'gw-scene-map', 'aria-label': sceneMapOpen ? 'Close textual scene map' : 'Open textual scene map',
-            title: 'Open a text alternative to the 3D scene',
-            onClick: function() { var next = !sceneMapOpen; setSceneMapOpen(next); announceToSR(next ? 'Textual scene map opened.' : 'Textual scene map closed.'); },
-            style: { minHeight: 30, padding: '4px 9px', border: sceneMapOpen ? '1px solid rgba(45,212,191,0.68)' : '1px solid rgba(45,212,191,0.32)', borderRadius: 9, background: sceneMapOpen ? 'rgba(13,148,136,0.4)' : 'rgba(15,118,110,0.26)', color: '#ccfbf1', fontSize: 10, fontWeight: 800, cursor: 'pointer' }
-          }, sceneMapOpen ? 'Close map' : 'Scene map'),
-          // Score
-          // Block counter
-          engine && el('span', { className: 'gw-stat-chip', style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)' } },
-            '\uD83E\uDDF1 ' + (engine.blocksPlaced || 0) + ' placed'
-          ),
-          // Score with completion indicator
-          el('span', { className: 'gw-stat-chip', role: 'status', 'aria-live': 'polite', 'aria-label': 'Lesson progress: ' + score + ' of ' + totalQ + ' questions complete', style: { fontSize: '12px', color: score >= totalQ && totalQ > 0 ? '#fbbf24' : '#4ade80', fontWeight: 700, transition: 'transform 0.2s ease', transform: d._scorePulse && Date.now() - d._scorePulse < 500 ? 'scale(1.3)' : 'scale(1)' } },
-            (score >= totalQ && totalQ > 0 ? '\uD83C\uDFC6 ' : '\u2B50 ') + score + '/' + totalQ
-          ),
-          // Achievement badges earned
-          Object.keys(earnedBadges).length > 0 && el('div', { className: 'gw-badge-strip',
-            role: 'list', 'aria-label': Object.keys(earnedBadges).length + ' achievement badges earned',
-            style: { display: 'flex', gap: '2px', alignItems: 'center', fontSize: '14px', background: 'var(--allo-stem-panel, #1e293b)', padding: '2px 6px', borderRadius: '6px', cursor: 'default' },
-            title: Object.keys(earnedBadges).length + ' badges earned: ' + ACHIEVEMENTS.filter(function(a) { return earnedBadges[a.id]; }).map(function(a) { return a.name; }).join(', ')
-          },
-            ACHIEVEMENTS.filter(function(a) { return earnedBadges[a.id]; }).map(function(a) {
-              return el('span', { key: a.id, role: 'listitem', 'aria-label': a.name + ': ' + a.desc, title: a.name + ': ' + a.desc, style: { opacity: 1 } }, a.icon);
-            })
-          ),
-          ),
+            el('span', { className: 'gw-stat-chip', role: 'status', 'aria-live': 'polite', 'aria-label': 'Lesson progress: ' + score + ' of ' + totalQ + ' questions complete', style: { fontSize: '12px', color: score >= totalQ && totalQ > 0 ? '#fbbf24' : '#4ade80', fontWeight: 800 } },
+              (score >= totalQ && totalQ > 0 ? '\uD83C\uDFC6 ' : '\u2B50 ') + score + '/' + totalQ
+            ),
+            Object.keys(earnedBadges).length > 0 && el('div', { className: 'gw-badge-strip', role: 'list', 'aria-label': Object.keys(earnedBadges).length + ' achievement badges earned', title: Object.keys(earnedBadges).length + ' badges earned: ' + ACHIEVEMENTS.filter(function(a) { return earnedBadges[a.id]; }).map(function(a) { return a.name; }).join(', ') },
+              ACHIEVEMENTS.filter(function(a) { return earnedBadges[a.id]; }).map(function(a) {
+                return el('span', { key: a.id, role: 'listitem', 'aria-label': a.name + ': ' + a.desc, title: a.name + ': ' + a.desc }, a.icon);
+              })
+            ),
+            worldActive && el('button', {
+              type: 'button', className: 'gw-compact-action gw-focusable',
+              'aria-expanded': showPredictionPanel, 'aria-controls': 'gw-prediction-panel',
+              'aria-label': showPredictionPanel ? 'Close volume prediction drawer' : 'Open volume prediction drawer',
+              onClick: function() { var next = !showPredictionPanel; setSceneMapOpen(false); upd({ showPredictionPanel: next, showGameSettings: false, objectivesOpen: false, hudPanel: '' }); announceToSR(next ? 'Volume prediction drawer opened.' : 'Volume prediction drawer closed.'); }
+            }, el('span', { 'aria-hidden': 'true' }, '\uD83D\uDCDD'), el('span', { className: 'gw-compact-action-label' }, 'Predict')),
+            worldActive && el('button', {
+              type: 'button', className: 'gw-compact-action gw-focusable',
+              'aria-expanded': objectivesOpen, 'aria-controls': 'gw-objective-panel',
+              'aria-label': objectivesOpen ? 'Close lesson objectives' : 'Open lesson objectives',
+              onClick: function() { var next = !objectivesOpen; setSceneMapOpen(false); upd({ objectivesOpen: next, showPredictionPanel: false, showGameSettings: false, hudPanel: '' }); }
+            }, el('span', { 'aria-hidden': 'true' }, '\uD83D\uDCCB'), el('span', { className: 'gw-compact-action-label' }, 'Objectives')),
+            el('button', {
+              type: 'button', className: 'gw-compact-action gw-focusable',
+              'data-geometry-settings-trigger': 'true', 'aria-haspopup': 'dialog',
+              'aria-expanded': showGameSettings, 'aria-controls': 'gw-settings-dialog',
+              'aria-label': 'Open game settings and tools', onClick: openGameSettings
+            }, el('span', { 'aria-hidden': 'true' }, '\u2699\uFE0F'), el('span', { className: 'gw-compact-action-label' }, 'Menu')),
+            el('button', {
+              type: 'button', className: 'gw-compact-action gw-toolbar-collapse gw-focusable',
+              'aria-label': 'Hide the Geometry World game bar', title: 'Hide game bar',
+              onClick: function() { var saved = saveGeometryHudPreferences({ toolbarCollapsed: true }); upd('toolbarCollapsed', true); announceToSR('Game bar hidden; use the Show game bar button to restore it.' + (saved ? ' Preference saved on this device.' : ' Preference applies for this session.')); }
+            }, '\u25B2')
+          )
+        ),
+
+        toolbarCollapsed && !isWorkspaceFullscreen && el('button', {
+          type: 'button', className: 'gw-toolbar-reveal gw-focusable',
+          'aria-label': 'Show the Geometry World game bar',
+          onClick: function() { var saved = saveGeometryHudPreferences({ toolbarCollapsed: false }); upd('toolbarCollapsed', false); announceToSR('Game bar shown.' + (saved ? ' Preference saved on this device.' : ' Preference applies for this session.')); }
+        }, el('span', { 'aria-hidden': 'true' }, '\u25BC'), ' Show game bar'),
+
+        el('div', { className: 'gw-fullscreen-quickbar', role: 'group', 'aria-label': 'Fullscreen game tools' },
+          worldActive && el('button', {
+            type: 'button', className: 'gw-compact-action gw-focusable',
+            'aria-expanded': showPredictionPanel, 'aria-controls': 'gw-prediction-panel',
+            'aria-label': showPredictionPanel ? 'Close volume prediction drawer' : 'Open volume prediction drawer',
+            onClick: function() { var next = !showPredictionPanel; setSceneMapOpen(false); upd({ showPredictionPanel: next, showGameSettings: false, objectivesOpen: false, hudPanel: '' }); }
+          }, el('span', { 'aria-hidden': 'true' }, '\uD83D\uDCDD'), el('span', { className: 'gw-compact-action-label' }, 'Predict')),
+          worldActive && el('button', {
+            type: 'button', className: 'gw-compact-action gw-focusable',
+            'aria-expanded': objectivesOpen, 'aria-controls': 'gw-objective-panel',
+            'aria-label': objectivesOpen ? 'Close lesson objectives' : 'Open lesson objectives',
+            onClick: function() { var next = !objectivesOpen; setSceneMapOpen(false); upd({ objectivesOpen: next, showPredictionPanel: false, showGameSettings: false, hudPanel: '' }); }
+          }, el('span', { 'aria-hidden': 'true' }, '\uD83D\uDCCB'), el('span', { className: 'gw-compact-action-label' }, 'Objectives')),
+          el('button', {
+            type: 'button', className: 'gw-compact-action gw-focusable',
+            'data-geometry-settings-trigger': 'true', 'aria-haspopup': 'dialog',
+            'aria-expanded': showGameSettings, 'aria-controls': 'gw-settings-dialog',
+            'aria-label': 'Open game settings and tools', onClick: openGameSettings
+          }, el('span', { 'aria-hidden': 'true' }, '\u2699\uFE0F'), el('span', { className: 'gw-compact-action-label' }, 'Menu'))
+        ),
+
           // Badge notification popup
           lastBadgeNotification && el('div', {
             role: 'status', 'aria-live': 'polite', className: 'gw-achievement-toast',
-            style: { position: 'absolute', top: 'calc(100% + 10px)', left: '50%', transform: 'translateX(-50%)', zIndex: 60,
+            style: { position: 'absolute', top: '64px', left: '50%', transform: 'translateX(-50%)', zIndex: 60,
               background: 'linear-gradient(135deg, #4c1d95, #7c3aed)', border: '2px solid #a78bfa',
               borderRadius: '12px', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '10px',
               boxShadow: '0 4px 20px rgba(124,58,237,0.4)', animation: 'fadeIn 0.3s ease-out' }
@@ -6839,8 +6990,12 @@
               el('div', { style: { fontSize: '11px', color: '#c4b5fd' } }, lastBadgeNotification.desc)
             )
           ),
-          // Measure result
-          el('div', { role: 'group', className: 'gw-prediction-bar', 'aria-label': 'Predict and explain volume before measuring', 'data-geometry-prediction-cycle': 'predict-explain', style: { display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', maxWidth: '470px', background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '3px 6px' } },
+          // Prediction drawer ? available on demand without consuming play space.
+          showPredictionPanel && el('section', { id: 'gw-prediction-panel', role: 'region', className: 'gw-prediction-bar gw-prediction-panel', 'aria-labelledby': 'gw-prediction-title', 'data-geometry-prediction-cycle': 'predict-explain', style: { display: 'grid', alignItems: 'center', gap: '6px', background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '10px', padding: '9px' } },
+            el('div', { className: 'gw-prediction-heading' },
+              el('h3', { id: 'gw-prediction-title', className: 'gw-prediction-title' }, '\uD83D\uDCDD Predict volume before measuring'),
+              el('button', { type: 'button', className: 'gw-prediction-close gw-focusable', 'aria-label': 'Close volume prediction drawer', onClick: function() { upd('showPredictionPanel', false); focusWorldSurface(); } }, '\u00D7')
+            ),
             el('label', { htmlFor: 'gw-volume-prediction', style: { color: '#fde68a', fontSize: '10px', fontWeight: 700, whiteSpace: 'nowrap' } }, 'Predict V'),
             el('input', {
               id: 'gw-volume-prediction',
@@ -7110,13 +7265,131 @@
               style: { background: '#7c3aed', border: 'none', borderRadius: '4px', padding: '2px 8px', color: '#fff', fontSize: '10px', cursor: 'pointer', fontWeight: 700, marginTop: '2px' }
             }, '\uD83E\uDDF1 Build This!')
           ),
+          // Secondary setup and utility controls stay out of the flex layout.
+          showGameSettings && el('div', {
+            className: 'gw-settings-backdrop',
+            onMouseDown: function(ev) { if (ev.target === ev.currentTarget) closeGameSettings(); }
+          },
+            el('section', {
+              id: 'gw-settings-dialog', role: 'dialog', 'aria-modal': 'true',
+              'aria-labelledby': 'gw-settings-title', 'aria-describedby': 'gw-settings-description',
+              className: 'gw-settings-dialog', tabIndex: -1, ref: gwDialogRef,
+              onKeyDown: function(ev) { if (ev.key === 'Escape') { ev.preventDefault(); ev.stopPropagation(); closeGameSettings(); } }
+            },
+              el('div', { className: 'gw-settings-header' },
+                el('div', null,
+                  el('h2', { id: 'gw-settings-title', className: 'gw-settings-title' }, '\u2699\uFE0F Game settings & tools'),
+                  el('p', { id: 'gw-settings-description', className: 'gw-settings-description' }, 'Choose a saved HUD layout, adjust the lesson and view, or export your work. Closing this menu returns you to the game.')
+                ),
+                el('button', { type: 'button', className: 'gw-dialog-close gw-settings-close gw-focusable', 'aria-label': 'Close game settings and tools', onClick: closeGameSettings }, '\u00D7')
+              ),
+              el('div', { className: 'gw-settings-controls' },
+                el('h3', { className: 'gw-settings-section-title' }, 'Play & view'),
+                el('label', { className: 'gw-quality-control', title: renderQualityProfile.reason },
+                  el('span', { className: 'gw-quality-label' }, '3D quality'),
+                  el('select', {
+                    value: renderQuality, 'data-geometry-render-quality': 'true',
+                    'aria-label': '3D graphics quality', 'aria-describedby': 'gw-quality-help',
+                    onChange: function(ev) {
+                      var preference = ev.target.value;
+                      upd('renderQuality', preference);
+                      var liveEngine = window[engineKey];
+                      var profile = liveEngine && liveEngine.applyRenderQuality ? liveEngine.applyRenderQuality(preference) : resolveGeometryRenderProfile(preference, {});
+                      announceToSR('3D graphics quality set to ' + profile.label + '.');
+                    }
+                  },
+                    el('option', { value: 'auto' }, 'Auto (' + renderQualityProfile.label + ')'),
+                    el('option', { value: 'saver' }, 'Battery saver'),
+                    el('option', { value: 'balanced' }, 'Balanced'),
+                    el('option', { value: 'detail' }, 'Detailed')
+                  ),
+                  el('span', { className: 'gw-quality-resolved', role: 'status', 'aria-live': 'polite', 'aria-label': 'Resolved graphics mode: ' + renderQualityProfile.label }, renderQualityProfile.label),
+                  el('span', { id: 'gw-quality-help', className: 'gw-quality-help' }, renderQualityProfile.reason)
+                ),
+                worldActive && tutorialDismissed && engine && el('button', {
+                  type: 'button', className: 'gw-tour-button gw-focusable',
+                  'aria-pressed': guidedTourActive,
+                  'aria-label': guidedTourActive ? 'Stop guided explore tour' : 'Start guided explore tour',
+                  onClick: function() {
+                    if (!engine) return;
+                    if (guidedTourActive && engine.stopGuidedTour) engine.stopGuidedTour(false);
+                    else if (engine.startGuidedTour) engine.startGuidedTour();
+                    closeGameSettings();
+                  },
+                  style: { border: '1px solid rgba(167,139,250,0.42)', borderRadius: 8, background: guidedTourActive ? '#92400e' : '#4c1d95', color: '#fff', fontSize: 11, fontWeight: 800, cursor: 'pointer' }
+                }, guidedTourActive ? '\u23F9 Exit tour' : '\u2728 Explore tour'),
+                worldActive && tutorialDismissed && engine && el('div', {
+                  className: 'gw-view-presets', role: 'group', 'aria-label': 'Camera views',
+                  style: { display: 'inline-flex', alignItems: 'center', gap: 4, border: '1px solid rgba(148,163,184,0.28)', borderRadius: 9, background: 'rgba(15,23,42,0.66)' }
+                },
+                  el('span', { className: 'gw-view-presets-label', style: { color: '#cbd5e1', fontSize: 10, fontWeight: 800, padding: '0 4px' } }, 'Camera'),
+                  ['front', 'side', 'top', 'free'].map(function(preset) {
+                    var active = viewPreset === preset;
+                    return el('button', {
+                      key: preset, type: 'button', className: 'gw-view-preset gw-focusable',
+                      'aria-pressed': active, 'aria-label': viewPresetLabels[preset] + ' camera view',
+                      onClick: function() { if (engine && engine.setViewPreset) engine.setViewPreset(preset); closeGameSettings(); },
+                      style: { minHeight: 30, minWidth: 42, padding: '4px 7px', border: active ? '1px solid #c4b5fd' : '1px solid transparent', borderRadius: 6, background: active ? '#5b21b6' : 'transparent', color: '#fff', fontSize: 10, fontWeight: 800, cursor: 'pointer' }
+                    }, viewPresetLabels[preset]);
+                  })
+                ),
+                worldActive && tutorialDismissed && engine && el('button', {
+                  type: 'button', className: 'gw-scene-map-button gw-focusable',
+                  'aria-label': sceneMapOpen ? 'Close textual scene map' : 'Open textual scene map',
+                  'aria-expanded': sceneMapOpen, 'aria-controls': 'gw-scene-map',
+                  onClick: function() { var next = !sceneMapOpen; setSceneMapOpen(next); if (next) upd({ hudPanel: '', showPredictionPanel: false, objectivesOpen: false }); announceToSR(next ? 'Textual scene map opened.' : 'Textual scene map closed.'); closeGameSettings(); },
+                  style: { border: '1px solid rgba(45,212,191,0.5)', borderRadius: 8, background: '#115e59', color: '#fff', fontSize: 11, fontWeight: 800, cursor: 'pointer' }
+                }, sceneMapOpen ? 'Close scene map' : 'Scene map'),
+                worldActive && el('fieldset', { className: 'gw-hud-preset-fieldset', 'aria-describedby': 'gw-hud-preset-help' },
+                  el('legend', { className: 'gw-settings-section-title' }, 'HUD layout'),
+                  el('p', { id: 'gw-hud-preset-help', className: 'gw-hud-preset-help' }, 'Choose a default game view. Your preset and game-bar visibility are saved on this device.'),
+                  el('div', { className: 'gw-hud-presets', role: 'group', 'aria-label': 'Choose a saved HUD preset', 'aria-describedby': 'gw-hud-preset-help' },
+                    [
+                      { id: 'minimal', icon: '\uD83C\uDFAE', label: 'Minimal', description: 'Clear view with optional panels hidden.', ariaLabel: 'Use Minimal HUD: hide optional HUD panels' },
+                      { id: 'learning', icon: '\uD83C\uDF93', label: 'Learning', description: 'Lesson progress, score, and activity status.', ariaLabel: 'Use Learning HUD: show lesson progress' },
+                      { id: 'builder', icon: '\uD83E\uDDF1', label: 'Builder', description: 'Block counts and total constructed volume.', ariaLabel: 'Use Builder HUD: show block inventory' }
+                    ].map(function(preset) {
+                      var active = hudPreset === preset.id;
+                      return el('button', {
+                        key: preset.id, type: 'button', className: 'gw-hud-preset-card gw-focusable',
+                        'data-geometry-hud-preset': preset.id, 'aria-pressed': active,
+                        'aria-label': preset.ariaLabel,
+                        onClick: function() { applyHudPreset(preset.id); }
+                      },
+                        el('span', { className: 'gw-hud-preset-icon', 'aria-hidden': 'true' }, preset.icon),
+                        el('span', { className: 'gw-hud-preset-copy' },
+                          el('span', { className: 'gw-hud-preset-name' }, preset.label),
+                          el('span', { className: 'gw-hud-preset-description' }, preset.description)
+                        )
+                      );
+                    })
+                  )
+                ),
+                worldActive && el('h3', { className: 'gw-settings-section-title' }, 'Optional HUD overlays'),
+                worldActive && [
+                  { id: 'progress', controls: 'gw-progress-hud', icon: '\uD83D\uDCCA', label: 'Progress', disabled: false },
+                  { id: 'map', controls: 'gw-minimap', icon: '\uD83D\uDDFA\uFE0F', label: 'Minimap', disabled: !engine },
+                  { id: 'history', controls: 'gw-history-panel', icon: '\uD83D\uDCCF', label: 'Measurements', disabled: measureHistory.length === 0 },
+                  { id: 'inventory', controls: 'gw-inventory-panel', icon: '\uD83E\uDDF1', label: 'Block counts', disabled: !engine },
+                  { id: 'transform', controls: 'gw-transform-panel', icon: '\uD83D\uDCD0', label: 'Transform lab', disabled: false }
+                ].map(function(panel) {
+                  var active = hudPanel === panel.id;
+                  return el('button', {
+                    key: panel.id, type: 'button', className: 'gw-compact-action gw-hud-toggle gw-focusable',
+                    'aria-pressed': active, 'aria-controls': panel.controls, disabled: panel.disabled,
+                    title: panel.disabled ? panel.label + ' becomes available during play' : (active ? 'Hide ' + panel.label : 'Show ' + panel.label),
+                    onClick: function() { setHudPanel(panel.id, panel.label); }
+                  }, el('span', { 'aria-hidden': 'true' }, panel.icon), active ? 'Hide ' + panel.label : panel.label);
+                }),
+                el('h3', { className: 'gw-settings-section-title' }, 'Lesson & accessibility'),
+
           // Lesson selector (built-in + AI-generated)
           el('select', {
             'aria-label': __alloT('stem.geometryworld.choose_lesson', 'Choose lesson'),
             value: activeLesson,
             onChange: function(ev) {
               var lessonKey = ev.target.value;
-              upd({ activeLesson: lessonKey, showLessonIntro: true, showReflection: false });
+              upd({ activeLesson: lessonKey, showLessonIntro: true, showReflection: false, showGameSettings: false });
             },
             style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '3px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontFamily: 'inherit', cursor: 'pointer' }
           },
@@ -7159,7 +7432,7 @@
           ),
           // Help toggle
           el('button', {
-            onClick: function() { upd('showHelp', !showHelp); },
+            onClick: function() { upd({ showHelp: !showHelp, showGameSettings: false }); },
             style: { background: 'var(--allo-stem-panel, #1e293b)', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', borderRadius: '6px', padding: '4px 10px', cursor: 'pointer', fontSize: '11px', fontWeight: 600 }
           }, showHelp ? 'Hide Help' : '? Help'),
           // Sound mute toggle
@@ -7204,6 +7477,7 @@
             title: d.autoCycle ? 'Stop auto day/night cycle' : 'Start auto day/night cycle (changes every 60s)',
             style: { background: d.autoCycle ? '#f59e0b' : '#1e293b', border: '1px solid ' + (d.autoCycle ? '#fbbf24' : '#334155'), borderRadius: '6px', padding: '3px 6px', color: d.autoCycle ? '#000' : '#f59e0b', fontSize: '10px', cursor: 'pointer', fontWeight: 700 }
           }, d.autoCycle ? '\u2600\uFE0F\u27F3' : '\u2600\uFE0F'),
+          el('h3', { className: 'gw-settings-section-title' }, 'Create, share & export'),
           // Save/Export world
           engine && el('button', {
             onClick: function() {
@@ -7354,7 +7628,7 @@
           }, '\uD83D\uDDA8\uFE0F Worksheet'),
           // Creator Mode toggle
           el('button', {
-            onClick: function() { upd('creatorMode', !creatorMode); if (!creatorMode && addToast) addToast('\uD83C\uDFA8 Creator Mode ON \u2014 build a lesson for your classmates!', 'info'); },
+            onClick: function() { upd({ creatorMode: !creatorMode, showGameSettings: false }); if (!creatorMode && addToast) addToast('\uD83C\uDFA8 Creator Mode ON \u2014 build a lesson for your classmates!', 'info'); },
             style: { background: creatorMode ? '#7c3aed' : '#1e293b', border: '1px solid ' + (creatorMode ? '#a78bfa' : '#334155'), borderRadius: '6px', padding: '4px 10px', color: creatorMode ? '#fff' : '#a78bfa', fontSize: '11px', cursor: 'pointer', fontWeight: 700 }
           }, creatorMode ? '\uD83C\uDFA8 Creating...' : '\uD83C\uDFA8 Create'),
           // Load World (import JSON)
@@ -7452,7 +7726,7 @@
           }, '\uD83C\uDF10 Share'),
           // ── Peer Worlds: Browse class library ──
           sessionCode && el('button', {
-            onClick: loadPeerWorlds,
+            onClick: function() { upd('showGameSettings', false); loadPeerWorlds(); },
             title: __alloT('stem.geometryworld.browse_worlds_shared_by_classmates', 'Browse worlds shared by classmates'),
             style: { background: showPeerWorlds ? '#7c3aed' : '#1e293b', border: '1px solid ' + (showPeerWorlds ? '#a78bfa' : '#334155'), borderRadius: '6px', padding: '4px 10px', color: showPeerWorlds ? '#fff' : '#c084fc', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
           }, '\uD83D\uDCDA Class Worlds'),
@@ -7475,10 +7749,11 @@
           }, collabMode ? '\uD83D\uDC65 Building...' : '\uD83D\uDC65 Collab'),
           // ── Teacher Command Center toggle ──
           isTeacher && sessionCode && el('button', {
-            onClick: toggleTeacherView,
+            onClick: function() { upd('showGameSettings', false); toggleTeacherView(); },
             title: showTeacherView ? 'Close teacher dashboard' : 'Open real-time student progress dashboard',
             style: { background: showTeacherView ? '#dc2626' : '#1e293b', border: '1px solid ' + (showTeacherView ? '#f87171' : '#334155'), borderRadius: '6px', padding: '4px 10px', color: showTeacherView ? '#fff' : '#f87171', fontSize: '11px', cursor: 'pointer', fontWeight: 700 }
           }, showTeacherView ? '\uD83D\uDCCA Live!' : '\uD83D\uDCCA Teacher'),
+          el('h3', { className: 'gw-settings-section-title' }, 'AI lesson builder'),
           // ── AI Lesson Generator (enhanced) ──
           callGemini && el('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', alignItems: 'center' } },
             el('input', {
@@ -7540,7 +7815,7 @@
             }, '\uD83C\uDFB2'),
             // My Lessons library button
             el('button', {
-              onClick: function() { upd('showMyLessons', !showMyLessons); },
+              onClick: function() { upd({ showMyLessons: !showMyLessons, showGameSettings: false }); },
               title: __alloT('stem.geometryworld.browse_saved_ai_generated_lessons', 'Browse saved AI-generated lessons'),
               style: { background: showMyLessons ? '#7c3aed' : '#1e293b', border: '1px solid ' + (showMyLessons ? '#a78bfa' : '#334155'), borderRadius: '6px', padding: '4px 8px', color: showMyLessons ? '#fff' : '#a78bfa', fontSize: '11px', cursor: 'pointer', fontWeight: 700 }
             }, '\uD83D\uDCDA ' + getMyLessons().length)
@@ -7559,20 +7834,23 @@
               style: { background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '6px', padding: '4px 8px', cursor: 'pointer', fontSize: '10px', fontWeight: 700 }
             }, '\uD83D\uDD04 Refine'),
             el('button', {
-              onClick: function() { upd('showLessonEditor', !showLessonEditor); },
+              onClick: function() { upd({ showLessonEditor: !showLessonEditor, showGameSettings: false }); },
               title: __alloT('stem.geometryworld.edit_the_raw_lesson_json_manually', 'Edit the raw lesson JSON manually'),
               style: { background: showLessonEditor ? '#f59e0b' : '#1e293b', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 8px', color: showLessonEditor ? '#000' : '#f59e0b', fontSize: '10px', cursor: 'pointer', fontWeight: 700 }
             }, '\u270F\uFE0F JSON')
           )
-        ),
+              )
+            )
+          ),
 
         // ── LESSON PROGRESS HUD (always visible while playing, hidden when modals cover it) ──
         // Compact status card top-left below the toolbar. Students always see lesson title +
         // NPC progress + blocks placed without opening a menu.
-        worldActive && openModals.length === 0 && el('div', {
-          style: { position: 'absolute', top: '56px', left: '10px', zIndex: 5, padding: '8px 12px', borderRadius: '10px', background: 'rgba(15,23,42,0.72)', backdropFilter: 'blur(6px)', border: '1px solid rgba(124,58,237,0.22)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontWeight: 600, maxWidth: '260px', pointerEvents: 'none' },
+        worldActive && openModals.length === 0 && hudPanel === 'progress' && el('section', { id: 'gw-progress-hud',
+          style: { position: 'absolute', top: '56px', left: '10px', zIndex: 5, padding: '8px 12px', borderRadius: '10px', background: 'rgba(15,23,42,0.72)', backdropFilter: 'blur(6px)', border: '1px solid rgba(124,58,237,0.22)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontWeight: 600, maxWidth: '260px', pointerEvents: 'auto' },
           role: 'status', 'aria-live': 'polite', 'aria-label': 'Lesson progress: ' + (currentLesson.title || 'Lesson') + ', ' + Object.keys(answeredNpcs).length + ' of ' + totalQ + ' NPCs answered, ' + ((engine && engine.blocksPlaced) || 0) + ' blocks placed'
         },
+          el('button', { type: 'button', className: 'gw-hud-panel-close gw-focusable', 'aria-label': 'Hide progress HUD', onClick: function() { closeHudPanel('Progress'); }, style: { float: 'right', margin: '-3px -5px 3px 8px' } }, '\u00D7 Hide'),
           el('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' } },
             el('span', { style: { fontSize: '13px' } }, '📐'),
             el('span', { style: { color: '#c4b5fd', fontSize: '11px', fontWeight: 800, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px' } }, currentLesson.title || 'Geometry Lesson')
@@ -7591,46 +7869,6 @@
           totalQ > 0 && el('div', { style: { marginTop: '4px', height: '3px', background: 'rgba(255,255,255,0.06)', borderRadius: '2px', overflow: 'hidden' } },
             el('div', { style: { width: Math.round((Object.keys(answeredNpcs).length / totalQ) * 100) + '%', height: '100%', background: 'linear-gradient(90deg, #7c3aed, #34d399)', transition: 'width 0.4s' } })
           ),
-          // ── Objectives checklist (auto-computed from lesson data + live state) ──
-          (function() {
-            var objectives = [];
-            var objectiveContext = {
-              answered: Object.keys(answeredNpcs).length,
-              totalQuestions: totalQ,
-              blocksPlaced: (engine && engine.blocksPlaced) || 0,
-              measurements: measureHistory,
-              structureCount: (currentLesson.structures || []).length,
-              revisionCompleted: !!predictionRevisionResult,
-              reflectionsCompleted: ((engine && engine.sessionLog) || []).filter(function(event) { return event && event.type === 'reflection' && event.data && String(event.data.text || '').trim(); }).length,
-              buildTarget: 5,
-              representationConnections: ((engine && engine.sessionLog) || []).filter(function(event) { return event && event.type === 'representation_connection' && event.data && String(event.data.text || '').trim(); }).length,
-            };
-            function addEvidenceObjective(text) {
-              var evidence = objectiveEvidenceFor(text, objectiveContext);
-              objectives.push({ text: text, done: evidence.done, evidence: evidence.evidence });
-            }
-            if (Array.isArray(currentLesson.objectives) && currentLesson.objectives.length > 0) {
-              currentLesson.objectives.forEach(addEvidenceObjective);
-            } else {
-              if (totalQ > 0) addEvidenceObjective('Answer all ' + totalQ + ' NPC question' + (totalQ === 1 ? '' : 's'));
-              if ((currentLesson.structures || []).length > 0) addEvidenceObjective((currentLesson.structures || []).length > 1 ? 'Investigate at least 2 structures' : 'Explore the structure');
-              addEvidenceObjective(__alloT('stem.geometryworld.place_at_least_5_blocks', 'Place at least 5 blocks'));
-            }
-            if ((currentLesson.structures || []).length > 0 && !objectives.some(function(o) { return /predict|estimate|strategy|explain|reason/i.test(o.text); })) {
-              addEvidenceObjective('Make and explain a volume prediction');
-            }
-            var allDone = objectives.length > 0 && objectives.every(function(o) { return o.done; });
-            return el('div', { style: { marginTop: '6px', paddingTop: '6px', borderTop: '1px dashed rgba(148,163,184,0.2)' } },
-              el('div', { style: { fontSize: '9px', fontWeight: 800, color: allDone ? '#4ade80' : '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: '2px' } },
-                (allDone ? '✨ ' : '🎯 ') + 'Objectives'),
-              objectives.slice(0, 4).map(function(o, i) {
-                return el('div', { key: 'hudobj-' + i + '-' + (o && o.text ? String(o.text).slice(0, 24) : ''), title: o.evidence, 'aria-label': o.text + '. ' + o.evidence, style: { display: 'flex', alignItems: 'start', gap: '5px', fontSize: '10px', lineHeight: 1.3, marginBottom: '1px' } },
-                  el('span', { style: { color: o.done ? '#4ade80' : '#94a3b8', flexShrink: 0, fontWeight: 700 } }, o.done ? '☑' : '☐'),
-                  el('span', { style: { color: o.done ? '#94a3b8' : '#cbd5e1', textDecoration: o.done ? 'line-through' : 'none' } }, o.text)
-                );
-              })
-            );
-          })()
         ),
 
         // ── NPC COMPASS — live-updating horizontal pip strip centered on camera facing ──
@@ -7774,18 +8012,18 @@
         showHelp && el('div', { role: 'dialog', className: 'gw-dialog gw-dialog--compact', 'aria-modal': 'true', 'aria-label': 'Controls and help', tabIndex: -1, ref: gwDialogRef, style: { position: 'absolute', top: '48px', right: '8px', zIndex: 20, background: 'rgba(15,23,42,0.95)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '10px', padding: '12px', fontSize: '11px', color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, maxWidth: '240px' } },
           el('div', { style: { fontWeight: 700, color: '#a78bfa', marginBottom: '6px', fontSize: '12px' } }, '\uD83C\uDFAE Controls'),
           el('div', { style: { display: 'grid', gridTemplateColumns: '70px 1fr', gap: '2px 8px', marginBottom: '10px' } },
-            el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, 'WASD'), 'Move around',
-            el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, 'Mouse'), 'Look around',
-            el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, '←↑↓→'), 'Look around (no mouse)',
-            el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, 'L-Click'), 'Break block',
-            el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, 'R-Click'), 'Place block',
-            el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, 'X / B'), 'Break / build (no mouse)',
-            el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, 'E'), 'Talk to NPC',
-            el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, 'M'), 'Measure structure',
-            el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, 'Space'), 'Jump',
-            el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, 'Shift'), 'Sprint',
-            el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, 'Scroll'), 'Cycle blocks',
-            el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, '1-9,0'), 'Select block',
+            el('span', { style: { color: '#c4b5fd', fontWeight: 700 } }, 'WASD'), 'Move around',
+            el('span', { style: { color: '#c4b5fd', fontWeight: 700 } }, 'Mouse'), 'Look around',
+            el('span', { style: { color: '#c4b5fd', fontWeight: 700 } }, '←↑↓→'), 'Look around (no mouse)',
+            el('span', { style: { color: '#c4b5fd', fontWeight: 700 } }, 'L-Click'), 'Break block',
+            el('span', { style: { color: '#c4b5fd', fontWeight: 700 } }, 'R-Click'), 'Place block',
+            el('span', { style: { color: '#c4b5fd', fontWeight: 700 } }, 'X / B'), 'Break / build (no mouse)',
+            el('span', { style: { color: '#c4b5fd', fontWeight: 700 } }, 'E'), 'Talk to NPC',
+            el('span', { style: { color: '#c4b5fd', fontWeight: 700 } }, 'M'), 'Measure structure',
+            el('span', { style: { color: '#c4b5fd', fontWeight: 700 } }, 'Space'), 'Jump',
+            el('span', { style: { color: '#c4b5fd', fontWeight: 700 } }, 'Shift'), 'Sprint',
+            el('span', { style: { color: '#c4b5fd', fontWeight: 700 } }, 'Scroll'), 'Cycle blocks',
+            el('span', { style: { color: '#c4b5fd', fontWeight: 700 } }, '1-9,0'), 'Select block',
             el('span', { style: { color: '#22d3ee', fontWeight: 600 } }, 'Ctrl+Z'), 'Undo',
             el('span', { style: { color: '#22d3ee', fontWeight: 600 } }, 'Ctrl+Y'), 'Redo',
             el('span', { style: { color: '#a78bfa', fontWeight: 600 } }, '2\u00d7Space'), 'Toggle fly (or F key)',
@@ -8009,7 +8247,7 @@
           )
         ),
         // Objectives panel (left side) — glass style with progress bar
-        el('section', { className: 'gw-objective-panel', role: 'region', 'aria-labelledby': 'gw-objective-title' },
+        objectivesOpen && el('section', { id: 'gw-objective-panel', className: 'gw-objective-panel', role: 'region', 'aria-labelledby': 'gw-objective-title' },
           el('div', { className: 'gw-objective-header' },
             el('h2', { id: 'gw-objective-title', className: 'gw-objective-title' }, '\uD83D\uDCCB Objectives'),
             totalQ > 0 && el('div', { className: 'gw-objective-count' }, score + '/' + totalQ)
@@ -8065,7 +8303,9 @@
           }, '\u21BB Reset World')
         ),
         // ── Minimap — top-down view showing player + NPC positions ──
-        engine && el('canvas', {
+        engine && hudPanel === 'map' && el('section', { id: 'gw-minimap', className: 'gw-minimap-shell', role: 'region', 'aria-label': 'Minimap' },
+          el('button', { type: 'button', className: 'gw-hud-panel-close gw-focusable', 'aria-label': 'Hide minimap', onClick: function() { closeHudPanel('Minimap'); } }, '\u00D7 Map'),
+          el('canvas', {
           className: 'gw-minimap',
           'aria-hidden': 'true',
           ref: function(canvasNode) {
@@ -8152,7 +8392,7 @@
             ctx.beginPath(); ctx.arc(w / 2, h / 2, 2.5, 0, Math.PI * 2); ctx.fill();
 
             // Compass rose labels
-            ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.font = 'bold 7px sans-serif'; ctx.textAlign = 'center';
+            ctx.fillStyle = '#cbd5e1'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center';
             ctx.fillText('N', w / 2, 8); ctx.fillText('S', w / 2, h - 2);
             ctx.fillText('W', 5, h / 2 + 3); ctx.fillText('E', w - 5, h / 2 + 3);
             // Border
@@ -8161,7 +8401,8 @@
           },
           width: 100, height: 100,
           style: { overflow: 'hidden' }
-        }),
+          })
+        ),
         // Shape selector (above block toolbar) — matching glass style
         el('div', { className: 'gw-shape-tray', style: { position: 'absolute', bottom: '54px', left: '50%', transform: 'translateX(-50%)', zIndex: 20, display: 'flex', gap: '3px', background: 'rgba(0,0,0,0.65)', borderRadius: '10px', padding: '3px 5px', alignItems: 'center', backdropFilter: 'blur(6px)', border: '1px solid rgba(255,255,255,0.06)' } },
           el('span', { style: { fontSize: '9px', color: 'var(--allo-stem-text-soft, #94a3b8)', padding: '0 4px', fontWeight: 600 } }, 'Shape'),
@@ -8362,13 +8603,13 @@
           // Left side: virtual joystick zone indicator
           el('div', { role: 'img', 'aria-label': 'Touch joystick: drag on the left side to move', style: { position: 'absolute', bottom: '80px', left: '20px', width: '100px', height: '100px', borderRadius: '50%', border: '2px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.05)', pointerEvents: 'none' } },
             el('div', { className: 'gw-touch-joystick-thumb', style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(calc(-50% + var(--gw-touch-stick-x, 0px)), calc(-50% + var(--gw-touch-stick-y, 0px)))', width: '30px', height: '30px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)' } }),
-            el('div', { style: { position: 'absolute', top: '4px', left: '50%', transform: 'translateX(-50%)', fontSize: '10px', color: 'rgba(255,255,255,0.25)' } }, '\u25B2'),
-            el('div', { style: { position: 'absolute', bottom: '4px', left: '50%', transform: 'translateX(-50%)', fontSize: '10px', color: 'rgba(255,255,255,0.25)' } }, '\u25BC'),
-            el('div', { style: { position: 'absolute', left: '4px', top: '50%', transform: 'translateY(-50%)', fontSize: '10px', color: 'rgba(255,255,255,0.25)' } }, '\u25C0'),
-            el('div', { style: { position: 'absolute', right: '4px', top: '50%', transform: 'translateY(-50%)', fontSize: '10px', color: 'rgba(255,255,255,0.25)' } }, '\u25B6')
+            el('div', { style: { position: 'absolute', top: '4px', left: '50%', transform: 'translateX(-50%)', fontSize: '12px', color: '#cbd5e1' } }, '\u25B2'),
+            el('div', { style: { position: 'absolute', bottom: '4px', left: '50%', transform: 'translateX(-50%)', fontSize: '12px', color: '#cbd5e1' } }, '\u25BC'),
+            el('div', { style: { position: 'absolute', left: '4px', top: '50%', transform: 'translateY(-50%)', fontSize: '12px', color: '#cbd5e1' } }, '\u25C0'),
+            el('div', { style: { position: 'absolute', right: '4px', top: '50%', transform: 'translateY(-50%)', fontSize: '12px', color: '#cbd5e1' } }, '\u25B6')
           ),
           // Right side: action buttons
-          el('div', { role: 'group', 'aria-label': 'Touch actions', style: { position: 'absolute', bottom: '80px', right: '12px', display: 'flex', flexDirection: 'column', gap: '8px', pointerEvents: 'auto' } },
+          el('div', { className: 'gw-touch-actions', role: 'group', 'aria-label': 'Touch actions', style: { position: 'absolute', bottom: '80px', right: '12px', display: 'flex', flexDirection: 'column', gap: '8px', pointerEvents: 'auto' } },
             // Jump button
             el('button', {
               type: 'button', className: 'gw-focusable', 'aria-label': 'Jump', title: 'Jump',
@@ -8424,8 +8665,8 @@
             }, '\u21A9')
           ),
           // Label hints
-          el('div', { style: { position: 'absolute', bottom: '65px', left: '20px', fontSize: '9px', color: 'rgba(255,255,255,0.3)', textAlign: 'center', width: '100px', pointerEvents: 'none' } }, 'MOVE'),
-          el('div', { style: { position: 'absolute', bottom: '65px', right: '12px', fontSize: '9px', color: 'rgba(255,255,255,0.3)', textAlign: 'center', width: '52px', pointerEvents: 'none' } }, 'ACTIONS')
+          el('div', { style: { position: 'absolute', bottom: '65px', left: '20px', fontSize: '11px', fontWeight: 800, color: '#cbd5e1', textAlign: 'center', width: '100px', pointerEvents: 'none' } }, 'MOVE'),
+          el('div', { style: { position: 'absolute', bottom: '65px', right: '12px', fontSize: '11px', fontWeight: 800, color: '#cbd5e1', textAlign: 'center', width: '52px', pointerEvents: 'none' } }, 'ACTIONS')
         ),
         // ── Water submersion blue tint ──
         engine && engine._inWater && el('div', { className: 'gw-environment-tint gw-environment-tint--water', 'aria-hidden': 'true' }),
@@ -8448,8 +8689,8 @@
             padding: '2px 8px', fontSize: '9px', color: '#fbbf24', fontWeight: 600 }
         }, '\u21BB ' + (blockRotation * 90) + '\u00b0 (R)'),
         // ── Measurement history panel (bottom-left, above position HUD) ──
-        measureHistory.length > 0 && el('section', { className: 'gw-history-panel', role: 'region', 'aria-label': 'Measurement history' },
-          el('div', { className: 'gw-history-title' }, '\uD83D\uDCCF MEASUREMENTS \u00b7 ' + completedMeasurements.length + '/' + measureHistory.length + ' COMPLETE'),
+        hudPanel === 'history' && measureHistory.length > 0 && el('section', { id: 'gw-history-panel', className: 'gw-history-panel', role: 'region', 'aria-label': 'Measurement history' },
+          el('div', { className: 'gw-history-title gw-hud-panel-heading' }, el('span', null, '\uD83D\uDCCF MEASUREMENTS \u00b7 ' + completedMeasurements.length + '/' + measureHistory.length + ' COMPLETE'), el('button', { type: 'button', className: 'gw-hud-panel-close gw-focusable', 'aria-label': 'Hide measurement history', onClick: function() { closeHudPanel('Measurements'); } }, '\u00D7')),
           measureHistory.slice(-5).reverse().map(function(mh, mi) {
             return el('div', { key: mi, className: 'gw-history-row', 'data-current': mi === 0 ? 'true' : 'false', 'data-incomplete': mh.isComplete === false ? 'true' : 'false' },
               el('span', null, mh.isComplete === false ? 'Incomplete scan' : mh.L + '\u00d7' + mh.W + '\u00d7' + mh.H),
@@ -8499,15 +8740,15 @@
           )
         ),
         // ── Block inventory widget (top-right, shows counts per type) ──
-        engine && (engine.blocksPlaced || 0) > 0 && el('section', { className: 'gw-inventory-panel', role: 'region', 'aria-label': 'Block inventory' },
-          el('div', { className: 'gw-inventory-title' }, 'BLOCKS PLACED'),
+        hudPanel === 'inventory' && engine && el('section', { id: 'gw-inventory-panel', className: 'gw-inventory-panel', role: 'region', 'aria-label': 'Block inventory' },
+          el('div', { className: 'gw-inventory-title gw-hud-panel-heading' }, el('span', null, 'BLOCKS PLACED'), el('button', { type: 'button', className: 'gw-hud-panel-close gw-focusable', 'aria-label': 'Hide block inventory', onClick: function() { closeHudPanel('Block counts'); } }, '\u00D7')),
           // Real-time total volume counter
           (function() {
             var totalVol = 0;
             var bks = Object.keys(engine.blocks);
             for (var vi = 0; vi < bks.length; vi++) {
               var bm = engine.blocks[bks[vi]];
-              if (bm && bm.userData && bm.userData.volume) totalVol += bm.userData.volume;
+              if (bm && bm.userData && !bm.userData._lessonBlock && bm.userData.volume) totalVol += bm.userData.volume;
             }
             return el('div', { className: 'gw-inventory-volume' },
               '\uD83D\uDCE6 ' + (totalVol === Math.floor(totalVol) ? totalVol : totalVol.toFixed(2)) + ' cu'
@@ -8518,7 +8759,7 @@
             var bk = Object.keys(engine.blocks);
             for (var bi = 0; bi < bk.length; bi++) {
               var bm = engine.blocks[bk[bi]];
-              if (bm && bm.userData.blockType && bm.userData.blockType !== 'grass') {
+              if (bm && bm.userData.blockType && !bm.userData._lessonBlock && bm.userData.blockType !== 'grass') {
                 var bt = bm.userData.blockType;
                 counts[bt] = (counts[bt] || 0) + 1;
               }
@@ -8875,7 +9116,7 @@
               el('div', { style: { width: '32px', height: '32px', borderRadius: '50%', background: 'linear-gradient(135deg, ' + npcHexColor + ', ' + npcHexColor + '88)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', color: '#fff', fontWeight: 800, flexShrink: 0, border: '2px solid ' + npcHexColor + '66' } }, data.name.charAt(0)),
               el('div', { style: { flex: 1 } },
                 el('div', { style: { fontSize: '13px', fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)' } }, data.name),
-                data.question && !isAnswered && el('div', { style: { fontSize: '9px', color: npcHexColor, fontWeight: 600, letterSpacing: '0.3px' } }, 'HAS A QUESTION')
+                data.question && !isAnswered && el('div', { style: { display: 'inline-flex', marginTop: '2px', padding: '2px 6px', border: '1px solid rgba(251,191,36,0.4)', borderRadius: '999px', background: 'rgba(15,23,42,0.92)', color: '#fde68a', fontSize: '10px', fontWeight: 800, letterSpacing: '0.3px' } }, 'HAS A QUESTION')
               ),
               el('button', { type: 'button', className: 'gw-dialog-close', 'aria-label': __alloT('stem.geometryworld.close_npc_dialog', 'Close NPC dialog'), onClick: function() { upd({ showNpcDialog: false }); focusWorldSurface(); }, style: { background: 'rgba(100,116,139,0.15)', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '14px', cursor: 'pointer', borderRadius: '6px', width: '26px', height: '26px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 } }, '\u00d7')
             ),
@@ -9196,7 +9437,7 @@
           el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' } },
             el('div', { style: { fontSize: '15px', fontWeight: 800, color: '#c4b5fd' } }, '\uD83D\uDCDA Class World Library'),
             el('div', { style: { display: 'flex', gap: '6px' } },
-              el('button', { onClick: loadPeerWorlds, style: { background: 'none', border: 'none', color: '#7c3aed', fontSize: '12px', cursor: 'pointer', fontWeight: 600 } }, '\u21BB Refresh'),
+              el('button', { onClick: loadPeerWorlds, style: { background: 'none', border: 'none', color: '#c4b5fd', fontSize: '12px', cursor: 'pointer', fontWeight: 700 } }, '\u21BB Refresh'),
               el('button', { type: 'button', className: 'gw-dialog-close', 'aria-label': __alloT('stem.geometryworld.close_class_worlds_browser', 'Close class worlds browser'), onClick: function() { upd('showPeerWorlds', false); }, style: { background: 'none', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '18px', cursor: 'pointer' } }, '\u00d7')
             )
           ),
@@ -9469,7 +9710,7 @@
               }, '🥽 ' + __alloT('vr.enter', 'VR'))
             ),
             // === H7b'' inquiry widget: transformation discovery ===
-            (function() {
+            hudPanel === 'transform' && (function() {
               var iq = d._transformHunt || { rot: 0, scale: 1, shear: 0, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
               function setIQ(patch) { upd('_transformHunt', Object.assign({}, iq, patch)); }
               var volume = iq.scale * iq.scale * iq.scale;
@@ -9485,8 +9726,11 @@
                 skewed:     { label: __alloT('stem.geometryworld.skewed_shape_deformed', '🟠 Skewed (shape deformed)'), color: '#fbbf24', bg: 'rgba(251,191,36,0.12)', border: 'rgba(251,191,36,0.4)' },
                 degenerate: { label: __alloT('stem.geometryworld.degenerate_volume_0', '💀 Degenerate (volume → 0)'), color: '#f87171', bg: 'rgba(248,113,113,0.12)', border: 'rgba(248,113,113,0.4)' }
               }[state];
-              return el('div', { className: 'gw-transform-panel', role: 'region', 'aria-label': 'Transform discovery' },
-                el('h3', { style: { fontSize: 12, fontWeight: 800, color: '#a78bfa', margin: '0 0 4px 0' } }, '📐 Transform discovery'),
+              return el('section', { id: 'gw-transform-panel', className: 'gw-transform-panel', role: 'region', 'aria-label': 'Transform discovery' },
+                el('div', { className: 'gw-transform-heading gw-hud-panel-heading' },
+                  el('h3', { style: { fontSize: 12, fontWeight: 800, color: '#c4b5fd', margin: 0 } }, '\uD83D\uDCD0 Transform discovery'),
+                  el('button', { type: 'button', className: 'gw-hud-panel-close gw-focusable', 'aria-label': 'Hide transform discovery', onClick: function() { closeHudPanel('Transform lab'); } }, '\u00D7')
+                ),
                 el('div', { className: 'gw-transform-state', role: 'status', 'aria-live': 'polite', style: { color: sm.color, background: sm.bg, border: '1px solid ' + sm.border } },
                   sm.label
                 ),

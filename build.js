@@ -515,8 +515,18 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'DiagnosisEligibility',
+        filename: 'stem_lab/stem_tool_eligibility.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'WordSoundsModal',
         filename: 'word_sounds_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'BehaviorLensWorkspace',
+        filename: 'behavior_lens_workspace_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
@@ -811,6 +821,11 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'VideoLibrary',
+        filename: 'view_video_library_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'SessionModal',
         filename: 'view_session_modal_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -1085,6 +1100,7 @@ const PLUGIN_FILES = [
     'translate_loader.js',
     'dictionary_loader.js',
     'sd_turbo_loader.js',
+    'stem_lab/stem_tool_machinelab.js',
     'stem_lab/stem_tool_arccity.js',
     'stem_lab/stem_tool_dna.js',
     'stem_lab/stem_tool_unitconvert.js',
@@ -1127,6 +1143,7 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_anatomy.js',
     'stem_lab/stem_tool_decomposer.js',
     'stem_lab/stem_tool_companionplanting.js',
+    'stem_lab/stem_tool_treelab.js',
     'stem_lab/stem_tool_aquarium.js',
     'stem_lab/stem_tool_ecosystem.js',
     'stem_lab/stem_tool_molecule.js',
@@ -1211,6 +1228,7 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_firstresponse.js',
     'stem_lab/stem_tool_learning_lab.js',
     'stem_lab/stem_tool_consciousness.js',
+    'stem_lab/stem_tool_organismid.js',
     'stem_lab/stem_tool_llm_literacy.js',
     'stem_lab/stem_tool_nutritionlab.js',
     'stem_lab/stem_tool_kitchenlab.js',

@@ -180,7 +180,7 @@ function spedAnnounce(message) {
 }
 
 function SpedTimelinesPanel(props) {
-  const { onClose, t, addToast = (() => {}) } = props;
+  const { onClose, t, addToast = (() => {}), onOpenEligibility } = props;
   const tt = React.useCallback((key, fallback) => {
     if (typeof t === 'function') {
       try { const v = t(key); if (v) return v; } catch (_) {}
@@ -339,6 +339,15 @@ function SpedTimelinesPanel(props) {
           </div>
         </div>
 
+          {typeof onOpenEligibility === 'function' && (
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <button type="button" onClick={() => onOpenEligibility('elig-documents-title')}
+                className="min-h-11 px-3 py-2 rounded-lg border border-violet-300 bg-violet-50 text-violet-800 text-xs font-bold hover:bg-violet-100">
+                {tt('spedtl.eligibility_link', 'Review evaluation, eligibility & safeguards')}
+              </button>
+              <span className="text-[10px] text-slate-500">{tt('spedtl.eligibility_link_note', 'Opens the generic guide; no timeline data is transferred.')}</span>
+            </div>
+          )}
         <div className="p-4" role="tabpanel" id="spedtl-tabpanel" aria-labelledby={'spedtl-tab-' + tab} tabIndex={-1}>
           {tab === 'dashboard' && (
             <div>

@@ -252,7 +252,7 @@ const useAlloMotionDisabled = (disableAnimations) => {
   return !!disableAnimations || !!prefersReducedMotion;
 };
 // @section ALLOBOT — Embodied pedagogical tour agent
-// STEM Lab: map the active tool -> its discipline -> a themed accessory.
+// STEAM Lab: map the active tool -> its discipline -> a themed accessory.
 // Discipline is read from the tool's registered category (window.STEM_TOOL_REGISTRY,
 // populated by registerTool at load), so new tools auto-inherit the right accessory;
 // a few known edge cases are pinned in the override table.
@@ -1878,7 +1878,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
       onKeyDown={handleKeyDown}
       className={`fixed z-[10000] group ${motionDisabled ? 'allobot-motion-disabled' : ''} ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} ${isSleeping ? 'opacity-60 grayscale-[0.5]' : ''} outline-none focus:ring-4 focus:ring-indigo-400 focus:ring-offset-4 rounded-full`}
       style={{
-        // The STEM Lab modal sets an inline zIndex of 10020 (its z-[9999] class is
+        // The STEAM Lab modal sets an inline zIndex of 10020 (its z-[9999] class is
         // overridden), which buries the bot's z-[10000] — so the bot and its speech
         // bubble/chat were invisible during STEM tools. While the lab is open, lift
         // the bot to 10500: above the lab, below the voice overlays (10999/11500).

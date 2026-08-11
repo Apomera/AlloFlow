@@ -1,4 +1,4 @@
-// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -374,7 +374,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         var dt = new Date();
         var dateStamp = dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
         lines.push('# 🌍 Climate Explorer — Personal Report');
-        lines.push('*Generated ' + dateStamp + ' — AlloFlow STEM Lab · Climate Explorer*');
+        lines.push('*Generated ' + dateStamp + ' — AlloFlow STEAM Lab · Climate Explorer*');
         lines.push('');
         lines.push('## Overview');
         lines.push('- **Grade band:** ' + gradeLevel);
@@ -1338,7 +1338,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
 
         // ── Header ──
         el('div', { style: { padding: '20px 24px 16px', borderBottom: '1px solid rgba(34,197,94,0.2)', display: 'flex', alignItems: 'center', gap: 12 } },
-          el('button', { onClick: function() { setStemLabTool(null); }, 'aria-label': t('stem.climateExplorer.back_to_stem_lab', 'Back to STEM Lab'), style: { background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 16 } }, '\u2190'),
+          el('button', { onClick: function() { setStemLabTool(null); }, 'aria-label': t('stem.climateExplorer.back_to_stem_lab', 'Back to STEAM Lab'), style: { background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 16 } }, '\u2190'),
           el('div', { style: { fontSize: 28 } }, '\uD83C\uDF0D'),
           el('div', null,
             el('h2', { style: { margin: 0, fontSize: 20, fontWeight: 900, background: 'linear-gradient(90deg, #22c55e, #3b82f6, #a855f7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } }, 'Climate Explorer'),
@@ -2134,7 +2134,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             ),
             // Chart
             el('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(30,41,59,0.5)', border: '1px solid rgba(96,165,250,0.2)', marginBottom: 16 } },
-              el('canvas', { tabIndex: 0, role: 'img', 'aria-label': 'Climate data chart showing the selected indicator over time.', ref: function(cv) {
+              el('canvas', { tabIndex: 0, ref: function(cv) {
                 if (!cv) return;
                 var dpr = window.devicePixelRatio || 1;
                 var w = cv.offsetWidth || 600, h = 260;

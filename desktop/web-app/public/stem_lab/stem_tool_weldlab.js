@@ -21,7 +21,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
 (function() {
   'use strict';
 
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -304,6 +304,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
     name: 'WeldLab — Welding & Metal Joining',
     icon: '🔥',
     desc: 'Vocational welding simulator covering MIG / TIG / Stick / Oxy-Fuel processes, heat-input physics, weld bead geometry, defect identification, AWS welding symbols, OSHA-aligned PPE, and Maine career pathways (Bath Iron Works, EMCC welding program, AWS certification ladder). Real procedural and conceptual content for skilled-trades exploration — not a watered-down toy.',
+    category: 'engineering',
+    aliases: ['welding', 'MIG TIG', 'weld defects', 'skilled trades'],
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx.React || window.React;
@@ -3887,7 +3889,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           defects: 'Burn-through (too much heat on thin plate), incomplete penetration, undercut at toes',
           // SVG path defs — coordinates are within a 200×100 viewBox
           svgRender: function(h, accent) {
-            return h('svg', { viewBox: '0 0 200 100', className: 'w-full h-full' },
+            return h('svg', { role: 'img', 'aria-label': __alloT('stem.weldlab.butt_img', 'Butt joint: two plates meeting edge to edge in the same plane, welded along the seam'), viewBox: '0 0 200 100', className: 'w-full h-full' },
               // Two plates with small gap
               h('rect', { x: 25, y: 40, width: 70, height: 20, fill: '#94a3b8', stroke: '#475569', strokeWidth: 1.5 }),
               h('rect', { x: 105, y: 40, width: 70, height: 20, fill: '#94a3b8', stroke: '#475569', strokeWidth: 1.5 }),
@@ -3905,7 +3907,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           uses: 'Auto body panels, HVAC ductwork, sheet metal fabrication, aluminum boat hulls, gussets',
           defects: 'Cold lap (top piece doesn\'t fuse to bottom), overlap, incomplete root fusion',
           svgRender: function(h, accent) {
-            return h('svg', { viewBox: '0 0 200 100', className: 'w-full h-full' },
+            return h('svg', { role: 'img', 'aria-label': __alloT('stem.weldlab.lap_img', 'Lap joint: one plate overlapping another, welded along the overlapping edge'), viewBox: '0 0 200 100', className: 'w-full h-full' },
               // Bottom plate
               h('rect', { x: 25, y: 50, width: 150, height: 18, fill: '#94a3b8', stroke: '#475569', strokeWidth: 1.5 }),
               // Top plate (overlap)
@@ -3923,7 +3925,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           uses: 'Structural steel framing, machine bases, brackets, gussets, ship frames, table legs',
           defects: 'Undercut along vertical leg, overlap on horizontal leg, lack of root fusion in deep joints',
           svgRender: function(h, accent) {
-            return h('svg', { viewBox: '0 0 200 100', className: 'w-full h-full' },
+            return h('svg', { role: 'img', 'aria-label': __alloT('stem.weldlab.tee_img', 'T-joint: a vertical plate meeting a horizontal plate at a right angle, welded where they meet'), viewBox: '0 0 200 100', className: 'w-full h-full' },
               // Horizontal piece
               h('rect', { x: 25, y: 60, width: 150, height: 18, fill: '#94a3b8', stroke: '#475569', strokeWidth: 1.5 }),
               // Vertical piece
@@ -3942,7 +3944,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           uses: 'Box fabrication (toolboxes, electrical enclosures), sheet metal cabinets, frame corners, picture-frame style joints',
           defects: 'Burn-through at the corner edge (heat concentrates), gap fit-up issues, root cracking',
           svgRender: function(h, accent) {
-            return h('svg', { viewBox: '0 0 200 100', className: 'w-full h-full' },
+            return h('svg', { role: 'img', 'aria-label': __alloT('stem.weldlab.corner_img', 'Corner joint: two plates meeting at an outside corner, welded along the outer seam'), viewBox: '0 0 200 100', className: 'w-full h-full' },
               // Vertical piece (left)
               h('rect', { x: 60, y: 18, width: 18, height: 70, fill: '#94a3b8', stroke: '#475569', strokeWidth: 1.5 }),
               // Horizontal piece (top, sitting on the vertical)
@@ -3960,7 +3962,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           uses: 'Sheet metal tanks, food-service stainless containers, thin-gauge HVAC plenums, decorative trim edges',
           defects: 'Burn-through (very thin material), warping due to localized heat, incomplete seal',
           svgRender: function(h, accent) {
-            return h('svg', { viewBox: '0 0 200 100', className: 'w-full h-full' },
+            return h('svg', { role: 'img', 'aria-label': __alloT('stem.weldlab.edge_img', 'Edge joint: two plates face to face with edges aligned, welded along the top edge'), viewBox: '0 0 200 100', className: 'w-full h-full' },
               // Two plates standing up, edges aligned at top
               h('rect', { x: 80, y: 30, width: 14, height: 60, fill: '#94a3b8', stroke: '#475569', strokeWidth: 1.5 }),
               h('rect', { x: 106, y: 30, width: 14, height: 60, fill: '#cbd5e1', stroke: '#475569', strokeWidth: 1.5 }),
@@ -4341,7 +4343,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           difficulty: 'Beginner',
           context: 'You\'re working in a structural shop and the print shows this symbol on a T-joint:',
           render: function(h) {
-            return h('svg', { viewBox: '0 0 220 140', className: 'w-full', style: { maxWidth: '300px' } },
+            return h('svg', { role: 'img', 'aria-label': __alloT('stem.weldlab.ch1_img', 'Weld symbol: a horizontal reference line with a leader angling down to an arrowhead. A triangle sits below the reference line, with the text 1/4 to its left'), viewBox: '0 0 220 140', className: 'w-full', style: { maxWidth: '300px' } },
               h('line', { x1: 60, y1: 70, x2: 180, y2: 70, stroke: '#1f2937', strokeWidth: 2 }),
               h('line', { x1: 60, y1: 70, x2: 35, y2: 105, stroke: '#1f2937', strokeWidth: 2 }),
               h('path', { d: 'M 35 105 L 41 99 L 45 104 Z', fill: '#1f2937' }),
@@ -4360,7 +4362,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           difficulty: 'Intermediate',
           context: 'Print for a railing assembly. This symbol appears on a T-joint at every post:',
           render: function(h) {
-            return h('svg', { viewBox: '0 0 220 140', className: 'w-full', style: { maxWidth: '300px' } },
+            return h('svg', { role: 'img', 'aria-label': __alloT('stem.weldlab.ch2_img', 'Weld symbol: a horizontal reference line with a leader angling down to an arrowhead. An open circle marks the point where they meet and a small flag flies from it. A triangle sits below the reference line, with the text 3/16 to its left'), viewBox: '0 0 220 140', className: 'w-full', style: { maxWidth: '300px' } },
               h('line', { x1: 60, y1: 70, x2: 180, y2: 70, stroke: '#1f2937', strokeWidth: 2 }),
               h('line', { x1: 60, y1: 70, x2: 35, y2: 105, stroke: '#1f2937', strokeWidth: 2 }),
               h('path', { d: 'M 35 105 L 41 99 L 45 104 Z', fill: '#1f2937' }),
@@ -4381,7 +4383,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           difficulty: 'Intermediate',
           context: 'Production drawing for a structural beam splice. The symbol shows welds on both sides:',
           render: function(h) {
-            return h('svg', { viewBox: '0 0 220 140', className: 'w-full', style: { maxWidth: '300px' } },
+            return h('svg', { role: 'img', 'aria-label': __alloT('stem.weldlab.ch3_img', 'Weld symbol: a horizontal reference line with a leader angling down to an arrowhead. A V opens below the reference line and a mirrored V opens above it, each marked 3/8'), viewBox: '0 0 220 140', className: 'w-full', style: { maxWidth: '300px' } },
               h('line', { x1: 60, y1: 70, x2: 180, y2: 70, stroke: '#1f2937', strokeWidth: 2 }),
               h('line', { x1: 60, y1: 70, x2: 35, y2: 105, stroke: '#1f2937', strokeWidth: 2 }),
               h('path', { d: 'M 35 105 L 41 99 L 45 104 Z', fill: '#1f2937' }),
@@ -4404,7 +4406,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           difficulty: 'Advanced',
           context: 'Pipeline drawing — pipe fits to a flange. Tail of symbol calls out specific process:',
           render: function(h) {
-            return h('svg', { viewBox: '0 0 280 140', className: 'w-full', style: { maxWidth: '380px' } },
+            return h('svg', { role: 'img', 'aria-label': __alloT('stem.weldlab.ch4_img', 'Weld symbol: a horizontal reference line with a leader angling down to an arrowhead and an open circle where they meet. Below the line is a V with a curve bulging downward beneath it, marked 1/2. The right end forks into a tail carrying the text GTAW-6G'), viewBox: '0 0 280 140', className: 'w-full', style: { maxWidth: '380px' } },
               h('line', { x1: 60, y1: 70, x2: 200, y2: 70, stroke: '#1f2937', strokeWidth: 2 }),
               h('line', { x1: 60, y1: 70, x2: 35, y2: 105, stroke: '#1f2937', strokeWidth: 2 }),
               h('path', { d: 'M 35 105 L 41 99 L 45 104 Z', fill: '#1f2937' }),
@@ -4517,7 +4519,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                         className: 'flex justify-center items-center mb-2',
                         style: { height: '70px' }
                       },
-                        h('svg', { viewBox: '0 0 90 80', style: { width: '70px', height: '70px' } },
+                        h('svg', { 'aria-hidden': 'true', viewBox: '0 0 90 80', style: { width: '70px', height: '70px' } },
                           sym.render(h)
                         )
                       ),
@@ -7055,6 +7057,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           { q: 'What is "burn-through"?', opts: ['Burning a hole through the base metal', 'Burning your skin from arc flash', 'Burning out a welding machine', 'Burning consumables'], correct: 0, explain: 'Burn-through = melted hole punched through the base metal due to excessive heat input on thin material. Visible as a sag or hole in the bead. Caused by too much amperage, too slow travel, or insufficient base metal thickness for the chosen procedure.' },
           { q: 'What is "essential variable" in a WPS?', opts: ['Optional setting', 'Variable that requires re-qualification if changed beyond limits', 'Welder personality trait', 'Inspector requirement'], correct: 1, explain: 'Essential variables per ASME IX include: base metal class, filler classification, electrical characteristics, joint design, position, technique. Changing any essential variable beyond ranges requires WPS requalification. Non-essential variables can be changed without re-qualifying.' }
         ];
+        // The authored exam put 61% of correct answers in slot 2 (measured
+        // 11/30/8/0 with slot 4 never) — passable by position. Deterministic
+        // per-question rotation: the exam re-reads examQuestions[quizIdx] on
+        // every render, so a random shuffle would deal new options
+        // mid-question. Grading is by index (oi === current.correct), so
+        // `correct` is remapped with the options; `explain` is one string.
+        examQuestions = examQuestions.map(function(q, qi) {
+          if (!q || !Array.isArray(q.opts) || q.opts.length < 2 || typeof q.correct !== 'number') return q;
+          var n = q.opts.length;
+          var shift = ((qi * 7) + 3) % n;
+          if (shift === 0) return q;
+          var moved = new Array(n);
+          for (var i = 0; i < n; i++) moved[(i + shift) % n] = q.opts[i];
+          return Object.assign({}, q, { opts: moved, correct: (q.correct + shift) % n });
+        });
 
         if (qpView === 'overview') {
           return h('div', { className: 'min-h-screen bg-slate-50' },
@@ -9201,6 +9218,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             explain: 'Half-V shape (⌶) = bevel groove. Only ONE plate is prepared (beveled); the other stays square. Used when only one piece can be machined easily — common for plate-to-pipe.'
           }
         ];
+        // Same slot-2 pile-up as the cert exam; same deterministic rotation
+        // (symbolQuestions[mbQIdx] is re-read every render, graded by index).
+        symbolQuestions = symbolQuestions.map(function(q, qi) {
+          if (!q || !Array.isArray(q.options) || q.options.length < 2 || typeof q.correct !== 'number') return q;
+          var n = q.options.length;
+          var shift = ((qi * 7) + 3) % n;
+          if (shift === 0) return q;
+          var moved = new Array(n);
+          for (var i = 0; i < n; i++) moved[(i + shift) % n] = q.options[i];
+          return Object.assign({}, q, { options: moved, correct: (q.correct + shift) % n });
+        });
 
         function renderSymbolViz(viz) {
           // Visual approximation of an AWS weld symbol: reference line

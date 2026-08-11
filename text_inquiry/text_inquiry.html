@@ -7,6 +7,35 @@
   <style>
     :root{color-scheme:light;--ink:#172033;--muted:#59657a;--line:#cbd5e1;--panel:#fff;--wash:#f5f3ff;--violet:#6d28d9;--violet2:#4c1d95;--amber:#92400e;--green:#166534;--red:#b91c1c;--focus:#0ea5e9}*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#f8fafc,#f5f3ff 55%,#ecfeff);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}button,input,textarea,select{font:inherit}button{min-height:44px;border:1px solid transparent;border-radius:11px;padding:10px 14px;font-weight:800;cursor:pointer}button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid var(--focus);outline-offset:2px}.top{padding:22px clamp(16px,4vw,46px);background:#27134f;color:#fff}.top h1{margin:0;font-size:clamp(24px,4vw,38px)}.top p{max-width:900px;margin:7px 0 0;color:#ddd6fe}.badges{display:flex;flex-wrap:wrap;gap:7px;margin-top:13px}.badge{border:1px solid #8b5cf6;border-radius:999px;padding:4px 9px;background:#3b1b6c;color:#ede9fe;font-size:12px;font-weight:750}.layout{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(300px,.92fr);gap:18px;max-width:1320px;margin:0 auto;padding:20px}.stack{display:grid;gap:16px}.card{padding:18px;border:1px solid var(--line);border-radius:16px;background:var(--panel);box-shadow:0 10px 28px rgba(51,65,85,.08)}.card h2{margin:0 0 5px;font-size:18px}.card h3{margin:16px 0 6px;font-size:14px}.help{margin:0 0 13px;color:var(--muted);font-size:13px}.warning{padding:10px 12px;border-left:4px solid #d97706;border-radius:8px;background:#fffbeb;color:#78350f;font-size:13px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:grid;gap:5px}.field label,.label{font-size:12px;font-weight:850;color:#334155}.field input,.field textarea,.field select{width:100%;border:1px solid #94a3b8;border-radius:9px;padding:9px;background:#fff;color:#0f172a}.field textarea{min-height:92px;resize:vertical}.text-input{min-height:270px!important;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13px}.actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:12px}.primary{background:linear-gradient(135deg,var(--violet),var(--violet2));color:#fff}.secondary{border-color:#7c3aed;background:#fff;color:#5b21b6}.ghost{border-color:#94a3b8;background:#f8fafc;color:#334155}.primary:disabled,.secondary:disabled{cursor:not-allowed;opacity:.48}.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.metric{padding:10px;border:1px solid #ddd6fe;border-radius:10px;background:#faf5ff}.metric strong{display:block;font-size:19px;color:#5b21b6}.metric span{font-size:10px;color:#64748b}.terms{display:flex;flex-wrap:wrap;gap:7px}.term{min-height:36px;padding:7px 9px;border:1px solid #c4b5fd;background:#faf5ff;color:#5b21b6;font-size:12px}.term[aria-pressed="true"]{background:#6d28d9;color:#fff}.concordance{display:grid;gap:8px;margin:9px 0 0;padding:0;list-style:none}.concordance li{padding:9px 11px;border-left:3px solid #8b5cf6;background:#f8fafc;color:#334155;font-size:12px}.annotation-list{display:grid;gap:8px;padding:0;list-style:none}.annotation-list li{padding:10px;border:1px solid #c4b5fd;border-radius:9px;background:#faf5ff;font-size:12px}.annotation-list button{float:right;min-height:32px;padding:4px 8px}.empty{color:#64748b;font-size:12px;font-style:italic}.check{display:flex;align-items:flex-start;gap:9px;margin-top:12px;padding:10px;border:1px solid #c4b5fd;border-radius:10px;background:#faf5ff;font-size:12px}.check input{width:20px;height:20px;flex:0 0 auto}.status{min-height:24px;margin-top:10px;font-size:13px;font-weight:750}.status[data-kind="ok"]{color:var(--green)}.status[data-kind="error"]{color:var(--red)}.status[data-kind="warn"]{color:var(--amber)}.method-note{padding:12px;border:1px solid #a7f3d0;border-radius:10px;background:#ecfdf5;color:#14532d;font-size:12px}.license{max-width:1320px;margin:0 auto;padding:0 20px 24px;color:#64748b;font-size:11px}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}[hidden]{display:none!important}@media(max-width:900px){.layout{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,1fr)}}@media(max-width:560px){.grid2{grid-template-columns:1fr}.layout{padding:12px}.card{padding:14px}.actions button{width:100%}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
   </style>
+  <style>
+    .source-search{margin-top:16px;padding-top:16px;border-top:1px solid #ddd6fe}
+    .source-search h3{margin-top:0}
+    .source-search-note{margin:8px 0 0;color:#64748b;font-size:11px}
+    .source-search-results{display:grid;gap:9px;margin:12px 0 0;padding:0;list-style:none}
+    .source-search-results li{padding:11px 12px;border:1px solid #c4b5fd;border-radius:10px;background:#faf5ff}
+    .source-search-results a{color:#4c1d95;font-weight:850;text-decoration:underline}
+    .source-search-results p{margin:5px 0;color:#334155;font-size:12px}
+    .source-search-meta{color:#64748b;font-size:11px}
+    .source-search-results button{min-height:36px;padding:7px 10px;margin-top:7px}
+    .source-search-controls{margin-top:10px}
+    .source-trust{display:inline-block;margin-top:7px;padding:3px 7px;border-radius:999px;background:#e2e8f0;color:#475569;font-size:10px;font-weight:800}
+    .source-trust[data-preferred="true"]{background:#dcfce7;color:#166534}
+    .source-verification{margin-top:14px;padding:12px;border:1px solid #a7f3d0;border-radius:10px;background:#f0fdf4}
+    .source-verification h4{margin:0 0 4px;font-size:13px;color:#14532d}
+    .source-verification-details{display:grid;gap:6px;margin-top:8px}
+    .source-verification-row{display:grid;grid-template-columns:120px 1fr;gap:8px;padding:7px 0;border-top:1px solid #bbf7d0;font-size:12px}
+    .source-verification-row strong{color:#334155}
+    .source-verification-row span{color:#14532d;overflow-wrap:anywhere}
+    .source-verification-row[data-kind="warn"] span{color:#92400e}
+    .source-verification-row[data-kind="error"] span{color:#b91c1c}
+    .source-citation-output{min-height:84px!important;font-size:12px}
+    .source-confidence{margin-top:10px;padding:9px 10px;border:1px solid #c4b5fd;border-radius:9px;background:#faf5ff;color:#334155;font-size:12px}
+    .source-confidence strong{color:#4c1d95}
+    .source-confidence[data-level="high"]{border-color:#86efac;background:#f0fdf4;color:#166534}
+    .source-confidence[data-level="medium"]{border-color:#fde68a;background:#fffbeb;color:#92400e}
+    .source-confidence[data-level="low"]{border-color:#fecaca;background:#fef2f2;color:#991b1b}
+    .source-confidence-details{margin:4px 0 0;color:#64748b;font-size:11px}
+  </style>
 </head>
 <body>
   <header class="top">
@@ -29,6 +58,29 @@
           <div class="field"><label for="sourceUrl">Stable record URL (optional)</label><input id="sourceUrl" type="url" maxlength="500" autocomplete="off" placeholder="https://…"></div>
         </div>
         <div class="field" style="margin-top:12px"><label for="sourceContext">Historical, cultural, positional, or collection context</label><textarea id="sourceContext" maxlength="1200" placeholder="What should a reader know about who created, preserved, edited, translated, or selected this source?"></textarea></div>
+
+        <section class="source-search" aria-labelledby="sourceSearchHeading">
+          <h3 id="sourceSearchHeading">Find sources online <span class="source-search-meta">Optional</span></h3>
+          <p class="help">Search for a candidate source by title, creator, topic, or collection. Only the search query and selected result URL are sent to the service; the pasted text stays in this window.</p>
+          <div class="field"><label for="sourceSearchQuery">Source search query</label><input id="sourceSearchQuery" maxlength="200" autocomplete="off" placeholder="Example: Charlotte Perkins Gilman The Yellow Wallpaper"></div>
+          <div class="grid2 source-search-controls">
+            <div class="field"><label for="sourceSearchScope">Search scope</label><select id="sourceSearchScope"><option value="web">General web</option><option value="open">Public-domain and open archives</option><option value="libraries">Libraries and catalogs</option><option value="scholarly">Scholarly records</option></select></div>
+            <div class="field"><label for="citationStyle">Citation style</label><select id="citationStyle"><option value="plain">Plain text</option><option value="mla">MLA</option><option value="apa">APA</option><option value="chicago">Chicago</option></select></div>
+          </div>
+          <div class="actions"><button class="secondary" id="sourceSearchBtn" type="button">Find sources</button></div>
+          <div class="status" id="sourceSearchStatus" role="status" aria-live="polite"></div>
+          <ol class="source-search-results" id="sourceSearchResults" aria-label="Web source candidates"></ol>
+          <section class="source-verification" id="sourceVerification" aria-labelledby="sourceVerificationHeading" hidden>
+            <h4 id="sourceVerificationHeading">Metadata check and citation</h4>
+            <p class="help">This checks public page metadata only. It does not prove authorship, edition, permissions, or scholarly quality.</p>
+            <div class="status" id="sourceVerificationStatus" role="status" aria-live="polite"></div>
+            <div class="source-confidence" id="sourceConfidence" data-level="unknown"><strong>Source confidence:</strong> <span id="sourceConfidenceLabel">Not assessed</span><p class="source-confidence-details" id="sourceConfidenceDetails"></p></div>
+            <div class="source-verification-details" id="sourceVerificationDetails"></div>
+            <div class="field" style="margin-top:10px"><label for="citationOutput">Suggested citation</label><textarea class="source-citation-output" id="citationOutput" rows="4" readonly></textarea></div>
+            <div class="actions"><button class="secondary" id="copyCitationBtn" type="button" disabled>Copy citation</button><button class="ghost" id="downloadCitationBtn" type="button" disabled>Download CSL-JSON</button></div>
+          </section>
+          <p class="source-search-note">Review the result, confirm the edition and permissions, then choose “Use this source.” Search results are candidates, not verified citations.</p>
+        </section>
       </section>
 
       <section class="card" aria-labelledby="textHeading">
@@ -90,6 +142,7 @@
   <script src="../annotation_inquiry_bridge.js"></script>
   <script src="../tool_integration_sdk.js"></script>
   <script src="text_inquiry_core.js"></script>
+  <script src="text_inquiry_search.js"></script>
   <script>
   (function () {
     'use strict';
@@ -107,17 +160,18 @@
       license: { name: 'MIT License', spdx: 'MIT', note: 'NLP enhancement uses compromise 14.15.1; learners must separately respect source-text rights.' },
       citation: { text: 'Cite the analyzed source edition or record and disclose Text Inquiry Studio 2026.07 with compromise 14.15.1 when its sentence segmentation is used.', url: 'https://github.com/spencermountain/compromise' },
       supportedMethodPacks: ['humanistic_interpretation', 'civic_policy', 'creative_cultural'],
-      capabilities: { captureArtifact: true, rawDataIncluded: false },
-      privacy: { learnerApprovalRequired: true, directIdentifiersAllowed: false, sequenceLikeTextAllowed: false, fullTextIncluded: false, sanitizerId: 'text_inquiry_excerpt_guard_v1', sanitizerRequired: false },
+      capabilities: { captureArtifact: true, rawDataIncluded: false, sourceDiscovery: true, sourceVerification: true, citationGeneration: true },
+      privacy: { learnerApprovalRequired: true, directIdentifiersAllowed: false, sequenceLikeTextAllowed: false, fullTextIncluded: false, externalSearchQueryAllowed: true, externalMetadataUrlAllowed: true, sanitizerId: 'text_inquiry_excerpt_guard_v1', sanitizerRequired: false },
       reproducibility: { requiredFields: ['softwareVersion', 'sourceRecordId', 'parameters', 'randomSeed', 'limitations', 'datasetVersion', 'transformations'] }
     };
     var els = {};
-    ['sourceTitle','sourceCreator','sourceEdition','sourceUrl','sourceContext','sourceText','analyzeBtn','sampleBtn','clearBtn','analysisStatus','resultsCard','metrics','topTerms','topBigrams','queryTerm','concordanceBtn','concordanceSummary','concordanceList','openAnnotationBtn','annotationCard','annotationExcerpt','annotationStance','annotationNote','addAnnotationBtn','downloadAnnotationsBtn','annotationStatus','annotationList','patternClaim','counterReading','limitation','nextQuestion','approvalCheck','captureBtn','downloadBtn','captureStatus','capturePreview','nlpBadge'].forEach(function (id) { els[id] = document.getElementById(id); });
+    ['sourceTitle','sourceCreator','sourceEdition','sourceUrl','sourceContext','sourceText','analyzeBtn','sampleBtn','clearBtn','analysisStatus','resultsCard','metrics','topTerms','topBigrams','queryTerm','concordanceBtn','concordanceSummary','concordanceList','openAnnotationBtn','annotationCard','annotationExcerpt','annotationStance','annotationNote','addAnnotationBtn','downloadAnnotationsBtn','annotationStatus','annotationList','patternClaim','counterReading','limitation','nextQuestion','approvalCheck','captureBtn','downloadBtn','captureStatus','capturePreview','nlpBadge','sourceSearchQuery','sourceSearchScope','sourceSearchBtn','sourceSearchStatus','sourceSearchResults','sourceVerification','sourceVerificationStatus','sourceConfidence','sourceConfidenceLabel','sourceConfidenceDetails','sourceVerificationDetails','citationStyle','citationOutput','copyCitationBtn','downloadCitationBtn'].forEach(function (id) { els[id] = document.getElementById(id); });
     var analysis = null;
     var concordanceRows = [];
     var concordanceQuery = '';
     var annotationHandoff = null;
     var inquiryAnnotations = [];
+    var sourceSearchState = { query: '', searchQuery: '', scope: 'web', results: [], selected: null, searchedAt: '', provider: '', cached: false, metadata: null, metadataStatus: '', metadataCheckedAt: '', metadataCached: false, confidence: null };
 
     function setStatus(element, message, kind) { element.textContent = message || ''; element.dataset.kind = kind || ''; }
     function text(value, limit) { return core.cleanText(value, limit); }
@@ -217,8 +271,176 @@
       if (value&&typeof value==='object') { var out={}; Object.keys(value).forEach(function(key){if(!/^(fullText|rawText|sourceText|text)$/i.test(key))out[key]=sanitizeValue(value[key],depth+1);}); return out; }
       return value;
     }
+    function sourceSearchQueryFromFields() {
+      var entered=text(els.sourceSearchQuery.value,200);
+      if (entered) return entered;
+      return [text(els.sourceTitle.value,180),text(els.sourceCreator.value,180),text(els.sourceEdition.value,220)].filter(function(value){return value.length>0;}).join(' ').slice(0,200);
+    }
+    function sourceScopeLabel(scope) {
+      var client=window.AlloFlowTextInquirySearch;
+      var details=client&&client.sourceScopes&&client.sourceScopes[scope];
+      return details&&details.label||'General web';
+    }
+    function compareSourceMetadata(expected, observed) {
+      var left=text(expected||'',240).toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+      var right=text(observed||'',320).toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+      if(!left)return {kind:'neutral',label:'Not provided',observed:observed||'Not recorded'};
+      if(!right)return {kind:'warn',label:'Not found',observed:'Not returned by the page'};
+      if(left===right||left.indexOf(right)>=0||right.indexOf(left)>=0)return {kind:'ok',label:'Likely match',observed:observed};
+      var words=left.split(' ').filter(function(word){return word.length>2;});
+      var hits=words.filter(function(word){return right.indexOf(word)>=0;}).length;
+      if(words.length&&hits/words.length>=0.5)return {kind:'warn',label:'Partial match',observed:observed};
+      return {kind:'error',label:'Possible mismatch',observed:observed};
+    }
+    function citationText() {
+      var source=sourceMetadata();
+      var metadata=sourceSearchState.metadata||{};
+      var creator=text(metadata.creator||els.sourceCreator.value,180);
+      var title=text(metadata.title||els.sourceTitle.value,180);
+      var date=text(metadata.date||els.sourceEdition.value,220);
+      var url=text(metadata.canonicalUrl||source.stableUrl,500);
+      if(creator==='Creator not recorded')creator='';
+      if(title==='Untitled classroom source')title='';
+      if(date==='Edition not recorded')date='';
+      var cleanPart=function(value){return String(value||'').replace(/[.!?]+$/,'').trim();};
+      creator=cleanPart(creator); title=cleanPart(title); date=cleanPart(date);
+      if(!title&&!url)return '';
+      if(els.citationStyle.value==='mla')return (creator?creator+'. ':'')+(title?'"'+title+'". ':'')+(date?date+'. ':'')+url;
+      if(els.citationStyle.value==='apa')return (creator?creator+'. ':'')+(date?'('+date+'). ':'')+(title?title+'. ':'')+url;
+      if(els.citationStyle.value==='chicago')return (creator?creator+'. ':'')+(title?'"'+title+'". ':'')+(date?date+'. ':'')+url;
+      return [creator,title,date,url].filter(function(value){return value.length>0;}).join('. ')+'.';
+    }
+    function creatorRecords(value) {
+      return text(value,180).split(/\s+(?:and|&)\s+|;\s*/i).map(function(name){var cleanName=name.trim();if(!cleanName)return null;if(cleanName.indexOf(',')>=0){var parts=cleanName.split(',');return {family:parts[0].trim(),given:parts.slice(1).join(',').trim()};}var words=cleanName.split(/\s+/);return words.length>1?{family:words.pop(),given:words.join(' ')}:{literal:cleanName};}).filter(Boolean);
+    }
+    function citationRecord() {
+      var source=sourceMetadata();
+      var metadata=sourceSearchState.metadata||{};
+      var title=text(metadata.title||els.sourceTitle.value,180);
+      var creator=text(metadata.creator||els.sourceCreator.value,180);
+      var date=text(metadata.date||els.sourceEdition.value,220);
+      var url=text(metadata.canonicalUrl||source.stableUrl,500);
+      if(title==='Untitled classroom source')title='';
+      if(creator==='Creator not recorded')creator='';
+      if(date==='Edition not recorded')date='';
+      if(!title&&!url)return null;
+      var type=String(metadata.type||'').toLowerCase();
+      var record={id:'text-inquiry-'+core.stableSourceId([title,creator,date,url]),type:type.indexOf('article')>=0?'article-journal':type.indexOf('book')>=0?'book':'webpage',title:title};
+      var authors=creatorRecords(creator);if(authors.length)record.author=authors;
+      if(url)record.URL=url;
+      if(metadata.publisher)record.publisher=text(metadata.publisher,180);
+      if(metadata.doi)record.DOI=text(metadata.doi,180);
+      if(metadata.isbn)record.ISBN=text(metadata.isbn,32);
+      var year=String(date||'').match(/\b(1[5-9]\d{2}|20\d{2}|21\d{2})\b/);if(year)record.issued={'date-parts':[[Number(year[1])]]};
+      return record;
+    }
+    function citationText() {
+      var source=sourceMetadata();
+      var metadata=sourceSearchState.metadata||{};
+      var creator=text(metadata.creator||els.sourceCreator.value,180);
+      var title=text(metadata.title||els.sourceTitle.value,180);
+      var date=text(metadata.date||els.sourceEdition.value,220);
+      var url=text(metadata.canonicalUrl||source.stableUrl,500);
+      if(creator==='Creator not recorded')creator='';
+      if(title==='Untitled classroom source')title='';
+      if(date==='Edition not recorded')date='';
+      var cleanPart=function(value){return String(value||'').replace(/[.!?]+$/,'').trim();};
+      creator=cleanPart(creator); title=cleanPart(title); date=cleanPart(date);
+      if(!title&&!url)return '';
+      if(els.citationStyle.value==='mla')return (creator?creator+'. ':'')+(title?'"'+title+'". ':'')+(date?date+'. ':'')+url;
+      if(els.citationStyle.value==='apa')return (creator?creator+'. ':'')+(date?'('+date+'). ':'')+(title?title+'. ':'')+url;
+      if(els.citationStyle.value==='chicago')return (creator?creator+'. ':'')+(title?'"'+title+'". ':'')+(date?date+'. ':'')+url;
+      return [creator,title,date,url].filter(function(value){return value.length>0;}).join('. ')+'.';
+    }
+    function renderCitation() {
+      els.citationOutput.value=citationText();
+      els.copyCitationBtn.disabled=!els.citationOutput.value;
+      els.downloadCitationBtn.disabled=!citationRecord();
+    }
+    function sourceConfidenceAssessment(expected,metadata) {
+      var client=window.AlloFlowTextInquirySearch;
+      if(client&&typeof client.assessConfidence==='function')return client.assessConfidence({expected:expected,metadata:metadata,metadataStatus:sourceSearchState.metadataStatus,preferredDomain:!!(sourceSearchState.selected&&sourceSearchState.selected.preferredDomain)});
+      return {level:'unknown',label:'Not assessed',score:0,maxScore:10,reasons:['Confidence scorer unavailable.'],comparisons:{}};
+    }
+    function renderSourceConfidence(assessment) {
+      assessment=assessment||{level:'unknown',label:'Not assessed',score:0,maxScore:10,reasons:[]};
+      els.sourceConfidence.dataset.level=assessment.level;els.sourceConfidenceLabel.textContent=assessment.label+(assessment.level==='unknown'?'':' ('+assessment.score+'/'+assessment.maxScore+' evidence points)');els.sourceConfidenceDetails.textContent=assessment.reasons.length?assessment.reasons.join('; ')+'.':'Choose a search result to assess its source metadata.';
+    }
+    function renderSourceVerification() {
+      if(!sourceSearchState.selected){els.sourceVerification.hidden=true;sourceSearchState.confidence=null;renderSourceConfidence(null);return;}
+      els.sourceVerification.hidden=false;els.sourceVerificationDetails.textContent='';
+      if(sourceSearchState.metadataStatus==='checking'){setStatus(els.sourceVerificationStatus,'Checking public metadata…','');sourceSearchState.confidence=null;renderSourceConfidence(null);}
+      else if(sourceSearchState.metadataStatus==='error'){setStatus(els.sourceVerificationStatus,'Metadata could not be checked. The candidate remains usable, but verify it manually.','warn');sourceSearchState.confidence=null;renderSourceConfidence(null);}
+      else if(sourceSearchState.metadata){
+        var expected={title:text(els.sourceTitle.value,180),creator:text(els.sourceCreator.value,180),edition:text(els.sourceEdition.value,220)};var metadata=sourceSearchState.metadata;var rows=[['Title',expected.title,metadata.title],['Creator',expected.creator,metadata.creator],['Date / edition',expected.edition,metadata.date]];var mismatches=0;var matches=0;
+        rows.forEach(function(row){var comparison=compareSourceMetadata(row[1],row[2]);if(comparison.kind==='error')mismatches+=1;if(comparison.kind==='ok')matches+=1;var item=document.createElement('div');item.className='source-verification-row';item.dataset.kind=comparison.kind;var label=document.createElement('strong');label.textContent=row[0];var value=document.createElement('span');value.textContent=comparison.label+': '+comparison.observed;item.append(label,value);els.sourceVerificationDetails.appendChild(item);});
+        [['Publisher',metadata.publisher],['DOI',metadata.doi],['ISBN',metadata.isbn],['Canonical URL',metadata.canonicalUrl||sourceSearchState.selected.url]].forEach(function(row){if(!row[1])return;var item=document.createElement('div');item.className='source-verification-row';var label=document.createElement('strong');label.textContent=row[0];var value=document.createElement('span');value.textContent=row[1];item.append(label,value);els.sourceVerificationDetails.appendChild(item);});
+        sourceSearchState.confidence=sourceConfidenceAssessment(expected,metadata);renderSourceConfidence(sourceSearchState.confidence);setStatus(els.sourceVerificationStatus,mismatches?'Review the possible metadata mismatch before citing this source.':matches?'The returned metadata is consistent with the entered source details.':'Metadata was returned, but the entered details were incomplete.',mismatches?'warn':matches?'ok':'warn');
+      }
+      renderCitation();
+    }
+    async function verifySelectedSource(row) {
+      sourceSearchState.metadata=null;sourceSearchState.metadataStatus='checking';sourceSearchState.metadataCheckedAt='';sourceSearchState.metadataCached=false;sourceSearchState.confidence=null;renderSourceVerification();
+      var client=window.AlloFlowTextInquirySearch;
+      if(!client||typeof client.verifyMetadata!=='function'){sourceSearchState.metadataStatus='error';renderSourceVerification();return;}
+      try {var response=await client.verifyMetadata(row.url);sourceSearchState.metadata=response.metadata||{};sourceSearchState.metadataStatus='ok';sourceSearchState.metadataCheckedAt=new Date().toISOString();sourceSearchState.metadataCached=!!response.cached;renderSourceVerification();updatePreview();}
+      catch(error){sourceSearchState.metadataStatus='error';renderSourceVerification();setStatus(els.sourceVerificationStatus,String(error&&error.message||error||'Metadata verification failed.'),'warn');updatePreview();}
+    }
+    function renderSourceSearchResults() {
+      els.sourceSearchResults.textContent='';
+      if (!sourceSearchState.results.length) {
+        var empty=document.createElement('li'); empty.className='empty'; empty.textContent='No source candidates returned. Try a more specific title, creator, or topic.'; els.sourceSearchResults.appendChild(empty); return;
+      }
+      sourceSearchState.results.forEach(function(row,index){
+        var li=document.createElement('li');
+        var link=document.createElement('a'); link.href=row.url; link.target='_blank'; link.rel='noopener noreferrer'; link.textContent=row.title;
+        var snippet=document.createElement('p'); snippet.textContent=row.snippet||'No search snippet was provided.';
+        var meta=document.createElement('div'); meta.className='source-search-meta'; meta.textContent=(row.domain||row.source||'Web search');
+        var trust=document.createElement('span'); trust.className='source-trust'; trust.dataset.preferred=String(!!row.preferredDomain); trust.textContent=row.preferredDomain?'Preferred source: '+row.preferredDomainLabel:'General web result';
+        var use=document.createElement('button'); use.type='button'; use.className='secondary'; use.textContent='Use this source'; use.addEventListener('click',function(){selectSourceSearchResult(index);});
+        li.append(link,snippet,meta,trust,use); els.sourceSearchResults.appendChild(li);
+      });
+    }
+    function selectSourceSearchResult(index) {
+      var row=sourceSearchState.results[index]; if(!row)return;
+      els.sourceTitle.value=row.title;
+      els.sourceUrl.value=row.url;
+      sourceSearchState.selected={title:row.title,url:row.url,domain:row.domain||'',source:row.source||'Web search',preferredDomain:!!row.preferredDomain,preferredDomainLabel:row.preferredDomainLabel||''};
+      setStatus(els.sourceSearchStatus,'Candidate selected. Checking public metadata now; verify the edition, context, and permissions before citing it.','ok');
+      verifySelectedSource(row); updatePreview(); els.sourceTitle.focus();
+    }
+    async function findSourceCandidates() {
+      var query=sourceSearchQueryFromFields();
+      if(!query){setStatus(els.sourceSearchStatus,'Enter a title, creator, topic, or collection to search.','error');return;}
+      els.sourceSearchQuery.value=query;
+      if(!window.AlloFlowTextInquirySearch||typeof window.AlloFlowTextInquirySearch.search!=='function'){setStatus(els.sourceSearchStatus,'The source-search client did not load. Refresh this page and try again.','error');return;}
+      els.sourceSearchBtn.disabled=true; setStatus(els.sourceSearchStatus,'Searching for source candidates…','');
+      try {
+        var response=await window.AlloFlowTextInquirySearch.search(query,{maxResults:6,scope:els.sourceSearchScope.value});
+        sourceSearchState={query:response.query,searchQuery:response.searchQuery||response.query,scope:response.scope||els.sourceSearchScope.value,results:response.results||[],selected:null,searchedAt:new Date().toISOString(),provider:response.source||'Web search',cached:!!response.cached,metadata:null,metadataStatus:'',metadataCheckedAt:'',metadataCached:false,confidence:null};
+        renderSourceSearchResults();
+        setStatus(els.sourceSearchStatus,sourceSearchState.results.length+' candidate'+(sourceSearchState.results.length===1?'':'s')+' found via '+sourceSearchState.provider+' ('+sourceScopeLabel(sourceSearchState.scope)+'). Review a result before using it.','ok');
+      } catch(error) {
+        sourceSearchState.results=[]; sourceSearchState.selected=null; sourceSearchState.metadata=null; sourceSearchState.metadataStatus=''; sourceSearchState.confidence=null; renderSourceSearchResults(); renderSourceVerification(); setStatus(els.sourceSearchStatus,String(error&&error.message||error||'Source search failed.'),'error');
+      } finally { els.sourceSearchBtn.disabled=false; }
+      updatePreview();
+    }
+    function sourceDiscoveryReceipt() {
+      return { provider:sourceSearchState.provider||'', scope:sourceSearchState.scope||'web', query:sourceSearchState.query||'', searchQuery:sourceSearchState.searchQuery||'', searchedAt:sourceSearchState.searchedAt||'', resultCount:sourceSearchState.results.length, cached:!!sourceSearchState.cached, metadataStatus:sourceSearchState.metadataStatus||'', metadataCheckedAt:sourceSearchState.metadataCheckedAt||'', metadataCached:!!sourceSearchState.metadataCached, confidence:sourceSearchState.confidence ? { level:sourceSearchState.confidence.level, score:sourceSearchState.confidence.score, maxScore:sourceSearchState.confidence.maxScore, reasons:sourceSearchState.confidence.reasons } : null, citationStyle:els.citationStyle.value||'plain', citation:els.citationOutput.value||'', citationRecord:citationRecord(), selected:sourceSearchState.selected ? { title:sourceSearchState.selected.title, url:sourceSearchState.selected.url, domain:sourceSearchState.selected.domain, source:sourceSearchState.selected.source, preferredDomain:!!sourceSearchState.selected.preferredDomain, preferredDomainLabel:sourceSearchState.selected.preferredDomainLabel||'' } : null, metadata:sourceSearchState.metadata ? { title:sourceSearchState.metadata.title||'', creator:sourceSearchState.metadata.creator||'', date:sourceSearchState.metadata.date||'', canonicalUrl:sourceSearchState.metadata.canonicalUrl||'', publisher:sourceSearchState.metadata.publisher||'', type:sourceSearchState.metadata.type||'', doi:sourceSearchState.metadata.doi||'', isbn:sourceSearchState.metadata.isbn||'', signals:sourceSearchState.metadata.signals||{} } : null };
+    }
+    function downloadCitation() {
+      var record=citationRecord();
+      if(!record){setStatus(els.sourceVerificationStatus,'Select and verify a source before downloading CSL-JSON.','warn');return;}
+      var blob=new Blob([JSON.stringify(record,null,2)],{type:'application/vnd.citationstyles.csl+json'});var link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download='text-inquiry-citation.csl.json';document.body.appendChild(link);link.click();link.remove();setTimeout(function(){URL.revokeObjectURL(link.href);},0);setStatus(els.sourceVerificationStatus,'Downloaded the structured CSL-JSON citation.','ok');
+    }
+    async function copyCitation() {
+      var value=els.citationOutput.value;
+      if(!value){setStatus(els.sourceVerificationStatus,'Select and verify a source before copying a citation.','warn');return;}
+      try { if(navigator.clipboard&&navigator.clipboard.writeText) await navigator.clipboard.writeText(value); else throw new Error('Clipboard unavailable'); setStatus(els.sourceVerificationStatus,'Citation copied to the clipboard.','ok'); }
+      catch(_) { els.citationOutput.focus(); els.citationOutput.select(); setStatus(els.sourceVerificationStatus,'Select the citation text and copy it manually.','warn'); }
+    }
     function sourceMetadata() { return { title:text(els.sourceTitle.value,180)||'Untitled classroom source', creator:text(els.sourceCreator.value,180)||'Creator not recorded', edition:text(els.sourceEdition.value,220)||'Edition not recorded', stableUrl:text(els.sourceUrl.value,500), context:text(els.sourceContext.value,1200) }; }
-    function payload() { var query=text(els.queryTerm.value,80); return { source:sourceMetadata(), analysis:analysis, concordance:query.toLowerCase()===concordanceQuery?concordanceRows:[], queryTerm:query, claim:text(els.patternClaim.value,900), counterReading:text(els.counterReading.value,900), limitation:text(els.limitation.value,900), nextQuestion:text(els.nextQuestion.value,500), nlpEnhanced:typeof window.nlp==='function', annotationBundle:annotationHandoff&&annotationBridge?annotationBridge.summarizeForCapture(annotationHandoff,inquiryAnnotations):null }; }
+    function payload() { var query=text(els.queryTerm.value,80); return { source:sourceMetadata(), sourceDiscovery:sourceDiscoveryReceipt(), analysis:analysis, concordance:query.toLowerCase()===concordanceQuery?concordanceRows:[], queryTerm:query, claim:text(els.patternClaim.value,900), counterReading:text(els.counterReading.value,900), limitation:text(els.limitation.value,900), nextQuestion:text(els.nextQuestion.value,500), nlpEnhanced:typeof window.nlp==='function', annotationBundle:annotationHandoff&&annotationBridge?annotationBridge.summarizeForCapture(annotationHandoff,inquiryAnnotations):null }; }
 
     var adapter = sdk.createAdapter({
       contract: TEXT_INQUIRY_CONTRACT,
@@ -233,6 +455,7 @@
           summary: state.claim+' Counter-reading: '+state.counterReading+' Limitation: '+state.limitation+' Close-reading annotations: '+(state.annotationBundle&&state.annotationBundle.annotations?state.annotationBundle.annotations.length:0)+'.',
           data: {
             source: source,
+            sourceDiscovery: state.sourceDiscovery,
             analysis: { wordCount:state.analysis.wordCount, uniqueWordCount:state.analysis.uniqueWordCount, sentenceCount:state.analysis.sentenceCount, lexicalDiversity:state.analysis.lexicalDiversity, topTerms:state.analysis.topTerms.slice(0,20), topBigrams:state.analysis.topBigrams.slice(0,12), queryTerm:state.queryTerm, queryCount:selectedCount, concordance:state.concordance.slice(0,10) },
             interpretation: { claim:state.claim, counterReading:state.counterReading, limitation:state.limitation, nextQuestion:state.nextQuestion },
             annotations: state.annotationBundle
@@ -267,7 +490,7 @@
     function clearAll(){els.sourceText.value='';analysis=null;concordanceRows=[];concordanceQuery='';resetInquiryAnnotations('');els.resultsCard.hidden=true;els.metrics.textContent='';els.topTerms.textContent='';els.topBigrams.textContent='';els.queryTerm.value='';els.concordanceList.textContent='';els.concordanceSummary.textContent='';els.approvalCheck.checked=false;setStatus(els.analysisStatus,'Text and derived results cleared from this window.','ok');setStatus(els.captureStatus,'','');updatePreview();els.sourceText.focus();}
     function loadSample(){els.sourceTitle.value='The Yellow Wallpaper (excerpt)';els.sourceCreator.value='Charlotte Perkins Gilman';els.sourceEdition.value='Public-domain text, first published 1892';els.sourceUrl.value='https://www.gutenberg.org/ebooks/1952';els.sourceContext.value='A first-person narrative published in the late nineteenth century. Interpretive claims should consider gender, medical authority, narration, genre, and the history of the edition.';els.sourceText.value='It is very seldom that mere ordinary people like John and myself secure ancestral halls for the summer. A colonial mansion, a hereditary estate, I would say a haunted house, and reach the height of romantic felicity—but that would be asking too much of fate! Still I will proudly declare that there is something queer about it. Else, why should it be let so cheaply? And why have stood so long untenanted? John laughs at me, of course, but one expects that in marriage. John is practical in the extreme. He has no patience with faith, an intense horror of superstition, and he scoffs openly at any talk of things not to be felt and seen and put down in figures.';setStatus(els.analysisStatus,'Loaded a short public-domain sample. Analyze it, then inspect repeated words in context.','ok');els.sourceText.focus();}
 
-    els.analyzeBtn.addEventListener('click',analyze);els.sampleBtn.addEventListener('click',loadSample);els.clearBtn.addEventListener('click',clearAll);els.concordanceBtn.addEventListener('click',runConcordance);els.openAnnotationBtn.addEventListener('click',openAnnotationSuite);els.addAnnotationBtn.addEventListener('click',addInquiryAnnotation);els.downloadAnnotationsBtn.addEventListener('click',downloadInquiryAnnotations);els.captureBtn.addEventListener('click',sendCapture);els.downloadBtn.addEventListener('click',downloadCapture);
+    els.sourceSearchBtn.addEventListener('click',findSourceCandidates);els.citationStyle.addEventListener('change',function(){renderCitation();updatePreview();});els.copyCitationBtn.addEventListener('click',copyCitation);els.downloadCitationBtn.addEventListener('click',downloadCitation);els.analyzeBtn.addEventListener('click',analyze);els.sampleBtn.addEventListener('click',loadSample);els.clearBtn.addEventListener('click',clearAll);els.concordanceBtn.addEventListener('click',runConcordance);els.openAnnotationBtn.addEventListener('click',openAnnotationSuite);els.addAnnotationBtn.addEventListener('click',addInquiryAnnotation);els.downloadAnnotationsBtn.addEventListener('click',downloadInquiryAnnotations);els.captureBtn.addEventListener('click',sendCapture);els.downloadBtn.addEventListener('click',downloadCapture);
     els.queryTerm.addEventListener('input',function(){if(text(els.queryTerm.value,80).toLowerCase()!==concordanceQuery){concordanceRows=[];resetInquiryAnnotations('The query changed; run concordance and reopen Annotation Suite.');els.concordanceList.textContent='';els.concordanceSummary.textContent='Query changed. Run concordance again before capture.';}updatePreview();});
     [els.sourceTitle,els.sourceCreator,els.sourceEdition,els.sourceUrl,els.sourceContext,els.patternClaim,els.counterReading,els.limitation,els.nextQuestion,els.approvalCheck].forEach(function(element){element.addEventListener('input',updatePreview);element.addEventListener('change',updatePreview);});
     updatePreview();

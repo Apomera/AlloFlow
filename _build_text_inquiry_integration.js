@@ -12,6 +12,7 @@ const copies = [
   ['annotation_inquiry_bridge.js', 'desktop/web-app/public/annotation_inquiry_bridge.js'],
   ['text_inquiry/text_inquiry.html', 'desktop/web-app/public/text_inquiry/text_inquiry.html'],
   ['text_inquiry/text_inquiry_core.js', 'desktop/web-app/public/text_inquiry/text_inquiry_core.js'],
+  ['text_inquiry/text_inquiry_search.js', 'desktop/web-app/public/text_inquiry/text_inquiry_search.js'],
   ['node_modules/compromise/builds/compromise.js', 'vendor/compromise/compromise.js'],
   ['node_modules/compromise/builds/compromise.js', 'desktop/web-app/public/vendor/compromise/compromise.js'],
   ['node_modules/compromise/LICENSE', 'vendor/compromise/LICENSE'],

@@ -63,6 +63,21 @@ function mountTool(bucket) {
   return mounted;
 }
 
+function openSettings(view) {
+  let trigger = view.container.querySelector('[data-geometry-settings-trigger="true"]');
+  expect(trigger).toBeTruthy();
+  expect(trigger.getAttribute('aria-expanded')).toBe('false');
+  React.act(function() { trigger.dispatchEvent(new Event('click', { bubbles: true })); });
+  const dialog = view.container.querySelector('#gw-settings-dialog');
+  expect(dialog).toBeTruthy();
+  expect(dialog.getAttribute('role')).toBe('dialog');
+  expect(dialog.getAttribute('aria-modal')).toBe('true');
+  expect(dialog.getAttribute('aria-labelledby')).toBe('gw-settings-title');
+  trigger = view.container.querySelector('[data-geometry-settings-trigger="true"]');
+  expect(trigger.getAttribute('aria-expanded')).toBe('true');
+  return dialog;
+}
+
 beforeAll(function() {
   resetStemLab();
   window.THREE = makeThreeStub();
@@ -70,6 +85,7 @@ beforeAll(function() {
 });
 
 beforeEach(function() {
+  window.localStorage.removeItem('allo.geometryworld.hud.v1');
   window.THREE = makeThreeStub();
   window[ENGINE_KEY] = makeEngine();
 });
@@ -98,6 +114,7 @@ describe('Geometry World display stability controls', function() {
 
   it('renders and persists an accessible graphics-quality selector', function() {
     const view = mountTool({ _introShownOnce: true, worldActive: true });
+    openSettings(view);
     let select = view.container.querySelector('[data-geometry-render-quality=true]');
     expect(select).toBeTruthy();
     expect(select.getAttribute('aria-label')).toBe('3D graphics quality');
@@ -117,6 +134,132 @@ describe('Geometry World display stability controls', function() {
     expect(window[ENGINE_KEY].qualityCalls).toEqual(['saver']);
   });
 
+  it('keeps optional HUD overlays off by default and limits play to one open panel', function() {
+    const view = mountTool({ _introShownOnce: true, worldActive: true });
+    ['#gw-progress-hud', '#gw-minimap', '#gw-history-panel', '#gw-inventory-panel', '#gw-transform-panel'].forEach(function(selector) {
+      expect(view.container.querySelector(selector)).toBeFalsy();
+    });
+
+    let dialog = openSettings(view);
+    const mapButton = dialog.querySelector('[aria-controls="gw-minimap"]');
+    expect(mapButton).toBeTruthy();
+    expect(mapButton.getAttribute('aria-pressed')).toBe('false');
+    React.act(function() { mapButton.dispatchEvent(new Event('click', { bubbles: true })); });
+    expect(view.toolData.geometryWorld.hudPanel).toBe('map');
+    expect(view.container.querySelector('#gw-minimap')).toBeTruthy();
+    expect(view.container.querySelector('#gw-transform-panel')).toBeFalsy();
+
+    dialog = openSettings(view);
+    const transformButton = dialog.querySelector('[aria-controls="gw-transform-panel"]');
+    React.act(function() { transformButton.dispatchEvent(new Event('click', { bubbles: true })); });
+    expect(view.toolData.geometryWorld.hudPanel).toBe('transform');
+    expect(view.container.querySelector('#gw-minimap')).toBeFalsy();
+    expect(view.container.querySelector('#gw-transform-panel')).toBeTruthy();
+
+    const close = view.container.querySelector('[aria-label="Hide transform discovery"]');
+    React.act(function() { close.dispatchEvent(new Event('click', { bubbles: true })); });
+    expect(view.toolData.geometryWorld.hudPanel).toBe('');
+    expect(view.container.querySelector('#gw-transform-panel')).toBeFalsy();
+  });
+
+  it('applies and restores Minimal, Learning, and Builder HUD presets', function() {
+    const key = 'allo.geometryworld.hud.v1';
+    let view = mountTool({ _introShownOnce: true, worldActive: true });
+    let workspace = view.container.querySelector('#geoworld-fs-workspace');
+    let dialog = openSettings(view);
+    let presetButtons = Array.from(dialog.querySelectorAll('[data-geometry-hud-preset]'));
+    expect(presetButtons.map(function(button) { return button.getAttribute('data-geometry-hud-preset'); })).toEqual(['minimal', 'learning', 'builder']);
+    expect(presetButtons.map(function(button) { return button.getAttribute('aria-pressed'); })).toEqual(['true', 'false', 'false']);
+    expect(presetButtons.map(function(button) { return button.getAttribute('aria-label'); })).toEqual([
+      'Use Minimal HUD: hide optional HUD panels',
+      'Use Learning HUD: show lesson progress',
+      'Use Builder HUD: show block inventory'
+    ]);
+    expect(workspace.getAttribute('data-hud-preset')).toBe('minimal');
+    expect(workspace.getAttribute('data-toolbar-collapsed')).toBe('false');
+    expect(view.container.querySelector('.gw-toolbar')).toBeTruthy();
+
+    const learning = dialog.querySelector('[data-geometry-hud-preset="learning"]');
+    React.act(function() { learning.dispatchEvent(new Event('click', { bubbles: true })); });
+    expect(view.toolData.geometryWorld).toMatchObject({ hudPreset: 'learning', hudPanel: 'progress' });
+    expect(view.container.querySelector('#gw-progress-hud')).toBeTruthy();
+    expect(JSON.parse(window.localStorage.getItem(key))).toEqual({ version: 1, preset: 'learning', toolbarCollapsed: false });
+
+    React.act(function() { view.root.unmount(); });
+    view.container.remove();
+    mounted = null;
+    delete window[ENGINE_KEY];
+    window[ENGINE_KEY] = makeEngine();
+    view = mountTool({ _introShownOnce: true, worldActive: true });
+    workspace = view.container.querySelector('#geoworld-fs-workspace');
+    expect(workspace.getAttribute('data-hud-preset')).toBe('learning');
+    expect(workspace.getAttribute('data-toolbar-collapsed')).toBe('false');
+    expect(view.container.querySelector('#gw-progress-hud')).toBeTruthy();
+
+    dialog = openSettings(view);
+    const builder = dialog.querySelector('[data-geometry-hud-preset="builder"]');
+    React.act(function() { builder.dispatchEvent(new Event('click', { bubbles: true })); });
+    expect(view.toolData.geometryWorld).toMatchObject({ hudPreset: 'builder', hudPanel: 'inventory' });
+    expect(view.container.querySelector('#gw-progress-hud')).toBeFalsy();
+    expect(view.container.querySelector('#gw-inventory-panel')).toBeTruthy();
+    expect(view.container.querySelector('#gw-inventory-panel').textContent).toContain('None yet');
+
+    dialog = openSettings(view);
+    const minimal = dialog.querySelector('[data-geometry-hud-preset="minimal"]');
+    React.act(function() { minimal.dispatchEvent(new Event('click', { bubbles: true })); });
+    expect(view.toolData.geometryWorld).toMatchObject({ hudPreset: 'minimal', hudPanel: '' });
+    expect(view.container.querySelector('.gw-toolbar')).toBeTruthy();
+    expect(view.container.querySelector('#gw-inventory-panel')).toBeFalsy();
+
+    const collapse = view.container.querySelector('.gw-toolbar-collapse');
+    React.act(function() { collapse.dispatchEvent(new Event('click', { bubbles: true })); });
+    expect(view.toolData.geometryWorld.toolbarCollapsed).toBe(true);
+    expect(JSON.parse(window.localStorage.getItem(key))).toEqual({ version: 1, preset: 'minimal', toolbarCollapsed: true });
+
+    React.act(function() { view.root.unmount(); });
+    view.container.remove();
+    mounted = null;
+    delete window[ENGINE_KEY];
+    window[ENGINE_KEY] = makeEngine();
+    view = mountTool({ _introShownOnce: true, worldActive: true });
+    workspace = view.container.querySelector('#geoworld-fs-workspace');
+    expect(workspace.getAttribute('data-hud-preset')).toBe('minimal');
+    expect(workspace.getAttribute('data-toolbar-collapsed')).toBe('true');
+    const reveal = view.container.querySelector('.gw-toolbar-reveal');
+    expect(reveal).toBeTruthy();
+    React.act(function() { reveal.dispatchEvent(new Event('click', { bubbles: true })); });
+    expect(JSON.parse(window.localStorage.getItem(key))).toEqual({ version: 1, preset: 'minimal', toolbarCollapsed: false });
+  });
+
+  it('falls back safely when the saved HUD preference is corrupted', function() {
+    window.localStorage.setItem('allo.geometryworld.hud.v1', '{not-json');
+    const view = mountTool({ _introShownOnce: true, worldActive: true });
+    const workspace = view.container.querySelector('#geoworld-fs-workspace');
+    expect(workspace.getAttribute('data-hud-preset')).toBe('minimal');
+    expect(workspace.getAttribute('data-toolbar-collapsed')).toBe('false');
+    expect(view.container.querySelector('#gw-progress-hud')).toBeFalsy();
+    const dialog = openSettings(view);
+    expect(dialog.querySelectorAll('[data-geometry-hud-preset][aria-pressed="true"]')).toHaveLength(1);
+    expect(dialog.querySelector('[data-geometry-hud-preset="minimal"]').getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('treats the textual Scene Map as part of the one-panel HUD contract', function() {
+    window[ENGINE_KEY].getSceneOverview = function() {
+      return { title: 'Test lesson', structures: [], npcs: [], camera: { x: 0, y: 0, z: 0 }, target: null };
+    };
+    const view = mountTool({ _introShownOnce: true, worldActive: true, tutorialDismissed: true });
+    let dialog = openSettings(view);
+    const sceneMap = dialog.querySelector('[aria-controls="gw-scene-map"]');
+    React.act(function() { sceneMap.dispatchEvent(new Event('click', { bubbles: true })); });
+    expect(view.container.querySelector('#gw-scene-map')).toBeTruthy();
+
+    dialog = openSettings(view);
+    const minimap = dialog.querySelector('[aria-controls="gw-minimap"]');
+    React.act(function() { minimap.dispatchEvent(new Event('click', { bubbles: true })); });
+    expect(view.container.querySelector('#gw-scene-map')).toBeFalsy();
+    expect(view.container.querySelector('#gw-minimap')).toBeTruthy();
+    expect(view.toolData.geometryWorld.hudPanel).toBe('map');
+  });
   it('keeps fullscreen naming, pressed state, and workspace state synchronized', function() {
     let active = null;
     Object.defineProperty(document, 'fullscreenElement', { configurable: true, get: function() { return active; } });
@@ -132,6 +275,9 @@ describe('Geometry World display stability controls', function() {
     expect(button).toBeTruthy();
     expect(button.getAttribute('aria-pressed')).toBe('true');
     expect(workspace.getAttribute('data-fullscreen')).toBe('true');
+    expect(view.container.querySelector('.gw-fullscreen-quickbar')).toBeTruthy();
+    expect(SOURCE).toContain('#geoworld-fs-workspace[data-fullscreen="true"]>.gw-toolbar{display:none!important}');
+    expect(SOURCE).toContain('#geoworld-fs-workspace:fullscreen .gw-viewport');
   });
 
   it('pauses offscreen animation and disconnects the observer during teardown', function() {
@@ -191,6 +337,7 @@ describe('Geometry World display stability controls', function() {
     };
     window[ENGINE_KEY].focusStructure = function() {};
     const view = mountTool({ _introShownOnce: true, worldActive: true, tutorialDismissed: true });
+    openSettings(view);
     let button = view.container.querySelector('[aria-label="Open textual scene map"]');
     expect(button).toBeTruthy();
     expect(button.getAttribute('aria-expanded')).toBe('false');
@@ -208,6 +355,7 @@ describe('Geometry World display stability controls', function() {
   });
   it('offers repeatable front, side, top, and free camera evidence views', function() {
     const view = mountTool({ _introShownOnce: true, worldActive: true, tutorialDismissed: true });
+    openSettings(view);
     const group = view.container.querySelector('[aria-label="Camera views"]');
     expect(group).toBeTruthy();
     ['Front', 'Side', 'Top', 'Free'].forEach(function(label) {
@@ -224,6 +372,7 @@ describe('Geometry World display stability controls', function() {
   });
   it('offers a guided explore tour with visible checkpoints and an exit path', function() {
     const view = mountTool({ _introShownOnce: true, worldActive: true, tutorialDismissed: true });
+    openSettings(view);
     const button = Array.from(view.container.querySelectorAll('button')).find(function(node) { return node.getAttribute('aria-label') === 'Start guided explore tour'; });
     expect(button).toBeTruthy();
     expect(button.getAttribute('aria-pressed')).toBe('false');
@@ -255,6 +404,9 @@ describe('Geometry World display stability controls', function() {
     expect(SOURCE).toContain("className: 'gw-touch-joystick-thumb'");
     expect(SOURCE).toContain("className: 'gw-touch-look-zone'");
     expect(SOURCE).toContain("className: 'gw-touch-look-panel'");
+    expect(SOURCE).toContain("className: 'gw-touch-actions'");
+    expect(SOURCE).toContain('.gw-touch-controls>.gw-touch-actions');
+    expect(SOURCE).not.toContain('.gw-touch-controls > [role="group"]');
     expect(SOURCE).toContain("id: 'gw-touch-look-sensitivity'");
     expect(SOURCE).toContain('engine.setTouchLookSensitivity');
     expect(SOURCE).toContain('updateTouchLookFeedback(dx, dy)');

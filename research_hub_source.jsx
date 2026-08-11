@@ -50,7 +50,7 @@
  *   4. view_learning_hub_modal_source.jsx gains a 7th tile that flips
  *      setShowResearchHub(true).
  *   5. onboarding_coach_source.jsx mode descriptor for learning_tools needs
- *      "Research Hub" added (today it literally says "STEM Lab, StoryForge &
+ *      "Research Hub" added (today it literally says "STEAM Lab, StoryForge &
  *      SEL Hub").
  */
 (function () {

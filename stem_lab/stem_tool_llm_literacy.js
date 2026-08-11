@@ -1,4 +1,4 @@
-// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -97,6 +97,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
   var PREFIXES = ['un','re','pre','dis','over','under','mis','non'];
   var SUFFIXES = ['ing','tion','sion','ment','ness','able','less','ful','ly','ed','er','est','ity','ous','ive'];
 
+  // ── What this tokenizer will and will not do ─────────────────────────
+  // The affix rules above were the ONLY thing that could split a word, and
+  // they fired on any accidental substring match. "Emily" came out as Emi|ly
+  // and "Christopher" as Christoph|er — neither of which is morphology —
+  // while Nguyen, Oyelaran, Krzyzewski and Rodriguez each came out as one
+  // clean token. Proper nouns now skip the affix rules entirely, which fixes
+  // the false splits.
+  //
+  // What is deliberately NOT here is a rarity model. Real BPE fragments a
+  // string according to how often it appeared in training data, and that is
+  // not recoverable from spelling: Rodriguez and Adeyemi are built from
+  // exactly the same ordinary English letter pairs, yet a real tokenizer
+  // treats them very differently because one is far commoner in English text.
+  // A letter-pattern heuristic was tried here and rejected — it scored
+  // Rodriguez, Adeyemi and Oyelaran as maximally English, so it could not
+  // have taught the thing it would have claimed to teach.
+  //
+  // The consequence is that this demo shows the SHAPE of subword tokenization
+  // and nothing about how any particular name really tokenizes. The UI says
+  // so, and the teacher note no longer asks the class to draw conclusions
+  // from their own names in this widget.
+
   function pseudoTokenize(text) {
     // Produces an array of { tok, kind } entries where kind is
     // 'word' | 'subword' | 'space' | 'punct'.
@@ -123,6 +145,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
       if (!word) continue;
       var lower = word.toLowerCase();
       if (COMMON_WORDS[lower] || word.length <= 3) {
+        out.push({ tok: word, kind: 'word' });
+        continue;
+      }
+      // A capitalised word that is not a common word is a name or other
+      // proper noun. English affix rules must not touch it — that is what
+      // turned Emily into Emi|ly and Christopher into Christoph|er. Send it
+      // down the familiarity path instead, which is what a real tokenizer
+      // effectively does with a string it has rarely seen.
+      if (/^[A-Z]/.test(word)) {
         out.push({ tok: word, kind: 'word' });
         continue;
       }
@@ -159,6 +190,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           break;
         }
       }
+      // No morphology found. A lower-case word can still be an unfamiliar
+      // string — a loanword, a transliteration, a technical term — so it gets
+      // the same familiarity treatment rather than being assumed to be one
+      // token just because English suffix rules did not recognise it.
       if (!handled) out.push({ tok: word, kind: 'word' });
     }
     return out;
@@ -927,12 +962,68 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
     },
     {
       myth: 'If AI writes it, it\u2019s plagiarism-proof.',
-      fact: 'Schools increasingly detect AI-written text, and submitting AI-generated work as your own is almost always an academic-integrity violation, regardless of detection.'
+      fact: 'Submitting AI-generated work as your own is almost always an academic-integrity violation whether or not anyone can tell \u2014 that question does not depend on detection. Worth knowing separately: AI detectors are unreliable in BOTH directions, and the students they wrongly accuse are not a random sample. See Section 6.'
+    },
+    {
+      myth: 'An AI detector can prove who wrote something.',
+      fact: 'It cannot. OpenAI withdrew its own detector in 2023 for low accuracy, and detectors wrongly flag honest work from non-native English writers at high rates. A detector score is a guess, not evidence. See Section 6.'
     },
     {
       myth: 'Newer AI models don\u2019t hallucinate.',
       fact: 'They hallucinate less in some cases and differently in others. Every generation of LLM has its own failure modes \u2014 hallucination has not been solved.'
     }
+  ];
+
+  // ─────────────────────────────────────────────────────────
+  // AI DETECTORS: what they can and cannot do
+  // ─────────────────────────────────────────────────────────
+  // Section 6 teaches when using AI is legitimate. The mirror image of that
+  // question — what happens when you are ACCUSED of using it and did not —
+  // was missing entirely, and the tool's single sentence on the subject
+  // ("schools increasingly detect AI-written text") asserted a reliability
+  // the published evidence does not support.
+  //
+  // That gap matters most for precisely the students this tool is written
+  // for. The documented false positives are not evenly distributed: they
+  // land on writers with simpler sentence structure and a narrower
+  // vocabulary range, which describes non-native English writers, students
+  // taught to write to a rigid formula, and plenty of students with language
+  // or learning differences. A tool that warns students about AI without
+  // warning them about this is only telling them half of what can go wrong.
+  //
+  // The ethical anchor stays where the tool already had it: whether handing
+  // in AI-written work is wrong does not depend on whether anyone can tell.
+  // Nothing below is an argument that detection failures make it safe.
+  var DETECTOR_FACTS = [
+    {
+      head: 'The people who built them could not make them work.',
+      body: 'OpenAI released an AI Text Classifier in January 2023 and withdrew it six months later, citing its low rate of accuracy. It was never replaced. That is the company with the most to gain from a working detector telling you it did not have one.'
+    },
+    {
+      head: 'The mistakes are not spread evenly.',
+      body: 'A Stanford study published in Patterns in 2023 ran seven detectors over essays written by non-native English speakers. More than half were wrongly flagged as AI-written. The same detectors judged essays by native-English-speaking US students almost perfectly. Shorter sentences and a narrower range of words read to a detector as machine-like.'
+    },
+    {
+      head: 'So the risk does not land on everyone equally.',
+      body: 'If English is not your first language, or you were taught to write to a strict formula, or you write plainly because that is what is easiest for you, your own honest work is more likely to be flagged. That is a fault in the detector, not in your writing, and it is worth knowing before it happens rather than after.'
+    },
+    {
+      head: 'Some schools have switched them off.',
+      body: 'Vanderbilt University disabled Turnitin’s AI detector in 2023 and published its reasoning: even a small false-positive rate, applied across every paper a university receives in a year, means a large number of students accused of something they did not do.'
+    },
+    {
+      head: 'None of this changes the honest answer.',
+      body: 'Whether handing in AI-written work is wrong has nothing to do with whether anyone can catch it. Detection and integrity are two separate questions, and the rest of this section is about the second one. "They cannot prove it" was never the standard.'
+    }
+  ];
+
+  // Practical, and deliberately the kind of advice that costs an honest
+  // student nothing: every item here is something you would want anyway.
+  var DETECTOR_PROTECT = [
+    'Draft somewhere that keeps version history — Google Docs, Word online, anything that records revisions. A document that grew over four days is the strongest evidence there is that you wrote it.',
+    'Keep the mess: your outline, your notes, the paragraph you deleted. Process is proof in a way a finished file never is.',
+    'Be ready to talk through your argument out loud. If you wrote it, you can, and that conversation persuades a teacher far faster than any score.',
+    'If you are accused, ask what evidence exists besides a detector percentage. A number from a tool that its own makers could not validate is not, on its own, proof of anything.'
   ];
 
   // ─────────────────────────────────────────────────────────
@@ -948,10 +1039,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
       goal: 'Make the model\u2019s machinery visible so \u201cAI magic\u201d stops being a category students use.',
       rationale: 'Students who don\u2019t know what an LLM is doing tend to either over-trust it (because it sounds like a knowledgeable adult) or over-distrust it (because they heard it\u2019s \u201cfake intelligence\u201d). Seeing tokenization and next-token prediction converts that into a third, more accurate mental model: pattern-matching text generator.',
       watchFor: 'Students getting stuck on \u201cbut how does it really think?\u201d \u2014 the honest answer is: it doesn\u2019t, and that\u2019s the point. Redirect to the temperature demo to show the probabilistic nature.',
-      extension: 'Ask students to compare tokenization of a rare word (e.g., their name) vs. a common word. The compression ratio they see teaches why names and proper nouns are where hallucinations love to live.',
+      extension: 'Ask students to compare a long made-up word against a long real one (“antidisestablishmentarianism” vs. “flibbertigibbetnessing”). Watch where the tool can find real word-parts and where it gives up — that is the same thing a model does, and it is why unfamiliar strings and proper nouns are where hallucinations love to live.',
       activities: [
         { kind: 'warm-up',  title: 'Predict-the-next-word', body: 'Before showing the next-token chart, write "The capital of France is ___" on the board and take a class vote on the top 3 candidates. Then show the probabilities. The shock of how confident the top token is makes the concept stick.' },
-        { kind: 'pair',     title: 'Tokenize your name',    body: 'Have each student type their full name into the tokenizer. Compare compression ratios across the class. Names of students from non-English-speaking backgrounds often tokenize worse \u2014 open a conversation about whose language the model was trained on.' },
+        { kind: 'pair',     title: 'Whose language was it trained on?', body: 'Real tokenizers split a name into more pieces the less often it appeared in training data, and that training data is overwhelmingly English \u2014 so names from other language communities routinely cost two or three times as many tokens as Anglo ones. That is a real and documented inequity, and it is worth a conversation. Do NOT try to show it in the tokenizer on this page: that widget only approximates the SHAPE of subword splitting and treats every name as one token. To demonstrate it for real, put the same names through a live tokenizer tool alongside the class. Handle student names with care either way \u2014 nobody should feel their name is being scored.' },
         { kind: 'transfer', title: 'Temperature forecasting', body: 'Give students a list of 6 task types (write a fact summary, write a poem, solve a math problem, brainstorm, describe a character, debug code). Ask them to pick a temperature for each and justify it in one sentence. No wrong answers \u2014 discuss disagreements.' }
       ]
     },
@@ -3023,6 +3114,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                 )
               );
             })(),
+            // Say what the demo is, so nobody reads their own name's token
+            // count off it. It approximates the SHAPE of subword splitting and
+            // knows nothing about how often a string appeared in training data,
+            // which is the thing that actually decides real token counts.
+            h('p', { style: {
+              marginTop: '8px', fontSize: '11px', color: '#78350f', lineHeight: 1.5,
+              background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px', padding: '7px 9px'
+            } },
+              h('strong', null, __alloT('stem.llm_literacy.tokenizer_is_an_approximation', 'This is an approximation. ')),
+              __alloT('stem.llm_literacy.tokenizer_approximation_note',
+                'It shows the shape of subword splitting, not real token counts. A real tokenizer splits a string according to how often it saw that string while training, which spelling alone cannot tell you — so do not read anything into how your own name comes out here.')),
             h('p', { style: { marginTop: '10px', fontSize: '12px', color: COLORS.subtext, lineHeight: 1.5 } },
               h('strong', null, __alloT('stem.llm_literacy.why_this_matters', 'Why this matters: ')),
               __alloT('stem.llm_literacy.the_model_predicts_the_next_token_not_', 'The model predicts the next TOKEN, not the next word. Short common words become one token; longer words often split (e.g. "unhappy" \u2192 "un" + "happy"). This is also how billing works — API costs are per token, not per word.')
@@ -5599,6 +5701,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             )
           ),
 
+          // ── Accused and innocent ──────────────────────────────────────
+          // The other half of the integrity question. Everything above asks
+          // when using AI is legitimate; this asks what happens when someone
+          // decides you did and you did not.
+          h('div', { style: {
+            marginTop: '20px', background: '#fff',
+            border: '1px solid ' + COLORS.border, borderLeft: '4px solid #b91c1c',
+            borderRadius: '10px', padding: '14px 16px'
+          } },
+            h('h3', { style: { margin: '0 0 2px', fontSize: '16px', fontWeight: 800, color: COLORS.text, letterSpacing: '-.01em' } },
+              __alloT('stem.llm_literacy.detector_heading', '🚩 If you are accused and you did not do it')),
+            h('div', { style: { fontSize: '12px', color: COLORS.muted, marginBottom: '10px', lineHeight: 1.5 } },
+              __alloT('stem.llm_literacy.detector_sub', 'Schools run AI detectors. You should know what they are actually worth before one is pointed at your work.')),
+            h('div', { style: { display: 'grid', gap: '8px' } },
+              DETECTOR_FACTS.map(function(f, i) {
+                return h('div', { key: i, style: {
+                  background: COLORS.card, border: '1px solid ' + COLORS.border,
+                  borderRadius: '8px', padding: '9px 11px'
+                } },
+                  h('div', { style: { fontSize: '13px', fontWeight: 700, color: COLORS.text, marginBottom: '3px' } }, f.head),
+                  h('div', { style: { fontSize: '12px', color: COLORS.subtext, lineHeight: 1.55 } }, f.body)
+                );
+              })
+            ),
+            h('div', { style: { marginTop: '12px' } },
+              h('div', { style: { fontSize: '11px', fontWeight: 800, color: '#047857', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '.05em' } },
+                __alloT('stem.llm_literacy.detector_protect_heading', 'What protects you — and costs you nothing if you are honest')),
+              h('ul', { style: { margin: 0, paddingLeft: '18px', display: 'grid', gap: '5px' } },
+                DETECTOR_PROTECT.map(function(p, i) {
+                  return h('li', { key: i, style: { fontSize: '12px', color: COLORS.text, lineHeight: 1.55 } }, p);
+                })
+              )
+            ),
+            h('div', { style: {
+              marginTop: '12px', background: '#fffbeb', border: '1px solid #fde68a',
+              borderRadius: '8px', padding: '9px 11px', fontSize: '12px', color: '#78350f', lineHeight: 1.55
+            } },
+              __alloT('stem.llm_literacy.detector_not_a_loophole',
+                'Read this the right way round: detectors being unreliable is not a reason to think you can get away with it. It is a reason to keep your drafts, and a reason to speak up if a number is used against you or someone in your class.'))
+          ),
+
           comprehensionCheck('udl'),
           sectionFooter('udl')
         );
@@ -5636,7 +5779,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             '',
             '| Metric | Value |',
             '|---|---|',
-            '| Sections explored | ' + Object.keys(visited).length + ' of 6 |',
+            // Derived, not hardcoded. This said "of 6" while SECTION_ORDER had
+            // grown to eight, so a student who had worked through every section
+            // could export a report claiming they had done more than all of
+            // them. SECTION_ORDER is assigned during the render pass and this
+            // only runs from a click, so it is populated by the time we read it.
+            '| Sections explored | ' + Object.keys(visited).length + ' of ' + SECTION_ORDER.length + ' |',
             '| Comprehension checks passed | ' + checksDone + ' of 5 |',
             '| Prompt iterations | ' + (d.promptIterations || 0) + ' |',
             '| Perfect hallucination spots (unassisted) | ' + (d.spotterPerfect || 0) + ' |',

@@ -24,7 +24,7 @@
  * Apps Script cannot answer). GET on the /exec URL shows a human status line.
  */
 
-var VERSION = 12;
+var VERSION = 13;
 var SESSION_TTL_SEC = 6 * 60 * 60;      // live session marker + counters
 var MESSAGE_TTL_SEC = 45 * 60;          // live messages
 var UPLOAD_TTL_SEC = 30 * 60;           // pack upload parts awaiting finalize
@@ -47,6 +47,14 @@ var MAX_BOARD_ITEM_CHARS = 200;            // one question on a board
 var MAX_BOARD_ITEMS_PER_STUDENT = 10;      // hard ceiling; per-board config clamps under it
 var MAX_BOARD_ITEMS = 500;                 // absolute board ceiling; byte guard still applies
 var MAX_ASSIGNMENT_ACTIVITIES = 8;
+var MAX_SURVEY_ITEMS = 12;                 // one survey activity holds up to this many questions
+var MAX_SURVEY_CHOICE_OPTIONS = 12;
+var MAX_SURVEY_STEPS = 10;                 // widest Likert the wire accepts; research validity is advisory, client-side
+var MAX_SURVEY_FREETEXT_CHARS = 500;
+// What this deployment can host. Advertised by {a:'hello'} so a NEWER client
+// can tell a teacher "your mailbox needs redeploying" instead of the generic
+// bad-activity it used to hit when a type landed here before the script did.
+var SUPPORTED_ACTIVITY_TYPES = ['word_cloud', 'rating', 'question_board', 'availability', 'signup', 'survey'];
 var ASYNC_ACTIVITY_CACHE_SEC = 5 * 60;
 var FOLDER_NAME = 'AlloFlow Class Mailbox';
 
@@ -104,7 +112,7 @@ function actorRateKey(code, actor, kind) {
 
 function handle(p) {
   var a = String(p.a || '');
-  if (a === 'hello') return out({ ok: true, v: VERSION, t: Date.now() });
+  if (a === 'hello') return out({ ok: true, v: VERSION, activities: SUPPORTED_ACTIVITY_TYPES.slice(), t: Date.now() });
 
   var props = PropertiesService.getScriptProperties();
   if (a === 'claim') {
@@ -986,6 +994,37 @@ function normalizeAssignmentActivityConfig(value, expiresAt) {
       expiresAt: suCloses
     };
   }
+  if (source.type === 'survey') {
+    // Multi-question survey: several items answered in ONE submission. This is
+    // the piece none of the single-prompt types could provide — a Likert scale
+    // is only a measurement across >=2 items, and pre/post comparison needs
+    // the same instrument delivered as one thing, not eight loose activities.
+    var svIdMode = String(source.identityMode || '');
+    // No default. Identity is a privacy decision (same discipline as the
+    // availability poll): an unset or unknown mode is a rejected config.
+    if (svIdMode !== 'anonymous' && svIdMode !== 'codename' && svIdMode !== 'real_name') return null;
+    var svItems = normalizeSurveyItems(source.items);
+    if (!svItems) return null;
+    var svCloses = String(source.closesAt || expiresAt || source.expiresAt || '');
+    // Optional study information sheet, shown to respondents above the
+    // questions: who is asking and what the answers are for. Informational
+    // only — consent itself is collected OUTSIDE the app by design.
+    var svInfo = String(source.info || '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 600);
+    return {
+      v: 1,
+      activityId: activityId,
+      type: 'survey',
+      delivery: 'shared_async',
+      prompt: prompt,
+      info: svInfo,
+      identityMode: svIdMode,
+      items: svItems,
+      minParticipants: minParticipants,
+      closesAt: svCloses,
+      deleteAt: String(source.deleteAt || ''),
+      expiresAt: svCloses
+    };
+  }
   if (source.type === 'availability') {
     // Scheduling poll (docs/availability_poll_spec.md). Option labels are the
     // organizer's OWN text: no date parsing and no timezones by design (spec §8).
@@ -1481,6 +1520,267 @@ function availabilityIsClosed(config) {
   return isFinite(closesAt) && Date.now() >= closesAt;
 }
 
+// ── Survey helpers ───────────────────────────────────────────────────────
+// A survey is a multi-item instrument answered in one submission. Item and
+// option ids are GENERATED here, never taken from input, so no client can
+// address a question that is not on the form (same rule as poll options).
+
+function normalizeSurveyItems(value) {
+  var source = value;
+  if (typeof source === 'string') { try { source = JSON.parse(source); } catch (e) { return null; } }
+  if (!Array.isArray(source) || !source.length || source.length > MAX_SURVEY_ITEMS) return null;
+  var items = [];
+  for (var i = 0; i < source.length; i++) {
+    var raw = source[i];
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+    var kind = String(raw.type || 'likert');
+    // An unknown item type is a rejected CONFIG, not a dropped item: silently
+    // shipping a survey with questions missing would be worse than refusing.
+    if (kind !== 'likert' && kind !== 'choice' && kind !== 'freetext' && kind !== 'numeric') return null;
+    var itemText = String(raw.text || '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 240);
+    if (!itemText) return null;
+    var item = { id: 'i' + (items.length + 1), type: kind, text: itemText, required: raw.required === true };
+    if (kind === 'likert') {
+      var rawLabels = Array.isArray(raw.labels) ? raw.labels : [];
+      var labels = [];
+      for (var li = 0; li < rawLabels.length && labels.length < MAX_SURVEY_STEPS; li++) {
+        // Positional: a BLANK label keeps its slot (index i is step i+1), so a
+        // scale with only endpoint labels survives as authored.
+        labels.push(String(rawLabels[li] == null ? '' : (rawLabels[li].text != null ? rawLabels[li].text : rawLabels[li]))
+          .replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 60));
+      }
+      var steps = parseInt(raw.steps, 10);
+      // Labels are the stronger signal: five written labels mean five steps
+      // whatever a stale steps field says.
+      if (labels.length >= 2) steps = labels.length;
+      if (!isFinite(steps) || steps < 2 || steps > MAX_SURVEY_STEPS) return null;
+      item.steps = steps;
+      item.labels = labels;
+    } else if (kind === 'choice') {
+      var rawOptions = Array.isArray(raw.options) ? raw.options : [];
+      var options = [];
+      for (var oi = 0; oi < rawOptions.length && options.length < MAX_SURVEY_CHOICE_OPTIONS; oi++) {
+        var optLabel = normalizeAssignmentBoardItemText(
+          rawOptions[oi] && rawOptions[oi].label != null ? rawOptions[oi].label : rawOptions[oi]).slice(0, 80);
+        if (!optLabel) continue;
+        options.push({ id: 'o' + (options.length + 1), label: optLabel });
+      }
+      if (options.length < 2) return null;
+      item.options = options;
+    } else if (kind === 'numeric') {
+      var numMin = Number(raw.min);
+      var numMax = Number(raw.max);
+      item.min = isFinite(numMin) ? numMin : null;
+      item.max = isFinite(numMax) ? numMax : null;
+      if (item.min !== null && item.max !== null && item.min >= item.max) return null;
+    }
+    items.push(item);
+  }
+  return items;
+}
+
+// Answers arrive as a map of itemId -> value. Unknown ids are DROPPED (a
+// stale form can still submit the questions that do still exist — the picks
+// discipline), but a PRESENT answer that fails its item's validation rejects
+// the submission: recording a corrupted answer would poison the aggregate.
+function normalizeSurveyAnswers(value, config) {
+  var source = value;
+  if (typeof source === 'string') { try { source = JSON.parse(source); } catch (e) { return null; } }
+  if (!source || typeof source !== 'object' || Array.isArray(source)) return null;
+  var answers = {};
+  var count = 0;
+  for (var i = 0; i < config.items.length; i++) {
+    var item = config.items[i];
+    var raw = source[item.id];
+    var present = raw !== undefined && raw !== null && raw !== '';
+    if (!present) {
+      if (item.required) return null;
+      continue;
+    }
+    if (item.type === 'likert') {
+      var tick = Number(raw);
+      if (!isFinite(tick) || Math.floor(tick) !== tick || tick < 1 || tick > item.steps) return null;
+      answers[item.id] = tick;
+    } else if (item.type === 'choice') {
+      var chosen = String(raw);
+      var known = false;
+      for (var ci = 0; ci < item.options.length; ci++) if (item.options[ci].id === chosen) known = true;
+      if (!known) return null;
+      answers[item.id] = chosen;
+    } else if (item.type === 'numeric') {
+      var num = Number(raw);
+      if (!isFinite(num)) return null;
+      if (item.min !== null && num < item.min) return null;
+      if (item.max !== null && num > item.max) return null;
+      answers[item.id] = num;
+    } else {
+      var text = String(raw).replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, MAX_SURVEY_FREETEXT_CHARS);
+      if (!text) return null;
+      answers[item.id] = text;
+    }
+    count++;
+  }
+  if (!count) return null;
+  return answers;
+}
+
+// Per-item aggregates. Free text is COUNTED here and nothing more: the texts
+// themselves live in rows and are handed out only by buildSurveySummary,
+// which knows who is asking.
+function computeSurveyAggregates(config, responses) {
+  var rows = responses && typeof responses === 'object' ? responses : {};
+  var uids = Object.keys(rows);
+  var participantCount = 0;
+  var byItem = {};
+  for (var i = 0; i < config.items.length; i++) {
+    var item = config.items[i];
+    if (item.type === 'likert') {
+      var counts = [];
+      for (var s = 0; s < item.steps; s++) counts.push(0);
+      byItem[item.id] = { id: item.id, type: 'likert', n: 0, counts: counts, sum: 0 };
+    } else if (item.type === 'choice') {
+      var optCounts = {};
+      for (var oi = 0; oi < item.options.length; oi++) optCounts[item.options[oi].id] = 0;
+      byItem[item.id] = { id: item.id, type: 'choice', n: 0, counts: optCounts };
+    } else if (item.type === 'numeric') {
+      byItem[item.id] = { id: item.id, type: 'numeric', n: 0, sum: 0, min: null, max: null };
+    } else {
+      byItem[item.id] = { id: item.id, type: 'freetext', n: 0 };
+    }
+  }
+  for (var ui = 0; ui < uids.length; ui++) {
+    var answers = rows[uids[ui]] && rows[uids[ui]].answers;
+    if (!answers || typeof answers !== 'object' || !Object.keys(answers).length) continue;
+    participantCount++;
+    for (var ii = 0; ii < config.items.length; ii++) {
+      var target = config.items[ii];
+      var slot = byItem[target.id];
+      var value = answers[target.id];
+      if (value === undefined || value === null) continue;
+      if (target.type === 'likert') {
+        var tickValue = parseInt(value, 10);
+        if (!isFinite(tickValue) || tickValue < 1 || tickValue > target.steps) continue;
+        slot.counts[tickValue - 1]++;
+        slot.sum += tickValue;
+        slot.n++;
+      } else if (target.type === 'choice') {
+        if (slot.counts[value] === undefined) continue;
+        slot.counts[value]++;
+        slot.n++;
+      } else if (target.type === 'numeric') {
+        var numValue = Number(value);
+        if (!isFinite(numValue)) continue;
+        slot.sum += numValue;
+        slot.min = slot.min === null ? numValue : Math.min(slot.min, numValue);
+        slot.max = slot.max === null ? numValue : Math.max(slot.max, numValue);
+        slot.n++;
+      } else {
+        slot.n++;
+      }
+    }
+  }
+  var items = [];
+  for (var oi2 = 0; oi2 < config.items.length; oi2++) {
+    var agg = byItem[config.items[oi2].id];
+    if ((agg.type === 'likert' || agg.type === 'numeric') && agg.n) {
+      agg.mean = Math.round((agg.sum / agg.n) * 100) / 100;
+    }
+    delete agg.sum;
+    items.push(agg);
+  }
+  return { items: items, participantCount: participantCount };
+}
+
+// Same bargain as the poll: past deleteAt the aggregates outlive the rows.
+// After this runs the free-text answers are GONE — they were rows.
+function applySurveyRetention(state) {
+  if (!state || !state.config || state.config.type !== 'survey') return false;
+  var deleteAt = Date.parse(state.config.deleteAt);
+  if (!isFinite(deleteAt) || Date.now() < deleteAt) return false;
+  var responses = state.responses && typeof state.responses === 'object' ? state.responses : {};
+  if (!Object.keys(responses).length && state.tally) return false;
+  if (!state.tally) state.tally = computeSurveyAggregates(state.config, responses);
+  state.responses = {};
+  return true;
+}
+
+// Identity mode is enforced HERE, not in the UI (the availability discipline):
+// if this function can hand back attributable rows in anonymous mode, the mode
+// is a promise the data does not keep.
+function buildSurveySummary(state, isHost) {
+  var config = state.config;
+  applySurveyRetention(state);
+  var responses = state.responses && typeof state.responses === 'object' ? state.responses : {};
+  var aggregates = state.tally || computeSurveyAggregates(config, responses);
+  var participantCount = aggregates.participantCount;
+  var revealed = participantCount >= (parseInt(config.minParticipants, 10) || 3);
+  // In anonymous mode the floor guards the organizer too: with two respondents
+  // a per-item distribution can still identify who said what.
+  var showAggregates = config.identityMode === 'anonymous' ? revealed : (isHost || revealed);
+  var aggByItem = {};
+  for (var ai = 0; ai < aggregates.items.length; ai++) aggByItem[aggregates.items[ai].id] = aggregates.items[ai];
+  var items = [];
+  for (var i = 0; i < config.items.length; i++) {
+    var item = config.items[i];
+    var entry = {
+      id: item.id,
+      type: item.type,
+      text: item.text,
+      required: item.required === true
+    };
+    if (item.type === 'likert') { entry.steps = item.steps; entry.labels = item.labels; }
+    if (item.type === 'choice') entry.options = item.options;
+    if (item.type === 'numeric') { entry.min = item.min; entry.max = item.max; }
+    if (showAggregates && aggByItem[item.id]) entry.aggregate = aggByItem[item.id];
+    // Free-text answers go to the HOST only, floor-gated, and detached from
+    // any identity in anonymous mode. Sorted by text, not arrival: iteration
+    // order of the response map follows submission order, which in a small
+    // class is an identity all by itself.
+    if (isHost && item.type === 'freetext' && showAggregates && !state.tally) {
+      var texts = [];
+      Object.keys(responses).forEach(function(uid) {
+        var row = responses[uid];
+        var answer = row && row.answers && row.answers[item.id];
+        if (typeof answer === 'string' && answer) texts.push(answer);
+      });
+      texts.sort();
+      entry.texts = texts;
+    }
+    items.push(entry);
+  }
+  var rows = [];
+  if (isHost && config.identityMode !== 'anonymous') {
+    Object.keys(responses).forEach(function(uid) {
+      var row = responses[uid];
+      if (!row || !row.answers) return;
+      rows.push({
+        label: config.identityMode === 'real_name' ? String(row.name || '') : availabilityCodename(uid),
+        answers: row.answers,
+        updatedAt: parseInt(row.updatedAt, 10) || 0
+      });
+    });
+    rows.sort(function(a, b) { return b.updatedAt - a.updatedAt; });
+  }
+  return {
+    ok: true,
+    activityId: state.activityId,
+    type: 'survey',
+    prompt: config.prompt,
+    info: config.info || '',
+    identityMode: config.identityMode,
+    minParticipants: config.minParticipants,
+    closesAt: config.closesAt,
+    deleteAt: config.deleteAt,
+    closed: availabilityIsClosed(config),
+    participantCount: participantCount,
+    revealed: revealed,
+    items: items,
+    rows: rows,
+    version: parseInt(state.version, 10) || 0,
+    updatedAt: parseInt(state.updatedAt, 10) || 0
+  };
+}
+
 // Stable per respondent, derived from the uid the deployment already issued, so
 // someone who returns keeps their codename and the tally does not count them
 // twice (spec §3).
@@ -1547,6 +1847,7 @@ function buildAvailabilitySummary(state, isHost) {
 
 function buildAssignmentActivityPublicSummary(state) {
   var responses = state.responses && typeof state.responses === 'object' ? state.responses : {};
+  if (state.config.type === 'survey') return buildSurveySummary(state, false);
   if (state.config.type === 'signup') return buildSignupSummary(state, false);
   if (state.config.type === 'availability') return buildAvailabilitySummary(state, false);
   if (state.config.type === 'rating') {
@@ -1653,6 +1954,12 @@ function assignmentActivitySummaryFor(cache, context, uid) {
     } catch (e) {}
   }
   var state = readAssignmentActivityState(context);
+  // Same persistence rule on the respondent read path, and BEFORE caching:
+  // caching per-uid rows that retention is about to erase would hand out for
+  // the cache TTL exactly what deleteAt promised was gone.
+  if (state.config.type === 'survey' && applySurveyRetention(state)) {
+    writeAssignmentActivityState(state);
+  }
   cacheAssignmentActivitySummary(cache, state);
   var summary = buildAssignmentActivityPublicSummary(state);
   summary.own = state.responses[uid] || null;
@@ -1699,7 +2006,16 @@ function upsertAssignmentActivity(cache, p, admin) {
   var boardText = '';
   var pollPicks = null;
   var signupClaims = null;
-  if (context.config.type === 'question_board') {
+  var surveyAnswers = null;
+  if (context.config.type === 'survey') {
+    if (availabilityIsClosed(context.config)) return out({ ok: false, e: 'poll-closed' });
+    // deleteAt also closes writes. A row arriving after retention ran would
+    // sit invisible under the materialised tally — stored but never counted.
+    var surveyDeleteAt = Date.parse(context.config.deleteAt);
+    if (isFinite(surveyDeleteAt) && Date.now() >= surveyDeleteAt) return out({ ok: false, e: 'poll-closed' });
+    surveyAnswers = normalizeSurveyAnswers(p.answers, context.config);
+    if (!surveyAnswers) return out({ ok: false, e: 'bad-answers' });
+  } else if (context.config.type === 'question_board') {
     boardText = normalizeAssignmentBoardItemText(p.term);
     if (!boardText) return out({ ok: false, e: 'bad-term' });
   } else if (context.config.type === 'signup') {
@@ -1766,6 +2082,25 @@ function upsertAssignmentActivity(cache, p, admin) {
         row.items.pop();
         return out({ ok: false, e: 'board-bytes' });
       }
+    } else if (context.config.type === 'survey') {
+      // One row per actor, replace semantics: a returning respondent CHANGES
+      // their answers rather than appearing twice in the aggregates.
+      var svRow = { answers: surveyAnswers, updatedAt: Date.now() };
+      // A name is stored ONLY in real_name mode. If the row carried one in
+      // the other modes the mode would be a lie, whatever the UI shows.
+      if (context.config.identityMode === 'real_name') {
+        var svName = normalizeAssignmentBoardItemText(p.nm).slice(0, 40);
+        if (svName) svRow.name = svName;
+      }
+      responses[actor.uid] = svRow;
+      // Byte guard BEFORE the write, and refuse rather than truncate: twelve
+      // free-text answers per row add up in a way the single-value types
+      // never could.
+      var svProbe = JSON.stringify(responses);
+      if (svProbe.length > MAX_DOC_CHARS) {
+        if (previous) responses[actor.uid] = previous; else delete responses[actor.uid];
+        return out({ ok: false, e: 'survey-bytes' });
+      }
     } else if (context.config.type === 'signup') {
       // The whole point of doing this here: we are inside LockService, so the
       // seat count cannot change between the check and the write. Checking on
@@ -1820,6 +2155,11 @@ function upsertAssignmentActivity(cache, p, admin) {
     state.updatedAt = Date.now();
     writeAssignmentActivityState(state);
     cacheAssignmentActivitySummary(cache, state);
+    if (context.config.type === 'survey') {
+      var answered = buildSurveySummary(state, false);
+      answered.own = responses[actor.uid] || null;
+      return out(answered);
+    }
     if (context.config.type === 'signup') {
       var claimed = buildSignupSummary(state, false);
       claimed.own = responses[actor.uid] || null;
@@ -1848,6 +2188,21 @@ function getAssignmentActivityAdmin(cache, p) {
     return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
   }
   var state = readAssignmentActivityState(context);
+  if (context.config.type === 'survey') {
+    // Retention must PERSIST from the read path: answers stop arriving after
+    // closesAt, so if erasure only ever lived in memory the Drive file would
+    // keep the rows — free text included — forever. One write, once: the next
+    // applySurveyRetention sees empty rows + a tally and does nothing.
+    var surveyErased = applySurveyRetention(state);
+    // The organizer's endpoint. buildSurveySummary still decides what they
+    // may see: rows only outside anonymous mode, free text floor-gated.
+    var surveySummary = buildSurveySummary(state, true);
+    if (surveyErased) {
+      writeAssignmentActivityState(state);
+      cacheAssignmentActivitySummary(cache, state);
+    }
+    return out(surveySummary);
+  }
   if (context.config.type === 'signup') return out(buildSignupSummary(state, true));
   if (context.config.type === 'availability') {
     // The organizer is the audience for a scheduling poll, so rows come back

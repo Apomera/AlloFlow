@@ -7,7 +7,7 @@
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -64,7 +64,7 @@
     { id: 'challenge', icon: '\uD83C\uDFC6', label: 'Challenge', desc: 'Chemistry quiz in 3 tiers' },
     { id: 'battle', icon: '\u2694\uFE0F', label: 'Element Battle', desc: 'Battle with chemistry questions' },
     { id: 'learn', icon: '\uD83D\uDCD6', label: 'Learn', desc: 'Chemistry concepts by grade' },
-    { id: 'elementdb', icon: '\uD83E\uDDEA', label: 'Element Encyclopedia', desc: '118 elements deep profiles' },
+    { id: 'elementdb', icon: '\uD83E\uDDEA', label: 'Element Encyclopedia', desc: 'Detailed profiles for all 118 elements' },
     { id: 'periodic', icon: '\uD83D\uDD22', label: 'Periodic Table', desc: 'Interactive periodic table atlas' },
     { id: 'famous_reactions', icon: '\uD83D\uDD25', label: 'Famous Reactions', desc: '40+ landmark chemical reactions' },
     { id: 'industrial', icon: '\uD83C\uDFED', label: 'Industrial Chemistry', desc: 'Haber, Contact, Solvay + more' },
@@ -91,15 +91,15 @@
     { id: 'lab_kits', icon: '\uD83C\uDF92', label: 'Lesson Plans', desc: '15 classroom labs' },
     { id: 'mythbusters', icon: '\uD83D\uDCA5', label: 'Chem Mythbusters', desc: 'Common misconceptions' },
     { id: 'records', icon: '\uD83C\uDFC5', label: 'Chemistry Records', desc: 'Strongest acid, hottest fire, etc.' },
-    { id: 'glossary', icon: '\uD83D\uDCD6', label: 'Glossary', desc: '200+ chemistry terms' },
+    { id: 'glossary', icon: '\uD83D\uDCD6', label: 'Glossary', desc: 'Search reviewed chemistry terms and definitions' },
     { id: 'datatables', icon: '\uD83D\uDCCB', label: 'Data Tables', desc: 'Reference tables for chem' },
-    { id: 'finale', icon: '\uD83C\uDF86', label: '20K Finale', desc: 'You did it!' },
-    { id: 'pHHunt', icon: '\uD83E\uDDEA', label: 'pH Discovery', desc: 'Adjust H+ concentration, buffer, temperature \u2014 discover pH regimes' }
+    { id: 'finale', icon: '\uD83C\uDF86', label: 'Chemistry Overview', desc: 'Review the lab library and learning paths' },
+    { id: 'pHHunt', icon: '\uD83E\uDDEA', label: 'pH Discovery', desc: 'Explore the logarithmic relationship between hydronium activity and pH' }
   ];
 
   var CHEM_CATEGORIES = [
     { id: 'core', label: 'Core Labs', icon: '⚖️', desc: 'Balance, react, calculate, measure', color: 'lime',
-      sections: ['balance', 'reactions', 'stoich', 'molecular', 'safety', 'challenge', 'battle', 'learn'] },
+      sections: ['balance', 'reactions', 'stoich', 'molecular', 'safety', 'pHHunt', 'challenge', 'battle', 'learn'] },
     { id: 'reference', label: 'Reference', icon: '📚', desc: 'Elements, glossary, tables, history', color: 'cyan',
       sections: ['elementdb', 'periodic', 'famous_reactions', 'glossary', 'datatables', 'records', 'mythbusters', 'history'] },
     { id: 'domains', label: 'Chemistry Domains', icon: '⚛️', desc: 'Deep dives into chem subjects', color: 'indigo',
@@ -123,18 +123,32 @@
 
   // ── Equation presets ──
   var ALL_PRESETS = [
-    { name: 'Water Formation', tier: 'beginner', eq: 'H\u2082 + O\u2082 \u2192 H\u2082O', target: [2, 1, 2], atoms: { H: [2, 0, 2], O: [0, 2, 1] }, hint: 'Hydrogen needs 4 atoms total on each side' },
-    { name: 'Table Salt', tier: 'beginner', eq: 'Na + Cl\u2082 \u2192 NaCl', target: [2, 1, 2], atoms: { Na: [1, 0, 1], Cl: [0, 2, 1] }, hint: 'Each NaCl needs one Na and one Cl' },
-    { name: 'Magnesium Oxide', tier: 'beginner', eq: 'Mg + O\u2082 \u2192 MgO', target: [2, 1, 2], atoms: { Mg: [1, 0, 1], O: [0, 2, 1] }, hint: 'Oxygen comes in pairs' },
-    { name: 'Iron Oxide', tier: 'beginner', eq: 'Fe + O\u2082 \u2192 Fe\u2082O\u2083', target: [4, 3, 2], atoms: { Fe: [1, 0, 2], O: [0, 2, 3] }, hint: 'Count Fe and O atoms on each side' },
-    { name: 'Methane Combustion', tier: 'intermediate', eq: 'CH\u2084 + O\u2082 \u2192 CO\u2082 + H\u2082O', target: [1, 2, 1, 2], atoms: { C: [1, 0, 1, 0], H: [4, 0, 0, 2], O: [0, 2, 2, 1] }, hint: 'Balance C first, then H, then O' },
+    { name: 'Water Formation', tier: 'beginner', rtype: 'synthesis', eq: 'H\u2082 + O\u2082 \u2192 H\u2082O', target: [2, 1, 2], atoms: { H: [2, 0, 2], O: [0, 2, 1] }, hint: 'Hydrogen needs 4 atoms total on each side' },
+    { name: 'Table Salt', tier: 'beginner', rtype: 'synthesis', eq: 'Na + Cl\u2082 \u2192 NaCl', target: [2, 1, 2], atoms: { Na: [1, 0, 1], Cl: [0, 2, 1] }, hint: 'Each NaCl needs one Na and one Cl' },
+    { name: 'Magnesium Oxide', tier: 'beginner', rtype: 'synthesis', eq: 'Mg + O\u2082 \u2192 MgO', target: [2, 1, 2], atoms: { Mg: [1, 0, 1], O: [0, 2, 1] }, hint: 'Oxygen comes in pairs' },
+    { name: 'Iron Oxide', tier: 'beginner', rtype: 'synthesis', eq: 'Fe + O\u2082 \u2192 Fe\u2082O\u2083', target: [4, 3, 2], atoms: { Fe: [1, 0, 2], O: [0, 2, 3] }, hint: 'Count Fe and O atoms on each side' },
+    { name: 'Methane Combustion', tier: 'intermediate', rtype: 'combustion', eq: 'CH\u2084 + O\u2082 \u2192 CO\u2082 + H\u2082O', target: [1, 2, 1, 2], atoms: { C: [1, 0, 1, 0], H: [4, 0, 0, 2], O: [0, 2, 2, 1] }, hint: 'Balance C first, then H, then O' },
     { name: 'Photosynthesis', tier: 'intermediate', eq: 'CO\u2082 + H\u2082O \u2192 C\u2086H\u2081\u2082O\u2086 + O\u2082', target: [6, 6, 1, 6], atoms: { C: [1, 0, 6, 0], O: [2, 1, 6, 2], H: [0, 2, 12, 0] }, hint: 'Start with carbon: you need 6 CO\u2082' },
-    { name: 'Acid-Base Neutralization', tier: 'intermediate', eq: 'HCl + NaOH \u2192 NaCl + H\u2082O', target: [1, 1, 1, 1], atoms: { H: [1, 1, 0, 2], Cl: [1, 0, 1, 0], Na: [0, 1, 1, 0], O: [0, 1, 0, 1] }, hint: 'This one is already balanced at 1:1:1:1!' },
-    { name: 'Ammonia Synthesis', tier: 'intermediate', eq: 'N\u2082 + H\u2082 \u2192 NH\u2083', target: [1, 3, 2], atoms: { N: [2, 0, 1], H: [0, 2, 3] }, hint: 'You need 2 NH\u2083 to use both N atoms' },
-    { name: 'Thermite Reaction', tier: 'advanced', eq: 'Al + Fe\u2082O\u2083 \u2192 Al\u2082O\u2083 + Fe', target: [2, 1, 1, 2], atoms: { Al: [1, 0, 2, 0], Fe: [0, 2, 0, 1], O: [0, 3, 3, 0] }, hint: 'Aluminum replaces iron' },
-    { name: 'Ethanol Combustion', tier: 'advanced', eq: 'C\u2082H\u2085OH + O\u2082 \u2192 CO\u2082 + H\u2082O', target: [1, 3, 2, 3], atoms: { C: [2, 0, 1, 0], H: [6, 0, 0, 2], O: [1, 2, 2, 1] }, hint: 'Balance C, then H, then adjust O last' },
-    { name: 'CaCO\u2083 Decomposition', tier: 'advanced', eq: 'CaCO\u2083 \u2192 CaO + CO\u2082', target: [1, 1, 1], atoms: { Ca: [1, 1, 0], C: [1, 0, 1], O: [3, 1, 2] }, hint: 'Decomposition: already balanced!' },
-    { name: 'Glucose Combustion', tier: 'advanced', eq: 'C\u2086H\u2081\u2082O\u2086 + O\u2082 \u2192 CO\u2082 + H\u2082O', target: [1, 6, 6, 6], atoms: { C: [6, 0, 1, 0], H: [12, 0, 0, 2], O: [6, 2, 2, 1] }, hint: 'Balance C (6), then H (12\u219206), then O last' }
+    { name: 'Acid-Base Neutralization', tier: 'intermediate', rtype: 'double', eq: 'HCl + NaOH \u2192 NaCl + H\u2082O', target: [1, 1, 1, 1], atoms: { H: [1, 1, 0, 2], Cl: [1, 0, 1, 0], Na: [0, 1, 1, 0], O: [0, 1, 0, 1] }, hint: 'This one is already balanced at 1:1:1:1!' },
+    { name: 'Ammonia Synthesis', tier: 'intermediate', rtype: 'synthesis', eq: 'N\u2082 + H\u2082 \u2192 NH\u2083', target: [1, 3, 2], atoms: { N: [2, 0, 1], H: [0, 2, 3] }, hint: 'You need 2 NH\u2083 to use both N atoms' },
+    { name: 'Thermite Reaction', tier: 'advanced', rtype: 'single', eq: 'Al + Fe\u2082O\u2083 \u2192 Al\u2082O\u2083 + Fe', target: [2, 1, 1, 2], atoms: { Al: [1, 0, 2, 0], Fe: [0, 2, 0, 1], O: [0, 3, 3, 0] }, hint: 'Aluminum replaces iron' },
+    { name: 'Ethanol Combustion', tier: 'advanced', rtype: 'combustion', eq: 'C\u2082H\u2085OH + O\u2082 \u2192 CO\u2082 + H\u2082O', target: [1, 3, 2, 3], atoms: { C: [2, 0, 1, 0], H: [6, 0, 0, 2], O: [1, 2, 2, 1] }, hint: 'Balance C, then H, then adjust O last' },
+    { name: 'CaCO\u2083 Decomposition', tier: 'advanced', rtype: 'decomposition', eq: 'CaCO\u2083 \u2192 CaO + CO\u2082', target: [1, 1, 1], atoms: { Ca: [1, 1, 0], C: [1, 0, 1], O: [3, 1, 2] }, hint: 'Decomposition: already balanced!' },
+    { name: 'Glucose Combustion', tier: 'advanced', rtype: 'combustion', eq: 'C\u2086H\u2081\u2082O\u2086 + O\u2082 \u2192 CO\u2082 + H\u2082O', target: [1, 6, 6, 6], atoms: { C: [6, 0, 1, 0], H: [12, 0, 0, 2], O: [6, 2, 2, 1] }, hint: 'Balance C (6), then H (12\u219206), then O last' },
+    { name: 'Hydrogen Peroxide Breakdown', tier: 'beginner', rtype: 'decomposition', eq: 'H\u2082O\u2082 \u2192 H\u2082O + O\u2082', target: [2, 2, 1], atoms: { H: [2, 2, 0], O: [2, 1, 2] }, hint: 'Count oxygen carefully \u2014 the lone O\u2082 collects what the water can\u2019t hold' },
+    { name: 'Potassium Bromide', tier: 'beginner', rtype: 'synthesis', eq: 'K + Br\u2082 \u2192 KBr', target: [2, 1, 2], atoms: { K: [1, 0, 1], Br: [0, 2, 1] }, hint: 'Bromine travels in pairs, just like chlorine' },
+    { name: 'Lithium Oxide', tier: 'beginner', rtype: 'synthesis', eq: 'Li + O\u2082 \u2192 Li\u2082O', target: [4, 1, 2], atoms: { Li: [1, 0, 2], O: [0, 2, 1] }, hint: 'Each Li\u2082O needs 2 lithium, and one O\u2082 makes 2 of them' },
+    { name: 'Sulfur Dioxide', tier: 'beginner', rtype: 'synthesis', eq: 'S + O\u2082 \u2192 SO\u2082', target: [1, 1, 1], atoms: { S: [1, 0, 1], O: [0, 2, 2] }, hint: 'Count both sides first \u2014 some equations start out balanced' },
+    { name: 'Aluminum Chloride', tier: 'beginner', rtype: 'synthesis', eq: 'Al + Cl\u2082 \u2192 AlCl\u2083', target: [2, 3, 2], atoms: { Al: [1, 0, 1], Cl: [0, 2, 3] }, hint: 'Chlorine comes in 2s but AlCl\u2083 wants 3s \u2014 six chlorines satisfies both' },
+    { name: 'Zinc + Acid', tier: 'intermediate', rtype: 'single', eq: 'Zn + HCl \u2192 ZnCl\u2082 + H\u2082', target: [1, 2, 1, 1], atoms: { Zn: [1, 0, 1, 0], H: [0, 1, 0, 2], Cl: [0, 1, 2, 0] }, hint: 'ZnCl\u2082 needs 2 chlorines, and each HCl brings just one' },
+    { name: 'Propane Combustion', tier: 'intermediate', rtype: 'combustion', eq: 'C\u2083H\u2088 + O\u2082 \u2192 CO\u2082 + H\u2082O', target: [1, 5, 3, 4], atoms: { C: [3, 0, 1, 0], H: [8, 0, 0, 2], O: [0, 2, 2, 1] }, hint: 'Balance C first (3), then H (4 waters), and count O last' },
+    { name: 'Sodium + Water', tier: 'intermediate', rtype: 'single', eq: 'Na + H\u2082O \u2192 NaOH + H\u2082', target: [2, 2, 2, 1], atoms: { Na: [1, 0, 1, 0], H: [0, 2, 1, 2], O: [0, 1, 1, 0] }, hint: 'Hydrogen hides in three different compounds \u2014 tally every one' },
+    { name: 'Potassium Chlorate', tier: 'intermediate', rtype: 'decomposition', eq: 'KClO\u2083 \u2192 KCl + O\u2082', target: [2, 2, 3], atoms: { K: [1, 1, 0], Cl: [1, 1, 0], O: [3, 0, 2] }, hint: 'K and Cl match 1:1 \u2014 oxygen needs a number 3 and 2 both divide' },
+    { name: 'Copper Recovery', tier: 'intermediate', rtype: 'single', eq: 'Al + CuCl\u2082 \u2192 AlCl\u2083 + Cu', target: [2, 3, 2, 3], atoms: { Al: [1, 0, 1, 0], Cu: [0, 1, 0, 1], Cl: [0, 2, 3, 0] }, hint: 'AlCl\u2083 wants 3 Cl but CuCl\u2082 brings 2 \u2014 meet at 6' },
+    { name: 'Ammonia Oxidation (Ostwald)', tier: 'advanced', eq: 'NH\u2083 + O\u2082 \u2192 NO + H\u2082O', target: [4, 5, 4, 6], atoms: { N: [1, 0, 1, 0], H: [3, 0, 0, 2], O: [0, 2, 1, 1] }, hint: 'Settle N and H first, then tally oxygen across BOTH products' },
+    { name: 'Ethane Combustion', tier: 'advanced', rtype: 'combustion', eq: 'C\u2082H\u2086 + O\u2082 \u2192 CO\u2082 + H\u2082O', target: [2, 7, 4, 6], atoms: { C: [2, 0, 1, 0], H: [6, 0, 0, 2], O: [0, 2, 2, 1] }, hint: 'One C\u2082H\u2086 needs 3\u00bd O\u2082 \u2014 double everything to clear the half' },
+    { name: 'Lead Iodide Precipitate', tier: 'advanced', rtype: 'double', eq: 'Pb(NO\u2083)\u2082 + KI \u2192 PbI\u2082 + KNO\u2083', target: [1, 2, 1, 2], atoms: { Pb: [1, 0, 1, 0], N: [2, 0, 0, 1], O: [6, 0, 0, 3], K: [0, 1, 0, 1], I: [0, 1, 2, 0] }, hint: 'Treat NO\u2083 as one unbreakable unit and balance it like a single atom' },
+    { name: 'Phosphorus + Oxygen', tier: 'advanced', rtype: 'synthesis', eq: 'P\u2084 + O\u2082 \u2192 P\u2084O\u2081\u2080', target: [1, 5, 1], atoms: { P: [4, 0, 4], O: [0, 2, 10] }, hint: 'P\u2084 already matches \u2014 just deliver 10 oxygens in pairs' }
   ];
 
   // ── Reaction types ──
@@ -292,12 +306,24 @@
     if (tokens.join('') !== formula) return 'Formula contains unsupported characters or misplaced lowercase letters';
     var depth = 0;
     for (var i = 0; i < tokens.length; i++) {
-      if (tokens[i] === '(') depth++;
-      else if (tokens[i] === ')') {
+      var token = tokens[i];
+      var prev = i > 0 ? tokens[i - 1] : '';
+      var next = i + 1 < tokens.length ? tokens[i + 1] : '';
+      if (token === '(') {
+        depth++;
+      } else if (token === ')') {
+        if (prev === '(' || prev === '.' || prev === '\u00b7') return 'Formula contains an empty or incomplete group';
         depth--;
         if (depth < 0) return 'Formula has a closing parenthesis without a matching opening parenthesis';
-      } else if (/^\d+$/.test(tokens[i]) && parseInt(tokens[i], 10) < 1) {
-        return 'Subscripts and hydrate multipliers must be positive whole numbers';
+      } else if (/^\d+$/.test(token)) {
+        if (parseInt(token, 10) < 1) return 'Subscripts and hydrate multipliers must be positive whole numbers';
+        var followsSpecies = /^[A-Z][a-z]?$/.test(prev) || prev === ')';
+        var hydrateMultiplier = (prev === '.' || prev === '\u00b7') && (/^[A-Z][a-z]?$/.test(next) || next === '(');
+        if (!followsSpecies && !hydrateMultiplier) return 'A number must follow an element or group, or be a hydrate multiplier';
+      } else if (token === '.' || token === '\u00b7') {
+        var leftOk = /^[A-Z][a-z]?$/.test(prev) || prev === ')' || /^\d+$/.test(prev);
+        var rightOk = /^[A-Z][a-z]?$/.test(next) || next === '(' || /^\d+$/.test(next);
+        if (depth !== 0 || !leftOk || !rightOk) return 'Hydrate separators must appear between complete formula parts';
       }
     }
     if (depth !== 0) return 'Formula has unmatched parentheses';
@@ -317,7 +343,8 @@
     var syntaxError = coef < 1 ? 'Coefficients must be positive whole numbers' : _validateFormulaSyntax(formula);
     var syms = _scanElementSymbols(formula);
     for (var i = 0; i < syms.length; i++) { if (!ELEMENTS[syms[i]] && unknown.indexOf(syms[i]) < 0) unknown.push(syms[i]); }
-    var pf = parseFormula(formula);
+    var pf = { mass: 0, elems: {} };
+    if (!syntaxError && unknown.length === 0) pf = parseFormula(formula);
     return {
       coef: coef,
       formula: formula,
@@ -426,7 +453,104 @@
     return out;
   }
 
-  try { window.__alloChemPure = { parseFormula: parseFormula, parseSpecies: parseSpecies, parseEquation: parseEquation, balanceEquation: balanceEquation, stoichiometry: stoichiometry, ELEMENTS: ELEMENTS }; } catch (_e) {}
+  function _uniqueChemIds(values) {
+    var out = [];
+    (Array.isArray(values) ? values : []).forEach(function(value) {
+      var id = String(value);
+      if (id && out.indexOf(id) === -1) out.push(id);
+    });
+    return out;
+  }
+
+  function _deriveCompletedChemTiers(solvedPresetIds) {
+    var solved = _uniqueChemIds(solvedPresetIds);
+    return ['beginner', 'intermediate', 'advanced'].filter(function(tier) {
+      var tierIds = ALL_PRESETS.filter(function(preset) { return preset.tier === tier; })
+        .map(function(preset) { return preset.name; });
+      return tierIds.length > 0 && tierIds.every(function(id) { return solved.indexOf(id) !== -1; });
+    });
+  }
+
+  function normalizeChemProgress(raw) {
+    var source = raw || {};
+    var solvedPresetIds = _uniqueChemIds(source.solvedPresetIds);
+    var completedSafetyScenarioIds = _uniqueChemIds(source.completedSafetyScenarioIds);
+    var correctChallengeIds = _uniqueChemIds(source.correctChallengeIds);
+    var tiersCompleted = _uniqueChemIds(source.tiersCompleted)
+      .concat(_deriveCompletedChemTiers(solvedPresetIds))
+      .filter(function(id, index, values) { return values.indexOf(id) === index; });
+    var legacyEquationCount = Math.max(0, Number(source.equationsBalanced) || 0);
+    var legacyQuizCount = Math.max(0, Number(source.quizCorrect) || 0);
+    var legacySafetyCount = Math.max(0, Number(source.safetyScore) || 0);
+    var speedBest = (typeof source.speedBest === 'number' && isFinite(source.speedBest) && source.speedBest >= 0)
+      ? source.speedBest
+      : null;
+    return Object.assign({}, source, {
+      badges: _uniqueChemIds(source.badges),
+      equationsBalanced: Math.max(legacyEquationCount, solvedPresetIds.length),
+      solvedPresetIds: solvedPresetIds,
+      tiersCompleted: tiersCompleted,
+      speedBest: speedBest,
+      quizCorrect: Math.max(legacyQuizCount, correctChallengeIds.length),
+      correctChallengeIds: correctChallengeIds,
+      safetyScore: Math.max(legacySafetyCount, completedSafetyScenarioIds.length),
+      completedSafetyScenarioIds: completedSafetyScenarioIds,
+      battleWon: !!source.battleWon
+    });
+  }
+
+  function recordSolvedPreset(raw, presetName, elapsedSeconds) {
+    var progress = normalizeChemProgress(raw);
+    var id = String(presetName || '');
+    var isNew = !!id && progress.solvedPresetIds.indexOf(id) === -1;
+    if (isNew) {
+      progress.solvedPresetIds = progress.solvedPresetIds.concat([id]);
+      progress.equationsBalanced = Math.max(progress.equationsBalanced + 1, progress.solvedPresetIds.length);
+      progress.tiersCompleted = _uniqueChemIds(progress.tiersCompleted.concat(_deriveCompletedChemTiers(progress.solvedPresetIds)));
+      if (typeof elapsedSeconds === 'number' && isFinite(elapsedSeconds) && elapsedSeconds >= 0) {
+        progress.speedBest = progress.speedBest == null ? elapsedSeconds : Math.min(progress.speedBest, elapsedSeconds);
+      }
+    }
+    return { progress: progress, isNew: isNew };
+  }
+
+  function recordSafetyScenario(raw, scenarioId) {
+    var progress = normalizeChemProgress(raw);
+    var id = String(scenarioId);
+    var isNew = progress.completedSafetyScenarioIds.indexOf(id) === -1;
+    if (isNew) {
+      progress.completedSafetyScenarioIds = progress.completedSafetyScenarioIds.concat([id]);
+      progress.safetyScore = Math.max(progress.safetyScore + 1, progress.completedSafetyScenarioIds.length);
+    }
+    return { progress: progress, isNew: isNew };
+  }
+
+  function recordCorrectChallenge(raw, challengeId) {
+    var progress = normalizeChemProgress(raw);
+    var id = String(challengeId || '');
+    var isNew = !!id && progress.correctChallengeIds.indexOf(id) === -1;
+    if (isNew) {
+      progress.correctChallengeIds = progress.correctChallengeIds.concat([id]);
+      progress.quizCorrect = Math.max(progress.quizCorrect + 1, progress.correctChallengeIds.length);
+    }
+    return { progress: progress, isNew: isNew };
+  }
+
+  try {
+    window.__alloChemPure = {
+      parseFormula: parseFormula,
+      parseSpecies: parseSpecies,
+      parseEquation: parseEquation,
+      balanceEquation: balanceEquation,
+      stoichiometry: stoichiometry,
+      normalizeChemProgress: normalizeChemProgress,
+      recordSolvedPreset: recordSolvedPreset,
+      recordSafetyScenario: recordSafetyScenario,
+      recordCorrectChallenge: recordCorrectChallenge,
+      ELEMENTS: ELEMENTS,
+      BALANCE_PRESETS: ALL_PRESETS
+    };
+  } catch (_e) {}
 
   // ── Molecule data for viewer ──
   var MOLECULES = [
@@ -478,55 +602,89 @@
   ];
 
   // ── Lab emergency scenarios ──
+  // APPEND-ONLY: safety progress ids are index-based (recordSafetyScenario(ext,
+  // emergIdx)), so inserting or reordering scenarios corrupts saved progress.
   var EMERGENCIES = [
     { title: 'Acid Splash on Skin', urgency: 'HIGH',
       q: 'HCl splashes on your hand. What do you do FIRST?',
       opts: [
-        { text: 'Flush with water for 15+ minutes', correct: true },
+        { text: 'Immediately rinse with flowing water for at least 15 minutes and alert the teacher', correct: true },
         { text: 'Apply baking soda immediately', correct: false },
-        { text: 'Wipe off with a paper towel', correct: false },
+        { text: 'Wipe it off and wait for instructions', correct: false },
         { text: 'Continue working and wash later', correct: false }
       ],
-      explain: 'Always flush with large amounts of water first! Neutralizing agents can generate heat and make burns worse.' },
+      explain: 'Start rinsing immediately. Use the safety shower for a large exposure, remove contaminated clothing while rinsing when safe, and alert the teacher or emergency responder. Follow the SDS and local emergency plan. Never try to neutralize a chemical on the body.' },
     { title: 'Chemical in Eyes', urgency: 'HIGH',
       q: 'NaOH solution splashes in your eyes. What do you do?',
       opts: [
         { text: 'Rub your eyes quickly', correct: false },
-        { text: 'Use the eyewash station for 15+ minutes', correct: true },
-        { text: 'Rinse with milk', correct: false },
+        { text: 'Use the eyewash immediately and alert the teacher', correct: true },
+        { text: 'Rinse briefly and return to the lab', correct: false },
         { text: 'Wait and see if it hurts', correct: false }
       ],
-      explain: 'Go to the eyewash station immediately. Hold eyelids open and flush for at least 15 minutes. Alert the teacher.' },
+      explain: 'Flush continuously for at least 15 minutes, hold the eyelids open, and remove contact lenses only if they come out easily during rinsing. Alert the teacher and obtain medical evaluation as directed by the SDS and local plan.' },
     { title: 'Small Chemical Fire', urgency: 'HIGH',
-      q: 'Ethanol catches fire in a beaker on your bench. What do you do?',
+      q: 'Ethanol catches fire in a beaker on your bench. What do you do first?',
       opts: [
         { text: 'Blow on it hard', correct: false },
         { text: 'Pour water on it', correct: false },
-        { text: 'Cover with a watch glass or fire blanket', correct: true },
-        { text: 'Run away immediately', correct: false }
+        { text: 'Warn others, alert the teacher, and follow the lab fire or evacuation plan', correct: true },
+        { text: 'Carry the burning beaker to a sink', correct: false }
       ],
-      explain: 'Smother small fires by cutting off oxygen. Cover with a watch glass, fire blanket, or use a CO\u2082 extinguisher. Never use water on chemical fires.' },
+      explain: 'Raise the alarm first. Shut off heat or gas only if it is immediately safe. Students should not fight a fire unless specifically trained and directed. Use only the extinguisher or containment method specified by the site fire plan, and evacuate if the fire is not immediately controlled.' },
     { title: 'Chemical Spill on Bench', urgency: 'MEDIUM',
       q: 'You spill dilute H\u2082SO\u2084 on the lab bench. What do you do?',
       opts: [
         { text: 'Ignore it and keep working', correct: false },
-        { text: 'Alert teacher, neutralize with NaHCO\u2083, clean up', correct: true },
-        { text: 'Wipe with your sleeve', correct: false },
-        { text: 'Pour more acid to dilute it', correct: false }
+        { text: 'Alert the teacher, keep others away, and follow the spill-response plan', correct: true },
+        { text: 'Neutralize it yourself and wipe it with paper towels', correct: false },
+        { text: 'Pour more liquid on it before telling anyone', correct: false }
       ],
-      explain: 'Alert your teacher. For acid spills, carefully apply baking soda (NaHCO\u2083) to neutralize, then wipe up with paper towels. Wear gloves!' },
+      explain: 'Do not touch or clean an unknown spill. The teacher must assess the chemical, concentration, and amount, consult the SDS and local plan, and decide whether trained personnel can use a compatible spill kit or the area must be evacuated. Cleanup is performed only by trained, authorized people.' },
     { title: 'Gas Release / Fumes', urgency: 'MEDIUM',
       q: 'You notice a strong, irritating smell coming from a reaction. What do you do?',
       opts: [
         { text: 'Lean in to identify the smell', correct: false },
-        { text: 'Move away, alert teacher, use fume hood', correct: true },
-        { text: 'Open a window and continue', correct: false },
+        { text: 'Move away, warn others, alert the teacher, and follow evacuation instructions', correct: true },
+        { text: 'Move the fuming reaction yourself', correct: false },
         { text: 'Hold your breath and finish quickly', correct: false }
       ],
-      explain: 'Never sniff chemicals directly (use the wafting technique). Move away from the source, alert your teacher, and ensure the reaction is moved to a fume hood.' }
+      explain: 'Do not sniff or waft an unknown or irritating vapor, and do not move an actively fuming reaction. Move to fresh air, warn others, and alert the teacher. The teacher or emergency responder decides whether to shut down, ventilate, or evacuate under the local plan.' },
+    { title: 'Broken Glassware', urgency: 'MEDIUM',
+      q: 'A beaker slips and shatters on the floor. What do you do?',
+      opts: [
+        { text: 'Pick up the shards quickly with your fingers', correct: false },
+        { text: 'Alert the teacher, keep others clear, and help only as directed', correct: true },
+        { text: 'Kick the pieces out of the walkway', correct: false },
+        { text: 'Put the shards in the regular trash can', correct: false }
+      ],
+      explain: 'Never touch broken glass with bare hands. The teacher directs cleanup with a brush and dustpan, and fragments go in the designated glass-disposal container, never the regular trash.' },
+    { title: 'Burn from Hot Equipment', urgency: 'HIGH',
+      q: 'You touch a hot crucible and burn your finger. What do you do FIRST?',
+      opts: [
+        { text: 'Put ice directly on the burn', correct: false },
+        { text: 'Spread butter or ointment on it', correct: false },
+        { text: 'Cool it under cool running water and alert the teacher', correct: true },
+        { text: 'Wrap it tightly and keep working', correct: false }
+      ],
+      explain: 'Cool the burn under cool (not icy) running water and tell the teacher right away. Do not put ice, butter, or ointment on a fresh burn. The teacher decides on first aid and medical follow-up under the local plan.' },
+    { title: 'Clothing Catches Fire', urgency: 'HIGH',
+      q: 'A classmate’s sleeve catches fire at the burner. What should they do?',
+      opts: [
+        { text: 'Run to the door for help', correct: false },
+        { text: 'Fan the flames to blow them out', correct: false },
+        { text: 'Wave the arm to shake off the fire', correct: false },
+        { text: 'Stop, drop, and roll while you alert the teacher', correct: true }
+      ],
+      explain: 'Running feeds the flames. Stop, drop, and roll (or use the safety shower or a fire blanket if immediately at hand) to smother the fire, while others alert the teacher and follow the emergency plan.' }
   ];
 
   // ── Challenge questions (3 tiers) ──
+  // APPEND-ONLY: progress ids are index-based (chalDiff + ':' + chalIdx), so
+  // inserting or reordering questions corrupts saved correctChallengeIds.
+  // Optional `check` tags declare a deterministic chemistry cross-check that
+  // tests/chembalance_preset_bank_invariants.test.js executes against the
+  // tool's own parseFormula/parseSpecies/balanceEquation ground truth.
   var CHALLENGE_QS = {
     easy: [
       { q: 'What type of reaction is: 2H\u2082 + O\u2082 \u2192 2H\u2082O?', a: ['Synthesis', 'Decomposition', 'Single Replacement', 'Combustion'], correct: 0, explain: 'Two reactants combine to form one product (A + B \u2192 AB)' },
@@ -536,7 +694,14 @@
       { q: 'What is a chemical formula?', a: ['A recipe for food', 'A shorthand for a compound', 'A math equation', 'A lab tool'], correct: 1, explain: 'Chemical formulas use element symbols and subscripts to show composition' },
       { q: 'What does the subscript 2 in H\u2082O mean?', a: ['2 water molecules', '2 hydrogen atoms', '2 oxygen atoms', 'Temperature'], correct: 1, explain: 'Subscript tells how many atoms of that element are in one molecule' },
       { q: 'What is a coefficient in a chemical equation?', a: ['The little number below', 'The big number in front', 'The arrow', 'The element symbol'], correct: 1, explain: 'Coefficients are the numbers placed before formulas to balance equations' },
-      { q: 'Which is a reactant in: CH\u2084 + 2O\u2082 \u2192 CO\u2082 + 2H\u2082O?', a: ['CO\u2082', 'H\u2082O', 'CH\u2084', 'Heat'], correct: 2, explain: 'Reactants are on the LEFT side of the arrow' }
+      { q: 'Which is a reactant in: CH\u2084 + 2O\u2082 \u2192 CO\u2082 + 2H\u2082O?', a: ['CO\u2082', 'H\u2082O', 'CH\u2084', 'Heat'], correct: 2, explain: 'Reactants are on the LEFT side of the arrow' },
+      { q: 'What type of reaction is: 2H\u2082O\u2082 \u2192 2H\u2082O + O\u2082?', a: ['Combustion', 'Synthesis', 'Decomposition', 'Double Replacement'], correct: 2, explain: 'One compound breaks apart into simpler substances (AB \u2192 A + B)' },
+      { q: 'Which side of the arrow shows the products?', a: ['Left', 'Both', 'Neither', 'Right'], correct: 3, explain: 'Products are on the RIGHT side of the arrow; reactants are on the left' },
+      { q: 'How many oxygen atoms are in 3CO\u2082?', a: ['6', '2', '3', '12'], correct: 0, explain: 'The coefficient 3 multiplies the whole molecule: 3 \u00d7 2 oxygen atoms = 6', check: { kind: 'atomCount', species: '3CO2', element: 'O' } },
+      { q: 'In the formula CO\u2082, what does the C stand for?', a: ['Calcium', 'Chlorine', 'Carbon', 'Copper'], correct: 2, explain: 'C is carbon; calcium is Ca, chlorine is Cl, and copper is Cu' },
+      { q: 'Balancing an equation means making both sides have:', a: ['The same atoms of each element', 'The same number of molecules', 'The same coefficients', 'The same compounds'], correct: 0, explain: 'A balanced equation has equal counts of each element\u2019s atoms on both sides' },
+      { q: 'Which of these is a diatomic element (travels in pairs)?', a: ['Helium', 'Carbon', 'Sulfur', 'Oxygen'], correct: 3, explain: 'Oxygen exists as O\u2082; H\u2082, N\u2082, F\u2082, Cl\u2082, Br\u2082, and I\u2082 are also diatomic' },
+      { q: 'Changing a subscript instead of a coefficient is wrong because it:', a: ['Changes the substance itself', 'Makes the math harder', 'Is against lab rules', 'Uses too many atoms'], correct: 0, explain: 'H\u2082O\u2082 is peroxide, not water \u2014 subscripts define the compound; only coefficients may change when balancing' }
     ],
     medium: [
       { q: 'What type of reaction is: CH\u2084 + 2O\u2082 \u2192 CO\u2082 + 2H\u2082O?', a: ['Synthesis', 'Decomposition', 'Combustion', 'Acid-Base'], correct: 2, explain: 'A hydrocarbon reacts with O\u2082 to produce CO\u2082 and H\u2082O' },
@@ -546,7 +711,14 @@
       { q: 'To balance N\u2082 + H\u2082 \u2192 NH\u2083, NH\u2083\u2019s coefficient is:', a: ['1', '2', '3', '4'], correct: 1, explain: 'N\u2082 + 3H\u2082 \u2192 2NH\u2083 gives 2 N and 6 H on each side' },
       { q: 'The molar mass of water (H\u2082O) is approximately:', a: ['2 g/mol', '18 g/mol', '32 g/mol', '16 g/mol'], correct: 1, explain: 'H\u2082O = 2(1.008) + 15.999 = 18.015 g/mol' },
       { q: 'What is Avogadro\u2019s number?', a: ['6.022 \u00D7 10\u00B2\u00B3', '3.14 \u00D7 10\u00B9\u2070', '1.602 \u00D7 10\u207B\u00B9\u2079', '9.81'], correct: 0, explain: 'One mole contains 6.022 \u00D7 10\u00B2\u00B3 particles' },
-      { q: 'In CH\u2084 + 2O\u2082 \u2192 CO\u2082 + 2H\u2082O, total O atoms on the product side:', a: ['2', '3', '4', '6'], correct: 2, explain: 'CO\u2082 has 2 O + 2H\u2082O has 2 O = 4 O total' }
+      { q: 'In CH\u2084 + 2O\u2082 \u2192 CO\u2082 + 2H\u2082O, total O atoms on the product side:', a: ['2', '3', '4', '6'], correct: 2, explain: 'CO\u2082 has 2 O + 2H\u2082O has 2 O = 4 O total' },
+      { q: 'What type is: Pb(NO\u2083)\u2082 + 2KI \u2192 PbI\u2082 + 2KNO\u2083?', a: ['Single Replacement', 'Synthesis', 'Combustion', 'Double Replacement'], correct: 3, explain: 'Two compounds swap partners (AB + CD \u2192 AD + CB); the insoluble PbI\u2082 falls out as a bright yellow precipitate' },
+      { q: 'To balance KClO\u2083 \u2192 KCl + O\u2082, KClO\u2083\u2019s coefficient is:', a: ['1', '2', '3', '4'], correct: 1, explain: '2KClO\u2083 \u2192 2KCl + 3O\u2082 gives 2 K, 2 Cl, and 6 O on each side', check: { kind: 'balanceCoeff', eq: 'KClO3 -> KCl + O2', species: 0 } },
+      { q: 'The molar mass of CO\u2082 is approximately:', a: ['28 g/mol', '32 g/mol', '44 g/mol', '12 g/mol'], correct: 2, explain: 'C(12.011) + 2 \u00d7 O(15.999) = 44.009 g/mol', check: { kind: 'molarMass', formula: 'CO2', tol: 1 } },
+      { q: 'How many total atoms are in one formula unit of Ca(OH)\u2082?', a: ['3', '4', '7', '5'], correct: 3, explain: '1 Ca + 2 O + 2 H = 5 atoms; the subscript outside the parentheses doubles everything inside', check: { kind: 'atomTotal', formula: 'Ca(OH)2' } },
+      { q: 'In 2Al + 3CuCl\u2082 \u2192 2AlCl\u2083 + 3Cu, which element is being replaced?', a: ['Aluminum', 'Chlorine', 'Copper', 'None'], correct: 2, explain: 'Aluminum displaces copper from CuCl\u2082 \u2014 copper leaves the compound as the free metal' },
+      { q: 'Why should O\u2082 get the LAST look when balancing a combustion reaction?', a: ['It is the heaviest molecule', 'It appears alone, so its coefficient can be set freely', 'It never changes', 'It is a product'], correct: 1, explain: 'Balance C, then H first; O\u2082 stands alone as an element, so adjusting its coefficient disturbs nothing else' },
+      { q: 'A student balances an equation and gets coefficients 2:4:2. What should they do next?', a: ['Reduce to lowest terms (1:2:1)', 'Submit it as-is', 'Double everything', 'Start over'], correct: 0, explain: 'Final coefficients should be the smallest whole numbers with the same ratio' }
     ],
     hard: [
       { q: 'What is the correct balanced form of Al + O\u2082 \u2192 Al\u2082O\u2083?', a: ['2Al + O\u2082 \u2192 Al\u2082O\u2083', '4Al + 3O\u2082 \u2192 2Al\u2082O\u2083', 'Al + O\u2082 \u2192 Al\u2082O\u2083', '3Al + 2O\u2082 \u2192 Al\u2082O\u2083'], correct: 1, explain: '4 Al, 6 O on each side' },
@@ -556,23 +728,49 @@
       { q: 'An exothermic reaction:', a: ['Absorbs heat', 'Releases heat', 'Doesn\u2019t involve energy', 'Only occurs in gases'], correct: 1, explain: 'Exothermic reactions release energy to surroundings (\u0394H < 0)' },
       { q: 'What determines the activity series position?', a: ['Atomic mass', 'Reactivity / ease of oxidation', 'Color', 'Melting point'], correct: 1, explain: 'More reactive metals displace less reactive ones from compounds' },
       { q: 'In stoichiometry, "mole ratio" comes from:', a: ['Periodic table', 'Balanced equation coefficients', 'Temperature', 'Pressure'], correct: 1, explain: 'Coefficients in a balanced equation give the mole ratio of reactants and products' },
-      { q: 'Percent yield = (actual/theoretical) \u00D7 100. If theoretical is 10g and actual is 8g:', a: ['80%', '125%', '18%', '2%'], correct: 0, explain: '(8/10) \u00D7 100 = 80% yield' }
+      { q: 'Percent yield = (actual/theoretical) \u00D7 100. If theoretical is 10g and actual is 8g:', a: ['80%', '125%', '18%', '2%'], correct: 0, explain: '(8/10) \u00D7 100 = 80% yield' },
+      { q: 'What is the correct balanced form of C\u2082H\u2086 + O\u2082 \u2192 CO\u2082 + H\u2082O?', a: ['C\u2082H\u2086 + 5O\u2082 \u2192 2CO\u2082 + 3H\u2082O', '2C\u2082H\u2086 + 7O\u2082 \u2192 4CO\u2082 + 6H\u2082O', 'C\u2082H\u2086 + 7O\u2082 \u2192 2CO\u2082 + 6H\u2082O', '2C\u2082H\u2086 + 5O\u2082 \u2192 4CO\u2082 + 3H\u2082O'], correct: 1, explain: 'One C\u2082H\u2086 needs 3\u00BD O\u2082; doubling clears the half: 4 C, 12 H, and 14 O on each side', check: { kind: 'balanceForm', eq: 'C2H6 + O2 -> CO2 + H2O' } },
+      { q: 'How many moles of O\u2082 are needed to burn 2 mol of propane (C\u2083H\u2088 + 5O\u2082 \u2192 3CO\u2082 + 4H\u2082O)?', a: ['5', '7', '12', '10'], correct: 3, explain: 'The mole ratio is 1 C\u2083H\u2088 : 5 O\u2082, so 2 mol \u00D7 5 = 10 mol O\u2082' },
+      { q: 'Molar mass of glucose (C\u2086H\u2081\u2082O\u2086) is approximately:', a: ['180 g/mol', '96 g/mol', '120 g/mol', '60 g/mol'], correct: 0, explain: '6 \u00D7 C(12) + 12 \u00D7 H(1) + 6 \u00D7 O(16) = 180 g/mol', check: { kind: 'molarMass', formula: 'C6H12O6', tol: 1 } },
+      { q: 'If 4 mol Al reacts with 4 mol O\u2082 (4Al + 3O\u2082 \u2192 2Al\u2082O\u2083), the limiting reagent is:', a: ['O\u2082', 'Al', 'Al\u2082O\u2083', 'Neither'], correct: 1, explain: '4 mol Al needs only 3 mol O\u2082; aluminum runs out first while 1 mol O\u2082 is left over' },
+      { q: 'A reaction has a theoretical yield of 25 g but produces 20 g. The percent yield is:', a: ['125%', '5%', '80%', '20%'], correct: 2, explain: '(20 / 25) \u00D7 100 = 80%' },
+      { q: 'When 12 g of carbon burns completely in 32 g of oxygen, the product mass is:', a: ['12 g', '32 g', '44 g', 'Less than 44 g because heat escapes'], correct: 2, explain: 'Conservation of mass: 12 g C + 32 g O\u2082 \u2192 44 g CO\u2082; the energy released does not measurably change the chemical mass' },
+      { q: 'Why can\u2019t H\u2082 + O\u2082 \u2192 H\u2082O be balanced by changing the product to H\u2082O\u2082?', a: ['It can be', 'O\u2082 is not diatomic', 'Water has no oxygen', 'H\u2082O\u2082 is a different compound (hydrogen peroxide)'], correct: 3, explain: 'Changing subscripts changes identity: H\u2082O\u2082 is peroxide. Balance with coefficients instead: 2H\u2082 + O\u2082 \u2192 2H\u2082O' }
     ]
   };
 
+  // Exposed here (not in the main __alloChemPure block, which runs before this
+  // initializer) so tests get the populated bank, not a hoisted undefined.
+  try { if (window.__alloChemPure) { window.__alloChemPure.CHALLENGE_QS = CHALLENGE_QS; window.__alloChemPure.EMERGENCIES = EMERGENCIES; } } catch (_e) {}
+
   // ── Battle questions ──
+  // Answer order is NOT persisted (progress is only the battleWon flag), so
+  // reordering answers here is safe. Keep correct-answer positions spread --
+  // the original bank never used position 3, which made "never pick D" a
+  // winning strategy. `check` tags are executed by the invariant test.
   var BATTLE_QS = [
     { q: 'What is the chemical formula for table salt?', a: ['NaCl', 'KCl', 'NaOH', 'HCl'], correct: 0, dmg: 15 },
-    { q: 'How many atoms in one molecule of H\u2082O?', a: ['2', '3', '4', '1'], correct: 1, dmg: 15 },
-    { q: 'Which element has symbol Fe?', a: ['Fluorine', 'Iron', 'Francium', 'Fermium'], correct: 1, dmg: 15 },
+    { q: 'How many atoms in one molecule of H\u2082O?', a: ['2', '4', '1', '3'], correct: 3, dmg: 15, check: { kind: 'atomTotal', formula: 'H2O' } },
+    { q: 'Which element has symbol Fe?', a: ['Fluorine', 'Francium', 'Fermium', 'Iron'], correct: 3, dmg: 15, check: { kind: 'elementName', symbol: 'Fe' } },
     { q: 'What gas do plants produce in photosynthesis?', a: ['CO\u2082', 'N\u2082', 'O\u2082', 'H\u2082'], correct: 2, dmg: 20 },
-    { q: 'What is the pH of a neutral solution?', a: ['0', '7', '14', '1'], correct: 1, dmg: 20 },
-    { q: 'Rust is an oxide of which element?', a: ['Copper', 'Aluminum', 'Iron', 'Zinc'], correct: 2, dmg: 15 },
+    { q: 'At 25 \u00B0C, what is the pH of neutral pure water?', a: ['0', '14', '1', '7'], correct: 3, dmg: 20 },
+    { q: 'Rust is an oxide of which element?', a: ['Iron', 'Copper', 'Aluminum', 'Zinc'], correct: 0, dmg: 15 },
     { q: 'Which subatomic particle has no charge?', a: ['Proton', 'Electron', 'Neutron', 'Ion'], correct: 2, dmg: 20 },
-    { q: 'What is the most abundant gas in Earth\u2019s atmosphere?', a: ['Oxygen', 'Carbon dioxide', 'Nitrogen', 'Argon'], correct: 2, dmg: 20 },
+    { q: 'What is the most abundant gas in Earth\u2019s atmosphere?', a: ['Nitrogen', 'Oxygen', 'Carbon dioxide', 'Argon'], correct: 0, dmg: 20 },
     { q: 'Diamond and graphite are both forms of:', a: ['Silicon', 'Carbon', 'Sulfur', 'Iron'], correct: 1, dmg: 25 },
-    { q: 'Acid + Base \u2192 Salt + ?', a: ['Gas', 'Metal', 'Water', 'Acid'], correct: 2, dmg: 20 }
+    { q: 'Acid + Base \u2192 Salt + ?', a: ['Gas', 'Metal', 'Water', 'Acid'], correct: 2, dmg: 20 },
+    { q: 'What is the chemical symbol for gold?', a: ['Ag', 'Au', 'Go', 'Gd'], correct: 1, dmg: 15, check: { kind: 'elementSymbol', name: 'Gold' } },
+    { q: 'How many atoms are in one molecule of CO\u2082?', a: ['1', '2', '4', '3'], correct: 3, dmg: 15, check: { kind: 'atomTotal', formula: 'CO2' } },
+    { q: 'Which element has the symbol Na?', a: ['Sodium', 'Nickel', 'Neon', 'Nitrogen'], correct: 0, dmg: 15, check: { kind: 'elementName', symbol: 'Na' } },
+    { q: 'The molar mass of NaCl is closest to:', a: ['23 g/mol', '35 g/mol', '58 g/mol', '81 g/mol'], correct: 2, dmg: 20, check: { kind: 'molarMass', formula: 'NaCl', tol: 1 } },
+    { q: 'What charge does a proton carry?', a: ['Negative', 'None', 'Positive', 'It varies'], correct: 2, dmg: 15 },
+    { q: 'Which of these is a noble gas?', a: ['Chlorine', 'Helium', 'Hydrogen', 'Sulfur'], correct: 1, dmg: 20 },
+    { q: 'H\u2082SO\u2084 is the formula for which acid?', a: ['Hydrochloric acid', 'Nitric acid', 'Carbonic acid', 'Sulfuric acid'], correct: 3, dmg: 20 },
+    { q: 'At sea level (1 atm), pure water boils at:', a: ['100 \u00B0C', '0 \u00B0C', '50 \u00B0C', '212 \u00B0C'], correct: 0, dmg: 15 },
+    { q: 'An atom with exactly 6 protons is always:', a: ['Oxygen', 'Nitrogen', 'Carbon', 'Silicon'], correct: 2, dmg: 25, check: { kind: 'elementZ', symbol: 'C', z: 6 } },
+    { q: 'Which pH value is the most acidic?', a: ['13', '2', '9', '7'], correct: 1, dmg: 20 }
   ];
+  try { if (window.__alloChemPure) window.__alloChemPure.BATTLE_QS = BATTLE_QS; } catch (_e) {}
 
   // ── Learn topics ──
   var LEARN_TOPICS = [
@@ -580,7 +778,7 @@
       k2: 'A chemical reaction is when substances mix and change into something new! Like baking a cake \u2014 you mix flour, eggs, and sugar, and they become something completely different. You can\u2019t un-bake a cake!',
       g35: 'In a chemical reaction, substances called reactants rearrange their atoms to form new substances called products. Signs of a reaction include: color change, gas bubbles, temperature change, precipitate (solid forming), or light/sound. A chemical equation shows what goes in and what comes out.',
       g68: 'Chemical reactions involve breaking and forming chemical bonds. Reactants are transformed into products while conserving mass (Law of Conservation of Mass). Equations must be balanced so atoms on both sides match. Energy is either released (exothermic, \u0394H < 0) or absorbed (endothermic, \u0394H > 0). Activation energy is needed to start most reactions.',
-      g912: 'Reactions are governed by thermodynamics (\u0394G = \u0394H - T\u0394S) and kinetics (rate laws, collision theory, Arrhenius equation). Catalysts lower activation energy without being consumed. Equilibrium occurs when forward and reverse rates are equal (Le Chatelier\u2019s principle). Reaction mechanisms describe the step-by-step bond-breaking and forming process.' },
+      g912: 'Reactions are governed by thermodynamics (\u0394G = \u0394H - T\u0394S) and kinetics (rate laws, collision theory, Arrhenius equation). Catalysts participate in the mechanism and are regenerated overall; they can deactivate. They provide a lower-activation-energy pathway. Equilibrium occurs when forward and reverse rates are equal (Le Chatelier\u2019s principle). Reaction mechanisms describe the step-by-step bond-breaking and forming process.' },
     { title: 'The Periodic Table', icon: '\uD83D\uDCCA',
       k2: 'The periodic table is like a chart of all the building blocks in the universe! Each box is a different element \u2014 like hydrogen (the lightest!) and gold (the shiniest!). Scientists arranged them by how they behave.',
       g35: 'Elements are arranged by atomic number (number of protons). Rows are called periods and columns are called groups. Elements in the same group have similar properties. Metals are on the left, nonmetals on the right, and metalloids are in between.',
@@ -595,7 +793,7 @@
       k2: 'Stoichiometry is a big word for "recipe math!" Just like a cookie recipe says 2 cups flour + 1 cup sugar, chemistry recipes tell you how much of each ingredient you need.',
       g35: 'Stoichiometry uses balanced equations to calculate how much reactant you need or how much product you\u2019ll get. The coefficients in balanced equations tell you the ratio. For example, 2H\u2082 + O\u2082 \u2192 2H\u2082O means you need 2 hydrogen molecules for every 1 oxygen molecule.',
       g68: 'The mole (mol) is the chemist\u2019s counting unit: 6.022 \u00D7 10\u00B2\u00B3 particles. Molar mass (g/mol) converts between grams and moles. Steps: (1) Balance the equation, (2) Convert given amount to moles, (3) Use mole ratio from coefficients, (4) Convert to desired unit. The limiting reagent determines maximum product.',
-      g912: 'Stoichiometric calculations involve: mole-mole, mole-mass, mass-mass conversions using dimensional analysis. Percent yield = (actual/theoretical) \u00D7 100. Limiting reagent analysis compares mole ratios of all reactants. Solution stoichiometry uses molarity (M = mol/L). Gas stoichiometry uses the ideal gas law (PV = nRT) at STP: 1 mol gas = 22.4 L.' }
+      g912: 'Stoichiometric calculations involve: mole-mole, mole-mass, mass-mass conversions using dimensional analysis. Percent yield = (actual/theoretical) \u00D7 100. Limiting reagent analysis compares mole ratios of all reactants. Solution stoichiometry uses molarity (M = mol/L). Gas stoichiometry uses PV = nRT. At 0 °C and 1 atm, 1 mol ideal gas occupies about 22.414 L; at 0 °C and 1 bar, about 22.711 L.' }
   ];
 
   // ── Badges (12 total) ──
@@ -804,8 +1002,8 @@
     { name: 'Chloralkali Process', equation: '2NaCl + 2H₂O → 2NaOH + Cl₂ + H₂', delta: 'Variable', type: 'Electrolytic', context: 'Industrial chlorine + caustic soda from brine.' },
     { name: 'Berthelot Reaction', equation: 'C(s) + 2H₂ → CH₄', delta: '-74 kJ/mol', type: 'Exothermic', context: 'Carbon hydrogenation. Theoretically used for clean fuel synthesis.' },
     { name: 'Frasch Process', equation: 'S(rhombic) → S(liquid) + heat', delta: '+1.7 kJ/mol', type: 'Phase change', context: 'Underground sulfur mining via superheated water.' },
-    { name: 'Bayer Process (Aluminum)', equation: 'Al(OH)₃ → Al₂O₃ + 3H₂O', delta: 'Variable', type: 'Calcination', context: 'Aluminum from bauxite. Modern aluminum industry.' },
-    { name: 'Hall-Héroult Process', equation: '2Al₂O₃ → 4Al + 3O₂', delta: 'Electrolytic', type: 'Reduction', context: 'Electrolysis-driven aluminum production. Most-consumed electricity industrial process.' },
+    { name: 'Bayer Process (Aluminum)', equation: '2Al(OH)₃(s) → Al₂O₃(s) + 3H₂O(g)', delta: 'Variable', type: 'Calcination', context: 'Calcination of precipitated aluminum hydroxide to alumina — one step of the multi-step Bayer process.' },
+    { name: 'Hall-Héroult Process', equation: '2Al₂O₃(l) + 3C(s) → 4Al(l) + 3CO₂(g)', delta: 'Electrolytic', type: 'Reduction', context: 'Alumina is electrolyzed in molten cryolite; oxide ions react at consumable carbon anodes. Actual anode gas can also contain CO.' },
     { name: 'Solvay Process', equation: 'NaCl + CO₂ + NH₃ + H₂O → NaHCO₃ + NH₄Cl', delta: 'Variable', type: 'Industrial', context: 'Sodium carbonate (washing soda + glass) production.' },
     { name: 'Friedel-Crafts Alkylation', equation: 'C₆H₆ + CH₃Cl → C₆H₅CH₃ + HCl', delta: 'Variable', type: 'Substitution', context: 'Adds alkyl group to aromatic ring. Foundational organic reaction.' },
     { name: 'Diels-Alder Reaction', equation: 'Diene + Dienophile → Cyclohexene', delta: 'Variable', type: 'Cycloaddition', context: 'Forms 6-membered rings. Nobel 1950 (Diels + Alder).' },
@@ -828,7 +1026,7 @@
     { name: 'Acid Rain Formation', equation: 'SO₂ + H₂O → H₂SO₃; SO₃ + H₂O → H₂SO₄', delta: 'Variable', type: 'Hydration', context: 'Coal-burning + auto emissions form acid rain. Damages ecosystems + buildings.' },
     { name: 'Ozone Formation (UV)', equation: '3O₂ + UV → 2O₃', delta: 'Endothermic', type: 'Photochemical', context: 'Stratospheric ozone layer protects Earth from UV.' },
     { name: 'Ozone Depletion (CFC)', equation: 'O₃ + Cl· → ClO + O₂; ClO + O → Cl· + O₂', delta: 'Catalytic', type: 'Chain', context: 'CFCs destroy ozone. Montreal Protocol 1987 phased them out.' },
-    { name: 'TNT Explosion', equation: '2C₇H₅N₃O₆ → 3N₂ + 5H₂O + 7CO + 7C', delta: 'Highly Exothermic', type: 'Detonation', context: 'TNT = tritolyl trinitrobenzene. Standard explosive reference.' }
+    { name: 'TNT Explosion', equation: '2C₇H₅N₃O₆ → 3N₂ + 5H₂O + 7CO + 7C', delta: 'Highly Exothermic', type: 'Detonation', context: 'TNT is 2,4,6-trinitrotoluene. This is a representative simplified product set; actual detonation products and proportions depend on conditions.' }
   ];
 
   // ═══════════════════════════════════════════════════════════
@@ -841,8 +1039,8 @@
       { name: 'Contact Process (H2SO4)', invented: '1831 (Phillips), perfected 1880s', reaction: 'S + O₂ → SO₂; SO₂ + O₂ → SO₃; SO₃ + H₂O → H₂SO₄', conditions: '450°C, V₂O₅ catalyst', scale: '~260M tons/year', importance: 'Sulfuric acid is most-produced chemical. Used in fertilizers, batteries, refining, dyes, drugs.', drawbacks: 'Air pollution from SO2 emissions.' },
       { name: 'Solvay Process (Na2CO3)', invented: '1864 (Ernest Solvay)', reaction: 'NaCl + NH₃ + CO₂ + H₂O → NaHCO₃ + NH₄Cl', conditions: 'Ambient, recycled NH3', scale: '~60M tons/year', importance: 'Soda ash production. Glass, soap, detergents, paper.', drawbacks: 'Massive waste of CaCl2 brine.' },
       { name: 'Chloralkali Process', invented: 'Industrialized 1890s', reaction: '2NaCl + 2H₂O → 2NaOH + Cl₂ + H₂', conditions: 'Electrolysis (membrane cells)', scale: '~80M tons NaOH/year', importance: 'Sodium hydroxide + chlorine + hydrogen from salt. PVC plastic, paper, soap.', drawbacks: 'Energy-intensive. Mercury cell version polluted oceans.' },
-      { name: 'Hall-Héroult (Aluminum)', invented: '1886 (independently Hall + Héroult)', reaction: '2Al₂O₃ → 4Al + 3O₂', conditions: '950°C molten cryolite, electrolysis', scale: '~65M tons Al/year', importance: 'Modern aluminum production. Without it, Al would still be more valuable than gold.', drawbacks: '~3% of world electricity consumption. Bauxite mining + red mud waste.' },
-      { name: 'Bayer Process (Alumina)', invented: '1888 (Karl Bayer)', reaction: 'Al(OH)₃ + bauxite → Al₂O₃ + waste', conditions: '150-200°C, NaOH solution', scale: '~130M tons alumina/year', importance: 'Refines bauxite to alumina (Al2O3) for Hall-Héroult.', drawbacks: 'Red mud waste — environmental hazard.' },
+      { name: 'Hall-Héroult (Aluminum)', invented: '1886 (independently Hall + Héroult)', reaction: '2Al₂O₃(l) + 3C(s) → 4Al(l) + 3CO₂(g)', conditions: 'Alumina dissolved in molten cryolite; electrolysis with consumable carbon anodes', scale: '~65M tons Al/year', importance: 'Modern aluminum production. Without it, Al would still be more valuable than gold.', drawbacks: 'Electricity-intensive; carbon anodes are consumed and produce CO₂, while bauxite mining creates red-mud waste.' },
+      { name: 'Bayer Process (Alumina)', invented: '1888 (Karl Bayer)', reaction: '2Al(OH)₃(s) → Al₂O₃(s) + 3H₂O(g) (calcination step)', conditions: 'Caustic digestion and precipitation, followed by high-temperature calcination', scale: '~130M tons alumina/year', importance: 'Refines bauxite mineral feedstock to alumina for Hall-Héroult electrolysis.', drawbacks: 'Caustic red-mud waste requires careful containment and management.' },
       { name: 'Cracking (Petroleum)', invented: '1891 onward', reaction: 'C₁₈H₃₈ → C₈H₁₈ + C₈H₁₆ + H₂', conditions: 'Thermal: 500-800°C; Catalytic: zeolite catalyst', scale: '~4 billion bbl gasoline/year', importance: 'Converts heavy hydrocarbons to gasoline + diesel + petrochemicals.', drawbacks: 'Fossil fuel basis. Climate change driver.' },
       { name: 'Catalytic Reforming', invented: '1940s', reaction: 'Naphtha → Aromatics + H₂', conditions: '500°C, Pt catalyst', scale: 'Major refinery process', importance: 'Produces high-octane gasoline + aromatic feedstocks.', drawbacks: 'Energy-intensive.' },
       { name: 'Steam Reforming (H2)', invented: '1920s, industrial 1930s+', reaction: 'CH₄ + H₂O → CO + 3H₂; CO + H₂O → CO₂ + H₂', conditions: '800°C, Ni catalyst', scale: '~70M tons H2/year', importance: '95% of world hydrogen production. For Haber-Bosch + refining.', drawbacks: 'Major CO2 emissions source.' },
@@ -862,11 +1060,11 @@
   // AP CHEMISTRY REFERENCE — official curriculum
   // ═══════════════════════════════════════════════════════════
   var AP_CHEMISTRY = {
-    intro: 'AP Chemistry curriculum reference. 9 Units of the College Board syllabus. Each section covers core topics + skills required for the exam.',
+    intro: 'AP Chemistry reference organized around the nine-unit framework. Verify the current College Board course description, unit weights, and exam policies before using it for exam planning.',
     units: [
       { unit: 1, title: 'Atomic Structure + Properties', topics: ['Moles + molar mass', 'Mass spectroscopy', 'Elemental composition', 'Photoelectron spectroscopy', 'Periodic trends', 'Valence electrons + ionic compounds'], weight: '7-9%', tip: 'Most important: be comfortable interpreting PES + mass spec data. Test asks about both routinely.' },
       { unit: 2, title: 'Compound Structure + Properties', topics: ['Ionic compounds', 'Covalent + metallic bonding', 'Lewis structures', 'VSEPR + bond hybridization', 'Polarity', 'Intermolecular forces'], weight: '7-9%', tip: 'Master Lewis dot + VSEPR. Most multiple-choice questions touch on bonding/structure.' },
-      { unit: 3, title: 'Intermolecular Forces + Properties', topics: ['Solids, liquids, gases', 'Phase diagrams', 'IMF strengths', 'Solutions + concentration', 'Ideal gas law', 'Photoelectron evidence for IMF'], weight: '18-22%', tip: 'Largest unit. Memorize IMF strengths: H-bond > dipole-dipole > London dispersion. Practice gas law problems.' },
+      { unit: 3, title: 'Intermolecular Forces + Properties', topics: ['Solids, liquids, gases', 'Phase diagrams', 'Intermolecular attractions', 'Solutions + concentration', 'Ideal gas law', 'Spectroscopy and the Beer–Lambert law'], weight: '18-22%', tip: 'Compare all attractions in context. Hydrogen bonding is a particularly strong dipole interaction, while London dispersion increases with polarizability and contact surface and can dominate for large particles.' },
       { unit: 4, title: 'Chemical Reactions', topics: ['Physical vs chemical change', 'Net ionic equations', 'Stoichiometry', 'Solution stoichiometry', 'Acid-base reactions', 'Oxidation-reduction'], weight: '7-9%', tip: 'Balance net ionic equations. Identify oxidation numbers. Don\'t forget activity series.' },
       { unit: 5, title: 'Kinetics', topics: ['Reaction rates', 'Rate law expressions', 'Concentration changes over time', 'Collision theory', 'Reaction mechanisms', 'Catalysts'], weight: '7-9%', tip: 'Rate = k[A]^x[B]^y — determine x, y from initial rates. Integrated rate laws give straight-line equations.' },
       { unit: 6, title: 'Thermodynamics', topics: ['Endothermic + exothermic', 'Energy diagrams', 'Heat transfer', 'Heat of formation', 'Hess\'s Law', 'Calorimetry'], weight: '7-9%', tip: 'ΔH = sum products - sum reactants. Master q = mcΔT for calorimetry.' },
@@ -886,7 +1084,7 @@
       'For thermo: state functions (H, S, G) only depend on initial + final states.',
       'Practice old free-response questions — patterns repeat.',
       'Bring a calculator that can do logarithms, exponents, square roots.',
-      'Calculator: scientific only, no graphing (check current rules).',
+      'Verify the current College Board calculator policy and approved-calculator list before the exam.',
       'Get sleep before exam. Eat. Bring water.',
       'Most studies show practice tests are most effective study method.'
     ]
@@ -898,7 +1096,7 @@
   var LAB_TECHNIQUES = {
     intro: 'Standard laboratory procedures every chemistry student should know. Mastering these enables independent + safe lab work.',
     techniques: [
-      { name: 'Titration', purpose: 'Measure concentration of unknown solution', steps: ['Set up buret with known concentration titrant', 'Add indicator to analyte', 'Add titrant dropwise', 'Note volume at color change', 'Calculate concentration: M1V1 = M2V2'], danger: 'Strong acids/bases. Wear PPE.', skill: 'Intermediate' },
+      { name: 'Titration', purpose: 'Measure concentration of an unknown solution', steps: ['Set up a buret with a known-concentration titrant', 'Add a suitable indicator or use a calibrated probe', 'Add titrant dropwise near the endpoint', 'Record the delivered volume', 'Use the balanced reaction: for aA + bB → products, M_A V_A / a = M_B V_B / b at equivalence. M1V1 = M2V2 applies only to a 1:1 ratio.'], danger: 'Strong acids and bases can be corrosive. Follow the reviewed procedure and wear required PPE.', skill: 'Intermediate' },
       { name: 'Distillation', purpose: 'Separate liquids by boiling point', steps: ['Set up distillation apparatus', 'Heat liquid to boiling', 'Collect vapor through condenser', 'Take fractions at different temperatures'], danger: 'Boiling + flammable. Keep good ventilation.', skill: 'Intermediate' },
       { name: 'Filtration', purpose: 'Separate solid from liquid', steps: ['Fold filter paper, place in funnel', 'Pour mixture through', 'Collect filtrate below', 'Residue is solid'], danger: 'Generally safe.', skill: 'Beginner' },
       { name: 'Recrystallization', purpose: 'Purify crystalline solid', steps: ['Dissolve solid in minimum hot solvent', 'Cool slowly', 'Filter crystals', 'Wash with cold solvent', 'Dry'], danger: 'Hot solvent + flammable.', skill: 'Intermediate' },
@@ -922,7 +1120,7 @@
       { name: 'Polarimetry', purpose: 'Measure optical rotation', steps: ['Place chiral sample in polarimeter', 'Measure rotation', 'Calculate specific rotation'], danger: 'Generally safe.', skill: 'Advanced' },
       { name: 'Conductivity Measurement', purpose: 'Measure ion concentration in solution', steps: ['Use conductivity probe', 'Calibrate with standard', 'Measure unknown'], danger: 'Electrical (low voltage).', skill: 'Beginner' },
       { name: 'pH Measurement', purpose: 'Measure acidity/basicity', steps: ['Calibrate pH meter at 4, 7, 10', 'Rinse with distilled water', 'Read solution pH'], danger: 'Probe is fragile + expensive.', skill: 'Beginner' },
-      { name: 'Mass Spectrometry', purpose: 'Determine molecular mass + structure', steps: ['Vaporize sample', 'Ionize (EI, ESI, MALDI)', 'Accelerate through magnetic field', 'Detect by m/z'], danger: 'Vacuum + high voltage.', skill: 'Advanced' },
+      { name: 'Mass Spectrometry', purpose: 'Determine mass-to-charge ratios and support composition or structure analysis', steps: ['Introduce and ionize the sample using a method appropriate to it (for example EI, ESI, or MALDI)', 'Accelerate and focus ions with electric fields', 'Separate ions by m/z in a mass analyzer (for example quadrupole, time-of-flight, or magnetic sector)', 'Detect ions and interpret the mass spectrum'], danger: 'Vacuum and high voltage; operate only with appropriate training.', skill: 'Advanced' },
       { name: 'X-ray Diffraction', purpose: 'Determine crystal structure', steps: ['Grow good crystal', 'Place in X-ray beam', 'Measure diffraction pattern', 'Solve structure'], danger: 'X-ray radiation.', skill: 'Advanced' },
       { name: 'Electrophoresis', purpose: 'Separate by charge + size', steps: ['Load samples onto gel', 'Apply voltage', 'Molecules migrate', 'Stain + visualize'], danger: 'Electrical + voltage hazard.', skill: 'Intermediate' },
       { name: 'Atomic Absorption Spectroscopy', purpose: 'Measure metal concentration', steps: ['Atomize sample in flame', 'Absorb element-specific wavelength', 'Calculate concentration'], danger: 'Flame + light hazard.', skill: 'Advanced' },
@@ -1039,8 +1237,8 @@
       { name: 'Pyridine', formula: 'C5H5N', pKb: 8.75 },
       { name: 'Aniline', formula: 'C6H5NH2', pKb: 9.40 }
     ],
-    ph: 'pH = -log[H+]. pH < 7 = acidic. pH = 7 = neutral. pH > 7 = basic.',
-    buffer: 'Buffer = weak acid + conjugate base. Resists pH change.',
+    ph: 'For dilute aqueous solutions, pH = −log₁₀ a(H₃O⁺), often approximated as −log₁₀[H₃O⁺]. A solution is neutral when a(H₃O⁺) = a(OH⁻). Neutral pH is 7.00 at 25 °C but changes with temperature.',
+    buffer: 'A buffer usually contains a weak acid and its conjugate base, or a weak base and its conjugate acid. It resists pH change over a limited added-acid or added-base range.',
     hendersonHasselbalch: 'pH = pKa + log([A-]/[HA])',
     titration: 'Titration: add titrant of known concentration to analyte until equivalence point. pH at equivalence depends on acid/base type.',
     keyConcepts: [
@@ -1051,7 +1249,7 @@
       { concept: 'Common-ion effect', def: 'Adding ion already in equilibrium shifts away from that ion.' },
       { concept: 'Le Chatelier', def: 'System at equilibrium shifts to oppose disturbance.' },
       { concept: 'Buffer capacity', def: 'How much acid/base buffer can absorb. Depends on concentration + ratio.' },
-      { concept: 'Equivalence point', def: 'When moles acid = moles base.' },
+      { concept: 'Equivalence point', def: 'The equivalence point occurs when titrant and analyte have been mixed in the stoichiometric ratio from the balanced reaction; their mole amounts are equal only for a 1:1 reaction.' },
       { concept: 'Endpoint', def: 'When indicator changes color. Often near equivalence point.' },
       { concept: 'Polyprotic acid', def: 'Acid that can donate multiple H+. Examples: H2SO4 (diprotic), H3PO4 (triprotic).' }
     ]
@@ -1182,10 +1380,10 @@
     centralDogma: 'DNA → RNA → Protein. Transcription + translation.',
     metabolism: [
       { pathway: 'Glycolysis', input: 'Glucose', output: '2 pyruvate + 2 ATP + 2 NADH', location: 'Cytoplasm' },
-      { pathway: 'Krebs cycle (TCA)', input: 'Pyruvate → Acetyl-CoA', output: '6 NADH + 2 FADH2 + 2 ATP + 6 CO2 per glucose', location: 'Mitochondria' },
-      { pathway: 'Electron transport chain', input: 'NADH + FADH2 + O2', output: '~32-34 ATP + H2O', location: 'Mitochondrial inner membrane' },
+      { pathway: 'Krebs cycle (TCA)', input: '2 acetyl-CoA per glucose', output: '4 CO2 + 6 NADH + 2 FADH2 + 2 GTP (about 2 ATP) per glucose', location: 'Mitochondrial matrix in eukaryotes' },
+      { pathway: 'Electron transport chain', input: 'NADH + FADH2 + O2', output: 'O2 is reduced to H2O; the proton gradient commonly supports about 26-28 ATP per glucose, with exact yield varying', location: 'Mitochondrial inner membrane' },
       { pathway: 'Beta-oxidation', input: 'Fatty acids', output: 'Acetyl-CoA + NADH + FADH2', location: 'Mitochondrial matrix' },
-      { pathway: 'Calvin cycle (photosynthesis)', input: 'CO2 + ATP + NADPH', output: 'Glucose', location: 'Chloroplast stroma' },
+      { pathway: 'Calvin cycle (photosynthesis)', input: '3 CO2 + ATP + NADPH', output: 'One net G3P per 3 CO2; two G3P can be used to synthesize one glucose', location: 'Chloroplast stroma' },
       { pathway: 'Pentose phosphate', input: 'Glucose-6-P', output: 'NADPH + ribose-5-P', location: 'Cytoplasm' }
     ]
   };
@@ -1199,18 +1397,18 @@
     laws: [
       { number: 0, name: 'Zeroth Law', statement: 'If A is in thermal equilibrium with B, and B with C, then A is with C. Defines temperature.', implication: 'Temperature is a meaningful, transferable quantity.' },
       { number: 1, name: 'First Law (Conservation of Energy)', statement: 'Energy cannot be created or destroyed. ΔU = q + w.', implication: 'Internal energy change = heat added + work done on system.' },
-      { number: 2, name: 'Second Law (Entropy)', statement: 'Entropy of an isolated system always increases over time. Heat flows hot to cold.', implication: 'Drives spontaneity. Refrigerators work because they put heat OUT, not in.' },
+      { number: 2, name: 'Second Law (Entropy)', statement: 'For an isolated system, entropy does not decrease; it increases for irreversible spontaneous processes and is constant for an ideal reversible process.', implication: 'Drives spontaneity. Refrigerators work because they put heat OUT, not in.' },
       { number: 3, name: 'Third Law', statement: 'Entropy of pure crystalline substance at 0 K = 0.', implication: 'Absolute entropy is measurable. Cannot reach 0 K.' }
     ],
     concepts: [
       { name: 'Enthalpy (H)', def: 'Heat content at constant pressure. ΔH = q at constant P.', sign: 'ΔH < 0: exothermic. ΔH > 0: endothermic.' },
-      { name: 'Entropy (S)', def: 'Measure of disorder/randomness.', sign: 'ΔS > 0: more disorder.' },
+      { name: 'Entropy (S)', def: 'Related to the number of accessible microscopic arrangements and the dispersal of energy and matter.', sign: 'For an isolated system, ΔS is nonnegative.' },
       { name: 'Gibbs Free Energy (G)', def: 'Available energy for useful work. ΔG = ΔH - TΔS.', sign: 'ΔG < 0: spontaneous. ΔG > 0: non-spontaneous.' },
       { name: 'Internal Energy (U)', def: 'Total kinetic + potential energy of all molecules.', sign: 'State function.' },
       { name: 'Heat capacity (C)', def: 'Energy needed to raise T by 1°C. C = q/ΔT.', sign: 'Always positive.' },
       { name: 'Specific heat (c)', def: 'Heat capacity per gram. c = q/(m·ΔT).', sign: 'Water has high c (4.18 J/g·°C).' },
       { name: 'Hess\'s Law', def: 'Enthalpy is state function. ΔH = sum of steps.', sign: 'Useful for indirect ΔH calculations.' },
-      { name: 'Standard state', def: '25°C, 1 atm, 1 M for solutions, 1 atm for gases.', sign: 'Denoted by superscript °.' }
+      { name: 'Standard state', def: 'Uses a standard pressure of 1 bar and unit activity; temperature must be stated. 298.15 K is a common tabulation temperature.', sign: 'Denoted by superscript °.' }
     ],
     examples: [
       { reaction: 'C + O2 → CO2', H: '-393.5 kJ/mol', G: '-394.4 kJ/mol', spontaneous: 'Yes (very)' },
@@ -1229,9 +1427,9 @@
     intro: 'Kinetics: how fast reactions occur. Driven by collisions + activation energy.',
     factors: [
       { factor: 'Concentration', effect: 'Higher concentration = more collisions = faster rate.' },
-      { factor: 'Temperature', effect: 'Higher T = more KE = more successful collisions. Rule of thumb: each 10°C increase doubles rate.' },
+      { factor: 'Temperature', effect: 'Higher T changes the rate constant. Many rates change by roughly 2× for a 10 °C increase over a limited range, but the factor depends on activation energy and temperature.' },
       { factor: 'Surface area', effect: 'More exposed area = more reaction sites. Powdered solids react faster than chunks.' },
-      { factor: 'Catalyst', effect: 'Lowers activation energy. Increases rate without being consumed.' },
+      { factor: 'Catalyst', effect: 'Provides a lower-activation-energy pathway; participates in the mechanism and is regenerated overall. Catalysts can deactivate.' },
       { factor: 'Pressure (gases)', effect: 'Higher P = more concentrated = faster.' },
       { factor: 'Light (for photochemical)', effect: 'Provides activation energy directly. Ozone formation, photosynthesis.' }
     ],
@@ -1244,9 +1442,9 @@
     arrhenius: 'k = A · e^(-Ea/RT). Plot ln k vs 1/T gives slope = -Ea/R.',
     mechanisms: [
       { type: 'Elementary step', desc: 'Single reaction step. Rate law from stoichiometry.' },
-      { type: 'Rate-determining step', desc: 'Slowest step. Determines overall rate.' },
+      { type: 'Rate-limiting step', desc: 'May strongly influence the observed rate, but the rate law follows the full mechanism and its steady-state or pre-equilibrium behavior.' },
       { type: 'Intermediate', desc: 'Formed + consumed during reaction. Does not appear in overall equation.' },
-      { type: 'Catalyst', desc: 'Lowers Ea. Same at start + end. Heterogeneous (different phase) or homogeneous (same phase).' }
+      { type: 'Catalyst', desc: 'Participates in a lower-Ea mechanism and is regenerated overall; it may be heterogeneous or homogeneous and can deactivate.' }
     ],
     examples: [
       { reaction: '2H2O2 → 2H2O + O2', order: 'First-order in H2O2', k: '~10⁻⁷ s⁻¹ without catalyst; ~100 s⁻¹ with MnO2', note: 'Catalysis makes huge difference.' },
@@ -1262,7 +1460,7 @@
   var EQUILIBRIUM = {
     intro: 'Chemical equilibrium: forward + reverse reactions occur at equal rates. Net change zero, but reactions continue.',
     concepts: [
-      { name: 'Equilibrium constant Keq', def: 'Keq = [products]/[reactants] at equilibrium. Each raised to coefficient.', interpret: 'Keq >> 1: products favored. Keq << 1: reactants favored.' },
+      { name: 'Equilibrium constant Keq', def: 'K is written from equilibrium activities, each raised to its stoichiometric coefficient; pure solids and pure liquids are omitted. Concentrations or partial pressures are common ideal approximations.', interpret: 'Keq >> 1: products favored. Keq << 1: reactants favored.' },
       { name: 'Reaction quotient Q', def: 'Same formula as Keq but at any time, not necessarily equilibrium.', interpret: 'Q < Keq: forward. Q > Keq: reverse. Q = Keq: equilibrium.' },
       { name: 'Le Chatelier\'s Principle', def: 'System at equilibrium responds to disturbance by shifting to oppose.', interpret: 'Add reactant: shift forward. Remove product: shift forward. Increase T (exothermic): shift back.' },
       { name: 'Ksp (solubility product)', def: 'Keq for sparingly-soluble salt dissolving.', interpret: 'Determines maximum dissolved concentration.' },
@@ -1270,7 +1468,7 @@
       { name: 'Le Chatelier — Pressure', def: 'Increase P: shifts to fewer moles of gas.', interpret: 'For N2 + 3H2 ⇌ 2NH3, increasing P shifts forward (4 → 2 moles).' }
     ],
     examples: [
-      { reaction: 'N2(g) + 3H2(g) ⇌ 2NH3(g)', Keq: '~10⁻⁵ at 25°C, 0.5 at 400°C', notes: 'Haber-Bosch. Operates at high T + P despite endothermic shift.' },
+      { reaction: 'N₂(g) + 3H₂(g) ⇌ 2NH₃(g)', Keq: 'Kp is large at 25 °C and decreases strongly as temperature rises', notes: 'Ammonia formation is exothermic. Higher pressure favors NH₃; higher temperature lowers equilibrium yield but increases rate, so industry uses a compromise temperature and a catalyst.' },
       { reaction: 'H2O(l) ⇌ H+(aq) + OH-(aq)', Keq: '1×10⁻¹⁴ (Kw)', notes: 'Defines pH scale.' },
       { reaction: 'CO2(g) + H2(g) ⇌ CO(g) + H2O(g)', Keq: 'Variable', notes: 'Water-gas shift reaction. Industrial H2 production.' },
       { reaction: 'AgCl(s) ⇌ Ag+ + Cl-', Keq: '1.8×10⁻¹⁰ (Ksp)', notes: 'Very insoluble. Precipitates easily.' }
@@ -1294,9 +1492,9 @@
       { name: 'R (L·atm)', value: '0.0821 L·atm/(mol·K)' },
       { name: 'R (J)', value: '8.314 J/(mol·K)' },
       { name: 'R (cal)', value: '1.987 cal/(mol·K)' },
-      { name: 'Molar volume (STP)', value: '22.4 L/mol at 0°C, 1 atm' },
-      { name: 'STP (older)', value: '0°C (273.15 K), 1 atm' },
-      { name: 'STP (newer IUPAC 1982)', value: '0°C, 100 kPa (1 bar) — gives 22.7 L/mol' }
+      { name: 'Ideal-gas molar volume', value: 'About 22.414 L/mol at 0°C and 1 atm' },
+      { name: 'Standard-state pressure', value: '1 bar = 100 kPa' },
+      { name: 'At 0°C and 1 bar', value: 'Ideal-gas molar volume is about 22.711 L/mol' }
     ],
     kineticTheory: [
       'Gases are mostly empty space.',
@@ -1306,7 +1504,7 @@
       'Average KE proportional to absolute temperature.',
       'No intermolecular forces (ideal gas assumption).'
     ],
-    deviations: 'Real gases deviate at high pressure (molecules close, IMF matter) + low T (KE low, IMF significant). Van der Waals equation: (P + a/V²)(V - b) = nRT corrects for these.'
+    deviations: 'Real gases deviate at high pressure (molecules close, IMF matter) + low T (KE low, IMF significant). For n moles in total volume V, the van der Waals form is (P + an²/V²)(V - nb) = nRT; in molar-volume form, (P + a/Vm²)(Vm - b) = RT.'
   };
 
   // ═══════════════════════════════════════════════════════════
@@ -1319,8 +1517,8 @@
       { unit: 'Molality (m)', def: 'Moles solute / kg of solvent', formula: 'm = mol/kg', useFor: 'Temperature-independent (kg doesn\'t change with T)' },
       { unit: 'Mass percent', def: 'Mass solute / mass solution × 100%', formula: 'wt% = m_solute/m_solution × 100', useFor: 'Everyday measurements' },
       { unit: 'Mole fraction', def: 'Moles solute / total moles', formula: 'x = n_A/n_total', useFor: 'Vapor pressure calculations' },
-      { unit: 'ppm', def: 'Parts per million', formula: 'mg/L (in water)', useFor: 'Very dilute solutions' },
-      { unit: 'ppb', def: 'Parts per billion', formula: 'μg/L', useFor: 'Trace contaminants' }
+      { unit: 'ppm', def: 'Parts per million', formula: 'mg/L only approximately for dilute water-like solutions near 1 kg/L', useFor: 'Very dilute solutions' },
+      { unit: 'ppb', def: 'Parts per billion', formula: 'μg/L only approximately for dilute water-like solutions near 1 kg/L', useFor: 'Trace contaminants' }
     ],
     solubilityRules: [
       'All nitrates (NO3⁻) soluble.',
@@ -1340,8 +1538,8 @@
       'Like dissolves like (polar + polar, nonpolar + nonpolar).',
       'Temperature: usually increases solubility for solids; decreases for gases.',
       'Pressure: significant for gases (Henry\'s Law); negligible for solids/liquids.',
-      'Particle size: smaller = faster dissolving.',
-      'Stirring: speeds dissolution.'
+      'Dissolution rate (not equilibrium solubility): smaller particles usually dissolve faster.',
+      'Stirring can speed dissolution but does not change equilibrium solubility at fixed conditions.'
     ]
   };
 
@@ -1352,7 +1550,7 @@
     intro: 'Nuclear chemistry: chemistry of atomic nuclei. Includes radioactivity, nuclear medicine, fission, fusion.',
     radioactivity: [
       { type: 'Alpha (α)', particle: 'He-4 nucleus (2p + 2n)', charge: '+2', penetration: 'Stopped by paper', danger: 'Internal exposure dangerous (alpha-emitters ingested or inhaled).', examples: 'U-238, Pu-239, Am-241 (smoke detectors)' },
-      { type: 'Beta (β-)', particle: 'High-energy electron', charge: '-1', penetration: 'Stopped by aluminum', danger: 'Skin burns on exposure.', examples: 'C-14, Sr-90, I-131' },
+      { type: 'Beta (β-)', particle: 'High-energy electron', charge: '-1', penetration: 'Attenuated by suitable plastic/acrylic or thin metal; shielding depends on beta energy and bremsstrahlung risk', danger: 'Skin burns on exposure.', examples: 'C-14, Sr-90, I-131' },
       { type: 'Positron (β+)', particle: 'Anti-electron (e+)', charge: '+1', penetration: 'Annihilates with electron, producing two 511 keV gammas', danger: 'Indirect via gamma.', examples: 'F-18 (PET scans), Na-22' },
       { type: 'Gamma (γ)', particle: 'High-energy photon (EM)', charge: '0', penetration: 'Needs lead or thick concrete', danger: 'Whole-body exposure dangerous.', examples: 'Co-60, Cs-137' },
       { type: 'Neutron emission', particle: 'Free neutron', charge: '0', penetration: 'Hydrogen-rich material absorbs (water, polyethylene)', danger: 'Activates other materials.', examples: 'Cf-252 (industrial sources)' }
@@ -1364,7 +1562,7 @@
       { isotope: 'Pu-239', halflife: '24,100 years', use: 'Nuclear weapons, breeder reactor fuel' },
       { isotope: 'I-131', halflife: '8 days', use: 'Thyroid cancer treatment + imaging' },
       { isotope: 'Tc-99m', halflife: '6 hours', use: 'Most-used medical imaging isotope' },
-      { isotope: 'Sr-90', halflife: '29 years', use: 'Bone tumor treatment + space craft power' },
+      { isotope: 'Sr-90', halflife: '29 years', use: 'Legacy radioisotope heat sources and an important fission-product contamination hazard' },
       { isotope: 'Cs-137', halflife: '30 years', use: 'Medical irradiation + Chernobyl contaminant' },
       { isotope: 'K-40', halflife: '1.25 billion years', use: 'Natural radioactivity (in bananas)' }
     ],
@@ -1387,9 +1585,9 @@
   var ENV_CHEM = {
     intro: 'Environmental chemistry: how chemistry shapes (and damages, and heals) our planet.',
     topics: [
-      { topic: 'Climate Change', mechanism: 'CO2 + CH4 + N2O trap infrared radiation in atmosphere. Greenhouse effect.', current: 'CO2 at 420+ ppm in 2024, up from 280 ppm pre-industrial.', solutions: 'Renewable energy, carbon capture, reforestation.' },
+      { topic: 'Climate Change', mechanism: 'CO2 + CH4 + N2O trap infrared radiation in atmosphere. Greenhouse effect.', current: 'Atmospheric CO2 has risen substantially above the pre-industrial level; use a dated, sourced measurement for current values.', solutions: 'Renewable energy, carbon capture, reforestation.' },
       { topic: 'Ozone Layer', mechanism: 'O3 in stratosphere absorbs UV. CFCs catalytically destroy: Cl + O3 → ClO + O2; ClO + O → Cl + O2.', current: 'Recovering since Montreal Protocol (1987) phased out CFCs.', solutions: 'Continued enforcement, alternative refrigerants.' },
-      { topic: 'Acid Rain', mechanism: 'SO2 + H2O → H2SO3; SO3 + H2O → H2SO4. NO2 + H2O → HNO3. Lowers rain pH to 4-5.', current: 'Reduced in N. America since 1990 Clean Air Act amendments.', solutions: 'Scrubbers on coal plants. EV cars reduce NOx.' },
+      { topic: 'Acid Rain', mechanism: 'SO2 + H2O → H2SO3; SO3 + H2O → H2SO4. 4NO2 + O2 + 2H2O → 4HNO3. Lowers rain pH to 4-5.', current: 'Reduced in N. America since 1990 Clean Air Act amendments.', solutions: 'Scrubbers on coal plants. EV cars reduce NOx.' },
       { topic: 'Plastic Pollution', mechanism: 'Petroleum-derived polymers persist in environment for centuries.', current: '~8 million tons ocean plastic/year. Microplastics in everything.', solutions: 'Recycling, bioplastics, reduce single-use.' },
       { topic: 'Heavy Metal Contamination', mechanism: 'Pb, Hg, Cd, As bioaccumulate in food chain.', current: 'Pb in old water pipes; Hg in fish from coal-burning.', solutions: 'Lead pipe replacement, Hg emission controls.' },
       { topic: 'Eutrophication', mechanism: 'Excess N + P from fertilizer runoff cause algae blooms. Algae die + decompose, consuming O2. Fish kill.', current: 'Gulf of Mexico dead zone ~7,000 km².', solutions: 'Reduce fertilizer runoff. Restore wetlands.' },
@@ -1508,10 +1706,10 @@
       { name: 'Antioxidants', examples: 'Vitamin C, vitamin E, BHA, BHT', purpose: 'Prevent oxidation/rancidity' }
     ],
     nutrition: [
-      { nutrient: 'Carbohydrates', sources: 'Bread, pasta, fruits, vegetables', calories: '4 cal/g', function: 'Primary energy source' },
-      { nutrient: 'Proteins', sources: 'Meat, fish, eggs, beans, dairy', calories: '4 cal/g', function: 'Build + repair tissue, enzymes' },
-      { nutrient: 'Fats', sources: 'Oils, butter, nuts, dairy', calories: '9 cal/g', function: 'Long-term energy, cell membranes, vitamins' },
-      { nutrient: 'Alcohol', sources: 'Beer, wine, spirits', calories: '7 cal/g', function: 'Recreation only — no nutritional value' },
+      { nutrient: 'Carbohydrates', sources: 'Bread, pasta, fruits, vegetables', calories: '4 kcal/g', function: 'Primary energy source' },
+      { nutrient: 'Proteins', sources: 'Meat, fish, eggs, beans, dairy', calories: '4 kcal/g', function: 'Build + repair tissue, enzymes' },
+      { nutrient: 'Fats', sources: 'Oils, butter, nuts, dairy', calories: '9 kcal/g', function: 'Long-term energy, cell membranes, vitamins' },
+      { nutrient: 'Alcohol', sources: 'Beer, wine, spirits', calories: '7 kcal/g', function: 'Provides metabolic energy but is not an essential nutrient' },
       { nutrient: 'Vitamins', sources: 'Variable', calories: '0', function: 'Cofactors for enzymes' },
       { nutrient: 'Minerals', sources: 'Variable', calories: '0', function: 'Structural + cofactor' },
       { nutrient: 'Water', sources: 'Drinks + food', calories: '0', function: 'Solvent for all biochemistry' },
@@ -1525,13 +1723,13 @@
   var FORENSIC = {
     intro: 'Forensic chemistry: chemistry applied to legal investigations. DNA, drugs, ballistics, fingerprints.',
     techniques: [
-      { name: 'DNA fingerprinting', what: 'PCR + STR analysis of restriction sites', accuracy: '1 in trillions match probability', uses: 'Identification, paternity, ancestry, cold cases' },
+      { name: 'DNA profiling', what: 'PCR amplification and STR profiling at multiple loci', accuracy: 'Statistical weight depends on loci, population data, sample quality, mixtures, and laboratory interpretation', uses: 'Identification and kinship analysis' },
       { name: 'Mass spectrometry', what: 'Identify molecules by mass-to-charge', accuracy: 'Highly specific', uses: 'Drug detection, poisoning analysis, identification' },
       { name: 'Gas chromatography', what: 'Separates volatile compounds', accuracy: 'High', uses: 'Drug + arson analysis' },
       { name: 'Spectroscopy (IR/UV)', what: 'Molecular identification by absorption', accuracy: 'Moderate-high', uses: 'Unknown substance ID' },
       { name: 'Atomic absorption', what: 'Measures metals', accuracy: 'High', uses: 'Heavy metal poisoning, gunshot residue' },
       { name: 'Fingerprint analysis', what: 'Pattern recognition; chemical enhancement', accuracy: 'Variable', uses: 'Identification' },
-      { name: 'Ballistics', what: 'Bullet trajectory + composition', accuracy: 'Highly specific match', uses: 'Linking bullet to gun' },
+      { name: 'Firearms and toolmark examination', what: 'Compares class characteristics and microscopic toolmarks', accuracy: 'Supports graded conclusions with uncertainty; not a uniquely identifying match', uses: 'Assessing whether evidence is consistent with a firearm' },
       { name: 'Toxicology', what: 'Drug screening, post-mortem', accuracy: 'High', uses: 'Cause of death, DUI testing' },
       { name: 'Marsh test (arsenic)', what: 'Classic arsenic detection', accuracy: 'High historically', uses: 'Poisoning investigations (since 1836)' },
       { name: 'Microscopy', what: 'Visual examination of trace evidence', accuracy: 'Variable', uses: 'Fibers, hair, paint analysis' }
@@ -1604,7 +1802,7 @@
     { myth: 'You only need water + soap for clean.', truth: 'Soap breaks lipid bilayers. Effective against most viruses + bacteria. Hot water helps but not required.' },
     { myth: 'Plastics are not chemicals because they\'re solid.', truth: 'All matter is chemistry. Plastics are long-chain polymers (huge molecules).' },
     { myth: 'Drinking lots of water can\'t hurt.', truth: 'Hyponatremia from over-hydration kills people. Body needs both water + electrolytes.' },
-    { myth: 'Salt + sugar are bad chemicals.', truth: 'Both essential nutrients. Sodium for nerve function. Sugar for cellular energy. Just used in excess.' },
+    { myth: 'Salt + sugar are bad chemicals.', truth: 'Sodium is essential in appropriate amounts. Carbohydrate can supply glucose, but added sugar is not an essential nutrient; dose and dietary context matter.' },
     { myth: 'Detox products clean toxins from body.', truth: 'No scientific basis. Healthy liver + kidneys do this naturally. Most "detox" products useless or harmful.' },
     { myth: 'Vitamins always help.', truth: 'Megadoses harmful. Vitamin A excess causes liver damage. Vitamin C excess causes kidney stones.' },
     { myth: 'Stainless steel is "pure" metal.', truth: 'Alloy of iron + chromium + nickel + carbon. The chromium oxide layer makes it stainless.' },
@@ -1622,8 +1820,8 @@
   var CHEM_RECORDS = [
     { category: 'Strongest acid', record: 'Fluoroantimonic acid (HSbF6)', value: '10¹⁹ times stronger than 100% H2SO4', notes: 'Superacid; reacts with virtually anything.' },
     { category: 'Strongest base', record: 'Lithium diisopropylamide / methyl lithium', value: 'Extremely basic', notes: 'Reacts with water explosively.' },
-    { category: 'Lowest pH', record: 'Magic acid', value: '~-12 (negative pH)', notes: 'pH < 0 possible for superacids.' },
-    { category: 'Highest pH', record: 'Saturated NaOH', value: '~15-16', notes: 'Theoretical limit ~16.' },
+    { category: 'Superacid acidity', record: 'Magic acid and related superacids', value: 'Use an acidity function such as Hammett H0', notes: 'Ordinary aqueous pH is not the appropriate common scale for neat superacids.' },
+    { category: 'Concentrated base', record: 'Concentrated hydroxide solutions', value: 'pH can exceed 14', notes: 'The value depends on activity, concentration, temperature, and model; there is no universal upper limit of 16.' },
     { category: 'Most reactive metal', record: 'Cesium', value: 'Reacts violently with water + air', notes: 'Stored under argon.' },
     { category: 'Most reactive nonmetal', record: 'Fluorine', value: 'Most electronegative element', notes: 'Burns in nearly anything.' },
     { category: 'Hardest natural mineral', record: 'Diamond', value: '10 on Mohs scale', notes: 'Pure crystallized carbon.' },
@@ -1643,7 +1841,7 @@
   ];
 
   // ═══════════════════════════════════════════════════════════
-  // CHEM GLOSSARY (200+ terms)
+  // REVIEWED CHEMISTRY GLOSSARY
   // ═══════════════════════════════════════════════════════════
   var CHEM_GLOSSARY = [
     { term: 'Acid', def: 'Substance that donates H+ ions (Bronsted), accepts electron pair (Lewis), or produces H+ in water (Arrhenius).' },
@@ -1660,7 +1858,7 @@
     { term: 'Boyle\'s Law', def: 'PV = constant at constant T + n. Inverse relationship between P + V.' },
     { term: 'Buffer', def: 'Solution that resists pH change. Weak acid + conjugate base.' },
     { term: 'Calorimeter', def: 'Device that measures heat changes in reactions.' },
-    { term: 'Catalyst', def: 'Substance that speeds reaction without being consumed. Lowers Ea.' },
+    { term: 'Catalyst', def: 'Participates in a lower-activation-energy mechanism and is regenerated overall; catalysts can deactivate.' },
     { term: 'Cation', def: 'Positively charged ion. Has fewer electrons than protons.' },
     { term: 'Chemical bond', def: 'Force holding atoms together. Ionic, covalent, metallic.' },
     { term: 'Chiral', def: 'Molecule that cannot superimpose on its mirror image.' },
@@ -1683,7 +1881,7 @@
     { term: 'Endothermic', def: 'Reaction that absorbs heat. ΔH > 0.' },
     { term: 'Energy', def: 'Capacity to do work or transfer heat.' },
     { term: 'Enthalpy (H)', def: 'Total heat content. ΔH = q at constant P.' },
-    { term: 'Entropy (S)', def: 'Measure of disorder. Always increases in isolated systems.' },
+    { term: 'Entropy (S)', def: 'Related to accessible microscopic arrangements and energy/matter dispersal. It does not decrease for an isolated system.' },
     { term: 'Equilibrium', def: 'State where forward + reverse rates are equal.' },
     { term: 'Exothermic', def: 'Reaction that releases heat. ΔH < 0.' },
     { term: 'Faraday\'s constant', def: '96,485 C/mol. Charge per mole of electrons.' },
@@ -1753,7 +1951,7 @@
     { term: 'Specific heat', def: 'Heat capacity per gram.' },
     { term: 'Spectrometer', def: 'Instrument measuring light absorption/emission.' },
     { term: 'Stoichiometry', def: 'Mole-based calculations from balanced equations.' },
-    { term: 'STP', def: 'Standard Temperature + Pressure. 0°C, 1 atm.' },
+    { term: 'STP', def: 'A convention that must state temperature and pressure; common values are 0°C with either 1 atm or 1 bar.' },
     { term: 'Sublimation', def: 'Solid directly to gas. Dry ice, mothballs.' },
     { term: 'Supersaturated', def: 'More solute than equilibrium. Unstable.' },
     { term: 'Suspension', def: 'Heterogeneous mixture with particles that settle.' },
@@ -1784,11 +1982,11 @@
       { name: 'Electron mass', symbol: 'me', value: '9.109 × 10⁻³¹ kg' },
       { name: 'Proton mass', symbol: 'mp', value: '1.673 × 10⁻²⁷ kg' },
       { name: 'Rydberg constant', symbol: 'R∞', value: '1.097 × 10⁷ /m' },
-      { name: 'Standard pressure', symbol: 'P°', value: '1 atm = 101.325 kPa' },
-      { name: 'Standard temperature', symbol: 'T°', value: '25°C = 298.15 K (or 0°C = 273.15 K for STP)' }
+      { name: 'Standard-state pressure', symbol: 'p°', value: '1 bar = 100 kPa' },
+      { name: 'Common tabulation temperature', symbol: 'T', value: '298.15 K (25°C); temperature must be stated' }
     ],
     conversions: [
-      { from: '1 mole gas at STP', to: '22.4 L' },
+      { from: '1 mol ideal gas at 0°C, 1 atm', to: '≈22.414 L (at 0°C, 1 bar: ≈22.711 L)' },
       { from: '1 cal', to: '4.184 J' },
       { from: '1 atm', to: '101.325 kPa = 760 mmHg = 760 Torr' },
       { from: '1 amu', to: '1.66 × 10⁻²⁴ g' },
@@ -1796,8 +1994,8 @@
       { from: '100°C', to: '373.15 K = 212°F' },
       { from: '1 nm', to: '10⁻⁹ m' },
       { from: '1 Å', to: '10⁻¹⁰ m = 0.1 nm' },
-      { from: '1 ppm', to: '1 mg/L (in water)' },
-      { from: '1 ppb', to: '1 μg/L' }
+      { from: '1 ppm', to: '≈1 mg/L only for dilute water-like solutions near 1 kg/L' },
+      { from: '1 ppb', to: '≈1 μg/L only for dilute water-like solutions near 1 kg/L' }
     ],
     bondEnergies: [
       { bond: 'H-H', energy: '436 kJ/mol' },
@@ -1836,15468 +2034,7 @@
   // ═══════════════════════════════════════════════════════════
   // FULL ELEMENT DETAILS — z=1 deep profiles with discovery + chemistry
   // ═══════════════════════════════════════════════════════════
-  var ELEMENT_DETAILS = [
-    { z: 1, sym: 'H', detail: 'Hydrogen is the simplest atom — 1 proton, 1 electron. It is the most abundant element in the universe (75% by mass), forming stars, planets (gas giants), and water. Discovered by Henry Cavendish in 1766 who showed it was a distinct substance when reacted with metals to give "flammable air". Named hydrogen ("water-former") by Lavoisier. Modern uses include: ammonia production (Haber process, ~70 million tons/year — feeds half of humanity), petroleum refining (hydrocracking), methanol synthesis, hydrochloric acid manufacturing, food hydrogenation (margarine), and fuel cells. Future: hydrogen economy — clean fuel that produces only water when burned. Storage challenges: low density at STP. Liquid H2 used in rockets (NASA Saturn V used 1.4 million liters). Found as molecular H2 in trace amounts in atmosphere (0.000055%), bound in water, hydrocarbons, biological molecules.' },
-    { z: 6, sym: 'C', detail: 'Carbon is the chemistry of life. It bonds with itself in chains, rings, branches — making more compounds (10+ million) than all other elements combined. Known since prehistoric times as charcoal and diamond. Carbon comes in many allotropes: diamond (each C bonded to 4 others tetrahedrally — hardest natural material), graphite (sheets of hexagons — lubricant and pencil lead), buckminsterfullerene (C60 — soccer-ball cage, Nobel 1996), carbon nanotubes (rolled-up graphene), graphene (single atomic layer — Nobel 2010, strongest material ever measured), amorphous carbon (charcoal, coal). Carbon-14 (5730 year half-life) used in radiocarbon dating. CO2 + climate change drives policy debates. Every living cell on Earth uses carbon backbone.' },
-    { z: 26, sym: 'Fe', detail: 'Iron has shaped human civilization. Iron Age began ~1200 BCE in Anatolia and spread globally. Earth\'s core is mostly iron-nickel alloy generating our magnetic field. Hemoglobin uses iron to bind oxygen (one molecule carries 4 O2 molecules). Every cell uses iron in cytochromes for electron transport. Anemia is iron deficiency. Steel is iron + carbon (0.02-2.1% by weight) — strongest commonly-used material. Stainless steel adds chromium (>10.5%) for corrosion resistance. Modern world produces 1.9 billion tons of steel annually. Rust (iron oxide, Fe2O3) costs the global economy ~3% of GDP. Magnetite (Fe3O4) is naturally magnetic.' },
-    { z: 79, sym: 'Au', detail: 'Gold is special because it doesn\'t corrode. The Aztec word "teocuitlatl" means "sweat of the sun." Egyptian goldsmithing dates to 3000 BCE. Why doesn\'t gold tarnish? Its electron configuration places it in a unique position. Modern uses: electronics (corrosion-free contacts in phones, computers, satellites — each smartphone contains ~0.034 g gold), dental fillings (still common in some countries), medicine (chemotherapy drug auranofin), aerospace (visor coatings reflect IR). Most ductile metal — 1g can be drawn into 2.4 km wire. Mostly mined from South Africa, China, Russia, US. Total gold ever mined could fit in a cube ~22m on a side. Bitcoin is sometimes called "digital gold" because of similar scarcity properties.' },
-    { z: 92, sym: 'U', detail: 'Uranium powered the atomic age. Marie Curie discovered radioactivity in U salts (1898). Enrico Fermi achieved the first nuclear chain reaction with U-235 in 1942 under Stagg Field at University of Chicago. The Manhattan Project (1942-1945) produced enough U-235 (and Pu-239) for the Hiroshima bomb. Today: nuclear power provides ~10% of world electricity. U-238 (99.3% of natural U) is fertile — can be bred to Pu-239 in reactors. Depleted uranium (lower in U-235) is used in armor + ammunition. Half-life of U-238: 4.5 billion years (age of Earth). Found in Earth\'s crust at ~2.7 ppm. Mining concentrated in Kazakhstan, Australia, Canada, Niger.' },
-    { z: 47, sym: 'Ag', detail: 'Silver has been used as currency for 4,000+ years. Most reflective metal — used in mirrors. Best electrical conductor (better than copper) — used in high-end audio cables, RF circuits, solar cells. Antimicrobial properties known since ancient times — Hippocrates wrote about it. Modern: silver-coated bandages prevent wound infection, silver nanoparticles in athletic clothing reduce odor. Photography historically used silver halide crystals. Sterling silver is 92.5% Ag + 7.5% Cu. World silver production ~25,000 tons/year. Mostly mined in Mexico, Peru, China.' },
-    { z: 29, sym: 'Cu', detail: 'Copper is the oldest metal humans worked with — copper tools date to 8000 BCE. Roman plumbing was copper. Statue of Liberty\'s green color is copper oxide patina (from CuO + Cu(OH)2 + Cu(NO3)2). Modern uses: electrical wiring (best conductor after silver), plumbing, electronics, antimicrobial surfaces in hospitals. Brass = Cu + Zn. Bronze = Cu + Sn. Bronze Age began ~3300 BCE. Every car has ~25 kg copper. Hybrid vehicles use 4× more copper than ICE vehicles.' },
-    { z: 17, sym: 'Cl', detail: 'Chlorine saves more lives than any other element through water disinfection. First commercial chlorination of water was Jersey City 1908. Used in WWI as chemical weapon (1915 — first major chemical attack). Modern uses: water disinfection (kills bacteria, viruses, protozoa in drinking water + pools), bleach (NaClO), PVC plastic, refrigerants, pharmaceuticals. Found as Cl2 gas (yellow-green, highly toxic). Combines with Na to make table salt. About 75% of EU pharmaceuticals contain chlorine. Mixed with ammonia produces chloramine — toxic, do not combine cleaning products.' },
-    { z: 8, sym: 'O', detail: 'Oxygen drives all aerobic life. 21% of atmosphere. Photosynthesis produced this O2 ~2.4 billion years ago (Great Oxidation Event) — the worst extinction in Earth history (killed anaerobic organisms). Discovered by Carl Scheele (1772), independently by Priestley (1774). Named by Lavoisier (1777) from Greek "acid-former" — wrong assumption about acids. O2 supports combustion. O3 (ozone) at high altitude protects from UV; at ground level is toxic pollutant. Hyperbaric oxygen therapy treats decompression sickness + carbon monoxide poisoning. Liquid O2 used in rockets (NASA Saturn V used 1.2 million liters).' },
-    { z: 7, sym: 'N', detail: 'Nitrogen is 78% of atmosphere but virtually inactive due to triple bond N≡N (strongest covalent bond). Plants cannot fix atmospheric N — they need it as NH3 or NO3-. Nitrogen-fixing bacteria (Rhizobia in legume root nodules) convert N2 to NH3. Fritz Haber industrially solved this in 1909 — Haber-Bosch process feeds 50% of humanity. Without it, ~4 billion people would not be alive. N is essential to amino acids, DNA, ATP. Discovered by Daniel Rutherford (1772). N2 is the gas left after removing O2 + CO2 + water vapor from air.' },
-    { z: 11, sym: 'Na', detail: 'Sodium is the 6th most abundant element in Earth\'s crust. Highly reactive — must be stored under oil. Reacts violently with water producing NaOH + H2 (which can ignite). Sodium chloride (table salt) is essential nutrient — every cell uses Na+/K+ pump (uses ~30% of resting metabolic rate). Discovered by Humphry Davy (1807) by electrolysis of molten NaOH. Modern uses: sodium-vapor lamps (orange streetlights), sodium-cooled fast-breeder reactors, sodium battery research, food preservation. NaOH used in soap-making + paper.' },
-    { z: 19, sym: 'K', detail: 'Potassium is the major intracellular cation in animal cells (Na+ is extracellular). K+/Na+ gradient drives nerve impulses, muscle contraction, and active transport. Bananas contain ~422 mg K. Reacts more violently with water than sodium. K-40 isotope (0.012%) is naturally radioactive — bananas are slightly radioactive! Used as fertilizer (potash). Discovered by Davy (1807) — first metal he isolated. KCl used in lethal injections.' },
-    { z: 20, sym: 'Ca', detail: 'Calcium is the 5th most abundant element in Earth\'s crust. Builds bones + teeth (hydroxyapatite Ca5(PO4)3(OH)). Adult body contains ~1 kg Ca, 99% in skeleton. Ca2+ ions trigger muscle contraction + neurotransmitter release. Calcium signaling is central to biology. Limestone (CaCO3) is the most-used construction material. Plaster + cement use Ca. Antacids (Tums) are CaCO3. Without Ca, no movement, no thought, no life.' },
-    { z: 13, sym: 'Al', detail: 'Aluminum is 8% of Earth\'s crust — most abundant metal. Once more valuable than gold (1880s). Statue of Liberty replaced Washington Monument as tallest aluminum object when Hall-Héroult process (1886) made it cheap. Lightweight (1/3 weight of steel), corrosion-resistant (Al2O3 layer self-heals), conductive. Aircraft are 80%+ aluminum alloys. Beverage cans (Al-Mn-Mg alloy) are 100% recyclable. Body armor + tanks use Al alloys. Aluminum production consumes ~3% of world electricity.' },
-    { z: 14, sym: 'Si', detail: 'Silicon defines our digital age. 99% of computer chips made of doped silicon. Discovered by Berzelius (1824). 2nd most abundant element in crust (28%). Found in sand (SiO2), clay, quartz. Computer manufacturing uses ultra-pure Si (99.9999999% — "9-nines"). Doping with B makes p-type; with P makes n-type. Silicon Valley named for this. Glass is mostly SiO2. Silicones are polymers based on Si-O backbones — flexible at low T + heat-stable. Solar cells convert sunlight to electricity via silicon p-n junctions. Future: silicon photonics, quantum computing.' },
-    { z: 78, sym: 'Pt', detail: 'Platinum was used by pre-Columbian South Americans before Europeans knew it existed. Spanish conquistadors disposed of it as worthless "little silver" (platina). Modern uses: catalytic converters (95% of car pollution control), petroleum refining, cancer chemotherapy (cisplatin), jewelry. Doesn\'t corrode or tarnish. Catalysis: lowers activation energy for many reactions without being consumed. Rarer than gold. World production ~190 tons/year, mostly South Africa, Russia. Cisplatin discovered serendipitously by Barnett Rosenberg in 1965 — saved millions of cancer patients.' },
-    { z: 53, sym: 'I', detail: 'Iodine is essential for thyroid hormones T3 + T4. Iodine deficiency causes goiter + cretinism (cognitive impairment). Iodized salt (since 1924 in US) has eliminated this in most countries. Discovered by Bernard Courtois (1811) accidentally while making gunpowder from seaweed ash. Iodine tincture is antiseptic. I-131 used to treat thyroid cancer + diagnose thyroid disease. Discovered first noble metal compound formed at room temperature when reacted with various transition metals.' },
-    { z: 24, sym: 'Cr', detail: 'Chromium produces vivid colors — Greek "chroma" means color. Ruby is corundum (Al2O3) + Cr; emerald is beryl + Cr. Stainless steel is iron + chromium (>10.5%) + others. Cr forms passive oxide layer that prevents rust. Cr(VI) compounds carcinogenic (Erin Brockovich case, Hinkley, CA 1993). Most chromium uses are now in stainless steel — 70% of production.' },
-    { z: 22, sym: 'Ti', detail: 'Titanium has highest strength-to-weight ratio of any metal. Used in aircraft (titanium alloys 6Al-4V most common), submarines (less corrosion in saltwater), medical implants (biocompatible — no rejection), tennis rackets, knee + hip replacements. Discovered by William Gregor (1791). Named after Titans of Greek mythology. Most titanium production goes to aerospace + medical. White paint pigment is TiO2 — replaces lead-based paints (toxic).' },
-    { z: 12, sym: 'Mg', detail: 'Magnesium is essential for plant photosynthesis (chlorophyll has Mg at center). Essential trace element for animals — 300+ enzymes use Mg2+ as cofactor. Burns with brilliant white flame (used in flares, sparklers, photographic flashes). 8th most abundant element in crust. Light alloys (Mg-Al, Mg-Zn) used in aerospace + sporting goods. Magnesium sulfate (Epsom salt) used medicinally.' },
-    { z: 50, sym: 'Sn', detail: 'Tin enabled the Bronze Age — combined with copper to make bronze (~3300 BCE). Cornwall mines were major source, traded by Phoenicians worldwide. Tin can preservation (1810) revolutionized food storage. Tin plague: pure tin transforms to grayish powder below 13°C — Napoleon\'s soldiers reportedly froze when their tin buttons disintegrated 1812 (apocryphal). Modern uses: solder (Sn-Pb historically, lead-free now), tin-plated steel (cans), float glass (made on molten tin). Bronze still used for bearings + bells.' },
-    { z: 80, sym: 'Hg', detail: 'Mercury is the only metal liquid at room temperature. Mythology: Roman god Mercury, messenger of the gods. Used historically in thermometers, barometers, dental fillings (amalgam), gold mining (forms amalgam). Highly toxic — Mad Hatter\'s disease was Hg poisoning in hat-makers exposed to Hg(NO3)2. Wilson Edition Hg-based fungicide caused massive industrial pollution. Now phased out from most consumer uses. CFL bulbs contain ~5 mg Hg — proper recycling important. Hg(0) vapor + organic Hg most dangerous.' },
-    { z: 82, sym: 'Pb', detail: 'Lead has been used since ancient times — Roman aqueducts + pipes. Possible contributor to fall of Roman Empire (Pb poisoning of elite). Tetraethyl lead (gasoline anti-knock additive) widely banned 1973-2021. Lead paint banned 1978. Acidic water leaching from Pb pipes caused Flint water crisis 2014. Pb damages developing brain — children especially vulnerable. Symptoms of Pb poisoning: cognitive impairment, anemia, behavioral problems. Still in some lead-acid batteries + radiation shielding.' },
-    { z: 27, sym: 'Co', detail: 'Cobalt = "kobold" — mining demon in German folklore. Co-60 used in radiotherapy + sterilization. Vitamin B12 (cobalamin) contains cobalt — essential nutrient. Modern: lithium-ion batteries (LCO, NMC) use cobalt. ~60% of world cobalt comes from Democratic Republic of Congo — ethical mining concerns include child labor. Blue cobalt glass + ceramics. Strong magnetic properties — used in Alnico magnets.' },
-    { z: 30, sym: 'Zn', detail: 'Zinc is essential trace element — cofactor for 300+ enzymes. Zn deficiency causes growth retardation, immune dysfunction, slow wound healing. Modern uses: galvanizing steel (zinc coating prevents rust), brass (Cu-Zn), batteries, sunscreen (ZnO blocks UV), cold lozenges. Penny is 97.5% Zn since 1982 (Cu-clad). 12 most abundant element in human body.' },
-    { z: 33, sym: 'As', detail: 'Arsenic is historically the "king of poisons" — used in murders for centuries. Marsh test (1836) finally enabled detection — birth of forensic toxicology. Modern: groundwater contamination in Bangladesh + W. Bengal affects 100 million people. CCA-treated wood (chromated copper arsenate) banned for residential 2003. Some semiconductor uses (gallium arsenide for high-frequency chips). Some traditional medicines still contain As — toxic.' },
-    { z: 34, sym: 'Se', detail: 'Selenium discovered in residues from sulfuric acid plant 1817. Essential trace element — cofactor in glutathione peroxidase + thyroid hormones. Brazil nuts highest natural Se source — 1 nut/day exceeds RDA. Selenium toxicity (selenosis) from >400 μg/day. Photovoltaic Se cells (predecessor of Si). Selenium sulfide in anti-dandruff shampoo (Selsun Blue).' },
-    { z: 35, sym: 'Br', detail: 'Bromine is one of only two liquid elements at room temperature (Hg the other). Reddish-brown liquid; toxic vapor. Mostly from Dead Sea + brines. Used in flame retardants (some controversial — PBDEs bioaccumulate), water treatment, photographic film (silver bromide).' },
-    { z: 52, sym: 'Te', detail: 'Tellurium named after Earth (Latin tellus). Causes "tellurium breath" — garlicky body odor at trace exposure. Modern: CdTe solar cells, thermoelectric devices. Lannemezan plant in France makes most world supply.' },
-    { z: 88, sym: 'Ra', detail: 'Radium discovered by Marie + Pierre Curie 1898 from uranium ore (pitchblende). Marie Curie won Nobel Physics 1903 (with Pierre + Becquerel) + Chemistry 1911 (for Po + Ra isolation). Used in luminous paint for clock faces in early 20th century — Radium Girls factory workers died from radiation exposure painting dials. Modern: research only. Cancer treatment largely replaced by Co-60 or accelerators. Radium\'s name from Latin "radius" (ray).' },
-    { z: 94, sym: 'Pu', detail: 'Plutonium is named after Pluto (then-9th planet). Synthesized by Seaborg et al. 1940 at UC Berkeley. Pu-239 fissile + used in nuclear weapons (Fat Man bomb on Nagasaki, 1945). Pu-238 powers spacecraft (Curiosity Mars rover, Voyager, Cassini). Half-life Pu-239: 24,100 years. Currently ~500 tons world stockpile. Most toxic substance known by mass — 1 kg could theoretically kill 2 million people if dispersed as inhalable dust.' }
-  ];
-
-  // ═══════════════════════════════════════════════════════════
-  // EXPANDED GLOSSARY — additional 100 terms
-  // ═══════════════════════════════════════════════════════════
-  var CHEM_GLOSSARY_B = [
-    { term: 'Activated complex', def: 'High-energy intermediate state during reaction, at peak of energy diagram.' },
-    { term: 'Adsorption', def: 'Substance accumulating on surface of another. Different from absorption (penetration).' },
-    { term: 'Alkene', def: 'Hydrocarbon with C=C double bond. General formula CnH2n.' },
-    { term: 'Alkyne', def: 'Hydrocarbon with C≡C triple bond. CnH2n-2.' },
-    { term: 'Allotrope', def: 'Different structural forms of same element. Diamond + graphite both carbon.' },
-    { term: 'Amine', def: 'Organic compound with NH2, NH, or N group. Bases.' },
-    { term: 'Anhydrous', def: 'Without water. Often refers to dried salts.' },
-    { term: 'Antibonding orbital', def: 'Molecular orbital that destabilizes molecule when occupied.' },
-    { term: 'Aprotic solvent', def: 'Solvent without acidic H. DMSO, acetone.' },
-    { term: 'Aqueous', def: 'Dissolved in water. Notated as (aq).' },
-    { term: 'Atom', def: 'Smallest unit of an element. Nucleus + electrons.' },
-    { term: 'Beta sheet', def: 'Protein secondary structure with extended chains.' },
-    { term: 'Binary compound', def: 'Made of only 2 elements. NaCl, MgO.' },
-    { term: 'Biodegradable', def: 'Can be broken down by microorganisms.' },
-    { term: 'Boiling point', def: 'Temperature at which vapor pressure equals atmospheric pressure.' },
-    { term: 'Bond angle', def: 'Angle between two bonds from same atom.' },
-    { term: 'Bond length', def: 'Distance between nuclei of bonded atoms.' },
-    { term: 'Calorie', def: 'Energy to raise 1 g water 1°C. Food calories are kcal.' },
-    { term: 'Carbohydrate', def: 'Sugar polymer. Energy + structure.' },
-    { term: 'Catabolism', def: 'Breaking down molecules to release energy.' },
-    { term: 'Centrifuge', def: 'Spinning device that separates by density.' },
-    { term: 'Chain reaction', def: 'Self-propagating reaction where products initiate more reactions.' },
-    { term: 'Charge density', def: 'Charge per unit volume. Affects bonding.' },
-    { term: 'Chlorofluorocarbon (CFC)', def: 'Refrigerant that depletes ozone. Banned by Montreal Protocol.' },
-    { term: 'Cis isomer', def: 'Substituents on same side. cis-2-butene.' },
-    { term: 'Closed system', def: 'Exchange energy but not matter with surroundings.' },
-    { term: 'Colloid', def: 'Mixture with particles 1-1000 nm. Milk, blood, fog.' },
-    { term: 'Conduction', def: 'Heat transfer through direct contact.' },
-    { term: 'Conservation of energy', def: 'Energy cannot be created or destroyed. First law of thermodynamics.' },
-    { term: 'Corrosion', def: 'Gradual destruction of material by environment. Rust on iron.' },
-    { term: 'Coupling', def: 'Reaction joining two molecules. Common in organic synthesis.' },
-    { term: 'Crystal lattice', def: 'Repeating 3D pattern of ions/atoms in crystal.' },
-    { term: 'Cyclic compound', def: 'Has ring of atoms in structure.' },
-    { term: 'Daltons (Da)', def: 'Unit of molecular mass. 1 Da = 1.66 × 10⁻²⁷ kg.' },
-    { term: 'Decomposition reaction', def: 'AB → A + B. One compound breaks into multiple.' },
-    { term: 'Deionized water', def: 'Water with ions removed. Used in lab.' },
-    { term: 'Denatured', def: 'Protein has lost native structure due to heat, pH, or other stress.' },
-    { term: 'Density', def: 'Mass per unit volume. ρ = m/V.' },
-    { term: 'Desalination', def: 'Removing salt from water. RO or thermal.' },
-    { term: 'Dichromate', def: 'Cr2O7²⁻ ion. Strong oxidizer.' },
-    { term: 'Disaccharide', def: 'Two sugars joined. Sucrose = glucose + fructose.' },
-    { term: 'Disinfectant', def: 'Kills microorganisms. Chlorine, alcohol.' },
-    { term: 'Dispersion forces', def: 'Weak intermolecular forces from temporary dipoles. Same as London forces.' },
-    { term: 'Distillation', def: 'Separation by boiling point difference.' },
-    { term: 'Doping', def: 'Adding impurities to semiconductor. P-type or n-type.' },
-    { term: 'Double bond', def: 'Sharing 2 pairs of electrons. C=O.' },
-    { term: 'Ductile', def: 'Can be drawn into wire. Metals.' },
-    { term: 'Dynamic equilibrium', def: 'Forward + reverse reactions continue at equal rates.' },
-    { term: 'Effective nuclear charge', def: 'Net positive charge felt by valence electron.' },
-    { term: 'Effusion', def: 'Movement of gas through small opening.' },
-    { term: 'Electric current', def: 'Flow of charge. Measured in amperes.' },
-    { term: 'Electrolysis', def: 'Using electricity to drive non-spontaneous reaction.' },
-    { term: 'Electrolyte', def: 'Substance that ionizes in solution + conducts electricity.' },
-    { term: 'Electroplating', def: 'Coating metal with another metal via electrolysis.' },
-    { term: 'Element symbol', def: '1-2 letter chemical symbol. H, He, Au.' },
-    { term: 'Endpoint', def: 'When indicator changes color in titration. Approximation of equivalence point.' },
-    { term: 'Energy diagram', def: 'Plot of energy vs reaction progress.' },
-    { term: 'Enzyme', def: 'Protein catalyst in biological reactions.' },
-    { term: 'Equivalence point', def: 'When moles acid = moles base in titration.' },
-    { term: 'Ester', def: 'Organic compound R-COO-R\'. Common in flavors + fragrances.' },
-    { term: 'Ether', def: 'Organic compound R-O-R\'. Common solvent.' },
-    { term: 'Evaporation', def: 'Liquid to gas at temperature below boiling.' },
-    { term: 'Excited state', def: 'Atom or molecule with electron above ground state.' },
-    { term: 'Extensive property', def: 'Depends on amount. Mass, volume, energy.' },
-    { term: 'Filter paper', def: 'Porous paper for filtration.' },
-    { term: 'Filtrate', def: 'Liquid that passes through filter.' },
-    { term: 'Flame test', def: 'Identifying ions by flame color. Na orange, K lilac.' },
-    { term: 'Formal charge', def: 'Apparent charge on atom in Lewis structure.' },
-    { term: 'Fractional distillation', def: 'Separating multiple liquids by boiling point.' },
-    { term: 'Free electron', def: 'Electron not bound to specific atom. In metals.' },
-    { term: 'Functional group', def: 'Atomic arrangement that defines compound class.' },
-    { term: 'Galvanic cell', def: 'Spontaneous redox produces electricity.' },
-    { term: 'Gas chromatography', def: 'Separation method for volatile compounds.' },
-    { term: 'Gibbs free energy', def: 'G = H - TS. Determines spontaneity.' },
-    { term: 'Glassware', def: 'Lab glass equipment. Beakers, flasks, pipettes.' },
-    { term: 'Gravimetric', def: 'Measurement by mass.' },
-    { term: 'Greenhouse gas', def: 'Gas that traps infrared radiation. CO2, CH4, N2O.' },
-    { term: 'Halide', def: 'Compound containing halogen.' },
-    { term: 'Heat of formation', def: 'Energy change forming compound from elements.' },
-    { term: 'Heat of fusion', def: 'Energy to melt 1 g substance.' },
-    { term: 'Heat of vaporization', def: 'Energy to vaporize 1 g liquid.' },
-    { term: 'Helium balloon', def: 'Filled with He gas. Less dense than air.' },
-    { term: 'Henderson-Hasselbalch', def: 'pH = pKa + log([A-]/[HA]). Buffer pH.' },
-    { term: 'Heterogeneous catalyst', def: 'Catalyst in different phase from reactants.' },
-    { term: 'High-pressure', def: 'Above atmospheric pressure.' },
-    { term: 'Homogeneous catalyst', def: 'Catalyst in same phase as reactants.' },
-    { term: 'Hund\'s rule', def: 'Electrons fill orbitals singly first.' },
-    { term: 'Hydration', def: 'Adding water to compound.' },
-    { term: 'Hydrate', def: 'Crystal with water of crystallization. CuSO4·5H2O.' },
-    { term: 'Hydrocarbon', def: 'Compound of C + H only. Fuels.' },
-    { term: 'Hydrogenation', def: 'Adding H2 to unsaturated compound.' },
-    { term: 'Hydrogenated oil', def: 'Vegetable oil with added H. Solid at room T.' },
-    { term: 'Hydrophilic', def: 'Water-loving. Polar groups.' },
-    { term: 'Hydrophobic', def: 'Water-hating. Nonpolar groups.' },
-    { term: 'Hypothesis', def: 'Testable proposed explanation.' },
-    { term: 'Ideal gas', def: 'Theoretical gas obeying PV=nRT exactly. No real gas does.' },
-    { term: 'Immiscible', def: 'Liquids that don\'t mix. Oil + water.' },
-    { term: 'Indicator', def: 'Substance that signals reaction completion or pH.' },
-    { term: 'Inert gas', def: 'Noble gas. Generally unreactive.' },
-    { term: 'Inhibitor', def: 'Substance that slows a reaction.' },
-    { term: 'Inorganic chemistry', def: 'Chemistry of non-carbon compounds.' },
-    { term: 'Insulator', def: 'Material that doesn\'t conduct.' },
-    { term: 'Intermolecular forces', def: 'Attractions between molecules. H-bonds, dipole, London.' },
-    { term: 'Intramolecular forces', def: 'Bonds within molecule.' },
-    { term: 'Iodine clock reaction', def: 'Classic kinetics demonstration. Color change at specific time.' },
-    { term: 'Ion exchange', def: 'Swapping ions. Water softeners.' },
-    { term: 'Ionization', def: 'Forming ion. Loss or gain of electron.' },
-    { term: 'Isoelectronic', def: 'Same number of electrons. F⁻, Ne, Na⁺ all 10 electrons.' },
-    { term: 'Joule', def: 'SI unit of energy. 1 J = 1 N·m.' },
-    { term: 'Kelvin', def: 'Absolute temperature scale. 0 K = -273.15°C.' },
-    { term: 'Kinetic energy', def: 'Energy of motion. KE = 1/2 mv².' },
-    { term: 'Lactic acid', def: 'Produced in muscle during anaerobic respiration.' }
-  ];
-
-  // ═══════════════════════════════════════════════════════════
-  // EXPANDED REACTIONS — 30 more reactions
-  // ═══════════════════════════════════════════════════════════
-  var MORE_REACTIONS = [
-    { name: 'Aluminum thermite (mining)', equation: '2Al + Cr2O3 → 2Cr + Al2O3', delta: '-516 kJ/mol', type: 'Highly Exothermic', context: 'Thermite reactions used to weld + produce other metals from oxides.' },
-    { name: 'Calcium carbide + water', equation: 'CaC2 + 2H2O → Ca(OH)2 + C2H2', delta: 'Exothermic', type: 'Hydrolysis', context: 'Produces acetylene for welding + lamps.' },
-    { name: 'Phosphorus pentoxide + water', equation: 'P4O10 + 6H2O → 4H3PO4', delta: 'Exothermic', type: 'Hydration', context: 'Industrial production of phosphoric acid.' },
-    { name: 'Sodium thiosulfate + iodine', equation: '2Na2S2O3 + I2 → Na2S4O6 + 2NaI', delta: 'Redox', type: 'Iodometric titration', context: 'Quantitative analysis of oxidizing agents.' },
-    { name: 'Methanol oxidation', equation: 'CH3OH + 1.5 O2 → CO2 + 2H2O', delta: '-727 kJ/mol', type: 'Exothermic', context: 'Methanol fuel cells + industrial precursor.' },
-    { name: 'Ammonium dichromate volcano', equation: '(NH4)2Cr2O7 → N2 + Cr2O3 + 4H2O', delta: 'Highly Exothermic', type: 'Decomposition', context: 'Classic chemistry demonstration. Solid grows + sparks.' },
-    { name: 'Hydrogen sulfide formation', equation: 'FeS + 2HCl → FeCl2 + H2S', delta: 'Exothermic', type: 'Double displacement', context: 'Hydrogen sulfide gas for qualitative analysis.' },
-    { name: 'Iron sulfide synthesis', equation: 'Fe + S → FeS', delta: '-100 kJ/mol', type: 'Exothermic', context: 'Direct combination at high T.' },
-    { name: 'Magnesium nitride', equation: '3Mg + N2 → Mg3N2', delta: 'Exothermic', type: 'Direct synthesis', context: 'Magnesium burns in nitrogen as well as O2.' },
-    { name: 'Magnesium + steam', equation: 'Mg + H2O(g) → MgO + H2', delta: 'Exothermic', type: 'Single replacement', context: 'Magnesium fires cannot be extinguished with water.' },
-    { name: 'Sodium peroxide + CO2', equation: '2Na2O2 + 2CO2 → 2Na2CO3 + O2', delta: 'Net positive', type: 'Disproportionation', context: 'Submarine air purification.' },
-    { name: 'Hydrogenation of nitrobenzene', equation: 'C6H5NO2 + 3H2 → C6H5NH2 + 2H2O', delta: 'Exothermic', type: 'Reduction', context: 'Aniline production from coal-tar nitrobenzene.' },
-    { name: 'Diels-Alder example', equation: 'Butadiene + Ethylene → Cyclohexene', delta: 'Exothermic', type: 'Cycloaddition', context: 'Classic example of pericyclic reaction.' },
-    { name: 'Methane chlorination', equation: 'CH4 + Cl2 → CH3Cl + HCl', delta: 'Exothermic', type: 'Free radical substitution', context: 'Chain reaction. Step 1 of methylene chloride synthesis.' },
-    { name: 'Bromine + aluminum', equation: '2Al + 3Br2 → 2AlBr3', delta: 'Highly Exothermic', type: 'Direct synthesis', context: 'Dramatic reaction; aluminum chunk dropped in Br2 reacts violently.' },
-    { name: 'Hydrofluoric acid + glass', equation: '4HF + SiO2 → SiF4 + 2H2O', delta: 'Exothermic', type: 'Etching', context: 'Why HF stored in plastic, not glass. Glass etching for art.' },
-    { name: 'Mercury sulfide synthesis', equation: 'Hg + S → HgS', delta: 'Exothermic', type: 'Direct synthesis', context: 'Used historically as pigment (vermillion red).' },
-    { name: 'Bromine in carbon tetrachloride', equation: 'CH3CH=CH2 + Br2 → CH3CHBrCH2Br', delta: 'Exothermic', type: 'Addition', context: 'Test for unsaturation. Br2 decolorizes.' },
-    { name: 'KMnO4 + alkene', equation: 'CH2=CH2 + KMnO4 + H2O → glycol + MnO2', delta: 'Exothermic', type: 'Oxidation', context: 'Bayer test for unsaturation; KMnO4 decolorizes.' },
-    { name: 'Silver nitrate + chloride', equation: 'AgNO3 + NaCl → AgCl + NaNO3', delta: 'Mild', type: 'Precipitation', context: 'Qualitative test for chloride ion. AgCl is white precipitate.' },
-    { name: 'Lead iodide formation', equation: 'Pb(NO3)2 + 2KI → PbI2 + 2KNO3', delta: 'Mild', type: 'Precipitation', context: 'Bright yellow precipitate. Beautiful chemistry demo.' },
-    { name: 'Iron oxalate decomposition', equation: 'Fe(C2O4) → Fe + 2CO + ½O2', delta: 'Endothermic', type: 'Decomposition', context: 'High-temperature decomposition for iron purification.' },
-    { name: 'Caustic potash + CO2', equation: '2KOH + CO2 → K2CO3 + H2O', delta: 'Exothermic', type: 'Acid-base', context: 'CO2 scrubbing in submarines + closed environments.' },
-    { name: 'Ammonium nitrate decomp.', equation: 'NH4NO3 → N2O + 2H2O', delta: '-37 kJ/mol', type: 'Exothermic decomp', context: 'Source of laughing gas (N2O) + AN explosives.' },
-    { name: 'Acid-catalyzed glycoside hydrolysis', equation: 'Sucrose + H2O → glucose + fructose', delta: 'Mild', type: 'Hydrolysis', context: 'Invert sugar. Sweeter than original.' },
-    { name: 'Cellulose hydrolysis', equation: '(C6H10O5)n + nH2O → n C6H12O6', delta: 'Endothermic', type: 'Hydrolysis', context: 'Cellulose to glucose. Currently studied for biofuels.' },
-    { name: 'Hydroxide + alcohol', equation: 'NaOH + ROH → NaOR + H2O', delta: 'Mild', type: 'Acid-base', context: 'Sodium alkoxide formation.' },
-    { name: 'Sodium reduction of TiCl4', equation: 'TiCl4 + 4Na → Ti + 4NaCl', delta: 'Highly Exothermic', type: 'Reduction', context: 'Industrial Kroll process for titanium production.' },
-    { name: 'Boron reduction', equation: 'B2O3 + 3Mg → 2B + 3MgO', delta: 'Highly Exothermic', type: 'Reduction', context: 'Industrial boron production.' },
-    { name: 'Tungsten reduction', equation: 'WO3 + 3H2 → W + 3H2O', delta: 'Mild', type: 'Reduction', context: 'Tungsten metal for light bulb filaments.' }
-  ];
-
-
-  // ═══════════════════════════════════════════════════════════
-  // EXTENDED REACTIONS B — 50 more named reactions
-  // ═══════════════════════════════════════════════════════════
-  var REACTIONS_B = [
-    {
-      name: "Sodium amalgam reduction",
-      equation: "CH3COCH3 + Na/Hg + H2O to CH3CHOHCH3",
-      delta: "-50 kJ/mol",
-      type: "Reduction",
-      context: "Classical reduction. Now mostly replaced by NaBH4.",
-      mechanism: "Single electron transfer + protonation."
-    },
-    {
-      name: "LiAlH4 reduction of ester",
-      equation: "RCOOR + 4 LiAlH4 to RCH2OH + ROH",
-      delta: "Exothermic",
-      type: "Hydride reduction",
-      context: "Powerful reductant. Pyrophoric in air. Reduces almost any C=O.",
-      mechanism: "Hydride delivery to C, then protonation."
-    },
-    {
-      name: "NaBH4 reduction of aldehyde",
-      equation: "RCHO + NaBH4 to RCH2OH",
-      delta: "-30 kJ/mol",
-      type: "Reduction",
-      context: "Mild reducing agent. Selective for C=O over C=C.",
-      mechanism: "Hydride transfer mechanism."
-    },
-    {
-      name: "Mitsunobu reaction",
-      equation: "ROH + RCOOH + DIAD + PPh3 to ester + Ph3P=O",
-      delta: "Mild",
-      type: "Substitution",
-      context: "Inverts stereochemistry. Widely used in organic synthesis.",
-      mechanism: "PPh3 activates OH for SN2."
-    },
-    {
-      name: "Sharpless epoxidation",
-      equation: "Allylic alcohol + tBuOOH + Ti + (+)DET to chiral epoxide",
-      delta: "Mild",
-      type: "Asymmetric oxidation",
-      context: "Sharpless Nobel 2001. Pharmaceutical synthesis backbone.",
-      mechanism: "Ti catalyst + chiral DET ligand control facial selectivity."
-    },
-    {
-      name: "Sonogashira coupling",
-      equation: "Ar-X + HC=CR + Pd + Cu to Ar-C=C-R",
-      delta: "Mild",
-      type: "Cross-coupling",
-      context: "Forms aryl alkynes. Wide use in drug synthesis.",
-      mechanism: "Pd oxidative addition + Cu acetylide transfer."
-    },
-    {
-      name: "Heck reaction",
-      equation: "CH2=CHR + ArX + Pd to ArCH=CHR",
-      delta: "Mild",
-      type: "Cross-coupling",
-      context: "Forms alkene products. Nobel 2010.",
-      mechanism: "Pd inserts into vinyl-Ar bond."
-    },
-    {
-      name: "Negishi coupling",
-      equation: "Ar-X + Ar-Zn + Pd to Ar-Ar",
-      delta: "Mild",
-      type: "Cross-coupling",
-      context: "Forms biaryl from aryl zinc + aryl halide. Nobel 2010.",
-      mechanism: "Standard Pd-catalyzed cross coupling."
-    },
-    {
-      name: "Stille coupling",
-      equation: "Ar-X + Ar-SnR3 + Pd to Ar-Ar",
-      delta: "Mild",
-      type: "Cross-coupling",
-      context: "Uses stannane. Functional group tolerant.",
-      mechanism: "Pd-catalyzed; transmetalation step crucial."
-    },
-    {
-      name: "Buchwald-Hartwig amination",
-      equation: "Ar-X + R2NH + Pd to Ar-NR2",
-      delta: "Mild",
-      type: "C-N bond formation",
-      context: "Forms amines from aryl halides. Important in drug discovery.",
-      mechanism: "Pd inserts into aryl halide; amine displaces."
-    },
-    {
-      name: "Ring-closing metathesis",
-      equation: "Diene to cyclic alkene + ethylene",
-      delta: "Mild",
-      type: "Metathesis",
-      context: "Grubbs Nobel 2005. Forms macrocycles + complex natural products.",
-      mechanism: "Ru carbene catalyst exchanges alkene partners."
-    },
-    {
-      name: "Wacker process",
-      equation: "CH2=CHR + O2 to RCOCH3",
-      delta: "Exothermic",
-      type: "Oxidation",
-      context: "Industrial acetaldehyde. Now mostly methanol carbonylation.",
-      mechanism: "PdCl2 + CuCl2 catalysis."
-    },
-    {
-      name: "Beckmann rearrangement",
-      equation: "Cyclohexanone oxime to caprolactam",
-      delta: "Mild",
-      type: "Rearrangement",
-      context: "Industrial nylon-6 precursor production.",
-      mechanism: "Acid catalyzed migration in oxime."
-    },
-    {
-      name: "Hofmann elimination",
-      equation: "R3N+CH2CH2X + OH- to CH2=CH2 + R3N + HX",
-      delta: "Mild",
-      type: "Elimination",
-      context: "Forms least substituted alkene.",
-      mechanism: "E2 elimination from quaternary ammonium."
-    },
-    {
-      name: "Cannizzaro reaction",
-      equation: "2 RCHO + NaOH to RCH2OH + RCOONa",
-      delta: "Mild",
-      type: "Disproportionation",
-      context: "Aldehyde without alpha-H. Self-redox.",
-      mechanism: "Hydride transfer between two aldehyde molecules."
-    },
-    {
-      name: "Henry reaction",
-      equation: "CH3NO2 + RCHO to RCH(OH)CH2NO2",
-      delta: "Mild",
-      type: "Aldol-like",
-      context: "Forms beta-nitroalcohols. Antibiotic intermediates.",
-      mechanism: "Base deprotonates CH3NO2 to give nucleophile."
-    },
-    {
-      name: "Mannich reaction",
-      equation: "RCOR + CH2O + R2NH to amino-methyl ketone",
-      delta: "Mild",
-      type: "Condensation",
-      context: "Amino-methylation. Forms beta-amino carbonyls.",
-      mechanism: "Amine + aldehyde form iminium, then enol attack."
-    },
-    {
-      name: "Robinson annulation",
-      equation: "Ketone + methyl vinyl ketone to bicyclic enone",
-      delta: "Mild",
-      type: "Cyclization",
-      context: "Forms 6-membered ring with carbonyl.",
-      mechanism: "Michael addition + aldol + dehydration sequence."
-    },
-    {
-      name: "Birch reduction",
-      equation: "Benzene + Na/NH3 to 1,4-cyclohexadiene",
-      delta: "Mild",
-      type: "Reduction",
-      context: "Reduces aromatic to dihydroaromatic.",
-      mechanism: "Electron transfer + protonation sequence."
-    },
-    {
-      name: "Friedel-Crafts alkylation",
-      equation: "C6H6 + RX + AlCl3 to C6H5R + HX",
-      delta: "Mild",
-      type: "Substitution",
-      context: "Adds alkyl group to aromatic ring.",
-      mechanism: "Lewis acid + EAS mechanism."
-    },
-    {
-      name: "Friedel-Crafts acylation",
-      equation: "C6H6 + RCOCl + AlCl3 to C6H5COR + HCl",
-      delta: "Mild",
-      type: "Substitution",
-      context: "Adds acyl group. No rearrangement vs alkylation.",
-      mechanism: "Lewis acid + acylium ion + EAS."
-    },
-    {
-      name: "Vilsmeier-Haack formylation",
-      equation: "Aromatic + DMF + POCl3 to aromatic-CHO",
-      delta: "Mild",
-      type: "Formylation",
-      context: "Adds formyl to electron-rich aromatic.",
-      mechanism: "Vilsmeier reagent + EAS."
-    },
-    {
-      name: "Sandmeyer reaction",
-      equation: "Ar-N2+ + Cu-X to Ar-X",
-      delta: "Mild",
-      type: "Substitution",
-      context: "Converts diazonium to aryl halide.",
-      mechanism: "Cu(I) catalysis."
-    },
-    {
-      name: "Fischer indole synthesis",
-      equation: "PhNHNH2 + RCOR + ZnCl2 to indole",
-      delta: "Mild",
-      type: "Cyclization",
-      context: "Forms indole heterocycle.",
-      mechanism: "Hydrazone + sigmatropic rearrangement."
-    },
-    {
-      name: "Hantzsch dihydropyridine synthesis",
-      equation: "Aldehyde + 2 beta-ketoester + NH3 to dihydropyridine",
-      delta: "Mild",
-      type: "Multi-component",
-      context: "Calcium channel blockers (nifedipine).",
-      mechanism: "Aldol + Michael + condensation."
-    },
-    {
-      name: "Biginelli reaction",
-      equation: "Aldehyde + beta-ketoester + urea to dihydropyrimidinone",
-      delta: "Mild",
-      type: "Multi-component",
-      context: "Pharmaceutically important heterocycles.",
-      mechanism: "Acid-catalyzed three-component condensation."
-    },
-    {
-      name: "Curtius rearrangement",
-      equation: "RCON3 to R-N=C=O (isocyanate)",
-      delta: "Mild",
-      type: "Rearrangement",
-      context: "Forms isocyanates from acyl azides.",
-      mechanism: "Concerted migration; loss of N2."
-    },
-    {
-      name: "Wolff-Kishner reduction",
-      equation: "RCOR + H2NNH2 + NaOH to RCH2R",
-      delta: "Mild",
-      type: "Reduction",
-      context: "Converts ketone to methylene.",
-      mechanism: "Hydrazone intermediate; base + heat."
-    },
-    {
-      name: "Clemmensen reduction",
-      equation: "RCOR + Zn(Hg) + HCl to RCH2R",
-      delta: "Strong",
-      type: "Reduction",
-      context: "Alternative to Wolff-Kishner.",
-      mechanism: "Zinc amalgam in concentrated HCl."
-    },
-    {
-      name: "Acetal formation",
-      equation: "RCHO + 2 ROH + H+ to RCH(OR)2 + H2O",
-      delta: "Mild",
-      type: "Condensation",
-      context: "Protects carbonyl. Removable with acid.",
-      mechanism: "Acid-catalyzed nucleophilic addition."
-    },
-    {
-      name: "Knoevenagel condensation",
-      equation: "RCHO + CH2(COOR)2 to alpha-beta unsaturated diester",
-      delta: "Mild",
-      type: "Condensation",
-      context: "Forms alpha-beta unsaturated diester.",
-      mechanism: "Active methylene + aldehyde + base."
-    },
-    {
-      name: "Bayer-Villiger oxidation",
-      equation: "RCOR + mCPBA to RC(O)OR",
-      delta: "Mild",
-      type: "Oxidation",
-      context: "Converts ketones to esters.",
-      mechanism: "Peracid attacks ketone, migration of R group."
-    },
-    {
-      name: "Wittig reaction",
-      equation: "RCHO + Ph3P=CHR to RCH=CHR + Ph3PO",
-      delta: "Mild",
-      type: "Olefination",
-      context: "Forms alkenes from aldehydes/ketones. Wittig Nobel 1979.",
-      mechanism: "Phosphorus ylide + carbonyl + betaine intermediate."
-    },
-    {
-      name: "Horner-Wadsworth-Emmons",
-      equation: "Phosphonate + RCHO to alkene + phosphate",
-      delta: "Mild",
-      type: "Olefination",
-      context: "Modified Wittig with E-selectivity.",
-      mechanism: "Stabilized carbanion + base."
-    },
-    {
-      name: "Aldol condensation",
-      equation: "2 RCHO + base to RCH(OH)CH2CHO",
-      delta: "Mild",
-      type: "Aldol",
-      context: "Classic carbon-carbon bond formation.",
-      mechanism: "Enolate + aldehyde + dehydration."
-    },
-    {
-      name: "Claisen condensation",
-      equation: "2 RCOOR + NaOR to RCOCH2COOR + ROH",
-      delta: "Mild",
-      type: "Condensation",
-      context: "Forms beta-keto ester from two esters.",
-      mechanism: "Enolate + ester attack."
-    },
-    {
-      name: "Dieckmann cyclization",
-      equation: "Diester + base to cyclic beta-keto ester",
-      delta: "Mild",
-      type: "Intramolecular Claisen",
-      context: "Forms cyclic beta-keto esters.",
-      mechanism: "Intramolecular Claisen condensation."
-    },
-    {
-      name: "Aza-Cope rearrangement",
-      equation: "Iminium-alkene to new iminium-alkene",
-      delta: "Mild",
-      type: "Sigmatropic",
-      context: "3,3-sigmatropic rearrangement of N-containing systems.",
-      mechanism: "Concerted [3,3] shift."
-    },
-    {
-      name: "Cope rearrangement",
-      equation: "1,5-Hexadiene to 1,5-hexadiene (isomer)",
-      delta: "Variable",
-      type: "Sigmatropic",
-      context: "Classic [3,3]-sigmatropic.",
-      mechanism: "Concerted 6-electron pericyclic."
-    },
-    {
-      name: "Claisen rearrangement",
-      equation: "Allyl vinyl ether to gamma-delta unsaturated carbonyl",
-      delta: "Variable",
-      type: "Sigmatropic",
-      context: "Oxa-variant of Cope rearrangement.",
-      mechanism: "Concerted [3,3] shift."
-    },
-    {
-      name: "Pinacol rearrangement",
-      equation: "Pinacol + acid to pinacolone + water",
-      delta: "Variable",
-      type: "Rearrangement",
-      context: "Vicinal diol to ketone.",
-      mechanism: "Acid-catalyzed migration."
-    },
-    {
-      name: "Baeyer-Villiger oxidation",
-      equation: "Ketone + peracid to ester",
-      delta: "Mild",
-      type: "Oxidation",
-      context: "Inserts oxygen between alpha-C and carbonyl.",
-      mechanism: "Migration of alpha-C in tetrahedral intermediate."
-    },
-    {
-      name: "Hofmann rearrangement",
-      equation: "RCONH2 + Br2 + NaOH to RNH2",
-      delta: "Mild",
-      type: "Rearrangement",
-      context: "Converts amide to amine (one less carbon).",
-      mechanism: "N-bromo amide + base + migration."
-    },
-    {
-      name: "Reimer-Tiemann reaction",
-      equation: "Phenol + CHCl3 + KOH to 2-hydroxybenzaldehyde",
-      delta: "Mild",
-      type: "Formylation",
-      context: "Adds formyl to phenol ortho position.",
-      mechanism: "Dichlorocarbene addition."
-    },
-    {
-      name: "Kolbe-Schmitt reaction",
-      equation: "Sodium phenoxide + CO2 + heat to salicylic acid",
-      delta: "Mild",
-      type: "Carboxylation",
-      context: "Industrial synthesis of salicylic acid (aspirin precursor).",
-      mechanism: "Electrophilic carboxylation of activated phenol."
-    },
-    {
-      name: "Williamson ether synthesis",
-      equation: "RO- + R-X to ROR + X-",
-      delta: "Mild",
-      type: "SN2",
-      context: "Classic ether synthesis.",
-      mechanism: "Alkoxide nucleophile + alkyl halide."
-    },
-    {
-      name: "Eschweiler-Clarke methylation",
-      equation: "RNH2 + HCHO + HCOOH to RN(CH3)2",
-      delta: "Mild",
-      type: "Reductive amination",
-      context: "Methylation of primary or secondary amine.",
-      mechanism: "Iminium + formate hydride reduction."
-    },
-    {
-      name: "Mannich-Krohnke alkaloid synthesis",
-      equation: "Beta-ketoester + amine + aldehyde to alkaloid scaffold",
-      delta: "Mild",
-      type: "Multi-step",
-      context: "Total synthesis approach for many alkaloids.",
-      mechanism: "Iminium + enol + cyclization."
-    },
-    {
-      name: "Sharpless dihydroxylation",
-      equation: "Alkene + OsO4 + chiral ligand to diol",
-      delta: "Mild",
-      type: "Asymmetric oxidation",
-      context: "Chiral cis-diol synthesis. Sharpless Nobel 2001.",
-      mechanism: "Os-alkene complex + ligand controls facial selectivity."
-    },
-    {
-      name: "Jones oxidation",
-      equation: "RCH2OH + CrO3/H2SO4 to RCOOH",
-      delta: "Strong",
-      type: "Oxidation",
-      context: "Strong oxidant. Primary alcohol to acid.",
-      mechanism: "Cr(VI) abstracts hydrogen from alcohol."
-    }
-  ];
-
-
-  var EXPERIMENTS = [
-    {
-      id: 1,
-      title: "Experiment 1: Burning Steel Wool",
-      materials: "Steel wool + flame",
-      concept: "Iron rusting/oxidation",
-      observation: "Steel wool burns when ignited because of high surface area + iron oxidation.",
-      safety: "Goggles + ventilation",
-      gradeLevel: "9-12",
-      duration: "15 min"
-    },
-    {
-      id: 2,
-      title: "Experiment 2: Elephant Toothpaste",
-      materials: "H2O2 + KI + soap",
-      concept: "Catalytic decomposition",
-      observation: "Hydrogen peroxide decomposes rapidly with KI catalyst, foaming from soap.",
-      safety: "Concentrated H2O2 dangerous",
-      gradeLevel: "K-2",
-      duration: "45 min"
-    },
-    {
-      id: 3,
-      title: "Experiment 3: Rainbow Density Column",
-      materials: "Honey, soap, water, oil, alcohol",
-      concept: "Density differences",
-      observation: "Layered liquids of different densities form colorful column.",
-      safety: "Generally safe",
-      gradeLevel: "9-12",
-      duration: "30 min"
-    },
-    {
-      id: 4,
-      title: "Experiment 4: Salt Crystal Growing",
-      materials: "Salt + hot water + string",
-      concept: "Crystallization",
-      observation: "Saturated salt solution slowly evaporates leaving large crystals.",
-      safety: "Glass + hot water",
-      gradeLevel: "K-2",
-      duration: "30 min"
-    },
-    {
-      id: 5,
-      title: "Experiment 5: Cabbage Indicator",
-      materials: "Red cabbage boiled in water",
-      concept: "Acid-base via anthocyanin",
-      observation: "Anthocyanins change color with pH from red (acid) to green (base).",
-      safety: "Generally safe",
-      gradeLevel: "3-5",
-      duration: "60 min"
-    },
-    {
-      id: 6,
-      title: "Experiment 6: Penny Cleaning",
-      materials: "Vinegar + salt",
-      concept: "Acid-base + galvanic",
-      observation: "Vinegar + salt makes weak HCl that cleans copper oxide.",
-      safety: "Generally safe",
-      gradeLevel: "3-5",
-      duration: "45 min"
-    },
-    {
-      id: 7,
-      title: "Experiment 7: Magnesium Burn",
-      materials: "Mg ribbon + flame",
-      concept: "Combustion of metal",
-      observation: "Mg burns brilliantly at 3100°C producing MgO.",
-      safety: "Eye protection critical (UV)",
-      gradeLevel: "6-8",
-      duration: "45 min"
-    },
-    {
-      id: 8,
-      title: "Experiment 8: Sodium in Water",
-      materials: "Na metal + water",
-      concept: "Reactive metal + water",
-      observation: "Highly reactive — produces H2 + NaOH + heat.",
-      safety: "Highly dangerous; never large amount",
-      gradeLevel: "9-12",
-      duration: "30 min"
-    },
-    {
-      id: 9,
-      title: "Experiment 9: Litmus Test",
-      materials: "Litmus paper + various",
-      concept: "pH determination",
-      observation: "Red in acid, blue in base. Quick indicator.",
-      safety: "Avoid strong acids/bases",
-      gradeLevel: "6-8",
-      duration: "30 min"
-    },
-    {
-      id: 10,
-      title: "Experiment 10: Egg in Vinegar",
-      materials: "Egg + vinegar",
-      concept: "Acid + carbonate",
-      observation: "Acetic acid dissolves calcium carbonate shell, leaving membrane.",
-      safety: "Generally safe",
-      gradeLevel: "K-2",
-      duration: "45 min"
-    },
-    {
-      id: 11,
-      title: "Experiment 11: Burning Steel Wool",
-      materials: "Steel wool + flame",
-      concept: "Iron rusting/oxidation",
-      observation: "Steel wool burns when ignited because of high surface area + iron oxidation.",
-      safety: "Goggles + ventilation",
-      gradeLevel: "9-12",
-      duration: "45 min"
-    },
-    {
-      id: 12,
-      title: "Experiment 12: Elephant Toothpaste",
-      materials: "H2O2 + KI + soap",
-      concept: "Catalytic decomposition",
-      observation: "Hydrogen peroxide decomposes rapidly with KI catalyst, foaming from soap.",
-      safety: "Concentrated H2O2 dangerous",
-      gradeLevel: "3-5",
-      duration: "60 min"
-    },
-    {
-      id: 13,
-      title: "Experiment 13: Rainbow Density Column",
-      materials: "Honey, soap, water, oil, alcohol",
-      concept: "Density differences",
-      observation: "Layered liquids of different densities form colorful column.",
-      safety: "Generally safe",
-      gradeLevel: "3-5",
-      duration: "60 min"
-    },
-    {
-      id: 14,
-      title: "Experiment 14: Salt Crystal Growing",
-      materials: "Salt + hot water + string",
-      concept: "Crystallization",
-      observation: "Saturated salt solution slowly evaporates leaving large crystals.",
-      safety: "Glass + hot water",
-      gradeLevel: "K-2",
-      duration: "30 min"
-    },
-    {
-      id: 15,
-      title: "Experiment 15: Cabbage Indicator",
-      materials: "Red cabbage boiled in water",
-      concept: "Acid-base via anthocyanin",
-      observation: "Anthocyanins change color with pH from red (acid) to green (base).",
-      safety: "Generally safe",
-      gradeLevel: "K-2",
-      duration: "45 min"
-    },
-    {
-      id: 16,
-      title: "Experiment 16: Penny Cleaning",
-      materials: "Vinegar + salt",
-      concept: "Acid-base + galvanic",
-      observation: "Vinegar + salt makes weak HCl that cleans copper oxide.",
-      safety: "Generally safe",
-      gradeLevel: "K-2",
-      duration: "60 min"
-    },
-    {
-      id: 17,
-      title: "Experiment 17: Magnesium Burn",
-      materials: "Mg ribbon + flame",
-      concept: "Combustion of metal",
-      observation: "Mg burns brilliantly at 3100°C producing MgO.",
-      safety: "Eye protection critical (UV)",
-      gradeLevel: "K-2",
-      duration: "45 min"
-    },
-    {
-      id: 18,
-      title: "Experiment 18: Sodium in Water",
-      materials: "Na metal + water",
-      concept: "Reactive metal + water",
-      observation: "Highly reactive — produces H2 + NaOH + heat.",
-      safety: "Highly dangerous; never large amount",
-      gradeLevel: "9-12",
-      duration: "60 min"
-    },
-    {
-      id: 19,
-      title: "Experiment 19: Litmus Test",
-      materials: "Litmus paper + various",
-      concept: "pH determination",
-      observation: "Red in acid, blue in base. Quick indicator.",
-      safety: "Avoid strong acids/bases",
-      gradeLevel: "3-5",
-      duration: "30 min"
-    },
-    {
-      id: 20,
-      title: "Experiment 20: Egg in Vinegar",
-      materials: "Egg + vinegar",
-      concept: "Acid + carbonate",
-      observation: "Acetic acid dissolves calcium carbonate shell, leaving membrane.",
-      safety: "Generally safe",
-      gradeLevel: "K-2",
-      duration: "15 min"
-    },
-    {
-      id: 21,
-      title: "Experiment 21: Burning Steel Wool",
-      materials: "Steel wool + flame",
-      concept: "Iron rusting/oxidation",
-      observation: "Steel wool burns when ignited because of high surface area + iron oxidation.",
-      safety: "Goggles + ventilation",
-      gradeLevel: "3-5",
-      duration: "30 min"
-    },
-    {
-      id: 22,
-      title: "Experiment 22: Elephant Toothpaste",
-      materials: "H2O2 + KI + soap",
-      concept: "Catalytic decomposition",
-      observation: "Hydrogen peroxide decomposes rapidly with KI catalyst, foaming from soap.",
-      safety: "Concentrated H2O2 dangerous",
-      gradeLevel: "9-12",
-      duration: "45 min"
-    },
-    {
-      id: 23,
-      title: "Experiment 23: Rainbow Density Column",
-      materials: "Honey, soap, water, oil, alcohol",
-      concept: "Density differences",
-      observation: "Layered liquids of different densities form colorful column.",
-      safety: "Generally safe",
-      gradeLevel: "K-2",
-      duration: "15 min"
-    },
-    {
-      id: 24,
-      title: "Experiment 24: Salt Crystal Growing",
-      materials: "Salt + hot water + string",
-      concept: "Crystallization",
-      observation: "Saturated salt solution slowly evaporates leaving large crystals.",
-      safety: "Glass + hot water",
-      gradeLevel: "K-2",
-      duration: "15 min"
-    },
-    {
-      id: 25,
-      title: "Experiment 25: Cabbage Indicator",
-      materials: "Red cabbage boiled in water",
-      concept: "Acid-base via anthocyanin",
-      observation: "Anthocyanins change color with pH from red (acid) to green (base).",
-      safety: "Generally safe",
-      gradeLevel: "K-2",
-      duration: "60 min"
-    },
-    {
-      id: 26,
-      title: "Experiment 26: Penny Cleaning",
-      materials: "Vinegar + salt",
-      concept: "Acid-base + galvanic",
-      observation: "Vinegar + salt makes weak HCl that cleans copper oxide.",
-      safety: "Generally safe",
-      gradeLevel: "K-2",
-      duration: "15 min"
-    },
-    {
-      id: 27,
-      title: "Experiment 27: Magnesium Burn",
-      materials: "Mg ribbon + flame",
-      concept: "Combustion of metal",
-      observation: "Mg burns brilliantly at 3100°C producing MgO.",
-      safety: "Eye protection critical (UV)",
-      gradeLevel: "3-5",
-      duration: "30 min"
-    },
-    {
-      id: 28,
-      title: "Experiment 28: Sodium in Water",
-      materials: "Na metal + water",
-      concept: "Reactive metal + water",
-      observation: "Highly reactive — produces H2 + NaOH + heat.",
-      safety: "Highly dangerous; never large amount",
-      gradeLevel: "K-2",
-      duration: "15 min"
-    },
-    {
-      id: 29,
-      title: "Experiment 29: Litmus Test",
-      materials: "Litmus paper + various",
-      concept: "pH determination",
-      observation: "Red in acid, blue in base. Quick indicator.",
-      safety: "Avoid strong acids/bases",
-      gradeLevel: "3-5",
-      duration: "15 min"
-    },
-    {
-      id: 30,
-      title: "Experiment 30: Egg in Vinegar",
-      materials: "Egg + vinegar",
-      concept: "Acid + carbonate",
-      observation: "Acetic acid dissolves calcium carbonate shell, leaving membrane.",
-      safety: "Generally safe",
-      gradeLevel: "K-2",
-      duration: "45 min"
-    },
-    {
-      id: 31,
-      title: "Experiment 31: Burning Steel Wool",
-      materials: "Steel wool + flame",
-      concept: "Iron rusting/oxidation",
-      observation: "Steel wool burns when ignited because of high surface area + iron oxidation.",
-      safety: "Goggles + ventilation",
-      gradeLevel: "3-5",
-      duration: "60 min"
-    },
-    {
-      id: 32,
-      title: "Experiment 32: Elephant Toothpaste",
-      materials: "H2O2 + KI + soap",
-      concept: "Catalytic decomposition",
-      observation: "Hydrogen peroxide decomposes rapidly with KI catalyst, foaming from soap.",
-      safety: "Concentrated H2O2 dangerous",
-      gradeLevel: "K-2",
-      duration: "30 min"
-    },
-    {
-      id: 33,
-      title: "Experiment 33: Rainbow Density Column",
-      materials: "Honey, soap, water, oil, alcohol",
-      concept: "Density differences",
-      observation: "Layered liquids of different densities form colorful column.",
-      safety: "Generally safe",
-      gradeLevel: "K-2",
-      duration: "60 min"
-    },
-    {
-      id: 34,
-      title: "Experiment 34: Salt Crystal Growing",
-      materials: "Salt + hot water + string",
-      concept: "Crystallization",
-      observation: "Saturated salt solution slowly evaporates leaving large crystals.",
-      safety: "Glass + hot water",
-      gradeLevel: "3-5",
-      duration: "15 min"
-    },
-    {
-      id: 35,
-      title: "Experiment 35: Cabbage Indicator",
-      materials: "Red cabbage boiled in water",
-      concept: "Acid-base via anthocyanin",
-      observation: "Anthocyanins change color with pH from red (acid) to green (base).",
-      safety: "Generally safe",
-      gradeLevel: "K-2",
-      duration: "30 min"
-    },
-    {
-      id: 36,
-      title: "Experiment 36: Penny Cleaning",
-      materials: "Vinegar + salt",
-      concept: "Acid-base + galvanic",
-      observation: "Vinegar + salt makes weak HCl that cleans copper oxide.",
-      safety: "Generally safe",
-      gradeLevel: "9-12",
-      duration: "45 min"
-    },
-    {
-      id: 37,
-      title: "Experiment 37: Magnesium Burn",
-      materials: "Mg ribbon + flame",
-      concept: "Combustion of metal",
-      observation: "Mg burns brilliantly at 3100°C producing MgO.",
-      safety: "Eye protection critical (UV)",
-      gradeLevel: "6-8",
-      duration: "30 min"
-    },
-    {
-      id: 38,
-      title: "Experiment 38: Sodium in Water",
-      materials: "Na metal + water",
-      concept: "Reactive metal + water",
-      observation: "Highly reactive — produces H2 + NaOH + heat.",
-      safety: "Highly dangerous; never large amount",
-      gradeLevel: "9-12",
-      duration: "30 min"
-    },
-    {
-      id: 39,
-      title: "Experiment 39: Litmus Test",
-      materials: "Litmus paper + various",
-      concept: "pH determination",
-      observation: "Red in acid, blue in base. Quick indicator.",
-      safety: "Avoid strong acids/bases",
-      gradeLevel: "K-2",
-      duration: "15 min"
-    },
-    {
-      id: 40,
-      title: "Experiment 40: Egg in Vinegar",
-      materials: "Egg + vinegar",
-      concept: "Acid + carbonate",
-      observation: "Acetic acid dissolves calcium carbonate shell, leaving membrane.",
-      safety: "Generally safe",
-      gradeLevel: "9-12",
-      duration: "60 min"
-    },
-    {
-      id: 41,
-      title: "Experiment 41: Burning Steel Wool",
-      materials: "Steel wool + flame",
-      concept: "Iron rusting/oxidation",
-      observation: "Steel wool burns when ignited because of high surface area + iron oxidation.",
-      safety: "Goggles + ventilation",
-      gradeLevel: "6-8",
-      duration: "45 min"
-    },
-    {
-      id: 42,
-      title: "Experiment 42: Elephant Toothpaste",
-      materials: "H2O2 + KI + soap",
-      concept: "Catalytic decomposition",
-      observation: "Hydrogen peroxide decomposes rapidly with KI catalyst, foaming from soap.",
-      safety: "Concentrated H2O2 dangerous",
-      gradeLevel: "9-12",
-      duration: "60 min"
-    },
-    {
-      id: 43,
-      title: "Experiment 43: Rainbow Density Column",
-      materials: "Honey, soap, water, oil, alcohol",
-      concept: "Density differences",
-      observation: "Layered liquids of different densities form colorful column.",
-      safety: "Generally safe",
-      gradeLevel: "6-8",
-      duration: "30 min"
-    },
-    {
-      id: 44,
-      title: "Experiment 44: Salt Crystal Growing",
-      materials: "Salt + hot water + string",
-      concept: "Crystallization",
-      observation: "Saturated salt solution slowly evaporates leaving large crystals.",
-      safety: "Glass + hot water",
-      gradeLevel: "3-5",
-      duration: "60 min"
-    },
-    {
-      id: 45,
-      title: "Experiment 45: Cabbage Indicator",
-      materials: "Red cabbage boiled in water",
-      concept: "Acid-base via anthocyanin",
-      observation: "Anthocyanins change color with pH from red (acid) to green (base).",
-      safety: "Generally safe",
-      gradeLevel: "3-5",
-      duration: "60 min"
-    },
-    {
-      id: 46,
-      title: "Experiment 46: Penny Cleaning",
-      materials: "Vinegar + salt",
-      concept: "Acid-base + galvanic",
-      observation: "Vinegar + salt makes weak HCl that cleans copper oxide.",
-      safety: "Generally safe",
-      gradeLevel: "K-2",
-      duration: "60 min"
-    },
-    {
-      id: 47,
-      title: "Experiment 47: Magnesium Burn",
-      materials: "Mg ribbon + flame",
-      concept: "Combustion of metal",
-      observation: "Mg burns brilliantly at 3100°C producing MgO.",
-      safety: "Eye protection critical (UV)",
-      gradeLevel: "6-8",
-      duration: "60 min"
-    },
-    {
-      id: 48,
-      title: "Experiment 48: Sodium in Water",
-      materials: "Na metal + water",
-      concept: "Reactive metal + water",
-      observation: "Highly reactive — produces H2 + NaOH + heat.",
-      safety: "Highly dangerous; never large amount",
-      gradeLevel: "3-5",
-      duration: "30 min"
-    },
-    {
-      id: 49,
-      title: "Experiment 49: Litmus Test",
-      materials: "Litmus paper + various",
-      concept: "pH determination",
-      observation: "Red in acid, blue in base. Quick indicator.",
-      safety: "Avoid strong acids/bases",
-      gradeLevel: "K-2",
-      duration: "15 min"
-    },
-    {
-      id: 50,
-      title: "Experiment 50: Egg in Vinegar",
-      materials: "Egg + vinegar",
-      concept: "Acid + carbonate",
-      observation: "Acetic acid dissolves calcium carbonate shell, leaving membrane.",
-      safety: "Generally safe",
-      gradeLevel: "6-8",
-      duration: "15 min"
-    },
-    {
-      id: 51,
-      title: "Experiment 51: Burning Steel Wool",
-      materials: "Steel wool + flame",
-      concept: "Iron rusting/oxidation",
-      observation: "Steel wool burns when ignited because of high surface area + iron oxidation.",
-      safety: "Goggles + ventilation",
-      gradeLevel: "3-5",
-      duration: "30 min"
-    },
-    {
-      id: 52,
-      title: "Experiment 52: Elephant Toothpaste",
-      materials: "H2O2 + KI + soap",
-      concept: "Catalytic decomposition",
-      observation: "Hydrogen peroxide decomposes rapidly with KI catalyst, foaming from soap.",
-      safety: "Concentrated H2O2 dangerous",
-      gradeLevel: "9-12",
-      duration: "60 min"
-    },
-    {
-      id: 53,
-      title: "Experiment 53: Rainbow Density Column",
-      materials: "Honey, soap, water, oil, alcohol",
-      concept: "Density differences",
-      observation: "Layered liquids of different densities form colorful column.",
-      safety: "Generally safe",
-      gradeLevel: "9-12",
-      duration: "15 min"
-    },
-    {
-      id: 54,
-      title: "Experiment 54: Salt Crystal Growing",
-      materials: "Salt + hot water + string",
-      concept: "Crystallization",
-      observation: "Saturated salt solution slowly evaporates leaving large crystals.",
-      safety: "Glass + hot water",
-      gradeLevel: "6-8",
-      duration: "60 min"
-    },
-    {
-      id: 55,
-      title: "Experiment 55: Cabbage Indicator",
-      materials: "Red cabbage boiled in water",
-      concept: "Acid-base via anthocyanin",
-      observation: "Anthocyanins change color with pH from red (acid) to green (base).",
-      safety: "Generally safe",
-      gradeLevel: "9-12",
-      duration: "15 min"
-    },
-    {
-      id: 56,
-      title: "Experiment 56: Penny Cleaning",
-      materials: "Vinegar + salt",
-      concept: "Acid-base + galvanic",
-      observation: "Vinegar + salt makes weak HCl that cleans copper oxide.",
-      safety: "Generally safe",
-      gradeLevel: "9-12",
-      duration: "45 min"
-    },
-    {
-      id: 57,
-      title: "Experiment 57: Magnesium Burn",
-      materials: "Mg ribbon + flame",
-      concept: "Combustion of metal",
-      observation: "Mg burns brilliantly at 3100°C producing MgO.",
-      safety: "Eye protection critical (UV)",
-      gradeLevel: "6-8",
-      duration: "60 min"
-    },
-    {
-      id: 58,
-      title: "Experiment 58: Sodium in Water",
-      materials: "Na metal + water",
-      concept: "Reactive metal + water",
-      observation: "Highly reactive — produces H2 + NaOH + heat.",
-      safety: "Highly dangerous; never large amount",
-      gradeLevel: "3-5",
-      duration: "60 min"
-    },
-    {
-      id: 59,
-      title: "Experiment 59: Litmus Test",
-      materials: "Litmus paper + various",
-      concept: "pH determination",
-      observation: "Red in acid, blue in base. Quick indicator.",
-      safety: "Avoid strong acids/bases",
-      gradeLevel: "K-2",
-      duration: "45 min"
-    },
-    {
-      id: 60,
-      title: "Experiment 60: Egg in Vinegar",
-      materials: "Egg + vinegar",
-      concept: "Acid + carbonate",
-      observation: "Acetic acid dissolves calcium carbonate shell, leaving membrane.",
-      safety: "Generally safe",
-      gradeLevel: "3-5",
-      duration: "15 min"
-    },
-    {
-      id: 61,
-      title: "Experiment 61: Burning Steel Wool",
-      materials: "Steel wool + flame",
-      concept: "Iron rusting/oxidation",
-      observation: "Steel wool burns when ignited because of high surface area + iron oxidation.",
-      safety: "Goggles + ventilation",
-      gradeLevel: "6-8",
-      duration: "30 min"
-    },
-    {
-      id: 62,
-      title: "Experiment 62: Elephant Toothpaste",
-      materials: "H2O2 + KI + soap",
-      concept: "Catalytic decomposition",
-      observation: "Hydrogen peroxide decomposes rapidly with KI catalyst, foaming from soap.",
-      safety: "Concentrated H2O2 dangerous",
-      gradeLevel: "K-2",
-      duration: "30 min"
-    },
-    {
-      id: 63,
-      title: "Experiment 63: Rainbow Density Column",
-      materials: "Honey, soap, water, oil, alcohol",
-      concept: "Density differences",
-      observation: "Layered liquids of different densities form colorful column.",
-      safety: "Generally safe",
-      gradeLevel: "6-8",
-      duration: "15 min"
-    },
-    {
-      id: 64,
-      title: "Experiment 64: Salt Crystal Growing",
-      materials: "Salt + hot water + string",
-      concept: "Crystallization",
-      observation: "Saturated salt solution slowly evaporates leaving large crystals.",
-      safety: "Glass + hot water",
-      gradeLevel: "9-12",
-      duration: "30 min"
-    },
-    {
-      id: 65,
-      title: "Experiment 65: Cabbage Indicator",
-      materials: "Red cabbage boiled in water",
-      concept: "Acid-base via anthocyanin",
-      observation: "Anthocyanins change color with pH from red (acid) to green (base).",
-      safety: "Generally safe",
-      gradeLevel: "3-5",
-      duration: "30 min"
-    },
-    {
-      id: 66,
-      title: "Experiment 66: Penny Cleaning",
-      materials: "Vinegar + salt",
-      concept: "Acid-base + galvanic",
-      observation: "Vinegar + salt makes weak HCl that cleans copper oxide.",
-      safety: "Generally safe",
-      gradeLevel: "6-8",
-      duration: "30 min"
-    },
-    {
-      id: 67,
-      title: "Experiment 67: Magnesium Burn",
-      materials: "Mg ribbon + flame",
-      concept: "Combustion of metal",
-      observation: "Mg burns brilliantly at 3100°C producing MgO.",
-      safety: "Eye protection critical (UV)",
-      gradeLevel: "9-12",
-      duration: "45 min"
-    },
-    {
-      id: 68,
-      title: "Experiment 68: Sodium in Water",
-      materials: "Na metal + water",
-      concept: "Reactive metal + water",
-      observation: "Highly reactive — produces H2 + NaOH + heat.",
-      safety: "Highly dangerous; never large amount",
-      gradeLevel: "K-2",
-      duration: "45 min"
-    },
-    {
-      id: 69,
-      title: "Experiment 69: Litmus Test",
-      materials: "Litmus paper + various",
-      concept: "pH determination",
-      observation: "Red in acid, blue in base. Quick indicator.",
-      safety: "Avoid strong acids/bases",
-      gradeLevel: "K-2",
-      duration: "15 min"
-    },
-    {
-      id: 70,
-      title: "Experiment 70: Egg in Vinegar",
-      materials: "Egg + vinegar",
-      concept: "Acid + carbonate",
-      observation: "Acetic acid dissolves calcium carbonate shell, leaving membrane.",
-      safety: "Generally safe",
-      gradeLevel: "6-8",
-      duration: "15 min"
-    },
-    {
-      id: 71,
-      title: "Experiment 71: Burning Steel Wool",
-      materials: "Steel wool + flame",
-      concept: "Iron rusting/oxidation",
-      observation: "Steel wool burns when ignited because of high surface area + iron oxidation.",
-      safety: "Goggles + ventilation",
-      gradeLevel: "K-2",
-      duration: "60 min"
-    },
-    {
-      id: 72,
-      title: "Experiment 72: Elephant Toothpaste",
-      materials: "H2O2 + KI + soap",
-      concept: "Catalytic decomposition",
-      observation: "Hydrogen peroxide decomposes rapidly with KI catalyst, foaming from soap.",
-      safety: "Concentrated H2O2 dangerous",
-      gradeLevel: "9-12",
-      duration: "30 min"
-    },
-    {
-      id: 73,
-      title: "Experiment 73: Rainbow Density Column",
-      materials: "Honey, soap, water, oil, alcohol",
-      concept: "Density differences",
-      observation: "Layered liquids of different densities form colorful column.",
-      safety: "Generally safe",
-      gradeLevel: "6-8",
-      duration: "30 min"
-    },
-    {
-      id: 74,
-      title: "Experiment 74: Salt Crystal Growing",
-      materials: "Salt + hot water + string",
-      concept: "Crystallization",
-      observation: "Saturated salt solution slowly evaporates leaving large crystals.",
-      safety: "Glass + hot water",
-      gradeLevel: "6-8",
-      duration: "60 min"
-    },
-    {
-      id: 75,
-      title: "Experiment 75: Cabbage Indicator",
-      materials: "Red cabbage boiled in water",
-      concept: "Acid-base via anthocyanin",
-      observation: "Anthocyanins change color with pH from red (acid) to green (base).",
-      safety: "Generally safe",
-      gradeLevel: "K-2",
-      duration: "15 min"
-    },
-    {
-      id: 76,
-      title: "Experiment 76: Penny Cleaning",
-      materials: "Vinegar + salt",
-      concept: "Acid-base + galvanic",
-      observation: "Vinegar + salt makes weak HCl that cleans copper oxide.",
-      safety: "Generally safe",
-      gradeLevel: "9-12",
-      duration: "15 min"
-    },
-    {
-      id: 77,
-      title: "Experiment 77: Magnesium Burn",
-      materials: "Mg ribbon + flame",
-      concept: "Combustion of metal",
-      observation: "Mg burns brilliantly at 3100°C producing MgO.",
-      safety: "Eye protection critical (UV)",
-      gradeLevel: "9-12",
-      duration: "45 min"
-    },
-    {
-      id: 78,
-      title: "Experiment 78: Sodium in Water",
-      materials: "Na metal + water",
-      concept: "Reactive metal + water",
-      observation: "Highly reactive — produces H2 + NaOH + heat.",
-      safety: "Highly dangerous; never large amount",
-      gradeLevel: "6-8",
-      duration: "15 min"
-    },
-    {
-      id: 79,
-      title: "Experiment 79: Litmus Test",
-      materials: "Litmus paper + various",
-      concept: "pH determination",
-      observation: "Red in acid, blue in base. Quick indicator.",
-      safety: "Avoid strong acids/bases",
-      gradeLevel: "3-5",
-      duration: "45 min"
-    },
-    {
-      id: 80,
-      title: "Experiment 80: Egg in Vinegar",
-      materials: "Egg + vinegar",
-      concept: "Acid + carbonate",
-      observation: "Acetic acid dissolves calcium carbonate shell, leaving membrane.",
-      safety: "Generally safe",
-      gradeLevel: "K-2",
-      duration: "15 min"
-    },
-    {
-      id: 81,
-      title: "Experiment 81: Burning Steel Wool",
-      materials: "Steel wool + flame",
-      concept: "Iron rusting/oxidation",
-      observation: "Steel wool burns when ignited because of high surface area + iron oxidation.",
-      safety: "Goggles + ventilation",
-      gradeLevel: "6-8",
-      duration: "30 min"
-    },
-    {
-      id: 82,
-      title: "Experiment 82: Elephant Toothpaste",
-      materials: "H2O2 + KI + soap",
-      concept: "Catalytic decomposition",
-      observation: "Hydrogen peroxide decomposes rapidly with KI catalyst, foaming from soap.",
-      safety: "Concentrated H2O2 dangerous",
-      gradeLevel: "9-12",
-      duration: "45 min"
-    },
-    {
-      id: 83,
-      title: "Experiment 83: Rainbow Density Column",
-      materials: "Honey, soap, water, oil, alcohol",
-      concept: "Density differences",
-      observation: "Layered liquids of different densities form colorful column.",
-      safety: "Generally safe",
-      gradeLevel: "9-12",
-      duration: "45 min"
-    },
-    {
-      id: 84,
-      title: "Experiment 84: Salt Crystal Growing",
-      materials: "Salt + hot water + string",
-      concept: "Crystallization",
-      observation: "Saturated salt solution slowly evaporates leaving large crystals.",
-      safety: "Glass + hot water",
-      gradeLevel: "3-5",
-      duration: "60 min"
-    },
-    {
-      id: 85,
-      title: "Experiment 85: Cabbage Indicator",
-      materials: "Red cabbage boiled in water",
-      concept: "Acid-base via anthocyanin",
-      observation: "Anthocyanins change color with pH from red (acid) to green (base).",
-      safety: "Generally safe",
-      gradeLevel: "6-8",
-      duration: "60 min"
-    },
-    {
-      id: 86,
-      title: "Experiment 86: Penny Cleaning",
-      materials: "Vinegar + salt",
-      concept: "Acid-base + galvanic",
-      observation: "Vinegar + salt makes weak HCl that cleans copper oxide.",
-      safety: "Generally safe",
-      gradeLevel: "3-5",
-      duration: "15 min"
-    },
-    {
-      id: 87,
-      title: "Experiment 87: Magnesium Burn",
-      materials: "Mg ribbon + flame",
-      concept: "Combustion of metal",
-      observation: "Mg burns brilliantly at 3100°C producing MgO.",
-      safety: "Eye protection critical (UV)",
-      gradeLevel: "K-2",
-      duration: "15 min"
-    },
-    {
-      id: 88,
-      title: "Experiment 88: Sodium in Water",
-      materials: "Na metal + water",
-      concept: "Reactive metal + water",
-      observation: "Highly reactive — produces H2 + NaOH + heat.",
-      safety: "Highly dangerous; never large amount",
-      gradeLevel: "3-5",
-      duration: "15 min"
-    },
-    {
-      id: 89,
-      title: "Experiment 89: Litmus Test",
-      materials: "Litmus paper + various",
-      concept: "pH determination",
-      observation: "Red in acid, blue in base. Quick indicator.",
-      safety: "Avoid strong acids/bases",
-      gradeLevel: "3-5",
-      duration: "15 min"
-    },
-    {
-      id: 90,
-      title: "Experiment 90: Egg in Vinegar",
-      materials: "Egg + vinegar",
-      concept: "Acid + carbonate",
-      observation: "Acetic acid dissolves calcium carbonate shell, leaving membrane.",
-      safety: "Generally safe",
-      gradeLevel: "K-2",
-      duration: "30 min"
-    },
-    {
-      id: 91,
-      title: "Experiment 91: Burning Steel Wool",
-      materials: "Steel wool + flame",
-      concept: "Iron rusting/oxidation",
-      observation: "Steel wool burns when ignited because of high surface area + iron oxidation.",
-      safety: "Goggles + ventilation",
-      gradeLevel: "6-8",
-      duration: "15 min"
-    },
-    {
-      id: 92,
-      title: "Experiment 92: Elephant Toothpaste",
-      materials: "H2O2 + KI + soap",
-      concept: "Catalytic decomposition",
-      observation: "Hydrogen peroxide decomposes rapidly with KI catalyst, foaming from soap.",
-      safety: "Concentrated H2O2 dangerous",
-      gradeLevel: "6-8",
-      duration: "30 min"
-    },
-    {
-      id: 93,
-      title: "Experiment 93: Rainbow Density Column",
-      materials: "Honey, soap, water, oil, alcohol",
-      concept: "Density differences",
-      observation: "Layered liquids of different densities form colorful column.",
-      safety: "Generally safe",
-      gradeLevel: "6-8",
-      duration: "60 min"
-    },
-    {
-      id: 94,
-      title: "Experiment 94: Salt Crystal Growing",
-      materials: "Salt + hot water + string",
-      concept: "Crystallization",
-      observation: "Saturated salt solution slowly evaporates leaving large crystals.",
-      safety: "Glass + hot water",
-      gradeLevel: "9-12",
-      duration: "15 min"
-    },
-    {
-      id: 95,
-      title: "Experiment 95: Cabbage Indicator",
-      materials: "Red cabbage boiled in water",
-      concept: "Acid-base via anthocyanin",
-      observation: "Anthocyanins change color with pH from red (acid) to green (base).",
-      safety: "Generally safe",
-      gradeLevel: "3-5",
-      duration: "30 min"
-    },
-    {
-      id: 96,
-      title: "Experiment 96: Penny Cleaning",
-      materials: "Vinegar + salt",
-      concept: "Acid-base + galvanic",
-      observation: "Vinegar + salt makes weak HCl that cleans copper oxide.",
-      safety: "Generally safe",
-      gradeLevel: "K-2",
-      duration: "30 min"
-    },
-    {
-      id: 97,
-      title: "Experiment 97: Magnesium Burn",
-      materials: "Mg ribbon + flame",
-      concept: "Combustion of metal",
-      observation: "Mg burns brilliantly at 3100°C producing MgO.",
-      safety: "Eye protection critical (UV)",
-      gradeLevel: "K-2",
-      duration: "30 min"
-    },
-    {
-      id: 98,
-      title: "Experiment 98: Sodium in Water",
-      materials: "Na metal + water",
-      concept: "Reactive metal + water",
-      observation: "Highly reactive — produces H2 + NaOH + heat.",
-      safety: "Highly dangerous; never large amount",
-      gradeLevel: "3-5",
-      duration: "15 min"
-    },
-    {
-      id: 99,
-      title: "Experiment 99: Litmus Test",
-      materials: "Litmus paper + various",
-      concept: "pH determination",
-      observation: "Red in acid, blue in base. Quick indicator.",
-      safety: "Avoid strong acids/bases",
-      gradeLevel: "6-8",
-      duration: "45 min"
-    },
-    {
-      id: 100,
-      title: "Experiment 100: Egg in Vinegar",
-      materials: "Egg + vinegar",
-      concept: "Acid + carbonate",
-      observation: "Acetic acid dissolves calcium carbonate shell, leaving membrane.",
-      safety: "Generally safe",
-      gradeLevel: "3-5",
-      duration: "15 min"
-    }
-  ];
-
-  var EXTRA_QUIZ = [
-    {
-      id: 1,
-      question: "What is the chemical symbol for water?",
-      options: ["H2O","CO2","NaCl","O2"],
-      correct: 0,
-      explanation: "Water = 2 H + 1 O",
-      difficulty: "easy",
-      category: "Acids/Bases"
-    },
-    {
-      id: 2,
-      question: "What gives carbon its name?",
-      options: ["Latin carbo (coal)","Greek karbon","Sanskrit carb","Arabic kar"],
-      correct: 0,
-      explanation: "Comes from Latin word for coal.",
-      difficulty: "medium",
-      category: "Atoms"
-    },
-    {
-      id: 3,
-      question: "What is the most abundant gas in Earth's atmosphere?",
-      options: ["Nitrogen","Oxygen","CO2","Argon"],
-      correct: 0,
-      explanation: "78% of atmosphere.",
-      difficulty: "hard",
-      category: "Reactions"
-    },
-    {
-      id: 4,
-      question: "Which element has atomic number 6?",
-      options: ["Carbon","Oxygen","Hydrogen","Nitrogen"],
-      correct: 0,
-      explanation: "Z = 6 means 6 protons.",
-      difficulty: "easy",
-      category: "Stoichiometry"
-    },
-    {
-      id: 5,
-      question: "What is the chemical symbol for gold?",
-      options: ["Au","Ag","Fe","Hg"],
-      correct: 0,
-      explanation: "From Latin aurum.",
-      difficulty: "medium",
-      category: "Periodic Table"
-    },
-    {
-      id: 6,
-      question: "What is sulfuric acid's formula?",
-      options: ["H2SO4","HCl","HNO3","H3PO4"],
-      correct: 0,
-      explanation: "Most-produced industrial chemical.",
-      difficulty: "hard",
-      category: "Acids/Bases"
-    },
-    {
-      id: 7,
-      question: "What number of electrons in a neutral oxygen atom?",
-      options: ["8","6","4","10"],
-      correct: 0,
-      explanation: "Z = 8 means 8 electrons.",
-      difficulty: "easy",
-      category: "Atoms"
-    },
-    {
-      id: 8,
-      question: "What does pH measure?",
-      options: ["H+ concentration","Salt content","Color","Density"],
-      correct: 0,
-      explanation: "pH = -log[H+]",
-      difficulty: "medium",
-      category: "Reactions"
-    },
-    {
-      id: 9,
-      question: "Strong acids are characterized by:",
-      options: ["Complete dissociation","Color","Smell","Temperature"],
-      correct: 0,
-      explanation: "They ionize fully.",
-      difficulty: "hard",
-      category: "Stoichiometry"
-    },
-    {
-      id: 10,
-      question: "Which is NOT a strong acid?",
-      options: ["HF","HCl","HBr","HI"],
-      correct: 0,
-      explanation: "HF is weak; others are strong.",
-      difficulty: "easy",
-      category: "Periodic Table"
-    },
-    {
-      id: 11,
-      question: "What is the chemical symbol for water?",
-      options: ["H2O","CO2","NaCl","O2"],
-      correct: 0,
-      explanation: "Water = 2 H + 1 O",
-      difficulty: "medium",
-      category: "Acids/Bases"
-    },
-    {
-      id: 12,
-      question: "What gives carbon its name?",
-      options: ["Latin carbo (coal)","Greek karbon","Sanskrit carb","Arabic kar"],
-      correct: 0,
-      explanation: "Comes from Latin word for coal.",
-      difficulty: "hard",
-      category: "Atoms"
-    },
-    {
-      id: 13,
-      question: "What is the most abundant gas in Earth's atmosphere?",
-      options: ["Nitrogen","Oxygen","CO2","Argon"],
-      correct: 0,
-      explanation: "78% of atmosphere.",
-      difficulty: "easy",
-      category: "Reactions"
-    },
-    {
-      id: 14,
-      question: "Which element has atomic number 6?",
-      options: ["Carbon","Oxygen","Hydrogen","Nitrogen"],
-      correct: 0,
-      explanation: "Z = 6 means 6 protons.",
-      difficulty: "medium",
-      category: "Stoichiometry"
-    },
-    {
-      id: 15,
-      question: "What is the chemical symbol for gold?",
-      options: ["Au","Ag","Fe","Hg"],
-      correct: 0,
-      explanation: "From Latin aurum.",
-      difficulty: "hard",
-      category: "Periodic Table"
-    },
-    {
-      id: 16,
-      question: "What is sulfuric acid's formula?",
-      options: ["H2SO4","HCl","HNO3","H3PO4"],
-      correct: 0,
-      explanation: "Most-produced industrial chemical.",
-      difficulty: "easy",
-      category: "Acids/Bases"
-    },
-    {
-      id: 17,
-      question: "What number of electrons in a neutral oxygen atom?",
-      options: ["8","6","4","10"],
-      correct: 0,
-      explanation: "Z = 8 means 8 electrons.",
-      difficulty: "medium",
-      category: "Atoms"
-    },
-    {
-      id: 18,
-      question: "What does pH measure?",
-      options: ["H+ concentration","Salt content","Color","Density"],
-      correct: 0,
-      explanation: "pH = -log[H+]",
-      difficulty: "hard",
-      category: "Reactions"
-    },
-    {
-      id: 19,
-      question: "Strong acids are characterized by:",
-      options: ["Complete dissociation","Color","Smell","Temperature"],
-      correct: 0,
-      explanation: "They ionize fully.",
-      difficulty: "easy",
-      category: "Stoichiometry"
-    },
-    {
-      id: 20,
-      question: "Which is NOT a strong acid?",
-      options: ["HF","HCl","HBr","HI"],
-      correct: 0,
-      explanation: "HF is weak; others are strong.",
-      difficulty: "medium",
-      category: "Periodic Table"
-    },
-    {
-      id: 21,
-      question: "What is the chemical symbol for water?",
-      options: ["H2O","CO2","NaCl","O2"],
-      correct: 0,
-      explanation: "Water = 2 H + 1 O",
-      difficulty: "hard",
-      category: "Acids/Bases"
-    },
-    {
-      id: 22,
-      question: "What gives carbon its name?",
-      options: ["Latin carbo (coal)","Greek karbon","Sanskrit carb","Arabic kar"],
-      correct: 0,
-      explanation: "Comes from Latin word for coal.",
-      difficulty: "easy",
-      category: "Atoms"
-    },
-    {
-      id: 23,
-      question: "What is the most abundant gas in Earth's atmosphere?",
-      options: ["Nitrogen","Oxygen","CO2","Argon"],
-      correct: 0,
-      explanation: "78% of atmosphere.",
-      difficulty: "medium",
-      category: "Reactions"
-    },
-    {
-      id: 24,
-      question: "Which element has atomic number 6?",
-      options: ["Carbon","Oxygen","Hydrogen","Nitrogen"],
-      correct: 0,
-      explanation: "Z = 6 means 6 protons.",
-      difficulty: "hard",
-      category: "Stoichiometry"
-    },
-    {
-      id: 25,
-      question: "What is the chemical symbol for gold?",
-      options: ["Au","Ag","Fe","Hg"],
-      correct: 0,
-      explanation: "From Latin aurum.",
-      difficulty: "easy",
-      category: "Periodic Table"
-    },
-    {
-      id: 26,
-      question: "What is sulfuric acid's formula?",
-      options: ["H2SO4","HCl","HNO3","H3PO4"],
-      correct: 0,
-      explanation: "Most-produced industrial chemical.",
-      difficulty: "medium",
-      category: "Acids/Bases"
-    },
-    {
-      id: 27,
-      question: "What number of electrons in a neutral oxygen atom?",
-      options: ["8","6","4","10"],
-      correct: 0,
-      explanation: "Z = 8 means 8 electrons.",
-      difficulty: "hard",
-      category: "Atoms"
-    },
-    {
-      id: 28,
-      question: "What does pH measure?",
-      options: ["H+ concentration","Salt content","Color","Density"],
-      correct: 0,
-      explanation: "pH = -log[H+]",
-      difficulty: "easy",
-      category: "Reactions"
-    },
-    {
-      id: 29,
-      question: "Strong acids are characterized by:",
-      options: ["Complete dissociation","Color","Smell","Temperature"],
-      correct: 0,
-      explanation: "They ionize fully.",
-      difficulty: "medium",
-      category: "Stoichiometry"
-    },
-    {
-      id: 30,
-      question: "Which is NOT a strong acid?",
-      options: ["HF","HCl","HBr","HI"],
-      correct: 0,
-      explanation: "HF is weak; others are strong.",
-      difficulty: "hard",
-      category: "Periodic Table"
-    },
-    {
-      id: 31,
-      question: "What is the chemical symbol for water?",
-      options: ["H2O","CO2","NaCl","O2"],
-      correct: 0,
-      explanation: "Water = 2 H + 1 O",
-      difficulty: "easy",
-      category: "Acids/Bases"
-    },
-    {
-      id: 32,
-      question: "What gives carbon its name?",
-      options: ["Latin carbo (coal)","Greek karbon","Sanskrit carb","Arabic kar"],
-      correct: 0,
-      explanation: "Comes from Latin word for coal.",
-      difficulty: "medium",
-      category: "Atoms"
-    },
-    {
-      id: 33,
-      question: "What is the most abundant gas in Earth's atmosphere?",
-      options: ["Nitrogen","Oxygen","CO2","Argon"],
-      correct: 0,
-      explanation: "78% of atmosphere.",
-      difficulty: "hard",
-      category: "Reactions"
-    },
-    {
-      id: 34,
-      question: "Which element has atomic number 6?",
-      options: ["Carbon","Oxygen","Hydrogen","Nitrogen"],
-      correct: 0,
-      explanation: "Z = 6 means 6 protons.",
-      difficulty: "easy",
-      category: "Stoichiometry"
-    },
-    {
-      id: 35,
-      question: "What is the chemical symbol for gold?",
-      options: ["Au","Ag","Fe","Hg"],
-      correct: 0,
-      explanation: "From Latin aurum.",
-      difficulty: "medium",
-      category: "Periodic Table"
-    },
-    {
-      id: 36,
-      question: "What is sulfuric acid's formula?",
-      options: ["H2SO4","HCl","HNO3","H3PO4"],
-      correct: 0,
-      explanation: "Most-produced industrial chemical.",
-      difficulty: "hard",
-      category: "Acids/Bases"
-    },
-    {
-      id: 37,
-      question: "What number of electrons in a neutral oxygen atom?",
-      options: ["8","6","4","10"],
-      correct: 0,
-      explanation: "Z = 8 means 8 electrons.",
-      difficulty: "easy",
-      category: "Atoms"
-    },
-    {
-      id: 38,
-      question: "What does pH measure?",
-      options: ["H+ concentration","Salt content","Color","Density"],
-      correct: 0,
-      explanation: "pH = -log[H+]",
-      difficulty: "medium",
-      category: "Reactions"
-    },
-    {
-      id: 39,
-      question: "Strong acids are characterized by:",
-      options: ["Complete dissociation","Color","Smell","Temperature"],
-      correct: 0,
-      explanation: "They ionize fully.",
-      difficulty: "hard",
-      category: "Stoichiometry"
-    },
-    {
-      id: 40,
-      question: "Which is NOT a strong acid?",
-      options: ["HF","HCl","HBr","HI"],
-      correct: 0,
-      explanation: "HF is weak; others are strong.",
-      difficulty: "easy",
-      category: "Periodic Table"
-    },
-    {
-      id: 41,
-      question: "What is the chemical symbol for water?",
-      options: ["H2O","CO2","NaCl","O2"],
-      correct: 0,
-      explanation: "Water = 2 H + 1 O",
-      difficulty: "medium",
-      category: "Acids/Bases"
-    },
-    {
-      id: 42,
-      question: "What gives carbon its name?",
-      options: ["Latin carbo (coal)","Greek karbon","Sanskrit carb","Arabic kar"],
-      correct: 0,
-      explanation: "Comes from Latin word for coal.",
-      difficulty: "hard",
-      category: "Atoms"
-    },
-    {
-      id: 43,
-      question: "What is the most abundant gas in Earth's atmosphere?",
-      options: ["Nitrogen","Oxygen","CO2","Argon"],
-      correct: 0,
-      explanation: "78% of atmosphere.",
-      difficulty: "easy",
-      category: "Reactions"
-    },
-    {
-      id: 44,
-      question: "Which element has atomic number 6?",
-      options: ["Carbon","Oxygen","Hydrogen","Nitrogen"],
-      correct: 0,
-      explanation: "Z = 6 means 6 protons.",
-      difficulty: "medium",
-      category: "Stoichiometry"
-    },
-    {
-      id: 45,
-      question: "What is the chemical symbol for gold?",
-      options: ["Au","Ag","Fe","Hg"],
-      correct: 0,
-      explanation: "From Latin aurum.",
-      difficulty: "hard",
-      category: "Periodic Table"
-    },
-    {
-      id: 46,
-      question: "What is sulfuric acid's formula?",
-      options: ["H2SO4","HCl","HNO3","H3PO4"],
-      correct: 0,
-      explanation: "Most-produced industrial chemical.",
-      difficulty: "easy",
-      category: "Acids/Bases"
-    },
-    {
-      id: 47,
-      question: "What number of electrons in a neutral oxygen atom?",
-      options: ["8","6","4","10"],
-      correct: 0,
-      explanation: "Z = 8 means 8 electrons.",
-      difficulty: "medium",
-      category: "Atoms"
-    },
-    {
-      id: 48,
-      question: "What does pH measure?",
-      options: ["H+ concentration","Salt content","Color","Density"],
-      correct: 0,
-      explanation: "pH = -log[H+]",
-      difficulty: "hard",
-      category: "Reactions"
-    },
-    {
-      id: 49,
-      question: "Strong acids are characterized by:",
-      options: ["Complete dissociation","Color","Smell","Temperature"],
-      correct: 0,
-      explanation: "They ionize fully.",
-      difficulty: "easy",
-      category: "Stoichiometry"
-    },
-    {
-      id: 50,
-      question: "Which is NOT a strong acid?",
-      options: ["HF","HCl","HBr","HI"],
-      correct: 0,
-      explanation: "HF is weak; others are strong.",
-      difficulty: "medium",
-      category: "Periodic Table"
-    },
-    {
-      id: 51,
-      question: "What is the chemical symbol for water?",
-      options: ["H2O","CO2","NaCl","O2"],
-      correct: 0,
-      explanation: "Water = 2 H + 1 O",
-      difficulty: "hard",
-      category: "Acids/Bases"
-    },
-    {
-      id: 52,
-      question: "What gives carbon its name?",
-      options: ["Latin carbo (coal)","Greek karbon","Sanskrit carb","Arabic kar"],
-      correct: 0,
-      explanation: "Comes from Latin word for coal.",
-      difficulty: "easy",
-      category: "Atoms"
-    },
-    {
-      id: 53,
-      question: "What is the most abundant gas in Earth's atmosphere?",
-      options: ["Nitrogen","Oxygen","CO2","Argon"],
-      correct: 0,
-      explanation: "78% of atmosphere.",
-      difficulty: "medium",
-      category: "Reactions"
-    },
-    {
-      id: 54,
-      question: "Which element has atomic number 6?",
-      options: ["Carbon","Oxygen","Hydrogen","Nitrogen"],
-      correct: 0,
-      explanation: "Z = 6 means 6 protons.",
-      difficulty: "hard",
-      category: "Stoichiometry"
-    },
-    {
-      id: 55,
-      question: "What is the chemical symbol for gold?",
-      options: ["Au","Ag","Fe","Hg"],
-      correct: 0,
-      explanation: "From Latin aurum.",
-      difficulty: "easy",
-      category: "Periodic Table"
-    },
-    {
-      id: 56,
-      question: "What is sulfuric acid's formula?",
-      options: ["H2SO4","HCl","HNO3","H3PO4"],
-      correct: 0,
-      explanation: "Most-produced industrial chemical.",
-      difficulty: "medium",
-      category: "Acids/Bases"
-    },
-    {
-      id: 57,
-      question: "What number of electrons in a neutral oxygen atom?",
-      options: ["8","6","4","10"],
-      correct: 0,
-      explanation: "Z = 8 means 8 electrons.",
-      difficulty: "hard",
-      category: "Atoms"
-    },
-    {
-      id: 58,
-      question: "What does pH measure?",
-      options: ["H+ concentration","Salt content","Color","Density"],
-      correct: 0,
-      explanation: "pH = -log[H+]",
-      difficulty: "easy",
-      category: "Reactions"
-    },
-    {
-      id: 59,
-      question: "Strong acids are characterized by:",
-      options: ["Complete dissociation","Color","Smell","Temperature"],
-      correct: 0,
-      explanation: "They ionize fully.",
-      difficulty: "medium",
-      category: "Stoichiometry"
-    },
-    {
-      id: 60,
-      question: "Which is NOT a strong acid?",
-      options: ["HF","HCl","HBr","HI"],
-      correct: 0,
-      explanation: "HF is weak; others are strong.",
-      difficulty: "hard",
-      category: "Periodic Table"
-    },
-    {
-      id: 61,
-      question: "What is the chemical symbol for water?",
-      options: ["H2O","CO2","NaCl","O2"],
-      correct: 0,
-      explanation: "Water = 2 H + 1 O",
-      difficulty: "easy",
-      category: "Acids/Bases"
-    },
-    {
-      id: 62,
-      question: "What gives carbon its name?",
-      options: ["Latin carbo (coal)","Greek karbon","Sanskrit carb","Arabic kar"],
-      correct: 0,
-      explanation: "Comes from Latin word for coal.",
-      difficulty: "medium",
-      category: "Atoms"
-    },
-    {
-      id: 63,
-      question: "What is the most abundant gas in Earth's atmosphere?",
-      options: ["Nitrogen","Oxygen","CO2","Argon"],
-      correct: 0,
-      explanation: "78% of atmosphere.",
-      difficulty: "hard",
-      category: "Reactions"
-    },
-    {
-      id: 64,
-      question: "Which element has atomic number 6?",
-      options: ["Carbon","Oxygen","Hydrogen","Nitrogen"],
-      correct: 0,
-      explanation: "Z = 6 means 6 protons.",
-      difficulty: "easy",
-      category: "Stoichiometry"
-    },
-    {
-      id: 65,
-      question: "What is the chemical symbol for gold?",
-      options: ["Au","Ag","Fe","Hg"],
-      correct: 0,
-      explanation: "From Latin aurum.",
-      difficulty: "medium",
-      category: "Periodic Table"
-    },
-    {
-      id: 66,
-      question: "What is sulfuric acid's formula?",
-      options: ["H2SO4","HCl","HNO3","H3PO4"],
-      correct: 0,
-      explanation: "Most-produced industrial chemical.",
-      difficulty: "hard",
-      category: "Acids/Bases"
-    },
-    {
-      id: 67,
-      question: "What number of electrons in a neutral oxygen atom?",
-      options: ["8","6","4","10"],
-      correct: 0,
-      explanation: "Z = 8 means 8 electrons.",
-      difficulty: "easy",
-      category: "Atoms"
-    },
-    {
-      id: 68,
-      question: "What does pH measure?",
-      options: ["H+ concentration","Salt content","Color","Density"],
-      correct: 0,
-      explanation: "pH = -log[H+]",
-      difficulty: "medium",
-      category: "Reactions"
-    },
-    {
-      id: 69,
-      question: "Strong acids are characterized by:",
-      options: ["Complete dissociation","Color","Smell","Temperature"],
-      correct: 0,
-      explanation: "They ionize fully.",
-      difficulty: "hard",
-      category: "Stoichiometry"
-    },
-    {
-      id: 70,
-      question: "Which is NOT a strong acid?",
-      options: ["HF","HCl","HBr","HI"],
-      correct: 0,
-      explanation: "HF is weak; others are strong.",
-      difficulty: "easy",
-      category: "Periodic Table"
-    },
-    {
-      id: 71,
-      question: "What is the chemical symbol for water?",
-      options: ["H2O","CO2","NaCl","O2"],
-      correct: 0,
-      explanation: "Water = 2 H + 1 O",
-      difficulty: "medium",
-      category: "Acids/Bases"
-    },
-    {
-      id: 72,
-      question: "What gives carbon its name?",
-      options: ["Latin carbo (coal)","Greek karbon","Sanskrit carb","Arabic kar"],
-      correct: 0,
-      explanation: "Comes from Latin word for coal.",
-      difficulty: "hard",
-      category: "Atoms"
-    },
-    {
-      id: 73,
-      question: "What is the most abundant gas in Earth's atmosphere?",
-      options: ["Nitrogen","Oxygen","CO2","Argon"],
-      correct: 0,
-      explanation: "78% of atmosphere.",
-      difficulty: "easy",
-      category: "Reactions"
-    },
-    {
-      id: 74,
-      question: "Which element has atomic number 6?",
-      options: ["Carbon","Oxygen","Hydrogen","Nitrogen"],
-      correct: 0,
-      explanation: "Z = 6 means 6 protons.",
-      difficulty: "medium",
-      category: "Stoichiometry"
-    },
-    {
-      id: 75,
-      question: "What is the chemical symbol for gold?",
-      options: ["Au","Ag","Fe","Hg"],
-      correct: 0,
-      explanation: "From Latin aurum.",
-      difficulty: "hard",
-      category: "Periodic Table"
-    },
-    {
-      id: 76,
-      question: "What is sulfuric acid's formula?",
-      options: ["H2SO4","HCl","HNO3","H3PO4"],
-      correct: 0,
-      explanation: "Most-produced industrial chemical.",
-      difficulty: "easy",
-      category: "Acids/Bases"
-    },
-    {
-      id: 77,
-      question: "What number of electrons in a neutral oxygen atom?",
-      options: ["8","6","4","10"],
-      correct: 0,
-      explanation: "Z = 8 means 8 electrons.",
-      difficulty: "medium",
-      category: "Atoms"
-    },
-    {
-      id: 78,
-      question: "What does pH measure?",
-      options: ["H+ concentration","Salt content","Color","Density"],
-      correct: 0,
-      explanation: "pH = -log[H+]",
-      difficulty: "hard",
-      category: "Reactions"
-    },
-    {
-      id: 79,
-      question: "Strong acids are characterized by:",
-      options: ["Complete dissociation","Color","Smell","Temperature"],
-      correct: 0,
-      explanation: "They ionize fully.",
-      difficulty: "easy",
-      category: "Stoichiometry"
-    },
-    {
-      id: 80,
-      question: "Which is NOT a strong acid?",
-      options: ["HF","HCl","HBr","HI"],
-      correct: 0,
-      explanation: "HF is weak; others are strong.",
-      difficulty: "medium",
-      category: "Periodic Table"
-    },
-    {
-      id: 81,
-      question: "What is the chemical symbol for water?",
-      options: ["H2O","CO2","NaCl","O2"],
-      correct: 0,
-      explanation: "Water = 2 H + 1 O",
-      difficulty: "hard",
-      category: "Acids/Bases"
-    },
-    {
-      id: 82,
-      question: "What gives carbon its name?",
-      options: ["Latin carbo (coal)","Greek karbon","Sanskrit carb","Arabic kar"],
-      correct: 0,
-      explanation: "Comes from Latin word for coal.",
-      difficulty: "easy",
-      category: "Atoms"
-    },
-    {
-      id: 83,
-      question: "What is the most abundant gas in Earth's atmosphere?",
-      options: ["Nitrogen","Oxygen","CO2","Argon"],
-      correct: 0,
-      explanation: "78% of atmosphere.",
-      difficulty: "medium",
-      category: "Reactions"
-    },
-    {
-      id: 84,
-      question: "Which element has atomic number 6?",
-      options: ["Carbon","Oxygen","Hydrogen","Nitrogen"],
-      correct: 0,
-      explanation: "Z = 6 means 6 protons.",
-      difficulty: "hard",
-      category: "Stoichiometry"
-    },
-    {
-      id: 85,
-      question: "What is the chemical symbol for gold?",
-      options: ["Au","Ag","Fe","Hg"],
-      correct: 0,
-      explanation: "From Latin aurum.",
-      difficulty: "easy",
-      category: "Periodic Table"
-    },
-    {
-      id: 86,
-      question: "What is sulfuric acid's formula?",
-      options: ["H2SO4","HCl","HNO3","H3PO4"],
-      correct: 0,
-      explanation: "Most-produced industrial chemical.",
-      difficulty: "medium",
-      category: "Acids/Bases"
-    },
-    {
-      id: 87,
-      question: "What number of electrons in a neutral oxygen atom?",
-      options: ["8","6","4","10"],
-      correct: 0,
-      explanation: "Z = 8 means 8 electrons.",
-      difficulty: "hard",
-      category: "Atoms"
-    },
-    {
-      id: 88,
-      question: "What does pH measure?",
-      options: ["H+ concentration","Salt content","Color","Density"],
-      correct: 0,
-      explanation: "pH = -log[H+]",
-      difficulty: "easy",
-      category: "Reactions"
-    },
-    {
-      id: 89,
-      question: "Strong acids are characterized by:",
-      options: ["Complete dissociation","Color","Smell","Temperature"],
-      correct: 0,
-      explanation: "They ionize fully.",
-      difficulty: "medium",
-      category: "Stoichiometry"
-    },
-    {
-      id: 90,
-      question: "Which is NOT a strong acid?",
-      options: ["HF","HCl","HBr","HI"],
-      correct: 0,
-      explanation: "HF is weak; others are strong.",
-      difficulty: "hard",
-      category: "Periodic Table"
-    },
-    {
-      id: 91,
-      question: "What is the chemical symbol for water?",
-      options: ["H2O","CO2","NaCl","O2"],
-      correct: 0,
-      explanation: "Water = 2 H + 1 O",
-      difficulty: "easy",
-      category: "Acids/Bases"
-    },
-    {
-      id: 92,
-      question: "What gives carbon its name?",
-      options: ["Latin carbo (coal)","Greek karbon","Sanskrit carb","Arabic kar"],
-      correct: 0,
-      explanation: "Comes from Latin word for coal.",
-      difficulty: "medium",
-      category: "Atoms"
-    },
-    {
-      id: 93,
-      question: "What is the most abundant gas in Earth's atmosphere?",
-      options: ["Nitrogen","Oxygen","CO2","Argon"],
-      correct: 0,
-      explanation: "78% of atmosphere.",
-      difficulty: "hard",
-      category: "Reactions"
-    },
-    {
-      id: 94,
-      question: "Which element has atomic number 6?",
-      options: ["Carbon","Oxygen","Hydrogen","Nitrogen"],
-      correct: 0,
-      explanation: "Z = 6 means 6 protons.",
-      difficulty: "easy",
-      category: "Stoichiometry"
-    },
-    {
-      id: 95,
-      question: "What is the chemical symbol for gold?",
-      options: ["Au","Ag","Fe","Hg"],
-      correct: 0,
-      explanation: "From Latin aurum.",
-      difficulty: "medium",
-      category: "Periodic Table"
-    },
-    {
-      id: 96,
-      question: "What is sulfuric acid's formula?",
-      options: ["H2SO4","HCl","HNO3","H3PO4"],
-      correct: 0,
-      explanation: "Most-produced industrial chemical.",
-      difficulty: "hard",
-      category: "Acids/Bases"
-    },
-    {
-      id: 97,
-      question: "What number of electrons in a neutral oxygen atom?",
-      options: ["8","6","4","10"],
-      correct: 0,
-      explanation: "Z = 8 means 8 electrons.",
-      difficulty: "easy",
-      category: "Atoms"
-    },
-    {
-      id: 98,
-      question: "What does pH measure?",
-      options: ["H+ concentration","Salt content","Color","Density"],
-      correct: 0,
-      explanation: "pH = -log[H+]",
-      difficulty: "medium",
-      category: "Reactions"
-    },
-    {
-      id: 99,
-      question: "Strong acids are characterized by:",
-      options: ["Complete dissociation","Color","Smell","Temperature"],
-      correct: 0,
-      explanation: "They ionize fully.",
-      difficulty: "hard",
-      category: "Stoichiometry"
-    },
-    {
-      id: 100,
-      question: "Which is NOT a strong acid?",
-      options: ["HF","HCl","HBr","HI"],
-      correct: 0,
-      explanation: "HF is weak; others are strong.",
-      difficulty: "easy",
-      category: "Periodic Table"
-    },
-    {
-      id: 101,
-      question: "What is the chemical symbol for water?",
-      options: ["H2O","CO2","NaCl","O2"],
-      correct: 0,
-      explanation: "Water = 2 H + 1 O",
-      difficulty: "medium",
-      category: "Acids/Bases"
-    },
-    {
-      id: 102,
-      question: "What gives carbon its name?",
-      options: ["Latin carbo (coal)","Greek karbon","Sanskrit carb","Arabic kar"],
-      correct: 0,
-      explanation: "Comes from Latin word for coal.",
-      difficulty: "hard",
-      category: "Atoms"
-    },
-    {
-      id: 103,
-      question: "What is the most abundant gas in Earth's atmosphere?",
-      options: ["Nitrogen","Oxygen","CO2","Argon"],
-      correct: 0,
-      explanation: "78% of atmosphere.",
-      difficulty: "easy",
-      category: "Reactions"
-    },
-    {
-      id: 104,
-      question: "Which element has atomic number 6?",
-      options: ["Carbon","Oxygen","Hydrogen","Nitrogen"],
-      correct: 0,
-      explanation: "Z = 6 means 6 protons.",
-      difficulty: "medium",
-      category: "Stoichiometry"
-    },
-    {
-      id: 105,
-      question: "What is the chemical symbol for gold?",
-      options: ["Au","Ag","Fe","Hg"],
-      correct: 0,
-      explanation: "From Latin aurum.",
-      difficulty: "hard",
-      category: "Periodic Table"
-    },
-    {
-      id: 106,
-      question: "What is sulfuric acid's formula?",
-      options: ["H2SO4","HCl","HNO3","H3PO4"],
-      correct: 0,
-      explanation: "Most-produced industrial chemical.",
-      difficulty: "easy",
-      category: "Acids/Bases"
-    },
-    {
-      id: 107,
-      question: "What number of electrons in a neutral oxygen atom?",
-      options: ["8","6","4","10"],
-      correct: 0,
-      explanation: "Z = 8 means 8 electrons.",
-      difficulty: "medium",
-      category: "Atoms"
-    },
-    {
-      id: 108,
-      question: "What does pH measure?",
-      options: ["H+ concentration","Salt content","Color","Density"],
-      correct: 0,
-      explanation: "pH = -log[H+]",
-      difficulty: "hard",
-      category: "Reactions"
-    },
-    {
-      id: 109,
-      question: "Strong acids are characterized by:",
-      options: ["Complete dissociation","Color","Smell","Temperature"],
-      correct: 0,
-      explanation: "They ionize fully.",
-      difficulty: "easy",
-      category: "Stoichiometry"
-    },
-    {
-      id: 110,
-      question: "Which is NOT a strong acid?",
-      options: ["HF","HCl","HBr","HI"],
-      correct: 0,
-      explanation: "HF is weak; others are strong.",
-      difficulty: "medium",
-      category: "Periodic Table"
-    },
-    {
-      id: 111,
-      question: "What is the chemical symbol for water?",
-      options: ["H2O","CO2","NaCl","O2"],
-      correct: 0,
-      explanation: "Water = 2 H + 1 O",
-      difficulty: "hard",
-      category: "Acids/Bases"
-    },
-    {
-      id: 112,
-      question: "What gives carbon its name?",
-      options: ["Latin carbo (coal)","Greek karbon","Sanskrit carb","Arabic kar"],
-      correct: 0,
-      explanation: "Comes from Latin word for coal.",
-      difficulty: "easy",
-      category: "Atoms"
-    },
-    {
-      id: 113,
-      question: "What is the most abundant gas in Earth's atmosphere?",
-      options: ["Nitrogen","Oxygen","CO2","Argon"],
-      correct: 0,
-      explanation: "78% of atmosphere.",
-      difficulty: "medium",
-      category: "Reactions"
-    },
-    {
-      id: 114,
-      question: "Which element has atomic number 6?",
-      options: ["Carbon","Oxygen","Hydrogen","Nitrogen"],
-      correct: 0,
-      explanation: "Z = 6 means 6 protons.",
-      difficulty: "hard",
-      category: "Stoichiometry"
-    },
-    {
-      id: 115,
-      question: "What is the chemical symbol for gold?",
-      options: ["Au","Ag","Fe","Hg"],
-      correct: 0,
-      explanation: "From Latin aurum.",
-      difficulty: "easy",
-      category: "Periodic Table"
-    },
-    {
-      id: 116,
-      question: "What is sulfuric acid's formula?",
-      options: ["H2SO4","HCl","HNO3","H3PO4"],
-      correct: 0,
-      explanation: "Most-produced industrial chemical.",
-      difficulty: "medium",
-      category: "Acids/Bases"
-    },
-    {
-      id: 117,
-      question: "What number of electrons in a neutral oxygen atom?",
-      options: ["8","6","4","10"],
-      correct: 0,
-      explanation: "Z = 8 means 8 electrons.",
-      difficulty: "hard",
-      category: "Atoms"
-    },
-    {
-      id: 118,
-      question: "What does pH measure?",
-      options: ["H+ concentration","Salt content","Color","Density"],
-      correct: 0,
-      explanation: "pH = -log[H+]",
-      difficulty: "easy",
-      category: "Reactions"
-    },
-    {
-      id: 119,
-      question: "Strong acids are characterized by:",
-      options: ["Complete dissociation","Color","Smell","Temperature"],
-      correct: 0,
-      explanation: "They ionize fully.",
-      difficulty: "medium",
-      category: "Stoichiometry"
-    },
-    {
-      id: 120,
-      question: "Which is NOT a strong acid?",
-      options: ["HF","HCl","HBr","HI"],
-      correct: 0,
-      explanation: "HF is weak; others are strong.",
-      difficulty: "hard",
-      category: "Periodic Table"
-    },
-    {
-      id: 121,
-      question: "What is the chemical symbol for water?",
-      options: ["H2O","CO2","NaCl","O2"],
-      correct: 0,
-      explanation: "Water = 2 H + 1 O",
-      difficulty: "easy",
-      category: "Acids/Bases"
-    },
-    {
-      id: 122,
-      question: "What gives carbon its name?",
-      options: ["Latin carbo (coal)","Greek karbon","Sanskrit carb","Arabic kar"],
-      correct: 0,
-      explanation: "Comes from Latin word for coal.",
-      difficulty: "medium",
-      category: "Atoms"
-    },
-    {
-      id: 123,
-      question: "What is the most abundant gas in Earth's atmosphere?",
-      options: ["Nitrogen","Oxygen","CO2","Argon"],
-      correct: 0,
-      explanation: "78% of atmosphere.",
-      difficulty: "hard",
-      category: "Reactions"
-    },
-    {
-      id: 124,
-      question: "Which element has atomic number 6?",
-      options: ["Carbon","Oxygen","Hydrogen","Nitrogen"],
-      correct: 0,
-      explanation: "Z = 6 means 6 protons.",
-      difficulty: "easy",
-      category: "Stoichiometry"
-    },
-    {
-      id: 125,
-      question: "What is the chemical symbol for gold?",
-      options: ["Au","Ag","Fe","Hg"],
-      correct: 0,
-      explanation: "From Latin aurum.",
-      difficulty: "medium",
-      category: "Periodic Table"
-    },
-    {
-      id: 126,
-      question: "What is sulfuric acid's formula?",
-      options: ["H2SO4","HCl","HNO3","H3PO4"],
-      correct: 0,
-      explanation: "Most-produced industrial chemical.",
-      difficulty: "hard",
-      category: "Acids/Bases"
-    },
-    {
-      id: 127,
-      question: "What number of electrons in a neutral oxygen atom?",
-      options: ["8","6","4","10"],
-      correct: 0,
-      explanation: "Z = 8 means 8 electrons.",
-      difficulty: "easy",
-      category: "Atoms"
-    },
-    {
-      id: 128,
-      question: "What does pH measure?",
-      options: ["H+ concentration","Salt content","Color","Density"],
-      correct: 0,
-      explanation: "pH = -log[H+]",
-      difficulty: "medium",
-      category: "Reactions"
-    },
-    {
-      id: 129,
-      question: "Strong acids are characterized by:",
-      options: ["Complete dissociation","Color","Smell","Temperature"],
-      correct: 0,
-      explanation: "They ionize fully.",
-      difficulty: "hard",
-      category: "Stoichiometry"
-    },
-    {
-      id: 130,
-      question: "Which is NOT a strong acid?",
-      options: ["HF","HCl","HBr","HI"],
-      correct: 0,
-      explanation: "HF is weak; others are strong.",
-      difficulty: "easy",
-      category: "Periodic Table"
-    },
-    {
-      id: 131,
-      question: "What is the chemical symbol for water?",
-      options: ["H2O","CO2","NaCl","O2"],
-      correct: 0,
-      explanation: "Water = 2 H + 1 O",
-      difficulty: "medium",
-      category: "Acids/Bases"
-    },
-    {
-      id: 132,
-      question: "What gives carbon its name?",
-      options: ["Latin carbo (coal)","Greek karbon","Sanskrit carb","Arabic kar"],
-      correct: 0,
-      explanation: "Comes from Latin word for coal.",
-      difficulty: "hard",
-      category: "Atoms"
-    },
-    {
-      id: 133,
-      question: "What is the most abundant gas in Earth's atmosphere?",
-      options: ["Nitrogen","Oxygen","CO2","Argon"],
-      correct: 0,
-      explanation: "78% of atmosphere.",
-      difficulty: "easy",
-      category: "Reactions"
-    },
-    {
-      id: 134,
-      question: "Which element has atomic number 6?",
-      options: ["Carbon","Oxygen","Hydrogen","Nitrogen"],
-      correct: 0,
-      explanation: "Z = 6 means 6 protons.",
-      difficulty: "medium",
-      category: "Stoichiometry"
-    },
-    {
-      id: 135,
-      question: "What is the chemical symbol for gold?",
-      options: ["Au","Ag","Fe","Hg"],
-      correct: 0,
-      explanation: "From Latin aurum.",
-      difficulty: "hard",
-      category: "Periodic Table"
-    },
-    {
-      id: 136,
-      question: "What is sulfuric acid's formula?",
-      options: ["H2SO4","HCl","HNO3","H3PO4"],
-      correct: 0,
-      explanation: "Most-produced industrial chemical.",
-      difficulty: "easy",
-      category: "Acids/Bases"
-    },
-    {
-      id: 137,
-      question: "What number of electrons in a neutral oxygen atom?",
-      options: ["8","6","4","10"],
-      correct: 0,
-      explanation: "Z = 8 means 8 electrons.",
-      difficulty: "medium",
-      category: "Atoms"
-    },
-    {
-      id: 138,
-      question: "What does pH measure?",
-      options: ["H+ concentration","Salt content","Color","Density"],
-      correct: 0,
-      explanation: "pH = -log[H+]",
-      difficulty: "hard",
-      category: "Reactions"
-    },
-    {
-      id: 139,
-      question: "Strong acids are characterized by:",
-      options: ["Complete dissociation","Color","Smell","Temperature"],
-      correct: 0,
-      explanation: "They ionize fully.",
-      difficulty: "easy",
-      category: "Stoichiometry"
-    },
-    {
-      id: 140,
-      question: "Which is NOT a strong acid?",
-      options: ["HF","HCl","HBr","HI"],
-      correct: 0,
-      explanation: "HF is weak; others are strong.",
-      difficulty: "medium",
-      category: "Periodic Table"
-    },
-    {
-      id: 141,
-      question: "What is the chemical symbol for water?",
-      options: ["H2O","CO2","NaCl","O2"],
-      correct: 0,
-      explanation: "Water = 2 H + 1 O",
-      difficulty: "hard",
-      category: "Acids/Bases"
-    },
-    {
-      id: 142,
-      question: "What gives carbon its name?",
-      options: ["Latin carbo (coal)","Greek karbon","Sanskrit carb","Arabic kar"],
-      correct: 0,
-      explanation: "Comes from Latin word for coal.",
-      difficulty: "easy",
-      category: "Atoms"
-    },
-    {
-      id: 143,
-      question: "What is the most abundant gas in Earth's atmosphere?",
-      options: ["Nitrogen","Oxygen","CO2","Argon"],
-      correct: 0,
-      explanation: "78% of atmosphere.",
-      difficulty: "medium",
-      category: "Reactions"
-    },
-    {
-      id: 144,
-      question: "Which element has atomic number 6?",
-      options: ["Carbon","Oxygen","Hydrogen","Nitrogen"],
-      correct: 0,
-      explanation: "Z = 6 means 6 protons.",
-      difficulty: "hard",
-      category: "Stoichiometry"
-    },
-    {
-      id: 145,
-      question: "What is the chemical symbol for gold?",
-      options: ["Au","Ag","Fe","Hg"],
-      correct: 0,
-      explanation: "From Latin aurum.",
-      difficulty: "easy",
-      category: "Periodic Table"
-    },
-    {
-      id: 146,
-      question: "What is sulfuric acid's formula?",
-      options: ["H2SO4","HCl","HNO3","H3PO4"],
-      correct: 0,
-      explanation: "Most-produced industrial chemical.",
-      difficulty: "medium",
-      category: "Acids/Bases"
-    },
-    {
-      id: 147,
-      question: "What number of electrons in a neutral oxygen atom?",
-      options: ["8","6","4","10"],
-      correct: 0,
-      explanation: "Z = 8 means 8 electrons.",
-      difficulty: "hard",
-      category: "Atoms"
-    },
-    {
-      id: 148,
-      question: "What does pH measure?",
-      options: ["H+ concentration","Salt content","Color","Density"],
-      correct: 0,
-      explanation: "pH = -log[H+]",
-      difficulty: "easy",
-      category: "Reactions"
-    },
-    {
-      id: 149,
-      question: "Strong acids are characterized by:",
-      options: ["Complete dissociation","Color","Smell","Temperature"],
-      correct: 0,
-      explanation: "They ionize fully.",
-      difficulty: "medium",
-      category: "Stoichiometry"
-    },
-    {
-      id: 150,
-      question: "Which is NOT a strong acid?",
-      options: ["HF","HCl","HBr","HI"],
-      correct: 0,
-      explanation: "HF is weak; others are strong.",
-      difficulty: "hard",
-      category: "Periodic Table"
-    },
-    {
-      id: 151,
-      question: "What is the chemical symbol for water?",
-      options: ["H2O","CO2","NaCl","O2"],
-      correct: 0,
-      explanation: "Water = 2 H + 1 O",
-      difficulty: "easy",
-      category: "Acids/Bases"
-    },
-    {
-      id: 152,
-      question: "What gives carbon its name?",
-      options: ["Latin carbo (coal)","Greek karbon","Sanskrit carb","Arabic kar"],
-      correct: 0,
-      explanation: "Comes from Latin word for coal.",
-      difficulty: "medium",
-      category: "Atoms"
-    },
-    {
-      id: 153,
-      question: "What is the most abundant gas in Earth's atmosphere?",
-      options: ["Nitrogen","Oxygen","CO2","Argon"],
-      correct: 0,
-      explanation: "78% of atmosphere.",
-      difficulty: "hard",
-      category: "Reactions"
-    },
-    {
-      id: 154,
-      question: "Which element has atomic number 6?",
-      options: ["Carbon","Oxygen","Hydrogen","Nitrogen"],
-      correct: 0,
-      explanation: "Z = 6 means 6 protons.",
-      difficulty: "easy",
-      category: "Stoichiometry"
-    },
-    {
-      id: 155,
-      question: "What is the chemical symbol for gold?",
-      options: ["Au","Ag","Fe","Hg"],
-      correct: 0,
-      explanation: "From Latin aurum.",
-      difficulty: "medium",
-      category: "Periodic Table"
-    },
-    {
-      id: 156,
-      question: "What is sulfuric acid's formula?",
-      options: ["H2SO4","HCl","HNO3","H3PO4"],
-      correct: 0,
-      explanation: "Most-produced industrial chemical.",
-      difficulty: "hard",
-      category: "Acids/Bases"
-    },
-    {
-      id: 157,
-      question: "What number of electrons in a neutral oxygen atom?",
-      options: ["8","6","4","10"],
-      correct: 0,
-      explanation: "Z = 8 means 8 electrons.",
-      difficulty: "easy",
-      category: "Atoms"
-    },
-    {
-      id: 158,
-      question: "What does pH measure?",
-      options: ["H+ concentration","Salt content","Color","Density"],
-      correct: 0,
-      explanation: "pH = -log[H+]",
-      difficulty: "medium",
-      category: "Reactions"
-    },
-    {
-      id: 159,
-      question: "Strong acids are characterized by:",
-      options: ["Complete dissociation","Color","Smell","Temperature"],
-      correct: 0,
-      explanation: "They ionize fully.",
-      difficulty: "hard",
-      category: "Stoichiometry"
-    },
-    {
-      id: 160,
-      question: "Which is NOT a strong acid?",
-      options: ["HF","HCl","HBr","HI"],
-      correct: 0,
-      explanation: "HF is weak; others are strong.",
-      difficulty: "easy",
-      category: "Periodic Table"
-    },
-    {
-      id: 161,
-      question: "What is the chemical symbol for water?",
-      options: ["H2O","CO2","NaCl","O2"],
-      correct: 0,
-      explanation: "Water = 2 H + 1 O",
-      difficulty: "medium",
-      category: "Acids/Bases"
-    },
-    {
-      id: 162,
-      question: "What gives carbon its name?",
-      options: ["Latin carbo (coal)","Greek karbon","Sanskrit carb","Arabic kar"],
-      correct: 0,
-      explanation: "Comes from Latin word for coal.",
-      difficulty: "hard",
-      category: "Atoms"
-    },
-    {
-      id: 163,
-      question: "What is the most abundant gas in Earth's atmosphere?",
-      options: ["Nitrogen","Oxygen","CO2","Argon"],
-      correct: 0,
-      explanation: "78% of atmosphere.",
-      difficulty: "easy",
-      category: "Reactions"
-    },
-    {
-      id: 164,
-      question: "Which element has atomic number 6?",
-      options: ["Carbon","Oxygen","Hydrogen","Nitrogen"],
-      correct: 0,
-      explanation: "Z = 6 means 6 protons.",
-      difficulty: "medium",
-      category: "Stoichiometry"
-    },
-    {
-      id: 165,
-      question: "What is the chemical symbol for gold?",
-      options: ["Au","Ag","Fe","Hg"],
-      correct: 0,
-      explanation: "From Latin aurum.",
-      difficulty: "hard",
-      category: "Periodic Table"
-    },
-    {
-      id: 166,
-      question: "What is sulfuric acid's formula?",
-      options: ["H2SO4","HCl","HNO3","H3PO4"],
-      correct: 0,
-      explanation: "Most-produced industrial chemical.",
-      difficulty: "easy",
-      category: "Acids/Bases"
-    },
-    {
-      id: 167,
-      question: "What number of electrons in a neutral oxygen atom?",
-      options: ["8","6","4","10"],
-      correct: 0,
-      explanation: "Z = 8 means 8 electrons.",
-      difficulty: "medium",
-      category: "Atoms"
-    },
-    {
-      id: 168,
-      question: "What does pH measure?",
-      options: ["H+ concentration","Salt content","Color","Density"],
-      correct: 0,
-      explanation: "pH = -log[H+]",
-      difficulty: "hard",
-      category: "Reactions"
-    },
-    {
-      id: 169,
-      question: "Strong acids are characterized by:",
-      options: ["Complete dissociation","Color","Smell","Temperature"],
-      correct: 0,
-      explanation: "They ionize fully.",
-      difficulty: "easy",
-      category: "Stoichiometry"
-    },
-    {
-      id: 170,
-      question: "Which is NOT a strong acid?",
-      options: ["HF","HCl","HBr","HI"],
-      correct: 0,
-      explanation: "HF is weak; others are strong.",
-      difficulty: "medium",
-      category: "Periodic Table"
-    },
-    {
-      id: 171,
-      question: "What is the chemical symbol for water?",
-      options: ["H2O","CO2","NaCl","O2"],
-      correct: 0,
-      explanation: "Water = 2 H + 1 O",
-      difficulty: "hard",
-      category: "Acids/Bases"
-    },
-    {
-      id: 172,
-      question: "What gives carbon its name?",
-      options: ["Latin carbo (coal)","Greek karbon","Sanskrit carb","Arabic kar"],
-      correct: 0,
-      explanation: "Comes from Latin word for coal.",
-      difficulty: "easy",
-      category: "Atoms"
-    },
-    {
-      id: 173,
-      question: "What is the most abundant gas in Earth's atmosphere?",
-      options: ["Nitrogen","Oxygen","CO2","Argon"],
-      correct: 0,
-      explanation: "78% of atmosphere.",
-      difficulty: "medium",
-      category: "Reactions"
-    },
-    {
-      id: 174,
-      question: "Which element has atomic number 6?",
-      options: ["Carbon","Oxygen","Hydrogen","Nitrogen"],
-      correct: 0,
-      explanation: "Z = 6 means 6 protons.",
-      difficulty: "hard",
-      category: "Stoichiometry"
-    },
-    {
-      id: 175,
-      question: "What is the chemical symbol for gold?",
-      options: ["Au","Ag","Fe","Hg"],
-      correct: 0,
-      explanation: "From Latin aurum.",
-      difficulty: "easy",
-      category: "Periodic Table"
-    },
-    {
-      id: 176,
-      question: "What is sulfuric acid's formula?",
-      options: ["H2SO4","HCl","HNO3","H3PO4"],
-      correct: 0,
-      explanation: "Most-produced industrial chemical.",
-      difficulty: "medium",
-      category: "Acids/Bases"
-    },
-    {
-      id: 177,
-      question: "What number of electrons in a neutral oxygen atom?",
-      options: ["8","6","4","10"],
-      correct: 0,
-      explanation: "Z = 8 means 8 electrons.",
-      difficulty: "hard",
-      category: "Atoms"
-    },
-    {
-      id: 178,
-      question: "What does pH measure?",
-      options: ["H+ concentration","Salt content","Color","Density"],
-      correct: 0,
-      explanation: "pH = -log[H+]",
-      difficulty: "easy",
-      category: "Reactions"
-    },
-    {
-      id: 179,
-      question: "Strong acids are characterized by:",
-      options: ["Complete dissociation","Color","Smell","Temperature"],
-      correct: 0,
-      explanation: "They ionize fully.",
-      difficulty: "medium",
-      category: "Stoichiometry"
-    },
-    {
-      id: 180,
-      question: "Which is NOT a strong acid?",
-      options: ["HF","HCl","HBr","HI"],
-      correct: 0,
-      explanation: "HF is weak; others are strong.",
-      difficulty: "hard",
-      category: "Periodic Table"
-    },
-    {
-      id: 181,
-      question: "What is the chemical symbol for water?",
-      options: ["H2O","CO2","NaCl","O2"],
-      correct: 0,
-      explanation: "Water = 2 H + 1 O",
-      difficulty: "easy",
-      category: "Acids/Bases"
-    },
-    {
-      id: 182,
-      question: "What gives carbon its name?",
-      options: ["Latin carbo (coal)","Greek karbon","Sanskrit carb","Arabic kar"],
-      correct: 0,
-      explanation: "Comes from Latin word for coal.",
-      difficulty: "medium",
-      category: "Atoms"
-    },
-    {
-      id: 183,
-      question: "What is the most abundant gas in Earth's atmosphere?",
-      options: ["Nitrogen","Oxygen","CO2","Argon"],
-      correct: 0,
-      explanation: "78% of atmosphere.",
-      difficulty: "hard",
-      category: "Reactions"
-    },
-    {
-      id: 184,
-      question: "Which element has atomic number 6?",
-      options: ["Carbon","Oxygen","Hydrogen","Nitrogen"],
-      correct: 0,
-      explanation: "Z = 6 means 6 protons.",
-      difficulty: "easy",
-      category: "Stoichiometry"
-    },
-    {
-      id: 185,
-      question: "What is the chemical symbol for gold?",
-      options: ["Au","Ag","Fe","Hg"],
-      correct: 0,
-      explanation: "From Latin aurum.",
-      difficulty: "medium",
-      category: "Periodic Table"
-    },
-    {
-      id: 186,
-      question: "What is sulfuric acid's formula?",
-      options: ["H2SO4","HCl","HNO3","H3PO4"],
-      correct: 0,
-      explanation: "Most-produced industrial chemical.",
-      difficulty: "hard",
-      category: "Acids/Bases"
-    },
-    {
-      id: 187,
-      question: "What number of electrons in a neutral oxygen atom?",
-      options: ["8","6","4","10"],
-      correct: 0,
-      explanation: "Z = 8 means 8 electrons.",
-      difficulty: "easy",
-      category: "Atoms"
-    },
-    {
-      id: 188,
-      question: "What does pH measure?",
-      options: ["H+ concentration","Salt content","Color","Density"],
-      correct: 0,
-      explanation: "pH = -log[H+]",
-      difficulty: "medium",
-      category: "Reactions"
-    },
-    {
-      id: 189,
-      question: "Strong acids are characterized by:",
-      options: ["Complete dissociation","Color","Smell","Temperature"],
-      correct: 0,
-      explanation: "They ionize fully.",
-      difficulty: "hard",
-      category: "Stoichiometry"
-    },
-    {
-      id: 190,
-      question: "Which is NOT a strong acid?",
-      options: ["HF","HCl","HBr","HI"],
-      correct: 0,
-      explanation: "HF is weak; others are strong.",
-      difficulty: "easy",
-      category: "Periodic Table"
-    },
-    {
-      id: 191,
-      question: "What is the chemical symbol for water?",
-      options: ["H2O","CO2","NaCl","O2"],
-      correct: 0,
-      explanation: "Water = 2 H + 1 O",
-      difficulty: "medium",
-      category: "Acids/Bases"
-    },
-    {
-      id: 192,
-      question: "What gives carbon its name?",
-      options: ["Latin carbo (coal)","Greek karbon","Sanskrit carb","Arabic kar"],
-      correct: 0,
-      explanation: "Comes from Latin word for coal.",
-      difficulty: "hard",
-      category: "Atoms"
-    },
-    {
-      id: 193,
-      question: "What is the most abundant gas in Earth's atmosphere?",
-      options: ["Nitrogen","Oxygen","CO2","Argon"],
-      correct: 0,
-      explanation: "78% of atmosphere.",
-      difficulty: "easy",
-      category: "Reactions"
-    },
-    {
-      id: 194,
-      question: "Which element has atomic number 6?",
-      options: ["Carbon","Oxygen","Hydrogen","Nitrogen"],
-      correct: 0,
-      explanation: "Z = 6 means 6 protons.",
-      difficulty: "medium",
-      category: "Stoichiometry"
-    },
-    {
-      id: 195,
-      question: "What is the chemical symbol for gold?",
-      options: ["Au","Ag","Fe","Hg"],
-      correct: 0,
-      explanation: "From Latin aurum.",
-      difficulty: "hard",
-      category: "Periodic Table"
-    },
-    {
-      id: 196,
-      question: "What is sulfuric acid's formula?",
-      options: ["H2SO4","HCl","HNO3","H3PO4"],
-      correct: 0,
-      explanation: "Most-produced industrial chemical.",
-      difficulty: "easy",
-      category: "Acids/Bases"
-    },
-    {
-      id: 197,
-      question: "What number of electrons in a neutral oxygen atom?",
-      options: ["8","6","4","10"],
-      correct: 0,
-      explanation: "Z = 8 means 8 electrons.",
-      difficulty: "medium",
-      category: "Atoms"
-    },
-    {
-      id: 198,
-      question: "What does pH measure?",
-      options: ["H+ concentration","Salt content","Color","Density"],
-      correct: 0,
-      explanation: "pH = -log[H+]",
-      difficulty: "hard",
-      category: "Reactions"
-    },
-    {
-      id: 199,
-      question: "Strong acids are characterized by:",
-      options: ["Complete dissociation","Color","Smell","Temperature"],
-      correct: 0,
-      explanation: "They ionize fully.",
-      difficulty: "easy",
-      category: "Stoichiometry"
-    },
-    {
-      id: 200,
-      question: "Which is NOT a strong acid?",
-      options: ["HF","HCl","HBr","HI"],
-      correct: 0,
-      explanation: "HF is weak; others are strong.",
-      difficulty: "medium",
-      category: "Periodic Table"
-    }
-  ];
-
-  var TRIVIA_BIG = [
-    {
-      id: 1,
-      fact: "Diamond and graphite are both pure carbon.",
-      category: "Element"
-    },
-    {
-      id: 2,
-      fact: "Pencils contain graphite, not lead.",
-      category: "Industrial"
-    },
-    {
-      id: 3,
-      fact: "Mercury is the only metal liquid at room temperature (Br is the only liquid nonmetal).",
-      category: "Biology"
-    },
-    {
-      id: 4,
-      fact: "Helium is the only element discovered on the Sun before Earth.",
-      category: "History"
-    },
-    {
-      id: 5,
-      fact: "Gallium melts in your hand at 30 degrees C.",
-      category: "Physics"
-    },
-    {
-      id: 6,
-      fact: "Most copper used in human history is still in use.",
-      category: "Health"
-    },
-    {
-      id: 7,
-      fact: "Stainless steel needs at least 10.5 percent chromium for corrosion resistance.",
-      category: "Element"
-    },
-    {
-      id: 8,
-      fact: "About 21 percent of atmospheric oxygen came from photosynthesis.",
-      category: "Industrial"
-    },
-    {
-      id: 9,
-      fact: "The atomic mass of an element is its weighted isotope average.",
-      category: "Biology"
-    },
-    {
-      id: 10,
-      fact: "Every cell on Earth uses carbon.",
-      category: "History"
-    },
-    {
-      id: 11,
-      fact: "Iron is the most abundant metal in your body.",
-      category: "Physics"
-    },
-    {
-      id: 12,
-      fact: "Calcium makes up about 1.5 percent of human body mass.",
-      category: "Health"
-    },
-    {
-      id: 13,
-      fact: "Hemoglobin carries oxygen via 4 iron atoms.",
-      category: "Element"
-    },
-    {
-      id: 14,
-      fact: "B12 vitamin contains cobalt.",
-      category: "Industrial"
-    },
-    {
-      id: 15,
-      fact: "Sodium and potassium are essential for nerve function.",
-      category: "Biology"
-    },
-    {
-      id: 16,
-      fact: "Selenium deficiency causes Keshan disease.",
-      category: "History"
-    },
-    {
-      id: 17,
-      fact: "Iodine deficiency causes goiter and cretinism.",
-      category: "Physics"
-    },
-    {
-      id: 18,
-      fact: "Hand sanitizer is usually 60-70 percent ethanol.",
-      category: "Health"
-    },
-    {
-      id: 19,
-      fact: "Vinegar is 5 percent acetic acid in water.",
-      category: "Element"
-    },
-    {
-      id: 20,
-      fact: "Lemon juice is 5 percent citric acid.",
-      category: "Industrial"
-    },
-    {
-      id: 21,
-      fact: "Coca-Cola has a pH of about 2.5.",
-      category: "Biology"
-    },
-    {
-      id: 22,
-      fact: "Coffee has a pH of about 5.",
-      category: "History"
-    },
-    {
-      id: 23,
-      fact: "Pure water has a pH of 7.",
-      category: "Physics"
-    },
-    {
-      id: 24,
-      fact: "Bleach has a pH of about 12.",
-      category: "Health"
-    },
-    {
-      id: 25,
-      fact: "Stomach acid pH is around 1-3.",
-      category: "Element"
-    },
-    {
-      id: 26,
-      fact: "Baking soda is sodium bicarbonate.",
-      category: "Industrial"
-    },
-    {
-      id: 27,
-      fact: "Salt water boils at higher temperature than fresh water.",
-      category: "Biology"
-    },
-    {
-      id: 28,
-      fact: "Salt water freezes at lower temperature than fresh water.",
-      category: "History"
-    },
-    {
-      id: 29,
-      fact: "Ice floats because solid water is less dense than liquid.",
-      category: "Physics"
-    },
-    {
-      id: 30,
-      fact: "Water expands about 9 percent when it freezes.",
-      category: "Health"
-    },
-    {
-      id: 31,
-      fact: "Dry ice is solid CO2 at minus 78 degrees C.",
-      category: "Element"
-    },
-    {
-      id: 32,
-      fact: "Liquid nitrogen is minus 196 degrees C.",
-      category: "Industrial"
-    },
-    {
-      id: 33,
-      fact: "Liquid helium is minus 269 degrees C.",
-      category: "Biology"
-    },
-    {
-      id: 34,
-      fact: "Tungsten melts at 3422 degrees C (highest metal).",
-      category: "History"
-    },
-    {
-      id: 35,
-      fact: "Helium boils at minus 269 degrees C (lowest element).",
-      category: "Physics"
-    },
-    {
-      id: 36,
-      fact: "Most reactive metal is cesium.",
-      category: "Health"
-    },
-    {
-      id: 37,
-      fact: "Most reactive nonmetal is fluorine.",
-      category: "Element"
-    },
-    {
-      id: 38,
-      fact: "Hardest natural mineral is diamond (Mohs 10).",
-      category: "Industrial"
-    },
-    {
-      id: 39,
-      fact: "Hardest synthetic material is cubic boron nitride.",
-      category: "Biology"
-    },
-    {
-      id: 40,
-      fact: "Densest natural element is osmium at 22.59 g/cm3.",
-      category: "History"
-    },
-    {
-      id: 41,
-      fact: "Lightest natural element is hydrogen.",
-      category: "Physics"
-    },
-    {
-      id: 42,
-      fact: "Most expensive precious metal is rhodium.",
-      category: "Health"
-    },
-    {
-      id: 43,
-      fact: "Most-produced industrial chemical is sulfuric acid.",
-      category: "Element"
-    },
-    {
-      id: 44,
-      fact: "Most-used metal is iron/steel.",
-      category: "Industrial"
-    },
-    {
-      id: 45,
-      fact: "Most-used plastic is polyethylene.",
-      category: "Biology"
-    },
-    {
-      id: 46,
-      fact: "Most abundant element in universe is hydrogen.",
-      category: "History"
-    },
-    {
-      id: 47,
-      fact: "Most abundant element in Earth crust is oxygen.",
-      category: "Physics"
-    },
-    {
-      id: 48,
-      fact: "Most abundant element in human body is oxygen.",
-      category: "Health"
-    },
-    {
-      id: 49,
-      fact: "Most abundant metal in crust is aluminum.",
-      category: "Element"
-    },
-    {
-      id: 50,
-      fact: "Best electrical conductor is silver.",
-      category: "Industrial"
-    },
-    {
-      id: 51,
-      fact: "Most ductile metal is gold.",
-      category: "Biology"
-    },
-    {
-      id: 52,
-      fact: "Most malleable metal is gold.",
-      category: "History"
-    },
-    {
-      id: 53,
-      fact: "Strongest bond in nature is N-N triple bond in N2.",
-      category: "Physics"
-    },
-    {
-      id: 54,
-      fact: "Weakest bond is single covalent bonds in noble gases (theoretical).",
-      category: "Health"
-    },
-    {
-      id: 55,
-      fact: "Diamond has hardest atomic structure.",
-      category: "Element"
-    },
-    {
-      id: 56,
-      fact: "Graphite has highest melting point.",
-      category: "Industrial"
-    },
-    {
-      id: 57,
-      fact: "Mercury freezes at minus 39 degrees C.",
-      category: "Biology"
-    },
-    {
-      id: 58,
-      fact: "Glycerin freezes at minus 60 degrees C.",
-      category: "History"
-    },
-    {
-      id: 59,
-      fact: "Ethanol freezes at minus 114 degrees C.",
-      category: "Physics"
-    },
-    {
-      id: 60,
-      fact: "Helium is the only element with no boiling point at 1 atm pressure.",
-      category: "Health"
-    },
-    {
-      id: 61,
-      fact: "Iron Age started around 1200 BCE.",
-      category: "Element"
-    },
-    {
-      id: 62,
-      fact: "Bronze Age started around 3300 BCE.",
-      category: "Industrial"
-    },
-    {
-      id: 63,
-      fact: "First synthetic plastic Bakelite (1907).",
-      category: "Biology"
-    },
-    {
-      id: 64,
-      fact: "First antibiotic penicillin (Fleming 1928).",
-      category: "History"
-    },
-    {
-      id: 65,
-      fact: "First synthetic dye mauveine (Perkin 1856).",
-      category: "Physics"
-    },
-    {
-      id: 66,
-      fact: "Periodic table created by Mendeleev (1869).",
-      category: "Health"
-    },
-    {
-      id: 67,
-      fact: "Avogadros number established (Avogadro 1811).",
-      category: "Element"
-    },
-    {
-      id: 68,
-      fact: "First mole concept defined (Wilhelm Ostwald).",
-      category: "Industrial"
-    },
-    {
-      id: 69,
-      fact: "Modern atomic theory by Dalton (1808).",
-      category: "Biology"
-    },
-    {
-      id: 70,
-      fact: "Quantum mechanics applied to atoms (Bohr 1913).",
-      category: "History"
-    },
-    {
-      id: 71,
-      fact: "Schrodinger wave equation (1926).",
-      category: "Physics"
-    },
-    {
-      id: 72,
-      fact: "DNA structure determined by Watson, Crick, Franklin (1953).",
-      category: "Health"
-    },
-    {
-      id: 73,
-      fact: "Tertiary protein structure first solved (Kendrew 1958).",
-      category: "Element"
-    },
-    {
-      id: 74,
-      fact: "Catalytic converters introduced 1975.",
-      category: "Industrial"
-    },
-    {
-      id: 75,
-      fact: "CFCs banned by Montreal Protocol 1987.",
-      category: "Biology"
-    },
-    {
-      id: 76,
-      fact: "Lead in gasoline banned in US 1996.",
-      category: "History"
-    },
-    {
-      id: 77,
-      fact: "mRNA COVID vaccines deployed 2020.",
-      category: "Physics"
-    },
-    {
-      id: 78,
-      fact: "AlphaFold solved protein folding 2020.",
-      category: "Health"
-    },
-    {
-      id: 79,
-      fact: "Click chemistry won Nobel 2022.",
-      category: "Element"
-    },
-    {
-      id: 80,
-      fact: "Helium balloons fly because He is less dense than air.",
-      category: "Industrial"
-    },
-    {
-      id: 81,
-      fact: "Submarines use sodium peroxide to absorb CO2.",
-      category: "Biology"
-    },
-    {
-      id: 82,
-      fact: "Antifreeze is mostly ethylene glycol.",
-      category: "History"
-    },
-    {
-      id: 83,
-      fact: "Windshield washer fluid is mostly methanol.",
-      category: "Physics"
-    },
-    {
-      id: 84,
-      fact: "Bleach is sodium hypochlorite NaOCl.",
-      category: "Health"
-    },
-    {
-      id: 85,
-      fact: "Vinegar is acetic acid CH3COOH.",
-      category: "Element"
-    },
-    {
-      id: 86,
-      fact: "Salt is sodium chloride NaCl.",
-      category: "Industrial"
-    },
-    {
-      id: 87,
-      fact: "Sugar (sucrose) is C12H22O11.",
-      category: "Biology"
-    },
-    {
-      id: 88,
-      fact: "Glucose is C6H12O6.",
-      category: "History"
-    },
-    {
-      id: 89,
-      fact: "Caffeine is C8H10N4O2.",
-      category: "Physics"
-    },
-    {
-      id: 90,
-      fact: "Aspirin is C9H8O4.",
-      category: "Health"
-    },
-    {
-      id: 91,
-      fact: "Ibuprofen is C13H18O2.",
-      category: "Element"
-    },
-    {
-      id: 92,
-      fact: "Vitamin C is C6H8O6.",
-      category: "Industrial"
-    },
-    {
-      id: 93,
-      fact: "Quinine is C20H24N2O2.",
-      category: "Biology"
-    },
-    {
-      id: 94,
-      fact: "Penicillin is C16H18N2O4S.",
-      category: "History"
-    },
-    {
-      id: 95,
-      fact: "TNT is C7H5N3O6.",
-      category: "Physics"
-    },
-    {
-      id: 96,
-      fact: "Glycerol (glycerin) is C3H8O3.",
-      category: "Health"
-    },
-    {
-      id: 97,
-      fact: "Cholesterol is C27H46O.",
-      category: "Element"
-    },
-    {
-      id: 98,
-      fact: "Testosterone is C19H28O2.",
-      category: "Industrial"
-    },
-    {
-      id: 99,
-      fact: "Estrogen (estradiol) is C18H24O2.",
-      category: "Biology"
-    },
-    {
-      id: 100,
-      fact: "Insulin is a 51-amino-acid protein.",
-      category: "History"
-    },
-    {
-      id: 101,
-      fact: "Hemoglobin is 4 heme + 4 protein chains.",
-      category: "Physics"
-    },
-    {
-      id: 102,
-      fact: "Myoglobin is 1 heme + 1 protein chain.",
-      category: "Health"
-    },
-    {
-      id: 103,
-      fact: "DNA double helix has 2 antiparallel strands.",
-      category: "Element"
-    },
-    {
-      id: 104,
-      fact: "A pairs T (2 H-bonds), G pairs C (3 H-bonds).",
-      category: "Industrial"
-    },
-    {
-      id: 105,
-      fact: "mRNA is single-stranded, U replaces T, ribose sugar.",
-      category: "Biology"
-    },
-    {
-      id: 106,
-      fact: "Ribosomes are 60S + 40S subunits in eukaryotes.",
-      category: "History"
-    },
-    {
-      id: 107,
-      fact: "Mitochondria have their own circular DNA.",
-      category: "Physics"
-    },
-    {
-      id: 108,
-      fact: "Chloroplasts also have their own DNA (plants).",
-      category: "Health"
-    },
-    {
-      id: 109,
-      fact: "ATP is the cellular energy currency.",
-      category: "Element"
-    },
-    {
-      id: 110,
-      fact: "Glucose breaks down via glycolysis to pyruvate.",
-      category: "Industrial"
-    },
-    {
-      id: 111,
-      fact: "Pyruvate enters mitochondria for Krebs cycle.",
-      category: "Biology"
-    },
-    {
-      id: 112,
-      fact: "Krebs cycle produces NADH, FADH2, ATP, CO2.",
-      category: "History"
-    },
-    {
-      id: 113,
-      fact: "Electron transport chain produces 32-34 ATP per glucose.",
-      category: "Physics"
-    },
-    {
-      id: 114,
-      fact: "Fermentation makes 2 ATP per glucose anaerobically.",
-      category: "Health"
-    },
-    {
-      id: 115,
-      fact: "Beta-oxidation breaks down fatty acids.",
-      category: "Element"
-    },
-    {
-      id: 116,
-      fact: "Calvin cycle fixes CO2 to sugar in plants.",
-      category: "Industrial"
-    },
-    {
-      id: 117,
-      fact: "Chlorophyll absorbs red + blue light, reflects green.",
-      category: "Biology"
-    },
-    {
-      id: 118,
-      fact: "Photosynthesis produces 21 percent of atmospheric O2.",
-      category: "History"
-    },
-    {
-      id: 119,
-      fact: "Pre-Cambrian Great Oxidation Event around 2.4 billion years ago.",
-      category: "Physics"
-    },
-    {
-      id: 120,
-      fact: "First eukaryotes around 2.1 billion years ago.",
-      category: "Health"
-    },
-    {
-      id: 121,
-      fact: "Multicellular life around 1 billion years ago.",
-      category: "Element"
-    },
-    {
-      id: 122,
-      fact: "Cambrian explosion 540 million years ago.",
-      category: "Industrial"
-    },
-    {
-      id: 123,
-      fact: "Dinosaurs extinct 65 million years ago.",
-      category: "Biology"
-    },
-    {
-      id: 124,
-      fact: "Modern humans 300,000 years ago.",
-      category: "History"
-    },
-    {
-      id: 125,
-      fact: "Modern alchemy: combining elements via transmutation.",
-      category: "Physics"
-    },
-    {
-      id: 126,
-      fact: "Lead to gold transmutation actually possible via nuclear reactions.",
-      category: "Health"
-    },
-    {
-      id: 127,
-      fact: "Modern art and science can both be inspired by chemistry.",
-      category: "Element"
-    },
-    {
-      id: 128,
-      fact: "Many famous artists used novel chemical pigments.",
-      category: "Industrial"
-    },
-    {
-      id: 129,
-      fact: "Color blindness affects roughly 8 percent of men.",
-      category: "Biology"
-    },
-    {
-      id: 130,
-      fact: "Earth atmosphere is approximately 100 km thick.",
-      category: "History"
-    },
-    {
-      id: 131,
-      fact: "Ozone layer at altitude 10-50 km.",
-      category: "Physics"
-    },
-    {
-      id: 132,
-      fact: "Most weather happens in troposphere (0-10 km).",
-      category: "Health"
-    },
-    {
-      id: 133,
-      fact: "Stratosphere above is more stable.",
-      category: "Element"
-    },
-    {
-      id: 134,
-      fact: "Mesosphere is where most meteors burn up.",
-      category: "Industrial"
-    },
-    {
-      id: 135,
-      fact: "Thermosphere is where aurora occurs.",
-      category: "Biology"
-    },
-    {
-      id: 136,
-      fact: "Most ozone is destroyed by Cl atoms from CFCs.",
-      category: "History"
-    },
-    {
-      id: 137,
-      fact: "Sulfur deposits found in volcanic regions.",
-      category: "Physics"
-    },
-    {
-      id: 138,
-      fact: "Most iron mined comes from Pilbara, Australia.",
-      category: "Health"
-    },
-    {
-      id: 139,
-      fact: "Most copper from Chile.",
-      category: "Element"
-    },
-    {
-      id: 140,
-      fact: "Most lithium from Chile, Argentina, Bolivia (Lithium Triangle).",
-      category: "Industrial"
-    },
-    {
-      id: 141,
-      fact: "Most rare earths from China.",
-      category: "Biology"
-    },
-    {
-      id: 142,
-      fact: "Most uranium from Kazakhstan.",
-      category: "History"
-    },
-    {
-      id: 143,
-      fact: "Most oil from Saudi Arabia + Russia + USA.",
-      category: "Physics"
-    },
-    {
-      id: 144,
-      fact: "Hydrogen from steam reforming of methane.",
-      category: "Health"
-    },
-    {
-      id: 145,
-      fact: "Most ammonia for fertilizer.",
-      category: "Element"
-    },
-    {
-      id: 146,
-      fact: "Most sulfuric acid for fertilizer + chemical synthesis.",
-      category: "Industrial"
-    },
-    {
-      id: 147,
-      fact: "Most chlorine for water treatment + PVC.",
-      category: "Biology"
-    },
-    {
-      id: 148,
-      fact: "Most ethanol for fuel additive.",
-      category: "History"
-    },
-    {
-      id: 149,
-      fact: "Most polyethylene for packaging.",
-      category: "Physics"
-    },
-    {
-      id: 150,
-      fact: "Aspirin used by over 1 billion people daily.",
-      category: "Health"
-    },
-    {
-      id: 151,
-      fact: "Insulin saves 50+ million diabetics worldwide.",
-      category: "Element"
-    },
-    {
-      id: 152,
-      fact: "Most painkillers are acetaminophen or ibuprofen.",
-      category: "Industrial"
-    },
-    {
-      id: 153,
-      fact: "Antibiotics killed 100 million by 1950 (before resistance).",
-      category: "Biology"
-    }
-  ];
-
-
-  // ═══════════════════════════════════════════════════════════
-  // RICH HISTORY EVENTS — 50 detailed entries
-  // ═══════════════════════════════════════════════════════════
-  var HISTORY_RICH = [
-    {
-      id: 1,
-      year: 3000,
-      title: "Egyptians smelt copper from malachite (Cu2CO3(OH)2)",
-      detail: "First documented chemistry. Began metallurgy era.",
-      era: "21st Century",
-      significance: "Foundational"
-    },
-    {
-      id: 2,
-      year: 2200,
-      title: "Bronze invented in Mesopotamia + Indus Valley",
-      detail: "Cu + Sn alloy stronger than pure copper.",
-      era: "21st Century",
-      significance: "Major"
-    },
-    {
-      id: 3,
-      year: 1500,
-      title: "Egyptians develop early glass-making",
-      detail: "Used soda + sand + lime fluxes.",
-      era: "Early Modern",
-      significance: "Transformative"
-    },
-    {
-      id: 4,
-      year: 1200,
-      title: "Iron Age begins in Anatolia",
-      detail: "Iron tools replace bronze.",
-      era: "Medieval",
-      significance: "Critical"
-    },
-    {
-      id: 5,
-      year: 600,
-      title: "Greek philosophers propose 4-element theory",
-      detail: "Earth + Water + Air + Fire.",
-      era: "Medieval",
-      significance: "Foundational"
-    },
-    {
-      id: 6,
-      year: 400,
-      title: "Democritus proposes atomic theory",
-      detail: "Atoms cannot be divided further.",
-      era: "Medieval",
-      significance: "Major"
-    },
-    {
-      id: 7,
-      year: 300,
-      title: "Aristotle's 4 elements becomes dominant view",
-      detail: "Suppresses atomic theory for 2000 years.",
-      era: "Medieval",
-      significance: "Transformative"
-    },
-    {
-      id: 8,
-      year: 800,
-      title: "Arabic alchemy advances chemistry techniques",
-      detail: "Distillation + crystallization developed.",
-      era: "Medieval",
-      significance: "Critical"
-    },
-    {
-      id: 9,
-      year: 1250,
-      title: "Roger Bacon experiments with gunpowder",
-      detail: "Early European chemistry.",
-      era: "Medieval",
-      significance: "Foundational"
-    },
-    {
-      id: 10,
-      year: 1500,
-      title: "Paracelsus introduces iatrochemistry",
-      detail: "Chemistry applied to medicine.",
-      era: "Early Modern",
-      significance: "Major"
-    },
-    {
-      id: 11,
-      year: 1620,
-      title: "Jan Baptist van Helmont coins term \"gas\"",
-      detail: "First proper chemical experiments.",
-      era: "Early Modern",
-      significance: "Transformative"
-    },
-    {
-      id: 12,
-      year: 1662,
-      title: "Robert Boyle publishes Sceptical Chymist",
-      detail: "Challenges Aristotelian elements.",
-      era: "Early Modern",
-      significance: "Critical"
-    },
-    {
-      id: 13,
-      year: 1665,
-      title: "Robert Hooke describes cellular structure",
-      detail: "Crucial for biology + chemistry intersection.",
-      era: "Early Modern",
-      significance: "Foundational"
-    },
-    {
-      id: 14,
-      year: 1750,
-      title: "Joseph Black discovers carbon dioxide",
-      detail: "First identified specific gas.",
-      era: "Early Modern",
-      significance: "Major"
-    },
-    {
-      id: 15,
-      year: 1772,
-      title: "Daniel Rutherford discovers nitrogen",
-      detail: "Air minus oxygen.",
-      era: "Early Modern",
-      significance: "Transformative"
-    },
-    {
-      id: 16,
-      year: 1774,
-      title: "Joseph Priestley discovers oxygen",
-      detail: "Independently after Scheele.",
-      era: "Early Modern",
-      significance: "Critical"
-    },
-    {
-      id: 17,
-      year: 1789,
-      title: "Antoine Lavoisier publishes Traité Élémentaire",
-      detail: "Founds modern chemistry.",
-      era: "Early Modern",
-      significance: "Foundational"
-    },
-    {
-      id: 18,
-      year: 1799,
-      title: "Joseph Proust proposes law of definite proportions",
-      detail: "Compounds have fixed composition.",
-      era: "Early Modern",
-      significance: "Major"
-    },
-    {
-      id: 19,
-      year: 1803,
-      title: "John Dalton proposes atomic theory",
-      detail: "Atoms differ between elements.",
-      era: "19th Century",
-      significance: "Transformative"
-    },
-    {
-      id: 20,
-      year: 1808,
-      title: "Gay-Lussac discovers law of combining volumes",
-      detail: "Gas reactions in whole-number ratios.",
-      era: "19th Century",
-      significance: "Critical"
-    },
-    {
-      id: 21,
-      year: 1811,
-      title: "Amedeo Avogadro hypothesizes equal volumes equal moles",
-      detail: "Foundation of modern chemistry.",
-      era: "19th Century",
-      significance: "Foundational"
-    },
-    {
-      id: 22,
-      year: 1820,
-      title: "Berzelius proposes chemical symbols",
-      detail: "H, O, C system we use today.",
-      era: "19th Century",
-      significance: "Major"
-    },
-    {
-      id: 23,
-      year: 1828,
-      title: "Friedrich Wöhler synthesizes urea from inorganic",
-      detail: "Disproves vitalism.",
-      era: "19th Century",
-      significance: "Transformative"
-    },
-    {
-      id: 24,
-      year: 1849,
-      title: "Liebig founds organic chemistry as discipline",
-      detail: "Father of agricultural chemistry too.",
-      era: "19th Century",
-      significance: "Critical"
-    },
-    {
-      id: 25,
-      year: 1860,
-      title: "Kekulé proposes structural theory",
-      detail: "Atoms in space.",
-      era: "19th Century",
-      significance: "Foundational"
-    },
-    {
-      id: 26,
-      year: 1865,
-      title: "Kekulé proposes benzene ring structure",
-      detail: "Reportedly from dream of snake biting tail.",
-      era: "19th Century",
-      significance: "Major"
-    },
-    {
-      id: 27,
-      year: 1869,
-      title: "Dmitri Mendeleev publishes periodic table",
-      detail: "Predicts undiscovered elements.",
-      era: "19th Century",
-      significance: "Transformative"
-    },
-    {
-      id: 28,
-      year: 1875,
-      title: "Gallium discovered, confirming Mendeleev",
-      detail: "First predicted element found.",
-      era: "19th Century",
-      significance: "Critical"
-    },
-    {
-      id: 29,
-      year: 1885,
-      title: "Germanium discovered, again confirming",
-      detail: "Mendeleev's reputation secured.",
-      era: "19th Century",
-      significance: "Foundational"
-    },
-    {
-      id: 30,
-      year: 1895,
-      title: "X-rays discovered by Wilhelm Röntgen",
-      detail: "Foundation of X-ray crystallography.",
-      era: "19th Century",
-      significance: "Major"
-    },
-    {
-      id: 31,
-      year: 1897,
-      title: "J.J. Thomson discovers electron",
-      detail: "First subatomic particle.",
-      era: "19th Century",
-      significance: "Transformative"
-    },
-    {
-      id: 32,
-      year: 1898,
-      title: "Marie + Pierre Curie discover polonium + radium",
-      detail: "Foundation of radioactivity science.",
-      era: "19th Century",
-      significance: "Critical"
-    },
-    {
-      id: 33,
-      year: 1900,
-      title: "Max Planck proposes quantum theory",
-      detail: "Light comes in packets.",
-      era: "Early 20th",
-      significance: "Foundational"
-    },
-    {
-      id: 34,
-      year: 1905,
-      title: "Einstein explains photoelectric effect with quanta",
-      detail: "Confirms quantum nature of light.",
-      era: "Early 20th",
-      significance: "Major"
-    },
-    {
-      id: 35,
-      year: 1909,
-      title: "Fritz Haber synthesizes ammonia industrially",
-      detail: "Will feed half of humanity.",
-      era: "Early 20th",
-      significance: "Transformative"
-    },
-    {
-      id: 36,
-      year: 1911,
-      title: "Ernest Rutherford discovers atomic nucleus",
-      detail: "Gold foil experiment.",
-      era: "Early 20th",
-      significance: "Critical"
-    },
-    {
-      id: 37,
-      year: 1913,
-      title: "Niels Bohr proposes quantized atomic model",
-      detail: "Solves hydrogen spectrum.",
-      era: "Early 20th",
-      significance: "Foundational"
-    },
-    {
-      id: 38,
-      year: 1923,
-      title: "Gilbert N. Lewis proposes electron-pair bonds",
-      detail: "Modern bonding theory.",
-      era: "Early 20th",
-      significance: "Major"
-    },
-    {
-      id: 39,
-      year: 1926,
-      title: "Erwin Schrödinger publishes wave equation",
-      detail: "Quantum mechanics formalized.",
-      era: "Early 20th",
-      significance: "Transformative"
-    },
-    {
-      id: 40,
-      year: 1929,
-      title: "Linus Pauling describes hybridization",
-      detail: "Molecular shape explained.",
-      era: "Early 20th",
-      significance: "Critical"
-    },
-    {
-      id: 41,
-      year: 1932,
-      title: "James Chadwick discovers neutron",
-      detail: "Last major subatomic particle.",
-      era: "Early 20th",
-      significance: "Foundational"
-    },
-    {
-      id: 42,
-      year: 1938,
-      title: "Hahn + Strassmann discover nuclear fission",
-      detail: "Atomic age begins.",
-      era: "Early 20th",
-      significance: "Major"
-    },
-    {
-      id: 43,
-      year: 1953,
-      title: "Watson + Crick + Franklin determine DNA structure",
-      detail: "Modern molecular biology.",
-      era: "Late 20th",
-      significance: "Transformative"
-    },
-    {
-      id: 44,
-      year: 1953,
-      title: "Miller-Urey demonstrates abiotic amino acids",
-      detail: "Possible origin of life.",
-      era: "Late 20th",
-      significance: "Critical"
-    },
-    {
-      id: 45,
-      year: 1962,
-      title: "Rachel Carson publishes Silent Spring",
-      detail: "Environmental chemistry movement.",
-      era: "Late 20th",
-      significance: "Foundational"
-    },
-    {
-      id: 46,
-      year: 1985,
-      title: "Buckminsterfullerene discovered",
-      detail: "C60 sphere.",
-      era: "Late 20th",
-      significance: "Major"
-    },
-    {
-      id: 47,
-      year: 1991,
-      title: "Carbon nanotubes discovered",
-      detail: "Strong + conductive material.",
-      era: "Late 20th",
-      significance: "Transformative"
-    },
-    {
-      id: 48,
-      year: 2004,
-      title: "Graphene isolated by Geim + Novoselov",
-      detail: "Nobel 2010.",
-      era: "21st Century",
-      significance: "Critical"
-    },
-    {
-      id: 49,
-      year: 2020,
-      title: "mRNA vaccines deployed for COVID",
-      detail: "Chemistry saves lives.",
-      era: "21st Century",
-      significance: "Foundational"
-    },
-    {
-      id: 50,
-      year: 2024,
-      title: "AlphaFold revolutionizes protein structure",
-      detail: "AI + chemistry combine.",
-      era: "21st Century",
-      significance: "Major"
-    }
-  ];
-
-  // ═══════════════════════════════════════════════════════════
-  // FULL EXPERIMENT PROCEDURES — 80 lab activities
-  // ═══════════════════════════════════════════════════════════
-  var FULL_EXPERIMENTS = [
-    {
-      id: 1,
-      title: "Cabbage Indicator Test",
-      gradeLevel: "K-2",
-      duration: "15 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 1",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 2,
-      title: "Penny Cleaning",
-      gradeLevel: "3-5",
-      duration: "30 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 2",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 3,
-      title: "Crystal Growing",
-      gradeLevel: "6-8",
-      duration: "45 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 3",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 4,
-      title: "Density Tower",
-      gradeLevel: "9-12",
-      duration: "60 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 4",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 5,
-      title: "Yeast + Sugar",
-      gradeLevel: "K-2",
-      duration: "90 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 5",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 6,
-      title: "Iodine Clock",
-      gradeLevel: "3-5",
-      duration: "15 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 6",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 7,
-      title: "Magnesium Burn",
-      gradeLevel: "6-8",
-      duration: "30 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 7",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 8,
-      title: "Sodium in Water",
-      gradeLevel: "9-12",
-      duration: "45 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 8",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 9,
-      title: "Acid-Base Titration",
-      gradeLevel: "K-2",
-      duration: "60 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 9",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 10,
-      title: "Electrolysis of Water",
-      gradeLevel: "3-5",
-      duration: "90 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 10",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 11,
-      title: "Flame Test",
-      gradeLevel: "6-8",
-      duration: "15 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 11",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 12,
-      title: "Limewater Test",
-      gradeLevel: "9-12",
-      duration: "30 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 12",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 13,
-      title: "Egg in Vinegar",
-      gradeLevel: "K-2",
-      duration: "45 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 13",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 14,
-      title: "Borax Crystal",
-      gradeLevel: "3-5",
-      duration: "60 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 14",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 15,
-      title: "Slime Making",
-      gradeLevel: "6-8",
-      duration: "90 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 15",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 16,
-      title: "Lava Lamp",
-      gradeLevel: "9-12",
-      duration: "15 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 16",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 17,
-      title: "Plastic Milk",
-      gradeLevel: "K-2",
-      duration: "30 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 17",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 18,
-      title: "Glow Stick",
-      gradeLevel: "3-5",
-      duration: "45 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 18",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 19,
-      title: "Rusty Nail Battery",
-      gradeLevel: "6-8",
-      duration: "60 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 19",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 20,
-      title: "Lemon Battery",
-      gradeLevel: "9-12",
-      duration: "90 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 20",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 21,
-      title: "Endothermic Reaction",
-      gradeLevel: "K-2",
-      duration: "15 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 21",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 22,
-      title: "Exothermic Reaction",
-      gradeLevel: "3-5",
-      duration: "30 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 22",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 23,
-      title: "pH of Common Substances",
-      gradeLevel: "6-8",
-      duration: "45 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 23",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 24,
-      title: "Vitamin C in Juice",
-      gradeLevel: "9-12",
-      duration: "60 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 24",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 25,
-      title: "Effect of Surface Area",
-      gradeLevel: "K-2",
-      duration: "90 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 25",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 26,
-      title: "Effect of Temperature",
-      gradeLevel: "3-5",
-      duration: "15 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 26",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 27,
-      title: "Effect of Concentration",
-      gradeLevel: "6-8",
-      duration: "30 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 27",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 28,
-      title: "Catalyst Demo",
-      gradeLevel: "9-12",
-      duration: "45 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 28",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 29,
-      title: "Polarity Test",
-      gradeLevel: "K-2",
-      duration: "60 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 29",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 30,
-      title: "Capillary Action",
-      gradeLevel: "3-5",
-      duration: "90 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 30",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 31,
-      title: "Chromatography",
-      gradeLevel: "6-8",
-      duration: "15 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 31",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 32,
-      title: "Distillation",
-      gradeLevel: "9-12",
-      duration: "30 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 32",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 33,
-      title: "Soap Making",
-      gradeLevel: "K-2",
-      duration: "45 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 33",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 34,
-      title: "Candle Wax",
-      gradeLevel: "3-5",
-      duration: "60 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 34",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 35,
-      title: "Crystal Garden",
-      gradeLevel: "6-8",
-      duration: "90 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 35",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 36,
-      title: "Naked Egg",
-      gradeLevel: "9-12",
-      duration: "15 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 36",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 37,
-      title: "Floating + Sinking",
-      gradeLevel: "K-2",
-      duration: "30 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 37",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 38,
-      title: "Mentos + Cola",
-      gradeLevel: "3-5",
-      duration: "45 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 38",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 39,
-      title: "Tornado in Bottle",
-      gradeLevel: "6-8",
-      duration: "60 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 39",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 40,
-      title: "Soap Lifting",
-      gradeLevel: "9-12",
-      duration: "90 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 40",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 41,
-      title: "Borax + Vinegar",
-      gradeLevel: "K-2",
-      duration: "15 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 41",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 42,
-      title: "Hot Ice",
-      gradeLevel: "3-5",
-      duration: "30 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 42",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 43,
-      title: "Crystal Snowflakes",
-      gradeLevel: "6-8",
-      duration: "45 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 43",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 44,
-      title: "Magic Sand",
-      gradeLevel: "9-12",
-      duration: "60 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 44",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 45,
-      title: "Color Changing Milk",
-      gradeLevel: "K-2",
-      duration: "90 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 45",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 46,
-      title: "Frozen CO2 Bubbles",
-      gradeLevel: "3-5",
-      duration: "15 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 46",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 47,
-      title: "Dancing Raisins",
-      gradeLevel: "6-8",
-      duration: "30 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 47",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 48,
-      title: "Magic Glasses",
-      gradeLevel: "9-12",
-      duration: "45 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 48",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 49,
-      title: "Microscale Reactions",
-      gradeLevel: "K-2",
-      duration: "60 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 49",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 50,
-      title: "Acid Ammonia Test",
-      gradeLevel: "3-5",
-      duration: "90 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 50",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 51,
-      title: "Carbonation Test",
-      gradeLevel: "6-8",
-      duration: "15 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 51",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 52,
-      title: "Effect of pH",
-      gradeLevel: "9-12",
-      duration: "30 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 52",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 53,
-      title: "Acid in Stomach Model",
-      gradeLevel: "K-2",
-      duration: "45 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 53",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 54,
-      title: "Bone in Vinegar",
-      gradeLevel: "3-5",
-      duration: "60 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 54",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 55,
-      title: "Tooth Decay Model",
-      gradeLevel: "6-8",
-      duration: "90 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 55",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 56,
-      title: "Plant Cell Osmosis",
-      gradeLevel: "9-12",
-      duration: "15 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 56",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 57,
-      title: "Red Cabbage pH Strips",
-      gradeLevel: "K-2",
-      duration: "30 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 57",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 58,
-      title: "Color Changing Water",
-      gradeLevel: "3-5",
-      duration: "45 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 58",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 59,
-      title: "Ice Salt Lowering",
-      gradeLevel: "6-8",
-      duration: "60 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 59",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 60,
-      title: "Boiling Point Elevation",
-      gradeLevel: "9-12",
-      duration: "90 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 60",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 61,
-      title: "Bromothymol Test",
-      gradeLevel: "K-2",
-      duration: "15 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 61",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 62,
-      title: "Bicarbonate Test",
-      gradeLevel: "3-5",
-      duration: "30 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 62",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 63,
-      title: "Test for Halides",
-      gradeLevel: "6-8",
-      duration: "45 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 63",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 64,
-      title: "Test for Sulfate",
-      gradeLevel: "9-12",
-      duration: "60 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 64",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 65,
-      title: "Test for Iron",
-      gradeLevel: "K-2",
-      duration: "90 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 65",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 66,
-      title: "Test for Copper",
-      gradeLevel: "3-5",
-      duration: "15 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 66",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 67,
-      title: "Test for Nitrate",
-      gradeLevel: "6-8",
-      duration: "30 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 67",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 68,
-      title: "Test for Carbonate",
-      gradeLevel: "9-12",
-      duration: "45 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 68",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 69,
-      title: "Polymer Synthesis (Nylon)",
-      gradeLevel: "K-2",
-      duration: "60 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 69",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 70,
-      title: "Bouncing Ball",
-      gradeLevel: "3-5",
-      duration: "90 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 70",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 71,
-      title: "Crystal Cluster",
-      gradeLevel: "6-8",
-      duration: "15 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 71",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 72,
-      title: "Salt Crystals",
-      gradeLevel: "9-12",
-      duration: "30 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 72",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 73,
-      title: "Sugar Crystals",
-      gradeLevel: "K-2",
-      duration: "45 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 73",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 74,
-      title: "Copper Sulfate Crystals",
-      gradeLevel: "3-5",
-      duration: "60 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 74",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 75,
-      title: "Alum Crystals",
-      gradeLevel: "6-8",
-      duration: "90 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 75",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 76,
-      title: "Quartz Crystals",
-      gradeLevel: "9-12",
-      duration: "15 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 76",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 77,
-      title: "Cement Hydration",
-      gradeLevel: "K-2",
-      duration: "30 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 77",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 78,
-      title: "Glass Tinting",
-      gradeLevel: "3-5",
-      duration: "45 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 78",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 79,
-      title: "Paper Bleaching",
-      gradeLevel: "6-8",
-      duration: "60 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 79",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    },
-    {
-      id: 80,
-      title: "Detergent Foam",
-      gradeLevel: "9-12",
-      duration: "90 min",
-      materials: "Basic lab equipment + chemicals appropriate for experiment 80",
-      objective: "Students will observe and document chemical phenomena.",
-      preparation: "Read safety guidelines. Pre-measure chemicals if needed.",
-      steps: [
-        "Set up apparatus carefully according to instructions.",
-        "Measure required quantities of each chemical.",
-        "Combine reagents in proper sequence.",
-        "Observe phenomena + record observations.",
-        "Analyze results + answer reflection questions.",
-        "Clean up + dispose of waste properly."
-      ],
-      observation: "Specific to experiment. Document color, temperature, gas, etc.",
-      explanation: "Chemistry concept demonstrated by this procedure.",
-      safety: "Wear PPE. Follow lab safety. Adult supervision.",
-      extensions: "Vary one parameter. Compare results. Connect to advanced topics."
-    }
-  ];
-
-  // ═══════════════════════════════════════════════════════════
-  // EXPANDED FAMOUS CHEMISTS — 60 with full biographies
-  // ═══════════════════════════════════════════════════════════
-  var CHEMISTS_60 = [
-    {
-      id: 1,
-      name: "Antoine Lavoisier",
-      born: 1743,
-      died: 1794,
-      country: "France",
-      summary: "Father of modern chemistry",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 2,
-      name: "Marie Curie",
-      born: 1867,
-      died: 1934,
-      country: "Poland/France",
-      summary: "First person to win 2 Nobel Prizes",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 3,
-      name: "Dmitri Mendeleev",
-      born: 1834,
-      died: 1907,
-      country: "Russia",
-      summary: "Created periodic table",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 4,
-      name: "Linus Pauling",
-      born: 1901,
-      died: 1994,
-      country: "USA",
-      summary: "Nature of chemical bond + vitamin C advocate",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 5,
-      name: "Fritz Haber",
-      born: 1868,
-      died: 1934,
-      country: "Germany",
-      summary: "Ammonia synthesis; chemical weapons WWI",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 6,
-      name: "Robert Boyle",
-      born: 1627,
-      died: 1691,
-      country: "Ireland/UK",
-      summary: "Founded modern chemistry methodology",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 7,
-      name: "John Dalton",
-      born: 1766,
-      died: 1844,
-      country: "UK",
-      summary: "Modern atomic theory 1808",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 8,
-      name: "Joseph Priestley",
-      born: 1733,
-      died: 1804,
-      country: "UK/USA",
-      summary: "Discovered oxygen + soda water",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 9,
-      name: "Justus von Liebig",
-      born: 1803,
-      died: 1873,
-      country: "Germany",
-      summary: "Father of agricultural chemistry",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 10,
-      name: "Friedrich Wöhler",
-      born: 1800,
-      died: 1882,
-      country: "Germany",
-      summary: "First synthesized organic from inorganic",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 11,
-      name: "Antoine Lavoisier (variant 1)",
-      born: 1743,
-      died: 1794,
-      country: "France",
-      summary: "Father of modern chemistry",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 12,
-      name: "Marie Curie (variant 1)",
-      born: 1867,
-      died: 1934,
-      country: "Poland/France",
-      summary: "First person to win 2 Nobel Prizes",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 13,
-      name: "Dmitri Mendeleev (variant 1)",
-      born: 1834,
-      died: 1907,
-      country: "Russia",
-      summary: "Created periodic table",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 14,
-      name: "Linus Pauling (variant 1)",
-      born: 1901,
-      died: 1994,
-      country: "USA",
-      summary: "Nature of chemical bond + vitamin C advocate",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 15,
-      name: "Fritz Haber (variant 1)",
-      born: 1868,
-      died: 1934,
-      country: "Germany",
-      summary: "Ammonia synthesis; chemical weapons WWI",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 16,
-      name: "Robert Boyle (variant 1)",
-      born: 1627,
-      died: 1691,
-      country: "Ireland/UK",
-      summary: "Founded modern chemistry methodology",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 17,
-      name: "John Dalton (variant 1)",
-      born: 1766,
-      died: 1844,
-      country: "UK",
-      summary: "Modern atomic theory 1808",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 18,
-      name: "Joseph Priestley (variant 1)",
-      born: 1733,
-      died: 1804,
-      country: "UK/USA",
-      summary: "Discovered oxygen + soda water",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 19,
-      name: "Justus von Liebig (variant 1)",
-      born: 1803,
-      died: 1873,
-      country: "Germany",
-      summary: "Father of agricultural chemistry",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 20,
-      name: "Friedrich Wöhler (variant 1)",
-      born: 1800,
-      died: 1882,
-      country: "Germany",
-      summary: "First synthesized organic from inorganic",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 21,
-      name: "Antoine Lavoisier (variant 2)",
-      born: 1743,
-      died: 1794,
-      country: "France",
-      summary: "Father of modern chemistry",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 22,
-      name: "Marie Curie (variant 2)",
-      born: 1867,
-      died: 1934,
-      country: "Poland/France",
-      summary: "First person to win 2 Nobel Prizes",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 23,
-      name: "Dmitri Mendeleev (variant 2)",
-      born: 1834,
-      died: 1907,
-      country: "Russia",
-      summary: "Created periodic table",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 24,
-      name: "Linus Pauling (variant 2)",
-      born: 1901,
-      died: 1994,
-      country: "USA",
-      summary: "Nature of chemical bond + vitamin C advocate",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 25,
-      name: "Fritz Haber (variant 2)",
-      born: 1868,
-      died: 1934,
-      country: "Germany",
-      summary: "Ammonia synthesis; chemical weapons WWI",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 26,
-      name: "Robert Boyle (variant 2)",
-      born: 1627,
-      died: 1691,
-      country: "Ireland/UK",
-      summary: "Founded modern chemistry methodology",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 27,
-      name: "John Dalton (variant 2)",
-      born: 1766,
-      died: 1844,
-      country: "UK",
-      summary: "Modern atomic theory 1808",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 28,
-      name: "Joseph Priestley (variant 2)",
-      born: 1733,
-      died: 1804,
-      country: "UK/USA",
-      summary: "Discovered oxygen + soda water",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 29,
-      name: "Justus von Liebig (variant 2)",
-      born: 1803,
-      died: 1873,
-      country: "Germany",
-      summary: "Father of agricultural chemistry",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 30,
-      name: "Friedrich Wöhler (variant 2)",
-      born: 1800,
-      died: 1882,
-      country: "Germany",
-      summary: "First synthesized organic from inorganic",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 31,
-      name: "Antoine Lavoisier (variant 3)",
-      born: 1743,
-      died: 1794,
-      country: "France",
-      summary: "Father of modern chemistry",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 32,
-      name: "Marie Curie (variant 3)",
-      born: 1867,
-      died: 1934,
-      country: "Poland/France",
-      summary: "First person to win 2 Nobel Prizes",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 33,
-      name: "Dmitri Mendeleev (variant 3)",
-      born: 1834,
-      died: 1907,
-      country: "Russia",
-      summary: "Created periodic table",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 34,
-      name: "Linus Pauling (variant 3)",
-      born: 1901,
-      died: 1994,
-      country: "USA",
-      summary: "Nature of chemical bond + vitamin C advocate",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 35,
-      name: "Fritz Haber (variant 3)",
-      born: 1868,
-      died: 1934,
-      country: "Germany",
-      summary: "Ammonia synthesis; chemical weapons WWI",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 36,
-      name: "Robert Boyle (variant 3)",
-      born: 1627,
-      died: 1691,
-      country: "Ireland/UK",
-      summary: "Founded modern chemistry methodology",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 37,
-      name: "John Dalton (variant 3)",
-      born: 1766,
-      died: 1844,
-      country: "UK",
-      summary: "Modern atomic theory 1808",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 38,
-      name: "Joseph Priestley (variant 3)",
-      born: 1733,
-      died: 1804,
-      country: "UK/USA",
-      summary: "Discovered oxygen + soda water",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 39,
-      name: "Justus von Liebig (variant 3)",
-      born: 1803,
-      died: 1873,
-      country: "Germany",
-      summary: "Father of agricultural chemistry",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 40,
-      name: "Friedrich Wöhler (variant 3)",
-      born: 1800,
-      died: 1882,
-      country: "Germany",
-      summary: "First synthesized organic from inorganic",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 41,
-      name: "Antoine Lavoisier (variant 4)",
-      born: 1743,
-      died: 1794,
-      country: "France",
-      summary: "Father of modern chemistry",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 42,
-      name: "Marie Curie (variant 4)",
-      born: 1867,
-      died: 1934,
-      country: "Poland/France",
-      summary: "First person to win 2 Nobel Prizes",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 43,
-      name: "Dmitri Mendeleev (variant 4)",
-      born: 1834,
-      died: 1907,
-      country: "Russia",
-      summary: "Created periodic table",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 44,
-      name: "Linus Pauling (variant 4)",
-      born: 1901,
-      died: 1994,
-      country: "USA",
-      summary: "Nature of chemical bond + vitamin C advocate",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 45,
-      name: "Fritz Haber (variant 4)",
-      born: 1868,
-      died: 1934,
-      country: "Germany",
-      summary: "Ammonia synthesis; chemical weapons WWI",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 46,
-      name: "Robert Boyle (variant 4)",
-      born: 1627,
-      died: 1691,
-      country: "Ireland/UK",
-      summary: "Founded modern chemistry methodology",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 47,
-      name: "John Dalton (variant 4)",
-      born: 1766,
-      died: 1844,
-      country: "UK",
-      summary: "Modern atomic theory 1808",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 48,
-      name: "Joseph Priestley (variant 4)",
-      born: 1733,
-      died: 1804,
-      country: "UK/USA",
-      summary: "Discovered oxygen + soda water",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 49,
-      name: "Justus von Liebig (variant 4)",
-      born: 1803,
-      died: 1873,
-      country: "Germany",
-      summary: "Father of agricultural chemistry",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 50,
-      name: "Friedrich Wöhler (variant 4)",
-      born: 1800,
-      died: 1882,
-      country: "Germany",
-      summary: "First synthesized organic from inorganic",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 51,
-      name: "Antoine Lavoisier (variant 5)",
-      born: 1743,
-      died: 1794,
-      country: "France",
-      summary: "Father of modern chemistry",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 52,
-      name: "Marie Curie (variant 5)",
-      born: 1867,
-      died: 1934,
-      country: "Poland/France",
-      summary: "First person to win 2 Nobel Prizes",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 53,
-      name: "Dmitri Mendeleev (variant 5)",
-      born: 1834,
-      died: 1907,
-      country: "Russia",
-      summary: "Created periodic table",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 54,
-      name: "Linus Pauling (variant 5)",
-      born: 1901,
-      died: 1994,
-      country: "USA",
-      summary: "Nature of chemical bond + vitamin C advocate",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 55,
-      name: "Fritz Haber (variant 5)",
-      born: 1868,
-      died: 1934,
-      country: "Germany",
-      summary: "Ammonia synthesis; chemical weapons WWI",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 56,
-      name: "Robert Boyle (variant 5)",
-      born: 1627,
-      died: 1691,
-      country: "Ireland/UK",
-      summary: "Founded modern chemistry methodology",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 57,
-      name: "John Dalton (variant 5)",
-      born: 1766,
-      died: 1844,
-      country: "UK",
-      summary: "Modern atomic theory 1808",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 58,
-      name: "Joseph Priestley (variant 5)",
-      born: 1733,
-      died: 1804,
-      country: "UK/USA",
-      summary: "Discovered oxygen + soda water",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 59,
-      name: "Justus von Liebig (variant 5)",
-      born: 1803,
-      died: 1873,
-      country: "Germany",
-      summary: "Father of agricultural chemistry",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    },
-    {
-      id: 60,
-      name: "Friedrich Wöhler (variant 5)",
-      born: 1800,
-      died: 1882,
-      country: "Germany",
-      summary: "First synthesized organic from inorganic",
-      contribution: "Major contribution to chemistry through pioneering research, often working under challenging conditions. Their work formed the foundation for modern understanding of chemical phenomena.",
-      legacy: "Their discoveries shape current scientific practice. Awards and honors continue to recognize their impact.",
-      famousWork: "Several papers and treatises that revolutionized chemistry. Translations into many languages.",
-      personality: "Dedicated, passionate, often controversial in their time. Many faced personal tragedies tied to their work.",
-      notable: "Specific element discovered, technique invented, or theoretical framework proposed.",
-      timeline: [
-        "Early education in classical sciences.",
-        "First major publication or discovery.",
-        "Recognition by peers and society.",
-        "Continued research and teaching.",
-        "Later years and legacy."
-      ]
-    }
-  ];
-
-  // ═══════════════════════════════════════════════════════════
-  // COMPOUND ENCYCLOPEDIA — 120 compound profiles
-  // ═══════════════════════════════════════════════════════════
-  var COMPOUND_DB = [
-    {
-      id: 1,
-      name: "Sodium chloride",
-      formula: "NaCl",
-      commonName: "Salt",
-      class: "Acid",
-      melting: "312.0C",
-      boiling: "552.2C",
-      density: "1.71 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 2,
-      name: "Sucrose",
-      formula: "C12H22O11",
-      commonName: "Table sugar",
-      class: "Base",
-      melting: "59.7C",
-      boiling: "389.1C",
-      density: "1.21 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 3,
-      name: "Acetic acid",
-      formula: "CH3COOH",
-      commonName: "Vinegar",
-      class: "Salt",
-      melting: "1.6C",
-      boiling: "676.1C",
-      density: "1.41 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 4,
-      name: "Citric acid",
-      formula: "C6H8O7",
-      commonName: "Lemon",
-      class: "Hydrocarbon",
-      melting: "232.2C",
-      boiling: "161.8C",
-      density: "1.66 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 5,
-      name: "Aspirin",
-      formula: "C9H8O4",
-      commonName: "Pain relief",
-      class: "Sugar",
-      melting: "164.1C",
-      boiling: "379.5C",
-      density: "0.77 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 6,
-      name: "Ibuprofen",
-      formula: "C13H18O2",
-      commonName: "Pain relief",
-      class: "Protein",
-      melting: "207.1C",
-      boiling: "106.5C",
-      density: "2.41 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 7,
-      name: "Vitamin C",
-      formula: "C6H8O6",
-      commonName: "Ascorbic acid",
-      class: "Steroid",
-      melting: "39.3C",
-      boiling: "343.5C",
-      density: "0.58 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 8,
-      name: "Caffeine",
-      formula: "C8H10N4O2",
-      commonName: "Stimulant",
-      class: "Drug",
-      melting: "7.6C",
-      boiling: "176.9C",
-      density: "0.94 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 9,
-      name: "Nicotine",
-      formula: "C10H14N2",
-      commonName: "Tobacco active",
-      class: "Acid",
-      melting: "147.7C",
-      boiling: "694.2C",
-      density: "2.42 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 10,
-      name: "Ethanol",
-      formula: "C2H5OH",
-      commonName: "Alcohol",
-      class: "Base",
-      melting: "146.4C",
-      boiling: "203.5C",
-      density: "1.00 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 11,
-      name: "Methanol",
-      formula: "CH3OH",
-      commonName: "Wood alcohol",
-      class: "Salt",
-      melting: "224.6C",
-      boiling: "641.8C",
-      density: "0.52 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 12,
-      name: "Isopropanol",
-      formula: "C3H8O",
-      commonName: "Rubbing alcohol",
-      class: "Hydrocarbon",
-      melting: "324.6C",
-      boiling: "488.6C",
-      density: "1.98 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 13,
-      name: "Glucose",
-      formula: "C6H12O6",
-      commonName: "Blood sugar",
-      class: "Sugar",
-      melting: "126.4C",
-      boiling: "580.7C",
-      density: "0.99 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 14,
-      name: "Fructose",
-      formula: "C6H12O6",
-      commonName: "Fruit sugar",
-      class: "Protein",
-      melting: "79.4C",
-      boiling: "344.1C",
-      density: "2.19 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 15,
-      name: "Sucrose",
-      formula: "C12H22O11",
-      commonName: "Cane sugar",
-      class: "Steroid",
-      melting: "216.2C",
-      boiling: "493.1C",
-      density: "1.97 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 16,
-      name: "Lactose",
-      formula: "C12H22O11",
-      commonName: "Milk sugar",
-      class: "Drug",
-      melting: "303.8C",
-      boiling: "182.7C",
-      density: "2.22 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 17,
-      name: "Cholesterol",
-      formula: "C27H46O",
-      commonName: "Steroid",
-      class: "Acid",
-      melting: "38.3C",
-      boiling: "556.2C",
-      density: "2.18 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 18,
-      name: "Testosterone",
-      formula: "C19H28O2",
-      commonName: "Hormone",
-      class: "Base",
-      melting: "73.3C",
-      boiling: "677.0C",
-      density: "1.18 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 19,
-      name: "Estrogen",
-      formula: "C18H24O2",
-      commonName: "Hormone",
-      class: "Salt",
-      melting: "141.8C",
-      boiling: "234.1C",
-      density: "1.08 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 20,
-      name: "Insulin",
-      formula: "Protein",
-      commonName: "Diabetes med",
-      class: "Hydrocarbon",
-      melting: "294.2C",
-      boiling: "376.6C",
-      density: "2.00 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 21,
-      name: "Hemoglobin",
-      formula: "Protein",
-      commonName: "O2 transport",
-      class: "Sugar",
-      melting: "11.8C",
-      boiling: "332.9C",
-      density: "2.09 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 22,
-      name: "Penicillin",
-      formula: "C16H18N2O4S",
-      commonName: "Antibiotic",
-      class: "Protein",
-      melting: "236.4C",
-      boiling: "230.5C",
-      density: "2.43 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 23,
-      name: "Amoxicillin",
-      formula: "C16H19N3O5S",
-      commonName: "Antibiotic",
-      class: "Steroid",
-      melting: "11.8C",
-      boiling: "365.9C",
-      density: "1.15 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 24,
-      name: "Acetaminophen",
-      formula: "C8H9NO2",
-      commonName: "Tylenol",
-      class: "Drug",
-      melting: "285.4C",
-      boiling: "289.9C",
-      density: "2.29 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 25,
-      name: "Aspirin",
-      formula: "C9H8O4",
-      commonName: "NSAID",
-      class: "Acid",
-      melting: "242.1C",
-      boiling: "109.3C",
-      density: "1.21 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 26,
-      name: "Naproxen",
-      formula: "C14H14O3",
-      commonName: "NSAID",
-      class: "Base",
-      melting: "192.6C",
-      boiling: "419.5C",
-      density: "2.47 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 27,
-      name: "Morphine",
-      formula: "C17H19NO3",
-      commonName: "Opioid",
-      class: "Salt",
-      melting: "181.3C",
-      boiling: "529.7C",
-      density: "0.76 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 28,
-      name: "Codeine",
-      formula: "C18H21NO3",
-      commonName: "Opioid",
-      class: "Hydrocarbon",
-      melting: "32.8C",
-      boiling: "359.9C",
-      density: "1.67 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 29,
-      name: "Heroin",
-      formula: "C21H23NO5",
-      commonName: "Illegal opioid",
-      class: "Sugar",
-      melting: "236.2C",
-      boiling: "438.5C",
-      density: "0.96 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 30,
-      name: "Cocaine",
-      formula: "C17H21NO4",
-      commonName: "Illegal stimulant",
-      class: "Protein",
-      melting: "279.5C",
-      boiling: "235.3C",
-      density: "1.91 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 31,
-      name: "THC",
-      formula: "C21H30O2",
-      commonName: "Marijuana active",
-      class: "Steroid",
-      melting: "315.7C",
-      boiling: "314.5C",
-      density: "1.83 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 32,
-      name: "Caffeine",
-      formula: "C8H10N4O2",
-      commonName: "Coffee active",
-      class: "Drug",
-      melting: "46.8C",
-      boiling: "341.7C",
-      density: "2.39 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 33,
-      name: "Theobromine",
-      formula: "C7H8N4O2",
-      commonName: "Chocolate active",
-      class: "Acid",
-      melting: "337.7C",
-      boiling: "248.1C",
-      density: "2.02 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 34,
-      name: "L-Dopa",
-      formula: "C9H11NO4",
-      commonName: "Parkinson med",
-      class: "Base",
-      melting: "142.2C",
-      boiling: "552.4C",
-      density: "1.43 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 35,
-      name: "Adrenaline",
-      formula: "C9H13NO3",
-      commonName: "Fight or flight",
-      class: "Salt",
-      melting: "258.0C",
-      boiling: "424.8C",
-      density: "1.09 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 36,
-      name: "Serotonin",
-      formula: "C10H12N2O",
-      commonName: "Mood",
-      class: "Hydrocarbon",
-      melting: "323.5C",
-      boiling: "673.5C",
-      density: "1.46 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 37,
-      name: "Dopamine",
-      formula: "C8H11NO2",
-      commonName: "Reward",
-      class: "Sugar",
-      melting: "96.1C",
-      boiling: "235.0C",
-      density: "2.17 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 38,
-      name: "GABA",
-      formula: "C4H9NO2",
-      commonName: "Inhibitory",
-      class: "Protein",
-      melting: "389.0C",
-      boiling: "489.7C",
-      density: "1.05 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 39,
-      name: "Acetylcholine",
-      formula: "C7H16NO2",
-      commonName: "Neurotransmitter",
-      class: "Steroid",
-      melting: "194.7C",
-      boiling: "392.3C",
-      density: "1.42 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 40,
-      name: "Insulin",
-      formula: "Protein",
-      commonName: "Hormone",
-      class: "Drug",
-      melting: "300.3C",
-      boiling: "398.1C",
-      density: "1.60 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 41,
-      name: "Glucagon",
-      formula: "Protein",
-      commonName: "Counter to insulin",
-      class: "Acid",
-      melting: "189.0C",
-      boiling: "247.8C",
-      density: "0.82 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 42,
-      name: "Thyroxine T4",
-      formula: "C15H11I4NO4",
-      commonName: "Thyroid",
-      class: "Base",
-      melting: "102.9C",
-      boiling: "592.9C",
-      density: "1.58 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 43,
-      name: "Triiodothyronine T3",
-      formula: "C15H12I3NO4",
-      commonName: "Thyroid",
-      class: "Salt",
-      melting: "223.6C",
-      boiling: "657.2C",
-      density: "1.23 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 44,
-      name: "Cortisol",
-      formula: "C21H30O5",
-      commonName: "Stress hormone",
-      class: "Hydrocarbon",
-      melting: "314.1C",
-      boiling: "324.3C",
-      density: "0.74 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 45,
-      name: "Aldosterone",
-      formula: "C21H28O5",
-      commonName: "Salt balance",
-      class: "Sugar",
-      melting: "204.6C",
-      boiling: "265.9C",
-      density: "1.30 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 46,
-      name: "DDT",
-      formula: "C14H9Cl5",
-      commonName: "Banned pesticide",
-      class: "Protein",
-      melting: "281.0C",
-      boiling: "309.5C",
-      density: "0.53 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 47,
-      name: "Atrazine",
-      formula: "C8H14ClN5",
-      commonName: "Herbicide",
-      class: "Steroid",
-      melting: "304.8C",
-      boiling: "627.6C",
-      density: "1.76 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 48,
-      name: "Glyphosate",
-      formula: "C3H8NO5P",
-      commonName: "Roundup",
-      class: "Drug",
-      melting: "17.1C",
-      boiling: "658.6C",
-      density: "2.47 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 49,
-      name: "Acetylsalicylic acid",
-      formula: "C9H8O4",
-      commonName: "Aspirin",
-      class: "Acid",
-      melting: "157.0C",
-      boiling: "272.9C",
-      density: "2.34 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 50,
-      name: "Ascorbic acid",
-      formula: "C6H8O6",
-      commonName: "Vit C",
-      class: "Base",
-      melting: "285.8C",
-      boiling: "292.8C",
-      density: "2.25 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 51,
-      name: "Citric acid",
-      formula: "C6H8O7",
-      commonName: "Citrus",
-      class: "Salt",
-      melting: "295.1C",
-      boiling: "666.7C",
-      density: "2.04 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 52,
-      name: "Lactic acid",
-      formula: "C3H6O3",
-      commonName: "Muscle",
-      class: "Hydrocarbon",
-      melting: "178.8C",
-      boiling: "312.6C",
-      density: "1.63 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 53,
-      name: "Sodium chloride",
-      formula: "NaCl",
-      commonName: "Salt",
-      class: "Sugar",
-      melting: "107.5C",
-      boiling: "327.2C",
-      density: "1.31 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 54,
-      name: "Sucrose",
-      formula: "C12H22O11",
-      commonName: "Table sugar",
-      class: "Protein",
-      melting: "23.2C",
-      boiling: "330.6C",
-      density: "1.11 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 55,
-      name: "Acetic acid",
-      formula: "CH3COOH",
-      commonName: "Vinegar",
-      class: "Steroid",
-      melting: "334.8C",
-      boiling: "585.2C",
-      density: "1.88 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 56,
-      name: "Citric acid",
-      formula: "C6H8O7",
-      commonName: "Lemon",
-      class: "Drug",
-      melting: "287.5C",
-      boiling: "316.4C",
-      density: "2.03 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 57,
-      name: "Aspirin",
-      formula: "C9H8O4",
-      commonName: "Pain relief",
-      class: "Acid",
-      melting: "78.9C",
-      boiling: "337.5C",
-      density: "0.89 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 58,
-      name: "Ibuprofen",
-      formula: "C13H18O2",
-      commonName: "Pain relief",
-      class: "Base",
-      melting: "212.5C",
-      boiling: "400.6C",
-      density: "2.05 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 59,
-      name: "Vitamin C",
-      formula: "C6H8O6",
-      commonName: "Ascorbic acid",
-      class: "Salt",
-      melting: "183.3C",
-      boiling: "624.1C",
-      density: "0.71 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 60,
-      name: "Caffeine",
-      formula: "C8H10N4O2",
-      commonName: "Stimulant",
-      class: "Hydrocarbon",
-      melting: "37.6C",
-      boiling: "431.0C",
-      density: "0.97 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 61,
-      name: "Nicotine",
-      formula: "C10H14N2",
-      commonName: "Tobacco active",
-      class: "Sugar",
-      melting: "145.2C",
-      boiling: "228.2C",
-      density: "1.59 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 62,
-      name: "Ethanol",
-      formula: "C2H5OH",
-      commonName: "Alcohol",
-      class: "Protein",
-      melting: "239.0C",
-      boiling: "387.8C",
-      density: "0.99 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 63,
-      name: "Methanol",
-      formula: "CH3OH",
-      commonName: "Wood alcohol",
-      class: "Steroid",
-      melting: "257.5C",
-      boiling: "135.0C",
-      density: "1.07 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 64,
-      name: "Isopropanol",
-      formula: "C3H8O",
-      commonName: "Rubbing alcohol",
-      class: "Drug",
-      melting: "16.3C",
-      boiling: "553.2C",
-      density: "0.72 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 65,
-      name: "Glucose",
-      formula: "C6H12O6",
-      commonName: "Blood sugar",
-      class: "Acid",
-      melting: "215.2C",
-      boiling: "344.5C",
-      density: "2.12 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 66,
-      name: "Fructose",
-      formula: "C6H12O6",
-      commonName: "Fruit sugar",
-      class: "Base",
-      melting: "66.5C",
-      boiling: "123.4C",
-      density: "1.27 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 67,
-      name: "Sucrose",
-      formula: "C12H22O11",
-      commonName: "Cane sugar",
-      class: "Salt",
-      melting: "96.3C",
-      boiling: "522.6C",
-      density: "1.69 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 68,
-      name: "Lactose",
-      formula: "C12H22O11",
-      commonName: "Milk sugar",
-      class: "Hydrocarbon",
-      melting: "103.0C",
-      boiling: "117.6C",
-      density: "0.53 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 69,
-      name: "Cholesterol",
-      formula: "C27H46O",
-      commonName: "Steroid",
-      class: "Sugar",
-      melting: "161.3C",
-      boiling: "636.3C",
-      density: "1.47 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 70,
-      name: "Testosterone",
-      formula: "C19H28O2",
-      commonName: "Hormone",
-      class: "Protein",
-      melting: "377.9C",
-      boiling: "589.8C",
-      density: "1.00 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 71,
-      name: "Estrogen",
-      formula: "C18H24O2",
-      commonName: "Hormone",
-      class: "Steroid",
-      melting: "368.9C",
-      boiling: "281.3C",
-      density: "1.04 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 72,
-      name: "Insulin",
-      formula: "Protein",
-      commonName: "Diabetes med",
-      class: "Drug",
-      melting: "40.4C",
-      boiling: "326.4C",
-      density: "1.42 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 73,
-      name: "Hemoglobin",
-      formula: "Protein",
-      commonName: "O2 transport",
-      class: "Acid",
-      melting: "167.5C",
-      boiling: "556.1C",
-      density: "1.59 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 74,
-      name: "Penicillin",
-      formula: "C16H18N2O4S",
-      commonName: "Antibiotic",
-      class: "Base",
-      melting: "192.0C",
-      boiling: "161.7C",
-      density: "0.81 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 75,
-      name: "Amoxicillin",
-      formula: "C16H19N3O5S",
-      commonName: "Antibiotic",
-      class: "Salt",
-      melting: "334.0C",
-      boiling: "183.5C",
-      density: "1.90 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 76,
-      name: "Acetaminophen",
-      formula: "C8H9NO2",
-      commonName: "Tylenol",
-      class: "Hydrocarbon",
-      melting: "10.8C",
-      boiling: "123.2C",
-      density: "1.86 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 77,
-      name: "Aspirin",
-      formula: "C9H8O4",
-      commonName: "NSAID",
-      class: "Sugar",
-      melting: "378.5C",
-      boiling: "130.3C",
-      density: "2.39 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 78,
-      name: "Naproxen",
-      formula: "C14H14O3",
-      commonName: "NSAID",
-      class: "Protein",
-      melting: "139.0C",
-      boiling: "466.8C",
-      density: "1.76 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 79,
-      name: "Morphine",
-      formula: "C17H19NO3",
-      commonName: "Opioid",
-      class: "Steroid",
-      melting: "359.7C",
-      boiling: "214.9C",
-      density: "0.60 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 80,
-      name: "Codeine",
-      formula: "C18H21NO3",
-      commonName: "Opioid",
-      class: "Drug",
-      melting: "7.7C",
-      boiling: "587.6C",
-      density: "2.46 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 81,
-      name: "Heroin",
-      formula: "C21H23NO5",
-      commonName: "Illegal opioid",
-      class: "Acid",
-      melting: "14.4C",
-      boiling: "285.0C",
-      density: "1.50 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 82,
-      name: "Cocaine",
-      formula: "C17H21NO4",
-      commonName: "Illegal stimulant",
-      class: "Base",
-      melting: "236.8C",
-      boiling: "479.3C",
-      density: "2.35 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 83,
-      name: "THC",
-      formula: "C21H30O2",
-      commonName: "Marijuana active",
-      class: "Salt",
-      melting: "295.0C",
-      boiling: "383.7C",
-      density: "1.26 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 84,
-      name: "Caffeine",
-      formula: "C8H10N4O2",
-      commonName: "Coffee active",
-      class: "Hydrocarbon",
-      melting: "247.7C",
-      boiling: "290.7C",
-      density: "0.92 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 85,
-      name: "Theobromine",
-      formula: "C7H8N4O2",
-      commonName: "Chocolate active",
-      class: "Sugar",
-      melting: "132.2C",
-      boiling: "150.7C",
-      density: "2.48 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 86,
-      name: "L-Dopa",
-      formula: "C9H11NO4",
-      commonName: "Parkinson med",
-      class: "Protein",
-      melting: "49.9C",
-      boiling: "694.9C",
-      density: "2.26 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 87,
-      name: "Adrenaline",
-      formula: "C9H13NO3",
-      commonName: "Fight or flight",
-      class: "Steroid",
-      melting: "42.7C",
-      boiling: "634.9C",
-      density: "1.82 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 88,
-      name: "Serotonin",
-      formula: "C10H12N2O",
-      commonName: "Mood",
-      class: "Drug",
-      melting: "43.1C",
-      boiling: "545.4C",
-      density: "1.98 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 89,
-      name: "Dopamine",
-      formula: "C8H11NO2",
-      commonName: "Reward",
-      class: "Acid",
-      melting: "167.5C",
-      boiling: "673.9C",
-      density: "2.38 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 90,
-      name: "GABA",
-      formula: "C4H9NO2",
-      commonName: "Inhibitory",
-      class: "Base",
-      melting: "155.0C",
-      boiling: "196.1C",
-      density: "1.54 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 91,
-      name: "Acetylcholine",
-      formula: "C7H16NO2",
-      commonName: "Neurotransmitter",
-      class: "Salt",
-      melting: "369.1C",
-      boiling: "413.9C",
-      density: "2.30 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 92,
-      name: "Insulin",
-      formula: "Protein",
-      commonName: "Hormone",
-      class: "Hydrocarbon",
-      melting: "378.5C",
-      boiling: "695.2C",
-      density: "0.80 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 93,
-      name: "Glucagon",
-      formula: "Protein",
-      commonName: "Counter to insulin",
-      class: "Sugar",
-      melting: "265.6C",
-      boiling: "490.6C",
-      density: "2.18 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 94,
-      name: "Thyroxine T4",
-      formula: "C15H11I4NO4",
-      commonName: "Thyroid",
-      class: "Protein",
-      melting: "230.8C",
-      boiling: "300.5C",
-      density: "1.61 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 95,
-      name: "Triiodothyronine T3",
-      formula: "C15H12I3NO4",
-      commonName: "Thyroid",
-      class: "Steroid",
-      melting: "38.6C",
-      boiling: "101.6C",
-      density: "1.16 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 96,
-      name: "Cortisol",
-      formula: "C21H30O5",
-      commonName: "Stress hormone",
-      class: "Drug",
-      melting: "363.2C",
-      boiling: "671.2C",
-      density: "1.41 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 97,
-      name: "Aldosterone",
-      formula: "C21H28O5",
-      commonName: "Salt balance",
-      class: "Acid",
-      melting: "252.6C",
-      boiling: "411.7C",
-      density: "0.78 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 98,
-      name: "DDT",
-      formula: "C14H9Cl5",
-      commonName: "Banned pesticide",
-      class: "Base",
-      melting: "222.7C",
-      boiling: "177.7C",
-      density: "0.62 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 99,
-      name: "Atrazine",
-      formula: "C8H14ClN5",
-      commonName: "Herbicide",
-      class: "Salt",
-      melting: "163.0C",
-      boiling: "109.9C",
-      density: "2.29 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 100,
-      name: "Glyphosate",
-      formula: "C3H8NO5P",
-      commonName: "Roundup",
-      class: "Hydrocarbon",
-      melting: "226.5C",
-      boiling: "694.3C",
-      density: "2.15 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 101,
-      name: "Acetylsalicylic acid",
-      formula: "C9H8O4",
-      commonName: "Aspirin",
-      class: "Sugar",
-      melting: "219.3C",
-      boiling: "114.9C",
-      density: "0.61 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 102,
-      name: "Ascorbic acid",
-      formula: "C6H8O6",
-      commonName: "Vit C",
-      class: "Protein",
-      melting: "207.1C",
-      boiling: "591.9C",
-      density: "1.54 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 103,
-      name: "Citric acid",
-      formula: "C6H8O7",
-      commonName: "Citrus",
-      class: "Steroid",
-      melting: "214.9C",
-      boiling: "239.9C",
-      density: "1.50 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 104,
-      name: "Lactic acid",
-      formula: "C3H6O3",
-      commonName: "Muscle",
-      class: "Drug",
-      melting: "292.7C",
-      boiling: "222.4C",
-      density: "1.49 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 105,
-      name: "Sodium chloride",
-      formula: "NaCl",
-      commonName: "Salt",
-      class: "Acid",
-      melting: "175.8C",
-      boiling: "315.1C",
-      density: "2.40 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 106,
-      name: "Sucrose",
-      formula: "C12H22O11",
-      commonName: "Table sugar",
-      class: "Base",
-      melting: "273.0C",
-      boiling: "176.3C",
-      density: "1.64 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 107,
-      name: "Acetic acid",
-      formula: "CH3COOH",
-      commonName: "Vinegar",
-      class: "Salt",
-      melting: "100.7C",
-      boiling: "643.0C",
-      density: "2.19 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 108,
-      name: "Citric acid",
-      formula: "C6H8O7",
-      commonName: "Lemon",
-      class: "Hydrocarbon",
-      melting: "345.5C",
-      boiling: "272.9C",
-      density: "2.24 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 109,
-      name: "Aspirin",
-      formula: "C9H8O4",
-      commonName: "Pain relief",
-      class: "Sugar",
-      melting: "286.4C",
-      boiling: "259.2C",
-      density: "2.29 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 110,
-      name: "Ibuprofen",
-      formula: "C13H18O2",
-      commonName: "Pain relief",
-      class: "Protein",
-      melting: "113.0C",
-      boiling: "526.5C",
-      density: "1.54 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 111,
-      name: "Vitamin C",
-      formula: "C6H8O6",
-      commonName: "Ascorbic acid",
-      class: "Steroid",
-      melting: "216.5C",
-      boiling: "548.4C",
-      density: "0.92 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 112,
-      name: "Caffeine",
-      formula: "C8H10N4O2",
-      commonName: "Stimulant",
-      class: "Drug",
-      melting: "63.8C",
-      boiling: "103.5C",
-      density: "2.02 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 113,
-      name: "Nicotine",
-      formula: "C10H14N2",
-      commonName: "Tobacco active",
-      class: "Acid",
-      melting: "358.2C",
-      boiling: "629.6C",
-      density: "0.84 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 114,
-      name: "Ethanol",
-      formula: "C2H5OH",
-      commonName: "Alcohol",
-      class: "Base",
-      melting: "293.1C",
-      boiling: "686.7C",
-      density: "1.07 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 115,
-      name: "Methanol",
-      formula: "CH3OH",
-      commonName: "Wood alcohol",
-      class: "Salt",
-      melting: "264.6C",
-      boiling: "508.0C",
-      density: "1.26 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 116,
-      name: "Isopropanol",
-      formula: "C3H8O",
-      commonName: "Rubbing alcohol",
-      class: "Hydrocarbon",
-      melting: "261.4C",
-      boiling: "158.8C",
-      density: "1.33 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 117,
-      name: "Glucose",
-      formula: "C6H12O6",
-      commonName: "Blood sugar",
-      class: "Sugar",
-      melting: "285.7C",
-      boiling: "316.6C",
-      density: "1.22 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 118,
-      name: "Fructose",
-      formula: "C6H12O6",
-      commonName: "Fruit sugar",
-      class: "Protein",
-      melting: "102.3C",
-      boiling: "555.6C",
-      density: "1.08 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 119,
-      name: "Sucrose",
-      formula: "C12H22O11",
-      commonName: "Cane sugar",
-      class: "Steroid",
-      melting: "98.5C",
-      boiling: "306.9C",
-      density: "0.77 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    },
-    {
-      id: 120,
-      name: "Lactose",
-      formula: "C12H22O11",
-      commonName: "Milk sugar",
-      class: "Drug",
-      melting: "70.0C",
-      boiling: "470.2C",
-      density: "1.48 g/cm3",
-      uses: "Industrial chemistry, pharmaceuticals, food processing, research applications.",
-      hazards: "Various depending on quantity. Always consult safety data sheet.",
-      history: "Discovered in 19th-20th century. Various roles in modern chemistry."
-    }
-  ];
-
-  // ═══════════════════════════════════════════════════════════
-  // BALANCED EQUATION REFERENCE — 100 examples
-  // ═══════════════════════════════════════════════════════════
-  var BALANCED_EQS = [
-    {
-      id: 1,
-      equation: "Sample chemical equation 1 - balanced and labeled.",
-      reactants: "Specific reactants for equation 1.",
-      products: "Resulting products of equation 1.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "194 kJ/mol",
-      type: "Synthesis",
-      context: "Educational context and applications for equation 1."
-    },
-    {
-      id: 2,
-      equation: "Sample chemical equation 2 - balanced and labeled.",
-      reactants: "Specific reactants for equation 2.",
-      products: "Resulting products of equation 2.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-59 kJ/mol",
-      type: "Decomposition",
-      context: "Educational context and applications for equation 2."
-    },
-    {
-      id: 3,
-      equation: "Sample chemical equation 3 - balanced and labeled.",
-      reactants: "Specific reactants for equation 3.",
-      products: "Resulting products of equation 3.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-48 kJ/mol",
-      type: "Single replacement",
-      context: "Educational context and applications for equation 3."
-    },
-    {
-      id: 4,
-      equation: "Sample chemical equation 4 - balanced and labeled.",
-      reactants: "Specific reactants for equation 4.",
-      products: "Resulting products of equation 4.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-20 kJ/mol",
-      type: "Double replacement",
-      context: "Educational context and applications for equation 4."
-    },
-    {
-      id: 5,
-      equation: "Sample chemical equation 5 - balanced and labeled.",
-      reactants: "Specific reactants for equation 5.",
-      products: "Resulting products of equation 5.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "199 kJ/mol",
-      type: "Combustion",
-      context: "Educational context and applications for equation 5."
-    },
-    {
-      id: 6,
-      equation: "Sample chemical equation 6 - balanced and labeled.",
-      reactants: "Specific reactants for equation 6.",
-      products: "Resulting products of equation 6.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "285 kJ/mol",
-      type: "Redox",
-      context: "Educational context and applications for equation 6."
-    },
-    {
-      id: 7,
-      equation: "Sample chemical equation 7 - balanced and labeled.",
-      reactants: "Specific reactants for equation 7.",
-      products: "Resulting products of equation 7.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-254 kJ/mol",
-      type: "Acid-Base",
-      context: "Educational context and applications for equation 7."
-    },
-    {
-      id: 8,
-      equation: "Sample chemical equation 8 - balanced and labeled.",
-      reactants: "Specific reactants for equation 8.",
-      products: "Resulting products of equation 8.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "329 kJ/mol",
-      type: "Synthesis",
-      context: "Educational context and applications for equation 8."
-    },
-    {
-      id: 9,
-      equation: "Sample chemical equation 9 - balanced and labeled.",
-      reactants: "Specific reactants for equation 9.",
-      products: "Resulting products of equation 9.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-388 kJ/mol",
-      type: "Decomposition",
-      context: "Educational context and applications for equation 9."
-    },
-    {
-      id: 10,
-      equation: "Sample chemical equation 10 - balanced and labeled.",
-      reactants: "Specific reactants for equation 10.",
-      products: "Resulting products of equation 10.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-250 kJ/mol",
-      type: "Single replacement",
-      context: "Educational context and applications for equation 10."
-    },
-    {
-      id: 11,
-      equation: "Sample chemical equation 11 - balanced and labeled.",
-      reactants: "Specific reactants for equation 11.",
-      products: "Resulting products of equation 11.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-310 kJ/mol",
-      type: "Double replacement",
-      context: "Educational context and applications for equation 11."
-    },
-    {
-      id: 12,
-      equation: "Sample chemical equation 12 - balanced and labeled.",
-      reactants: "Specific reactants for equation 12.",
-      products: "Resulting products of equation 12.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "93 kJ/mol",
-      type: "Combustion",
-      context: "Educational context and applications for equation 12."
-    },
-    {
-      id: 13,
-      equation: "Sample chemical equation 13 - balanced and labeled.",
-      reactants: "Specific reactants for equation 13.",
-      products: "Resulting products of equation 13.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-61 kJ/mol",
-      type: "Redox",
-      context: "Educational context and applications for equation 13."
-    },
-    {
-      id: 14,
-      equation: "Sample chemical equation 14 - balanced and labeled.",
-      reactants: "Specific reactants for equation 14.",
-      products: "Resulting products of equation 14.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "381 kJ/mol",
-      type: "Acid-Base",
-      context: "Educational context and applications for equation 14."
-    },
-    {
-      id: 15,
-      equation: "Sample chemical equation 15 - balanced and labeled.",
-      reactants: "Specific reactants for equation 15.",
-      products: "Resulting products of equation 15.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "182 kJ/mol",
-      type: "Synthesis",
-      context: "Educational context and applications for equation 15."
-    },
-    {
-      id: 16,
-      equation: "Sample chemical equation 16 - balanced and labeled.",
-      reactants: "Specific reactants for equation 16.",
-      products: "Resulting products of equation 16.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-125 kJ/mol",
-      type: "Decomposition",
-      context: "Educational context and applications for equation 16."
-    },
-    {
-      id: 17,
-      equation: "Sample chemical equation 17 - balanced and labeled.",
-      reactants: "Specific reactants for equation 17.",
-      products: "Resulting products of equation 17.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "197 kJ/mol",
-      type: "Single replacement",
-      context: "Educational context and applications for equation 17."
-    },
-    {
-      id: 18,
-      equation: "Sample chemical equation 18 - balanced and labeled.",
-      reactants: "Specific reactants for equation 18.",
-      products: "Resulting products of equation 18.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-94 kJ/mol",
-      type: "Double replacement",
-      context: "Educational context and applications for equation 18."
-    },
-    {
-      id: 19,
-      equation: "Sample chemical equation 19 - balanced and labeled.",
-      reactants: "Specific reactants for equation 19.",
-      products: "Resulting products of equation 19.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "389 kJ/mol",
-      type: "Combustion",
-      context: "Educational context and applications for equation 19."
-    },
-    {
-      id: 20,
-      equation: "Sample chemical equation 20 - balanced and labeled.",
-      reactants: "Specific reactants for equation 20.",
-      products: "Resulting products of equation 20.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "248 kJ/mol",
-      type: "Redox",
-      context: "Educational context and applications for equation 20."
-    },
-    {
-      id: 21,
-      equation: "Sample chemical equation 21 - balanced and labeled.",
-      reactants: "Specific reactants for equation 21.",
-      products: "Resulting products of equation 21.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "297 kJ/mol",
-      type: "Acid-Base",
-      context: "Educational context and applications for equation 21."
-    },
-    {
-      id: 22,
-      equation: "Sample chemical equation 22 - balanced and labeled.",
-      reactants: "Specific reactants for equation 22.",
-      products: "Resulting products of equation 22.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-41 kJ/mol",
-      type: "Synthesis",
-      context: "Educational context and applications for equation 22."
-    },
-    {
-      id: 23,
-      equation: "Sample chemical equation 23 - balanced and labeled.",
-      reactants: "Specific reactants for equation 23.",
-      products: "Resulting products of equation 23.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "400 kJ/mol",
-      type: "Decomposition",
-      context: "Educational context and applications for equation 23."
-    },
-    {
-      id: 24,
-      equation: "Sample chemical equation 24 - balanced and labeled.",
-      reactants: "Specific reactants for equation 24.",
-      products: "Resulting products of equation 24.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-109 kJ/mol",
-      type: "Single replacement",
-      context: "Educational context and applications for equation 24."
-    },
-    {
-      id: 25,
-      equation: "Sample chemical equation 25 - balanced and labeled.",
-      reactants: "Specific reactants for equation 25.",
-      products: "Resulting products of equation 25.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "14 kJ/mol",
-      type: "Double replacement",
-      context: "Educational context and applications for equation 25."
-    },
-    {
-      id: 26,
-      equation: "Sample chemical equation 26 - balanced and labeled.",
-      reactants: "Specific reactants for equation 26.",
-      products: "Resulting products of equation 26.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-22 kJ/mol",
-      type: "Combustion",
-      context: "Educational context and applications for equation 26."
-    },
-    {
-      id: 27,
-      equation: "Sample chemical equation 27 - balanced and labeled.",
-      reactants: "Specific reactants for equation 27.",
-      products: "Resulting products of equation 27.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "35 kJ/mol",
-      type: "Redox",
-      context: "Educational context and applications for equation 27."
-    },
-    {
-      id: 28,
-      equation: "Sample chemical equation 28 - balanced and labeled.",
-      reactants: "Specific reactants for equation 28.",
-      products: "Resulting products of equation 28.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "249 kJ/mol",
-      type: "Acid-Base",
-      context: "Educational context and applications for equation 28."
-    },
-    {
-      id: 29,
-      equation: "Sample chemical equation 29 - balanced and labeled.",
-      reactants: "Specific reactants for equation 29.",
-      products: "Resulting products of equation 29.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-298 kJ/mol",
-      type: "Synthesis",
-      context: "Educational context and applications for equation 29."
-    },
-    {
-      id: 30,
-      equation: "Sample chemical equation 30 - balanced and labeled.",
-      reactants: "Specific reactants for equation 30.",
-      products: "Resulting products of equation 30.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "62 kJ/mol",
-      type: "Decomposition",
-      context: "Educational context and applications for equation 30."
-    },
-    {
-      id: 31,
-      equation: "Sample chemical equation 31 - balanced and labeled.",
-      reactants: "Specific reactants for equation 31.",
-      products: "Resulting products of equation 31.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-271 kJ/mol",
-      type: "Single replacement",
-      context: "Educational context and applications for equation 31."
-    },
-    {
-      id: 32,
-      equation: "Sample chemical equation 32 - balanced and labeled.",
-      reactants: "Specific reactants for equation 32.",
-      products: "Resulting products of equation 32.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-204 kJ/mol",
-      type: "Double replacement",
-      context: "Educational context and applications for equation 32."
-    },
-    {
-      id: 33,
-      equation: "Sample chemical equation 33 - balanced and labeled.",
-      reactants: "Specific reactants for equation 33.",
-      products: "Resulting products of equation 33.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-279 kJ/mol",
-      type: "Combustion",
-      context: "Educational context and applications for equation 33."
-    },
-    {
-      id: 34,
-      equation: "Sample chemical equation 34 - balanced and labeled.",
-      reactants: "Specific reactants for equation 34.",
-      products: "Resulting products of equation 34.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "196 kJ/mol",
-      type: "Redox",
-      context: "Educational context and applications for equation 34."
-    },
-    {
-      id: 35,
-      equation: "Sample chemical equation 35 - balanced and labeled.",
-      reactants: "Specific reactants for equation 35.",
-      products: "Resulting products of equation 35.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-215 kJ/mol",
-      type: "Acid-Base",
-      context: "Educational context and applications for equation 35."
-    },
-    {
-      id: 36,
-      equation: "Sample chemical equation 36 - balanced and labeled.",
-      reactants: "Specific reactants for equation 36.",
-      products: "Resulting products of equation 36.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "393 kJ/mol",
-      type: "Synthesis",
-      context: "Educational context and applications for equation 36."
-    },
-    {
-      id: 37,
-      equation: "Sample chemical equation 37 - balanced and labeled.",
-      reactants: "Specific reactants for equation 37.",
-      products: "Resulting products of equation 37.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "242 kJ/mol",
-      type: "Decomposition",
-      context: "Educational context and applications for equation 37."
-    },
-    {
-      id: 38,
-      equation: "Sample chemical equation 38 - balanced and labeled.",
-      reactants: "Specific reactants for equation 38.",
-      products: "Resulting products of equation 38.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "352 kJ/mol",
-      type: "Single replacement",
-      context: "Educational context and applications for equation 38."
-    },
-    {
-      id: 39,
-      equation: "Sample chemical equation 39 - balanced and labeled.",
-      reactants: "Specific reactants for equation 39.",
-      products: "Resulting products of equation 39.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-185 kJ/mol",
-      type: "Double replacement",
-      context: "Educational context and applications for equation 39."
-    },
-    {
-      id: 40,
-      equation: "Sample chemical equation 40 - balanced and labeled.",
-      reactants: "Specific reactants for equation 40.",
-      products: "Resulting products of equation 40.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-371 kJ/mol",
-      type: "Combustion",
-      context: "Educational context and applications for equation 40."
-    },
-    {
-      id: 41,
-      equation: "Sample chemical equation 41 - balanced and labeled.",
-      reactants: "Specific reactants for equation 41.",
-      products: "Resulting products of equation 41.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-221 kJ/mol",
-      type: "Redox",
-      context: "Educational context and applications for equation 41."
-    },
-    {
-      id: 42,
-      equation: "Sample chemical equation 42 - balanced and labeled.",
-      reactants: "Specific reactants for equation 42.",
-      products: "Resulting products of equation 42.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "123 kJ/mol",
-      type: "Acid-Base",
-      context: "Educational context and applications for equation 42."
-    },
-    {
-      id: 43,
-      equation: "Sample chemical equation 43 - balanced and labeled.",
-      reactants: "Specific reactants for equation 43.",
-      products: "Resulting products of equation 43.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-16 kJ/mol",
-      type: "Synthesis",
-      context: "Educational context and applications for equation 43."
-    },
-    {
-      id: 44,
-      equation: "Sample chemical equation 44 - balanced and labeled.",
-      reactants: "Specific reactants for equation 44.",
-      products: "Resulting products of equation 44.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "348 kJ/mol",
-      type: "Decomposition",
-      context: "Educational context and applications for equation 44."
-    },
-    {
-      id: 45,
-      equation: "Sample chemical equation 45 - balanced and labeled.",
-      reactants: "Specific reactants for equation 45.",
-      products: "Resulting products of equation 45.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-133 kJ/mol",
-      type: "Single replacement",
-      context: "Educational context and applications for equation 45."
-    },
-    {
-      id: 46,
-      equation: "Sample chemical equation 46 - balanced and labeled.",
-      reactants: "Specific reactants for equation 46.",
-      products: "Resulting products of equation 46.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "80 kJ/mol",
-      type: "Double replacement",
-      context: "Educational context and applications for equation 46."
-    },
-    {
-      id: 47,
-      equation: "Sample chemical equation 47 - balanced and labeled.",
-      reactants: "Specific reactants for equation 47.",
-      products: "Resulting products of equation 47.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "120 kJ/mol",
-      type: "Combustion",
-      context: "Educational context and applications for equation 47."
-    },
-    {
-      id: 48,
-      equation: "Sample chemical equation 48 - balanced and labeled.",
-      reactants: "Specific reactants for equation 48.",
-      products: "Resulting products of equation 48.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-110 kJ/mol",
-      type: "Redox",
-      context: "Educational context and applications for equation 48."
-    },
-    {
-      id: 49,
-      equation: "Sample chemical equation 49 - balanced and labeled.",
-      reactants: "Specific reactants for equation 49.",
-      products: "Resulting products of equation 49.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "134 kJ/mol",
-      type: "Acid-Base",
-      context: "Educational context and applications for equation 49."
-    },
-    {
-      id: 50,
-      equation: "Sample chemical equation 50 - balanced and labeled.",
-      reactants: "Specific reactants for equation 50.",
-      products: "Resulting products of equation 50.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "175 kJ/mol",
-      type: "Synthesis",
-      context: "Educational context and applications for equation 50."
-    },
-    {
-      id: 51,
-      equation: "Sample chemical equation 51 - balanced and labeled.",
-      reactants: "Specific reactants for equation 51.",
-      products: "Resulting products of equation 51.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "381 kJ/mol",
-      type: "Decomposition",
-      context: "Educational context and applications for equation 51."
-    },
-    {
-      id: 52,
-      equation: "Sample chemical equation 52 - balanced and labeled.",
-      reactants: "Specific reactants for equation 52.",
-      products: "Resulting products of equation 52.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-238 kJ/mol",
-      type: "Single replacement",
-      context: "Educational context and applications for equation 52."
-    },
-    {
-      id: 53,
-      equation: "Sample chemical equation 53 - balanced and labeled.",
-      reactants: "Specific reactants for equation 53.",
-      products: "Resulting products of equation 53.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "319 kJ/mol",
-      type: "Double replacement",
-      context: "Educational context and applications for equation 53."
-    },
-    {
-      id: 54,
-      equation: "Sample chemical equation 54 - balanced and labeled.",
-      reactants: "Specific reactants for equation 54.",
-      products: "Resulting products of equation 54.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "351 kJ/mol",
-      type: "Combustion",
-      context: "Educational context and applications for equation 54."
-    },
-    {
-      id: 55,
-      equation: "Sample chemical equation 55 - balanced and labeled.",
-      reactants: "Specific reactants for equation 55.",
-      products: "Resulting products of equation 55.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "348 kJ/mol",
-      type: "Redox",
-      context: "Educational context and applications for equation 55."
-    },
-    {
-      id: 56,
-      equation: "Sample chemical equation 56 - balanced and labeled.",
-      reactants: "Specific reactants for equation 56.",
-      products: "Resulting products of equation 56.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-288 kJ/mol",
-      type: "Acid-Base",
-      context: "Educational context and applications for equation 56."
-    },
-    {
-      id: 57,
-      equation: "Sample chemical equation 57 - balanced and labeled.",
-      reactants: "Specific reactants for equation 57.",
-      products: "Resulting products of equation 57.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "154 kJ/mol",
-      type: "Synthesis",
-      context: "Educational context and applications for equation 57."
-    },
-    {
-      id: 58,
-      equation: "Sample chemical equation 58 - balanced and labeled.",
-      reactants: "Specific reactants for equation 58.",
-      products: "Resulting products of equation 58.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-183 kJ/mol",
-      type: "Decomposition",
-      context: "Educational context and applications for equation 58."
-    },
-    {
-      id: 59,
-      equation: "Sample chemical equation 59 - balanced and labeled.",
-      reactants: "Specific reactants for equation 59.",
-      products: "Resulting products of equation 59.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "87 kJ/mol",
-      type: "Single replacement",
-      context: "Educational context and applications for equation 59."
-    },
-    {
-      id: 60,
-      equation: "Sample chemical equation 60 - balanced and labeled.",
-      reactants: "Specific reactants for equation 60.",
-      products: "Resulting products of equation 60.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "12 kJ/mol",
-      type: "Double replacement",
-      context: "Educational context and applications for equation 60."
-    },
-    {
-      id: 61,
-      equation: "Sample chemical equation 61 - balanced and labeled.",
-      reactants: "Specific reactants for equation 61.",
-      products: "Resulting products of equation 61.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "63 kJ/mol",
-      type: "Combustion",
-      context: "Educational context and applications for equation 61."
-    },
-    {
-      id: 62,
-      equation: "Sample chemical equation 62 - balanced and labeled.",
-      reactants: "Specific reactants for equation 62.",
-      products: "Resulting products of equation 62.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-133 kJ/mol",
-      type: "Redox",
-      context: "Educational context and applications for equation 62."
-    },
-    {
-      id: 63,
-      equation: "Sample chemical equation 63 - balanced and labeled.",
-      reactants: "Specific reactants for equation 63.",
-      products: "Resulting products of equation 63.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "306 kJ/mol",
-      type: "Acid-Base",
-      context: "Educational context and applications for equation 63."
-    },
-    {
-      id: 64,
-      equation: "Sample chemical equation 64 - balanced and labeled.",
-      reactants: "Specific reactants for equation 64.",
-      products: "Resulting products of equation 64.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-366 kJ/mol",
-      type: "Synthesis",
-      context: "Educational context and applications for equation 64."
-    },
-    {
-      id: 65,
-      equation: "Sample chemical equation 65 - balanced and labeled.",
-      reactants: "Specific reactants for equation 65.",
-      products: "Resulting products of equation 65.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "247 kJ/mol",
-      type: "Decomposition",
-      context: "Educational context and applications for equation 65."
-    },
-    {
-      id: 66,
-      equation: "Sample chemical equation 66 - balanced and labeled.",
-      reactants: "Specific reactants for equation 66.",
-      products: "Resulting products of equation 66.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-72 kJ/mol",
-      type: "Single replacement",
-      context: "Educational context and applications for equation 66."
-    },
-    {
-      id: 67,
-      equation: "Sample chemical equation 67 - balanced and labeled.",
-      reactants: "Specific reactants for equation 67.",
-      products: "Resulting products of equation 67.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "200 kJ/mol",
-      type: "Double replacement",
-      context: "Educational context and applications for equation 67."
-    },
-    {
-      id: 68,
-      equation: "Sample chemical equation 68 - balanced and labeled.",
-      reactants: "Specific reactants for equation 68.",
-      products: "Resulting products of equation 68.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "311 kJ/mol",
-      type: "Combustion",
-      context: "Educational context and applications for equation 68."
-    },
-    {
-      id: 69,
-      equation: "Sample chemical equation 69 - balanced and labeled.",
-      reactants: "Specific reactants for equation 69.",
-      products: "Resulting products of equation 69.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-290 kJ/mol",
-      type: "Redox",
-      context: "Educational context and applications for equation 69."
-    },
-    {
-      id: 70,
-      equation: "Sample chemical equation 70 - balanced and labeled.",
-      reactants: "Specific reactants for equation 70.",
-      products: "Resulting products of equation 70.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "321 kJ/mol",
-      type: "Acid-Base",
-      context: "Educational context and applications for equation 70."
-    },
-    {
-      id: 71,
-      equation: "Sample chemical equation 71 - balanced and labeled.",
-      reactants: "Specific reactants for equation 71.",
-      products: "Resulting products of equation 71.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "294 kJ/mol",
-      type: "Synthesis",
-      context: "Educational context and applications for equation 71."
-    },
-    {
-      id: 72,
-      equation: "Sample chemical equation 72 - balanced and labeled.",
-      reactants: "Specific reactants for equation 72.",
-      products: "Resulting products of equation 72.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "358 kJ/mol",
-      type: "Decomposition",
-      context: "Educational context and applications for equation 72."
-    },
-    {
-      id: 73,
-      equation: "Sample chemical equation 73 - balanced and labeled.",
-      reactants: "Specific reactants for equation 73.",
-      products: "Resulting products of equation 73.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-236 kJ/mol",
-      type: "Single replacement",
-      context: "Educational context and applications for equation 73."
-    },
-    {
-      id: 74,
-      equation: "Sample chemical equation 74 - balanced and labeled.",
-      reactants: "Specific reactants for equation 74.",
-      products: "Resulting products of equation 74.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-260 kJ/mol",
-      type: "Double replacement",
-      context: "Educational context and applications for equation 74."
-    },
-    {
-      id: 75,
-      equation: "Sample chemical equation 75 - balanced and labeled.",
-      reactants: "Specific reactants for equation 75.",
-      products: "Resulting products of equation 75.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-334 kJ/mol",
-      type: "Combustion",
-      context: "Educational context and applications for equation 75."
-    },
-    {
-      id: 76,
-      equation: "Sample chemical equation 76 - balanced and labeled.",
-      reactants: "Specific reactants for equation 76.",
-      products: "Resulting products of equation 76.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "85 kJ/mol",
-      type: "Redox",
-      context: "Educational context and applications for equation 76."
-    },
-    {
-      id: 77,
-      equation: "Sample chemical equation 77 - balanced and labeled.",
-      reactants: "Specific reactants for equation 77.",
-      products: "Resulting products of equation 77.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-350 kJ/mol",
-      type: "Acid-Base",
-      context: "Educational context and applications for equation 77."
-    },
-    {
-      id: 78,
-      equation: "Sample chemical equation 78 - balanced and labeled.",
-      reactants: "Specific reactants for equation 78.",
-      products: "Resulting products of equation 78.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-108 kJ/mol",
-      type: "Synthesis",
-      context: "Educational context and applications for equation 78."
-    },
-    {
-      id: 79,
-      equation: "Sample chemical equation 79 - balanced and labeled.",
-      reactants: "Specific reactants for equation 79.",
-      products: "Resulting products of equation 79.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "223 kJ/mol",
-      type: "Decomposition",
-      context: "Educational context and applications for equation 79."
-    },
-    {
-      id: 80,
-      equation: "Sample chemical equation 80 - balanced and labeled.",
-      reactants: "Specific reactants for equation 80.",
-      products: "Resulting products of equation 80.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-300 kJ/mol",
-      type: "Single replacement",
-      context: "Educational context and applications for equation 80."
-    },
-    {
-      id: 81,
-      equation: "Sample chemical equation 81 - balanced and labeled.",
-      reactants: "Specific reactants for equation 81.",
-      products: "Resulting products of equation 81.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-108 kJ/mol",
-      type: "Double replacement",
-      context: "Educational context and applications for equation 81."
-    },
-    {
-      id: 82,
-      equation: "Sample chemical equation 82 - balanced and labeled.",
-      reactants: "Specific reactants for equation 82.",
-      products: "Resulting products of equation 82.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "156 kJ/mol",
-      type: "Combustion",
-      context: "Educational context and applications for equation 82."
-    },
-    {
-      id: 83,
-      equation: "Sample chemical equation 83 - balanced and labeled.",
-      reactants: "Specific reactants for equation 83.",
-      products: "Resulting products of equation 83.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "22 kJ/mol",
-      type: "Redox",
-      context: "Educational context and applications for equation 83."
-    },
-    {
-      id: 84,
-      equation: "Sample chemical equation 84 - balanced and labeled.",
-      reactants: "Specific reactants for equation 84.",
-      products: "Resulting products of equation 84.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-233 kJ/mol",
-      type: "Acid-Base",
-      context: "Educational context and applications for equation 84."
-    },
-    {
-      id: 85,
-      equation: "Sample chemical equation 85 - balanced and labeled.",
-      reactants: "Specific reactants for equation 85.",
-      products: "Resulting products of equation 85.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-335 kJ/mol",
-      type: "Synthesis",
-      context: "Educational context and applications for equation 85."
-    },
-    {
-      id: 86,
-      equation: "Sample chemical equation 86 - balanced and labeled.",
-      reactants: "Specific reactants for equation 86.",
-      products: "Resulting products of equation 86.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-125 kJ/mol",
-      type: "Decomposition",
-      context: "Educational context and applications for equation 86."
-    },
-    {
-      id: 87,
-      equation: "Sample chemical equation 87 - balanced and labeled.",
-      reactants: "Specific reactants for equation 87.",
-      products: "Resulting products of equation 87.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-96 kJ/mol",
-      type: "Single replacement",
-      context: "Educational context and applications for equation 87."
-    },
-    {
-      id: 88,
-      equation: "Sample chemical equation 88 - balanced and labeled.",
-      reactants: "Specific reactants for equation 88.",
-      products: "Resulting products of equation 88.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-209 kJ/mol",
-      type: "Double replacement",
-      context: "Educational context and applications for equation 88."
-    },
-    {
-      id: 89,
-      equation: "Sample chemical equation 89 - balanced and labeled.",
-      reactants: "Specific reactants for equation 89.",
-      products: "Resulting products of equation 89.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-215 kJ/mol",
-      type: "Combustion",
-      context: "Educational context and applications for equation 89."
-    },
-    {
-      id: 90,
-      equation: "Sample chemical equation 90 - balanced and labeled.",
-      reactants: "Specific reactants for equation 90.",
-      products: "Resulting products of equation 90.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "251 kJ/mol",
-      type: "Redox",
-      context: "Educational context and applications for equation 90."
-    },
-    {
-      id: 91,
-      equation: "Sample chemical equation 91 - balanced and labeled.",
-      reactants: "Specific reactants for equation 91.",
-      products: "Resulting products of equation 91.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-284 kJ/mol",
-      type: "Acid-Base",
-      context: "Educational context and applications for equation 91."
-    },
-    {
-      id: 92,
-      equation: "Sample chemical equation 92 - balanced and labeled.",
-      reactants: "Specific reactants for equation 92.",
-      products: "Resulting products of equation 92.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "22 kJ/mol",
-      type: "Synthesis",
-      context: "Educational context and applications for equation 92."
-    },
-    {
-      id: 93,
-      equation: "Sample chemical equation 93 - balanced and labeled.",
-      reactants: "Specific reactants for equation 93.",
-      products: "Resulting products of equation 93.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "357 kJ/mol",
-      type: "Decomposition",
-      context: "Educational context and applications for equation 93."
-    },
-    {
-      id: 94,
-      equation: "Sample chemical equation 94 - balanced and labeled.",
-      reactants: "Specific reactants for equation 94.",
-      products: "Resulting products of equation 94.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "265 kJ/mol",
-      type: "Single replacement",
-      context: "Educational context and applications for equation 94."
-    },
-    {
-      id: 95,
-      equation: "Sample chemical equation 95 - balanced and labeled.",
-      reactants: "Specific reactants for equation 95.",
-      products: "Resulting products of equation 95.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-162 kJ/mol",
-      type: "Double replacement",
-      context: "Educational context and applications for equation 95."
-    },
-    {
-      id: 96,
-      equation: "Sample chemical equation 96 - balanced and labeled.",
-      reactants: "Specific reactants for equation 96.",
-      products: "Resulting products of equation 96.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-87 kJ/mol",
-      type: "Combustion",
-      context: "Educational context and applications for equation 96."
-    },
-    {
-      id: 97,
-      equation: "Sample chemical equation 97 - balanced and labeled.",
-      reactants: "Specific reactants for equation 97.",
-      products: "Resulting products of equation 97.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "-68 kJ/mol",
-      type: "Redox",
-      context: "Educational context and applications for equation 97."
-    },
-    {
-      id: 98,
-      equation: "Sample chemical equation 98 - balanced and labeled.",
-      reactants: "Specific reactants for equation 98.",
-      products: "Resulting products of equation 98.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "72 kJ/mol",
-      type: "Acid-Base",
-      context: "Educational context and applications for equation 98."
-    },
-    {
-      id: 99,
-      equation: "Sample chemical equation 99 - balanced and labeled.",
-      reactants: "Specific reactants for equation 99.",
-      products: "Resulting products of equation 99.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "279 kJ/mol",
-      type: "Synthesis",
-      context: "Educational context and applications for equation 99."
-    },
-    {
-      id: 100,
-      equation: "Sample chemical equation 100 - balanced and labeled.",
-      reactants: "Specific reactants for equation 100.",
-      products: "Resulting products of equation 100.",
-      coefficients: "Balanced stoichiometric coefficients.",
-      enthalpy: "99 kJ/mol",
-      type: "Decomposition",
-      context: "Educational context and applications for equation 100."
-    }
-  ];
-
-
-  // ═══════════════════════════════════════════════════════════
-  // CHEMISTRY TRIVIA MEGA — 200 facts
-  // ═══════════════════════════════════════════════════════════
-  var TRIVIA_MEGA = [
-    {
-      id: 1,
-      fact: "Gold doesn't rust because it doesn't react with oxygen.",
-      category: "Element Fact",
-      year: 1850,
-      verified: false
-    },
-    {
-      id: 2,
-      fact: "Aluminum was once more valuable than gold.",
-      category: "Chemistry History",
-      year: 1852,
-      verified: true
-    },
-    {
-      id: 3,
-      fact: "Diamonds are flammable. They burn above 1400 degrees F in pure oxygen.",
-      category: "Health",
-      year: 1854,
-      verified: true
-    },
-    {
-      id: 4,
-      fact: "Lithium is the lightest metal.",
-      category: "Industrial",
-      year: 1856,
-      verified: true
-    },
-    {
-      id: 5,
-      fact: "Tungsten has the highest melting point of all metals.",
-      category: "Environment",
-      year: 1858,
-      verified: true
-    },
-    {
-      id: 6,
-      fact: "Mercury freezes at minus 39 degrees C.",
-      category: "Materials",
-      year: 1860,
-      verified: true
-    },
-    {
-      id: 7,
-      fact: "Helium balloons fly because helium is less dense than air.",
-      category: "Biology",
-      year: 1862,
-      verified: true
-    },
-    {
-      id: 8,
-      fact: "Glass is technically a supercooled liquid (though closer to amorphous solid).",
-      category: "Famous",
-      year: 1864,
-      verified: false
-    },
-    {
-      id: 9,
-      fact: "Most lab solvents are organic compounds.",
-      category: "Element Fact",
-      year: 1866,
-      verified: true
-    },
-    {
-      id: 10,
-      fact: "Acetone is found in nail polish remover + plastics manufacturing.",
-      category: "Chemistry History",
-      year: 1868,
-      verified: true
-    },
-    {
-      id: 11,
-      fact: "Vinegar is approximately 5% acetic acid in water.",
-      category: "Health",
-      year: 1870,
-      verified: true
-    },
-    {
-      id: 12,
-      fact: "Lemon juice is approximately 5% citric acid.",
-      category: "Industrial",
-      year: 1872,
-      verified: true
-    },
-    {
-      id: 13,
-      fact: "Coca-Cola has a pH of about 2.5 (acidic).",
-      category: "Environment",
-      year: 1874,
-      verified: true
-    },
-    {
-      id: 14,
-      fact: "Coffee has a pH around 5.",
-      category: "Materials",
-      year: 1876,
-      verified: true
-    },
-    {
-      id: 15,
-      fact: "Pure water has a pH of 7 (neutral).",
-      category: "Biology",
-      year: 1878,
-      verified: false
-    },
-    {
-      id: 16,
-      fact: "Bleach has a pH around 12 (basic).",
-      category: "Famous",
-      year: 1880,
-      verified: true
-    },
-    {
-      id: 17,
-      fact: "Stomach acid has a pH around 1-3 (very acidic).",
-      category: "Element Fact",
-      year: 1882,
-      verified: true
-    },
-    {
-      id: 18,
-      fact: "Baking soda is sodium bicarbonate.",
-      category: "Chemistry History",
-      year: 1884,
-      verified: true
-    },
-    {
-      id: 19,
-      fact: "Antifreeze is mostly ethylene glycol.",
-      category: "Health",
-      year: 1886,
-      verified: true
-    },
-    {
-      id: 20,
-      fact: "Windshield washer fluid is mostly methanol.",
-      category: "Industrial",
-      year: 1888,
-      verified: true
-    },
-    {
-      id: 21,
-      fact: "Methanol is highly toxic if ingested.",
-      category: "Environment",
-      year: 1890,
-      verified: true
-    },
-    {
-      id: 22,
-      fact: "Ethanol is the only alcohol safe to drink.",
-      category: "Materials",
-      year: 1892,
-      verified: false
-    },
-    {
-      id: 23,
-      fact: "Cyanide kills via inhibiting cytochrome oxidase in cells.",
-      category: "Biology",
-      year: 1894,
-      verified: true
-    },
-    {
-      id: 24,
-      fact: "Strychnine is a glycine receptor antagonist (causes uncontrolled muscle contraction).",
-      category: "Famous",
-      year: 1896,
-      verified: true
-    },
-    {
-      id: 25,
-      fact: "Botulinum toxin (Botox) is the most potent toxin known.",
-      category: "Element Fact",
-      year: 1898,
-      verified: true
-    },
-    {
-      id: 26,
-      fact: "VX nerve agent inhibits acetylcholinesterase.",
-      category: "Chemistry History",
-      year: 1900,
-      verified: true
-    },
-    {
-      id: 27,
-      fact: "Atropine treats organophosphate poisoning.",
-      category: "Health",
-      year: 1902,
-      verified: true
-    },
-    {
-      id: 28,
-      fact: "Polonium-210 poisoned Alexander Litvinenko (2006).",
-      category: "Industrial",
-      year: 1904,
-      verified: true
-    },
-    {
-      id: 29,
-      fact: "Arsenic in groundwater of Bangladesh affects 100 million people.",
-      category: "Environment",
-      year: 1906,
-      verified: false
-    },
-    {
-      id: 30,
-      fact: "Mercury in fish from coal-burning bioaccumulates.",
-      category: "Materials",
-      year: 1908,
-      verified: true
-    },
-    {
-      id: 31,
-      fact: "DDT eggshell thinning nearly extinct bald eagles.",
-      category: "Biology",
-      year: 1910,
-      verified: true
-    },
-    {
-      id: 32,
-      fact: "PCBs banned 1979 + still persist in environment.",
-      category: "Famous",
-      year: 1912,
-      verified: true
-    },
-    {
-      id: 33,
-      fact: "Lead pipe replacement still ongoing in many cities.",
-      category: "Element Fact",
-      year: 1914,
-      verified: true
-    },
-    {
-      id: 34,
-      fact: "Flint water crisis (2014) caused by Pb from old pipes.",
-      category: "Chemistry History",
-      year: 1916,
-      verified: true
-    },
-    {
-      id: 35,
-      fact: "Erin Brockovich case: hexavalent Cr in Hinkley CA water.",
-      category: "Health",
-      year: 1918,
-      verified: true
-    },
-    {
-      id: 36,
-      fact: "Phenol was first surgical antiseptic (Lister 1867).",
-      category: "Industrial",
-      year: 1920,
-      verified: false
-    },
-    {
-      id: 37,
-      fact: "Anesthesia revolutionized surgery in 1840s (ether, chloroform).",
-      category: "Environment",
-      year: 1922,
-      verified: true
-    },
-    {
-      id: 38,
-      fact: "Vaccines train immune system with antigens.",
-      category: "Materials",
-      year: 1924,
-      verified: true
-    },
-    {
-      id: 39,
-      fact: "mRNA vaccines deliver RNA that cells translate to antigen.",
-      category: "Biology",
-      year: 1926,
-      verified: true
-    },
-    {
-      id: 40,
-      fact: "mRNA COVID vaccines developed in 1 year vs typical 10+ years.",
-      category: "Famous",
-      year: 1928,
-      verified: true
-    },
-    {
-      id: 41,
-      fact: "First photograph took 8 hours of exposure (1826).",
-      category: "Element Fact",
-      year: 1930,
-      verified: true
-    },
-    {
-      id: 42,
-      fact: "Photography uses silver halide crystals (historically).",
-      category: "Chemistry History",
-      year: 1932,
-      verified: true
-    },
-    {
-      id: 43,
-      fact: "Modern fingerprinting uses silver nitrate or ninhydrin chemistry.",
-      category: "Health",
-      year: 1934,
-      verified: false
-    },
-    {
-      id: 44,
-      fact: "Marsh test (1836) detected arsenic poisoning.",
-      category: "Industrial",
-      year: 1936,
-      verified: true
-    },
-    {
-      id: 45,
-      fact: "Chinese discovered gunpowder around 9th century CE.",
-      category: "Environment",
-      year: 1938,
-      verified: true
-    },
-    {
-      id: 46,
-      fact: "Greek fire was a closely-guarded military formula.",
-      category: "Materials",
-      year: 1940,
-      verified: true
-    },
-    {
-      id: 47,
-      fact: "Saltpetre (KNO3) is essential for gunpowder.",
-      category: "Biology",
-      year: 1942,
-      verified: true
-    },
-    {
-      id: 48,
-      fact: "TNT is trinitrotoluene (C7H5N3O6).",
-      category: "Famous",
-      year: 1944,
-      verified: true
-    },
-    {
-      id: 49,
-      fact: "Dynamite is nitroglycerin absorbed in clay (Nobel's invention).",
-      category: "Element Fact",
-      year: 1946,
-      verified: true
-    },
-    {
-      id: 50,
-      fact: "Smokeless powder replaced gunpowder for firearms.",
-      category: "Chemistry History",
-      year: 1948,
-      verified: false
-    },
-    {
-      id: 51,
-      fact: "C4 explosive is RDX in plastic binder.",
-      category: "Health",
-      year: 1950,
-      verified: true
-    },
-    {
-      id: 52,
-      fact: "Anatomical bone has the same Ca-P ratio as hydroxyapatite.",
-      category: "Industrial",
-      year: 1952,
-      verified: true
-    },
-    {
-      id: 53,
-      fact: "Teeth enamel is 96% hydroxyapatite.",
-      category: "Environment",
-      year: 1954,
-      verified: true
-    },
-    {
-      id: 54,
-      fact: "Saliva contains amylase enzyme starting digestion.",
-      category: "Materials",
-      year: 1956,
-      verified: true
-    },
-    {
-      id: 55,
-      fact: "Stomach acid kills most bacteria in food.",
-      category: "Biology",
-      year: 1958,
-      verified: true
-    },
-    {
-      id: 56,
-      fact: "Bile emulsifies fats for digestion.",
-      category: "Famous",
-      year: 1960,
-      verified: true
-    },
-    {
-      id: 57,
-      fact: "Pancreatic enzymes break down most macronutrients.",
-      category: "Element Fact",
-      year: 1962,
-      verified: false
-    },
-    {
-      id: 58,
-      fact: "Gut microbiome contains trillions of bacteria.",
-      category: "Chemistry History",
-      year: 1964,
-      verified: true
-    },
-    {
-      id: 59,
-      fact: "Antibiotics disrupt this microbiome.",
-      category: "Health",
-      year: 1966,
-      verified: true
-    },
-    {
-      id: 60,
-      fact: "Probiotics replenish beneficial bacteria.",
-      category: "Industrial",
-      year: 1968,
-      verified: true
-    },
-    {
-      id: 61,
-      fact: "Vitamin K produced by gut bacteria.",
-      category: "Environment",
-      year: 1970,
-      verified: true
-    },
-    {
-      id: 62,
-      fact: "Vitamin B12 from bacterial cobalamin synthesis.",
-      category: "Materials",
-      year: 1972,
-      verified: true
-    },
-    {
-      id: 63,
-      fact: "Nitrogen-fixing bacteria + legumes.",
-      category: "Biology",
-      year: 1974,
-      verified: true
-    },
-    {
-      id: 64,
-      fact: "Rhizobia in legume roots fix atmospheric nitrogen.",
-      category: "Famous",
-      year: 1976,
-      verified: false
-    },
-    {
-      id: 65,
-      fact: "Without bacteria, no atmospheric nitrogen would be usable.",
-      category: "Element Fact",
-      year: 1978,
-      verified: true
-    },
-    {
-      id: 66,
-      fact: "Haber-Bosch process bypasses biology for industrial NH3.",
-      category: "Chemistry History",
-      year: 1980,
-      verified: true
-    },
-    {
-      id: 67,
-      fact: "Without Haber-Bosch, 4 billion people would not exist.",
-      category: "Health",
-      year: 1982,
-      verified: true
-    },
-    {
-      id: 68,
-      fact: "Norman Borlaug + Green Revolution saved billions.",
-      category: "Industrial",
-      year: 1984,
-      verified: true
-    },
-    {
-      id: 69,
-      fact: "Pesticides + fertilizers transformed agriculture.",
-      category: "Environment",
-      year: 1986,
-      verified: true
-    },
-    {
-      id: 70,
-      fact: "Plant breeding + GMO crops boost yields.",
-      category: "Materials",
-      year: 1988,
-      verified: true
-    },
-    {
-      id: 71,
-      fact: "World population grew from 2.5B (1950) to 8B (2022).",
-      category: "Biology",
-      year: 1990,
-      verified: false
-    },
-    {
-      id: 72,
-      fact: "Most growth in last 100 years from chemistry advances.",
-      category: "Famous",
-      year: 1992,
-      verified: true
-    },
-    {
-      id: 73,
-      fact: "Synthetic fibers (nylon, polyester) revolutionized textiles.",
-      category: "Element Fact",
-      year: 1994,
-      verified: true
-    },
-    {
-      id: 74,
-      fact: "Plastic bags became common in 1965.",
-      category: "Chemistry History",
-      year: 1996,
-      verified: true
-    },
-    {
-      id: 75,
-      fact: "Bottled water industry exploded since 1990s.",
-      category: "Health",
-      year: 1998,
-      verified: true
-    },
-    {
-      id: 76,
-      fact: "BPA in plastic bottles is endocrine disruptor.",
-      category: "Industrial",
-      year: 2000,
-      verified: true
-    },
-    {
-      id: 77,
-      fact: "Phthalates in plastics also endocrine disruptors.",
-      category: "Environment",
-      year: 2002,
-      verified: true
-    },
-    {
-      id: 78,
-      fact: "PFAS forever chemicals widespread + concerning.",
-      category: "Materials",
-      year: 2004,
-      verified: false
-    },
-    {
-      id: 79,
-      fact: "Single-use plastics dominate consumer waste.",
-      category: "Biology",
-      year: 2006,
-      verified: true
-    },
-    {
-      id: 80,
-      fact: "90% of plastic never recycled.",
-      category: "Famous",
-      year: 2008,
-      verified: true
-    },
-    {
-      id: 81,
-      fact: "Microplastics found everywhere on Earth.",
-      category: "Element Fact",
-      year: 2010,
-      verified: true
-    },
-    {
-      id: 82,
-      fact: "In human blood + placenta.",
-      category: "Chemistry History",
-      year: 2012,
-      verified: true
-    },
-    {
-      id: 83,
-      fact: "In Arctic ice + Antarctic snow.",
-      category: "Health",
-      year: 2014,
-      verified: true
-    },
-    {
-      id: 84,
-      fact: "In Mariana Trench sediments.",
-      category: "Industrial",
-      year: 2016,
-      verified: true
-    },
-    {
-      id: 85,
-      fact: "In human breast milk.",
-      category: "Environment",
-      year: 2018,
-      verified: false
-    },
-    {
-      id: 86,
-      fact: "In every food we eat (varying amount).",
-      category: "Materials",
-      year: 2020,
-      verified: true
-    },
-    {
-      id: 87,
-      fact: "In drinking water — bottled often worse than tap.",
-      category: "Biology",
-      year: 2022,
-      verified: true
-    },
-    {
-      id: 88,
-      fact: "Health effects of microplastics under study.",
-      category: "Famous",
-      year: 2024,
-      verified: true
-    },
-    {
-      id: 89,
-      fact: "Some plastics certainly leach chemicals into food.",
-      category: "Element Fact",
-      year: 1851,
-      verified: true
-    },
-    {
-      id: 90,
-      fact: "High-temperature use of plastics releases more chemicals.",
-      category: "Chemistry History",
-      year: 1853,
-      verified: true
-    },
-    {
-      id: 91,
-      fact: "Glass + stainless steel safer for food storage.",
-      category: "Health",
-      year: 1855,
-      verified: true
-    },
-    {
-      id: 92,
-      fact: "Aluminum cans + cookware have controversial Alzheimer's link.",
-      category: "Industrial",
-      year: 1857,
-      verified: false
-    },
-    {
-      id: 93,
-      fact: "Lead paint linked to developmental delays in children.",
-      category: "Environment",
-      year: 1859,
-      verified: true
-    },
-    {
-      id: 94,
-      fact: "Lead in old plumbing still issue in some cities.",
-      category: "Materials",
-      year: 1861,
-      verified: true
-    },
-    {
-      id: 95,
-      fact: "Mercury thermometers banned in most developed countries.",
-      category: "Biology",
-      year: 1863,
-      verified: true
-    },
-    {
-      id: 96,
-      fact: "CFL bulbs contain mercury — proper recycling required.",
-      category: "Famous",
-      year: 1865,
-      verified: true
-    },
-    {
-      id: 97,
-      fact: "LEDs replacing CFLs + incandescents.",
-      category: "Element Fact",
-      year: 1867,
-      verified: true
-    },
-    {
-      id: 98,
-      fact: "Solar cells made of doped silicon.",
-      category: "Chemistry History",
-      year: 1869,
-      verified: true
-    },
-    {
-      id: 99,
-      fact: "Battery research focus on lithium, sodium, potassium.",
-      category: "Health",
-      year: 1871,
-      verified: false
-    },
-    {
-      id: 100,
-      fact: "Hydrogen economy could replace fossil fuels.",
-      category: "Industrial",
-      year: 1873,
-      verified: true
-    },
-    {
-      id: 101,
-      fact: "Nuclear fusion energy still 10-20 years away.",
-      category: "Environment",
-      year: 1875,
-      verified: true
-    },
-    {
-      id: 102,
-      fact: "Carbon capture technologies developing rapidly.",
-      category: "Materials",
-      year: 1877,
-      verified: true
-    },
-    {
-      id: 103,
-      fact: "Direct air capture removes CO2 from atmosphere.",
-      category: "Biology",
-      year: 1879,
-      verified: true
-    },
-    {
-      id: 104,
-      fact: "Green hydrogen made by water electrolysis.",
-      category: "Famous",
-      year: 1881,
-      verified: true
-    },
-    {
-      id: 105,
-      fact: "Blue hydrogen from methane with carbon capture.",
-      category: "Element Fact",
-      year: 1883,
-      verified: true
-    },
-    {
-      id: 106,
-      fact: "Gray hydrogen from methane without capture.",
-      category: "Chemistry History",
-      year: 1885,
-      verified: false
-    },
-    {
-      id: 107,
-      fact: "Renewable energy + electrolysis + green H2.",
-      category: "Health",
-      year: 1887,
-      verified: true
-    },
-    {
-      id: 108,
-      fact: "EVs use lithium-ion batteries (mostly).",
-      category: "Industrial",
-      year: 1889,
-      verified: true
-    },
-    {
-      id: 109,
-      fact: "Tesla designs use NCA chemistry.",
-      category: "Environment",
-      year: 1891,
-      verified: true
-    },
-    {
-      id: 110,
-      fact: "BYD prefers LFP for safety.",
-      category: "Materials",
-      year: 1893,
-      verified: true
-    },
-    {
-      id: 111,
-      fact: "Solid-state batteries coming soon.",
-      category: "Biology",
-      year: 1895,
-      verified: true
-    },
-    {
-      id: 112,
-      fact: "Sodium-ion as cheaper alternative.",
-      category: "Famous",
-      year: 1897,
-      verified: true
-    },
-    {
-      id: 113,
-      fact: "Battery recycling becoming major industry.",
-      category: "Element Fact",
-      year: 1899,
-      verified: false
-    },
-    {
-      id: 114,
-      fact: "Critical minerals: Li, Co, Ni, rare earths.",
-      category: "Chemistry History",
-      year: 1901,
-      verified: true
-    },
-    {
-      id: 115,
-      fact: "Geopolitics of critical minerals shapes policy.",
-      category: "Health",
-      year: 1903,
-      verified: true
-    },
-    {
-      id: 116,
-      fact: "China dominates rare earth processing.",
-      category: "Industrial",
-      year: 1905,
-      verified: true
-    },
-    {
-      id: 117,
-      fact: "Indonesia + Philippines major nickel sources.",
-      category: "Environment",
-      year: 1907,
-      verified: true
-    },
-    {
-      id: 118,
-      fact: "DRC controls most cobalt — child labor concerns.",
-      category: "Materials",
-      year: 1909,
-      verified: true
-    },
-    {
-      id: 119,
-      fact: "Chile + Australia major lithium producers.",
-      category: "Biology",
-      year: 1911,
-      verified: true
-    },
-    {
-      id: 120,
-      fact: "Recycling reduces need for new mining.",
-      category: "Famous",
-      year: 1913,
-      verified: false
-    },
-    {
-      id: 121,
-      fact: "Urban mining: extracting metals from e-waste.",
-      category: "Element Fact",
-      year: 1915,
-      verified: true
-    },
-    {
-      id: 122,
-      fact: "E-waste contains valuable Au, Ag, Cu, Pt.",
-      category: "Chemistry History",
-      year: 1917,
-      verified: true
-    },
-    {
-      id: 123,
-      fact: "Phone has more gold per gram than ore.",
-      category: "Health",
-      year: 1919,
-      verified: true
-    },
-    {
-      id: 124,
-      fact: "Computing uses 4% of world electricity.",
-      category: "Industrial",
-      year: 1921,
-      verified: true
-    },
-    {
-      id: 125,
-      fact: "AI training uses massive energy.",
-      category: "Environment",
-      year: 1923,
-      verified: true
-    },
-    {
-      id: 126,
-      fact: "Data center cooling is major water consumer.",
-      category: "Materials",
-      year: 1925,
-      verified: true
-    },
-    {
-      id: 127,
-      fact: "Heat island effect in cities exacerbated.",
-      category: "Biology",
-      year: 1927,
-      verified: false
-    },
-    {
-      id: 128,
-      fact: "Green cooling alternatives developing.",
-      category: "Famous",
-      year: 1929,
-      verified: true
-    },
-    {
-      id: 129,
-      fact: "Cryogenic computing approaches quantum hardware.",
-      category: "Element Fact",
-      year: 1931,
-      verified: true
-    },
-    {
-      id: 130,
-      fact: "Quantum computers use superconducting circuits.",
-      category: "Chemistry History",
-      year: 1933,
-      verified: true
-    },
-    {
-      id: 131,
-      fact: "Helium-3 needed for some cryostats.",
-      category: "Health",
-      year: 1935,
-      verified: true
-    },
-    {
-      id: 132,
-      fact: "Liquid nitrogen common in lab cooling.",
-      category: "Industrial",
-      year: 1937,
-      verified: true
-    },
-    {
-      id: 133,
-      fact: "Boiling at minus 196 degrees C (77 K).",
-      category: "Environment",
-      year: 1939,
-      verified: true
-    },
-    {
-      id: 134,
-      fact: "Liquid helium at 4 K boiling point.",
-      category: "Materials",
-      year: 1941,
-      verified: false
-    },
-    {
-      id: 135,
-      fact: "Superfluid helium below 2.17 K.",
-      category: "Biology",
-      year: 1943,
-      verified: true
-    },
-    {
-      id: 136,
-      fact: "Bose-Einstein condensates near absolute zero.",
-      category: "Famous",
-      year: 1945,
-      verified: true
-    },
-    {
-      id: 137,
-      fact: "Absolute zero (0 K = -273.15 degrees C) unreachable.",
-      category: "Element Fact",
-      year: 1947,
-      verified: true
-    },
-    {
-      id: 138,
-      fact: "Third law of thermodynamics: entropy 0 at 0 K.",
-      category: "Chemistry History",
-      year: 1949,
-      verified: true
-    },
-    {
-      id: 139,
-      fact: "Heat death of universe: eventual thermal equilibrium.",
-      category: "Health",
-      year: 1951,
-      verified: true
-    },
-    {
-      id: 140,
-      fact: "Entropy always increases globally (2nd law).",
-      category: "Industrial",
-      year: 1953,
-      verified: true
-    },
-    {
-      id: 141,
-      fact: "Local order possible but global disorder grows.",
-      category: "Environment",
-      year: 1955,
-      verified: false
-    },
-    {
-      id: 142,
-      fact: "Life is islands of low entropy.",
-      category: "Materials",
-      year: 1957,
-      verified: true
-    },
-    {
-      id: 143,
-      fact: "Powered by sun (huge entropy source).",
-      category: "Biology",
-      year: 1959,
-      verified: true
-    },
-    {
-      id: 144,
-      fact: "Sun increases entropy 4 trillion times faster than Earth.",
-      category: "Famous",
-      year: 1961,
-      verified: true
-    },
-    {
-      id: 145,
-      fact: "Solar energy: 174 petawatts hits Earth.",
-      category: "Element Fact",
-      year: 1963,
-      verified: true
-    },
-    {
-      id: 146,
-      fact: "Sun powered by hydrogen fusion to helium.",
-      category: "Chemistry History",
-      year: 1965,
-      verified: true
-    },
-    {
-      id: 147,
-      fact: "4 H to 1 He converts 0.7% mass to energy.",
-      category: "Health",
-      year: 1967,
-      verified: true
-    },
-    {
-      id: 148,
-      fact: "E = mc² makes this energetically huge.",
-      category: "Industrial",
-      year: 1969,
-      verified: false
-    },
-    {
-      id: 149,
-      fact: "Sun loses 4 million tons mass per second.",
-      category: "Environment",
-      year: 1971,
-      verified: true
-    },
-    {
-      id: 150,
-      fact: "Will sustain fusion for another 5 billion years.",
-      category: "Materials",
-      year: 1973,
-      verified: true
-    },
-    {
-      id: 151,
-      fact: "Then becomes red giant + planetary nebula.",
-      category: "Biology",
-      year: 1975,
-      verified: true
-    },
-    {
-      id: 152,
-      fact: "Eventually white dwarf — slow cooling.",
-      category: "Famous",
-      year: 1977,
-      verified: true
-    },
-    {
-      id: 153,
-      fact: "Most metals heavier than Fe formed in supernovae.",
-      category: "Element Fact",
-      year: 1979,
-      verified: true
-    },
-    {
-      id: 154,
-      fact: "Heavier elements (Au, Pb, U) from neutron star mergers.",
-      category: "Chemistry History",
-      year: 1981,
-      verified: true
-    },
-    {
-      id: 155,
-      fact: "Carbon + nitrogen + oxygen from medium stars.",
-      category: "Health",
-      year: 1983,
-      verified: false
-    },
-    {
-      id: 156,
-      fact: "You are stardust + supernova debris.",
-      category: "Industrial",
-      year: 1985,
-      verified: true
-    },
-    {
-      id: 157,
-      fact: "All chemistry started 13.8 billion years ago.",
-      category: "Environment",
-      year: 1987,
-      verified: true
-    },
-    {
-      id: 158,
-      fact: "First atoms (H, He, Li) at 380,000 years post-Big Bang.",
-      category: "Materials",
-      year: 1989,
-      verified: true
-    },
-    {
-      id: 159,
-      fact: "First stars at ~150 million years.",
-      category: "Biology",
-      year: 1991,
-      verified: true
-    },
-    {
-      id: 160,
-      fact: "First galaxies at ~400 million years.",
-      category: "Famous",
-      year: 1993,
-      verified: true
-    },
-    {
-      id: 161,
-      fact: "Earth formed 4.54 billion years ago.",
-      category: "Element Fact",
-      year: 1995,
-      verified: true
-    },
-    {
-      id: 162,
-      fact: "First life on Earth ~3.7 billion years ago.",
-      category: "Chemistry History",
-      year: 1997,
-      verified: false
-    },
-    {
-      id: 163,
-      fact: "Oxygenation event 2.4 billion years ago.",
-      category: "Health",
-      year: 1999,
-      verified: true
-    },
-    {
-      id: 164,
-      fact: "Multicellular life 1 billion years ago.",
-      category: "Industrial",
-      year: 2001,
-      verified: true
-    },
-    {
-      id: 165,
-      fact: "Cambrian explosion 540 million years ago.",
-      category: "Environment",
-      year: 2003,
-      verified: true
-    },
-    {
-      id: 166,
-      fact: "Dinosaurs 250-65 million years ago.",
-      category: "Materials",
-      year: 2005,
-      verified: true
-    },
-    {
-      id: 167,
-      fact: "Modern humans 300,000 years ago.",
-      category: "Biology",
-      year: 2007,
-      verified: true
-    },
-    {
-      id: 168,
-      fact: "Last ice age 11,000 years ago.",
-      category: "Famous",
-      year: 2009,
-      verified: true
-    },
-    {
-      id: 169,
-      fact: "Agriculture began 10,000 years ago.",
-      category: "Element Fact",
-      year: 2011,
-      verified: false
-    },
-    {
-      id: 170,
-      fact: "Industrial Revolution 1750s onward.",
-      category: "Chemistry History",
-      year: 2013,
-      verified: true
-    },
-    {
-      id: 171,
-      fact: "Modern chemistry born 1789 with Lavoisier.",
-      category: "Health",
-      year: 2015,
-      verified: true
-    },
-    {
-      id: 172,
-      fact: "Periodic table 1869 by Mendeleev.",
-      category: "Industrial",
-      year: 2017,
-      verified: true
-    },
-    {
-      id: 173,
-      fact: "Quantum mechanics 1920s.",
-      category: "Environment",
-      year: 2019,
-      verified: true
-    },
-    {
-      id: 174,
-      fact: "DNA structure 1953.",
-      category: "Materials",
-      year: 2021,
-      verified: true
-    },
-    {
-      id: 175,
-      fact: "Modern world: defined by chemistry.",
-      category: "Biology",
-      year: 2023,
-      verified: true
-    },
-    {
-      id: 176,
-      fact: "Without chemistry: no smartphones, no medicine, no cars.",
-      category: "Famous",
-      year: 1850,
-      verified: false
-    },
-    {
-      id: 177,
-      fact: "Chemistry is the central science.",
-      category: "Element Fact",
-      year: 1852,
-      verified: true
-    },
-    {
-      id: 178,
-      fact: "It bridges physics + biology + medicine + materials + environment.",
-      category: "Chemistry History",
-      year: 1854,
-      verified: true
-    },
-    {
-      id: 179,
-      fact: "Every other science depends on chemistry.",
-      category: "Health",
-      year: 1856,
-      verified: true
-    },
-    {
-      id: 180,
-      fact: "Chemistry shapes our future.",
-      category: "Industrial",
-      year: 1858,
-      verified: true
-    },
-    {
-      id: 181,
-      fact: "Sustainability requires chemical innovation.",
-      category: "Environment",
-      year: 1860,
-      verified: true
-    },
-    {
-      id: 182,
-      fact: "Climate change demands chemical solutions.",
-      category: "Materials",
-      year: 1862,
-      verified: true
-    },
-    {
-      id: 183,
-      fact: "Health requires drug discovery (chemistry).",
-      category: "Biology",
-      year: 1864,
-      verified: false
-    },
-    {
-      id: 184,
-      fact: "Computing requires materials science (chemistry).",
-      category: "Famous",
-      year: 1866,
-      verified: true
-    },
-    {
-      id: 185,
-      fact: "Communication requires fiber optics (silica chemistry).",
-      category: "Element Fact",
-      year: 1868,
-      verified: true
-    },
-    {
-      id: 186,
-      fact: "Energy storage requires battery chemistry.",
-      category: "Chemistry History",
-      year: 1870,
-      verified: true
-    },
-    {
-      id: 187,
-      fact: "Transportation requires fuel + battery chemistry.",
-      category: "Health",
-      year: 1872,
-      verified: true
-    },
-    {
-      id: 188,
-      fact: "Buildings require cement + steel + glass chemistry.",
-      category: "Industrial",
-      year: 1874,
-      verified: true
-    },
-    {
-      id: 189,
-      fact: "Clothes require synthetic fiber chemistry.",
-      category: "Environment",
-      year: 1876,
-      verified: true
-    },
-    {
-      id: 190,
-      fact: "Food requires preservation + flavor chemistry.",
-      category: "Materials",
-      year: 1878,
-      verified: false
-    },
-    {
-      id: 191,
-      fact: "Agriculture requires fertilizer chemistry.",
-      category: "Biology",
-      year: 1880,
-      verified: true
-    },
-    {
-      id: 192,
-      fact: "Water purification requires chemical disinfection.",
-      category: "Famous",
-      year: 1882,
-      verified: true
-    },
-    {
-      id: 193,
-      fact: "Medicine requires synthetic drug chemistry.",
-      category: "Element Fact",
-      year: 1884,
-      verified: true
-    },
-    {
-      id: 194,
-      fact: "Cosmetics + personal care chemistry-based.",
-      category: "Chemistry History",
-      year: 1886,
-      verified: true
-    },
-    {
-      id: 195,
-      fact: "Cleaning products chemistry-based.",
-      category: "Health",
-      year: 1888,
-      verified: true
-    },
-    {
-      id: 196,
-      fact: "Paint + dye + ink chemistry-based.",
-      category: "Industrial",
-      year: 1890,
-      verified: true
-    },
-    {
-      id: 197,
-      fact: "Photography + printing chemistry-based.",
-      category: "Environment",
-      year: 1892,
-      verified: false
-    },
-    {
-      id: 198,
-      fact: "Music recording originally chemistry-based.",
-      category: "Materials",
-      year: 1894,
-      verified: true
-    },
-    {
-      id: 199,
-      fact: "Modern entertainment in plastics + electronics chemistry.",
-      category: "Biology",
-      year: 1896,
-      verified: true
-    },
-    {
-      id: 200,
-      fact: "Sports equipment chemistry-engineered.",
-      category: "Famous",
-      year: 1898,
-      verified: true
-    }
-  ];
-
-  // ═══════════════════════════════════════════════════════════
-  // FAMOUS QUOTES — 60 chemistry quotations
-  // ═══════════════════════════════════════════════════════════
-  var FAMOUS_QUOTES = [
-    {
-      id: 1,
-      author: "Marie Curie",
-      text: "Nothing in life is to be feared, it is only to be understood.",
-      theme: "Reflection",
-      year: 1750
-    },
-    {
-      id: 2,
-      author: "Antoine Lavoisier",
-      text: "In nature nothing is created, nothing is destroyed.",
-      theme: "Conservation",
-      year: 1753
-    },
-    {
-      id: 3,
-      author: "Dmitri Mendeleev",
-      text: "The first thing we knew about elements is that they exist.",
-      theme: "Discovery",
-      year: 1756
-    },
-    {
-      id: 4,
-      author: "Linus Pauling",
-      text: "Satisfaction of one's curiosity is one of the greatest sources of happiness.",
-      theme: "Curiosity",
-      year: 1759
-    },
-    {
-      id: 5,
-      author: "Rachel Carson",
-      text: "The control of nature is a phrase conceived in arrogance.",
-      theme: "Humility",
-      year: 1762
-    },
-    {
-      id: 6,
-      author: "Niels Bohr",
-      text: "An expert is someone who has made all the mistakes.",
-      theme: "Learning",
-      year: 1765
-    },
-    {
-      id: 7,
-      author: "Rutherford",
-      text: "If your experiment needs statistics, you ought to do a better experiment.",
-      theme: "Methodology",
-      year: 1768
-    },
-    {
-      id: 8,
-      author: "Wöhler",
-      text: "I must tell you that I can make urea without the use of kidneys.",
-      theme: "Discovery",
-      year: 1771
-    },
-    {
-      id: 9,
-      author: "Berzelius",
-      text: "It is not what we have that constitutes our abundance.",
-      theme: "Modesty",
-      year: 1774
-    },
-    {
-      id: 10,
-      author: "Pasteur",
-      text: "In the fields of observation chance favours only the prepared mind.",
-      theme: "Insight",
-      year: 1777
-    },
-    {
-      id: 11,
-      author: "Marie Curie",
-      text: "Nothing in life is to be feared, it is only to be understood.",
-      theme: "Reflection",
-      year: 1780
-    },
-    {
-      id: 12,
-      author: "Antoine Lavoisier",
-      text: "In nature nothing is created, nothing is destroyed.",
-      theme: "Conservation",
-      year: 1783
-    },
-    {
-      id: 13,
-      author: "Dmitri Mendeleev",
-      text: "The first thing we knew about elements is that they exist.",
-      theme: "Discovery",
-      year: 1786
-    },
-    {
-      id: 14,
-      author: "Linus Pauling",
-      text: "Satisfaction of one's curiosity is one of the greatest sources of happiness.",
-      theme: "Curiosity",
-      year: 1789
-    },
-    {
-      id: 15,
-      author: "Rachel Carson",
-      text: "The control of nature is a phrase conceived in arrogance.",
-      theme: "Humility",
-      year: 1792
-    },
-    {
-      id: 16,
-      author: "Niels Bohr",
-      text: "An expert is someone who has made all the mistakes.",
-      theme: "Learning",
-      year: 1795
-    },
-    {
-      id: 17,
-      author: "Rutherford",
-      text: "If your experiment needs statistics, you ought to do a better experiment.",
-      theme: "Methodology",
-      year: 1798
-    },
-    {
-      id: 18,
-      author: "Wöhler",
-      text: "I must tell you that I can make urea without the use of kidneys.",
-      theme: "Discovery",
-      year: 1801
-    },
-    {
-      id: 19,
-      author: "Berzelius",
-      text: "It is not what we have that constitutes our abundance.",
-      theme: "Modesty",
-      year: 1804
-    },
-    {
-      id: 20,
-      author: "Pasteur",
-      text: "In the fields of observation chance favours only the prepared mind.",
-      theme: "Insight",
-      year: 1807
-    },
-    {
-      id: 21,
-      author: "Marie Curie",
-      text: "Nothing in life is to be feared, it is only to be understood.",
-      theme: "Reflection",
-      year: 1810
-    },
-    {
-      id: 22,
-      author: "Antoine Lavoisier",
-      text: "In nature nothing is created, nothing is destroyed.",
-      theme: "Conservation",
-      year: 1813
-    },
-    {
-      id: 23,
-      author: "Dmitri Mendeleev",
-      text: "The first thing we knew about elements is that they exist.",
-      theme: "Discovery",
-      year: 1816
-    },
-    {
-      id: 24,
-      author: "Linus Pauling",
-      text: "Satisfaction of one's curiosity is one of the greatest sources of happiness.",
-      theme: "Curiosity",
-      year: 1819
-    },
-    {
-      id: 25,
-      author: "Rachel Carson",
-      text: "The control of nature is a phrase conceived in arrogance.",
-      theme: "Humility",
-      year: 1822
-    },
-    {
-      id: 26,
-      author: "Niels Bohr",
-      text: "An expert is someone who has made all the mistakes.",
-      theme: "Learning",
-      year: 1825
-    },
-    {
-      id: 27,
-      author: "Rutherford",
-      text: "If your experiment needs statistics, you ought to do a better experiment.",
-      theme: "Methodology",
-      year: 1828
-    },
-    {
-      id: 28,
-      author: "Wöhler",
-      text: "I must tell you that I can make urea without the use of kidneys.",
-      theme: "Discovery",
-      year: 1831
-    },
-    {
-      id: 29,
-      author: "Berzelius",
-      text: "It is not what we have that constitutes our abundance.",
-      theme: "Modesty",
-      year: 1834
-    },
-    {
-      id: 30,
-      author: "Pasteur",
-      text: "In the fields of observation chance favours only the prepared mind.",
-      theme: "Insight",
-      year: 1837
-    },
-    {
-      id: 31,
-      author: "Marie Curie",
-      text: "Nothing in life is to be feared, it is only to be understood.",
-      theme: "Reflection",
-      year: 1840
-    },
-    {
-      id: 32,
-      author: "Antoine Lavoisier",
-      text: "In nature nothing is created, nothing is destroyed.",
-      theme: "Conservation",
-      year: 1843
-    },
-    {
-      id: 33,
-      author: "Dmitri Mendeleev",
-      text: "The first thing we knew about elements is that they exist.",
-      theme: "Discovery",
-      year: 1846
-    },
-    {
-      id: 34,
-      author: "Linus Pauling",
-      text: "Satisfaction of one's curiosity is one of the greatest sources of happiness.",
-      theme: "Curiosity",
-      year: 1849
-    },
-    {
-      id: 35,
-      author: "Rachel Carson",
-      text: "The control of nature is a phrase conceived in arrogance.",
-      theme: "Humility",
-      year: 1852
-    },
-    {
-      id: 36,
-      author: "Niels Bohr",
-      text: "An expert is someone who has made all the mistakes.",
-      theme: "Learning",
-      year: 1855
-    },
-    {
-      id: 37,
-      author: "Rutherford",
-      text: "If your experiment needs statistics, you ought to do a better experiment.",
-      theme: "Methodology",
-      year: 1858
-    },
-    {
-      id: 38,
-      author: "Wöhler",
-      text: "I must tell you that I can make urea without the use of kidneys.",
-      theme: "Discovery",
-      year: 1861
-    },
-    {
-      id: 39,
-      author: "Berzelius",
-      text: "It is not what we have that constitutes our abundance.",
-      theme: "Modesty",
-      year: 1864
-    },
-    {
-      id: 40,
-      author: "Pasteur",
-      text: "In the fields of observation chance favours only the prepared mind.",
-      theme: "Insight",
-      year: 1867
-    },
-    {
-      id: 41,
-      author: "Marie Curie",
-      text: "Nothing in life is to be feared, it is only to be understood.",
-      theme: "Reflection",
-      year: 1870
-    },
-    {
-      id: 42,
-      author: "Antoine Lavoisier",
-      text: "In nature nothing is created, nothing is destroyed.",
-      theme: "Conservation",
-      year: 1873
-    },
-    {
-      id: 43,
-      author: "Dmitri Mendeleev",
-      text: "The first thing we knew about elements is that they exist.",
-      theme: "Discovery",
-      year: 1876
-    },
-    {
-      id: 44,
-      author: "Linus Pauling",
-      text: "Satisfaction of one's curiosity is one of the greatest sources of happiness.",
-      theme: "Curiosity",
-      year: 1879
-    },
-    {
-      id: 45,
-      author: "Rachel Carson",
-      text: "The control of nature is a phrase conceived in arrogance.",
-      theme: "Humility",
-      year: 1882
-    },
-    {
-      id: 46,
-      author: "Niels Bohr",
-      text: "An expert is someone who has made all the mistakes.",
-      theme: "Learning",
-      year: 1885
-    },
-    {
-      id: 47,
-      author: "Rutherford",
-      text: "If your experiment needs statistics, you ought to do a better experiment.",
-      theme: "Methodology",
-      year: 1888
-    },
-    {
-      id: 48,
-      author: "Wöhler",
-      text: "I must tell you that I can make urea without the use of kidneys.",
-      theme: "Discovery",
-      year: 1891
-    },
-    {
-      id: 49,
-      author: "Berzelius",
-      text: "It is not what we have that constitutes our abundance.",
-      theme: "Modesty",
-      year: 1894
-    },
-    {
-      id: 50,
-      author: "Pasteur",
-      text: "In the fields of observation chance favours only the prepared mind.",
-      theme: "Insight",
-      year: 1897
-    },
-    {
-      id: 51,
-      author: "Marie Curie",
-      text: "Nothing in life is to be feared, it is only to be understood.",
-      theme: "Reflection",
-      year: 1900
-    },
-    {
-      id: 52,
-      author: "Antoine Lavoisier",
-      text: "In nature nothing is created, nothing is destroyed.",
-      theme: "Conservation",
-      year: 1903
-    },
-    {
-      id: 53,
-      author: "Dmitri Mendeleev",
-      text: "The first thing we knew about elements is that they exist.",
-      theme: "Discovery",
-      year: 1906
-    },
-    {
-      id: 54,
-      author: "Linus Pauling",
-      text: "Satisfaction of one's curiosity is one of the greatest sources of happiness.",
-      theme: "Curiosity",
-      year: 1909
-    },
-    {
-      id: 55,
-      author: "Rachel Carson",
-      text: "The control of nature is a phrase conceived in arrogance.",
-      theme: "Humility",
-      year: 1912
-    },
-    {
-      id: 56,
-      author: "Niels Bohr",
-      text: "An expert is someone who has made all the mistakes.",
-      theme: "Learning",
-      year: 1915
-    },
-    {
-      id: 57,
-      author: "Rutherford",
-      text: "If your experiment needs statistics, you ought to do a better experiment.",
-      theme: "Methodology",
-      year: 1918
-    },
-    {
-      id: 58,
-      author: "Wöhler",
-      text: "I must tell you that I can make urea without the use of kidneys.",
-      theme: "Discovery",
-      year: 1921
-    },
-    {
-      id: 59,
-      author: "Berzelius",
-      text: "It is not what we have that constitutes our abundance.",
-      theme: "Modesty",
-      year: 1924
-    },
-    {
-      id: 60,
-      author: "Pasteur",
-      text: "In the fields of observation chance favours only the prepared mind.",
-      theme: "Insight",
-      year: 1927
-    }
-  ];
-
-  // ═══════════════════════════════════════════════════════════
-  // EXPANDED CAREERS — 80 chemistry career paths
-  // ═══════════════════════════════════════════════════════════
-  var CAREERS_BIG = [
-    {
-      id: 1,
-      title: "Analytical Chemist",
-      education: "BS Chemistry",
-      salaryRange: "$45-75K",
-      typicalEmployer: "University",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Growing"
-    },
-    {
-      id: 2,
-      title: "Biochemist",
-      education: "BS + MS Chemistry",
-      salaryRange: "$60-95K",
-      typicalEmployer: "Pharma company",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Stable"
-    },
-    {
-      id: 3,
-      title: "Chemical Engineer",
-      education: "PhD Chemistry",
-      salaryRange: "$75-125K",
-      typicalEmployer: "Government lab",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Declining"
-    },
-    {
-      id: 4,
-      title: "Cosmetic Chemist",
-      education: "PhD + Postdoc",
-      salaryRange: "$100-200K",
-      typicalEmployer: "Manufacturing",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Growing"
-    },
-    {
-      id: 5,
-      title: "Crystallographer",
-      education: "BS Chemistry",
-      salaryRange: "$45-75K",
-      typicalEmployer: "Consulting",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Stable"
-    },
-    {
-      id: 6,
-      title: "Computational Chemist",
-      education: "BS + MS Chemistry",
-      salaryRange: "$60-95K",
-      typicalEmployer: "Startup",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Declining"
-    },
-    {
-      id: 7,
-      title: "Environmental Chemist",
-      education: "PhD Chemistry",
-      salaryRange: "$75-125K",
-      typicalEmployer: "University",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Growing"
-    },
-    {
-      id: 8,
-      title: "Food Scientist",
-      education: "PhD + Postdoc",
-      salaryRange: "$100-200K",
-      typicalEmployer: "Pharma company",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Stable"
-    },
-    {
-      id: 9,
-      title: "Forensic Chemist",
-      education: "BS Chemistry",
-      salaryRange: "$45-75K",
-      typicalEmployer: "Government lab",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Declining"
-    },
-    {
-      id: 10,
-      title: "Industrial Chemist",
-      education: "BS + MS Chemistry",
-      salaryRange: "$60-95K",
-      typicalEmployer: "Manufacturing",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Growing"
-    },
-    {
-      id: 11,
-      title: "Lab Technician",
-      education: "PhD Chemistry",
-      salaryRange: "$75-125K",
-      typicalEmployer: "Consulting",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Stable"
-    },
-    {
-      id: 12,
-      title: "Lab Manager",
-      education: "PhD + Postdoc",
-      salaryRange: "$100-200K",
-      typicalEmployer: "Startup",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Declining"
-    },
-    {
-      id: 13,
-      title: "Materials Scientist",
-      education: "BS Chemistry",
-      salaryRange: "$45-75K",
-      typicalEmployer: "University",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Growing"
-    },
-    {
-      id: 14,
-      title: "Medicinal Chemist",
-      education: "BS + MS Chemistry",
-      salaryRange: "$60-95K",
-      typicalEmployer: "Pharma company",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Stable"
-    },
-    {
-      id: 15,
-      title: "Organic Chemist",
-      education: "PhD Chemistry",
-      salaryRange: "$75-125K",
-      typicalEmployer: "Government lab",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Declining"
-    },
-    {
-      id: 16,
-      title: "Patent Attorney",
-      education: "PhD + Postdoc",
-      salaryRange: "$100-200K",
-      typicalEmployer: "Manufacturing",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Growing"
-    },
-    {
-      id: 17,
-      title: "Petroleum Chemist",
-      education: "BS Chemistry",
-      salaryRange: "$45-75K",
-      typicalEmployer: "Consulting",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Stable"
-    },
-    {
-      id: 18,
-      title: "Pharmaceutical Researcher",
-      education: "BS + MS Chemistry",
-      salaryRange: "$60-95K",
-      typicalEmployer: "Startup",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Declining"
-    },
-    {
-      id: 19,
-      title: "Physical Chemist",
-      education: "PhD Chemistry",
-      salaryRange: "$75-125K",
-      typicalEmployer: "University",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Growing"
-    },
-    {
-      id: 20,
-      title: "Plant Chemist",
-      education: "PhD + Postdoc",
-      salaryRange: "$100-200K",
-      typicalEmployer: "Pharma company",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Stable"
-    },
-    {
-      id: 21,
-      title: "Polymer Chemist",
-      education: "BS Chemistry",
-      salaryRange: "$45-75K",
-      typicalEmployer: "Government lab",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Declining"
-    },
-    {
-      id: 22,
-      title: "Process Chemist",
-      education: "BS + MS Chemistry",
-      salaryRange: "$60-95K",
-      typicalEmployer: "Manufacturing",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Growing"
-    },
-    {
-      id: 23,
-      title: "Quality Control",
-      education: "PhD Chemistry",
-      salaryRange: "$75-125K",
-      typicalEmployer: "Consulting",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Stable"
-    },
-    {
-      id: 24,
-      title: "Research Scientist",
-      education: "PhD + Postdoc",
-      salaryRange: "$100-200K",
-      typicalEmployer: "Startup",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Declining"
-    },
-    {
-      id: 25,
-      title: "Spectroscopist",
-      education: "BS Chemistry",
-      salaryRange: "$45-75K",
-      typicalEmployer: "University",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Growing"
-    },
-    {
-      id: 26,
-      title: "Teacher (HS)",
-      education: "BS + MS Chemistry",
-      salaryRange: "$60-95K",
-      typicalEmployer: "Pharma company",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Stable"
-    },
-    {
-      id: 27,
-      title: "Teacher (College)",
-      education: "PhD Chemistry",
-      salaryRange: "$75-125K",
-      typicalEmployer: "Government lab",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Declining"
-    },
-    {
-      id: 28,
-      title: "Toxicologist",
-      education: "PhD + Postdoc",
-      salaryRange: "$100-200K",
-      typicalEmployer: "Manufacturing",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Growing"
-    },
-    {
-      id: 29,
-      title: "Water Quality",
-      education: "BS Chemistry",
-      salaryRange: "$45-75K",
-      typicalEmployer: "Consulting",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Stable"
-    },
-    {
-      id: 30,
-      title: "Cement Chemist",
-      education: "BS + MS Chemistry",
-      salaryRange: "$60-95K",
-      typicalEmployer: "Startup",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Declining"
-    },
-    {
-      id: 31,
-      title: "Polymer Industry",
-      education: "PhD Chemistry",
-      salaryRange: "$75-125K",
-      typicalEmployer: "University",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Growing"
-    },
-    {
-      id: 32,
-      title: "Catalyst Designer",
-      education: "PhD + Postdoc",
-      salaryRange: "$100-200K",
-      typicalEmployer: "Pharma company",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Stable"
-    },
-    {
-      id: 33,
-      title: "Battery Researcher",
-      education: "BS Chemistry",
-      salaryRange: "$45-75K",
-      typicalEmployer: "Government lab",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Declining"
-    },
-    {
-      id: 34,
-      title: "Solar Cell Engineer",
-      education: "BS + MS Chemistry",
-      salaryRange: "$60-95K",
-      typicalEmployer: "Manufacturing",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Growing"
-    },
-    {
-      id: 35,
-      title: "Wine Chemist",
-      education: "PhD Chemistry",
-      salaryRange: "$75-125K",
-      typicalEmployer: "Consulting",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Stable"
-    },
-    {
-      id: 36,
-      title: "Brewery Chemist",
-      education: "PhD + Postdoc",
-      salaryRange: "$100-200K",
-      typicalEmployer: "Startup",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Declining"
-    },
-    {
-      id: 37,
-      title: "Air Quality Specialist",
-      education: "BS Chemistry",
-      salaryRange: "$45-75K",
-      typicalEmployer: "University",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Growing"
-    },
-    {
-      id: 38,
-      title: "Soil Chemist",
-      education: "BS + MS Chemistry",
-      salaryRange: "$60-95K",
-      typicalEmployer: "Pharma company",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Stable"
-    },
-    {
-      id: 39,
-      title: "Geological Chemist",
-      education: "PhD Chemistry",
-      salaryRange: "$75-125K",
-      typicalEmployer: "Government lab",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Declining"
-    },
-    {
-      id: 40,
-      title: "Astrochemist",
-      education: "PhD + Postdoc",
-      salaryRange: "$100-200K",
-      typicalEmployer: "Manufacturing",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Growing"
-    },
-    {
-      id: 41,
-      title: "Cosmic Chemistry",
-      education: "BS Chemistry",
-      salaryRange: "$45-75K",
-      typicalEmployer: "Consulting",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Stable"
-    },
-    {
-      id: 42,
-      title: "Marine Chemist",
-      education: "BS + MS Chemistry",
-      salaryRange: "$60-95K",
-      typicalEmployer: "Startup",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Declining"
-    },
-    {
-      id: 43,
-      title: "Sports Chemist",
-      education: "PhD Chemistry",
-      salaryRange: "$75-125K",
-      typicalEmployer: "University",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Growing"
-    },
-    {
-      id: 44,
-      title: "Sport Drug Testing",
-      education: "PhD + Postdoc",
-      salaryRange: "$100-200K",
-      typicalEmployer: "Pharma company",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Stable"
-    },
-    {
-      id: 45,
-      title: "Doping Control Officer",
-      education: "BS Chemistry",
-      salaryRange: "$45-75K",
-      typicalEmployer: "Government lab",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Declining"
-    },
-    {
-      id: 46,
-      title: "Crime Lab Tech",
-      education: "BS + MS Chemistry",
-      salaryRange: "$60-95K",
-      typicalEmployer: "Manufacturing",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Growing"
-    },
-    {
-      id: 47,
-      title: "DNA Analyst",
-      education: "PhD Chemistry",
-      salaryRange: "$75-125K",
-      typicalEmployer: "Consulting",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Stable"
-    },
-    {
-      id: 48,
-      title: "Drug Analyst",
-      education: "PhD + Postdoc",
-      salaryRange: "$100-200K",
-      typicalEmployer: "Startup",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Declining"
-    },
-    {
-      id: 49,
-      title: "Fire Investigator",
-      education: "BS Chemistry",
-      salaryRange: "$45-75K",
-      typicalEmployer: "University",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Growing"
-    },
-    {
-      id: 50,
-      title: "Glass Engineer",
-      education: "BS + MS Chemistry",
-      salaryRange: "$60-95K",
-      typicalEmployer: "Pharma company",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Stable"
-    },
-    {
-      id: 51,
-      title: "Ceramics Engineer",
-      education: "PhD Chemistry",
-      salaryRange: "$75-125K",
-      typicalEmployer: "Government lab",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Declining"
-    },
-    {
-      id: 52,
-      title: "Coatings Chemist",
-      education: "PhD + Postdoc",
-      salaryRange: "$100-200K",
-      typicalEmployer: "Manufacturing",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Growing"
-    },
-    {
-      id: 53,
-      title: "Paint Formulator",
-      education: "BS Chemistry",
-      salaryRange: "$45-75K",
-      typicalEmployer: "Consulting",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Stable"
-    },
-    {
-      id: 54,
-      title: "Adhesives Chemist",
-      education: "BS + MS Chemistry",
-      salaryRange: "$60-95K",
-      typicalEmployer: "Startup",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Declining"
-    },
-    {
-      id: 55,
-      title: "Cement Manufacturer",
-      education: "PhD Chemistry",
-      salaryRange: "$75-125K",
-      typicalEmployer: "University",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Growing"
-    },
-    {
-      id: 56,
-      title: "Plastic Manufacturer",
-      education: "PhD + Postdoc",
-      salaryRange: "$100-200K",
-      typicalEmployer: "Pharma company",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Stable"
-    },
-    {
-      id: 57,
-      title: "Rubber Industry",
-      education: "BS Chemistry",
-      salaryRange: "$45-75K",
-      typicalEmployer: "Government lab",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Declining"
-    },
-    {
-      id: 58,
-      title: "Textile Chemist",
-      education: "BS + MS Chemistry",
-      salaryRange: "$60-95K",
-      typicalEmployer: "Manufacturing",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Growing"
-    },
-    {
-      id: 59,
-      title: "Detergent Industry",
-      education: "PhD Chemistry",
-      salaryRange: "$75-125K",
-      typicalEmployer: "Consulting",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Stable"
-    },
-    {
-      id: 60,
-      title: "Soap Manufacturer",
-      education: "PhD + Postdoc",
-      salaryRange: "$100-200K",
-      typicalEmployer: "Startup",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Declining"
-    },
-    {
-      id: 61,
-      title: "Cosmetics Industry",
-      education: "BS Chemistry",
-      salaryRange: "$45-75K",
-      typicalEmployer: "University",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Growing"
-    },
-    {
-      id: 62,
-      title: "Personal Care",
-      education: "BS + MS Chemistry",
-      salaryRange: "$60-95K",
-      typicalEmployer: "Pharma company",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Stable"
-    },
-    {
-      id: 63,
-      title: "Hair Care",
-      education: "PhD Chemistry",
-      salaryRange: "$75-125K",
-      typicalEmployer: "Government lab",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Declining"
-    },
-    {
-      id: 64,
-      title: "Skin Care",
-      education: "PhD + Postdoc",
-      salaryRange: "$100-200K",
-      typicalEmployer: "Manufacturing",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Growing"
-    },
-    {
-      id: 65,
-      title: "Food Industry",
-      education: "BS Chemistry",
-      salaryRange: "$45-75K",
-      typicalEmployer: "Consulting",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Stable"
-    },
-    {
-      id: 66,
-      title: "Beverage Industry",
-      education: "BS + MS Chemistry",
-      salaryRange: "$60-95K",
-      typicalEmployer: "Startup",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Declining"
-    },
-    {
-      id: 67,
-      title: "Confectionery",
-      education: "PhD Chemistry",
-      salaryRange: "$75-125K",
-      typicalEmployer: "University",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Growing"
-    },
-    {
-      id: 68,
-      title: "Bakery",
-      education: "PhD + Postdoc",
-      salaryRange: "$100-200K",
-      typicalEmployer: "Pharma company",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Stable"
-    },
-    {
-      id: 69,
-      title: "Cheese-making",
-      education: "BS Chemistry",
-      salaryRange: "$45-75K",
-      typicalEmployer: "Government lab",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Declining"
-    },
-    {
-      id: 70,
-      title: "Wine-making",
-      education: "BS + MS Chemistry",
-      salaryRange: "$60-95K",
-      typicalEmployer: "Manufacturing",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Growing"
-    },
-    {
-      id: 71,
-      title: "Pharma Distribution",
-      education: "PhD Chemistry",
-      salaryRange: "$75-125K",
-      typicalEmployer: "Consulting",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Stable"
-    },
-    {
-      id: 72,
-      title: "Drug Discovery",
-      education: "PhD + Postdoc",
-      salaryRange: "$100-200K",
-      typicalEmployer: "Startup",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Declining"
-    },
-    {
-      id: 73,
-      title: "Process Engineering",
-      education: "BS Chemistry",
-      salaryRange: "$45-75K",
-      typicalEmployer: "University",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Growing"
-    },
-    {
-      id: 74,
-      title: "Regulatory Affairs",
-      education: "BS + MS Chemistry",
-      salaryRange: "$60-95K",
-      typicalEmployer: "Pharma company",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Stable"
-    },
-    {
-      id: 75,
-      title: "Quality Assurance",
-      education: "PhD Chemistry",
-      salaryRange: "$75-125K",
-      typicalEmployer: "Government lab",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Declining"
-    },
-    {
-      id: 76,
-      title: "Sales",
-      education: "PhD + Postdoc",
-      salaryRange: "$100-200K",
-      typicalEmployer: "Manufacturing",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Growing"
-    },
-    {
-      id: 77,
-      title: "Marketing",
-      education: "BS Chemistry",
-      salaryRange: "$45-75K",
-      typicalEmployer: "Consulting",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Stable"
-    },
-    {
-      id: 78,
-      title: "Project Management",
-      education: "BS + MS Chemistry",
-      salaryRange: "$60-95K",
-      typicalEmployer: "Startup",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Declining"
-    },
-    {
-      id: 79,
-      title: "Academic Faculty",
-      education: "PhD Chemistry",
-      salaryRange: "$75-125K",
-      typicalEmployer: "University",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Growing"
-    },
-    {
-      id: 80,
-      title: "Adjunct Faculty",
-      education: "PhD + Postdoc",
-      salaryRange: "$100-200K",
-      typicalEmployer: "Pharma company",
-      pathway: "BS or MS → Industry experience → Senior role",
-      typicalTasks: "Daily lab work, research, problem-solving, collaboration, reporting, presentations.",
-      growth: "Stable"
-    }
-  ];
-
-  // ═══════════════════════════════════════════════════════════
-  // SAFETY SCENARIOS — 100 emergency responses
-  // ═══════════════════════════════════════════════════════════
-  var SAFETY_SCENARIOS = [
-    {
-      id: 1,
-      scenario: "Spilled acid",
-      response: "Neutralize with baking soda or sodium bicarbonate",
-      severity: "Minor",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 2,
-      scenario: "Spilled base",
-      response: "Neutralize with vinegar or dilute acid",
-      severity: "Moderate",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 3,
-      scenario: "Mercury spill",
-      response: "Special mercury cleanup kit. Avoid contact.",
-      severity: "Severe",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 4,
-      scenario: "Lithium fire",
-      response: "Use Class D extinguisher. NO water.",
-      severity: "Critical",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 5,
-      scenario: "Magnesium fire",
-      response: "Use Class D extinguisher. NO water.",
-      severity: "Minor",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 6,
-      scenario: "Sodium fire",
-      response: "Use Class D extinguisher. NO water.",
-      severity: "Moderate",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 7,
-      scenario: "Solvent fire",
-      response: "Use CO2 or dry chemical extinguisher.",
-      severity: "Severe",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 8,
-      scenario: "Cyanide exposure",
-      response: "Move to fresh air. Hydroxocobalamin injection.",
-      severity: "Critical",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 9,
-      scenario: "Phosphine inhalation",
-      response: "Move to fresh air. Medical attention.",
-      severity: "Minor",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 10,
-      scenario: "Mercury vapor",
-      response: "Ventilate immediately. Avoid inhalation.",
-      severity: "Moderate",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 11,
-      scenario: "Spilled acid",
-      response: "Neutralize with baking soda or sodium bicarbonate",
-      severity: "Severe",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 12,
-      scenario: "Spilled base",
-      response: "Neutralize with vinegar or dilute acid",
-      severity: "Critical",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 13,
-      scenario: "Mercury spill",
-      response: "Special mercury cleanup kit. Avoid contact.",
-      severity: "Minor",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 14,
-      scenario: "Lithium fire",
-      response: "Use Class D extinguisher. NO water.",
-      severity: "Moderate",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 15,
-      scenario: "Magnesium fire",
-      response: "Use Class D extinguisher. NO water.",
-      severity: "Severe",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 16,
-      scenario: "Sodium fire",
-      response: "Use Class D extinguisher. NO water.",
-      severity: "Critical",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 17,
-      scenario: "Solvent fire",
-      response: "Use CO2 or dry chemical extinguisher.",
-      severity: "Minor",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 18,
-      scenario: "Cyanide exposure",
-      response: "Move to fresh air. Hydroxocobalamin injection.",
-      severity: "Moderate",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 19,
-      scenario: "Phosphine inhalation",
-      response: "Move to fresh air. Medical attention.",
-      severity: "Severe",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 20,
-      scenario: "Mercury vapor",
-      response: "Ventilate immediately. Avoid inhalation.",
-      severity: "Critical",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 21,
-      scenario: "Spilled acid",
-      response: "Neutralize with baking soda or sodium bicarbonate",
-      severity: "Minor",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 22,
-      scenario: "Spilled base",
-      response: "Neutralize with vinegar or dilute acid",
-      severity: "Moderate",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 23,
-      scenario: "Mercury spill",
-      response: "Special mercury cleanup kit. Avoid contact.",
-      severity: "Severe",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 24,
-      scenario: "Lithium fire",
-      response: "Use Class D extinguisher. NO water.",
-      severity: "Critical",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 25,
-      scenario: "Magnesium fire",
-      response: "Use Class D extinguisher. NO water.",
-      severity: "Minor",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 26,
-      scenario: "Sodium fire",
-      response: "Use Class D extinguisher. NO water.",
-      severity: "Moderate",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 27,
-      scenario: "Solvent fire",
-      response: "Use CO2 or dry chemical extinguisher.",
-      severity: "Severe",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 28,
-      scenario: "Cyanide exposure",
-      response: "Move to fresh air. Hydroxocobalamin injection.",
-      severity: "Critical",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 29,
-      scenario: "Phosphine inhalation",
-      response: "Move to fresh air. Medical attention.",
-      severity: "Minor",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 30,
-      scenario: "Mercury vapor",
-      response: "Ventilate immediately. Avoid inhalation.",
-      severity: "Moderate",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 31,
-      scenario: "Spilled acid",
-      response: "Neutralize with baking soda or sodium bicarbonate",
-      severity: "Severe",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 32,
-      scenario: "Spilled base",
-      response: "Neutralize with vinegar or dilute acid",
-      severity: "Critical",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 33,
-      scenario: "Mercury spill",
-      response: "Special mercury cleanup kit. Avoid contact.",
-      severity: "Minor",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 34,
-      scenario: "Lithium fire",
-      response: "Use Class D extinguisher. NO water.",
-      severity: "Moderate",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 35,
-      scenario: "Magnesium fire",
-      response: "Use Class D extinguisher. NO water.",
-      severity: "Severe",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 36,
-      scenario: "Sodium fire",
-      response: "Use Class D extinguisher. NO water.",
-      severity: "Critical",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 37,
-      scenario: "Solvent fire",
-      response: "Use CO2 or dry chemical extinguisher.",
-      severity: "Minor",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 38,
-      scenario: "Cyanide exposure",
-      response: "Move to fresh air. Hydroxocobalamin injection.",
-      severity: "Moderate",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 39,
-      scenario: "Phosphine inhalation",
-      response: "Move to fresh air. Medical attention.",
-      severity: "Severe",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 40,
-      scenario: "Mercury vapor",
-      response: "Ventilate immediately. Avoid inhalation.",
-      severity: "Critical",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 41,
-      scenario: "Spilled acid",
-      response: "Neutralize with baking soda or sodium bicarbonate",
-      severity: "Minor",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 42,
-      scenario: "Spilled base",
-      response: "Neutralize with vinegar or dilute acid",
-      severity: "Moderate",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 43,
-      scenario: "Mercury spill",
-      response: "Special mercury cleanup kit. Avoid contact.",
-      severity: "Severe",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 44,
-      scenario: "Lithium fire",
-      response: "Use Class D extinguisher. NO water.",
-      severity: "Critical",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 45,
-      scenario: "Magnesium fire",
-      response: "Use Class D extinguisher. NO water.",
-      severity: "Minor",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 46,
-      scenario: "Sodium fire",
-      response: "Use Class D extinguisher. NO water.",
-      severity: "Moderate",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 47,
-      scenario: "Solvent fire",
-      response: "Use CO2 or dry chemical extinguisher.",
-      severity: "Severe",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 48,
-      scenario: "Cyanide exposure",
-      response: "Move to fresh air. Hydroxocobalamin injection.",
-      severity: "Critical",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 49,
-      scenario: "Phosphine inhalation",
-      response: "Move to fresh air. Medical attention.",
-      severity: "Minor",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 50,
-      scenario: "Mercury vapor",
-      response: "Ventilate immediately. Avoid inhalation.",
-      severity: "Moderate",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 51,
-      scenario: "Spilled acid",
-      response: "Neutralize with baking soda or sodium bicarbonate",
-      severity: "Severe",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 52,
-      scenario: "Spilled base",
-      response: "Neutralize with vinegar or dilute acid",
-      severity: "Critical",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 53,
-      scenario: "Mercury spill",
-      response: "Special mercury cleanup kit. Avoid contact.",
-      severity: "Minor",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 54,
-      scenario: "Lithium fire",
-      response: "Use Class D extinguisher. NO water.",
-      severity: "Moderate",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 55,
-      scenario: "Magnesium fire",
-      response: "Use Class D extinguisher. NO water.",
-      severity: "Severe",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 56,
-      scenario: "Sodium fire",
-      response: "Use Class D extinguisher. NO water.",
-      severity: "Critical",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 57,
-      scenario: "Solvent fire",
-      response: "Use CO2 or dry chemical extinguisher.",
-      severity: "Minor",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 58,
-      scenario: "Cyanide exposure",
-      response: "Move to fresh air. Hydroxocobalamin injection.",
-      severity: "Moderate",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 59,
-      scenario: "Phosphine inhalation",
-      response: "Move to fresh air. Medical attention.",
-      severity: "Severe",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 60,
-      scenario: "Mercury vapor",
-      response: "Ventilate immediately. Avoid inhalation.",
-      severity: "Critical",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 61,
-      scenario: "Spilled acid",
-      response: "Neutralize with baking soda or sodium bicarbonate",
-      severity: "Minor",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 62,
-      scenario: "Spilled base",
-      response: "Neutralize with vinegar or dilute acid",
-      severity: "Moderate",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 63,
-      scenario: "Mercury spill",
-      response: "Special mercury cleanup kit. Avoid contact.",
-      severity: "Severe",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 64,
-      scenario: "Lithium fire",
-      response: "Use Class D extinguisher. NO water.",
-      severity: "Critical",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 65,
-      scenario: "Magnesium fire",
-      response: "Use Class D extinguisher. NO water.",
-      severity: "Minor",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 66,
-      scenario: "Sodium fire",
-      response: "Use Class D extinguisher. NO water.",
-      severity: "Moderate",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 67,
-      scenario: "Solvent fire",
-      response: "Use CO2 or dry chemical extinguisher.",
-      severity: "Severe",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 68,
-      scenario: "Cyanide exposure",
-      response: "Move to fresh air. Hydroxocobalamin injection.",
-      severity: "Critical",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 69,
-      scenario: "Phosphine inhalation",
-      response: "Move to fresh air. Medical attention.",
-      severity: "Minor",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 70,
-      scenario: "Mercury vapor",
-      response: "Ventilate immediately. Avoid inhalation.",
-      severity: "Moderate",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 71,
-      scenario: "Spilled acid",
-      response: "Neutralize with baking soda or sodium bicarbonate",
-      severity: "Severe",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 72,
-      scenario: "Spilled base",
-      response: "Neutralize with vinegar or dilute acid",
-      severity: "Critical",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 73,
-      scenario: "Mercury spill",
-      response: "Special mercury cleanup kit. Avoid contact.",
-      severity: "Minor",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 74,
-      scenario: "Lithium fire",
-      response: "Use Class D extinguisher. NO water.",
-      severity: "Moderate",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 75,
-      scenario: "Magnesium fire",
-      response: "Use Class D extinguisher. NO water.",
-      severity: "Severe",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 76,
-      scenario: "Sodium fire",
-      response: "Use Class D extinguisher. NO water.",
-      severity: "Critical",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 77,
-      scenario: "Solvent fire",
-      response: "Use CO2 or dry chemical extinguisher.",
-      severity: "Minor",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 78,
-      scenario: "Cyanide exposure",
-      response: "Move to fresh air. Hydroxocobalamin injection.",
-      severity: "Moderate",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 79,
-      scenario: "Phosphine inhalation",
-      response: "Move to fresh air. Medical attention.",
-      severity: "Severe",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 80,
-      scenario: "Mercury vapor",
-      response: "Ventilate immediately. Avoid inhalation.",
-      severity: "Critical",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 81,
-      scenario: "Spilled acid",
-      response: "Neutralize with baking soda or sodium bicarbonate",
-      severity: "Minor",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 82,
-      scenario: "Spilled base",
-      response: "Neutralize with vinegar or dilute acid",
-      severity: "Moderate",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 83,
-      scenario: "Mercury spill",
-      response: "Special mercury cleanup kit. Avoid contact.",
-      severity: "Severe",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 84,
-      scenario: "Lithium fire",
-      response: "Use Class D extinguisher. NO water.",
-      severity: "Critical",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 85,
-      scenario: "Magnesium fire",
-      response: "Use Class D extinguisher. NO water.",
-      severity: "Minor",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 86,
-      scenario: "Sodium fire",
-      response: "Use Class D extinguisher. NO water.",
-      severity: "Moderate",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 87,
-      scenario: "Solvent fire",
-      response: "Use CO2 or dry chemical extinguisher.",
-      severity: "Severe",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 88,
-      scenario: "Cyanide exposure",
-      response: "Move to fresh air. Hydroxocobalamin injection.",
-      severity: "Critical",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 89,
-      scenario: "Phosphine inhalation",
-      response: "Move to fresh air. Medical attention.",
-      severity: "Minor",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 90,
-      scenario: "Mercury vapor",
-      response: "Ventilate immediately. Avoid inhalation.",
-      severity: "Moderate",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 91,
-      scenario: "Spilled acid",
-      response: "Neutralize with baking soda or sodium bicarbonate",
-      severity: "Severe",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 92,
-      scenario: "Spilled base",
-      response: "Neutralize with vinegar or dilute acid",
-      severity: "Critical",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 93,
-      scenario: "Mercury spill",
-      response: "Special mercury cleanup kit. Avoid contact.",
-      severity: "Minor",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 94,
-      scenario: "Lithium fire",
-      response: "Use Class D extinguisher. NO water.",
-      severity: "Moderate",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 95,
-      scenario: "Magnesium fire",
-      response: "Use Class D extinguisher. NO water.",
-      severity: "Severe",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 96,
-      scenario: "Sodium fire",
-      response: "Use Class D extinguisher. NO water.",
-      severity: "Critical",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 97,
-      scenario: "Solvent fire",
-      response: "Use CO2 or dry chemical extinguisher.",
-      severity: "Minor",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 98,
-      scenario: "Cyanide exposure",
-      response: "Move to fresh air. Hydroxocobalamin injection.",
-      severity: "Moderate",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 99,
-      scenario: "Phosphine inhalation",
-      response: "Move to fresh air. Medical attention.",
-      severity: "Severe",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    },
-    {
-      id: 100,
-      scenario: "Mercury vapor",
-      response: "Ventilate immediately. Avoid inhalation.",
-      severity: "Critical",
-      immediate: "Take immediate action per protocol.",
-      followUp: "Report incident. Investigate cause. Update protocols.",
-      training: "All lab personnel trained in this scenario."
-    }
-  ];
-
-
-  // ═══════════════════════════════════════════════════════════
-  // TEACHING TIPS — 100 pedagogical strategies
-  // ═══════════════════════════════════════════════════════════
-  var TEACHING_TIPS = [
-    {
-      id: 1,
-      tip: "Teaching strategy 1: Engage students with real-world applications of chemistry.",
-      grade: "K-2",
-      topic: "Acids/Bases",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 2,
-      tip: "Teaching strategy 2: Engage students with real-world applications of chemistry.",
-      grade: "3-5",
-      topic: "Stoichiometry",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 3,
-      tip: "Teaching strategy 3: Engage students with real-world applications of chemistry.",
-      grade: "6-8",
-      topic: "Atomic Theory",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 4,
-      tip: "Teaching strategy 4: Engage students with real-world applications of chemistry.",
-      grade: "9-12",
-      topic: "Chemical Bonds",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 5,
-      tip: "Teaching strategy 5: Engage students with real-world applications of chemistry.",
-      grade: "K-2",
-      topic: "Reactions",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 6,
-      tip: "Teaching strategy 6: Engage students with real-world applications of chemistry.",
-      grade: "3-5",
-      topic: "Periodic Table",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 7,
-      tip: "Teaching strategy 7: Engage students with real-world applications of chemistry.",
-      grade: "6-8",
-      topic: "Acids/Bases",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 8,
-      tip: "Teaching strategy 8: Engage students with real-world applications of chemistry.",
-      grade: "9-12",
-      topic: "Stoichiometry",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 9,
-      tip: "Teaching strategy 9: Engage students with real-world applications of chemistry.",
-      grade: "K-2",
-      topic: "Atomic Theory",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 10,
-      tip: "Teaching strategy 10: Engage students with real-world applications of chemistry.",
-      grade: "3-5",
-      topic: "Chemical Bonds",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 11,
-      tip: "Teaching strategy 11: Engage students with real-world applications of chemistry.",
-      grade: "6-8",
-      topic: "Reactions",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 12,
-      tip: "Teaching strategy 12: Engage students with real-world applications of chemistry.",
-      grade: "9-12",
-      topic: "Periodic Table",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 13,
-      tip: "Teaching strategy 13: Engage students with real-world applications of chemistry.",
-      grade: "K-2",
-      topic: "Acids/Bases",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 14,
-      tip: "Teaching strategy 14: Engage students with real-world applications of chemistry.",
-      grade: "3-5",
-      topic: "Stoichiometry",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 15,
-      tip: "Teaching strategy 15: Engage students with real-world applications of chemistry.",
-      grade: "6-8",
-      topic: "Atomic Theory",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 16,
-      tip: "Teaching strategy 16: Engage students with real-world applications of chemistry.",
-      grade: "9-12",
-      topic: "Chemical Bonds",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 17,
-      tip: "Teaching strategy 17: Engage students with real-world applications of chemistry.",
-      grade: "K-2",
-      topic: "Reactions",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 18,
-      tip: "Teaching strategy 18: Engage students with real-world applications of chemistry.",
-      grade: "3-5",
-      topic: "Periodic Table",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 19,
-      tip: "Teaching strategy 19: Engage students with real-world applications of chemistry.",
-      grade: "6-8",
-      topic: "Acids/Bases",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 20,
-      tip: "Teaching strategy 20: Engage students with real-world applications of chemistry.",
-      grade: "9-12",
-      topic: "Stoichiometry",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 21,
-      tip: "Teaching strategy 21: Engage students with real-world applications of chemistry.",
-      grade: "K-2",
-      topic: "Atomic Theory",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 22,
-      tip: "Teaching strategy 22: Engage students with real-world applications of chemistry.",
-      grade: "3-5",
-      topic: "Chemical Bonds",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 23,
-      tip: "Teaching strategy 23: Engage students with real-world applications of chemistry.",
-      grade: "6-8",
-      topic: "Reactions",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 24,
-      tip: "Teaching strategy 24: Engage students with real-world applications of chemistry.",
-      grade: "9-12",
-      topic: "Periodic Table",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 25,
-      tip: "Teaching strategy 25: Engage students with real-world applications of chemistry.",
-      grade: "K-2",
-      topic: "Acids/Bases",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 26,
-      tip: "Teaching strategy 26: Engage students with real-world applications of chemistry.",
-      grade: "3-5",
-      topic: "Stoichiometry",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 27,
-      tip: "Teaching strategy 27: Engage students with real-world applications of chemistry.",
-      grade: "6-8",
-      topic: "Atomic Theory",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 28,
-      tip: "Teaching strategy 28: Engage students with real-world applications of chemistry.",
-      grade: "9-12",
-      topic: "Chemical Bonds",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 29,
-      tip: "Teaching strategy 29: Engage students with real-world applications of chemistry.",
-      grade: "K-2",
-      topic: "Reactions",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 30,
-      tip: "Teaching strategy 30: Engage students with real-world applications of chemistry.",
-      grade: "3-5",
-      topic: "Periodic Table",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 31,
-      tip: "Teaching strategy 31: Engage students with real-world applications of chemistry.",
-      grade: "6-8",
-      topic: "Acids/Bases",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 32,
-      tip: "Teaching strategy 32: Engage students with real-world applications of chemistry.",
-      grade: "9-12",
-      topic: "Stoichiometry",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 33,
-      tip: "Teaching strategy 33: Engage students with real-world applications of chemistry.",
-      grade: "K-2",
-      topic: "Atomic Theory",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 34,
-      tip: "Teaching strategy 34: Engage students with real-world applications of chemistry.",
-      grade: "3-5",
-      topic: "Chemical Bonds",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 35,
-      tip: "Teaching strategy 35: Engage students with real-world applications of chemistry.",
-      grade: "6-8",
-      topic: "Reactions",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 36,
-      tip: "Teaching strategy 36: Engage students with real-world applications of chemistry.",
-      grade: "9-12",
-      topic: "Periodic Table",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 37,
-      tip: "Teaching strategy 37: Engage students with real-world applications of chemistry.",
-      grade: "K-2",
-      topic: "Acids/Bases",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 38,
-      tip: "Teaching strategy 38: Engage students with real-world applications of chemistry.",
-      grade: "3-5",
-      topic: "Stoichiometry",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 39,
-      tip: "Teaching strategy 39: Engage students with real-world applications of chemistry.",
-      grade: "6-8",
-      topic: "Atomic Theory",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 40,
-      tip: "Teaching strategy 40: Engage students with real-world applications of chemistry.",
-      grade: "9-12",
-      topic: "Chemical Bonds",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 41,
-      tip: "Teaching strategy 41: Engage students with real-world applications of chemistry.",
-      grade: "K-2",
-      topic: "Reactions",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 42,
-      tip: "Teaching strategy 42: Engage students with real-world applications of chemistry.",
-      grade: "3-5",
-      topic: "Periodic Table",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 43,
-      tip: "Teaching strategy 43: Engage students with real-world applications of chemistry.",
-      grade: "6-8",
-      topic: "Acids/Bases",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 44,
-      tip: "Teaching strategy 44: Engage students with real-world applications of chemistry.",
-      grade: "9-12",
-      topic: "Stoichiometry",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 45,
-      tip: "Teaching strategy 45: Engage students with real-world applications of chemistry.",
-      grade: "K-2",
-      topic: "Atomic Theory",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 46,
-      tip: "Teaching strategy 46: Engage students with real-world applications of chemistry.",
-      grade: "3-5",
-      topic: "Chemical Bonds",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 47,
-      tip: "Teaching strategy 47: Engage students with real-world applications of chemistry.",
-      grade: "6-8",
-      topic: "Reactions",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 48,
-      tip: "Teaching strategy 48: Engage students with real-world applications of chemistry.",
-      grade: "9-12",
-      topic: "Periodic Table",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 49,
-      tip: "Teaching strategy 49: Engage students with real-world applications of chemistry.",
-      grade: "K-2",
-      topic: "Acids/Bases",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 50,
-      tip: "Teaching strategy 50: Engage students with real-world applications of chemistry.",
-      grade: "3-5",
-      topic: "Stoichiometry",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 51,
-      tip: "Teaching strategy 51: Engage students with real-world applications of chemistry.",
-      grade: "6-8",
-      topic: "Atomic Theory",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 52,
-      tip: "Teaching strategy 52: Engage students with real-world applications of chemistry.",
-      grade: "9-12",
-      topic: "Chemical Bonds",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 53,
-      tip: "Teaching strategy 53: Engage students with real-world applications of chemistry.",
-      grade: "K-2",
-      topic: "Reactions",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 54,
-      tip: "Teaching strategy 54: Engage students with real-world applications of chemistry.",
-      grade: "3-5",
-      topic: "Periodic Table",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 55,
-      tip: "Teaching strategy 55: Engage students with real-world applications of chemistry.",
-      grade: "6-8",
-      topic: "Acids/Bases",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 56,
-      tip: "Teaching strategy 56: Engage students with real-world applications of chemistry.",
-      grade: "9-12",
-      topic: "Stoichiometry",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 57,
-      tip: "Teaching strategy 57: Engage students with real-world applications of chemistry.",
-      grade: "K-2",
-      topic: "Atomic Theory",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 58,
-      tip: "Teaching strategy 58: Engage students with real-world applications of chemistry.",
-      grade: "3-5",
-      topic: "Chemical Bonds",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 59,
-      tip: "Teaching strategy 59: Engage students with real-world applications of chemistry.",
-      grade: "6-8",
-      topic: "Reactions",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 60,
-      tip: "Teaching strategy 60: Engage students with real-world applications of chemistry.",
-      grade: "9-12",
-      topic: "Periodic Table",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 61,
-      tip: "Teaching strategy 61: Engage students with real-world applications of chemistry.",
-      grade: "K-2",
-      topic: "Acids/Bases",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 62,
-      tip: "Teaching strategy 62: Engage students with real-world applications of chemistry.",
-      grade: "3-5",
-      topic: "Stoichiometry",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 63,
-      tip: "Teaching strategy 63: Engage students with real-world applications of chemistry.",
-      grade: "6-8",
-      topic: "Atomic Theory",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 64,
-      tip: "Teaching strategy 64: Engage students with real-world applications of chemistry.",
-      grade: "9-12",
-      topic: "Chemical Bonds",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 65,
-      tip: "Teaching strategy 65: Engage students with real-world applications of chemistry.",
-      grade: "K-2",
-      topic: "Reactions",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 66,
-      tip: "Teaching strategy 66: Engage students with real-world applications of chemistry.",
-      grade: "3-5",
-      topic: "Periodic Table",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 67,
-      tip: "Teaching strategy 67: Engage students with real-world applications of chemistry.",
-      grade: "6-8",
-      topic: "Acids/Bases",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 68,
-      tip: "Teaching strategy 68: Engage students with real-world applications of chemistry.",
-      grade: "9-12",
-      topic: "Stoichiometry",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 69,
-      tip: "Teaching strategy 69: Engage students with real-world applications of chemistry.",
-      grade: "K-2",
-      topic: "Atomic Theory",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 70,
-      tip: "Teaching strategy 70: Engage students with real-world applications of chemistry.",
-      grade: "3-5",
-      topic: "Chemical Bonds",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 71,
-      tip: "Teaching strategy 71: Engage students with real-world applications of chemistry.",
-      grade: "6-8",
-      topic: "Reactions",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 72,
-      tip: "Teaching strategy 72: Engage students with real-world applications of chemistry.",
-      grade: "9-12",
-      topic: "Periodic Table",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 73,
-      tip: "Teaching strategy 73: Engage students with real-world applications of chemistry.",
-      grade: "K-2",
-      topic: "Acids/Bases",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 74,
-      tip: "Teaching strategy 74: Engage students with real-world applications of chemistry.",
-      grade: "3-5",
-      topic: "Stoichiometry",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 75,
-      tip: "Teaching strategy 75: Engage students with real-world applications of chemistry.",
-      grade: "6-8",
-      topic: "Atomic Theory",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 76,
-      tip: "Teaching strategy 76: Engage students with real-world applications of chemistry.",
-      grade: "9-12",
-      topic: "Chemical Bonds",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 77,
-      tip: "Teaching strategy 77: Engage students with real-world applications of chemistry.",
-      grade: "K-2",
-      topic: "Reactions",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 78,
-      tip: "Teaching strategy 78: Engage students with real-world applications of chemistry.",
-      grade: "3-5",
-      topic: "Periodic Table",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 79,
-      tip: "Teaching strategy 79: Engage students with real-world applications of chemistry.",
-      grade: "6-8",
-      topic: "Acids/Bases",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 80,
-      tip: "Teaching strategy 80: Engage students with real-world applications of chemistry.",
-      grade: "9-12",
-      topic: "Stoichiometry",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 81,
-      tip: "Teaching strategy 81: Engage students with real-world applications of chemistry.",
-      grade: "K-2",
-      topic: "Atomic Theory",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 82,
-      tip: "Teaching strategy 82: Engage students with real-world applications of chemistry.",
-      grade: "3-5",
-      topic: "Chemical Bonds",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 83,
-      tip: "Teaching strategy 83: Engage students with real-world applications of chemistry.",
-      grade: "6-8",
-      topic: "Reactions",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 84,
-      tip: "Teaching strategy 84: Engage students with real-world applications of chemistry.",
-      grade: "9-12",
-      topic: "Periodic Table",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 85,
-      tip: "Teaching strategy 85: Engage students with real-world applications of chemistry.",
-      grade: "K-2",
-      topic: "Acids/Bases",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 86,
-      tip: "Teaching strategy 86: Engage students with real-world applications of chemistry.",
-      grade: "3-5",
-      topic: "Stoichiometry",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 87,
-      tip: "Teaching strategy 87: Engage students with real-world applications of chemistry.",
-      grade: "6-8",
-      topic: "Atomic Theory",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 88,
-      tip: "Teaching strategy 88: Engage students with real-world applications of chemistry.",
-      grade: "9-12",
-      topic: "Chemical Bonds",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 89,
-      tip: "Teaching strategy 89: Engage students with real-world applications of chemistry.",
-      grade: "K-2",
-      topic: "Reactions",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 90,
-      tip: "Teaching strategy 90: Engage students with real-world applications of chemistry.",
-      grade: "3-5",
-      topic: "Periodic Table",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 91,
-      tip: "Teaching strategy 91: Engage students with real-world applications of chemistry.",
-      grade: "6-8",
-      topic: "Acids/Bases",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 92,
-      tip: "Teaching strategy 92: Engage students with real-world applications of chemistry.",
-      grade: "9-12",
-      topic: "Stoichiometry",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 93,
-      tip: "Teaching strategy 93: Engage students with real-world applications of chemistry.",
-      grade: "K-2",
-      topic: "Atomic Theory",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 94,
-      tip: "Teaching strategy 94: Engage students with real-world applications of chemistry.",
-      grade: "3-5",
-      topic: "Chemical Bonds",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 95,
-      tip: "Teaching strategy 95: Engage students with real-world applications of chemistry.",
-      grade: "6-8",
-      topic: "Reactions",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 96,
-      tip: "Teaching strategy 96: Engage students with real-world applications of chemistry.",
-      grade: "9-12",
-      topic: "Periodic Table",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 97,
-      tip: "Teaching strategy 97: Engage students with real-world applications of chemistry.",
-      grade: "K-2",
-      topic: "Acids/Bases",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 98,
-      tip: "Teaching strategy 98: Engage students with real-world applications of chemistry.",
-      grade: "3-5",
-      topic: "Stoichiometry",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 99,
-      tip: "Teaching strategy 99: Engage students with real-world applications of chemistry.",
-      grade: "6-8",
-      topic: "Atomic Theory",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    },
-    {
-      id: 100,
-      tip: "Teaching strategy 100: Engage students with real-world applications of chemistry.",
-      grade: "9-12",
-      topic: "Chemical Bonds",
-      strategy: "Use hands-on experiments to bring abstract concepts to life. Connect to students daily experiences.",
-      assessment: "Use diverse assessments: quizzes, projects, lab reports, presentations.",
-      differentiation: "Provide multiple paths to understanding for different learners."
-    }
-  ];
-
-  // ═══════════════════════════════════════════════════════════
-  // FAMOUS COMPOUNDS — 80 with biographical detail
-  // ═══════════════════════════════════════════════════════════
-  var FAMOUS_COMPOUNDS = [
-    {
-      id: 1,
-      name: "Aspirin",
-      formula: "C9H8O4",
-      detail: "Acetylsalicylic acid - one of the most-used drugs in the world. Acetylates COX enzymes to reduce pain/inflammation.",
-      discoverer: "Various chemists over decades",
-      year: 1850,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 2,
-      name: "Penicillin",
-      formula: "C16H18N2O4S",
-      detail: "First antibiotic. Discovered Fleming 1928. Inhibits bacterial cell wall synthesis.",
-      discoverer: "Various chemists over decades",
-      year: 1852,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 3,
-      name: "Caffeine",
-      formula: "C8H10N4O2",
-      detail: "Most-consumed psychoactive substance. Adenosine receptor antagonist.",
-      discoverer: "Various chemists over decades",
-      year: 1854,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 4,
-      name: "Insulin",
-      formula: "Protein",
-      detail: "Hormone regulating blood glucose. Banting + Best 1922.",
-      discoverer: "Various chemists over decades",
-      year: 1856,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 5,
-      name: "DNA",
-      formula: "Variable",
-      detail: "Genetic material. Double helix structure (Watson + Crick + Franklin 1953).",
-      discoverer: "Various chemists over decades",
-      year: 1858,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 6,
-      name: "Hemoglobin",
-      formula: "Protein",
-      detail: "Oxygen transport in blood. Tetrameric structure.",
-      discoverer: "Various chemists over decades",
-      year: 1860,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 7,
-      name: "Chlorophyll",
-      formula: "C55H72MgN4O5",
-      detail: "Photosynthesis pigment. Mg-porphyrin.",
-      discoverer: "Various chemists over decades",
-      year: 1862,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 8,
-      name: "Cellulose",
-      formula: "(C6H10O5)n",
-      detail: "Plant cell wall polysaccharide. Most abundant organic compound.",
-      discoverer: "Various chemists over decades",
-      year: 1864,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 9,
-      name: "Glucose",
-      formula: "C6H12O6",
-      detail: "Primary blood sugar. Cellular energy source.",
-      discoverer: "Various chemists over decades",
-      year: 1866,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 10,
-      name: "Sucrose",
-      formula: "C12H22O11",
-      detail: "Table sugar. Glucose + fructose disaccharide.",
-      discoverer: "Various chemists over decades",
-      year: 1868,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 11,
-      name: "Vitamin C",
-      formula: "C6H8O6",
-      detail: "Ascorbic acid. Antioxidant + connective tissue cofactor.",
-      discoverer: "Various chemists over decades",
-      year: 1870,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 12,
-      name: "Cholesterol",
-      formula: "C27H46O",
-      detail: "Steroid. Cell membrane + hormone precursor.",
-      discoverer: "Various chemists over decades",
-      year: 1872,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 13,
-      name: "ATP",
-      formula: "C10H16N5O13P3",
-      detail: "Energy currency of cells.",
-      discoverer: "Various chemists over decades",
-      year: 1874,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 14,
-      name: "DNA bases",
-      formula: "A, T, G, C",
-      detail: "Genetic information storage.",
-      discoverer: "Various chemists over decades",
-      year: 1876,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 15,
-      name: "RNA bases",
-      formula: "A, U, G, C",
-      detail: "Single-stranded version.",
-      discoverer: "Various chemists over decades",
-      year: 1878,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 16,
-      name: "Aspirin variant 1",
-      formula: "C9H8O4",
-      detail: "Acetylsalicylic acid - one of the most-used drugs in the world. Acetylates COX enzymes to reduce pain/inflammation.",
-      discoverer: "Various chemists over decades",
-      year: 1880,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 17,
-      name: "Penicillin variant 1",
-      formula: "C16H18N2O4S",
-      detail: "First antibiotic. Discovered Fleming 1928. Inhibits bacterial cell wall synthesis.",
-      discoverer: "Various chemists over decades",
-      year: 1882,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 18,
-      name: "Caffeine variant 1",
-      formula: "C8H10N4O2",
-      detail: "Most-consumed psychoactive substance. Adenosine receptor antagonist.",
-      discoverer: "Various chemists over decades",
-      year: 1884,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 19,
-      name: "Insulin variant 1",
-      formula: "Protein",
-      detail: "Hormone regulating blood glucose. Banting + Best 1922.",
-      discoverer: "Various chemists over decades",
-      year: 1886,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 20,
-      name: "DNA variant 1",
-      formula: "Variable",
-      detail: "Genetic material. Double helix structure (Watson + Crick + Franklin 1953).",
-      discoverer: "Various chemists over decades",
-      year: 1888,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 21,
-      name: "Hemoglobin variant 1",
-      formula: "Protein",
-      detail: "Oxygen transport in blood. Tetrameric structure.",
-      discoverer: "Various chemists over decades",
-      year: 1890,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 22,
-      name: "Chlorophyll variant 1",
-      formula: "C55H72MgN4O5",
-      detail: "Photosynthesis pigment. Mg-porphyrin.",
-      discoverer: "Various chemists over decades",
-      year: 1892,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 23,
-      name: "Cellulose variant 1",
-      formula: "(C6H10O5)n",
-      detail: "Plant cell wall polysaccharide. Most abundant organic compound.",
-      discoverer: "Various chemists over decades",
-      year: 1894,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 24,
-      name: "Glucose variant 1",
-      formula: "C6H12O6",
-      detail: "Primary blood sugar. Cellular energy source.",
-      discoverer: "Various chemists over decades",
-      year: 1896,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 25,
-      name: "Sucrose variant 1",
-      formula: "C12H22O11",
-      detail: "Table sugar. Glucose + fructose disaccharide.",
-      discoverer: "Various chemists over decades",
-      year: 1898,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 26,
-      name: "Vitamin C variant 1",
-      formula: "C6H8O6",
-      detail: "Ascorbic acid. Antioxidant + connective tissue cofactor.",
-      discoverer: "Various chemists over decades",
-      year: 1900,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 27,
-      name: "Cholesterol variant 1",
-      formula: "C27H46O",
-      detail: "Steroid. Cell membrane + hormone precursor.",
-      discoverer: "Various chemists over decades",
-      year: 1902,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 28,
-      name: "ATP variant 1",
-      formula: "C10H16N5O13P3",
-      detail: "Energy currency of cells.",
-      discoverer: "Various chemists over decades",
-      year: 1904,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 29,
-      name: "DNA bases variant 1",
-      formula: "A, T, G, C",
-      detail: "Genetic information storage.",
-      discoverer: "Various chemists over decades",
-      year: 1906,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 30,
-      name: "RNA bases variant 1",
-      formula: "A, U, G, C",
-      detail: "Single-stranded version.",
-      discoverer: "Various chemists over decades",
-      year: 1908,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 31,
-      name: "Aspirin variant 2",
-      formula: "C9H8O4",
-      detail: "Acetylsalicylic acid - one of the most-used drugs in the world. Acetylates COX enzymes to reduce pain/inflammation.",
-      discoverer: "Various chemists over decades",
-      year: 1910,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 32,
-      name: "Penicillin variant 2",
-      formula: "C16H18N2O4S",
-      detail: "First antibiotic. Discovered Fleming 1928. Inhibits bacterial cell wall synthesis.",
-      discoverer: "Various chemists over decades",
-      year: 1912,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 33,
-      name: "Caffeine variant 2",
-      formula: "C8H10N4O2",
-      detail: "Most-consumed psychoactive substance. Adenosine receptor antagonist.",
-      discoverer: "Various chemists over decades",
-      year: 1914,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 34,
-      name: "Insulin variant 2",
-      formula: "Protein",
-      detail: "Hormone regulating blood glucose. Banting + Best 1922.",
-      discoverer: "Various chemists over decades",
-      year: 1916,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 35,
-      name: "DNA variant 2",
-      formula: "Variable",
-      detail: "Genetic material. Double helix structure (Watson + Crick + Franklin 1953).",
-      discoverer: "Various chemists over decades",
-      year: 1918,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 36,
-      name: "Hemoglobin variant 2",
-      formula: "Protein",
-      detail: "Oxygen transport in blood. Tetrameric structure.",
-      discoverer: "Various chemists over decades",
-      year: 1920,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 37,
-      name: "Chlorophyll variant 2",
-      formula: "C55H72MgN4O5",
-      detail: "Photosynthesis pigment. Mg-porphyrin.",
-      discoverer: "Various chemists over decades",
-      year: 1922,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 38,
-      name: "Cellulose variant 2",
-      formula: "(C6H10O5)n",
-      detail: "Plant cell wall polysaccharide. Most abundant organic compound.",
-      discoverer: "Various chemists over decades",
-      year: 1924,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 39,
-      name: "Glucose variant 2",
-      formula: "C6H12O6",
-      detail: "Primary blood sugar. Cellular energy source.",
-      discoverer: "Various chemists over decades",
-      year: 1926,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 40,
-      name: "Sucrose variant 2",
-      formula: "C12H22O11",
-      detail: "Table sugar. Glucose + fructose disaccharide.",
-      discoverer: "Various chemists over decades",
-      year: 1928,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 41,
-      name: "Vitamin C variant 2",
-      formula: "C6H8O6",
-      detail: "Ascorbic acid. Antioxidant + connective tissue cofactor.",
-      discoverer: "Various chemists over decades",
-      year: 1930,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 42,
-      name: "Cholesterol variant 2",
-      formula: "C27H46O",
-      detail: "Steroid. Cell membrane + hormone precursor.",
-      discoverer: "Various chemists over decades",
-      year: 1932,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 43,
-      name: "ATP variant 2",
-      formula: "C10H16N5O13P3",
-      detail: "Energy currency of cells.",
-      discoverer: "Various chemists over decades",
-      year: 1934,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 44,
-      name: "DNA bases variant 2",
-      formula: "A, T, G, C",
-      detail: "Genetic information storage.",
-      discoverer: "Various chemists over decades",
-      year: 1936,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 45,
-      name: "RNA bases variant 2",
-      formula: "A, U, G, C",
-      detail: "Single-stranded version.",
-      discoverer: "Various chemists over decades",
-      year: 1938,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 46,
-      name: "Aspirin variant 3",
-      formula: "C9H8O4",
-      detail: "Acetylsalicylic acid - one of the most-used drugs in the world. Acetylates COX enzymes to reduce pain/inflammation.",
-      discoverer: "Various chemists over decades",
-      year: 1940,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 47,
-      name: "Penicillin variant 3",
-      formula: "C16H18N2O4S",
-      detail: "First antibiotic. Discovered Fleming 1928. Inhibits bacterial cell wall synthesis.",
-      discoverer: "Various chemists over decades",
-      year: 1942,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 48,
-      name: "Caffeine variant 3",
-      formula: "C8H10N4O2",
-      detail: "Most-consumed psychoactive substance. Adenosine receptor antagonist.",
-      discoverer: "Various chemists over decades",
-      year: 1944,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 49,
-      name: "Insulin variant 3",
-      formula: "Protein",
-      detail: "Hormone regulating blood glucose. Banting + Best 1922.",
-      discoverer: "Various chemists over decades",
-      year: 1946,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 50,
-      name: "DNA variant 3",
-      formula: "Variable",
-      detail: "Genetic material. Double helix structure (Watson + Crick + Franklin 1953).",
-      discoverer: "Various chemists over decades",
-      year: 1948,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 51,
-      name: "Hemoglobin variant 3",
-      formula: "Protein",
-      detail: "Oxygen transport in blood. Tetrameric structure.",
-      discoverer: "Various chemists over decades",
-      year: 1950,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 52,
-      name: "Chlorophyll variant 3",
-      formula: "C55H72MgN4O5",
-      detail: "Photosynthesis pigment. Mg-porphyrin.",
-      discoverer: "Various chemists over decades",
-      year: 1952,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 53,
-      name: "Cellulose variant 3",
-      formula: "(C6H10O5)n",
-      detail: "Plant cell wall polysaccharide. Most abundant organic compound.",
-      discoverer: "Various chemists over decades",
-      year: 1954,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 54,
-      name: "Glucose variant 3",
-      formula: "C6H12O6",
-      detail: "Primary blood sugar. Cellular energy source.",
-      discoverer: "Various chemists over decades",
-      year: 1956,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 55,
-      name: "Sucrose variant 3",
-      formula: "C12H22O11",
-      detail: "Table sugar. Glucose + fructose disaccharide.",
-      discoverer: "Various chemists over decades",
-      year: 1958,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 56,
-      name: "Vitamin C variant 3",
-      formula: "C6H8O6",
-      detail: "Ascorbic acid. Antioxidant + connective tissue cofactor.",
-      discoverer: "Various chemists over decades",
-      year: 1960,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 57,
-      name: "Cholesterol variant 3",
-      formula: "C27H46O",
-      detail: "Steroid. Cell membrane + hormone precursor.",
-      discoverer: "Various chemists over decades",
-      year: 1962,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 58,
-      name: "ATP variant 3",
-      formula: "C10H16N5O13P3",
-      detail: "Energy currency of cells.",
-      discoverer: "Various chemists over decades",
-      year: 1964,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 59,
-      name: "DNA bases variant 3",
-      formula: "A, T, G, C",
-      detail: "Genetic information storage.",
-      discoverer: "Various chemists over decades",
-      year: 1966,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 60,
-      name: "RNA bases variant 3",
-      formula: "A, U, G, C",
-      detail: "Single-stranded version.",
-      discoverer: "Various chemists over decades",
-      year: 1968,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 61,
-      name: "Aspirin variant 4",
-      formula: "C9H8O4",
-      detail: "Acetylsalicylic acid - one of the most-used drugs in the world. Acetylates COX enzymes to reduce pain/inflammation.",
-      discoverer: "Various chemists over decades",
-      year: 1970,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 62,
-      name: "Penicillin variant 4",
-      formula: "C16H18N2O4S",
-      detail: "First antibiotic. Discovered Fleming 1928. Inhibits bacterial cell wall synthesis.",
-      discoverer: "Various chemists over decades",
-      year: 1972,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 63,
-      name: "Caffeine variant 4",
-      formula: "C8H10N4O2",
-      detail: "Most-consumed psychoactive substance. Adenosine receptor antagonist.",
-      discoverer: "Various chemists over decades",
-      year: 1974,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 64,
-      name: "Insulin variant 4",
-      formula: "Protein",
-      detail: "Hormone regulating blood glucose. Banting + Best 1922.",
-      discoverer: "Various chemists over decades",
-      year: 1976,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 65,
-      name: "DNA variant 4",
-      formula: "Variable",
-      detail: "Genetic material. Double helix structure (Watson + Crick + Franklin 1953).",
-      discoverer: "Various chemists over decades",
-      year: 1978,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 66,
-      name: "Hemoglobin variant 4",
-      formula: "Protein",
-      detail: "Oxygen transport in blood. Tetrameric structure.",
-      discoverer: "Various chemists over decades",
-      year: 1980,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 67,
-      name: "Chlorophyll variant 4",
-      formula: "C55H72MgN4O5",
-      detail: "Photosynthesis pigment. Mg-porphyrin.",
-      discoverer: "Various chemists over decades",
-      year: 1982,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 68,
-      name: "Cellulose variant 4",
-      formula: "(C6H10O5)n",
-      detail: "Plant cell wall polysaccharide. Most abundant organic compound.",
-      discoverer: "Various chemists over decades",
-      year: 1984,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 69,
-      name: "Glucose variant 4",
-      formula: "C6H12O6",
-      detail: "Primary blood sugar. Cellular energy source.",
-      discoverer: "Various chemists over decades",
-      year: 1986,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 70,
-      name: "Sucrose variant 4",
-      formula: "C12H22O11",
-      detail: "Table sugar. Glucose + fructose disaccharide.",
-      discoverer: "Various chemists over decades",
-      year: 1988,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 71,
-      name: "Vitamin C variant 4",
-      formula: "C6H8O6",
-      detail: "Ascorbic acid. Antioxidant + connective tissue cofactor.",
-      discoverer: "Various chemists over decades",
-      year: 1990,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 72,
-      name: "Cholesterol variant 4",
-      formula: "C27H46O",
-      detail: "Steroid. Cell membrane + hormone precursor.",
-      discoverer: "Various chemists over decades",
-      year: 1992,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 73,
-      name: "ATP variant 4",
-      formula: "C10H16N5O13P3",
-      detail: "Energy currency of cells.",
-      discoverer: "Various chemists over decades",
-      year: 1994,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 74,
-      name: "DNA bases variant 4",
-      formula: "A, T, G, C",
-      detail: "Genetic information storage.",
-      discoverer: "Various chemists over decades",
-      year: 1996,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 75,
-      name: "RNA bases variant 4",
-      formula: "A, U, G, C",
-      detail: "Single-stranded version.",
-      discoverer: "Various chemists over decades",
-      year: 1998,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 76,
-      name: "Aspirin variant 5",
-      formula: "C9H8O4",
-      detail: "Acetylsalicylic acid - one of the most-used drugs in the world. Acetylates COX enzymes to reduce pain/inflammation.",
-      discoverer: "Various chemists over decades",
-      year: 2000,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 77,
-      name: "Penicillin variant 5",
-      formula: "C16H18N2O4S",
-      detail: "First antibiotic. Discovered Fleming 1928. Inhibits bacterial cell wall synthesis.",
-      discoverer: "Various chemists over decades",
-      year: 2002,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 78,
-      name: "Caffeine variant 5",
-      formula: "C8H10N4O2",
-      detail: "Most-consumed psychoactive substance. Adenosine receptor antagonist.",
-      discoverer: "Various chemists over decades",
-      year: 2004,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 79,
-      name: "Insulin variant 5",
-      formula: "Protein",
-      detail: "Hormone regulating blood glucose. Banting + Best 1922.",
-      discoverer: "Various chemists over decades",
-      year: 2006,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    },
-    {
-      id: 80,
-      name: "DNA variant 5",
-      formula: "Variable",
-      detail: "Genetic material. Double helix structure (Watson + Crick + Franklin 1953).",
-      discoverer: "Various chemists over decades",
-      year: 2008,
-      uses: "Industrial + medical + research applications.",
-      synthesis: "Multi-step organic synthesis from cheaper starting materials.",
-      occurrence: "Naturally occurring + synthetically produced.",
-      hazards: "Variable based on concentration + handling. SDS required."
-    }
-  ];
-
-  // ═══════════════════════════════════════════════════════════
-  // REACTION MECHANISMS — 80 detailed mechanisms
-  // ═══════════════════════════════════════════════════════════
+  // Reviewed reaction-mechanism reference data used by the active Mechanisms sub-tool.
   var MECHANISMS = [
     {
       id: 1,
@@ -18576,25 +3313,51 @@
             return Object.assign({}, prev, { chemBalance: cb });
           });
         };
+        // Declared HERE, not inside the chem-nav block: the hero band below
+        // also calls it, and a declaration inside one IIFE is invisible to
+        // the next — which threw ReferenceError on every learning-path button.
+        function goSection(sid) {
+          upd('subtool', sid);
+          upd('_everPicked', true);
+          if (CHEM_SECTION_TO_CATEGORY[sid] && CHEM_SECTION_TO_CATEGORY[sid] !== d._activeCategory) {
+            upd('_activeCategory', CHEM_SECTION_TO_CATEGORY[sid]);
+          }
+          var destination = SUBTOOLS.find(function(item) { return item.id === sid; });
+          if (typeof announceToSR === 'function') announceToSR('Switched to ' + (destination ? destination.label : sid));
+          setTimeout(function() {
+            var heading = document.getElementById('chem-workspace-title');
+            if (heading && typeof heading.focus === 'function') heading.focus();
+          }, 0);
+        }
 
         var subtool = d.subtool || 'balance';
         var chemSearchRaw = d._chemSearch || '';
         var isChemHub = !d._activeCategory && !chemSearchRaw && !d._everPicked;
+        var soundEnabled = d._soundEnabled !== false;
 
         // ═══ SOUND EFFECTS ═══
         var chemSound = function(type) {
+          if (!soundEnabled) return;
           try {
             var AC = window.AudioContext || window.webkitAudioContext;
             if (!AC) return;
-            var a = new AC();
+            var a = window.__alloChemAudioContext;
+            if (!a || a.state === 'closed') {
+              a = new AC();
+              window.__alloChemAudioContext = a;
+            }
+            if (a.state === 'suspended' && typeof a.resume === 'function') {
+              var resumeResult = a.resume();
+              if (resumeResult && typeof resumeResult.catch === 'function') resumeResult.catch(function() {});
+            }
             var o = a.createOscillator();
             var g = a.createGain();
             o.connect(g); g.connect(a.destination);
             var freqs = { correct:[880,0.15], wrong:[220,0.18], streak:[740,0.12], badge:[990,0.2], balance:[660,0.12], click:[520,0.06], victory:[1047,0.25], damage:[150,0.2] };
             var f = freqs[type] || [440, 0.1];
             o.frequency.value = f[0];
-            g.gain.value = 0.13;
             o.type = type === 'wrong' || type === 'damage' ? 'sawtooth' : type === 'badge' || type === 'victory' ? 'triangle' : 'sine';
+            g.gain.setValueAtTime(0.13, a.currentTime);
             o.start();
             g.gain.exponentialRampToValueAtTime(0.001, a.currentTime + f[1]);
             o.stop(a.currentTime + f[1] + 0.01);
@@ -18602,50 +3365,60 @@
         };
 
         // ═══ BADGE SYSTEM ═══
-        var ext = d._chemExt || { badges: [], equationsBalanced: 0, tiersCompleted: [], speedBest: Infinity, quizCorrect: 0, safetyScore: 0, battleWon: false };
-        var updExt = function(obj) {
-          var merged = Object.assign({}, ext, obj);
+        var streak = d.streak || 0;
+        var ext = normalizeChemProgress(d._chemExt || {});
+
+        var updExt = function(obj, streakOverride) {
+          var merged = normalizeChemProgress(Object.assign({}, ext, obj || {}));
+          var badgeStreak = streakOverride == null ? streak : streakOverride;
+          var newBadges = merged.badges.slice();
+          var qualifies = {
+            firstBalance: merged.equationsBalanced >= 1,
+            streak3: badgeStreak >= 3,
+            streak5: badgeStreak >= 5,
+            allBeginner: merged.tiersCompleted.indexOf('beginner') !== -1,
+            allIntermediate: merged.tiersCompleted.indexOf('intermediate') !== -1,
+            allAdvanced: merged.tiersCompleted.indexOf('advanced') !== -1,
+            speedDemon: merged.speedBest != null && merged.speedBest < 15,
+            quizWhiz: merged.quizCorrect >= 5,
+            centurion: merged.equationsBalanced >= 10,
+            masterChemist: merged.tiersCompleted.length >= 3 && merged.quizCorrect >= 5,
+            safetyPro: merged.completedSafetyScenarioIds.length >= EMERGENCIES.length,
+            battleWinner: merged.battleWon
+          };
+          Object.keys(qualifies).forEach(function(id) {
+            if (!qualifies[id] || newBadges.indexOf(id) !== -1) return;
+            newBadges.push(id);
+            var badge = CHEM_BADGES[id];
+            if (badge) {
+              chemSound('badge');
+              awardXP('chem_badge_' + id, badge.xp, badge.label);
+              addToast('\uD83C\uDFC5 ' + badge.label + '! +' + badge.xp + ' XP', 'success');
+            }
+          });
+          merged.badges = newBadges;
           upd('_chemExt', merged);
           ext = merged;
+          return merged;
         };
 
-        var streak = d.streak || 0;
-
-        var checkBadges = function() {
-          var newBadges = ext.badges.slice();
-          var changed = false;
-          var award = function(id) {
-            if (newBadges.indexOf(id) === -1) {
-              newBadges.push(id);
-              changed = true;
-              var b = CHEM_BADGES[id];
-              if (b) {
-                chemSound('badge');
-                awardXP('chem_badge_' + id, b.xp, b.label);
-                addToast('\uD83C\uDFC5 ' + b.label + '! +' + b.xp + ' XP', 'success');
-              }
-            }
-          };
-          if (ext.equationsBalanced >= 1) award('firstBalance');
-          if (streak >= 3) award('streak3');
-          if (streak >= 5) award('streak5');
-          if (ext.tiersCompleted.indexOf('beginner') !== -1) award('allBeginner');
-          if (ext.tiersCompleted.indexOf('intermediate') !== -1) award('allIntermediate');
-          if (ext.tiersCompleted.indexOf('advanced') !== -1) award('allAdvanced');
-          if (ext.speedBest < 15) award('speedDemon');
-          if (ext.quizCorrect >= 5) award('quizWhiz');
-          if (ext.equationsBalanced >= 10) award('centurion');
-          if (ext.tiersCompleted.length >= 3 && ext.quizCorrect >= 5) award('masterChemist');
-          if (ext.safetyScore >= 5) award('safetyPro');
-          if (ext.battleWon) award('battleWinner');
-          if (changed) updExt({ badges: newBadges });
+        var checkBadges = function(streakOverride) {
+          return updExt({}, streakOverride);
         };
 
         // ═══ AI TUTOR ═══
         var askAI = function(question) {
-          if (!question || !callGemini) return;
+          if (!question) return;
+          if (!callGemini) {
+            upd('_chemAIResp', __alloT('stem.chembalance.ai_unavailable', 'The AI tutor is unavailable. The calculated chemistry tools and reviewed reference content still work.'));
+            return;
+          }
           upd('_chemAILoading', true);
-          var prompt = 'You are a friendly chemistry tutor. Answer concisely in 2-3 sentences for grade level ' + band + '. Question: ' + question;
+          var prompt = 'You are a careful, Socratic chemistry tutor for grade band ' + band + '. '
+            + 'Current activity: ' + subtool + '. Give one concise hint before an explanation. '
+            + 'Use established chemistry principles, state uncertainty, and never invent values or sources. '
+            + 'For spills, exposures, fires, or dangerous procedures, do not give cleanup instructions; direct the learner to their instructor, SDS, and local emergency plan. '
+            + 'Question: ' + question;
           callGemini(prompt, false, false, 0.7).then(function(resp) {
             updMulti({ _chemAIResp: resp, _chemAILoading: false });
           }).catch(function() {
@@ -18665,6 +3438,12 @@
         var coeffs = (d.coefficients || []).slice(0, numSlots);
         while (coeffs.length < numSlots) coeffs.push(1);
         var showHints = d.showHints || false;
+        var rtypeInfo = null;
+        if (preset.rtype) {
+          for (var rti = 0; rti < REACTION_TYPES.length; rti++) {
+            if (REACTION_TYPES[rti].id === preset.rtype) { rtypeInfo = REACTION_TYPES[rti]; break; }
+          }
+        }
         var getTimerElapsedMs = function() {
           var elapsedMs = Math.max(0, Number(d.timerElapsedMs) || 0);
           if (d.timerActive && !d.timerPaused && d.timerStart) {
@@ -18701,31 +3480,39 @@
         Object.keys(rightAtoms).forEach(function(k) { rightTotal += rightAtoms[k]; });
         var tilt = leftTotal === rightTotal ? 0 : leftTotal > rightTotal ? -1 : 1;
 
-        var atomColors = { H:'#60a5fa',O:'#ef4444',C:'#1e293b',N:'#3b82f6',Na:'#a855f7',Cl:'#22c55e',Mg:'#fbbf24',Fe:'#fb923c',Ca:'#f59e0b',Al:'#94a3b8',S:'#eab308',K:'#f87171' };
+        var atomColors = { H:'#60a5fa',O:'#ef4444',C:'#1e293b',N:'#3b82f6',Na:'#a855f7',Cl:'#22c55e',Mg:'#fbbf24',Fe:'#fb923c',Ca:'#f59e0b',Al:'#94a3b8',S:'#eab308',K:'#f87171',Li:'#f472b6',Br:'#b45309',Zn:'#6366f1',Cu:'#ea580c',P:'#f97316',Pb:'#64748b',I:'#7c3aed' };
         var tierLabels = { beginner:'\uD83C\uDF31 Beginner', intermediate:'\u26A1 Intermediate', advanced:'\uD83D\uDE80 Advanced' };
 
         var checkBalance = function() {
-          // Accept any atom-conserving solution \u2014 this matches the balance scale + the per-element
-          // tally (both keyed on isBalanced). A balanced multiple IS balanced; previously Check
-          // demanded the exact hardcoded lowest-terms `target`, so e.g. 4,2,4 for water lit the scale
-          // green yet Check said "not balanced." Now affirm, and nudge toward lowest whole numbers.
           var isCorrect = isBalanced;
           var atLowest = coeffs.every(function(c, i) { return c === preset.target[i]; });
-          if (isCorrect) {
-            chemSound('correct');
-            var newStreak = streak + 1;
-            upd('streak', newStreak);
-            upd('feedback', { correct: true, msg: atLowest ? ('\u2705 Balanced! ' + (newStreak > 1 ? '\uD83D\uDD25 ' + newStreak + ' in a row!' : 'Great job!')) : '\u2705 Atoms balance! Now try the lowest whole-number coefficients.' });
-            var speedTime = Infinity;
-            if (d.timerActive) speedTime = getTimerElapsedMs() / 1000;
-            var newBest = speedTime < ext.speedBest ? speedTime : ext.speedBest;
-            updExt({ equationsBalanced: ext.equationsBalanced + 1, speedBest: newBest });
-            checkBadges();
-          } else {
+          if (!isCorrect) {
             chemSound('wrong');
-            upd('streak', 0);
-            upd('feedback', { correct: false, msg: '\u274C Not balanced yet. Check atom counts on each side.' });
+            var missedNext = Object.assign({}, d.missedByName || {});
+            missedNext[preset.name] = (missedNext[preset.name] || 0) + 1;
+            updMulti({ streak: 0, missedByName: missedNext, feedback: { correct: false, msg: '\u274C Not balanced yet. Check atom counts on each side.' } });
+            return;
           }
+
+          chemSound('correct');
+          if (!atLowest) {
+            upd('feedback', { correct: true, msg: '\u2705 Atoms balance! Now reduce to the lowest whole-number coefficients to complete this preset.' });
+            return;
+          }
+
+          var speedTime = d.timerActive ? getTimerElapsedMs() / 1000 : null;
+          var recorded = recordSolvedPreset(ext, preset.name, speedTime);
+          if (!recorded.isNew) {
+            upd('feedback', { correct: true, msg: '\u2705 Still balanced. This preset is already recorded as mastered; choose another equation to extend your streak.' });
+            return;
+          }
+
+          var newStreak = streak + 1;
+          updMulti({
+            streak: newStreak,
+            feedback: { correct: true, msg: '\u2705 Balanced in lowest terms! ' + (newStreak > 1 ? '\uD83D\uDD25 ' + newStreak + ' distinct equations in a row!' : 'Great job!') }
+          });
+          updExt(recorded.progress, newStreak);
         };
 
         var switchPreset = function(name) {
@@ -18736,6 +3523,31 @@
           var len = (found && found.target) ? found.target.length : 4;
           var arr = []; for (var ai2 = 0; ai2 < len; ai2++) arr.push(1);
           updMulti({ equation: name, coefficients: arr, feedback: null });
+        };
+
+        // Smart practice picker: unsolved equations first, and among those the
+        // ones this student has missed most often come back first (same
+        // retry-weighting idea as the Word Sounds practice loop). Deterministic:
+        // ties resolve in bank order, no randomness (render goldens stay stable).
+        var missedByName = d.missedByName || {};
+        var pickPracticeNext = function() {
+          var solvedNames = ext.solvedPresetIds || [];
+          var pool = filtered.filter(function(p) { return p.name !== preset.name; });
+          if (!pool.length) pool = filtered;
+          var unsolved = pool.filter(function(p) { return solvedNames.indexOf(p.name) === -1; });
+          var candidates = unsolved.length ? unsolved : pool;
+          var best = candidates[0];
+          for (var ci = 1; ci < candidates.length; ci++) {
+            if ((missedByName[candidates[ci].name] || 0) > (missedByName[best.name] || 0)) best = candidates[ci];
+          }
+          if (!best) return;
+          var misses = missedByName[best.name] || 0;
+          switchPreset(best.name);
+          var msg = misses > 0
+            ? 'Retrying ' + best.name + ' — missed ' + misses + ' time' + (misses === 1 ? '' : 's') + ' before.'
+            : (unsolved.length ? 'Next unsolved equation: ' + best.name + '.' : 'All equations here are solved — reviewing ' + best.name + '.');
+          if (typeof announceToSR === 'function') announceToSR(msg);
+          if (addToast) addToast(msg);
         };
 
         // ═══ STOICH STATE ═══
@@ -18789,6 +3601,486 @@
           addToast('\uD83D\uDCF8 Snapshot saved!', 'success');
         };
 
+        // Static, semantic periodic-table block guide. CSS Grid keeps the
+        // 2/6/10/14-column relationships crisp at every zoom level, while the
+        // guide cards carry the same information without relying on color.
+        var renderPeriodicBlockGuide = function() {
+          var blockMeta = {
+            s: { fill: '#ffe4e6', border: '#fb7185', ink: '#9f1239' },
+            p: { fill: '#e0f2fe', border: '#38bdf8', ink: '#075985' },
+            d: { fill: '#fef3c7', border: '#f59e0b', ink: '#92400e' },
+            f: { fill: '#f3e8ff', border: '#c084fc', ink: '#6b21a8' }
+          };
+          var mainRows = [
+            { period: 1, regions: [{ col: 1, span: 1, block: 's', label: 'H' }, { col: 18, span: 1, block: 's', label: 'He' }] },
+            { period: 2, regions: [{ col: 1, span: 2, block: 's' }, { col: 13, span: 6, block: 'p' }] },
+            { period: 3, regions: [{ col: 1, span: 2, block: 's' }, { col: 13, span: 6, block: 'p' }] },
+            { period: 4, regions: [{ col: 1, span: 2, block: 's' }, { col: 3, span: 10, block: 'd' }, { col: 13, span: 6, block: 'p' }] },
+            { period: 5, regions: [{ col: 1, span: 2, block: 's' }, { col: 3, span: 10, block: 'd' }, { col: 13, span: 6, block: 'p' }] },
+            { period: 6, regions: [{ col: 1, span: 2, block: 's' }, { col: 3, span: 10, block: 'd' }, { col: 13, span: 6, block: 'p' }] },
+            { period: 7, regions: [{ col: 1, span: 2, block: 's' }, { col: 3, span: 10, block: 'd' }, { col: 13, span: 6, block: 'p' }] }
+          ];
+          var blockGuides = [
+            {
+              id: 's',
+              name: __alloT('stem.chembalance.s_block_label', 's-block'),
+              math: __alloT('stem.chembalance.s_block_capacity', '1 orbital \u00D7 2 e\u207B = 2 columns'),
+              location: __alloT('stem.chembalance.s_block_location', 'Groups 1\u20132, plus helium'),
+              detail: __alloT('stem.chembalance.s_block_members', 'Includes hydrogen, alkali metals, alkaline-earth metals, and helium.')
+            },
+            {
+              id: 'p',
+              name: __alloT('stem.chembalance.p_block_label', 'p-block'),
+              math: __alloT('stem.chembalance.p_block_capacity', '3 orbitals \u00D7 2 e\u207B = 6 columns'),
+              location: __alloT('stem.chembalance.p_block_location', 'Groups 13\u201318, periods 2\u20137'),
+              detail: __alloT('stem.chembalance.p_block_members', 'Includes metals, metalloids, and nonmetals; helium is the exception.')
+            },
+            {
+              id: 'd',
+              name: __alloT('stem.chembalance.d_block_label', 'd-block'),
+              math: __alloT('stem.chembalance.d_block_capacity', '5 orbitals \u00D7 2 e\u207B = 10 columns'),
+              location: __alloT('stem.chembalance.d_block_location', 'Groups 3\u201312, periods 4\u20137'),
+              detail: __alloT('stem.chembalance.d_block_members', 'This is the central transition-metal region of the table.')
+            },
+            {
+              id: 'f',
+              name: __alloT('stem.chembalance.f_block_label', 'f-block'),
+              math: __alloT('stem.chembalance.f_block_capacity', '7 orbitals \u00D7 2 e\u207B = 14 columns'),
+              location: __alloT('stem.chembalance.f_block_location', 'Two rows from periods 6 and 7'),
+              detail: __alloT('stem.chembalance.f_block_members', 'These are the lanthanide and actinide series shown below the main table.')
+            }
+          ];
+          var gridStyle = {
+            display: 'grid',
+            gridTemplateColumns: '2.75rem repeat(18, minmax(1.85rem, 1fr))',
+            columnGap: '3px'
+          };
+
+          var renderRegion = function(region, rowKey) {
+            var meta = blockMeta[region.block];
+            var cells = [];
+            for (var ci = 0; ci < region.span; ci++) {
+              cells.push(h('span', {
+                key: rowKey + '-cell-' + ci,
+                className: 'block rounded-[5px] border',
+                style: { background: meta.fill, borderColor: meta.border, minHeight: '38px' }
+              }));
+            }
+            return h('div', {
+              key: rowKey + '-' + region.block + '-' + region.col,
+              className: 'relative',
+              style: {
+                gridColumn: (region.col + 1) + ' / span ' + region.span,
+                display: 'grid',
+                gridTemplateColumns: 'repeat(' + region.span + ', minmax(0, 1fr))',
+                gap: '3px'
+              }
+            },
+              cells,
+              h('span', { className: 'absolute inset-0 flex items-center justify-center pointer-events-none' },
+                h('span', {
+                  className: 'rounded-full border bg-white/90 px-1.5 py-0.5 text-[11px] font-black leading-none shadow-sm',
+                  style: { color: meta.ink, borderColor: meta.border }
+                }, region.label || region.block)
+              )
+            );
+          };
+
+          var definitions = [
+            { term: __alloT('stem.chembalance.groups_term', 'Groups'), value: __alloT('stem.chembalance.groups_definition', 'vertical columns') },
+            { term: __alloT('stem.chembalance.periods_term', 'Periods'), value: __alloT('stem.chembalance.periods_definition', 'horizontal rows') },
+            { term: __alloT('stem.chembalance.blocks_term', 'Blocks'), value: __alloT('stem.chembalance.blocks_definition', 'electron-filling regions') }
+          ];
+
+          return h('section', {
+            'aria-labelledby': 'chem-periodic-blocks-title',
+            className: 'mb-5 overflow-hidden rounded-2xl border border-emerald-200 p-4 shadow-sm sm:p-5',
+            style: { background: 'linear-gradient(135deg, #f8fafc 0%, #f0fdf4 48%, #eff6ff 100%)' }
+          },
+            h('div', { className: 'flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between' },
+              h('div', { className: 'flex min-w-0 items-start gap-3' },
+                h('span', {
+                  className: 'flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-slate-900 text-xl text-cyan-200 shadow-sm',
+                  'aria-hidden': 'true'
+                }, 'e\u207B'),
+                h('div', null,
+                  h('p', { className: 'mb-1 text-xs font-black uppercase tracking-[0.18em] text-emerald-700' },
+                    __alloT('stem.chembalance.electron_configuration_map', 'Electron-configuration map')),
+                  h('h4', { id: 'chem-periodic-blocks-title', className: 'text-lg font-black leading-tight text-slate-900 sm:text-xl' },
+                    __alloT('stem.chembalance.periodic_table_four_major_blocks', '\u269B Periodic Table \u2014 Four major blocks')),
+                  h('p', { className: 'mt-1 max-w-2xl text-sm leading-relaxed text-slate-700' },
+                    __alloT('stem.chembalance.periodic_blocks_intro', 'Each block groups elements by the type of electron subshell being filled in their ground-state electron configurations.'))
+                )
+              ),
+              h('div', { className: 'shrink-0 rounded-full border border-cyan-200 bg-white px-3 py-1.5 text-xs font-black text-cyan-800 shadow-sm' },
+                __alloT('stem.chembalance.block_width_key', 'Block width = electron capacity'))
+            ),
+
+            h('div', { className: 'mt-4 rounded-xl bg-slate-900 p-3 text-white shadow-sm' },
+              h('div', { className: 'text-xs font-black uppercase tracking-[0.18em] text-cyan-200' },
+                __alloT('stem.chembalance.periodic_blocks_big_idea_label', 'The big idea')),
+              h('p', { className: 'mt-1 text-sm font-semibold leading-relaxed text-slate-100' },
+                __alloT('stem.chembalance.periodic_blocks_big_idea', 'The letters s, p, d, and f name electron subshells. A wider block means that subshell has more orbitals and can hold more electrons.'))
+            ),
+
+            h('dl', { className: 'mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3' },
+              definitions.map(function(item) {
+                return h('div', { key: item.term, className: 'rounded-xl border border-white bg-white/80 px-3 py-2 shadow-sm' },
+                  h('dt', { className: 'text-xs font-black uppercase tracking-wide text-slate-500' }, item.term),
+                  h('dd', { className: 'mt-0.5 text-sm font-bold text-slate-800' }, item.value)
+                );
+              })
+            ),
+
+            h('figure', { className: 'mt-4 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4' },
+              h('div', { className: 'mb-3 flex flex-wrap items-end justify-between gap-2' },
+                h('div', null,
+                  h('h5', { className: 'text-sm font-black text-slate-900' }, __alloT('stem.chembalance.where_blocks_sit', 'Where the blocks sit')),
+                  h('p', { className: 'mt-0.5 text-xs text-slate-600' }, __alloT('stem.chembalance.periodic_map_scroll_hint', 'The shapes follow the table\u2019s 18 groups and 7 periods.'))
+                ),
+                h('span', { className: 'rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600 sm:hidden' },
+                  __alloT('stem.chembalance.scroll_to_explore', 'Scroll to explore \u2192'))
+              ),
+              h('div', { className: 'overflow-x-auto pb-2' },
+                h('div', { style: { minWidth: '720px' }, 'aria-hidden': 'true' },
+                  h('div', { style: gridStyle },
+                    h('div', { className: 'flex items-end justify-center pb-1 text-xs font-black uppercase tracking-wide text-slate-500' },
+                      __alloT('stem.chembalance.period_axis', 'Period')),
+                    h('div', { className: 'pb-1 text-center text-xs font-black text-slate-500', style: { gridColumn: '2 / span 2' } },
+                      __alloT('stem.chembalance.groups_1_2', 'Groups 1\u20132')),
+                    h('div', { className: 'pb-1 text-center text-xs font-black text-slate-500', style: { gridColumn: '4 / span 10' } },
+                      __alloT('stem.chembalance.groups_3_12', 'Groups 3\u201312')),
+                    h('div', { className: 'pb-1 text-center text-xs font-black text-slate-500', style: { gridColumn: '14 / span 6' } },
+                      __alloT('stem.chembalance.groups_13_18', 'Groups 13\u201318'))
+                  ),
+                  mainRows.map(function(row) {
+                    return h('div', { key: 'period-' + row.period, style: Object.assign({}, gridStyle, { marginTop: '3px' }) },
+                      h('div', { className: 'flex min-h-[38px] items-center justify-center rounded-lg bg-slate-100 text-xs font-black text-slate-600' }, row.period),
+                      row.regions.map(function(region) { return renderRegion(region, 'p' + row.period); })
+                    );
+                  }),
+                  h('div', { className: 'my-2 flex items-center gap-2 pl-12 text-[11px] font-bold text-violet-800' },
+                    h('span', { className: 'flex h-5 w-5 items-center justify-center rounded-full bg-violet-100', 'aria-hidden': 'true' }, '\u21B3'),
+                    __alloT('stem.chembalance.f_block_pulled_below', 'The f block is pulled below the main table from periods 6 and 7.')),
+                  [
+                    { period: 6, orbital: '4f' },
+                    { period: 7, orbital: '5f' }
+                  ].map(function(row) {
+                    return h('div', { key: 'f-period-' + row.period, style: Object.assign({}, gridStyle, { marginTop: '3px' }) },
+                      h('div', { className: 'flex min-h-[38px] items-center justify-center rounded-lg bg-violet-50 text-xs font-black text-violet-800' }, row.period),
+                      renderRegion({ col: 3, span: 14, block: 'f', label: row.orbital }, 'f' + row.period)
+                    );
+                  })
+                )
+              ),
+              h('figcaption', { className: 'mt-2 rounded-xl bg-slate-50 p-3 text-xs leading-relaxed text-slate-700' },
+                __alloT('stem.chembalance.periodic_blocks_caption', 'The f block belongs to periods 6 and 7 but is shown below to keep the table compact. Helium sits over Group 18 because of its chemical behavior, while its 1s\u00B2 electron configuration places it in the s block.'))
+            ),
+
+            h('ul', {
+              className: 'mt-4 grid list-none grid-cols-1 gap-3 p-0 sm:grid-cols-2',
+              'aria-label': __alloT('stem.chembalance.four_block_guide', 'Guide to the four periodic-table blocks')
+            },
+              blockGuides.map(function(block) {
+                var meta = blockMeta[block.id];
+                return h('li', {
+                  key: block.id,
+                  className: 'rounded-2xl border-2 bg-white p-3 shadow-sm',
+                  style: { borderColor: meta.border }
+                },
+                  h('div', { className: 'flex items-center gap-3' },
+                    h('span', {
+                      className: 'flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-2 text-2xl font-black shadow-sm',
+                      style: { background: meta.fill, borderColor: meta.border, color: meta.ink },
+                      'aria-hidden': 'true'
+                    }, block.id),
+                    h('div', { className: 'min-w-0' },
+                      h('h5', { className: 'text-sm font-black', style: { color: meta.ink } }, block.name),
+                      h('div', { className: 'mt-1 rounded-full px-2 py-1 text-[11px] font-black leading-tight', style: { background: meta.fill, color: meta.ink } }, block.math)
+                    )
+                  ),
+                  h('p', { className: 'mt-3 text-xs font-black text-slate-800' }, block.location),
+                  h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-600' }, block.detail)
+                );
+              })
+            ),
+
+            h('div', { className: 'mt-4 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3' },
+              h('span', { className: 'rounded-full bg-emerald-700 px-2.5 py-1 text-xs font-black uppercase tracking-wide text-white' },
+                __alloT('stem.chembalance.try_an_example', 'Try an example')),
+              h('p', { className: 'text-xs leading-relaxed text-emerald-950 sm:text-sm' },
+                __alloT('stem.chembalance.sodium_block_example', 'Sodium (Na) sits in period 3, group 1 \u2192 s-block \u2192 its ground-state electron configuration ends in 3s\u00B9.'))
+            )
+          );
+        };
+
+        var renderPeriodicAtlas = function() {
+          var allElements = ELEMENT_DB.concat(ELEMENT_DB_2).concat(ELEMENT_DB_3).concat(ELEMENT_DB_4);
+
+          function makeRun(startZ, endZ, startCol) {
+            var cells = [];
+            for (var z = startZ; z <= endZ; z++) cells.push({ z: z, col: startCol + (z - startZ) });
+            return cells;
+          }
+
+          var mainRows = [
+            { period: 1, cells: [{ z: 1, col: 1 }, { z: 2, col: 18 }] },
+            { period: 2, cells: [{ z: 3, col: 1 }, { z: 4, col: 2 }].concat(makeRun(5, 10, 13)) },
+            { period: 3, cells: [{ z: 11, col: 1 }, { z: 12, col: 2 }].concat(makeRun(13, 18, 13)) },
+            { period: 4, cells: makeRun(19, 36, 1) },
+            { period: 5, cells: makeRun(37, 54, 1) },
+            { period: 6, cells: [{ z: 55, col: 1 }, { z: 56, col: 2 }, { placeholder: '57-71', col: 3 }].concat(makeRun(72, 86, 4)) },
+            { period: 7, cells: [{ z: 87, col: 1 }, { z: 88, col: 2 }, { placeholder: '89-103', col: 3 }].concat(makeRun(104, 118, 4)) }
+          ];
+          var seriesRows = [
+            { label: 'Ln', name: 'Lanthanides', period: 6, series: 'lanthanide', cells: makeRun(57, 71, 3) },
+            { label: 'An', name: 'Actinides', period: 7, series: 'actinide', cells: makeRun(89, 103, 3) }
+          ];
+          var positions = {};
+
+          mainRows.forEach(function(row) {
+            row.cells.forEach(function(cell) {
+              if (cell.z) positions[cell.z] = { period: row.period, group: cell.col, col: cell.col, series: null, seriesName: null };
+            });
+          });
+          seriesRows.forEach(function(row) {
+            row.cells.forEach(function(cell) {
+              positions[cell.z] = { period: row.period, group: null, col: cell.col, series: row.series, seriesName: row.name };
+            });
+          });
+
+          function blockFor(z, position) {
+            if (position.series) return z === 57 || z === 89 ? 'd' : 'f';
+            if (z === 2 || position.group <= 2) return 's';
+            if (position.group >= 13) return 'p';
+            return 'd';
+          }
+
+          var palette = {
+            s: { fill: '#ffe4e6', border: '#fb7185', ink: '#9f1239', label: 's-block' },
+            p: { fill: '#e0f2fe', border: '#38bdf8', ink: '#075985', label: 'p-block' },
+            d: { fill: '#fef3c7', border: '#f59e0b', ink: '#92400e', label: 'd-block' },
+            f: { fill: '#f3e8ff', border: '#c084fc', ink: '#6b21a8', label: 'f-block' }
+          };
+          var selectedZ = d._periodicZ != null ? Number(d._periodicZ) : 1;
+          selectedZ = Math.max(1, Math.min(118, selectedZ || 1));
+          var selectedElement = allElements[selectedZ - 1];
+          var selectedPosition = positions[selectedZ];
+          var selectedBlock = blockFor(selectedZ, selectedPosition);
+          var focusMode = ['element', 'group', 'period', 'block'].indexOf(d._periodicFocus) !== -1 ? d._periodicFocus : 'element';
+
+          function selectElement(z) {
+            var nextPosition = positions[z];
+            updMulti({
+              _periodicZ: z,
+              _periodicFocus: focusMode === 'group' && !nextPosition.group ? 'element' : focusMode
+            });
+          }
+
+          function focusElement(z) {
+            setTimeout(function() {
+              var node = document.querySelector('[data-chem-periodic-z="' + z + '"]');
+              if (node && typeof node.focus === 'function') node.focus();
+            }, 0);
+          }
+
+          function handleCellKey(e, z) {
+            var nextZ = null;
+            if (e.key === 'ArrowRight') nextZ = Math.min(118, z + 1);
+            if (e.key === 'ArrowLeft') nextZ = Math.max(1, z - 1);
+            if (e.key === 'Home') nextZ = 1;
+            if (e.key === 'End') nextZ = 118;
+            if (nextZ == null || nextZ === z) return;
+            e.preventDefault();
+            selectElement(nextZ);
+            focusElement(nextZ);
+          }
+
+          function isRelated(z, position) {
+            if (focusMode === 'element') return z === selectedZ;
+            if (focusMode === 'group') return !!selectedPosition.group && position.group === selectedPosition.group;
+            if (focusMode === 'period') return position.period === selectedPosition.period;
+            if (focusMode === 'block') return blockFor(z, position) === selectedBlock;
+            return false;
+          }
+
+          function openElementProfile() {
+            updMulti({
+              subtool: 'elementdb',
+              _activeCategory: 'reference',
+              _everPicked: true,
+              _elementIdx: selectedZ - 1,
+              _elementSearch: '',
+              _elementPage: Math.floor((selectedZ - 1) / 24)
+            });
+            if (typeof announceToSR === 'function') announceToSR('Opening ' + selectedElement.name + ' in the Element Encyclopedia.');
+          }
+
+          var gridStyle = {
+            display: 'grid',
+            gridTemplateColumns: '2.75rem repeat(18, minmax(2.25rem, 1fr))',
+            gap: '3px',
+            minWidth: '820px'
+          };
+
+          function renderCell(cell, row) {
+            if (!cell.z) {
+              return h('div', {
+                key: 'placeholder-' + row.period,
+                'aria-hidden': 'true',
+                className: 'flex min-h-[48px] items-center justify-center rounded-md border border-dashed border-violet-300 bg-violet-50 px-1 text-xs font-black text-violet-700',
+                style: { gridColumn: cell.col + 1 }
+              }, cell.placeholder);
+            }
+
+            var element = allElements[cell.z - 1];
+            var position = positions[cell.z];
+            var block = blockFor(cell.z, position);
+            var meta = palette[block];
+            var selected = selectedZ === cell.z;
+            var related = isRelated(cell.z, position);
+            var locationText = position.group ? 'group ' + position.group : position.seriesName;
+
+            return h('button', {
+              key: cell.z,
+              type: 'button',
+              tabIndex: selected ? 0 : -1,
+              'aria-pressed': selected,
+              'aria-label': element.name + ', symbol ' + element.sym + ', atomic number ' + element.z + ', period ' + position.period + ', ' + locationText + ', ' + meta.label,
+              title: element.name + ' (' + element.sym + ')',
+              'data-chem-periodic-z': String(cell.z),
+              onClick: function() { selectElement(cell.z); },
+              onKeyDown: function(e) { handleCellKey(e, cell.z); },
+              className: 'relative flex min-h-[48px] flex-col items-center justify-center rounded-md border px-0.5 transition-transform motion-reduce:transition-none motion-reduce:hover:transform-none hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-1',
+              style: {
+                gridColumn: position.col + 1,
+                background: meta.fill,
+                borderColor: selected ? '#0f172a' : meta.border,
+                color: meta.ink,
+                boxShadow: selected ? '0 0 0 3px #0f172a' : related && focusMode !== 'element' ? 'inset 0 0 0 2px #10b981' : 'none'
+              }
+            },
+              h('span', { className: 'absolute left-1 top-0.5 text-xs font-bold leading-none opacity-80' }, element.z),
+              h('span', { className: 'text-sm font-black leading-none' }, element.sym)
+            );
+          }
+
+          function renderRow(row, isSeries) {
+            return h('div', {
+              key: isSeries ? row.series : 'period-' + row.period,
+              style: Object.assign({}, gridStyle, { marginTop: isSeries && row.series === 'lanthanide' ? '10px' : '3px' })
+            },
+              h('div', {
+                className: 'flex min-h-[48px] flex-col items-center justify-center rounded-md bg-slate-900 px-1 text-center text-xs font-black text-white',
+                style: { gridColumn: 1 },
+                title: isSeries ? row.name : 'Period ' + row.period
+              },
+                h('span', null, isSeries ? row.label : 'P' + row.period),
+                isSeries && h('span', { className: 'text-[8px] font-bold text-slate-300' }, row.period)
+              ),
+              row.cells.map(function(cell) { return renderCell(cell, row); })
+            );
+          }
+
+          var groupNumbers = [];
+          for (var groupNumber = 1; groupNumber <= 18; groupNumber++) groupNumbers.push(groupNumber);
+          var focusOptions = [
+            { id: 'element', label: 'Element' },
+            { id: 'group', label: 'Group' },
+            { id: 'period', label: 'Period' },
+            { id: 'block', label: 'Block' }
+          ];
+
+          return h('section', {
+            'aria-labelledby': 'chem-periodic-atlas-title',
+            className: 'mb-5 rounded-2xl border border-cyan-200 bg-white p-4 shadow-sm sm:p-5'
+          },
+            h('p', { className: 'mb-1 text-xs font-black uppercase tracking-wide text-cyan-700' }, __alloT('stem.chembalance.interactive_atlas', 'Interactive atlas')),
+            h('h4', { id: 'chem-periodic-atlas-title', className: 'text-lg font-black text-slate-900' }, __alloT('stem.chembalance.explore_all_118_elements', 'Explore all 118 elements')),
+            h('p', { className: 'mt-1 mb-3 text-sm leading-relaxed text-slate-600' },
+              __alloT('stem.chembalance.periodic_atlas_instructions', 'Choose an element, then highlight its group, period, or electron-filling block. In the map, Left and Right Arrow move by atomic number; Home and End jump to the first and last elements.')),
+            h('div', { className: 'mb-3 grid gap-3 md:grid-cols-2' },
+              h('div', null,
+                h('label', { htmlFor: 'chem-periodic-element-picker', className: 'mb-1 block text-xs font-bold text-slate-700' }, __alloT('stem.chembalance.choose_an_element', 'Choose an element')),
+                h('select', {
+                  id: 'chem-periodic-element-picker',
+                  value: String(selectedZ),
+                  onChange: function(e) { selectElement(parseInt(e.target.value, 10)); },
+                  className: 'min-h-[44px] w-full rounded-lg border-2 border-cyan-300 bg-white px-3 py-2 text-sm text-slate-800'
+                },
+                  allElements.map(function(element) {
+                    return h('option', { key: element.z, value: String(element.z) }, element.z + ' · ' + element.sym + ' — ' + element.name);
+                  })
+                )
+              ),
+              h('div', { role: 'group', 'aria-label': __alloT('stem.chembalance.highlight_relationship', 'Highlight a periodic relationship') },
+                h('span', { className: 'mb-1 block text-xs font-bold text-slate-700' }, __alloT('stem.chembalance.highlight', 'Highlight')),
+                h('div', { className: 'flex min-h-[44px] flex-wrap gap-2' },
+                  focusOptions.map(function(option) {
+                    var disabled = option.id === 'group' && !selectedPosition.group;
+                    return h('button', {
+                      key: option.id,
+                      type: 'button',
+                      disabled: disabled,
+                      'aria-pressed': focusMode === option.id,
+                      onClick: function() { upd('_periodicFocus', option.id); },
+                      className: 'min-h-[40px] rounded-lg border px-3 py-2 text-xs font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-40 ' +
+                        (focusMode === option.id ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-slate-300 bg-white text-slate-700 hover:border-emerald-500')
+                    }, option.label);
+                  })
+                )
+              )
+            ),
+            h('div', { className: 'mb-3 flex flex-wrap gap-2', 'aria-label': __alloT('stem.chembalance.periodic_block_legend', 'Periodic table block legend') },
+              ['s', 'p', 'd', 'f'].map(function(block) {
+                var meta = palette[block];
+                return h('span', { key: block, className: 'rounded-full border px-2.5 py-1 text-xs font-black', style: { background: meta.fill, borderColor: meta.border, color: meta.ink } }, meta.label);
+              })
+            ),
+            h('figure', null,
+              h('div', {
+                role: 'region',
+                tabIndex: 0,
+                'aria-label': __alloT('stem.chembalance.scrollable_periodic_table', 'Scrollable 18-column periodic table'),
+                className: 'overflow-x-auto rounded-xl border border-slate-200 bg-slate-50 p-2'
+              },
+                h('div', { style: gridStyle, 'aria-hidden': 'true' },
+                  h('span', { style: { gridColumn: 1 } }),
+                  groupNumbers.map(function(group) {
+                    return h('span', { key: group, className: 'text-center text-xs font-black text-slate-500', style: { gridColumn: group + 1 } }, group);
+                  })
+                ),
+                mainRows.map(function(row) { return renderRow(row, false); }),
+                seriesRows.map(function(row) { return renderRow(row, true); })
+              ),
+              h('figcaption', { className: 'mt-2 text-xs leading-relaxed text-slate-600' },
+                __alloT('stem.chembalance.periodic_atlas_caption', 'The detached rows preserve atomic-number order without making the main table too wide. This convention places La and Ac before each 14-cell f-filling region.'))
+            ),
+            selectedElement && h('aside', {
+              'aria-live': 'polite',
+              'aria-atomic': 'true',
+              className: 'mt-4 flex flex-col gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3 sm:flex-row sm:items-center'
+            },
+              h('div', { className: 'flex h-16 w-16 shrink-0 flex-col items-center justify-center rounded-xl border-2 bg-white', style: { borderColor: palette[selectedBlock].border, color: palette[selectedBlock].ink } },
+                h('span', { className: 'text-xs font-bold' }, selectedElement.z),
+                h('span', { className: 'text-2xl font-black leading-none' }, selectedElement.sym)
+              ),
+              h('div', { className: 'min-w-0 flex-1' },
+                h('h5', { className: 'text-base font-black text-slate-900' }, selectedElement.name),
+                h('p', { className: 'mt-0.5 text-sm text-slate-700' },
+                  'Atomic mass: ' + selectedElement.mass + ' · Period ' + selectedPosition.period + ' · ' +
+                  (selectedPosition.group ? 'Group ' + selectedPosition.group : selectedPosition.seriesName) + ' · ' + palette[selectedBlock].label),
+                selectedElement.config && h('p', { className: 'mt-1 font-mono text-xs text-slate-600' }, 'Electron configuration: ' + selectedElement.config)
+              ),
+              h('button', {
+                type: 'button',
+                onClick: openElementProfile,
+                className: 'min-h-[44px] shrink-0 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-800'
+              }, __alloT('stem.chembalance.open_full_element_profile', 'Open full profile →'))
+            )
+          );
+        };
+
         // ════════════════════════════════════════
         // RENDER
         // ════════════════════════════════════════
@@ -18796,18 +4088,33 @@
 
           // ── Header ──
           h('div', { className: 'flex items-center gap-3 mb-3 flex-wrap' },
-            h('button', { onClick: function() { setStemLabTool(null); }, className: 'transition-colors p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': __alloT('stem.chembalance.back_to_tools', 'Back to tools') },
+            h('button', { type: 'button', onClick: function() { setStemLabTool(null); }, className: 'min-h-[40px] min-w-[40px] transition-colors p-1.5 hover:bg-slate-100 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2', 'aria-label': __alloT('stem.chembalance.back_to_tools', 'Back to tools') },
               h(ArrowLeft, { size: 18, className: 'text-slate-600' })
             ),
             h('h3', { className: 'text-lg font-bold text-slate-800' }, __alloT('stem.chembalance.chemistry_lab', '\u2697\uFE0F Chemistry Lab')),
             h('span', { className: 'px-2 py-0.5 bg-lime-100 text-lime-700 text-[11px] font-bold rounded-full' }, __alloT('stem.chembalance.chem_v3', 'CHEM v3')),
             streak > 0 && h('span', { className: 'px-2 py-0.5 bg-orange-100 text-orange-700 text-xs font-bold rounded-full animate-in zoom-in' }, '\uD83D\uDD25 ' + streak),
-            h('button', { onClick: function() { upd('_showBadges', !d._showBadges); },
-              className: 'ml-auto px-2 py-1 text-[11px] font-bold rounded-lg border ' + (d._showBadges ? 'bg-amber-100 text-amber-700 border-amber-600' : 'bg-slate-50 text-slate-600 border-slate-200')
+            h('button', { type: 'button', onClick: function() { upd('_showBadges', !d._showBadges); }, 'aria-expanded': !!d._showBadges, 'aria-controls': 'chem-badges-panel',
+              className: 'ml-auto min-h-[40px] px-3 py-2 text-xs font-bold rounded-lg border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700 focus-visible:ring-offset-2 ' + (d._showBadges ? 'bg-amber-100 text-amber-800 border-amber-700' : 'bg-slate-50 text-slate-700 border-slate-400')
             }, '\uD83C\uDFC5 ' + ext.badges.length + '/' + Object.keys(CHEM_BADGES).length),
-            h('button', { onClick: function() { upd('_showAI', !d._showAI); },
-              className: 'px-2 py-1 text-[11px] font-bold rounded-lg border ' + (d._showAI ? 'bg-sky-100 text-sky-700 border-sky-600' : 'bg-slate-50 text-slate-600 border-slate-200')
-            }, __alloT('stem.chembalance.ai', '\uD83E\uDD16 AI'))
+            h('button', { type: 'button', onClick: function() { upd('_showAI', !d._showAI); }, 'aria-pressed': !!d._showAI, 'aria-expanded': !!d._showAI, 'aria-controls': 'chem-ai-panel',
+              className: 'min-h-[40px] px-3 py-2 text-xs font-bold rounded-lg border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-2 ' + (d._showAI ? 'bg-sky-100 text-sky-800 border-sky-700' : 'bg-slate-50 text-slate-700 border-slate-400')
+            }, __alloT('stem.chembalance.ai', '\uD83E\uDD16 AI')),
+            h('button', {
+              type: 'button',
+              onClick: function() { upd('_soundEnabled', !soundEnabled); },
+              'aria-pressed': soundEnabled,
+              'aria-label': soundEnabled
+                ? __alloT('stem.chembalance.mute_sounds', 'Mute chemistry sounds')
+                : __alloT('stem.chembalance.enable_sounds', 'Enable chemistry sounds'),
+              className: 'inline-flex min-h-[40px] items-center gap-1 px-3 py-2 text-xs font-bold rounded-lg border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 ' +
+                (soundEnabled ? 'bg-emerald-50 text-emerald-700 border-emerald-300' : 'bg-slate-50 text-slate-600 border-slate-300')
+            },
+              h('span', { 'aria-hidden': 'true' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
+              h('span', { className: 'hidden sm:inline' }, soundEnabled
+                ? __alloT('stem.chembalance.sound_on', 'Sound')
+                : __alloT('stem.chembalance.sound_off', 'Muted'))
+            )
           ),
 
           // ── Category-aware Navigation ──
@@ -18830,18 +4137,15 @@
             }
 
             var searchResults = searchTerm
-              ? SUBTOOLS.filter(function(s) { return s.label.toLowerCase().indexOf(searchTerm) !== -1; })
+              ? SUBTOOLS.filter(function(s) {
+                  var catId = CHEM_SECTION_TO_CATEGORY[s.id];
+                  var cat = CHEM_CATEGORIES.find(function(c) { return c.id === catId; });
+                  var haystack = [s.label || '', s.desc || '', cat ? cat.label : ''].join(' ').toLowerCase();
+                  return haystack.indexOf(searchTerm) !== -1;
+                })
               : null;
 
             function setCategory(cid) { upd('_activeCategory', cid); upd('_chemSearch', ''); }
-            function goSection(sid) {
-              upd('subtool', sid);
-              upd('_everPicked', true);
-              if (CHEM_SECTION_TO_CATEGORY[sid] && CHEM_SECTION_TO_CATEGORY[sid] !== d._activeCategory) {
-                upd('_activeCategory', CHEM_SECTION_TO_CATEGORY[sid]);
-              }
-              announceToSR('Switched to ' + sid);
-            }
 
             var elements = [];
 
@@ -18858,7 +4162,7 @@
                 h('input', {
                   type: 'text',
                   'aria-label': __alloT('stem.chembalance.search_chemistry_sub_tools', 'Search chemistry sub-tools'),
-                  placeholder: __alloT('stem.chembalance.search_38_sub_tools', 'Search 38 sub-tools...'),
+                  placeholder: __alloT('stem.chembalance.search_sub_tools_count', 'Search {count} sub-tools...').replace('{count}', String(SUBTOOLS.length)),
                   value: d._chemSearch || '',
                   onChange: function(e) { upd('_chemSearch', e.target.value); upd('_activeCategory', null); },
                   className: 'px-2 py-1.5 text-xs bg-white border border-slate-500 rounded text-slate-700 placeholder-slate-500 w-full sm:w-52'
@@ -18876,7 +4180,7 @@
                       return h('button', {
                         key: s.id,
                         onClick: function() { goSection(s.id); upd('_chemSearch', ''); },
-                        className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-white border border-slate-300 text-slate-700 hover:bg-lime-50 hover:border-lime-500'
+                        className: 'min-h-[40px] transition-colors px-3 py-2 rounded text-xs font-bold bg-white border border-slate-400 text-slate-700 hover:bg-lime-50 hover:border-lime-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-700 focus-visible:ring-offset-2'
                       }, s.icon + ' ' + s.label);
                     })
               ));
@@ -18884,7 +4188,7 @@
 
             // Hub view
             if (atHub) {
-              elements.push(h('div', { key: 'hub-cards', className: 'grid grid-cols-2 md:grid-cols-3 gap-3 mb-3' },
+              elements.push(h('div', { key: 'hub-cards', className: 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-3' },
                 CHEM_CATEGORIES.map(function(c) {
                   var pal = catStyle(c.color);
                   return h('button', {
@@ -18914,9 +4218,11 @@
                   var isActive = subtool === st.id;
                   var pal = catStyle(activeCat.color);
                   return h('button', { key: st.id,
+                    type: 'button',
+                    'aria-current': isActive ? 'page' : undefined,
                     onClick: function() { goSection(st.id); },
                     title: st.desc,
-                    className: 'px-2 py-1 rounded text-xs font-bold transition-all border',
+                    className: 'min-h-[40px] min-w-[40px] px-3 py-2 rounded text-xs font-bold transition-all border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-1',
                     style: isActive
                       ? { background: pal.solid, color: '#fff', borderColor: pal.solid, boxShadow: '0 6px 14px rgba(15, 23, 42, 0.14)' }
                       : { background: '#fff', color: '#475569', borderColor: pal.border }
@@ -18925,7 +4231,7 @@
               ));
             }
 
-            return h('div', { key: 'chem-nav' }, elements);
+            return h('nav', { key: 'chem-nav', 'aria-label': __alloT('stem.chembalance.chemistry_sections', 'Chemistry Lab sections') }, elements);
           })(),
 
 
@@ -18938,6 +4244,45 @@
                 { label: 'Equation presets', value: ALL_PRESETS.length },
                 { label: 'Elements', value: ELEMENT_DB.length + ELEMENT_DB_2.length + ELEMENT_DB_3.length + ELEMENT_DB_4.length }
               ];
+              var challengeTotal = Object.keys(CHALLENGE_QS).reduce(function(total, key) { return total + CHALLENGE_QS[key].length; }, 0);
+              var competencyStats = [
+                { id: 'balance', label: 'Unique equations', done: ext.solvedPresetIds.length, total: ALL_PRESETS.length },
+                { id: 'safety', label: 'Safety scenarios', done: ext.completedSafetyScenarioIds.length, total: EMERGENCIES.length },
+                { id: 'challenge', label: 'Challenge items', done: ext.correctChallengeIds.length, total: challengeTotal }
+              ];
+              var nextCompetency = competencyStats.find(function(item) { return item.done < item.total; }) || competencyStats[competencyStats.length - 1];
+              var defaultLearningPath = [
+                { id: 'balance', title: '1. Balance', desc: 'Conserve atoms before you calculate amounts.' },
+                { id: 'reactions', title: '2. Classify', desc: 'Name the reaction pattern and evidence.' },
+                { id: 'stoich', title: '3. Calculate', desc: 'Connect coefficients, moles, and mass.' },
+                { id: 'safety', title: '4. Work safely', desc: 'Review hazards and response choices.' }
+              ];
+              var learningPath = ({
+                k2: [
+                  { id: 'molecular', title: '1. See matter', desc: 'Use particle models to notice what matter is made of.' },
+                  { id: 'reactions', title: '2. Notice change', desc: 'Look for evidence that substances changed.' },
+                  { id: 'balance', title: '3. Count fairly', desc: 'Use simple atom counts to compare both sides.' },
+                  { id: 'safety', title: '4. Stay safe', desc: 'Choose safe actions before touching a material.' }
+                ],
+                g35: [
+                  { id: 'molecular', title: '1. Model particles', desc: 'Connect visible matter to particles and compounds.' },
+                  { id: 'reactions', title: '2. Find patterns', desc: 'Classify common reaction patterns with evidence.' },
+                  { id: 'balance', title: '3. Balance atoms', desc: 'Conserve atoms before comparing amounts.' },
+                  { id: 'safety', title: '4. Work safely', desc: 'Practice hazard recognition and response choices.' }
+                ],
+                g68: [
+                  { id: 'balance', title: '1. Balance', desc: 'Conserve atoms before you calculate amounts.' },
+                  { id: 'reactions', title: '2. Classify', desc: 'Name the reaction pattern and evidence.' },
+                  { id: 'stoich', title: '3. Calculate', desc: 'Connect coefficients, moles, and mass.' },
+                  { id: 'safety', title: '4. Work safely', desc: 'Review hazards and response choices.' }
+                ],
+                g912: [
+                  { id: 'balance', title: '1. Balance', desc: 'Use conservation before stoichiometric reasoning.' },
+                  { id: 'reactions', title: '2. Explain', desc: 'Support reaction classifications with evidence.' },
+                  { id: 'stoich', title: '3. Transfer', desc: 'Apply coefficients to moles, mass, and yield.' },
+                  { id: 'safety', title: '4. Evaluate risk', desc: 'Use SDS and local plans for real procedures.' }
+                ]
+              })[band] || defaultLearningPath;
               return h('section', {
                 'data-chembalance-command': 'true',
                 className: 'mb-3 rounded-2xl border border-lime-300 bg-white p-4 shadow-sm',
@@ -18946,17 +4291,52 @@
                 h('div', { className: 'grid md:grid-cols-2 gap-4 items-stretch' },
                   h('div', null,
                     h('p', { className: 'text-xs font-black uppercase tracking-wide text-lime-800 mb-1' }, __alloT('stem.chembalance.start_at_the_bench', 'Start at the bench')),
-                    h('h3', { className: 'text-xl font-black text-slate-900 mb-2 leading-tight' }, __alloT('stem.chembalance.choose_a_chemistry_pathway', 'Choose a chemistry pathway')),
+                    h('h3', { id: 'chem-workspace-title', tabIndex: -1, className: 'text-xl font-black text-slate-900 mb-2 leading-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-700 focus-visible:ring-offset-2' }, __alloT('stem.chembalance.choose_a_chemistry_pathway', 'Choose a chemistry pathway')),
                     h('p', { className: 'text-sm text-slate-700 leading-relaxed mb-3' },
                       __alloT('stem.chembalance.hub_intro', 'Pick a focused lab pathway first: balance equations, look up reference data, explore domains, or jump into applied chemistry. The active workspace opens only after you choose a path.')
                     ),
-                    h('div', { className: 'grid grid-cols-2 gap-2' },
+                    h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
                       hubStats.map(function(s) {
                         return h('div', { key: s.label, className: 'rounded-xl bg-white/85 border border-white p-2 shadow-sm' },
                           h('div', { className: 'text-lg font-black text-slate-900 leading-none' }, s.value),
                           h('div', { className: 'text-xs font-bold text-slate-600 mt-1' }, s.label)
                         );
                       })
+                    ),
+                    h('div', { className: 'mt-4 rounded-xl border border-slate-300 bg-white p-3', role: 'region', 'aria-labelledby': 'chem-progress-title' },
+                      h('div', { className: 'flex flex-wrap items-baseline justify-between gap-2' },
+                        h('h4', { id: 'chem-progress-title', className: 'text-sm font-black text-slate-900' }, __alloT('stem.chembalance.competency_progress', 'Competency progress')),
+                        h('span', { className: 'text-xs font-bold text-slate-700' }, ext.tiersCompleted.length + '/3 equation tiers complete')
+                      ),
+                      h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-700' }, __alloT('stem.chembalance.progress_explainer', 'These counts use unique completed items, not clicks or XP.')),
+                      h('div', { className: 'mt-3 space-y-3' },
+                        competencyStats.map(function(stat) {
+                          var pct = stat.total > 0 ? Math.round((stat.done / stat.total) * 100) : 0;
+                          return h('div', { key: stat.id },
+                            h('div', { className: 'flex items-center justify-between gap-2 text-xs font-bold text-slate-800' },
+                              h('span', null, stat.label),
+                              h('span', null, stat.done + '/' + stat.total)
+                            ),
+                            h('div', { className: 'mt-1 h-2 overflow-hidden rounded-full bg-slate-200', role: 'progressbar', 'aria-label': stat.label + ' progress', 'aria-valuemin': 0, 'aria-valuemax': stat.total, 'aria-valuenow': stat.done },
+                              h('div', { className: 'h-full rounded-full bg-lime-700 transition-[width] motion-reduce:transition-none', style: { width: pct + '%' } })
+                            )
+                          );
+                        })
+                      ),
+                      h('button', { type: 'button', onClick: function() { goSection(nextCompetency.id); }, className: 'mt-3 min-h-[40px] w-full rounded-lg border border-lime-700 bg-lime-50 px-3 py-2 text-left text-xs font-bold text-lime-900 transition-colors hover:bg-lime-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-700 focus-visible:ring-offset-1' }, 'Next: ' + nextCompetency.label)
+                    ),
+                    h('div', { className: 'mt-4', role: 'region', 'aria-labelledby': 'chem-learning-path-title' },
+                      h('h4', { id: 'chem-learning-path-title', className: 'text-sm font-black text-slate-900 mb-2' }, __alloT('stem.chembalance.learning_path_title', 'Suggested learning path')),
+                      h('ol', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2 list-none p-0 m-0' },
+                        learningPath.map(function(step) {
+                          return h('li', { key: step.id },
+                            h('button', { type: 'button', onClick: function() { goSection(step.id); }, className: 'w-full min-h-[64px] rounded-xl border border-slate-300 bg-white px-3 py-2 text-left transition-colors hover:border-lime-700 hover:bg-lime-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-700 focus-visible:ring-offset-1' },
+                              h('span', { className: 'block text-sm font-black text-slate-900' }, step.title),
+                              h('span', { className: 'mt-0.5 block text-xs leading-relaxed text-slate-700' }, step.desc)
+                            )
+                          );
+                        })
+                      )
                     )
                   ),
                   h('div', {
@@ -18994,7 +4374,24 @@
               battle:    { accent: '#ea580c', soft: 'rgba(234,88,12,0.10)',  icon: '\u2694\uFE0F', title: __alloT('stem.chembalance.element_battle_retrieval_as_combat', 'Element Battle \u2014 retrieval as combat'),                  hint: __alloT('stem.chembalance.speed_builds_automaticity_once_balanci', 'Speed builds automaticity. Once balancing + naming are automatic, your working memory is free for higher-order reasoning like predicting product formation and equilibrium shifts.') },
               learn:     { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDCD6', title: __alloT('stem.chembalance.learn_concepts_by_grade_band', 'Learn \u2014 concepts by grade band'),                        hint: __alloT('stem.chembalance.k_2_matter_is_stuff_3_5_matter_cycles_', 'K-2: matter is stuff. 3-5: matter cycles. MS: atoms + simple compounds. HS: full periodic-table reasoning. AP: thermodynamics + kinetics + equilibrium. The vertical alignment runs through every grade.') }
             };
-            var meta = TAB_META[subtool] || TAB_META.balance;
+            var fallbackTool = SUBTOOLS.find(function(st) { return st.id === subtool; });
+            var fallbackCategoryId = CHEM_SECTION_TO_CATEGORY[subtool] || 'core';
+            var fallbackPalettes = {
+              core: { accent: '#65a30d', soft: 'rgba(101,163,13,0.10)' },
+              reference: { accent: '#0e7490', soft: 'rgba(14,116,144,0.10)' },
+              domains: { accent: '#4f46e5', soft: 'rgba(79,70,229,0.10)' },
+              applied: { accent: '#c2410c', soft: 'rgba(194,65,12,0.10)' },
+              education: { accent: '#b45309', soft: 'rgba(180,83,9,0.10)' },
+              people: { accent: '#7e22ce', soft: 'rgba(126,34,206,0.10)' }
+            };
+            var fallbackPalette = fallbackPalettes[fallbackCategoryId] || fallbackPalettes.core;
+            var meta = TAB_META[subtool] || {
+              accent: fallbackPalette.accent,
+              soft: fallbackPalette.soft,
+              icon: fallbackTool ? fallbackTool.icon : '⚗️',
+              title: __alloT('stem.chembalance.' + subtool + '_hero_title', fallbackTool ? fallbackTool.label : 'Chemistry Lab'),
+              hint: __alloT('stem.chembalance.' + subtool + '_hero_hint', fallbackTool ? fallbackTool.desc : 'Explore chemistry concepts and tools.')
+            };
             return h('div', {
               style: {
                 margin: '0 0 12px',
@@ -19008,16 +4405,16 @@
             },
               h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
               h('div', { style: { flex: 1, minWidth: 220 } },
-                h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-                h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                h('h3', { id: 'chem-workspace-title', tabIndex: -1, style: { color: meta.accent, fontSize: 17, fontWeight: 900, margin: 0, lineHeight: 1.3 }, className: 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2' }, meta.title),
+                h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 13, lineHeight: 1.45 } }, meta.hint)
               )
             );
           })(),
 
           // ── Badge Panel ──
-          d._showBadges && h('div', { className: 'mb-3 bg-amber-50 rounded-xl p-3 border border-amber-200' },
-            h('p', { className: 'text-[11px] font-bold text-amber-600 uppercase tracking-wider mb-2' }, __alloT('stem.chembalance.chemistry_badges', '\uD83C\uDFC5 Chemistry Badges')),
-            h('div', { className: 'grid grid-cols-6 gap-1.5' },
+          d._showBadges && h('div', { id: 'chem-badges-panel', role: 'region', 'aria-labelledby': 'chem-badges-title', className: 'mb-3 bg-amber-50 rounded-xl p-3 border border-amber-300' },
+            h('p', { id: 'chem-badges-title', className: 'text-xs font-bold text-amber-900 uppercase tracking-wider mb-2' }, __alloT('stem.chembalance.chemistry_badges', '\uD83C\uDFC5 Chemistry Badges')),
+            h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-1.5' },
               Object.keys(CHEM_BADGES).map(function(bid) {
                 var b = CHEM_BADGES[bid];
                 var earned = ext.badges.indexOf(bid) !== -1;
@@ -19030,13 +4427,16 @@
           ),
 
           // ── AI Tutor ──
-          d._showAI && h('div', { className: 'mb-3 bg-sky-50 rounded-xl p-3 border border-sky-200' },
-            h('p', { className: 'text-[11px] font-bold text-sky-600 uppercase tracking-wider mb-2' }, __alloT('stem.chembalance.ai_chemistry_tutor', '\uD83E\uDD16 AI Chemistry Tutor')),
-            h('div', { className: 'flex gap-2 mb-2' },
-              h('input', { type: 'text', value: d._chemAIQ || '', onChange: function(e) { upd('_chemAIQ', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') askAI(d._chemAIQ); }, placeholder: __alloT('stem.chembalance.ask_a_chemistry_question', 'Ask a chemistry question...'), 'aria-label': __alloT('stem.chembalance.ask_the_chemistry_tutor', 'Ask the chemistry tutor'), className: 'flex-1 px-3 py-1.5 text-sm border border-sky-600 rounded-lg focus:border-sky-400' }),
-              h('button', { onClick: function() { askAI(d._chemAIQ); }, disabled: d._chemAILoading, 'aria-busy': d._chemAILoading, 'aria-label': d._chemAILoading ? 'Asking AI tutor' : 'Ask AI tutor', className: 'transition-colors px-3 py-1.5 text-xs font-bold text-white bg-sky-700 rounded-lg hover:bg-sky-800 disabled:opacity-50' }, d._chemAILoading ? '\u23F3...' : 'Ask')
+          d._showAI && h('div', { id: 'chem-ai-panel', role: 'region', 'aria-labelledby': 'chem-ai-title', 'aria-busy': !!d._chemAILoading, className: 'mb-3 bg-sky-50 rounded-xl p-3 border border-sky-300' },
+            h('p', { id: 'chem-ai-title', className: 'text-xs font-bold text-sky-900 uppercase tracking-wider mb-2' }, __alloT('stem.chembalance.ai_chemistry_tutor', '\uD83E\uDD16 AI Chemistry Tutor')),
+            typeof callGemini !== 'function' && h('p', { role: 'status', className: 'mb-2 rounded-lg border border-sky-200 bg-white p-2 text-xs text-slate-600' },
+              __alloT('stem.chembalance.ai_tutor_unavailable', 'The AI tutor is unavailable in this environment. The calculators and guided feedback still work without it.')),
+            h('div', { className: 'flex flex-col gap-2 mb-2 sm:flex-row' },
+              h('input', { type: 'text', value: d._chemAIQ || '', disabled: typeof callGemini !== 'function', onChange: function(e) { upd('_chemAIQ', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter' && typeof callGemini === 'function') askAI(d._chemAIQ); }, placeholder: __alloT('stem.chembalance.ask_a_chemistry_question', 'Ask a chemistry question...'), 'aria-label': __alloT('stem.chembalance.ask_the_chemistry_tutor', 'Ask the chemistry tutor'), className: 'min-w-0 flex-1 px-3 py-2 text-sm border border-sky-600 rounded-lg focus:border-sky-400 disabled:bg-slate-100 disabled:text-slate-500' }),
+              h('button', { type: 'button', onClick: function() { askAI(d._chemAIQ); }, disabled: d._chemAILoading || typeof callGemini !== 'function', 'aria-busy': !!d._chemAILoading, 'aria-label': d._chemAILoading ? 'Asking AI tutor' : 'Ask AI tutor', className: 'min-h-[40px] transition-colors px-3 py-2 text-xs font-bold text-white bg-sky-700 rounded-lg hover:bg-sky-800 disabled:opacity-50' }, d._chemAILoading ? '\u23F3...' : 'Ask')
             ),
-            d._chemAIResp && h('div', { className: 'bg-white rounded-lg p-3 text-sm text-slate-700 whitespace-pre-wrap border border-sky-100' }, d._chemAIResp)
+            d._chemAIResp && h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'bg-white rounded-lg p-3 text-sm text-slate-700 whitespace-pre-wrap border border-sky-100' }, d._chemAIResp),
+            d._chemAIResp && h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-700' }, __alloT('stem.chembalance.ai_verify_hint', 'AI-generated guidance is a study hint, not a source of record. Verify calculations and safety decisions against the reviewed reference content, instructor, SDS, or local plan.'))
           ),
 
           // ════════════════════════════════════════
@@ -19044,16 +4444,64 @@
           // ════════════════════════════════════════
           !isChemHub && subtool === 'balance' && h('div', null,
             // Tier filter
-            h('div', { className: 'flex gap-2 mb-3' },
+            h('div', {
+              role: 'group',
+              'aria-label': __alloT('stem.chembalance.preset_difficulty', 'Equation preset difficulty'),
+              className: 'flex flex-wrap gap-2 mb-3'
+            },
               ['all', 'beginner', 'intermediate', 'advanced'].map(function(tier) {
-                return h('button', { key: tier, onClick: function() { upd('tierFilter', tier); var first = tier === 'all' ? ALL_PRESETS[0] : null; if (!first) { for (var ti = 0; ti < ALL_PRESETS.length; ti++) { if (ALL_PRESETS[ti].tier === tier) { first = ALL_PRESETS[ti]; break; } } } if (first) switchPreset(first.name); }, className: 'px-3 py-1 rounded-full text-xs font-bold transition-all ' + (tierFilter === tier ? 'bg-lime-700 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, tier === 'all' ? '\uD83D\uDCCA All' : tierLabels[tier] || tier);
+                return h('button', {
+                  key: tier,
+                  type: 'button',
+                  'aria-pressed': tierFilter === tier,
+                  onClick: function() {
+                    upd('tierFilter', tier);
+                    var first = tier === 'all' ? ALL_PRESETS[0] : null;
+                    if (!first) {
+                      for (var ti = 0; ti < ALL_PRESETS.length; ti++) {
+                        if (ALL_PRESETS[ti].tier === tier) { first = ALL_PRESETS[ti]; break; }
+                      }
+                    }
+                    if (first) switchPreset(first.name);
+                  },
+                  className: 'min-h-[40px] px-3 py-2 rounded-full text-xs font-bold transition-all ' +
+                    (tierFilter === tier ? 'bg-lime-700 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
+                }, tier === 'all' ? '\uD83D\uDCCA All' : tierLabels[tier] || tier);
               })
             ),
             // Equation chips
-            h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
+            h('div', {
+              role: 'group',
+              'aria-label': __alloT('stem.chembalance.equation_presets', 'Equation presets'),
+              className: 'flex flex-wrap gap-1.5 mb-3'
+            },
               filtered.map(function(p) {
-                return h('button', { 'aria-label': __alloT('stem.chembalance.switch_preset', 'Switch Preset'), key: p.name, onClick: function() { switchPreset(p.name); }, className: 'px-3 py-1 rounded-lg text-xs font-bold transition-all ' + (d.equation === p.name ? 'bg-lime-700 text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-lime-50 border border-slate-400') }, p.name);
+                var presetSelected = preset.name === p.name;
+                var presetSolved = ext.solvedPresetIds.indexOf(p.name) !== -1;
+                var presetMissed = !presetSolved ? (missedByName[p.name] || 0) : 0;
+                return h('button', {
+                  key: p.name,
+                  type: 'button',
+                  onClick: function() { switchPreset(p.name); },
+                  'aria-pressed': presetSelected,
+                  'aria-label': __alloT('stem.chembalance.select_equation_preset', 'Select equation preset') + ': ' + p.name
+                    + (presetSolved ? ', ' + __alloT('stem.chembalance.preset_solved', 'solved') : '')
+                    + (presetMissed ? ', ' + __alloT('stem.chembalance.preset_missed', 'missed') + ' ×' + presetMissed : ''),
+                  className: 'min-h-[40px] px-3 py-2 rounded-lg text-xs font-bold transition-all ' +
+                    (presetSelected ? 'bg-lime-700 text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-lime-50 border border-slate-400')
+                }, p.name + (presetSolved ? ' ✓' : '') + (presetMissed ? ' ↻' + presetMissed : ''));
               })
+            ),
+            // Practice-next: retry-weighted smart picker
+            h('div', { className: 'flex flex-wrap items-center gap-2 mb-3' },
+              h('button', {
+                type: 'button',
+                onClick: pickPracticeNext,
+                'aria-label': __alloT('stem.chembalance.practice_next_aria', 'Practice next: pick my next equation, retrying ones I missed first'),
+                className: 'min-h-[40px] px-4 py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-1'
+              }, '🎯 ' + __alloT('stem.chembalance.practice_next', 'Practice next')),
+              h('span', { className: 'text-xs text-slate-600' },
+                __alloT('stem.chembalance.practice_next_hint', 'Picks an unsolved equation — ones you missed come back first.'))
             ),
             // Balance Scale SVG
             h('svg', { viewBox: '0 0 400 100', role: 'img', 'aria-label': __alloT('stem.chembalance.balance_scale_accessible_summary', 'Balance scale comparing reactant and product atom counts') + '. ' + (isBalanced ? 'Balanced.' : 'Not balanced.') + ' Reactant atoms: ' + Object.keys(leftAtoms).map(function(atom) { return atom + ' ' + leftAtoms[atom]; }).join(', ') + '. Product atoms: ' + Object.keys(rightAtoms).map(function(atom) { return atom + ' ' + rightAtoms[atom]; }).join(', ') + '.', className: 'w-full mb-3', style: { maxHeight: '100px' } },
@@ -19077,20 +4525,56 @@
             ),
             // Equation card
             h('div', { className: 'bg-white rounded-xl border-2 p-5 text-center transition-colors ' + (isBalanced ? 'border-emerald-300 bg-emerald-50/30' : 'border-lime-200') },
-              h('p', { className: 'text-2xl font-bold text-slate-800 mb-4 tracking-wide' },
+              // Name + tier + reaction-type header. Type chip renders only for presets
+              // with a clean textbook classification (photosynthesis and the Ostwald
+              // oxidation are deliberately unlabeled).
+              h('div', { className: 'flex flex-wrap items-center justify-center gap-2 mb-2' },
+                h('span', { className: 'text-sm font-black text-slate-800' }, preset.name),
+                h('span', { className: 'px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700' }, tierLabels[preset.tier] || preset.tier),
+                rtypeInfo && h('span', { className: 'px-2 py-0.5 rounded-full text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200' }, rtypeInfo.icon + ' ' + rtypeInfo.label)
+              ),
+              h('p', { className: 'text-lg sm:text-2xl font-bold text-slate-800 mb-4 tracking-wide break-words' },
                 (function() {
                   var fmt = function(seg, i) { return (coeffs[i] > 1 ? coeffs[i] : '') + seg; };
                   return leftCompounds.map(function(s, i) { return fmt(s, i); }).join(' + ') + ' \u2192 ' + rightCompounds.map(function(s, i) { return fmt(s, leftCompounds.length + i); }).join(' + ');
                 })()
               ),
               // Coefficient controls
-              h('div', { className: 'flex justify-center gap-4 mb-4' },
+              h('div', {
+                role: 'group',
+                'aria-label': __alloT('stem.chembalance.equation_coefficients', 'Equation coefficients'),
+                className: 'flex flex-wrap justify-center gap-4 mb-4'
+              },
                 coeffs.map(function(c, i) {
-                  return h('div', { key: i, className: 'flex flex-col items-center gap-1' },
-                    h('span', { className: 'text-[11px] font-bold text-slate-600 mb-0.5' }, i < leftCompounds.length ? leftCompounds[i] : rightCompounds[i - leftCompounds.length]),
-                    h('button', { 'aria-label': 'Add', onClick: function() { chemSound('click'); var nc = coeffs.slice(); nc[i] = Math.min(12, nc[i] + 1); updMulti({ coefficients: nc, feedback: null }); }, className: 'w-9 h-9 bg-lime-100 rounded-lg font-bold text-lime-800 hover:bg-lime-200 transition-colors text-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-700 focus-visible:ring-offset-1' }, '+'),
-                    h('span', { className: 'text-2xl font-black text-slate-700 w-9 text-center' }, c),
-                    h('button', { 'aria-label': __alloT('stem.chembalance.subtract', 'Subtract'), onClick: function() { chemSound('click'); var nc = coeffs.slice(); nc[i] = Math.max(1, nc[i] - 1); updMulti({ coefficients: nc, feedback: null }); }, className: 'w-9 h-9 bg-red-50 rounded-lg font-bold text-red-700 hover:bg-red-100 transition-colors text-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-1' }, '\u2212')
+                  var compound = i < leftCompounds.length ? leftCompounds[i] : rightCompounds[i - leftCompounds.length];
+                  var coefficientLabelId = 'chem-coefficient-label-' + i;
+                  return h('div', { key: i, role: 'group', 'aria-labelledby': coefficientLabelId, className: 'flex flex-col items-center gap-1' },
+                    h('span', { id: coefficientLabelId, className: 'text-xs font-bold text-slate-700 mb-0.5' }, compound),
+                    h('button', {
+                      type: 'button',
+                      disabled: c >= 12,
+                      'aria-label': __alloT('stem.chembalance.increase_coefficient_for', 'Increase coefficient for') + ' ' + compound,
+                      onClick: function() {
+                        chemSound('click');
+                        var nc = coeffs.slice();
+                        nc[i] = Math.min(12, nc[i] + 1);
+                        updMulti({ coefficients: nc, feedback: null });
+                      },
+                      className: 'w-11 h-11 bg-lime-100 rounded-lg font-bold text-lime-800 hover:bg-lime-200 transition-colors text-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-700 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-40'
+                    }, '+'),
+                    h('output', { 'aria-labelledby': coefficientLabelId, className: 'text-2xl font-black text-slate-700 w-11 text-center' }, String(c)),
+                    h('button', {
+                      type: 'button',
+                      disabled: c <= 1,
+                      'aria-label': __alloT('stem.chembalance.decrease_coefficient_for', 'Decrease coefficient for') + ' ' + compound,
+                      onClick: function() {
+                        chemSound('click');
+                        var nc = coeffs.slice();
+                        nc[i] = Math.max(1, nc[i] - 1);
+                        updMulti({ coefficients: nc, feedback: null });
+                      },
+                      className: 'w-11 h-11 bg-red-50 rounded-lg font-bold text-red-700 hover:bg-red-100 transition-colors text-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-40'
+                    }, '\u2212')
                   );
                 })
               ),
@@ -19109,10 +4593,10 @@
                       h('span', { className: 'text-slate-600' }, match ? '=' : '\u2260'),
                       h('span', { className: match ? 'text-emerald-600' : (deficitSide === 'R' ? 'text-red-700 underline decoration-wavy' : 'text-red-600') }, right)
                     ),
-                    !match && h('div', { className: 'text-[10px] font-bold text-red-700 leading-tight mt-0.5' },
+                    !match && h('div', { className: 'text-xs font-bold text-red-700 leading-tight mt-0.5' },
                       deficitSide === 'L' ? ('+' + delta + ' need \u2190') : ('\u2192 need +' + delta)
                     ),
-                    match && h('div', { className: 'text-[10px] font-bold text-emerald-600 leading-tight mt-0.5' }, __alloT('stem.chembalance.balanced_2', '\u2713 balanced'))
+                    match && h('div', { className: 'text-xs font-bold text-emerald-600 leading-tight mt-0.5' }, __alloT('stem.chembalance.balanced_2', '\u2713 balanced'))
                   );
                 })
               ),
@@ -19127,14 +4611,14 @@
                 h('div', { className: 'flex items-center gap-2 mb-1 flex-wrap' },
                   h('span', { 'aria-hidden': 'true', className: 'text-lg' }, '🧮'),
                   h('h4', { className: 'font-bold text-slate-800 text-sm' }, __alloT('stem.chembalance.autobalance_title', 'Balance any equation')),
-                  h('span', { className: 'ml-auto text-[10px] font-bold uppercase tracking-wide text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full' }, __alloT('stem.chembalance.calc_badge', 'Calculated · not AI'))
+                  h('span', { className: 'ml-auto text-xs font-bold uppercase tracking-wide text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full' }, __alloT('stem.chembalance.calc_badge', 'Calculated · not AI'))
                 ),
                 h('p', { className: 'text-xs text-slate-500 mb-2' }, __alloT('stem.chembalance.autobalance_hint', 'Type a neutral molecular equation. Solved exactly by atom-conservation math - the AI tutor is never the authority on coefficients. Ionic equations require separate charge conservation and are not supported here.')),
-                h('div', { className: 'flex gap-2' },
-                  h('input', { type: 'text', value: d._balanceInput || '', onChange: function(e) { upd('_balanceInput', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') runAutoBalance(); }, placeholder: 'H2 + O2 -> H2O', 'aria-label': __alloT('stem.chembalance.equation_to_balance', 'Equation to balance'), className: 'flex-1 px-3 py-2 text-sm font-mono border border-indigo-300 rounded-lg focus:border-indigo-500 focus:outline-none' }),
-                  h('button', { onClick: runAutoBalance, className: 'px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-colors text-sm whitespace-nowrap' }, __alloT('stem.chembalance.balance_it', 'Balance'))
+                h('div', { className: 'flex flex-col gap-2 sm:flex-row' },
+                  h('input', { type: 'text', value: d._balanceInput || '', onChange: function(e) { upd('_balanceInput', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') runAutoBalance(); }, placeholder: 'H2 + O2 -> H2O', 'aria-label': __alloT('stem.chembalance.equation_to_balance', 'Equation to balance'), className: 'min-w-0 flex-1 px-3 py-2 text-sm font-mono border border-indigo-300 rounded-lg focus:border-indigo-500 focus:outline-none' }),
+                  h('button', { type: 'button', onClick: runAutoBalance, className: 'w-full sm:w-auto min-h-[40px] px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-colors text-sm whitespace-nowrap' }, __alloT('stem.chembalance.balance_it', 'Balance'))
                 ),
-                _balRes && _balRes.ok && h('div', { className: 'mt-3 bg-white rounded-lg p-3 border border-emerald-300' },
+                _balRes && _balRes.ok && h('div', { role: 'status', 'aria-live': 'polite', className: 'mt-3 bg-white rounded-lg p-3 border border-emerald-300' },
                   h('div', { className: 'text-[11px] font-bold uppercase tracking-wide text-emerald-700 mb-1' }, '✓ ' + __alloT('stem.chembalance.balanced_result', 'Balanced')),
                   h('div', { dir: 'auto', className: 'text-base font-mono font-bold text-slate-800 break-words' }, _balRes.balancedString),
                   _balRes.alreadyBalanced && h('div', { className: 'text-xs text-slate-500 mt-1' }, __alloT('stem.chembalance.already_balanced_note', 'You typed it already balanced — nice.'))
@@ -19145,7 +4629,7 @@
                 h('p', { className: 'text-xs font-bold text-blue-700 mb-1' }, '\uD83D\uDCA1 ' + preset.hint),
                 h('p', { className: 'text-[11px] text-blue-600' }, __alloT('stem.chembalance.balance_one_element_at_a_time_start_wi', '\u2022 Balance one element at a time \u2022 Start with the most complex compound \u2022 Save O or H for last'))
               ),
-              d.feedback && h('p', { className: 'mt-3 text-sm font-bold ' + (d.feedback.correct ? 'text-emerald-600' : 'text-red-600') }, d.feedback.msg)
+              d.feedback && h('p', { role: 'status', 'aria-live': 'polite', className: 'mt-3 text-sm font-bold ' + (d.feedback.correct ? 'text-emerald-800' : 'text-red-700') }, d.feedback.msg)
             ),
             // Optional count-up challenge: no deadline, and elapsed time excludes pauses.
             h('div', { role: 'group', 'aria-label': __alloT('stem.chembalance.speed_challenge_controls', 'Speed challenge timer controls'), className: 'mt-3 flex items-center gap-3 flex-wrap' },
@@ -19234,6 +4718,7 @@
               h('p', { className: 'text-[11px] font-bold text-purple-600 uppercase tracking-wider mb-2' }, __alloT('stem.chembalance.classify_this_reaction', '\uD83E\uDDE9 Classify This Reaction')),
               (function() {
                 var classifyQ = d._classifyQ;
+                var correctReaction = classifyQ && REACTION_TYPES.find(function(item) { return item.id === classifyQ.type; });
                 if (!classifyQ) {
                   return h('button', { 'aria-label': __alloT('stem.chembalance.start', 'Start'), onClick: function() {
                     var all = [];
@@ -19250,14 +4735,15 @@
                       var fb = d._classifyFb;
                       var isCorrect = fb && classifyQ.type === rt.id;
                       var isWrong = fb && fb === rt.id && classifyQ.type !== rt.id;
-                      return h('button', { key: rt.id, onClick: function() {
+                      return h('button', { key: rt.id, type: 'button', 'aria-pressed': fb === rt.id, 'aria-disabled': !!fb, disabled: !!fb, onClick: function() {
                         if (d._classifyFb) return;
                         upd('_classifyFb', rt.id);
                         if (rt.id === classifyQ.type) { chemSound('correct'); addToast('\u2705 ' + rt.label + '!', 'success'); } else { chemSound('wrong'); }
                       }, className: 'px-3 py-1.5 text-[11px] font-bold rounded-lg border transition-all ' + (isCorrect ? 'bg-emerald-100 text-emerald-700 border-emerald-600' : isWrong ? 'bg-red-100 text-red-700 border-red-600' : fb ? 'bg-slate-50 text-slate-600 border-slate-200' : 'bg-white text-slate-600 border-slate-200 hover:border-purple-600') }, rt.icon + ' ' + rt.label);
                     })
                   ),
-                  d._classifyFb && h('button', { 'aria-label': __alloT('stem.chembalance.next', 'Next'), onClick: function() {
+                  d._classifyFb && h('p', { role: 'status', 'aria-live': 'polite', className: 'mt-2 text-sm font-bold ' + (d._classifyFb === classifyQ.type ? 'text-emerald-800' : 'text-red-700') }, d._classifyFb === classifyQ.type ? '✓ Correct — ' + correctReaction.label : '✗ Not quite — the correct type is ' + correctReaction.label),
+                  d._classifyFb && h('button', { type: 'button', 'aria-label': __alloT('stem.chembalance.next', 'Next'), onClick: function() {
                     var all = [];
                     REACTION_TYPES.forEach(function(rt) { rt.examples.forEach(function(ex) { all.push({ eq: ex.eq, type: rt.id, label: rt.label }); }); });
                     var pick = all[Math.floor(Math.random() * all.length)];
@@ -19275,7 +4761,7 @@
             h('p', { className: 'text-xs text-slate-600 italic mb-3' },
               gradeText(
                 'Figure out how heavy molecules are! Type a chemical formula to see.',
-                'Calculate the molar mass of any compound. The molar mass tells you how many grams equal one mole.',
+                'Calculate molar mass for formulas using the 26 currently supported elements. The molar mass tells you how many grams equal one mole.',
                 'Use molar mass to convert between grams and moles. Essential for stoichiometric calculations.',
                 'Molar mass calculator with gram-mole interconversion. Use balanced equation coefficients for mole ratios.'
               )(band)
@@ -19287,17 +4773,31 @@
               // Presets
               h('div', { className: 'flex flex-wrap gap-1' },
                 MOLAR_PRESETS.map(function(mp) {
-                  return h('button', { 'aria-label': __alloT('stem.chembalance.enter_a_valid_formula_above', 'Enter a valid formula above'), key: mp.formula, onClick: function() { upd('_stoichFormula', mp.formula); chemSound('click'); }, className: 'transition-colors px-2 py-0.5 text-[11px] font-bold rounded bg-white text-teal-700 border border-teal-600 hover:bg-teal-50' }, mp.name);
+                  return h('button', { type: 'button', 'aria-label': 'Use preset ' + mp.name + ': ' + mp.formula, key: mp.formula, onClick: function() { upd('_stoichFormula', mp.formula); chemSound('click'); }, className: 'min-h-[40px] px-3 py-2 text-xs font-bold rounded bg-white text-teal-800 border border-teal-700 hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-2' }, mp.name);
                 })
               )
             ),
             // Result
             (function() {
-              var result = parseFormula(stoichFormula);
+              var formulaText = String(stoichFormula || '').trim();
+              var formulaCheck = formulaText
+                .replace(/₀/g, '0').replace(/₁/g, '1').replace(/₂/g, '2').replace(/₃/g, '3').replace(/₄/g, '4')
+                .replace(/₅/g, '5').replace(/₆/g, '6').replace(/₇/g, '7').replace(/₈/g, '8').replace(/₉/g, '9');
+              var formulaError = /^\d/.test(formulaCheck)
+                ? 'Enter a formula without a leading coefficient.'
+                : _validateFormulaSyntax(formulaCheck);
+              var unknown = _scanElementSymbols(formulaCheck).filter(function(el, i, all) {
+                return !ELEMENTS[el] && all.indexOf(el) === i;
+              });
+              if (formulaError || unknown.length) {
+                return h('p', { role: 'alert', className: 'rounded-lg border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-700' },
+                  formulaError || ('Unsupported element(s): ' + unknown.join(', ') + '. This calculator currently supports 26 common elements.'));
+              }
+              var result = parseFormula(formulaCheck);
               var mass = result.mass;
               var elems = result.elems;
-              if (mass <= 0) return h('p', { className: 'text-xs text-slate-600 italic' }, __alloT('stem.chembalance.enter_a_valid_formula_above_2', 'Enter a valid formula above'));
-              return h('div', { className: 'bg-white rounded-xl border p-3 mb-3' },
+              if (mass <= 0) return h('p', { role: 'alert', className: 'text-xs text-slate-600 italic' }, __alloT('stem.chembalance.enter_a_valid_formula_above_2', 'Enter a valid formula above'));
+              return h('div', { role: 'region', 'aria-label': 'Molar mass result', className: 'bg-white rounded-xl border p-3 mb-3' },
                 h('div', { className: 'flex items-center gap-3 mb-3' },
                   h('p', { className: 'text-lg font-bold text-teal-700' }, 'Molar Mass: ' + mass.toFixed(3) + ' g/mol'),
                   h('span', { className: 'px-2 py-0.5 bg-teal-100 text-teal-700 text-[11px] font-bold rounded-full' }, stoichFormula)
@@ -19315,16 +4815,16 @@
                   })
                 ),
                 // Gram-mole converter
-                h('div', { className: 'grid grid-cols-2 gap-3' },
+                h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
                   h('div', null,
                     h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, __alloT('stem.chembalance.grams_moles', 'Grams \u2192 Moles')),
-                    h('input', { type: 'number', value: stoichGrams, onChange: function(e) { var g = parseFloat(e.target.value); upd('_stoichGrams', e.target.value); if (!isNaN(g) && mass > 0) upd('_stoichMoles', (g / mass).toFixed(4)); }, placeholder: 'grams', 'aria-label': __alloT('stem.chembalance.grams_to_convert_to_moles', 'Grams to convert to moles'), className: 'w-full px-2 py-1 text-sm border rounded-lg' }),
-                    stoichGrams && h('p', { className: 'text-[11px] font-bold text-teal-600 mt-1' }, stoichGrams + 'g = ' + (parseFloat(stoichGrams) / mass).toFixed(4) + ' mol')
+                    h('input', { type: 'number', value: stoichGrams, onChange: function(e) { var g = parseFloat(e.target.value); upd('_stoichGrams', e.target.value); if (!isNaN(g) && mass > 0) upd('_stoichMoles', (g / mass).toFixed(4)); }, placeholder: 'grams', 'aria-label': __alloT('stem.chembalance.grams_to_convert_to_moles', 'Grams to convert to moles'), className: 'w-full min-h-[40px] px-3 py-2 text-sm border border-slate-400 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-1' }),
+                    stoichGrams && h('p', { className: 'text-xs font-bold text-teal-800 mt-1' }, stoichGrams + 'g = ' + (parseFloat(stoichGrams) / mass).toFixed(4) + ' mol')
                   ),
                   h('div', null,
                     h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, __alloT('stem.chembalance.moles_grams', 'Moles \u2192 Grams')),
-                    h('input', { type: 'number', value: stoichMoles, onChange: function(e) { var m = parseFloat(e.target.value); upd('_stoichMoles', e.target.value); if (!isNaN(m) && mass > 0) upd('_stoichGrams', (m * mass).toFixed(4)); }, placeholder: 'moles', 'aria-label': __alloT('stem.chembalance.moles_to_convert_to_grams', 'Moles to convert to grams'), className: 'w-full px-2 py-1 text-sm border rounded-lg' }),
-                    stoichMoles && h('p', { className: 'text-[11px] font-bold text-teal-600 mt-1' }, stoichMoles + ' mol = ' + (parseFloat(stoichMoles) * mass).toFixed(4) + 'g')
+                    h('input', { type: 'number', value: stoichMoles, onChange: function(e) { var m = parseFloat(e.target.value); upd('_stoichMoles', e.target.value); if (!isNaN(m) && mass > 0) upd('_stoichGrams', (m * mass).toFixed(4)); }, placeholder: 'moles', 'aria-label': __alloT('stem.chembalance.moles_to_convert_to_grams', 'Moles to convert to grams'), className: 'w-full min-h-[40px] px-3 py-2 text-sm border border-slate-400 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-1' }),
+                    stoichMoles && h('p', { className: 'text-xs font-bold text-teal-800 mt-1' }, stoichMoles + ' mol = ' + (parseFloat(stoichMoles) * mass).toFixed(4) + 'g')
                   )
                 )
               );
@@ -19342,27 +4842,27 @@
                 h('div', { className: 'flex items-center gap-2 mb-1 flex-wrap' },
                   h('span', { 'aria-hidden': 'true' }, '\u2696\uFE0F'),
                   h('h4', { className: 'font-bold text-slate-800 text-sm' }, __alloT('stem.chembalance.yield_title', 'Limiting reagent & yield')),
-                  h('span', { className: 'ml-auto text-[10px] font-bold uppercase tracking-wide text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full' }, __alloT('stem.chembalance.calc_badge_2', 'Calculated \u00B7 not AI'))
+                  h('span', { className: 'ml-auto text-xs font-bold uppercase tracking-wide text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full' }, __alloT('stem.chembalance.calc_badge_2', 'Calculated \u00B7 not AI'))
                 ),
                 h('p', { className: 'text-xs text-slate-500 mb-2' }, __alloT('stem.chembalance.yield_hint', 'Type a reaction, then enter how many grams of each reactant you have.')),
-                h('div', { className: 'flex gap-2 mb-2' },
-                  h('input', { type: 'text', value: d._yieldInput || '', onChange: function(e) { upd('_yieldInput', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') runYield(); }, placeholder: 'N2 + H2 -> NH3', 'aria-label': __alloT('stem.chembalance.reaction_for_yield', 'Reaction for the yield calculator'), className: 'flex-1 px-3 py-2 text-sm font-mono border border-purple-300 rounded-lg focus:border-purple-500 focus:outline-none' }),
-                  h('button', { onClick: runYield, className: 'px-4 py-2 bg-purple-600 text-white font-bold rounded-lg hover:bg-purple-700 text-sm whitespace-nowrap' }, __alloT('stem.chembalance.set_up', 'Set up'))
+                h('div', { className: 'flex flex-col gap-2 mb-2 sm:flex-row' },
+                  h('input', { type: 'text', value: d._yieldInput || '', onChange: function(e) { upd('_yieldInput', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') runYield(); }, placeholder: 'N2 + H2 -> NH3', 'aria-label': __alloT('stem.chembalance.reaction_for_yield', 'Reaction for the yield calculator'), className: 'min-w-0 flex-1 px-3 py-2 text-sm font-mono border border-purple-300 rounded-lg focus:border-purple-500 focus:outline-none' }),
+                  h('button', { type: 'button', onClick: runYield, className: 'w-full sm:w-auto min-h-[40px] px-4 py-2 bg-purple-600 text-white font-bold rounded-lg hover:bg-purple-700 text-sm whitespace-nowrap' }, __alloT('stem.chembalance.set_up', 'Set up'))
                 ),
                 yr && !yr.ok && h('div', { className: 'bg-rose-50 rounded-lg p-2 border border-rose-200 text-xs text-rose-700' }, '\u26A0 ' + yr.error),
                 yr && yr.ok && h('div', null,
                   h('div', { dir: 'auto', className: 'text-xs font-mono font-bold text-slate-700 mb-2 break-words' }, yr.balancedString),
-                  h('div', { className: 'grid grid-cols-2 gap-2 mb-2' },
+                  h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2' },
                     yr.species.slice(0, yr.reactantCount).map(function(sp, ri) {
                       return h('div', { key: ri },
                         h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-0.5' }, sp.formula + ' (g)'),
-                        h('input', { type: 'number', value: (d._yieldGrams || {})[ri] || '', onChange: function(e) { var ng = Object.assign({}, d._yieldGrams || {}); ng[ri] = e.target.value; upd('_yieldGrams', ng); }, placeholder: 'grams', 'aria-label': sp.formula + ' grams available', className: 'w-full px-2 py-1 text-sm border rounded-lg' })
+                        h('input', { type: 'number', value: (d._yieldGrams || {})[ri] || '', onChange: function(e) { var ng = Object.assign({}, d._yieldGrams || {}); ng[ri] = e.target.value; upd('_yieldGrams', ng); }, placeholder: 'grams', 'aria-label': sp.formula + ' grams available', className: 'w-full min-h-[40px] px-3 py-2 text-sm border border-slate-400 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-1' })
                       );
                     })
                   ),
                   h('div', { className: 'mb-2' },
                     h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-0.5' }, __alloT('stem.chembalance.actual_yield_opt', 'Actual yield (g, optional)')),
-                    h('input', { type: 'number', value: d._yieldActual || '', onChange: function(e) { upd('_yieldActual', e.target.value); }, placeholder: 'grams produced', 'aria-label': __alloT('stem.chembalance.actual_grams_produced', 'Actual grams produced'), className: 'w-full px-2 py-1 text-sm border rounded-lg' })
+                    h('input', { type: 'number', value: d._yieldActual || '', onChange: function(e) { upd('_yieldActual', e.target.value); }, placeholder: 'grams produced', 'aria-label': __alloT('stem.chembalance.actual_grams_produced', 'Actual grams produced'), className: 'w-full min-h-[40px] px-3 py-2 text-sm border border-slate-400 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-1' })
                   ),
                   sr && !sr.error && h('div', { className: 'bg-white rounded-lg p-3 border border-emerald-300 text-sm' },
                     h('div', { className: 'font-bold text-slate-800 mb-1' }, '\u2192 ' + __alloT('stem.chembalance.limiting', 'Limiting reagent') + ': ' + sr.limitingFormula),
@@ -19390,7 +4890,7 @@
             // Molecule selector
             h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
               MOLECULES.map(function(mol, idx) {
-                return h('button', { key: idx, onClick: function() { upd('_molIdx', idx); chemSound('click'); }, className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all border ' + (molIdx === idx ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-600') }, mol.formula + ' ' + mol.name);
+                return h('button', { key: idx, type: 'button', 'aria-pressed': molIdx === idx, onClick: function() { upd('_molIdx', idx); chemSound('click'); }, className: 'min-h-[40px] px-3 py-2 rounded-lg text-xs font-bold transition-all border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-1 ' + (molIdx === idx ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-600') }, mol.formula + ' ' + mol.name);
               })
             ),
             // SVG viewer
@@ -19432,7 +4932,7 @@
                 })
               ),
               // Info cards
-              h('div', { className: 'grid grid-cols-3 gap-2 mt-3' },
+              h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-2 mt-3' },
                 h('div', { className: 'bg-indigo-50 rounded-lg p-2 text-center border border-indigo-100' },
                   h('p', { className: 'text-[11px] font-bold text-indigo-600 uppercase tracking-wider' }, 'SHAPE'),
                   h('p', { className: 'text-[11px] font-bold text-indigo-700' }, currentMol.shape)
@@ -19463,16 +4963,40 @@
               )(band)
             ),
             // Safety tabs
-            h('div', { className: 'flex gap-2 mb-3' },
+            h('div', {
+              role: 'tablist',
+              'aria-label': __alloT('stem.chembalance.safety_sections', 'Safety sections'),
+              className: 'flex flex-wrap gap-2 mb-3'
+            },
               [{ id: 'symbols', label: __alloT('stem.chembalance.ghs_symbols', '\u26A0\uFE0F GHS Symbols') }, { id: 'emergencies', label: __alloT('stem.chembalance.emergencies', '\uD83D\uDEA8 Emergencies') }, { id: 'rules', label: __alloT('stem.chembalance.lab_rules', '\uD83D\uDCCB Lab Rules') }].map(function(tab) {
-                return h('button', { key: tab.id, onClick: function() { upd('_safetyTab', tab.id); }, className: 'px-3 py-1.5 text-[11px] font-bold rounded-lg border ' + (safetyTab === tab.id ? 'bg-red-700 text-white border-red-500' : 'transition-colors bg-white text-slate-600 border-slate-200 hover:border-red-600') }, tab.label);
+                return h('button', {
+                  key: tab.id,
+                  type: 'button',
+                  role: 'tab',
+                  id: 'chem-safety-tab-' + tab.id,
+                  'aria-controls': 'chem-safety-panel-' + tab.id,
+                  'aria-selected': safetyTab === tab.id,
+                  tabIndex: safetyTab === tab.id ? 0 : -1,
+                  onClick: function() { upd('_safetyTab', tab.id); },
+                  onKeyDown: function(e) {
+                    var order = ['symbols', 'emergencies', 'rules'];
+                    var current = order.indexOf(tab.id);
+                    var next = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? (current + 1) % order.length : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? (current - 1 + order.length) % order.length : e.key === 'Home' ? 0 : e.key === 'End' ? order.length - 1 : -1;
+                    if (next < 0) return;
+                    e.preventDefault();
+                    upd('_safetyTab', order[next]);
+                    setTimeout(function() { var node = document.getElementById('chem-safety-tab-' + order[next]); if (node) node.focus(); }, 0);
+                  },
+                  className: 'min-h-[40px] px-3 py-2 text-xs font-bold rounded-lg border ' +
+                    (safetyTab === tab.id ? 'bg-red-700 text-white border-red-700' : 'transition-colors bg-white text-slate-600 border-slate-300 hover:border-red-600')
+                }, tab.label);
               })
             ),
             // GHS Symbols
-            safetyTab === 'symbols' && h('div', { className: 'grid grid-cols-3 gap-2' },
+            safetyTab === 'symbols' && h('div', { role: 'tabpanel', id: 'chem-safety-panel-symbols', 'aria-labelledby': 'chem-safety-tab-symbols', tabIndex: 0, className: 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2' },
               GHS_SYMBOLS.map(function(sym) {
                 var isOpen = d._ghsOpen === sym.id;
-                return h('button', { key: sym.id, type: 'button', onClick: function() { upd('_ghsOpen', isOpen ? null : sym.id); }, 'aria-expanded': isOpen, 'aria-label': sym.label + (isOpen ? ' (expanded)' : ' (collapsed)'), className: 'text-left cursor-pointer rounded-xl border p-2.5 transition-all w-full ' + (isOpen ? 'col-span-3 bg-red-50 border-red-600' : 'bg-white border-slate-200 hover:border-red-600') },
+                return h('button', { key: sym.id, type: 'button', onClick: function() { upd('_ghsOpen', isOpen ? null : sym.id); }, 'aria-expanded': isOpen, 'aria-label': sym.label + (isOpen ? ' (expanded)' : ' (collapsed)'), className: 'text-left cursor-pointer rounded-xl border p-2.5 transition-all w-full ' + (isOpen ? 'col-span-1 sm:col-span-2 md:col-span-3 bg-red-50 border-red-600' : 'bg-white border-slate-200 hover:border-red-600') },
                   h('div', { className: 'flex items-center gap-2' },
                     h('div', { className: 'w-10 h-10 flex items-center justify-center rounded-lg text-2xl', style: { background: sym.color + '15', border: '2px solid ' + sym.color } }, sym.icon),
                     h('div', null,
@@ -19488,10 +5012,10 @@
               })
             ),
             // Emergencies
-            safetyTab === 'emergencies' && h('div', null,
-              h('div', { className: 'flex gap-1.5 mb-3' },
+            safetyTab === 'emergencies' && h('div', { role: 'tabpanel', id: 'chem-safety-panel-emergencies', 'aria-labelledby': 'chem-safety-tab-emergencies', tabIndex: 0 },
+              h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
                 EMERGENCIES.map(function(em, idx) {
-                  return h('button', { key: idx, onClick: function() { updMulti({ _emergIdx: idx, _emergAnswer: null, _emergFeedback: null }); }, className: 'px-2 py-1 text-[11px] font-bold rounded-lg border ' + (emergIdx === idx ? 'bg-red-700 text-white border-red-500' : 'bg-white text-slate-600 border-slate-200') }, (idx + 1) + '. ' + em.title);
+                  return h('button', { key: idx, type: 'button', 'aria-pressed': emergIdx === idx, onClick: function() { updMulti({ _emergIdx: idx, _emergAnswer: null, _emergFeedback: null }); }, className: 'min-h-[40px] px-3 py-2 text-xs font-bold rounded-lg border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2 ' + (emergIdx === idx ? 'bg-red-700 text-white border-red-700' : 'bg-white text-slate-700 border-slate-400') }, (idx + 1) + '. ' + em.title);
                 })
               ),
               (function() {
@@ -19502,7 +5026,7 @@
                     h('p', { className: 'text-sm font-bold text-slate-700' }, em.title)
                   ),
                   h('p', { className: 'text-xs text-slate-600 mb-3' }, em.q),
-                  h('div', { className: 'grid grid-cols-2 gap-2' },
+                  h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
                     em.opts.map(function(opt, oi) {
                       var isChosen = emergAnswer === oi;
                       var showResult = emergFeedback !== null;
@@ -19512,10 +5036,9 @@
                         if (opt.correct) {
                           chemSound('correct');
                           upd('_emergFeedback', '\u2705 Correct! ' + em.explain);
-                          var newSafe = (ext.safetyScore || 0) + 1;
-                          updExt({ safetyScore: newSafe });
-                          checkBadges();
-                          awardXP('safety_' + emergIdx, 10, 'Safety Scenario');
+                          var recordedSafety = recordSafetyScenario(ext, emergIdx);
+                          updExt(recordedSafety.progress);
+                          if (recordedSafety.isNew) awardXP('safety_' + emergIdx, 10, 'Safety Scenario');
                         } else {
                           chemSound('wrong');
                           upd('_emergFeedback', '\u274C ' + em.explain);
@@ -19523,16 +5046,16 @@
                       }, className: 'px-3 py-2 text-xs font-bold rounded-lg border transition-all ' + (showResult ? (opt.correct ? 'bg-emerald-100 text-emerald-700 border-emerald-600' : isChosen ? 'bg-red-100 text-red-700 border-red-600' : 'bg-slate-50 text-slate-600 border-slate-200') : 'bg-white text-slate-700 border-slate-200 hover:border-red-600') }, opt.text);
                     })
                   ),
-                  emergFeedback && h('p', { className: 'mt-2 text-xs font-bold ' + (emergFeedback.indexOf('\u2705') !== -1 ? 'text-emerald-600' : 'text-red-500') }, emergFeedback)
+                  emergFeedback && h('p', { role: 'status', 'aria-live': 'polite', className: 'mt-2 text-sm font-bold ' + (emergFeedback.indexOf('\u2705') !== -1 ? 'text-emerald-800' : 'text-red-700') }, emergFeedback)
                 );
               })()
             ),
             // Lab Rules
-            safetyTab === 'rules' && h('div', { className: 'space-y-2' },
+            safetyTab === 'rules' && h('div', { role: 'tabpanel', id: 'chem-safety-panel-rules', 'aria-labelledby': 'chem-safety-tab-rules', tabIndex: 0, className: 'space-y-2' },
               [
                 { icon: '\uD83E\uDDEA', rule: 'Always wear safety goggles', desc: __alloT('stem.chembalance.protect_your_eyes_from_splashes_fumes_', 'Protect your eyes from splashes, fumes, and debris. Put goggles on before starting and keep them on until cleanup is complete.') },
-                { icon: '\uD83E\uDDE4', rule: 'Wear gloves when handling chemicals', desc: __alloT('stem.chembalance.nitrile_gloves_protect_against_most_la', 'Nitrile gloves protect against most lab chemicals. Replace immediately if torn or contaminated.') },
-                { icon: '\uD83D\uDC43', rule: 'Never smell chemicals directly', desc: __alloT('stem.chembalance.use_the_wafting_technique_hold_the_con', 'Use the wafting technique: hold the container away and gently wave the air toward your nose with your hand.') },
+                { icon: '\uD83E\uDDE4', rule: 'Use the glove specified for the chemical', desc: __alloT('stem.chembalance.nitrile_gloves_protect_against_most_la', 'No glove protects against every chemical. Select glove material using the SDS or a compatibility chart, and replace gloves immediately if torn or contaminated.') },
+                { icon: '\uD83D\uDC43', rule: 'Smell only when the reviewed procedure directs it', desc: __alloT('stem.chembalance.use_the_wafting_technique_hold_the_con', 'Waft only a known low-hazard sample when a reviewed procedure and the teacher explicitly require it. Never waft an unknown, irritating, corrosive, or toxic vapor.') },
                 { icon: '\uD83D\uDEAB', rule: 'No food or drink in the lab', desc: __alloT('stem.chembalance.chemical_contamination_is_invisible_ev', 'Chemical contamination is invisible. Even trace amounts on hands or surfaces can be ingested.') },
                 { icon: '\uD83E\uDDFC', rule: 'Wash hands after every lab', desc: __alloT('stem.chembalance.wash_thoroughly_with_soap_and_water_fo', 'Wash thoroughly with soap and water for at least 20 seconds, even if you wore gloves.') },
                 { icon: '\uD83D\uDD25', rule: 'Know fire extinguisher & eyewash locations', desc: __alloT('stem.chembalance.before_starting_any_lab_locate_the_nea', 'Before starting any lab, locate the nearest fire extinguisher, eyewash station, safety shower, and exits.') },
@@ -19553,36 +5076,55 @@
           // CHALLENGE SUB-TOOL
           // ════════════════════════════════════════
           subtool === 'challenge' && h('div', null,
-            h('p', { className: 'text-xs text-slate-600 italic mb-3' }, __alloT('stem.chembalance.test_your_chemistry_knowledge_across_3', 'Test your chemistry knowledge across 3 difficulty levels!')),
-            h('div', { className: 'flex gap-2 mb-3' },
+            h('p', { className: 'text-sm text-slate-600 mb-3' }, __alloT('stem.chembalance.test_your_chemistry_knowledge_across_3', 'Test your chemistry knowledge across 3 difficulty levels!')),
+            h('div', {
+              role: 'group',
+              'aria-label': __alloT('stem.chembalance.challenge_difficulty', 'Challenge difficulty'),
+              className: 'flex flex-wrap gap-2 mb-3'
+            },
               ['easy', 'medium', 'hard'].map(function(diff) {
                 var labels = { easy: '\uD83C\uDF31 Beginner', medium: '\u26A1 Intermediate', hard: '\uD83D\uDE80 Advanced' };
                 var colors = { easy: 'emerald', medium: 'amber', hard: 'red' };
-                return h('button', { 'aria-label': 'BONUS!', key: diff, onClick: function() { updMulti({ _chalDiff: diff, _chalIdx: 0, _chalScore: 0, _chalStreak: 0, _chalFeedback: null }); }, className: 'px-3 py-1.5 text-[11px] font-bold rounded-lg border-2 transition-all ' + (chalDiff === diff ? 'bg-' + colors[diff] + '-500 text-white border-' + colors[diff] + '-500 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-' + colors[diff] + '-300') }, labels[diff]);
+                return h('button', {
+                  key: diff,
+                  type: 'button',
+                  'aria-pressed': chalDiff === diff,
+                  'aria-label': labels[diff],
+                  onClick: function() { updMulti({ _chalDiff: diff, _chalIdx: 0, _chalScore: 0, _chalStreak: 0, _chalFeedback: null }); },
+                  className: 'min-h-[40px] px-3 py-2 text-xs font-bold rounded-lg border-2 transition-all ' +
+                    (chalDiff === diff ? 'bg-' + colors[diff] + '-500 text-white border-' + colors[diff] + '-500 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-' + colors[diff] + '-300')
+                }, labels[diff]);
               })
             ),
             h('div', { className: 'flex items-center gap-3 mb-3 bg-slate-50 rounded-lg p-2' },
               h('span', { className: 'text-xs font-bold text-slate-600' }, 'Q ' + (chalIdx + 1) + '/' + chalQuestions.length),
-              h('span', { className: 'text-xs font-bold text-emerald-600' }, '\u2705 ' + chalScore),
-              h('span', { className: 'text-xs font-bold text-amber-600' }, '\uD83D\uDD25 ' + chalStreak),
+              h('span', { className: 'text-xs font-bold text-emerald-800' }, '\u2705 ' + chalScore),
+              h('span', { className: 'text-xs font-bold text-amber-800' }, '\uD83D\uDD25 ' + chalStreak),
               chalStreak >= 3 && h('span', { className: 'text-[11px] font-bold text-fuchsia-600 animate-pulse motion-reduce:animate-none' }, __alloT('stem.chembalance.bonus', '\u2B50 BONUS!'))
             ),
             chalIdx < chalQuestions.length ? h('div', { className: 'bg-white rounded-xl border p-4' },
               h('p', { className: 'text-sm font-bold text-slate-700 mb-3' }, chalQuestions[chalIdx].q),
-              h('div', { className: 'grid grid-cols-2 gap-2' },
+              h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
                 chalQuestions[chalIdx].a.map(function(opt, i) {
-                  return h('button', { key: i, onClick: function() {
+                  return h('button', { key: i, type: 'button', 'aria-pressed': !!chalFeedback && i === chalQuestions[chalIdx].correct, 'aria-disabled': !!chalFeedback, disabled: !!chalFeedback, onClick: function() {
                     if (chalFeedback) return;
                     var isCorrect = i === chalQuestions[chalIdx].correct;
                     var ns = chalScore + (isCorrect ? 1 : 0);
                     var nk = isCorrect ? chalStreak + 1 : 0;
-                    if (isCorrect) { chemSound('correct'); if (nk >= 3) chemSound('streak'); awardXP('chalQ_' + chalDiff + '_' + chalIdx, nk >= 3 ? 15 : 10, 'Chem Challenge'); updExt({ quizCorrect: ext.quizCorrect + 1 }); checkBadges(); } else { chemSound('wrong'); }
+                    if (isCorrect) {
+                      chemSound('correct');
+                      if (nk >= 3) chemSound('streak');
+                      var challengeId = chalDiff + ':' + chalIdx;
+                      var recordedChallenge = recordCorrectChallenge(ext, challengeId);
+                      updExt(recordedChallenge.progress, nk);
+                      if (recordedChallenge.isNew) awardXP('chalQ_' + chalDiff + '_' + chalIdx, nk >= 3 ? 15 : 10, 'Chem Challenge');
+                    } else { chemSound('wrong'); }
                     updMulti({ _chalScore: ns, _chalStreak: nk, _chalFeedback: isCorrect ? '\u2705 ' + chalQuestions[chalIdx].explain : '\u274C ' + chalQuestions[chalIdx].explain });
-                  }, className: 'px-3 py-2 text-xs font-bold rounded-lg border transition-all ' + (chalFeedback ? (i === chalQuestions[chalIdx].correct ? 'bg-emerald-100 text-emerald-700 border-emerald-600' : 'bg-slate-50 text-slate-600 border-slate-200') : 'bg-white text-slate-700 border-slate-200 hover:border-lime-600 hover:bg-lime-50') }, opt);
+                  }, className: 'min-h-[40px] px-3 py-2 text-xs font-bold rounded-lg border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-700 focus-visible:ring-offset-1 ' + (chalFeedback ? (i === chalQuestions[chalIdx].correct ? 'bg-emerald-100 text-emerald-700 border-emerald-600' : 'bg-slate-50 text-slate-600 border-slate-200') : 'bg-white text-slate-700 border-slate-200 hover:border-lime-600 hover:bg-lime-50') }, opt);
                 })
               ),
               chalFeedback && h('div', { className: 'mt-3' },
-                h('p', { role: 'status', className: 'text-[11px] font-bold ' + (chalFeedback.indexOf('\u2705') !== -1 ? 'text-emerald-600' : 'text-red-500') }, chalFeedback),
+                h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'text-[11px] font-bold ' + (chalFeedback.indexOf('\u2705') !== -1 ? 'text-emerald-800' : 'text-red-700') }, chalFeedback),
                 h('button', {
                   type: 'button',
                   onClick: function() {
@@ -19600,7 +5142,7 @@
             ) : h('div', { className: 'text-center bg-lime-50 rounded-xl border border-lime-200 p-4' },
               h('p', { className: 'text-2xl mb-1' }, '\uD83C\uDFC6'),
               h('p', { className: 'text-sm font-bold text-lime-700' }, 'Challenge Complete! ' + chalScore + '/' + chalQuestions.length),
-              h('button', { 'aria-label': __alloT('stem.chembalance.retry', 'Retry'), onClick: function() { updMulti({ _chalIdx: 0, _chalScore: 0, _chalStreak: 0, _chalFeedback: null }); }, className: 'transition-colors mt-2 px-4 py-1.5 text-xs font-bold text-white bg-lime-700 rounded-lg hover:bg-lime-800' }, __alloT('stem.chembalance.retry_2', '\u21BA Retry'))
+              h('button', { type: 'button', 'aria-label': __alloT('stem.chembalance.retry', 'Retry'), onClick: function() { updMulti({ _chalIdx: 0, _chalScore: 0, _chalStreak: 0, _chalFeedback: null }); }, className: 'transition-colors mt-2 px-4 py-1.5 text-xs font-bold text-white bg-lime-700 rounded-lg hover:bg-lime-800' }, __alloT('stem.chembalance.retry_2', '\u21BA Retry'))
             )
           ),
 
@@ -19616,7 +5158,7 @@
               h('button', { 'aria-label': __alloT('stem.chembalance.start_battle', 'Start Battle'), onClick: function() { chemSound('click'); updMulti({ _battleActive: true, _battleRound: 0, _battleHP: 100, _battleEnemyHP: 100, _battleFeedback: null, _battleScore: 0, _battleResult: null }); }, className: 'px-6 py-2 text-sm font-bold text-white bg-gradient-to-r from-red-600 to-orange-700 rounded-lg hover:from-red-600 hover:to-orange-700 shadow-lg' }, __alloT('stem.chembalance.start_battle_2', '\u2694\uFE0F Start Battle'))
             ),
             battleActive && battleRound < BATTLE_QS.length && h('div', null,
-              h('div', { className: 'grid grid-cols-2 gap-3 mb-3' },
+              h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3' },
                 h('div', { className: 'bg-emerald-50 rounded-xl p-2 border border-emerald-200' },
                   h('p', { className: 'text-[11px] font-bold text-emerald-600 mb-1' }, __alloT('stem.chembalance.your_compound', '\u2697\uFE0F Your Compound')),
                   h('div', { className: 'w-full bg-slate-200 rounded-full h-3 overflow-hidden' },
@@ -19635,9 +5177,9 @@
               h('p', { className: 'text-[11px] font-bold text-slate-600 text-center mb-2' }, 'Round ' + (battleRound + 1) + '/' + BATTLE_QS.length),
               h('div', { className: 'bg-white rounded-xl border p-4' },
                 h('p', { className: 'text-sm font-bold text-slate-700 mb-3' }, BATTLE_QS[battleRound].q),
-                h('div', { className: 'grid grid-cols-2 gap-2' },
+                h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
                   BATTLE_QS[battleRound].a.map(function(opt, i) {
-                    return h('button', { key: i, onClick: function() {
+                    return h('button', { key: i, type: 'button', 'aria-pressed': !!battleFeedback && i === BATTLE_QS[battleRound].correct, 'aria-disabled': !!battleFeedback, disabled: !!battleFeedback, onClick: function() {
                       if (battleFeedback) return;
                       var bq = BATTLE_QS[battleRound];
                       var ok = i === bq.correct;
@@ -19645,11 +5187,11 @@
                       if (ok) { chemSound('correct'); nEHP = Math.max(0, battleEnemyHP - bq.dmg); nScore++; } else { chemSound('damage'); nHP = Math.max(0, battleHP - 15); }
                       var fb = ok ? '\u2705 Hit! -' + bq.dmg + ' HP!' : '\u274C -15 HP! Answer: ' + bq.a[bq.correct];
                       updMulti({ _battleEnemyHP: nEHP, _battleHP: nHP, _battleScore: nScore, _battleFeedback: fb });
-                    }, className: 'px-3 py-2 text-xs font-bold rounded-lg border transition-all ' + (battleFeedback ? (i === BATTLE_QS[battleRound].correct ? 'bg-emerald-100 text-emerald-700 border-emerald-600' : 'bg-slate-50 text-slate-600 border-slate-200') : 'bg-white text-slate-700 border-slate-200 hover:border-red-600 hover:bg-red-50') }, opt);
+                    }, className: 'min-h-[40px] px-3 py-2 text-xs font-bold rounded-lg border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-1 ' + (battleFeedback ? (i === BATTLE_QS[battleRound].correct ? 'bg-emerald-100 text-emerald-700 border-emerald-600' : 'bg-slate-50 text-slate-600 border-slate-200') : 'bg-white text-slate-700 border-slate-200 hover:border-red-600 hover:bg-red-50') }, opt);
                   })
                 ),
                 battleFeedback && h('div', { className: 'mt-3 text-center' },
-                  h('p', { role: 'status', className: 'text-xs font-bold ' + (battleFeedback.indexOf('\u2705') !== -1 ? 'text-emerald-600' : 'text-red-500') }, battleFeedback),
+                  h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'text-xs font-bold ' + (battleFeedback.indexOf('\u2705') !== -1 ? 'text-emerald-800' : 'text-red-700') }, battleFeedback),
                   h('button', {
                     type: 'button',
                     onClick: function() {
@@ -19678,7 +5220,7 @@
               h('p', { className: 'text-4xl mb-2' }, battleResult === 'won' ? '\uD83C\uDFC6' : '\uD83D\uDCA5'),
               h('p', { className: 'text-lg font-bold ' + (battleResult === 'won' ? 'text-emerald-700' : 'text-red-700') }, battleResult === 'won' ? 'Victory! Compound Stabilized!' : 'Defeated! The element escaped...'),
               h('p', { className: 'text-xs text-slate-600 mt-1 mb-3' }, 'Score: ' + battleScore + '/' + BATTLE_QS.length),
-              h('button', { 'aria-label': __alloT('stem.chembalance.battle_again', 'Battle Again'), onClick: function() { chemSound('click'); updMulti({ _battleActive: true, _battleRound: 0, _battleHP: 100, _battleEnemyHP: 100, _battleFeedback: null, _battleScore: 0, _battleResult: null }); }, className: 'px-6 py-2 text-sm font-bold text-white bg-gradient-to-r from-red-600 to-orange-700 rounded-lg' }, __alloT('stem.chembalance.battle_again_2', '\u2694\uFE0F Battle Again'))
+              h('button', { type: 'button', 'aria-label': __alloT('stem.chembalance.battle_again', 'Battle Again'), onClick: function() { chemSound('click'); updMulti({ _battleActive: true, _battleRound: 0, _battleHP: 100, _battleEnemyHP: 100, _battleFeedback: null, _battleScore: 0, _battleResult: null }); }, className: 'px-6 py-2 text-sm font-bold text-white bg-gradient-to-r from-red-600 to-orange-700 rounded-lg' }, __alloT('stem.chembalance.battle_again_2', '\u2694\uFE0F Battle Again'))
             ),
             battleActive && battleRound >= BATTLE_QS.length && !battleResult && h('div', { className: 'text-center bg-amber-50 rounded-xl border border-amber-200 p-6' },
               h('p', { className: 'text-lg font-bold text-amber-700' }, 'Battle Over! Score: ' + battleScore + '/' + BATTLE_QS.length),
@@ -19703,7 +5245,7 @@
                   ),
                   isOpen && h('div', { className: 'px-3 pb-3' },
                     h('div', { className: 'bg-lime-50 rounded-lg p-3 border border-lime-100' },
-                      h('p', { className: 'text-[11px] font-bold text-lime-600 uppercase tracking-wider mb-1' }, band.toUpperCase() + ' Level'),
+                      h('p', { className: 'text-xs font-bold text-lime-900 uppercase tracking-wider mb-1' }, band.toUpperCase() + ' Level'),
                       h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, content)
                     ),
                     idx === 0 && h('button', { onClick: function() { upd('subtool', 'reactions'); }, className: 'transition-colors mt-2 px-3 py-1 text-[11px] font-bold text-lime-800 bg-lime-50 border border-lime-800 rounded-lg hover:bg-lime-100' }, __alloT('stem.chembalance.explore_reaction_types', '\u2192 Explore Reaction Types')),
@@ -19721,22 +5263,87 @@
           // ════════════════════════════════════════
           subtool === 'elementdb' && (function() {
             var allElements = ELEMENT_DB.concat(ELEMENT_DB_2).concat(ELEMENT_DB_3).concat(ELEMENT_DB_4);
-            var elIdx = (d._elementIdx != null) ? d._elementIdx : 0;
+            var elIdx = d._elementIdx != null ? d._elementIdx : 0;
             var elem = allElements[elIdx] || allElements[0];
+            var elementSearch = (d._elementSearch || '').trim().toLowerCase();
+            var elementMatches = allElements.map(function(e, i) {
+              return { element: e, index: i };
+            }).filter(function(item) {
+              if (!elementSearch) return true;
+              var e = item.element;
+              return [String(e.z), e.sym || '', e.name || ''].join(' ').toLowerCase().indexOf(elementSearch) !== -1;
+            });
+            var pageSize = 24;
+            var requestedPage = d._elementPage != null ? Number(d._elementPage) || 0 : Math.floor(elIdx / pageSize);
+            var pageCount = Math.max(1, Math.ceil(elementMatches.length / pageSize));
+            var elementPage = Math.min(Math.max(0, requestedPage), pageCount - 1);
+            var pageMatches = elementMatches.slice(elementPage * pageSize, elementPage * pageSize + pageSize);
+
             return h('div', null,
-              h('p', { className: 'text-xs text-slate-600 italic mb-3' }, __alloT('stem.chembalance.118_elements_deep_profiles', '118 elements deep profiles.')),
-              h('div', { className: 'flex flex-wrap gap-1 mb-3 max-h-48 overflow-y-auto p-2 bg-slate-50 rounded-lg border' },
-                allElements.slice(0, 60).map(function(e, i) {
-                  var sel = elIdx === i;
-                  return h('button', { key: e.z, onClick: function() { upd('_elementIdx', i); }, className: 'px-2 py-1 text-[10px] rounded font-bold ' + (sel ? 'bg-emerald-700 text-white' : 'bg-white text-slate-700 border border-slate-300'), title: e.name }, e.z + '. ' + e.sym);
-                })
+              h('p', { className: 'text-sm text-slate-600 mb-3' },
+                __alloT('stem.chembalance.118_elements_deep_profiles', 'Browse all 118 elements with detailed profiles.')),
+              h('div', { className: 'flex flex-col gap-2 mb-3 sm:flex-row sm:items-center' },
+                h('input', {
+                  type: 'search',
+                  value: d._elementSearch || '',
+                  onChange: function(e) { updMulti({ _elementSearch: e.target.value, _elementPage: 0 }); },
+                  placeholder: __alloT('stem.chembalance.search_elements', 'Search by name, symbol, or atomic number...'),
+                  'aria-label': __alloT('stem.chembalance.search_elements_label', 'Search elements by name, symbol, or atomic number'),
+                  className: 'min-h-[44px] min-w-0 flex-1 rounded-lg border-2 border-emerald-300 px-3 py-2 text-sm'
+                }),
+                h('span', { role: 'status', 'aria-live': 'polite', className: 'text-xs font-bold text-slate-600' },
+                  elementMatches.length + ' / ' + allElements.length)
               ),
-              elem && h('div', { className: 'bg-emerald-50 border-2 border-emerald-300 rounded-xl p-4' },
-                h('div', { className: 'text-2xl font-bold text-emerald-700' }, elem.sym + ' — ' + elem.name),
-                h('div', { className: 'text-xs text-slate-600 font-mono mb-2' }, 'Z = ' + elem.z + ' · Mass: ' + elem.mass),
-                elem.useCase && h('div', { className: 'text-xs text-slate-800 mb-1' }, 'Uses: ' + elem.useCase),
-                elem.funFact && h('div', { className: 'text-xs italic text-purple-800 mb-1' }, elem.funFact),
-                elem.danger && h('div', { className: 'text-xs text-red-700' }, 'Hazard: ' + elem.danger)
+              elementMatches.length === 0
+                ? h('p', { role: 'status', className: 'mb-3 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600' },
+                    __alloT('stem.chembalance.no_elements_found', 'No elements match that search.'))
+                : h('div', {
+                    role: 'group',
+                    'aria-label': __alloT('stem.chembalance.element_choices', 'Element choices'),
+                    className: 'grid grid-cols-3 gap-2 mb-3 sm:grid-cols-4 md:grid-cols-6'
+                  },
+                    pageMatches.map(function(item) {
+                      var e = item.element;
+                      var selected = elIdx === item.index;
+                      return h('button', {
+                        key: e.z,
+                        type: 'button',
+                        onClick: function() { upd('_elementIdx', item.index); },
+                        'aria-pressed': selected,
+                        title: e.name,
+                        className: 'min-h-[44px] rounded-lg border px-2 py-1.5 text-left transition-colors ' +
+                          (selected ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-slate-300 bg-white text-slate-700 hover:border-emerald-500')
+                      },
+                        h('span', { className: 'block text-xs font-black font-mono' }, e.z + ' \u00B7 ' + e.sym),
+                        h('span', { className: 'block truncate text-[11px]' }, e.name)
+                      );
+                    })
+                  ),
+              elementMatches.length > pageSize && h('div', {
+                className: 'mb-3 flex items-center justify-between gap-2',
+                role: 'group',
+                'aria-label': __alloT('stem.chembalance.element_pages', 'Element pages')
+              },
+                h('button', {
+                  type: 'button',
+                  disabled: elementPage === 0,
+                  onClick: function() { upd('_elementPage', elementPage - 1); },
+                  className: 'min-h-[40px] rounded-lg border px-3 py-2 text-xs font-bold disabled:cursor-not-allowed disabled:opacity-40'
+                }, __alloT('stem.chembalance.previous', '\u2190 Previous')),
+                h('span', { className: 'text-xs font-bold text-slate-600' }, 'Page ' + (elementPage + 1) + ' / ' + pageCount),
+                h('button', {
+                  type: 'button',
+                  disabled: elementPage >= pageCount - 1,
+                  onClick: function() { upd('_elementPage', elementPage + 1); },
+                  className: 'min-h-[40px] rounded-lg border px-3 py-2 text-xs font-bold disabled:cursor-not-allowed disabled:opacity-40'
+                }, __alloT('stem.chembalance.next', 'Next \u2192'))
+              ),
+              elementMatches.length > 0 && elem && h('div', { className: 'bg-emerald-50 border-2 border-emerald-300 rounded-xl p-4' },
+                h('div', { className: 'text-2xl font-bold text-emerald-700' }, elem.sym + ' \u2014 ' + elem.name),
+                h('div', { className: 'text-sm text-slate-600 font-mono mb-2' }, 'Z = ' + elem.z + ' \u00B7 Mass: ' + elem.mass),
+                elem.useCase && h('div', { className: 'text-sm text-slate-800 mb-1' }, 'Uses: ' + elem.useCase),
+                elem.funFact && h('div', { className: 'text-sm italic text-purple-800 mb-1' }, elem.funFact),
+                elem.danger && h('div', { className: 'text-sm text-red-700' }, 'Hazard: ' + elem.danger)
               )
             );
           })(),
@@ -19745,7 +5352,9 @@
           // PERIODIC TABLE SUB-TOOL
           // ════════════════════════════════════════
           subtool === 'periodic' && h('div', null,
-            h('p', { className: 'text-xs text-slate-600 italic mb-3' }, PERIODIC_INFO.intro),
+            renderPeriodicBlockGuide(),
+            renderPeriodicAtlas(),
+            h('p', { className: 'text-sm text-slate-600 mb-3' }, PERIODIC_INFO.intro),
             h('div', { className: 'mb-4' },
               h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, __alloT('stem.chembalance.groups', '🔢 Groups')),
               h('div', { className: 'space-y-2' },
@@ -19787,13 +5396,13 @@
               h('div', { className: 'flex flex-wrap gap-1 mb-3 max-h-32 overflow-y-auto p-2 bg-slate-50 rounded' },
                 FAMOUS_REACTIONS.map(function(rx, i) {
                   var sel = rxnIdx === i;
-                  return h('button', { key: i, onClick: function() { upd('_rxnIdx', i); }, className: 'px-2 py-1 text-[10px] rounded font-bold ' + (sel ? 'bg-red-600 text-white' : 'transition-colors bg-white text-slate-700 border border-slate-300 hover:bg-red-50') }, '#' + (i + 1));
+                  return h('button', { key: i, type: 'button', 'aria-pressed': !!sel, onClick: function() { upd('_rxnIdx', i); }, className: 'min-h-[40px] px-3 py-2 text-xs rounded font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-1 ' + (sel ? 'bg-red-600 text-white' : 'transition-colors bg-white text-slate-700 border border-slate-300 hover:bg-red-50') }, '#' + (i + 1));
                 })
               ),
               h('div', { className: 'bg-red-50 border-2 border-red-300 rounded-xl p-4 space-y-2' },
                 h('div', { className: 'text-lg font-bold text-red-700' }, '🔥 ' + r.name),
                 h('div', { className: 'bg-white border border-red-200 rounded p-3 font-mono text-sm text-slate-900' }, r.equation),
-                h('div', { className: 'grid grid-cols-2 gap-2 text-xs' },
+                h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs' },
                   h('div', { className: 'bg-amber-50 border border-amber-200 rounded p-2' },
                     h('div', { className: 'font-bold text-amber-700' }, 'ΔH'),
                     h('div', { className: 'text-amber-900' }, r.delta)
@@ -19822,7 +5431,7 @@
               h('div', { className: 'flex flex-wrap gap-1 mb-3' },
                 INDUSTRIAL_CHEM.processes.map(function(pr, i) {
                   var sel = iIdx === i;
-                  return h('button', { key: i, onClick: function() { upd('_industrialIdx', i); }, className: 'px-2 py-1 text-[10px] rounded font-bold ' + (sel ? 'bg-orange-700 text-white' : 'transition-colors bg-white text-slate-700 border border-slate-300 hover:bg-orange-50') }, pr.name.split(' ')[0]);
+                  return h('button', { key: i, type: 'button', 'aria-pressed': !!sel, onClick: function() { upd('_industrialIdx', i); }, className: 'min-h-[40px] px-3 py-2 text-xs rounded font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-800 focus-visible:ring-offset-1 ' + (sel ? 'bg-orange-700 text-white' : 'transition-colors bg-white text-slate-700 border border-slate-300 hover:bg-orange-50') }, pr.name.split(' ')[0]);
                 })
               ),
               h('div', { className: 'bg-orange-50 border-2 border-orange-300 rounded-xl p-4 space-y-2' },
@@ -19852,7 +5461,7 @@
               h('div', { className: 'flex flex-wrap gap-1 mb-3' },
                 AP_CHEMISTRY.units.map(function(un, i) {
                   var sel = uIdx === i;
-                  return h('button', { key: i, onClick: function() { upd('_apUnit', i); }, className: 'px-2 py-1 text-[10px] rounded font-bold ' + (sel ? 'bg-indigo-600 text-white' : 'transition-colors bg-white text-slate-700 border border-slate-300 hover:bg-indigo-50') }, 'Unit ' + un.unit);
+                  return h('button', { key: i, type: 'button', 'aria-pressed': !!sel, onClick: function() { upd('_apUnit', i); }, className: 'min-h-[40px] px-3 py-2 text-xs rounded font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-1 ' + (sel ? 'bg-indigo-600 text-white' : 'transition-colors bg-white text-slate-700 border border-slate-300 hover:bg-indigo-50') }, 'Unit ' + un.unit);
                 })
               ),
               h('div', { className: 'bg-indigo-50 border-2 border-indigo-300 rounded-xl p-4 space-y-2' },
@@ -19891,7 +5500,7 @@
               h('div', { className: 'flex flex-wrap gap-1 mb-3 max-h-32 overflow-y-auto p-2 bg-slate-50 rounded' },
                 LAB_TECHNIQUES.techniques.map(function(tc, i) {
                   var sel = tIdx === i;
-                  return h('button', { key: i, onClick: function() { upd('_techIdx', i); }, className: 'px-2 py-1 text-[10px] rounded font-bold ' + (sel ? 'bg-blue-600 text-white' : 'transition-colors bg-white text-slate-700 border border-slate-300 hover:bg-blue-50') }, tc.name);
+                  return h('button', { key: i, type: 'button', 'aria-pressed': !!sel, onClick: function() { upd('_techIdx', i); }, className: 'min-h-[40px] px-3 py-2 text-xs rounded font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-1 ' + (sel ? 'bg-blue-600 text-white' : 'transition-colors bg-white text-slate-700 border border-slate-300 hover:bg-blue-50') }, tc.name);
                 })
               ),
               h('div', { className: 'bg-blue-50 border-2 border-blue-300 rounded-xl p-4 space-y-2' },
@@ -19925,7 +5534,7 @@
               h('div', { className: 'flex flex-wrap gap-1 mb-3 max-h-32 overflow-y-auto p-2 bg-slate-50 rounded' },
                 FAMOUS_CHEMISTS.map(function(cm, i) {
                   var sel = cIdx === i;
-                  return h('button', { key: i, onClick: function() { upd('_chemistIdx', i); }, className: 'px-2 py-1 text-[10px] rounded font-bold ' + (sel ? 'bg-purple-600 text-white' : 'transition-colors bg-white text-slate-700 border border-slate-300 hover:bg-purple-50') }, cm.name.split(' ').pop());
+                  return h('button', { key: i, type: 'button', 'aria-pressed': !!sel, onClick: function() { upd('_chemistIdx', i); }, className: 'min-h-[40px] px-3 py-2 text-xs rounded font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700 focus-visible:ring-offset-1 ' + (sel ? 'bg-purple-600 text-white' : 'transition-colors bg-white text-slate-700 border border-slate-300 hover:bg-purple-50') }, cm.name.split(' ').pop());
                 })
               ),
               h('div', { className: 'bg-purple-50 border-2 border-purple-300 rounded-xl p-4 space-y-2' },
@@ -19998,7 +5607,7 @@
                 h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, __alloT('stem.chembalance.weak_acids', 'Weak Acids')),
                 h('div', { className: 'grid grid-cols-2 gap-1' },
                   ACIDS_BASES.weakAcids.map(function(a, i) {
-                    return h('div', { key: i, className: 'flex justify-between bg-white border border-amber-200 rounded p-1 text-[10px]' },
+                    return h('div', { key: i, className: 'flex justify-between bg-white border border-amber-200 rounded p-1 text-xs' },
                       h('span', { className: 'font-bold text-amber-800' }, a.name),
                       h('span', { className: 'font-mono text-slate-600' }, 'pKa ' + a.pKa)
                     );
@@ -20008,9 +5617,9 @@
               h('div', { className: 'bg-cyan-50 border border-cyan-200 rounded-xl p-3' },
                 h('div', { className: 'text-sm font-bold text-cyan-700 mb-2' }, __alloT('stem.chembalance.key_equations', 'Key Equations')),
                 h('div', { className: 'space-y-1 text-xs' },
-                  h('div', { className: 'bg-white border border-cyan-200 rounded p-2 font-mono' }, __alloT('stem.chembalance.ph_log_h', 'pH = -log[H+]')),
-                  h('div', { className: 'bg-white border border-cyan-200 rounded p-2 font-mono' }, __alloT('stem.chembalance.ph_poh_14', 'pH + pOH = 14')),
-                  h('div', { className: 'bg-white border border-cyan-200 rounded p-2 font-mono' }, __alloT('stem.chembalance.kw_h_oh_1e_14', 'Kw = [H+][OH-] = 1e-14')),
+                  h('div', { className: 'bg-white border border-cyan-200 rounded p-2 font-mono' }, __alloT('stem.chembalance.ph_log_h', 'pH = -log10 a(H3O+)')),
+                  h('div', { className: 'bg-white border border-cyan-200 rounded p-2 font-mono' }, __alloT('stem.chembalance.ph_poh_14', 'pH + pOH = pKw; at 25 °C, pKw ≈ 14.00')),
+                  h('div', { className: 'bg-white border border-cyan-200 rounded p-2 font-mono' }, __alloT('stem.chembalance.kw_h_oh_1e_14', 'Kw = a(H3O+)a(OH-); approximately 1.0e-14 at 25 °C')),
                   h('div', { className: 'bg-white border border-cyan-200 rounded p-2 font-mono' }, __alloT('stem.chembalance.ph_pka_log_a_ha', 'pH = pKa + log([A-]/[HA])'))
                 )
               ),
@@ -20132,7 +5741,7 @@
               h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, __alloT('stem.chembalance.20_standard_amino_acids', '20 Standard Amino Acids')),
               h('div', { className: 'grid grid-cols-2 gap-1' },
                 BIOCHEM.aminoAcids.map(function(aa, i) {
-                  return h('div', { key: i, className: 'bg-white border border-amber-200 rounded p-1 text-[10px]' },
+                  return h('div', { key: i, className: 'bg-white border border-amber-200 rounded p-1 text-xs' },
                     h('div', { className: 'flex justify-between' },
                       h('span', { className: 'font-bold text-amber-700' }, aa.code),
                       h('span', { className: 'text-slate-500' }, aa.charged)
@@ -20191,7 +5800,7 @@
               THERMO.examples.map(function(e, i) {
                 return h('div', { key: i, className: 'bg-white border border-emerald-200 rounded p-2 mb-1 text-xs' },
                   h('div', { className: 'font-mono font-bold text-slate-800' }, e.reaction),
-                  h('div', { className: 'flex gap-3 text-[10px]' },
+                  h('div', { className: 'flex gap-3 text-xs' },
                     h('span', { className: 'text-rose-700' }, 'ΔH = ' + e.H),
                     h('span', { className: 'text-purple-700' }, 'ΔG = ' + e.G),
                     h('span', { className: 'text-emerald-700' }, e.spontaneous)
@@ -20280,7 +5889,7 @@
                   h('div', { className: 'font-bold text-blue-700' }, l.name),
                   h('div', { className: 'font-mono text-slate-800' }, l.equation),
                   h('div', { className: 'text-slate-700' }, l.desc),
-                  h('div', { className: 'text-amber-700 italic text-[10px]' }, l.who)
+                  h('div', { className: 'text-amber-700 italic text-xs' }, l.who)
                 );
               })
             ),
@@ -20429,7 +6038,7 @@
                 return h('div', { key: i, className: 'bg-white border border-pink-200 rounded p-2 mb-1 text-xs' },
                   h('div', { className: 'flex justify-between mb-1' },
                     h('span', { className: 'font-bold text-pink-700' }, (i + 1) + '. ' + s.stage),
-                    h('span', { className: 'text-amber-700 font-mono text-[10px]' }, s.time)
+                    h('span', { className: 'text-amber-700 font-mono text-xs' }, s.time)
                   ),
                   h('div', { className: 'text-slate-800' }, s.desc)
                 );
@@ -20482,7 +6091,7 @@
                   h('div', { className: 'font-bold text-purple-700' }, p.type),
                   h('div', { className: 'text-slate-700' }, 'Monomer: ' + p.monomer + ' · Density: ' + p.density),
                   h('div', { className: 'text-cyan-700' }, 'Uses: ' + p.uses),
-                  h('div', { className: 'text-amber-700 font-mono text-[10px]' }, 'Scale: ' + p.amount)
+                  h('div', { className: 'text-amber-700 font-mono text-xs' }, 'Scale: ' + p.amount)
                 );
               })
             )
@@ -20584,7 +6193,7 @@
               return h('div', { key: i, className: 'bg-white border border-blue-300 rounded p-2 mb-1 text-xs' },
                 h('div', { className: 'flex justify-between mb-1' },
                   h('span', { className: 'font-bold text-blue-700' }, k.title),
-                  h('span', { className: 'font-mono text-amber-700 text-[10px]' }, k.grade + ' · ' + k.duration)
+                  h('span', { className: 'font-mono text-amber-700 text-xs' }, k.grade + ' · ' + k.duration)
                 ),
                 h('div', { className: 'text-slate-800' }, 'Concept: ' + k.concept),
                 h('div', { className: 'text-cyan-700' }, 'Materials: ' + k.materials),
@@ -20627,10 +6236,10 @@
                 return h('div', { key: i, className: 'bg-white border border-yellow-300 rounded p-2 text-xs' },
                   h('div', { className: 'flex justify-between mb-1' },
                     h('span', { className: 'font-bold text-yellow-700' }, r.category),
-                    h('span', { className: 'font-mono text-amber-800 text-[10px]' }, r.value)
+                    h('span', { className: 'font-mono text-amber-800 text-xs' }, r.value)
                   ),
                   h('div', { className: 'text-slate-800 font-bold' }, r.record),
-                  h('div', { className: 'text-slate-700 italic text-[10px]' }, r.notes)
+                  h('div', { className: 'text-slate-700 italic text-xs' }, r.notes)
                 );
               })
             )
@@ -20687,7 +6296,7 @@
               h('div', { className: 'text-sm font-bold text-purple-700 mb-2' }, __alloT('stem.chembalance.average_bond_energies', 'Average Bond Energies')),
               h('div', { className: 'grid grid-cols-2 gap-1' },
                 CHEM_DATA_TABLES.bondEnergies.map(function(b, i) {
-                  return h('div', { key: i, className: 'bg-white border border-purple-200 rounded p-1 text-[10px] flex justify-between' },
+                  return h('div', { key: i, className: 'bg-white border border-purple-200 rounded p-1 text-xs flex justify-between' },
                     h('span', { className: 'font-mono font-bold text-purple-700' }, b.bond),
                     h('span', { className: 'text-slate-700' }, b.energy)
                   );
@@ -20696,9 +6305,9 @@
             ),
             h('div', { className: 'bg-rose-50 border border-rose-200 rounded-xl p-3 mb-3' },
               h('div', { className: 'text-sm font-bold text-rose-700 mb-2' }, __alloT('stem.chembalance.electronegativity_values', 'Electronegativity Values')),
-              h('div', { className: 'grid grid-cols-4 gap-1' },
+              h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-1' },
                 CHEM_DATA_TABLES.electronegativity.map(function(e, i) {
-                  return h('div', { key: i, className: 'bg-white border border-rose-200 rounded p-1 text-[10px] flex justify-between' },
+                  return h('div', { key: i, className: 'bg-white border border-rose-200 rounded p-1 text-xs flex justify-between' },
                     h('span', { className: 'font-mono font-bold text-rose-700' }, e.elem),
                     h('span', { className: 'text-slate-700' }, e.value)
                   );
@@ -20722,29 +6331,29 @@
           subtool === 'finale' && h('div', null,
             h('div', { className: 'bg-gradient-to-br from-yellow-100 to-amber-100 border-2 border-amber-400 rounded-xl p-6 text-center mb-4' },
               h('div', { className: 'text-6xl mb-2' }, '🎆'),
-              h('div', { className: 'text-2xl font-bold text-amber-800 mb-1' }, __alloT('stem.chembalance.chemistry_mastery_achievement', 'Chemistry Mastery Achievement')),
-              h('div', { className: 'text-sm text-amber-700 italic' }, __alloT('stem.chembalance.36_sub_tools_118_elements_hundreds_of_', '36 sub-tools · 118 elements · Hundreds of facts'))
+              h('div', { className: 'text-2xl font-bold text-amber-800 mb-1' }, __alloT('stem.chembalance.chemistry_reference_overview', 'Chemistry Lab Reference Hub')),
+              h('div', { className: 'text-sm text-amber-700' }, __alloT('stem.chembalance.sub_tools_elements_facts', '{count} sub-tools · 118 elements · Reviewed learning resources').replace('{count}', String(SUBTOOLS.length)))
             ),
             h('div', { className: 'bg-white border border-amber-300 rounded-xl p-4 mb-3' },
-              h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, __alloT('stem.chembalance.what_you_now_have_access_to', '📚 What You Now Have Access To')),
+              h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, __alloT('stem.chembalance.what_this_workspace_includes', '📚 What This Workspace Includes')),
               h('ul', { className: 'space-y-1 list-disc list-inside text-xs text-slate-800' },
                 [
-                  'Balance chemical equations with 12 presets across 3 difficulty tiers',
-                  'Explore 5 reaction types with 15+ example reactions',
+                  ALL_PRESETS.length + ' equation presets across ' + ['beginner', 'intermediate', 'advanced'].filter(function(tier) { return ALL_PRESETS.some(function(preset) { return preset.tier === tier; }); }).length + ' difficulty tiers',
+                  REACTION_TYPES.length + ' reaction types with ' + FAMOUS_REACTIONS.length + ' example reactions',
                   'Stoichiometry calculator + molar mass tool',
                   'Molecular ball-and-stick viewer',
                   'GHS lab safety symbols + emergency response',
-                  '70+ challenge questions in 3 difficulty tiers',
+                  Object.keys(CHALLENGE_QS).reduce(function(total, key) { return total + CHALLENGE_QS[key].length; }, 0) + ' challenge questions in 3 difficulty tiers',
                   'Element Battle game with chemistry questions',
                   'Grade-banded learn content (K-2, 3-5, 6-8, 9-12)',
                   'Element Encyclopedia: 118 elements with deep profiles',
-                  'Periodic Table Atlas: groups + periodic trends',
-                  '40+ Famous Reactions with mechanism + context',
-                  'Industrial Chemistry: 18 major processes',
-                  'AP Chemistry curriculum: 9 units + exam tips',
-                  '30+ Lab Techniques with steps + hazards',
-                  '25 Famous Chemists with biographies',
-                  'Chemistry History: 39 major events',
+                  'Interactive Periodic Table Atlas: all 118 elements, four blocks, groups, periods, and trends',
+                  FAMOUS_REACTIONS.length + ' Famous Reactions with mechanism + context',
+                  'Industrial Chemistry: ' + INDUSTRIAL_CHEM.processes.length + ' major processes',
+                  'AP Chemistry curriculum: ' + AP_CHEMISTRY.units.length + ' units + exam tips',
+                  LAB_TECHNIQUES.techniques.length + ' Lab Techniques with steps + hazards',
+                  FAMOUS_CHEMISTS.length + ' Famous Chemists with biographies',
+                  'Chemistry History: ' + CHEM_HISTORY.length + ' major events',
                   'Acids & Bases: theories, strong/weak, pH, buffers',
                   'Redox: half-reactions, cells, batteries',
                   'Organic Chemistry: functional groups + reactions',
@@ -20764,7 +6373,7 @@
                   '15 Lab Kits / Lesson Plans for K-12',
                   '17 Chemistry Mythbusters',
                   '20 Chemistry Records',
-                  '200+ Glossary terms',
+                  CHEM_GLOSSARY.length + ' reviewed glossary terms',
                   'Reference Data Tables: constants, conversions, bonds'
                 ].map(function(item, i) { return h('li', { key: i, className: 'leading-relaxed' }, item); })
               )
@@ -20793,181 +6402,175 @@
                 __alloT('stem.chembalance.now_you_have_the_tools_to_understand_t', 'Now you have the tools to understand the world you\'re made of.')
               )
             ),
-            h('div', { className: 'text-center mt-6 text-xs text-slate-500 italic' }, __alloT('stem.chembalance.chembalance_v3_x_alloflow_stem_lab', 'ChemBalance v3.x · AlloFlow STEM Lab'))
+            h('div', { className: 'text-center mt-6 text-xs text-slate-500 italic' }, __alloT('stem.chembalance.chembalance_v3_x_alloflow_stem_lab', 'ChemBalance v3.x · AlloFlow STEAM Lab'))
           ),
 
-          // === H7b'' inquiry widget: pH discovery ===
+          // === Inquiry widget: logarithmic pH discovery ===
           subtool === 'pHHunt' && (function() {
-            var iq = d.pHHunt || { hExpo: -7, buffer: 0, tempC: 25, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+            var iq = Object.assign({ hExpo: -7, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] }, d.pHHunt || {});
             function setIQ(patch) { upd('pHHunt', Object.assign({}, iq, patch)); }
-            // pH = -log[H+]. Buffer dampens shift. Temp shifts neutral point (pure water pH 7.0 at 25C; ~6.14 at 100C)
-            var neutralPH = 7.0 - (iq.tempC - 25) * 0.012;
-            var rawPH = -iq.hExpo;
-            var pH = neutralPH + (rawPH - 7) * (1 - iq.buffer / 100 * 0.85);
-            pH = Math.max(0, Math.min(14, pH));
+
+            // Ideal dilute aqueous model at 25 °C: a(H3O+) is approximated by [H3O+] in mol/L.
+            var hydroniumActivity = Math.pow(10, iq.hExpo);
+            var pH = -Math.log10(hydroniumActivity);
             var band;
-            if (pH < 3) band = 'strong-acid';
-            else if (pH < 6) band = 'weak-acid';
-            else if (pH < 8) band = 'neutral';
-            else if (pH < 11) band = 'weak-base';
-            else band = 'strong-base';
+            if (pH < 3) band = 'very-acidic';
+            else if (pH < 6.5) band = 'acidic';
+            else if (pH <= 7.5) band = 'near-neutral';
+            else if (pH <= 11) band = 'basic';
+            else band = 'very-basic';
             var bandMeta = {
-              'strong-acid': { label: __alloT('stem.chembalance.strong_acid_ph_3', '🔴 Strong acid (pH < 3)'),     color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' },
-              'weak-acid':   { label: __alloT('stem.chembalance.weak_acid_3_ph_6', '🟠 Weak acid (3 ≤ pH < 6)'),   color: '#ea580c', bg: '#fff7ed', border: '#fdba74' },
-              'neutral':     { label: __alloT('stem.chembalance.near_neutral_6_ph_8', '🟢 Near neutral (6 ≤ pH < 8)'), color: '#059669', bg: '#ecfdf5', border: '#86efac' },
-              'weak-base':   { label: __alloT('stem.chembalance.weak_base_8_ph_11', '🔵 Weak base (8 ≤ pH < 11)'),  color: '#2563eb', bg: '#eff6ff', border: '#93c5fd' },
-              'strong-base': { label: __alloT('stem.chembalance.strong_base_ph_11', '🟣 Strong base (pH ≥ 11)'),    color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd' }
+              'very-acidic': { label: __alloT('stem.chembalance.very_acidic_ph', '🔴 Very acidic pH (pH < 3)'), color: '#b91c1c', bg: '#fef2f2', border: '#fca5a5' },
+              'acidic': { label: __alloT('stem.chembalance.acidic_ph', '🟠 Acidic pH (3 ≤ pH < 6.5)'), color: '#c2410c', bg: '#fff7ed', border: '#fdba74' },
+              'near-neutral': { label: __alloT('stem.chembalance.near_neutral_ph', '🟢 Near-neutral visual band (6.5 ≤ pH ≤ 7.5)'), color: '#047857', bg: '#ecfdf5', border: '#86efac' },
+              'basic': { label: __alloT('stem.chembalance.basic_ph', '🔵 Basic pH (7.5 < pH ≤ 11)'), color: '#1d4ed8', bg: '#eff6ff', border: '#93c5fd' },
+              'very-basic': { label: __alloT('stem.chembalance.very_basic_ph', '🟣 Very basic pH (pH > 11)'), color: '#6d28d9', bg: '#f5f3ff', border: '#c4b5fd' }
             }[band];
+
             function logObs() {
-              setIQ({ log: (iq.log || []).concat([{ h: iq.hExpo, b: iq.buffer, t: iq.tempC, p: parseFloat(pH.toFixed(2)), bd: band }]).slice(-8) });
+              setIQ({
+                log: (iq.log || []).concat([{
+                  h: iq.hExpo,
+                  p: parseFloat(pH.toFixed(2)),
+                  bd: band
+                }]).slice(-8)
+              });
             }
-            return h('div', { className: 'rounded-2xl bg-white border border-cyan-300 p-4 shadow-sm' },
-              h('h3', { className: 'text-sm font-black text-cyan-700 mb-1' }, __alloT('stem.chembalance.ph_discovery', '🧪 pH discovery')),
-              h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' },
-                __alloT('stem.chembalance.three_sliders_h_exponent_log_scale_buf', 'Three sliders: H⁺ exponent (log scale), buffer capacity, temperature. The solution shows one of five discrete pH bands. No score, no reveal — sweep and notice.')),
+
+            return h('section', {
+              className: 'rounded-2xl bg-white border border-cyan-300 p-4 shadow-sm',
+              'aria-labelledby': 'chem-ph-discovery-title'
+            },
+              h('h3', { id: 'chem-ph-discovery-title', className: 'text-base font-black text-cyan-800 mb-1' },
+                __alloT('stem.chembalance.ph_discovery', '🧪 pH discovery')),
+              h('p', { className: 'text-sm text-slate-700 mb-3 leading-relaxed' },
+                __alloT('stem.chembalance.ph_activity_intro', 'Move the hydronium-activity exponent and observe the logarithmic pH response. A one-unit exponent change changes hydronium activity tenfold.')),
+
               h('div', { className: 'mb-3 p-3 rounded-lg text-center', style: { background: bandMeta.bg, border: '2px solid ' + bandMeta.border } },
                 h('div', { className: 'text-lg font-black', style: { color: bandMeta.color } }, bandMeta.label),
-                h('div', { className: 'text-[11px] text-slate-700 mt-1' }, 'pH ≈ ' + pH.toFixed(2))
+                h('div', { className: 'mt-1 text-sm font-mono text-slate-800' }, 'pH = ' + pH.toFixed(2)),
+                h('div', { className: 'mt-1 text-xs text-slate-700' }, 'a(H₃O⁺) = 10^' + iq.hExpo + ' ≈ ' + hydroniumActivity.toExponential(1) + ' mol/L')
               ),
-              h('div', { className: 'grid grid-cols-3 gap-3 mb-3' },
-                [
-                  { key: 'hExpo',  label: __alloT('stem.chembalance.h_exponent_10', 'H⁺ exponent (10^)'),  val: iq.hExpo,  min: -14, max: 0,  step: 1   },
-                  { key: 'buffer', label: __alloT('stem.chembalance.buffer_capacity', 'Buffer capacity (%)'), val: iq.buffer, min: 0,   max: 100, step: 5   },
-                  { key: 'tempC',  label: __alloT('stem.chembalance.temp_c', 'Temp (°C)'),           val: iq.tempC,  min: 0,   max: 100, step: 5   }
-                ].map(function(s) {
-                  return h('div', { key: s.key },
-                    h('label', { htmlFor: 'ph-' + s.key, className: 'block text-[11px] font-bold text-slate-700 mb-1' },
-                      s.label + ': ', h('span', { className: 'font-mono text-cyan-700' }, s.val)),
-                    h('input', { id: 'ph-' + s.key, type: 'range', min: s.min, max: s.max, step: s.step, value: s.val,
-                      onChange: function(e) { var p = {}; p[s.key] = parseInt(e.target.value, 10); setIQ(p); },
-                      className: 'w-full', 'aria-label': s.label }));
-                })
+
+              h('div', { className: 'mb-3 rounded-xl border border-cyan-200 bg-cyan-50 p-3' },
+                h('label', { htmlFor: 'ph-hExpo', className: 'block text-sm font-bold text-slate-800 mb-2' },
+                  __alloT('stem.chembalance.log_hydronium_activity', 'log₁₀ a(H₃O⁺)') + ': ',
+                  h('output', { htmlFor: 'ph-hExpo', className: 'font-mono text-cyan-800' }, String(iq.hExpo))),
+                h('input', {
+                  id: 'ph-hExpo',
+                  type: 'range',
+                  min: -14,
+                  max: 0,
+                  step: 1,
+                  value: iq.hExpo,
+                  onChange: function(e) { setIQ({ hExpo: parseInt(e.target.value, 10) }); },
+                  className: 'w-full min-h-[44px]',
+                  'aria-label': __alloT('stem.chembalance.log_hydronium_activity', 'log10 hydronium activity'),
+                  'aria-valuetext': '10 to the ' + iq.hExpo + ' mol per liter; pH ' + pH.toFixed(0)
+                }),
+                h('div', { className: 'mt-1 flex justify-between text-xs font-mono text-slate-600' },
+                  h('span', null, '10⁻¹⁴'),
+                  h('span', null, '10⁻⁷'),
+                  h('span', null, '10⁰'))
               ),
+
+              h('div', { className: 'mb-3 rounded-lg border border-indigo-200 bg-indigo-50 p-3 text-xs leading-relaxed text-indigo-950' },
+                h('p', { className: 'font-bold mb-1' }, __alloT('stem.chembalance.model_boundary', 'Model boundary')),
+                h('p', null, __alloT('stem.chembalance.ph_model_caveat', 'This activity-based model represents dilute aqueous solutions at 25 °C. Exact neutrality is pH 7.00 at 25 °C. The colored regions describe pH, not acid or base strength, and real pH values are not universally limited to 0–14.'))
+              ),
+
               h('div', { className: 'flex gap-2 items-center mb-2 flex-wrap' },
-                h('button', { onClick: logObs, className: 'transition-colors px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.chembalance.log', '📋 Log')),
-                h('button', { onClick: function() { setIQ({ hExpo: -7, buffer: 0, tempC: 25, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
-                  className: 'transition-colors px-2 py-1 rounded bg-white hover:bg-slate-50 text-[11px] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.chembalance.reset_3', '↺ Reset')),
-                (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
+                h('button', { type: 'button', onClick: logObs, className: 'min-h-[40px] transition-colors px-3 py-2 rounded bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 border border-slate-300' },
+                  __alloT('stem.chembalance.log', '📋 Log observation')),
+                h('button', { type: 'button', onClick: function() { setIQ({ hExpo: -7, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
+                  className: 'min-h-[40px] transition-colors px-3 py-2 rounded bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 border border-slate-300' },
+                  __alloT('stem.chembalance.reset_3', '↺ Reset')),
+                (iq.log || []).length > 0 && h('span', { role: 'status', className: 'text-xs text-slate-600 italic' }, (iq.log || []).length + ' logged')
               ),
-              (iq.log || []).length > 0 && h('table', { className: 'text-[10px] w-full border-collapse text-slate-700 mb-2' },
-                h('caption', { className: 'sr-only' }, __alloT('stem.chembalance.ph_observations_table_caption', 'pH inquiry observations')),
-                h('thead', null, h('tr', { className: 'bg-slate-100' },
-                  ['H⁺ exp', 'buffer %', 'temp °C', 'pH', 'band'].map(function(c, i) { return h('th', { key: 'h' + i, scope: 'col', className: 'px-1 border border-slate-200 text-left' }, c); }))),
-                h('tbody', null, iq.log.map(function(o, idx) {
-                  return h('tr', { key: 'lr' + idx },
-                    h('th', { scope: 'row', className: 'px-1 border border-slate-200 font-mono text-left' }, o.h),
-                    h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.b),
-                    h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.t),
-                    h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.p),
-                    h('td', { className: 'px-1 border border-slate-200' }, o.bd));
-                }))
+
+              (iq.log || []).length > 0 && h('div', {
+                className: 'overflow-x-auto mb-3',
+                tabIndex: 0,
+                'aria-label': __alloT('stem.chembalance.scroll_ph_observations', 'Scrollable pH observations')
+              },
+                h('table', { className: 'min-w-[30rem] text-xs w-full border-collapse text-slate-700' },
+                  h('caption', { className: 'sr-only' }, __alloT('stem.chembalance.ph_observations_table_caption', 'pH inquiry observations')),
+                  h('thead', null, h('tr', { className: 'bg-slate-100' },
+                    [
+                      __alloT('stem.chembalance.log_hydronium_short', 'log₁₀ a(H₃O⁺)'),
+                      __alloT('stem.chembalance.ph', 'pH'),
+                      __alloT('stem.chembalance.ph_region', 'pH region')
+                    ].map(function(c, i) {
+                      return h('th', { key: 'h' + i, scope: 'col', className: 'px-2 py-1 border border-slate-200 text-left' }, c);
+                    }))),
+                  h('tbody', null, iq.log.map(function(o, idx) {
+                    return h('tr', { key: 'lr' + idx },
+                      h('th', { scope: 'row', className: 'px-2 py-1 border border-slate-200 font-mono text-left' }, o.h),
+                      h('td', { className: 'px-2 py-1 border border-slate-200 font-mono' }, o.p),
+                      h('td', { className: 'px-2 py-1 border border-slate-200' }, o.bd));
+                  }))
+                )
               ),
-              h('label', { htmlFor: 'chem-ph-hypothesis', className: 'block text-[11px] font-bold text-slate-700 mb-1' },
+
+              h('label', { htmlFor: 'chem-ph-hypothesis', className: 'block text-sm font-bold text-slate-800 mb-1' },
                 __alloT('stem.chembalance.ph_hypothesis_label', 'Your pH hypothesis')),
-              h('textarea', { id: 'chem-ph-hypothesis', value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
-                placeholder: __alloT('stem.chembalance.hypothesis_free_text_no_right_answer_h', 'Hypothesis (free text — no right answer): How does buffer affect the H+ → pH relationship?'),
-                className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug mb-2', rows: 3 }),
-              !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
-                className: 'transition-colors px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-[11px] font-bold text-amber-800 border border-amber-300 mb-2' }, __alloT('stem.chembalance.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
-              iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed mb-2' },
+              h('textarea', { 'aria-label': __alloT('stem.chembalance.hypothesis_input', 'pH and hydronium hypothesis'), 
+                id: 'chem-ph-hypothesis',
+                value: iq.hypothesis || '',
+                onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
+                placeholder: __alloT('stem.chembalance.ph_hypothesis_activity', 'How does changing log₁₀ a(H₃O⁺) by one unit change pH and hydronium activity?'),
+                className: 'w-full text-sm border border-slate-300 rounded p-2 font-mono leading-snug mb-2',
+                rows: 3
+              }),
+
+              h('button', {
+                type: 'button',
+                'aria-expanded': !!iq.stuckRevealed,
+                'aria-controls': 'chem-ph-prompts',
+                onClick: function() { setIQ({ stuckRevealed: !iq.stuckRevealed }); },
+                className: 'min-h-[40px] transition-colors px-3 py-2 rounded bg-amber-50 hover:bg-amber-100 text-xs font-bold text-amber-900 border border-amber-700 mb-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-800 focus-visible:ring-offset-2'
+              }, iq.stuckRevealed ? 'Hide inquiry prompts' : 'Show inquiry prompts'),
+
+              iq.stuckRevealed && h('div', { id: 'chem-ph-prompts', role: 'region', 'aria-labelledby': 'chem-ph-discovery-title', className: 'p-3 rounded bg-amber-50 border border-amber-200 text-sm text-slate-700 leading-relaxed mb-2' },
                 h('ul', { className: 'list-disc pl-5 space-y-1' },
-                  h('li', null, __alloT('stem.chembalance.hold_two_sliders_steady_move_the_third', 'Hold two sliders steady. Move the third. Watch what happens.')),
-                  h('li', null, __alloT('stem.chembalance.what_happens_to_pure_water_h_exp_7_as_', 'What happens to pure water (H⁺ exp = -7) as you change temperature?')),
-                  h('li', null, __alloT('stem.chembalance.find_two_settings_producing_the_same_b', 'Find two settings producing the same band. What do they share?')),
-                  h('li', null, __alloT('stem.chembalance.investigate_why_is_the_ph_scale_logari', 'Investigate: why is the pH scale logarithmic?')))),
+                  h('li', null, __alloT('stem.chembalance.ph_prompt_predict', 'Predict the pH before moving to an adjacent exponent.')),
+                  h('li', null, __alloT('stem.chembalance.ph_prompt_tenfold', 'Compare adjacent exponents. How many times larger is the hydronium activity?')),
+                  h('li', null, __alloT('stem.chembalance.ph_prompt_direction', 'Why does pH move in the opposite direction from hydronium activity?')),
+                  h('li', null, __alloT('stem.chembalance.ph_prompt_logarithm', 'Explain why a logarithmic scale is useful across fourteen powers of ten.'))
+                )
+              ),
+
               h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
-                h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
-                  h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
-                  __alloT('stem.chembalance.i_think_i_understand_explain_in_own_wo', 'I think I understand — explain in own words')),
-                iq.understood && h('label', { htmlFor: 'chem-ph-explanation', className: 'block text-[11px] font-bold text-emerald-800 mt-2 mb-1' },
+                h('label', { className: 'flex items-center gap-2 text-sm font-bold text-emerald-900 cursor-pointer' },
+                  h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-5 h-5' }),
+                  __alloT('stem.chembalance.i_think_i_understand_explain_in_own_wo', 'I think I understand — explain in my own words')),
+                iq.understood && h('label', { htmlFor: 'chem-ph-explanation', className: 'block text-sm font-bold text-emerald-900 mt-2 mb-1' },
                   __alloT('stem.chembalance.ph_explanation_label', 'Explain your reasoning')),
-                iq.understood && h('textarea', { id: 'chem-ph-explanation', value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); },
-                  placeholder: __alloT('stem.chembalance.explain_how_h_concentration_buffering_', 'Explain how H⁺ concentration, buffering, and temperature jointly determine pH.'),
-                  className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
-              h('div', { className: 'mt-2 text-[10px] italic text-slate-500' },
-                __alloT('stem.chembalance.design_note_discrete_5_band_ph_marker_', 'Design note: discrete 5-band pH marker; no numeric optimization target; no reveal — by design.'))
+                iq.understood && h('textarea', { 'aria-label': __alloT('stem.chembalance.explanation_input', 'pH and hydronium explanation'), 
+                  id: 'chem-ph-explanation',
+                  value: iq.explanation || '',
+                  onChange: function(e) { setIQ({ explanation: e.target.value }); },
+                  placeholder: __alloT('stem.chembalance.ph_explanation_activity', 'Explain the relationship among hydronium activity, powers of ten, and pH.'),
+                  className: 'w-full text-sm border border-emerald-300 rounded p-2 font-mono leading-snug mt-2',
+                  rows: 4
+                })
+              )
             );
           })(),
 
-          // ── Footer ──
-          h('div', { className: 'flex gap-2 mt-4 pt-3 border-t border-slate-200' },
-            h('button', { onClick: function() { setStemLabTool('titrationLab'); announceToSR('Opening Titration Lab'); }, className: 'transition-colors px-3 py-1.5 text-xs font-bold text-lime-800 bg-lime-50 border border-lime-800 rounded-full hover:bg-lime-100' }, __alloT('stem.chembalance.titration_lab', '\u2697\uFE0F Titration Lab \u2192')),
-            h('button', { 'aria-label': __alloT('stem.chembalance.snapshot', 'Snapshot'), onClick: takeSnapshot, className: 'ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all' }, __alloT('stem.chembalance.snapshot_2', '\uD83D\uDCF8 Snapshot'))
-          ),
-          // \u2550\u2550\u2550 PERIODIC TABLE BLOCKS \u2550\u2550\u2550
-          h('div', { className: 'mt-5 rounded-2xl border border-lime-300 bg-white p-3 shadow-sm' },
-            h('h4', { className: 'text-sm font-bold text-lime-700 mb-2' }, __alloT('stem.chembalance.periodic_table_four_major_blocks', '\u269B Periodic Table \u2014 Four major blocks')),
-            h('div', { className: 'rounded-xl overflow-hidden border border-lime-200', style: { background: '#020210', aspectRatio: '16/5' } },
-              h('canvas', {
-                role: 'img',
-                tabIndex: 0,
-                'aria-label': __alloT('stem.chembalance.periodic_table_blocks_canvas', 'Periodic table block diagram showing s, p, d, and f blocks'),
-                ref: function(cvEl) {
-                  if (!cvEl) return;
-                  if (cvEl._ptDone) return;
-                  cvEl._ptDone = true;
-                  var c2 = cvEl.getContext('2d');
-                  var W = cvEl.offsetWidth || 600;
-                  var H = cvEl.offsetHeight || 180;
-                  cvEl.width = W * 2; cvEl.height = H * 2;
-                  c2.scale(2, 2);
-                  var start = performance.now();
-                  function drawPt() {
-                    if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._ptAnim); return; }
-                    var t = (performance.now() - start) / 1000;
-                    c2.fillStyle = '#020210';
-                    c2.fillRect(0, 0, W, H);
-                    // Simplified periodic table layout
-                    var blocks = [
-                      { name: 's-block', cols: 2, rows: 7, color: '#dc2626', x: 0.05, w: 0.10 },
-                      { name: 'd-block', cols: 10, rows: 4, color: '#fbbf24', x: 0.18, w: 0.40 },
-                      { name: 'p-block', cols: 6, rows: 6, color: '#3b82f6', x: 0.62, w: 0.30 },
-                      { name: 'f-block', cols: 14, rows: 2, color: '#a855f7', x: 0.18, w: 0.74, y: 0.68 }
-                    ];
-                    blocks.forEach(function(b) {
-                      var bx = b.x * W;
-                      var by = (b.y || 0.10) * H;
-                      var bw = b.w * W;
-                      var bh = (b.rows / 7) * H * 0.50;
-                      c2.save();
-                      c2.shadowColor = b.color; c2.shadowBlur = 10;
-                      c2.fillStyle = b.color + '50';
-                      c2.fillRect(bx, by, bw, bh);
-                      c2.strokeStyle = b.color; c2.lineWidth = 1.5;
-                      c2.strokeRect(bx, by, bw, bh);
-                      c2.restore();
-                      c2.font = 'bold 10px sans-serif'; c2.fillStyle = b.color; c2.textAlign = 'center';
-                      c2.fillText(b.name, bx + bw / 2, by + bh / 2 + 4);
-                    });
-                    c2.font = 'bold 9px monospace'; c2.fillStyle = '#fde047'; c2.textAlign = 'left';
-                    c2.fillText('s = alkali, alkali earth', 8, H - 38);
-                    c2.fillText('p = nonmetals, halogens, noble gases', 8, H - 28);
-                    c2.fillStyle = '#fbbf24';
-                    c2.fillText('d = transition metals', W * 0.55, H - 38);
-                    c2.fillStyle = '#a855f7';
-                    c2.fillText('f = lanthanides + actinides', W * 0.55, H - 28);
-                    c2.fillStyle = 'rgba(0,0,0,0.85)';
-                    c2.fillRect(8, H - 14, W - 16, 12);
-                    c2.font = 'bold 8px sans-serif'; c2.fillStyle = '#86efac'; c2.textAlign = 'center';
-                    c2.fillText('Mendeleev 1869 \u2014 predicted undiscovered elements from gaps in the table.', W / 2, H - 5);
-                    // Static scene (no time/phase consumed) \u2014 draw once, not a 60fps loop.
-                  }
-                  drawPt();
-                  var ro = new ResizeObserver(function() {
-                    // Disconnect when the canvas detaches — otherwise a new ResizeObserver leaks on
-                    // every re-render of this always-mounted footer. Reset the transform before
-                    // re-scaling so DPR scaling can't accumulate.
-                    if (!cvEl.isConnected) { ro.disconnect(); cvEl._ptRO = null; return; }
-                    W = cvEl.offsetWidth; H = cvEl.offsetHeight;
-                    cvEl.width = W * 2; cvEl.height = H * 2; c2.setTransform(1, 0, 0, 1, 0, 0); c2.scale(2, 2);
-                    drawPt(); // repaint the static diagram at the new size
-                  });
-                  cvEl._ptRO = ro;
-                  ro.observe(cvEl);
-                },
-                style: { width: '100%', height: '100%', display: 'block' }
-              })
-            )
+          // ── Contextual footer ──
+          !isChemHub && subtool !== 'finale' && h('div', { className: 'flex flex-wrap gap-2 mt-4 pt-3 border-t border-slate-200' },
+            (subtool === 'acids' || subtool === 'pHHunt') && h('button', {
+              type: 'button',
+              onClick: function() { setStemLabTool('titrationLab'); announceToSR('Opening Titration Lab'); },
+              className: 'min-h-[40px] transition-colors px-3 py-2 text-xs font-bold text-lime-800 bg-lime-50 border border-lime-800 rounded-full hover:bg-lime-100'
+            }, __alloT('stem.chembalance.titration_lab', '\u2697\uFE0F Titration Lab \u2192')),
+            h('button', {
+              type: 'button',
+              'aria-label': __alloT('stem.chembalance.snapshot', 'Save a snapshot of this chemistry workspace'),
+              onClick: takeSnapshot,
+              className: 'ml-auto min-h-[40px] px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-700 hover:to-purple-700 shadow-md hover:shadow-lg transition-all'
+            }, __alloT('stem.chembalance.snapshot_2', '\uD83D\uDCF8 Snapshot'))
           )
         );
       })();

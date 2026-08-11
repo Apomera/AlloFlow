@@ -7,7 +7,12 @@
 const fs = require('fs');
 const path = require('path');
 
-const buildDir = path.join(__dirname, 'build');
+// The desktop release builder uses an isolated BUILD_PATH so it can compile
+// desktop-only environment values without overwriting the hosted Firebase
+// artifact that deploy.sh has just produced.
+const buildDir = process.env.BUILD_PATH
+    ? path.resolve(__dirname, process.env.BUILD_PATH)
+    : path.join(__dirname, 'build');
 const htmlPath = path.join(buildDir, 'index.html');
 const swPath = path.join(buildDir, 'sw.js');
 

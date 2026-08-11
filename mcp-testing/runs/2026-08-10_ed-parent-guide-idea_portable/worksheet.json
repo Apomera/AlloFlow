@@ -1,0 +1,177 @@
+{
+  "binding": {
+    "html_sha256": "b83b6a9beee4d9c45bb35dec54df0ea41947a902a336f911535d52e95ba6e1ed",
+    "plan_sha256": "96db08536e507d53f3c11c855c855aa9f3d5e80b1f9e7a89757b99571f7ba567",
+    "source_sha256": "31910c54e4b52fea0b8c79d08a9a707ab43f413261b3ae15335d82c1fd0753a5"
+  },
+  "createdAt": "2026-08-11T01:31:09Z",
+  "instructions": "You are the independent verifier. You must NOT be the model instance that authored the repair plan, and you must read the source document and the rebuilt HTML directly. Fill status for every item: 'verified', 'discrepancy', or 'unreadable'. Every 'discrepancy' or 'unreadable' needs a specific note (>= 20 characters) naming what and where. Then fill the verifier block: model, context_isolation='fresh-context', read_source_directly=true, and a statement (>= 40 characters) of what you read and how.",
+  "items": [
+    {
+      "id": "page-001",
+      "instruction": "Read source page 1 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "All page-1 text present: date, salutation, three body paragraphs, superscript markers [1][2][3] at their correct positions, and footnotes 1-3 (relocated to the end-of-document Notes section). Letterhead banner embedded with alt text.",
+      "source_page": 1,
+      "status": "verified"
+    },
+    {
+      "id": "page-002",
+      "instruction": "Read source page 2 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "All page-2 text present, including the signature block (Best / Ruth / Ruth E. Ryder / Acting Director / Office of Special Education Programs). The page's opening fragment ('SOI, the United States declares...') was rejoined into the preceding paragraph, which is tagged data-source-page=\"1\" and sits before the page-2 break marker; content itself is fully represented.",
+      "source_page": 2,
+      "status": "verified"
+    },
+    {
+      "id": "heading-001",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 1,
+      "note": "Matches the PDF's embedded metadata Title verbatim (including the source's own 'R. v.' and 'School District  Philadelphia' irregularities), with only the trailing ' (PDF)' suffix trimmed. No on-page title exists, so h1 from metadata at level 1 reflects the document hierarchy.",
+      "source_page": 1,
+      "status": "verified",
+      "text": "IEP Translation – Communication from OSEP regarding the Government’s Statement of Interest in R. v. The School District  Philadelphia addressing the translation of IEPs pursuant to Title VI of the Civil Rights Act of 1964 (Title VI) and the Equal Educational Opportunities Act of 1974."
+    },
+    {
+      "alt": "Letterhead banner: the seal of the U.S. Department of Education (“DEPARTMENT OF EDUCATION · UNITED STATES OF AMERICA”) beside the large letters “OSEP” over the words “Office of Special Education Programs”, on a blue banner.",
+      "id": "image-001",
+      "instruction": "Look at the source image and judge whether this alt text is accurate and sufficient (not merely plausible).",
+      "kind": "image_alt",
+      "note": "Viewed images/image-002-obj75.jpg directly: navy/blue banner, Department of Education seal on the left ringed by 'DEPARTMENT OF EDUCATION' and 'UNITED STATES OF AMERICA', large 'OSEP' with 'Office of Special Education Programs' beneath. Alt text is accurate and sufficient.",
+      "source_page": 1,
+      "status": "verified"
+    },
+    {
+      "emphasised": [
+        "T.R. v. The School District of Philadelphia"
+      ],
+      "id": "emphasis-001",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "Font evidence: TimesNewRomanPS-ItalicMT covers exactly 'T.R. v. The' (y=503) + 'School District of Philadelphia' (y=489) on page 1; the following period is roman. Rebuild wraps exactly that case name in <em> with the period outside. Italic to em matches.",
+      "source_page": 1,
+      "status": "verified"
+    },
+    {
+      "id": "linkrun-001",
+      "instruction": "For each linked span: does the source really carry a link here (annotation or written-out URL), does the destination match, and is the link text meaningful out of context?",
+      "kind": "inline_link",
+      "links": [
+        {
+          "href": "mailto:Lisa.Pagano@ed.gov",
+          "text": "Lisa.Pagano@ed.gov"
+        },
+        {
+          "href": "mailto:OCR@ed.gov",
+          "text": "OCR@ed.gov"
+        }
+      ],
+      "note": "Page 2 carries both mailto link annotations (mailto:Lisa.Pagano@ed.gov, mailto:OCR@ed.gov) and both addresses are written out in the text. Destinations match exactly; the email-address link text is meaningful out of context.",
+      "source_page": 2,
+      "status": "verified"
+    },
+    {
+      "emphasised": [],
+      "id": "emphasis-002",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "Page 2 uses only the roman face (TimesNewRomanPSMT); no italic items exist on page 2, and the rebuild's page-2 blocks contain no em/strong spans. Empty emphasis list confirmed correct.",
+      "source_page": 2,
+      "status": "verified"
+    },
+    {
+      "id": "heading-002",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "Discrepancy: no 'Notes' heading exists anywhere in the source. The footnotes sit at the bottom of page 1 with no heading text; the rebuild's h2 'Notes' is a synthesized section title for the relocated footnotes, and the HTML renders no review note disclosing the addition.",
+      "source_page": 1,
+      "status": "discrepancy",
+      "text": "Notes"
+    },
+    {
+      "id": "linkrun-002",
+      "instruction": "For each linked span: does the source really carry a link here (annotation or written-out URL), does the destination match, and is the link text meaningful out of context?",
+      "kind": "inline_link",
+      "links": [
+        {
+          "href": "https://www.lep.gov/resources/EOS_SOI_Philly_012716.pdf",
+          "text": "www.lep.gov/resources/EOS_SOI_Philly_012716.pdf"
+        }
+      ],
+      "note": "Footnote 1 writes the URL out and carries a link annotation. Host/path match exactly and the link text is the written-out URL itself. Minor observation, not graded a discrepancy: the source annotation uses http:// while the rebuild href uses https:// (the written-out text is scheme-less).",
+      "source_page": 1,
+      "status": "verified"
+    },
+    {
+      "emphasised": [],
+      "id": "emphasis-003",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "The only italic runs on page 1 are the case name (covered by emphasis-001) and 'available at' in footnote 3 (covered by emphasis-004); every other page-1 block, including footnote 1's roman 'available at', is unemphasised in both source and rebuild.",
+      "source_page": 1,
+      "status": "verified"
+    },
+    {
+      "id": "linkrun-003",
+      "instruction": "For each linked span: does the source really carry a link here (annotation or written-out URL), does the destination match, and is the link text meaningful out of context?",
+      "kind": "inline_link",
+      "links": [
+        {
+          "href": "https://www.justice.gov/crt/about/cor/lep/DOJFinLEPFRJun182002.pdf",
+          "text": "https://www.justice.gov/crt/about/cor/lep/DOJFinLEPFRJun182002.pdf"
+        }
+      ],
+      "note": "Footnote 3 writes the URL out and the page-1 annotation destination (https://www.justice.gov/crt/about/cor/lep/DOJFinLEPFRJun182002.pdf) matches the rebuild href exactly; link text is the full URL.",
+      "source_page": 1,
+      "status": "verified"
+    },
+    {
+      "emphasised": [
+        "available at"
+      ],
+      "id": "emphasis-004",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "Font evidence: 'available at' at y=86 (footnote 3) is in TimesNewRomanPS-ItalicMT and the rebuild renders it as <em>available at</em>; footnote 1's 'available at' is roman in the source and correctly left plain in the rebuild.",
+      "source_page": 1,
+      "status": "verified"
+    },
+    {
+      "id": "global-completeness",
+      "instruction": "After reading all pages: is any source content absent from the rebuild without a disclosed review note?",
+      "kind": "global",
+      "note": "Discrepancy: source page 1 carries three internal link annotations on the superscript footnote markers [1][2][3] (GoTo links jumping to the footnotes); in the rebuild these markers are plain text with no anchors linking to the relocated Notes section. The blank page image (image-001-obj74.png, 888x157 DeviceGray, renders solid white) was also dropped. Neither is disclosed - the HTML contains no review-notes section. All running text, both external links, both emails, the letterhead image, and the signature block are present.",
+      "status": "discrepancy"
+    },
+    {
+      "id": "global-no-invention",
+      "instruction": "Is there any content in the rebuild that does not exist in the source?",
+      "kind": "global",
+      "note": "Discrepancy: the h2 'Notes' is document content that does not exist anywhere in the source and is undisclosed. All other additions are standard accessibility scaffolding (skip link, page-break marker labeled 'Page 2', meta description) rather than document content; body text otherwise matches the source with no invented sentences.",
+      "status": "discrepancy"
+    },
+    {
+      "id": "global-reading-order",
+      "instruction": "Does the rebuild's linear order preserve or improve the source's logical reading order, with any relocation disclosed?",
+      "kind": "global",
+      "note": "Discrepancy on the disclosure clause: the linear order itself is an improvement (letterhead, date, salutation, body with the page-1/page-2 straddling sentence rejoined, signature block, then footnotes last), but the relocation of footnotes 1-3 from the bottom of page 1 to an end-of-document Notes section after the page-2 signature is nowhere disclosed - the rebuilt HTML renders no review notes.",
+      "status": "discrepancy"
+    },
+    {
+      "id": "global-review-notes",
+      "instruction": "Does every transformation you observed (moved content, dropped furniture, rejoined sentences) appear in the review notes, and is every note accurate?",
+      "kind": "global",
+      "note": "Discrepancy: the rebuilt HTML contains no review-notes section at all, so none of the observed transformations are disclosed: footnotes 1-3 relocated under a synthesized 'Notes' h2; footnote-marker internal links dropped (plain [1][2][3] text); the cross-page sentence rejoined with page-2 text inside a paragraph tagged data-source-page=\"1\"; the blank image obj74 omitted; and the metadata title's trailing ' (PDF)' trimmed from the h1.",
+      "status": "discrepancy"
+    }
+  ],
+  "schemaVersion": "1.0",
+  "verifier": {
+    "context_isolation": "fresh-context",
+    "model": "claude-fable-5",
+    "read_source_directly": true,
+    "statement": "I read source.pdf directly via pdfjs: reading-order per-page lines (extract_pages.cjs / pages-ordered.json), the raw object-order text layer, italic-face evidence (extract_f3.cjs: TimesNewRomanPS-ItalicMT items on page 1, roman-only page 2), embedded metadata Title (meta.cjs), and link annotations on both pages via a page.getAnnotations() script I wrote (check_annots.cjs); I viewed both extracted images (image-002-obj75.jpg letterhead, image-001-obj74.png blank) with the Read tool, then read alloflow-output/source-accessible.html in full (all 76 lines, which render no review-notes section) and compared it block by block against the source. I did not read repair-plan.json or any other notes."
+  }
+}

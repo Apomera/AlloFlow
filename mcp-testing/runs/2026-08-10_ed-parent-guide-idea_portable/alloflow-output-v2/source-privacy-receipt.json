@@ -1,0 +1,24 @@
+{
+  "alloflowServiceInvokedByScripts": false,
+  "artifacts": {
+    "accessibilityReport": "source-accessibility-report.json",
+    "accessibleHtml": "source-accessible.html",
+    "privacyReceipt": "source-privacy-receipt.json",
+    "taggedPdf": "source-alloflow-accessible.pdf"
+  },
+  "assuranceScope": "AlloFlow packaged scripts only; excludes the host AI provider, operating system, filesystem synchronization, and resolved local executables.",
+  "createdAt": "2026-08-11T02:45:31Z",
+  "documentNetworkPolicy": "deny",
+  "documentRequestsBlockedByRenderer": 0,
+  "documentTextLoggedByScripts": false,
+  "modelApiCalledByScripts": false,
+  "remoteMcpInvokedByScripts": false,
+  "schemaVersion": "1.0",
+  "source": {
+    "basename": "source.pdf",
+    "bytes": 64871,
+    "kind": "pdf",
+    "sha256": "31910c54e4b52fea0b8c79d08a9a707ab43f413261b3ae15335d82c1fd0753a5"
+  },
+  "systemWideNetworkUseVerified": false
+}

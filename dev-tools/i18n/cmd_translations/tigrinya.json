@@ -320,5 +320,8 @@
   "cmd.run_lesson_blueprint": "መደብ ትምህርቲ ፍጠር",
   "cmd.run_lesson_blueprint_done": "መደብ ይፍጠር ኣሎ — ነፍሲ ወከፍ ስጉምቲ ኣብ ካርድ ክትከታተል ትኽእል።",
   "cmd.run_lesson_blueprint_hint": "ኩሎም ምንጭታት ናይ ሕጂ መደብ ይፈጥር",
-  "cmd.cancelled": "ምስራዝ ተሓቲቱ እዩ። እቲ ኣብዚ ግዜ ዘሎ ስራሕ እቲ ኣቕራቢኡ ክድግፎ ከሎ ክቋረጽ እዩ።"
+  "cmd.cancelled": "ምስራዝ ተሓቲቱ እዩ። እቲ ኣብዚ ግዜ ዘሎ ስራሕ እቲ ኣቕራቢኡ ክድግፎ ከሎ ክቋረጽ እዩ።",
+  "cmd.open_share_collect": "Share & Collect ክፈት",
+  "cmd.open_share_collect_hint": "ምርጫታት፣ ምዝገባታት፣ መጠይቓት ከምኡውን ውጽኢቶም",
+  "cmd.open_share_collect_done": "Share & Collect ተኸፊቱ።"
 }

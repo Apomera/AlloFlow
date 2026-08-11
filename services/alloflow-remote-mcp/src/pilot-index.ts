@@ -1,4 +1,5 @@
 import OAuthProvider from "@cloudflare/workers-oauth-provider";
+import { getContainer } from "@cloudflare/containers";
 export { ContainerProxy } from "@cloudflare/containers";
 import { createMcpHandler } from "agents/mcp/server";
 
@@ -13,24 +14,90 @@ import {
   REMOTE_MCP_VERSION,
   getRemoteCapabilities,
 } from "./pilot-capabilities";
+import { checkDatabaseReleaseReadiness } from "./database-release";
 import {
+  PILOT_CHECKPOINT_SCHEMA_VERSION,
+  PILOT_DATABASE_SCHEMA_VERSION,
+  PILOT_RUNNER_PROTOCOL_VERSION,
   PILOT_SCOPES,
   getPilotConfig,
   pilotReadiness,
   type PilotEnv,
 } from "./pilot-env";
+import { emitPilotMetric, workerRelease } from "./pilot-telemetry";
 import {
   cleanupInstitutionPilot,
 } from "./pilot-operations";
 import { createServer } from "./pilot-server";
-export { RemediationContainer } from "./remediation-container";
+import { RemediationContainer } from "./remediation-container";
+export { RemediationContainer };
 export { RemediationWorkflow } from "./remediation-workflow";
+import {
+  assessRunnerCompatibility,
+  type RunnerBuildIdentity,
+} from "./release-contract";
+import { expectedRunnerBuildForModel } from "./runner-release-contract";
 import { guardClientRegistration } from "./registration-guard";
 import { boundProtocolRequest } from "./request-bounds";
-import { jsonError, noStoreHeaders } from "./security";
+import {
+  constantTimeEqual,
+  jsonError,
+  noStoreHeaders,
+} from "./security";
 
 const AUTHORIZATION_SERVER_METADATA_PATH =
   "/.well-known/oauth-authorization-server";
+const RELEASE_CANARY_CONTAINER_ID = "release-canary-v1";
+
+function releaseInfo(env: PilotEnv) {
+  return {
+    workerVersionId: workerRelease(env),
+    workerVersionTag: env.CF_VERSION_METADATA?.tag || "local",
+    workerVersionTimestamp:
+      env.CF_VERSION_METADATA?.timestamp || null,
+    databaseSchema: PILOT_DATABASE_SCHEMA_VERSION,
+    checkpointSchema: PILOT_CHECKPOINT_SCHEMA_VERSION,
+    runnerProtocol: PILOT_RUNNER_PROTOCOL_VERSION,
+  };
+}
+
+function releaseCanaryAuthorized(
+  request: Request,
+  env: PilotEnv,
+): boolean {
+  const authorization = request.headers.get("Authorization") || "";
+  const prefix = "Bearer ";
+  const secret = env.RELEASE_CANARY_SECRET || "";
+  return (
+    secret.length >= 32 &&
+    authorization.length <= 512 &&
+    authorization.startsWith(prefix) &&
+    constantTimeEqual(authorization.slice(prefix.length), secret)
+  );
+}
+
+async function runnerReleaseReadiness(env: PilotEnv): Promise<{
+  ok: boolean;
+  issues: string[];
+  runner: ReturnType<typeof assessRunnerCompatibility>["runner"];
+}> {
+  if (!env.REMEDIATION_CONTAINER || !env.GEMINI_MODEL) {
+    return {
+      ok: false,
+      issues: ["runner_not_configured"],
+      runner: null,
+    };
+  }
+  const expectedBuild = (await expectedRunnerBuildForModel(
+    env.GEMINI_MODEL,
+  )) satisfies RunnerBuildIdentity;
+  const container = getContainer<RemediationContainer>(
+    env.REMEDIATION_CONTAINER as DurableObjectNamespace<RemediationContainer>,
+    RELEASE_CANARY_CONTAINER_ID,
+  );
+  const health = await container.probeRunnerHealth();
+  return assessRunnerCompatibility(health, expectedBuild);
+}
 
 async function enforcePublicClientDiscoveryMetadata(
   request: Request,
@@ -120,6 +187,7 @@ async function publicResponse(
         ok: true,
         service: "alloflow-remediation-remote-mcp",
         version: REMOTE_MCP_VERSION,
+        release: releaseInfo(env),
         protocol: "mcp-streamable-http",
         protocolState: "stateless",
         documentRemediationConfigured:
@@ -128,6 +196,59 @@ async function publicResponse(
           capabilities.documentToolsEnabled,
       },
       { headers: noStoreHeaders() },
+    );
+  }
+
+  if (
+    request.method === "GET" &&
+    url.pathname === "/readyz" &&
+    !url.search
+  ) {
+    if (!releaseCanaryAuthorized(request, env)) {
+      return Response.json(
+        { ok: false, error: "unauthorized" },
+        {
+          status: 401,
+          headers: noStoreHeaders({
+            "WWW-Authenticate": 'Bearer realm="release-canary"',
+          }),
+        },
+      );
+    }
+    const [database, runnerResult] = await Promise.all([
+      checkDatabaseReleaseReadiness(env.PILOT_DB),
+      runnerReleaseReadiness(env).catch(() => ({
+        ok: false,
+        issues: ["runner_probe_failed"],
+        runner: null,
+      })),
+    ]);
+    const releaseReady = database.ok && runnerResult.ok;
+    const releaseIssues = [...database.issues, ...runnerResult.issues];
+    emitPilotMetric(env, "release_canary", {
+      outcome: releaseReady ? "success" : "failed",
+      stage: database.ok ? "runner" : "database",
+    });
+    return Response.json(
+      {
+        ok: releaseReady,
+        service: "alloflow-remediation-remote-mcp",
+        version: REMOTE_MCP_VERSION,
+        release: releaseInfo(env),
+        database: {
+          ok: database.ok,
+          schema: database.schema,
+        },
+        runner: runnerResult.runner,
+        compatibility: {
+          ok: releaseReady,
+          issues: releaseIssues,
+        },
+      },
+      {
+        status: releaseReady ? 200 : 503,
+        headers: noStoreHeaders(),
+      },
     );
   }
 
@@ -318,14 +439,42 @@ const worker = {
       );
       return;
     }
+    const startedAt = Date.now();
     ctx.waitUntil(
-      Promise.all([
+      Promise.allSettled([
         createOAuthProvider(env).purgeExpiredData(env, {
           batchSize: 50,
         }),
         cleanupInstitutionPilot(env),
-      ])
-        .then(([oauth, pilot]) => {
+      ]).then(([oauthResult, pilotResult]) => {
+        if (oauthResult.status === "rejected") {
+          console.error(
+            JSON.stringify({
+              event: "oauth_cleanup_failed",
+              errorType:
+                oauthResult.reason instanceof Error
+                  ? oauthResult.reason.name
+                  : "UnknownError",
+            }),
+          );
+        }
+        if (pilotResult.status === "rejected") {
+          emitPilotMetric(env, "pilot_cleanup_failed", {
+            outcome: "failed",
+            durationMs: Date.now() - startedAt,
+          });
+          return;
+        }
+        const pilot = pilotResult.value;
+        emitPilotMetric(env, "pilot_cleanup_complete", {
+          outcome:
+            oauthResult.status === "fulfilled"
+              ? "complete"
+              : "pilot_only",
+          durationMs: Date.now() - startedAt,
+        });
+        if (oauthResult.status === "fulfilled") {
+          const oauth = oauthResult.value;
           console.info(
             JSON.stringify({
               event: "pilot_cleanup_complete",
@@ -336,19 +485,10 @@ const worker = {
               pilot,
             }),
           );
-        })
-        .catch((error: unknown) => {
-          console.error(
-            JSON.stringify({
-              event: "pilot_cleanup_failed",
-              errorType:
-                error instanceof Error ? error.name : "UnknownError",
-            }),
-          );
-        }),
+        }
+      }),
     );
   },
 } satisfies ExportedHandler<PilotEnv>;
 
 export default worker;
-

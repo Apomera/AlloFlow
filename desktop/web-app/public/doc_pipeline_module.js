@@ -448,7 +448,7 @@ var ALLO_INTERACTIVE_OBJECT_PROFILES = {
   dbq: { label: 'Document-Based Question', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'document-packet', notes: 'Exports sources, prompts, and rubric; essay capture is handled by worksheet/submission flows.' },
   'note-taking': { label: 'Note Taking', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'student-work-snapshot', notes: 'Exports the current note snapshot and feedback state.' },
   'anchor-chart': { label: 'Anchor Chart', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'poster-snapshot', notes: 'Exports as a poster-style reference chart.' },
-  math: { label: 'STEM Lab', status: 'partial', html: 'snapshot', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'static-launch-summary', notes: 'Main export can include the generated math/STEM summary; full simulations need a dedicated adapter.' },
+  math: { label: 'STEAM Lab', status: 'partial', html: 'snapshot', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'static-launch-summary', notes: 'Main export can include the generated math/STEM summary; full simulations need a dedicated adapter.' },
   'lesson-plan': { label: 'Lesson Plan', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'teacher-plan', notes: 'Exports as a teacher-facing plan.' },
   'gemini-bridge': { label: 'Generated Interactive Artifact', status: 'partial', html: 'snapshot', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'code-snapshot', notes: 'Exports the generated artifact/code text. Running apps need packaged assets and sandboxing.' },
   'alignment-report': { label: 'Alignment Report', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'audit-report', notes: 'Exports as a standards-alignment report.' },
@@ -2425,6 +2425,8 @@ function _alloResolveExtractionPageCount(pageCount, isEstimate, probedPageCount,
 // Pure (items in → ordered items + diagnostics out) → unit-testable without pdf.js.
 function _alloOrderTextItems(items, opts) {
   opts = opts || {};
+  var TRACE = opts.trace || null;
+  var _t = function (msg) { if (TRACE) TRACE.push(msg); };
   var _x = function (it) { return it && it.transform ? it.transform[4] : 0; };
   var _y = function (it) { return it && it.transform ? it.transform[5] : 0; };
   var _w = function (it) {
@@ -2491,6 +2493,79 @@ function _alloOrderTextItems(items, opts) {
       medianChars: nLines ? charCounts[Math.floor(nLines / 2)] : 0,
     };
   };
+  // ── Region classifier primitives (corpus round 13) ──────────────────────
+  // Rounds 9-10 recorded that several gates "want a real region classifier,
+  // not another constant". These helpers are that classifier's vocabulary:
+  // every region can report its dominant face+size (char-mass weighted) and
+  // per-line shape, and the gates below consult THAT instead of loosening
+  // their constants globally (the measured-and-rejected round-10 policies).
+  var _itemSize = function (it) {
+    return it && it.transform ? Math.round(Math.abs(it.transform[0]) * 2) / 2 : 0;
+  };
+  var _itemKey = function (it) {
+    return ((it && it.fontName) || '?') + '|' + _itemSize(it);
+  };
+  // Dominant face|size key of a set of items, by character mass. Returns
+  // { key, size, share } or null when the set is empty.
+  var _domKey = function (set) {
+    var mass = Object.create(null), total = 0, kD;
+    for (var iD = 0; iD < set.length; iD++) {
+      var n = String(set[iD].str || '').length;
+      if (!n) continue;
+      mass[_itemKey(set[iD])] = (mass[_itemKey(set[iD])] || 0) + n;
+      total += n;
+    }
+    var bestK = null, bestN = 0;
+    for (kD in mass) if (mass[kD] > bestN) { bestN = mass[kD]; bestK = kD; }
+    if (!bestK || !total) return null;
+    return { key: bestK, size: parseFloat(bestK.split('|')[1]) || 0, share: bestN / total };
+  };
+  // A side reads as PURE BODY PROSE when >=80% of its characters share one
+  // face|size key at body size. Used to relax the 8-line prose floor for
+  // short columns (i1040 p121's five-line columns over a packed table) —
+  // ONLY when both sides are the same pure prose, so the round-9 lesson
+  // (loosening the floor globally lost more than it won) stays honored.
+  var _prosePureKey = function (side) {
+    var d = _domKey(side);
+    return d && d.share >= 0.8 && d.size >= 9 ? d.key : null;
+  };
+  // A side reads as a LIST/INDEX column — many short left-aligned entries on
+  // a regular pitch — when its lines align at few left stops and its leading
+  // is regular. An index's baselines match across columns (dense same-pitch
+  // lines alias into the 3pt buckets), so the table veto killed i1040 p124
+  // even though column-major reading is exactly right there. A TABLE differs
+  // on items-per-line (cells), a FORM on pitch regularity and stop
+  // concentration, a FIGURE page on line count.
+  var _listLike = function (side, S) {
+    if (!(S.lines >= 12 && S.itemsPerLine <= 3.0 && S.medianChars >= 8 && S.medianChars <= 40)) return null;
+    var lines = Object.create(null), kL2;
+    for (var iL2 = 0; iL2 < side.length; iL2++) {
+      var kk = Math.round(_y(side[iL2]) / 3);
+      var xa2 = _x(side[iL2]);
+      if (!(kk in lines) || xa2 < lines[kk]) lines[kk] = xa2;
+    }
+    var ys3 = [], stops = Object.create(null), nL = 0;
+    for (kL2 in lines) {
+      ys3.push(parseFloat(kL2) * 3);
+      var stop = Math.round(lines[kL2] / 6);
+      stops[stop] = (stops[stop] || 0) + 1;
+      nL++;
+    }
+    var aligned = 0, kS;
+    for (kS in stops) if (stops[kS] >= 3) aligned += stops[kS];
+    var alignedShare = nL ? aligned / nL : 0;
+    ys3.sort(function (p, q) { return q - p; });
+    var gapCount = Object.create(null), nG = 0, modal = 0;
+    for (var iG = 1; iG < ys3.length; iG++) {
+      var gp = Math.round(ys3[iG - 1] - ys3[iG]);
+      gapCount[gp] = (gapCount[gp] || 0) + 1;
+      nG++;
+    }
+    for (kS in gapCount) if (gapCount[kS] > modal) modal = gapCount[kS];
+    var pitchShare = nG ? modal / nG : 0;
+    return { alignedShare: alignedShare, pitchShare: pitchShare,
+             pass: alignedShare >= 0.75 && pitchShare >= 0.5 };
+  };
   var MAX_DEPTH = 4; // deeper than the old 2: a band cut may sit above a column cut
   var MIN_GUTTER_PT = 8; // measured: real gutters here are 10-12pt (see below)
   // Horizontal band cut (corpus round 8). Together with the vertical gutter
@@ -2525,15 +2600,47 @@ function _alloOrderTextItems(items, opts) {
     for (var g2 = 0; g2 < gaps.length; g2++) {
       if (gaps[g2] >= need) candidates.push({ gap: gaps[g2], yCut: (ys[g2] + ys[g2 + 1]) / 2 });
     }
-    if (!candidates.length) return null;
+    if (!candidates.length) { _t('  bandCut: levels=' + ys.length + ' leading=' + leading.toFixed(1) + ' need=' + need.toFixed(1) + ' maxGap=' + (gaps.length ? Math.max.apply(null, gaps).toFixed(1) : 'none') + ' -> no candidates'); return null; }
     // Widest first, but keep looking: the widest blank strip on a page is often
     // the one above the footer, which would peel off a band of one item. Take
     // the widest cut that actually leaves two substantial regions.
+    // BANNER PEEL (corpus round 13): the 6-item floor also blocked peeling a
+    // page TITLE — i1040 p125's "Your Rights as a Taxpayer" is two 43.5pt
+    // items over a 25.5pt band, and with them unpeeled the x-histogram never
+    // finds the two columns below (the banner floods every gutter bin). A
+    // side smaller than the floor is allowed when every item on it is
+    // display-scale furniture: >=1.6x the region's dominant body size, or a
+    // single item spanning most of the region. Body-size items keep the
+    // floor, so a stray caption or footer still cannot become its own band.
+    var _bodySizeD = _domKey(arr);
+    var _bannerSide = function (side, regionSpan) {
+      if (!side.length || side.length > 5) return false;
+      for (var iBn = 0; iBn < side.length; iBn++) {
+        var big = _bodySizeD && _itemSize(side[iBn]) >= _bodySizeD.size * 1.6;
+        var wide = _w(side[iBn]) >= regionSpan * 0.55;
+        if (!big && !wide) return false;
+      }
+      return true;
+    };
+    var _bandSpan = 0;
+    { var _bMinX = Infinity, _bMaxX = -Infinity;
+      for (var iSp = 0; iSp < arr.length; iSp++) {
+        var xs0 = _x(arr[iSp]), xs1 = xs0 + _w(arr[iSp]);
+        if (xs0 < _bMinX) _bMinX = xs0; if (xs1 > _bMaxX) _bMaxX = xs1;
+      }
+      _bandSpan = Math.max(1, _bMaxX - _bMinX); }
     candidates.sort(function (a, b) { return b.gap - a.gap; });
     for (var c2 = 0; c2 < candidates.length; c2++) {
       var top = [], bottom = [];
       for (var iC = 0; iC < arr.length; iC++) (_y(arr[iC]) > candidates[c2].yCut ? top : bottom).push(arr[iC]);
       if (top.length >= 6 && bottom.length >= 6) return { top: top, bottom: bottom };
+      if (top.length && bottom.length
+          && (top.length >= 6 || _bannerSide(top, _bandSpan))
+          && (bottom.length >= 6 || _bannerSide(bottom, _bandSpan))) {
+        _t('  bandCut: banner peel @' + candidates[c2].yCut.toFixed(0) + ' sides ' + top.length + '/' + bottom.length);
+        return { top: top, bottom: bottom };
+      }
+      _t('  bandCut: cut@' + candidates[c2].yCut.toFixed(0) + ' gap=' + candidates[c2].gap.toFixed(1) + ' sides ' + top.length + '/' + bottom.length + ' too small');
     }
     return null;
   };
@@ -2616,6 +2723,7 @@ function _alloOrderTextItems(items, opts) {
     }
     clean.sort(byLen);
     crossed.sort(byLen);
+    _t('d' + depth + ' n=' + arr.length + ' span=' + Math.round(span) + ' cands=' + cands.length + ' clean=' + clean.length + ' crossed=' + crossed.length);
     // Peel full-width furniture off an EDGE of the region in one cut: walk the
     // y levels inward from the top (then from the bottom) while every item on
     // the level crosses a candidate gutter, and cut below the last such level.
@@ -2654,6 +2762,199 @@ function _alloOrderTextItems(items, opts) {
       return null;
     };
     var best = null;
+    // Every way of REJECTING a vertical split falls through to here, not just
+    // "no gutter found": a page whose layout changes down the page can present
+    // a gutter that the balance or table gates then veto, and the band cut is
+    // exactly what such a page needs (i1040 p9 — three columns of prose above
+    // a full-width chart).
+    // Interior crosser partition (corpus round 10). The edge peel handles
+    // full-width furniture at the TOP or BOTTOM of a region; a full-width
+    // BLOCK stranded mid-region (i1040 p108's second worksheet, p116's 8978
+    // worksheet) used to fall through to a vertical cut straight through the
+    // block, splitting its rows across two "columns". Partition the region's
+    // y-levels instead: contiguous runs of levels that contain a crossing item
+    // become bands kept whole, the clear runs between them are recursed for
+    // columns. Guarded three ways: the crossing content must be a BLOCK (>= 4
+    // levels — a wrapped heading is 1-3 and keeps today's crossed-cut path),
+    // a clear band must actually find columns, and a 1-level clear run
+    // sandwiched between crosser runs is merged into the furniture rather
+    // than allowed to fragment the page.
+    var crosserPartition = function () {
+      if (!cands.length) return null;
+      var levelOf = function (it) { return Math.round(_y(it) / 3) * 3; };
+      var crossLv = {}, allLv = {};
+      for (var iP = 0; iP < arr.length; iP++) {
+        var lvl = levelOf(arr[iP]);
+        allLv[lvl] = true;
+        if (crossesAny(arr[iP])) crossLv[lvl] = true;
+      }
+      var crossLevels = 0, kC;
+      for (kC in crossLv) if (Object.prototype.hasOwnProperty.call(crossLv, kC)) crossLevels++;
+      if (crossLevels < 4) { _t('    partition: crossLevels=' + crossLevels + ' < 4'); return null; }
+      var ys2 = [], kP2;
+      for (kP2 in allLv) if (Object.prototype.hasOwnProperty.call(allLv, kP2)) ys2.push(parseFloat(kP2));
+      if (ys2.length < 6) return null;
+      ys2.sort(function (p, q) { return q - p; });
+      var runs = [], cur = null;
+      for (var iY = 0; iY < ys2.length; iY++) {
+        var isC = !!crossLv[ys2[iY]];
+        if (!cur || cur.cross !== isC) { cur = { cross: isC, yHi: ys2[iY], yLo: ys2[iY], levels: 1 }; runs.push(cur); }
+        else { cur.yLo = ys2[iY]; cur.levels++; }
+      }
+      // Merge 1-level clear runs into the surrounding furniture, then demote
+      // every THIN crosser run to clear: a run of 1-3 crossing levels is an
+      // ordinary heading or caption, and banding around headings slices
+      // continuing columns apart (measured: i1040 p106/p107 exploded to 17-18
+      // "columns" and lost 0.04-0.05 agreement when scattered one-line
+      // crossers were treated as band boundaries). Only a BLOCK - 4+
+      // consecutive occupied levels, all crossing - is furniture worth
+      // isolating.
+      for (var iM2 = 0; iM2 < runs.length; iM2++) {
+        if (!runs[iM2].cross && runs[iM2].levels <= 1 && iM2 > 0 && iM2 < runs.length - 1 &&
+            runs[iM2 - 1].cross && runs[iM2 + 1].cross) runs[iM2].cross = true;
+      }
+      var merged0 = [];
+      for (var iM4 = 0; iM4 < runs.length; iM4++) {
+        var last0 = merged0[merged0.length - 1];
+        if (last0 && last0.cross === runs[iM4].cross) { last0.yLo = runs[iM4].yLo; last0.levels += runs[iM4].levels; }
+        else merged0.push({ cross: runs[iM4].cross, yHi: runs[iM4].yHi, yLo: runs[iM4].yLo, levels: runs[iM4].levels });
+      }
+      var thick = 0;
+      for (var iM5 = 0; iM5 < merged0.length; iM5++) {
+        if (merged0[iM5].cross && merged0[iM5].levels < 4) merged0[iM5].cross = false;
+        else if (merged0[iM5].cross) thick++;
+      }
+      if (!thick) { _t('    partition: no thick crosser run'); return null; }
+      var merged = [];
+      for (var iM3 = 0; iM3 < merged0.length; iM3++) {
+        var last = merged[merged.length - 1];
+        if (last && last.cross === merged0[iM3].cross) { last.yLo = merged0[iM3].yLo; last.levels += merged0[iM3].levels; }
+        else merged.push(merged0[iM3]);
+      }
+      var clearBands = 0;
+      for (var iB3 = 0; iB3 < merged.length; iB3++) if (!merged[iB3].cross) clearBands++;
+      if (!clearBands || merged.length < 2) { _t('    partition: bands=' + merged.length + ' clear=' + clearBands); return null; }
+      var parts = [];
+      for (var iB4 = 0; iB4 < merged.length; iB4++) parts.push([]);
+      for (var iA2 = 0; iA2 < arr.length; iA2++) {
+        var lv2 = levelOf(arr[iA2]);
+        for (var iB5 = 0; iB5 < merged.length; iB5++) {
+          if (lv2 <= merged[iB5].yHi && lv2 >= merged[iB5].yLo) { parts[iB5].push(arr[iA2]); break; }
+        }
+      }
+      var colsOut = [], guttersOut = [];
+      for (var iB6 = 0; iB6 < merged.length; iB6++) {
+        if (!parts[iB6].length) continue;
+        if (merged[iB6].cross) { colsOut.push(parts[iB6]); continue; }
+        var S = split(parts[iB6], depth + 1);
+        colsOut = colsOut.concat(S.cols);
+        guttersOut = guttersOut.concat(S.gutters);
+      }
+      if (!guttersOut.length) { _t('    partition: no gutters in clear bands'); return null; }
+      _t('d' + depth + ' crosserPartition: ' + merged.length + ' bands (' + crossLevels + ' crosser levels), gutters=' + guttersOut.length);
+      return { cols: colsOut, gutters: guttersOut };
+    };
+    // FACE BAND CUT (corpus round 13). When no BLANK band exists — i1040
+    // p121 packs a full-width table right against its three columns of prose
+    // — the region can still carry a hard layout boundary: the y where the
+    // dominant face|size flips completely. Continuing columns carry their
+    // face across any figure or caption they flow around, so requiring the
+    // flip to be bidirectional (neither side's dominant key appears
+    // meaningfully in the other) is what keeps this away from the
+    // flow-around pages that sank banding-at-depth-0 in round 10.
+    var faceBandCut = function () {
+      var linesFB = Object.create(null), kFB;
+      for (var iF = 0; iF < arr.length; iF++) {
+        var kk2 = Math.round(_y(arr[iF]) / 3) * 3;
+        var rec = linesFB[kk2] || (linesFB[kk2] = { y: kk2, items: 0, mass: Object.create(null), tot: 0 });
+        var n2 = String(arr[iF].str || '').length;
+        rec.items++; rec.tot += n2;
+        rec.mass[_itemKey(arr[iF])] = (rec.mass[_itemKey(arr[iF])] || 0) + n2;
+      }
+      var recs = [];
+      for (kFB in linesFB) recs.push(linesFB[kFB]);
+      if (recs.length < 8) return null;
+      recs.sort(function (p, q) { return q.y - p.y; }); // top first
+      var massOf = function (a, b) {
+        var m = Object.create(null), items = 0, tot = 0, kM;
+        for (var iM6 = a; iM6 <= b; iM6++) {
+          items += recs[iM6].items; tot += recs[iM6].tot;
+          for (kM in recs[iM6].mass) m[kM] = (m[kM] || 0) + recs[iM6].mass[kM];
+        }
+        var bk = null, bn = 0;
+        for (kM in m) if (m[kM] > bn) { bn = m[kM]; bk = kM; }
+        return { m: m, items: items, tot: tot, dom: bk, domShare: tot ? bn / tot : 0 };
+      };
+      var bestCut = null;
+      for (var bI = 3; bI < recs.length - 4; bI++) {
+        var A = massOf(0, bI), B = massOf(bI + 1, recs.length - 1);
+        if (A.items < 8 || B.items < 8 || !A.dom || !B.dom || A.dom === B.dom) continue;
+        var sizeA = parseFloat(A.dom.split('|')[1]) || 0;
+        if (sizeA < 8 || Math.max(A.domShare, B.domShare) < 0.75) continue;
+        var aInB = (B.m[A.dom] || 0) / Math.max(1, B.tot);
+        var bInA = (A.m[B.dom] || 0) / Math.max(1, A.tot);
+        if (aInB > 0.2 || bInA > 0.2) continue;
+        var gapF = recs[bI].y - recs[bI + 1].y;
+        if (!bestCut || gapF > bestCut.gap) bestCut = { gap: gapF, yCut: (recs[bI].y + recs[bI + 1].y) / 2 };
+      }
+      if (!bestCut) return null;
+      var topF = [], botF = [];
+      for (var iF2 = 0; iF2 < arr.length; iF2++) (_y(arr[iF2]) > bestCut.yCut ? topF : botF).push(arr[iF2]);
+      _t('d' + depth + ' faceBandCut @' + bestCut.yCut.toFixed(0) + ' sides ' + topF.length + '/' + botF.length);
+      return { top: topF, bottom: botF };
+    };
+    var tryFaceBand = function () {
+      var fb = faceBandCut();
+      if (!fb) return null;
+      var FT = split(fb.top, depth + 1), FB2 = split(fb.bottom, depth + 1);
+      if (FT.gutters.length + FB2.gutters.length === 0) {
+        _t('d' + depth + ' faceBandCut rejected: no gutters found in bands');
+        return null;
+      }
+      // Column-continuation guard: when both sides find columns at the SAME
+      // x positions, the face flip sits INSIDE continuing columns (a styled
+      // intro, a face-changed section) and cutting would interleave each
+      // column's halves. A real layout reset changes the gutter set.
+      if (FT.gutters.length && FB2.gutters.length) {
+        var sameCount = 0;
+        for (var iG1 = 0; iG1 < FT.gutters.length; iG1++) {
+          for (var iG2 = 0; iG2 < FB2.gutters.length; iG2++) {
+            if (Math.abs(FT.gutters[iG1] - FB2.gutters[iG2]) <= 6) { sameCount++; break; }
+          }
+        }
+        if (sameCount === FT.gutters.length && FT.gutters.length === FB2.gutters.length) {
+          _t('d' + depth + ' faceBandCut rejected: identical gutters both sides (continuing columns)');
+          return null;
+        }
+      }
+      return { cols: FT.cols.concat(FB2.cols), gutters: FT.gutters.concat(FB2.gutters) };
+    };
+    var noVertical = function () {
+      var band = bandCut(arr);
+      if (!band) {
+        _t('d' + depth + ' bandCut=null');
+        var part = crosserPartition();
+        if (part) return part;
+        var faceOrg = tryFaceBand();
+        if (faceOrg) return faceOrg;
+        return { cols: [arr], gutters: [] };
+      }
+      _t('d' + depth + ' bandCut top=' + band.top.length + ' bottom=' + band.bottom.length);
+      var T = split(band.top, depth + 1), B = split(band.bottom, depth + 1);
+      // Keep the cut ONLY if it let some band find real columns. A band cut that
+      // merely slices single-column content into stacked pieces changes nothing
+      // a reader would notice and, measured across the corpus, cost more in
+      // subtle reordering than it ever gained.
+      if (T.gutters.length + B.gutters.length === 0) {
+        _t('d' + depth + ' bandCut rejected: no gutters found in bands');
+        var part2 = crosserPartition();
+        if (part2) return part2;
+        var faceOrg2 = tryFaceBand();
+        if (faceOrg2) return faceOrg2;
+        return { cols: [arr], gutters: [] };
+      }
+      return { cols: T.cols.concat(B.cols), gutters: T.gutters.concat(B.gutters) };
+    };
     // Peel only when NO channel on this region is clean. One crossed gutter
     // beside a clean one is an ordinary heading spanning two of three columns;
     // every gutter being crossed is the signature of full-width furniture.
@@ -2667,25 +2968,30 @@ function _alloOrderTextItems(items, opts) {
           return { cols: PT.cols.concat(PB.cols), gutters: PT.gutters.concat(PB.gutters) };
         }
       }
+      // Round 10: in a SUB-REGION (depth >= 1) whose every channel is
+      // crossed, prefer a horizontal organization over cutting through the
+      // crossers, kept only when a band actually finds columns. Measured on
+      // the full corpus (order_sweep, 1,068 referee'd pages):
+      //   * i1040 p108 - the crossers-stranded-mid-region case round 9 left
+      //     open - goes 0.8753 -> 0.9479: the mid-page worksheet stops
+      //     slicing columns 2 and 3 through it (+0.073, the round's target);
+      //   * the depth >= 1 gate is load-bearing: fired at depth 0 this also
+      //     banded ordinary two-column article pages whose text FLOWS AROUND
+      //     a figure or caption block, interleaving each column's above- and
+      //     below-figure halves (nsf p2 -0.040, sp800 p21 -0.024, usgs p10
+      //     -0.023, 12 more besides - measured and rejected). A whole PAGE
+      //     with only crossed channels is usually flow-around; a sub-region
+      //     already carved off by a band cut is a layout reset.
+      //   * residual cost, accepted: nces p15 -0.016 and i1040 p47 -0.008,
+      //     both worksheet-grid pages where the content-stream referee is at
+      //     its least reliable (p47 baseline 0.84).
+      if (depth >= 1 && bandCut(arr)) {
+        var hz = noVertical();
+        if (hz.gutters.length) { _t('d' + depth + ' all-crossed sub-region -> horizontal organization kept'); return hz; }
+      }
       // Nothing isolates the crossers: fall through and let the ordered search
       // below try the crossed channels on their own merits.
     }
-    // Every way of REJECTING a vertical split falls through to here, not just
-    // "no gutter found": a page whose layout changes down the page can present
-    // a gutter that the balance or table gates then veto, and the band cut is
-    // exactly what such a page needs (i1040 p9 — three columns of prose above
-    // a full-width chart).
-    var noVertical = function () {
-      var band = bandCut(arr);
-      if (!band) return { cols: [arr], gutters: [] };
-      var T = split(band.top, depth + 1), B = split(band.bottom, depth + 1);
-      // Keep the cut ONLY if it let some band find real columns. A band cut that
-      // merely slices single-column content into stacked pieces changes nothing
-      // a reader would notice and, measured across the corpus, cost more in
-      // subtle reordering than it ever gained.
-      if (T.gutters.length + B.gutters.length === 0) return { cols: [arr], gutters: [] };
-      return { cols: T.cols.concat(B.cols), gutters: T.gutters.concat(B.gutters) };
-    };
     // Try candidates in order — clean before crossed, widest first — and keep
     // the first that survives the gates below (corpus round 9). This used to
     // test the widest channel ALONE and fall straight through to the band cut
@@ -2721,7 +3027,30 @@ function _alloOrderTextItems(items, opts) {
       }
       if (!(lY > 0 && matches / lY >= 0.55)) return true;
       var LS = _sideLines(lSide, minX, xCut), RS = _sideLines(rSide, xCut, maxX);
-      return LS.lines >= 8 && RS.lines >= 8 &&
+      _t('  notATable stats: L{lines=' + LS.lines + ' fill=' + LS.medianFill.toFixed(2) + ' ipl=' + LS.itemsPerLine.toFixed(1) + ' chars=' + LS.medianChars + '} R{lines=' + RS.lines + ' fill=' + RS.medianFill.toFixed(2) + ' ipl=' + RS.itemsPerLine.toFixed(1) + ' chars=' + RS.medianChars + '} baselineMatch=' + (matches / lY).toFixed(2));
+      // LIST-REGION gate (corpus round 13). An index/list column is short
+      // left-aligned entries on a regular pitch: its baselines match across
+      // columns (dense same-leading lines alias into the 3pt buckets) and
+      // its fill/chars read nothing like prose, so the prose gates below
+      // vetoed exactly the pages where column-major reading is most right
+      // (i1040 p124's Index, 0.68 as one interleaved column). Both sides
+      // must classify as lists; tables fail on items-per-line, forms on
+      // pitch regularity/stop concentration, figure pages on line count.
+      var LL = _listLike(lSide, LS), RL = _listLike(rSide, RS);
+      if (LL && RL && LL.pass && RL.pass) {
+        _t('  listLike both sides (align ' + LL.alignedShare.toFixed(2) + '/' + RL.alignedShare.toFixed(2) + ', pitch ' + LL.pitchShare.toFixed(2) + '/' + RL.pitchShare.toFixed(2) + ') -> cut allowed');
+        return true;
+      }
+      // PROSE-PURITY floor relaxation (corpus round 13). The 8-line floor
+      // exists because short columns are usually table cells — but when both
+      // sides are >=80% one body-size face (the classifier's pure-prose
+      // verdict) they are short PARAGRAPH columns: i1040 p121's five-line
+      // columns over a packed full-width table. Every other prose gate
+      // still applies at full strength.
+      var _ppL = _prosePureKey(lSide), _ppR = _prosePureKey(rSide);
+      var _lineFloor = (_ppL && _ppR && _ppL === _ppR) ? 3 : 8;
+      _t('  prose-pure: L=' + _ppL + ' R=' + _ppR + ' -> line floor ' + _lineFloor);
+      return LS.lines >= _lineFloor && RS.lines >= _lineFloor &&
         LS.medianFill >= 0.8 && LS.itemsPerLine <= 2.5 && RS.itemsPerLine <= 4.5 &&
         LS.medianChars >= 18 && RS.medianChars >= 18;
     };
@@ -2744,13 +3073,22 @@ function _alloOrderTextItems(items, opts) {
     //     on all eight improved and all three regressed pages: no feature
     //     separates them, so there is nothing honest to threshold on. That
     //     search wants a real region classifier, not another constant.
+    // Crosser-volume guard (corpus round 10). A crossed channel is still an
+    // acceptable cut when what crosses it is a HEADING — one to three y-levels
+    // (i1040 p87, where the crossed 1|2 gutter is the right cut). But when the
+    // crossing content is a BLOCK of full-width lines (a worksheet, a chart
+    // legend), cutting through it splits its rows between the two sides:
+    // i1040 p116's 8978 worksheet was emitted between column 2 and column 3
+    // this way. Count the distinct y-levels that cross the candidate; past 3,
+    // refuse the vertical cut and let the band cut / crosser partition
+    // organize the page horizontally first.
     var order = cands.slice().sort(function (p, q) { return q.len - p.len; }).slice(0, 1);
     for (var iQ = 0; iQ < order.length; iQ++) {
       var cand = order[iQ], cl = [], cr2 = [];
       for (var i4 = 0; i4 < arr.length; i4++) { (( _x(arr[i4]) + _w(arr[i4]) / 2 ) < cand.xCut ? cl : cr2).push(arr[i4]); }
       // Balance guard: a stray margin note isn't a column.
-      if (cl.length < 5 || cr2.length < 5 || cl.length / cr2.length > 8 || cr2.length / cl.length > 8) continue;
-      if (!notATable(cl, cr2, cand.xCut)) continue;
+      if (cl.length < 5 || cr2.length < 5 || cl.length / cr2.length > 8 || cr2.length / cl.length > 8) { _t('d' + depth + ' veto=balance l=' + cl.length + ' r=' + cr2.length); continue; }
+      if (!notATable(cl, cr2, cand.xCut)) { _t('d' + depth + ' veto=table xCut=' + Math.round(cand.xCut)); continue; }
       accepted = cand; left = cl; right = cr2;
       break;
     }
@@ -5779,6 +6117,9 @@ var createDocPipeline = function(deps) {
   // run to record an honest "failed at Stage N" history row (the success path
   // carries the same numbers in fixResult.pipelineStats).
   var _getPipelineStats = function() {
+    // Fold the throttle rollup into the same log the teacher copies. Cheap and
+    // idempotent-ish: it only writes when the run actually hit the gate.
+    try { if (_throttleTrace.length) _pipeThrottleSummary(null); } catch (_) {}
     return {
       runId: _pipelineStats.runId || null, // #15: per-run identity — history rows dedupe on this
       runSequence: _pipelineStats.runSequence || null,
@@ -5923,9 +6264,112 @@ var createDocPipeline = function(deps) {
   var _geminiLastStormTripAt = 0;   // L7 (2026-07-26): when the breaker last actually tripped — see recentlyThrottled
   var _geminiOffRouteOkStreak = 0;  // M16 (2026-07-26): consecutive successes on a DIFFERENT route than the one that failed — a run that has moved on can never produce the failed route's evidence, so enough of these clear the wave on their own
   var _geminiCooldownUntil = 0;     // epoch ms; no NEW call starts before this
+
+  // ── Throttle telemetry (2026-08-11) ────────────────────────────────────
+  // Why: the gate constants above were tuned by hand against symptoms. To tune
+  // them against BEHAVIOUR we need to know, per decision: what tripped, what the
+  // streaks were, how much concurrency was actually in flight, how long we then
+  // waited, and whether the next call after that wait succeeded. Everything here
+  // is a number or an enum — no prompt text, no document content, no student data,
+  // so a teacher can paste the log back without disclosing anything.
+  var _throttleTrace = [];          // structured records for the end-of-run rollup
+  var _throttleRunStartedAt = 0;
+  var _throttleCooldownMsTotal = 0; // wall-clock deliberately spent backing off
+  var _throttlePendingProbe = null; // set when a cooldown ends, resolved by the next outcome
+  var _THROTTLE_TRACE_MAX = 400;
+  var _pipeThrottleEvent = function(kind, fields, owner) {
+    try {
+      var rec = Object.assign({
+        kind: kind,
+        atMs: (typeof Date !== "undefined" && Date.now) ? Date.now() : 0,
+        cap: _geminiCap,
+        inFlight: _geminiInFlight,
+        queued: (_geminiWaiters && _geminiWaiters.length) || 0,
+        authStreak: _geminiAuthStreak,
+        transientStreak: _geminiTransientStreak,
+        okStreak: _geminiOkStreak
+      }, fields || {});
+      _throttleTrace.push(rec);
+      if (_throttleTrace.length > _THROTTLE_TRACE_MAX) _throttleTrace.splice(0, _throttleTrace.length - _THROTTLE_TRACE_MAX);
+      // One compact line into the copyable log. Decisions only — see header.
+      var bits = [];
+      Object.keys(rec).forEach(function (k) {
+        if (k === "kind" || k === "atMs") return;
+        if (rec[k] === null || rec[k] === undefined || rec[k] === "") return;
+        bits.push(k + "=" + rec[k]);
+      });
+      _pipeLog("ThrottleData", kind + " " + bits.join(" "), rec, owner);
+    } catch (_) { /* telemetry must never break a run */ }
+  };
+  // Called by the outcome paths so a cooldown can be scored: did the FIRST call
+  // after backing off succeed? That is the number that says whether a given
+  // cooldown length is buying recovery or just costing the teacher time.
+  // Rollup for a finished run. Answers the three questions the tuned constants
+  // rest on: (1) is the limit driven by CONCURRENCY or by call RATE — compare the
+  // in-flight counts recorded at each trip against the cap in force; (2) is a
+  // given cooldown length buying recovery — post_cooldown_ok vs post_cooldown_fail;
+  // (3) how much wall-clock the run actually spent backing off.
+  var _pipeThrottleSummary = function(owner) {
+    try {
+      if (!_throttleTrace.length) return null;
+      var byKind = {};
+      var tripInFlight = [];
+      var cooldownOk = 0, cooldownFail = 0;
+      var cooldownsByMs = {};
+      for (var i = 0; i < _throttleTrace.length; i++) {
+        var r = _throttleTrace[i];
+        byKind[r.kind] = (byKind[r.kind] || 0) + 1;
+        if (r.kind === "auth_trip" || r.kind === "transient_trip") {
+          tripInFlight.push(r.inFlight);
+          if (r.cooldownMs) cooldownsByMs[r.cooldownMs] = (cooldownsByMs[r.cooldownMs] || 0) + 1;
+        }
+        if (r.kind === "post_cooldown_ok") cooldownOk++;
+        if (r.kind === "post_cooldown_fail") cooldownFail++;
+      }
+      var avgInFlight = tripInFlight.length
+        ? Math.round((tripInFlight.reduce(function (a, b) { return a + b; }, 0) / tripInFlight.length) * 10) / 10
+        : 0;
+      var maxInFlight = tripInFlight.length ? Math.max.apply(null, tripInFlight) : 0;
+      var summary = {
+        events: _throttleTrace.length,
+        byKind: byKind,
+        tripsAtInFlightAvg: avgInFlight,
+        tripsAtInFlightMax: maxInFlight,
+        cooldownMsTotal: _throttleCooldownMsTotal,
+        cooldownRecoveredFirstTry: cooldownOk,
+        cooldownStillFailing: cooldownFail,
+        cooldownLengthsUsed: cooldownsByMs,
+        effectiveMax: _geminiEffectiveMax,
+        stormMin: _GEMINI_STORM_MIN,
+        authTrip: _GEMINI_STORM_TRIP,
+        transientTrip: _GEMINI_TRANSIENT_TRIP,
+        baseCooldownMs: _GEMINI_COOLDOWN_MS,
+        staggerMs: _geminiStaggerMs
+      };
+      var line = "run rollup — " + _throttleTrace.length + " throttle event(s); "
+        + "trips at in-flight avg " + avgInFlight + " / max " + maxInFlight + " (cap ceiling " + _geminiEffectiveMax + "); "
+        + "cooldown total " + Math.round(_throttleCooldownMsTotal / 1000) + "s; "
+        + "first call after cooldown: " + cooldownOk + " ok / " + cooldownFail + " still failing.";
+      _pipeLog("ThrottleSummary", line, summary, owner);
+      return summary;
+    } catch (_) { return null; }
+  };
+  var _pipeThrottleScoreProbe = function(outcome, owner) {
+    try {
+      if (!_throttlePendingProbe) return;
+      var waited = _throttlePendingProbe.cooldownMs || 0;
+      _throttlePendingProbe = null;
+      _pipeThrottleEvent("post_cooldown_" + outcome, { cooldownMs: waited }, owner);
+    } catch (_) {}
+  };
+
   var _geminiCooldownTimer = null;
   var _geminiStormAnnounced = false; // user-facing "Canvas is rate-limiting" message emitted once per sustained storm
   var _geminiLastFailureProfile = null; // representative recovery must match the route and prompt volume that actually failed
+  // A queued call is still live remediation work. Feed the owning run's watchdog while it waits
+  // behind other calls (especially foreign/batch owners at the cap-1 throttle setting), otherwise
+  // an eight-minute host watchdog can invalidate a healthy call before its transport ever starts.
+  var _GEMINI_QUEUE_PULSE_MS = 30000;
   // Queue pump: start as many waiters as the CURRENT (possibly reduced) cap allows, and never
   // during a cooldown. Replaces the old hand-off-on-release model, which couldn't shrink the cap.
   // #3 (ChatGPT review 2026-07-10): queue entries carry the run's abort signal, captured at ENQUEUE
@@ -5947,6 +6391,20 @@ var createDocPipeline = function(deps) {
       else kept.push(w);
     }
     _geminiWaiters = kept;
+  };
+  var _pulseQueuedGeminiWaiter = function (waiter) {
+    if (!waiter || waiter.settled) return;
+    if (waiter.signal && waiter.signal.aborted) { _geminiPump(); return; }
+    // The host accepts only identified owners. Ownerless direct gate users (including probes in
+    // non-remediation contexts) must not create a timer that can never renew a real lease.
+    if (!waiter.owner || !waiter.owner.runId) return;
+    try {
+      if (typeof _pulsePipelineWatchdog === 'function') _pulsePipelineWatchdog(waiter.owner || null);
+    } catch (_) {}
+    waiter.pulseTimer = setTimeout(function () {
+      waiter.pulseTimer = null;
+      _pulseQueuedGeminiWaiter(waiter);
+    }, _GEMINI_QUEUE_PULSE_MS);
   };
   var _geminiPump = function() {
     _pruneAbortedWaiters();
@@ -5986,10 +6444,41 @@ var createDocPipeline = function(deps) {
       }
     }
   };
-  var _acquireGeminiSlot = function(signal, label) {
+  var _acquireGeminiSlot = function(signal, label, owner) {
     if (signal && signal.aborted) return Promise.reject(_mkGateAbortErr(label));
     return new Promise(function(resolve, reject) {
-      _geminiWaiters.push({ resolve: resolve, reject: reject, signal: signal || null, label: label || null });
+      var waiter = {
+        signal: signal || null,
+        label: label || null,
+        owner: owner || null,
+        pulseTimer: null,
+        abortHandler: null,
+        settled: false,
+      };
+      var settle = function (fn, value) {
+        if (waiter.settled) return;
+        waiter.settled = true;
+        if (waiter.pulseTimer) { clearTimeout(waiter.pulseTimer); waiter.pulseTimer = null; }
+        try {
+          if (waiter.signal && waiter.abortHandler && typeof waiter.signal.removeEventListener === 'function') {
+            waiter.signal.removeEventListener('abort', waiter.abortHandler);
+          }
+        } catch (_) {}
+        fn(value);
+      };
+      waiter.resolve = function () { settle(resolve); };
+      waiter.reject = function (err) { settle(reject, err); };
+      waiter.abortHandler = function () {
+        var i = _geminiWaiters.indexOf(waiter);
+        if (i >= 0) _geminiWaiters.splice(i, 1);
+        waiter.reject(_mkGateAbortErr(waiter.label));
+        _geminiPump();
+      };
+      try {
+        if (signal && typeof signal.addEventListener === 'function') signal.addEventListener('abort', waiter.abortHandler, { once: true });
+      } catch (_) {}
+      _geminiWaiters.push(waiter);
+      _pulseQueuedGeminiWaiter(waiter);
       _geminiPump();
     });
   };
@@ -6002,8 +6491,8 @@ var createDocPipeline = function(deps) {
   // held until `slotUntil` settles. #3: a timed-out call is still on the wire — releasing its slot
   // at the race let TRUE transport concurrency exceed _geminiCap and deepen the very storm the
   // breaker was easing.
-  var _geminiGate = function(fn, signal, label) {
-    return _acquireGeminiSlot(signal, label).then(function() {
+  var _geminiGate = function(fn, signal, label, owner) {
+    return _acquireGeminiSlot(signal, label, owner).then(function() {
       var _released = false;
       var _free = function () { if (!_released) { _released = true; _releaseGeminiSlot(); } };
       var ret;
@@ -6015,6 +6504,7 @@ var createDocPipeline = function(deps) {
     });
   };
   var _geminiNoteAuthFail = function(stats, owner) {
+    _pipeThrottleScoreProbe("fail", owner);
     _geminiOkStreak = 0;
     _geminiAuthStreak++;
     if (_geminiAuthStreak >= _GEMINI_STORM_TRIP) {
@@ -6027,6 +6517,9 @@ var createDocPipeline = function(deps) {
       _geminiCooldownUntil = ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0) + _cd;
       var _stats = stats || _pipelineStats;
       _stats.authThrottles = (_stats.authThrottles || 0) + 1;
+      _throttleCooldownMsTotal += _cd;
+      _throttlePendingProbe = { cooldownMs: _cd };
+      _pipeThrottleEvent('auth_trip', { cooldownMs: _cd, capTo: _GEMINI_STORM_MIN, trip: _GEMINI_STORM_TRIP }, owner);
       // Surface a clear, honest message ONCE per sustained storm — this is a Canvas quota/rate-limit,
       // not an AlloFlow bug; heavy/scanned docs (many calls) trip it sooner. _pipeLog also emits the
       // canvas-visible 'alloflow:pipeline-warn' event (which the heartbeat watchdog + panel observe).
@@ -6043,6 +6536,7 @@ var createDocPipeline = function(deps) {
   // back off to 1 concurrent + an escalating cooldown so the proxy recovers (counter-intuitively
   // faster end-to-end — same rationale as the auth breaker). Fed from _geminiCall's generic-transient path.
   var _geminiNoteTransientFail = function(stats, owner) {
+    _pipeThrottleScoreProbe("fail", owner);
     _geminiOkStreak = 0;
     _geminiTransientStreak++;
     if (_geminiTransientStreak >= _GEMINI_TRANSIENT_TRIP) {
@@ -6053,6 +6547,9 @@ var createDocPipeline = function(deps) {
       _geminiCooldownUntil = ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0) + _cd;
       var _stats = stats || _pipelineStats;
       _stats.authThrottles = (_stats.authThrottles || 0) + 1;
+      _throttleCooldownMsTotal += _cd;
+      _throttlePendingProbe = { cooldownMs: _cd };
+      _pipeThrottleEvent('transient_trip', { cooldownMs: _cd, capTo: _GEMINI_STORM_MIN, trip: _GEMINI_TRANSIENT_TRIP }, owner);
       if (!_geminiStormAnnounced && _geminiTransientStreak >= _GEMINI_TRANSIENT_TRIP + 2) {
         _geminiStormAnnounced = true;
         _pipeLog('Throttle', 'The AI service is rate-limiting this session — it is returning empty responses under load (a temporary throttle, not an AlloFlow error). Backing off to let it recover; this run will be slow. Large or scanned documents hit this sooner — a smaller doc or waiting a few minutes helps.', null, owner);
@@ -6099,6 +6596,7 @@ var createDocPipeline = function(deps) {
     return failedVolume <= 0 || successVolume >= Math.ceil(failedVolume * 0.8);
   };
   var _geminiNoteSuccess = function(requestProfile) {
+    _pipeThrottleScoreProbe("ok", null);
     var _failureWaveActive = (_geminiAuthStreak > 0 || _geminiTransientStreak > 0) && !!_geminiLastFailureProfile;
     if (_failureWaveActive && !_geminiSuccessRepresentsFailure(requestProfile)) {
       // M16: a run that has MOVED ON to a different route has no way to produce the old route's
@@ -6125,6 +6623,7 @@ var createDocPipeline = function(deps) {
         // up to 90s out; without this, _geminiPump still refuses to start queued waiters until that stale
         // timestamp elapses, so "restoring concurrency to 3" was a lie for up to ~90s.
         _geminiCooldownUntil = 0;
+        _pipeThrottleEvent('recovered', { capTo: _geminiEffectiveMax, hitsNeeded: _GEMINI_RECOVER_HITS });
         warnLog('[GeminiGate] Throttle cleared — restoring concurrency to ' + _geminiEffectiveMax);
         _geminiPump();
       }
@@ -6346,7 +6845,7 @@ var createDocPipeline = function(deps) {
         _outcome.then(function () {}, function () {}),
       ]);
       return { result: _outcome, slotUntil: _slotUntil };
-    }, _sig, 'gemini-probe');
+    }, _sig, 'gemini-probe', o.owner || null);
   };
   // ── Wait-not-stop (2026-07-05, maintainer): pause, never abandon ── The follow-up loops
   // (auto-continue) used to fire full rounds of 17-19KB chunk calls INTO an active storm: on the 7/5
@@ -6711,7 +7210,7 @@ var createDocPipeline = function(deps) {
         );
         var _slotUntil = Promise.all([_transportHold, _outcomeRecorded]);
         return { result: _raced, slotUntil: _slotUntil };
-      }, _gateSignal, label).then(function(res) {
+      }, _gateSignal, label, owner || null).then(function(res) {
         // A transport that ignores AbortSignal may still resolve after ownership was revoked.
         // Normalize that race before it can reset the shared breaker or log a stale success.
         if (_gateSignal && _gateSignal.aborted) throw _mkGateAbortErr(label);
@@ -14095,7 +14594,10 @@ var createDocPipeline = function(deps) {
   };
   const _restoreOcrEvidenceGlobals = (record) => {
     if (!record || typeof window === 'undefined') return;
-    window.__lastGroundTruthCharCount = record.groundTruthCharCount || record.extractedText.length;
+    const restoredText = typeof record.extractedText === 'string'
+      ? record.extractedText
+      : (typeof record.text === 'string' ? record.text : '');
+    window.__lastGroundTruthCharCount = record.groundTruthCharCount || restoredText.length;
     window.__lastGroundTruthPageMap = record.groundTruthPages || null;
     window.__lastGroundTruthMethod = record.groundTruthMethod || 'vision-ocr';
     window.__lastOcrTesseractText = record.ocrTesseractText || '';
@@ -14137,7 +14639,10 @@ var createDocPipeline = function(deps) {
       // deterministic audits and skipped the baseline (early return). Every write now marks the
       // object AFTER finalization; unmarked entries are legacy bad snapshots — reject them.
       if (!cached.audit._auditFinalized) return null;
-      return cached.audit;
+      // Return the record, not the bare audit: the caller stamps cache provenance
+      // (_fromAuditCache/_auditCachedAt) on its own UI copy from savedAt, and the
+      // stored object must never carry those stamps (a first-run write would lie).
+      return { audit: cached.audit, savedAt: cached.savedAt };
     } catch (_) { return null; }
   };
   // ── Bounded eviction sweep for the PDF audit/remediation caches ──
@@ -14206,6 +14711,29 @@ var createDocPipeline = function(deps) {
       }
     } catch (_) { /* sweep is best-effort; never break the write path */ }
     finally { _pdfCacheSweepRunning = false; }
+  };
+  // ── User-requested cache clear (2026-08-10) ── The audit/remediation caches are a
+  // 7-day-TTL optimization, and a hit replays instantly — which a teacher who WANTS a
+  // fresh look at a previously-processed document experiences as "it never ran".
+  // This deletes exactly the two prefixes the sweep above owns; it can NOT touch the
+  // batch-resume keys (different prefix) or the multi-session/chunk-progress stores
+  // (separate IndexedDB the default store's keys() cannot even see).
+  const clearPdfDocumentCaches = async () => {
+    if (typeof window === 'undefined' || !window.idbKeyval || typeof window.idbKeyval.keys !== 'function') {
+      return { ok: false, removed: 0, reason: 'cache store unavailable' };
+    }
+    let removed = 0;
+    try {
+      const allKeys = await window.idbKeyval.keys();
+      const candidates = (allKeys || []).filter(k => typeof k === 'string' && _PDF_CACHE_KEY_PREFIXES.some(p => k.startsWith(p)));
+      for (const k of candidates) {
+        try { await window.idbKeyval.del(k); removed++; } catch (_) {}
+      }
+    } catch (err) {
+      return { ok: false, removed, reason: (err && err.message) || 'cache enumeration failed' };
+    }
+    warnLog('[PDF Cache] Cleared ' + removed + ' cached audit/remediation result(s) at user request.');
+    return { ok: true, removed };
   };
   const _writeAuditCache = async (key, audit) => {
     if (!key || typeof window === 'undefined' || !window.idbKeyval || !audit) return;
@@ -14292,6 +14820,13 @@ var createDocPipeline = function(deps) {
   // cannot happen. Reset at batch entry.
   let _batchCheckpointDegraded = false;
   let _batchTakeoverWarned = false;
+  const _BATCH_BOUNDARY_COMMIT_TIMEOUT_MS = 7000;
+  let _lastBatchCommitRevision = 0;
+  const _newBatchCommitRevision = () => {
+    const wallRevision = Date.now() * 1000;
+    _lastBatchCommitRevision = Math.max(_lastBatchCommitRevision + 1, wallRevision);
+    return _lastBatchCommitRevision;
+  };
   const _warnBatchCheckpointOnce = (message) => {
     if (_batchCheckpointWarningShown) return;
     _batchCheckpointWarningShown = true;
@@ -14307,6 +14842,26 @@ var createDocPipeline = function(deps) {
     const message = 'Another tab started a newer batch, so this batch\'s resume checkpoint was retired. This run continues; if you close this tab, unfinished files here will need to be re-added.';
     warnLog('[Batch Resume] ' + message);
     try { if (typeof addToast === 'function') addToast(message, 'warning'); } catch (_) {}
+  };
+  const _signalBatchCheckpointCommit = (state, reason, context, commitRevision) => {
+    const detail = {
+      state: state,
+      reason: String(reason || ''),
+      context: String(context || 'batch-boundary'),
+      commitRevision: Number(commitRevision) || null,
+      at: Date.now(),
+    };
+    warnLog('[Batch Resume] checkpoint commit ' + state + ' at ' + detail.context + (detail.reason ? ': ' + detail.reason : ''));
+    try {
+      if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') {
+        window.dispatchEvent(new CustomEvent('alloflow:batch-checkpoint-commit', { detail }));
+      }
+    } catch (_) {}
+    if (state === 'degraded') {
+      _batchCheckpointDegraded = true;
+      _warnBatchCheckpointOnce('A batch checkpoint boundary could not be committed. This run continues, but keep the tab open until the batch finishes.');
+    }
+    return detail;
   };
   const _normalizeBatchCheckpointId = (value) => {
     const id = String(value || '').trim();
@@ -14340,23 +14895,21 @@ var createDocPipeline = function(deps) {
       const lockMode = mode === 'shared' ? 'shared' : 'exclusive';
       // An unavailable lock manager (opaque-origin sandboxed iframe, not-fully-active
       // document) REJECTS the returned promise per spec rather than throwing sync.
-      // Distinguish "lock never granted" (fall back to the unlocked path, same as the
-      // no-API case) from "fn itself failed" (propagate) — re-running a partially
-      // executed fn could double-apply mutations.
+      // A rejected/unavailable lock is fail-closed. Read-then-write is not a CAS:
+      // two tabs could both pass it and one loser's cleanup could delete the winner.
       let _lockBodyStarted = false;
       const _lockBody = (...args) => { _lockBodyStarted = true; return fn(...args); };
       try {
         const req = locks.request(_ACTIVE_BATCH_ROOT_LOCK, { mode: lockMode }, _lockBody);
         if (req && typeof req.catch === 'function') {
           return req.catch((err) => {
-            if (_lockBodyStarted) throw err;
-            return Promise.resolve().then(fn);
+            throw err;
           });
         }
         return req;
-      } catch (_) {}
+      } catch (err) { return Promise.reject(err); }
     }
-    return Promise.resolve().then(fn);
+    return Promise.reject(new Error('batch_checkpoint_atomic_lock_unavailable'));
   };
   const _deleteBatchStorageKey = async (key) => {
     if (!key) return;
@@ -14378,19 +14931,26 @@ var createDocPipeline = function(deps) {
     if (current.savedAt !== expected.savedAt) return false;
     return !!expectedId || current.startedAt === expected.startedAt;
   };
-  const _statusRecordMatchesBatch = (record, batchId) => {
+  const _statusRecordMatchesBatch = (record, batchId, rootWriteId) => {
     if (!record) return false;
-    return batchId
+    const batchMatches = batchId
       ? _normalizeBatchCheckpointId(record.batchId) === batchId
       : !record.batchId;
+    if (!batchMatches) return false;
+    const expectedRootWriteId = _normalizeBatchCheckpointId(rootWriteId);
+    return !expectedRootWriteId || record.rootWriteId === expectedRootWriteId;
   };
   const _sameBatchStatusRecord = (current, expected, batchId) => {
     if (!current || !expected
         || !_statusRecordMatchesBatch(current, batchId)
         || !_statusRecordMatchesBatch(expected, batchId)) return false;
     if (current.writeId || expected.writeId) {
-      return !!expected.writeId && current.writeId === expected.writeId;
+      if (!expected.writeId || current.writeId !== expected.writeId) return false;
     }
+    if (current.rootWriteId || expected.rootWriteId) {
+      if (!expected.rootWriteId || current.rootWriteId !== expected.rootWriteId) return false;
+    }
+    if (current.writeId || expected.writeId) return true;
     return current.lastUpdatedAt === expected.lastUpdatedAt;
   };
   const _readBatchStatusForFiles = async (filesRec) => {
@@ -14398,9 +14958,9 @@ var createDocPipeline = function(deps) {
     if (batchId) {
       const scopedKey = _batchStatusKeyFor(batchId);
       const scoped = await storageDB.get(scopedKey);
-      if (_statusRecordMatchesBatch(scoped, batchId)) return { key: scopedKey, record: scoped, legacy: false };
+      if (_statusRecordMatchesBatch(scoped, batchId, filesRec.rootWriteId)) return { key: scopedKey, record: scoped, legacy: false };
       const legacy = await storageDB.get(_ACTIVE_BATCH_STATUS_KEY);
-      if (_statusRecordMatchesBatch(legacy, batchId)) return { key: _ACTIVE_BATCH_STATUS_KEY, record: legacy, legacy: true };
+      if (_statusRecordMatchesBatch(legacy, batchId, filesRec.rootWriteId)) return { key: _ACTIVE_BATCH_STATUS_KEY, record: legacy, legacy: true };
       return { key: scopedKey, record: null, legacy: false };
     }
     const legacy = await storageDB.get(_ACTIVE_BATCH_STATUS_KEY);
@@ -14449,11 +15009,25 @@ var createDocPipeline = function(deps) {
     for (const key of ownedKeys) await _deleteBatchStorageKey(key);
     for (const file of (files || [])) {
       if (ownedKeys.has(file && file._checkpointResultKey)) {
-        file._checkpointResultKey = null;
-        file._checkpointResultBytes = 0;
+        _setBatchCheckpointFileMeta(file, { _checkpointResultKey: null, _checkpointResultBytes: 0 });
       }
     }
   };
+  const _setBatchCheckpointFileMeta = (file, patch) => {
+    if (!file || !patch) return;
+    try { Object.assign(file, patch); } catch (_) {}
+    const source = file._checkpointSourceFile;
+    if (source && source !== file) {
+      try { Object.assign(source, patch); } catch (_) {}
+    }
+  };
+  const _snapshotBatchCheckpointFiles = (files) => (files || []).map((file) => {
+    if (!file || typeof file !== 'object') return file;
+    const snapshot = Object.assign({}, file);
+    try { Object.defineProperty(snapshot, '_checkpointSourceFile', { value: file, enumerable: false }); }
+    catch (_) { snapshot._checkpointSourceFile = file; }
+    return snapshot;
+  });
   const _batchResultSummary = (result) => {
     if (!result) return null;
     return {
@@ -14517,11 +15091,22 @@ var createDocPipeline = function(deps) {
         committed = true;
       });
       if (!committed) return false;
+      // A resumed run intentionally reuses batchId but owns a new rootWriteId.
+      // Result keys are deterministic by batch/file, so force this writer to
+      // republish each referenced result with its own root token.
+      for (const file of files) {
+        if (file && file._checkpointResultKey) {
+          _setBatchCheckpointFileMeta(file, {
+            _checkpointResultKey: null,
+            _checkpointResultBytes: 0,
+          });
+        }
+      }
       const previousId = _normalizeBatchCheckpointId(previousFilesRec && previousFilesRec.batchId);
       if (previousFilesRec && previousId !== cleanBatchId) {
         await _deleteLegacyBatchCheckpointData(previousFilesRec);
       }
-      return true;
+      return nextFilesRec.rootWriteId;
     } catch (e) {
       warnLog('[Batch Resume] saveFiles failed:', e?.message || e);
       _batchCheckpointDegraded = true;
@@ -14529,30 +15114,48 @@ var createDocPipeline = function(deps) {
       return false;
     }
   };
-  const _saveBatchStatusNow = async (files, batchId) => {
+  const _saveBatchStatusNow = async (files, batchId, commitMeta) => {
     if (typeof window === 'undefined' || !window.idbKeyval || !Array.isArray(files)) return false;
     const cleanBatchId = _normalizeBatchCheckpointId(batchId);
     if (!cleanBatchId) return false;
+    const meta = commitMeta && typeof commitMeta === 'object' ? commitMeta : {};
+    const requestedRevision = Number(meta.commitRevision);
+    const commitRevision = Number.isSafeInteger(requestedRevision) && requestedRevision > 0
+      ? requestedRevision : _newBatchCommitRevision();
+    const commitReason = String(meta.commitReason || 'batch-status');
+    const expectedRootWriteId = _normalizeBatchCheckpointId(meta.rootWriteId);
+    if (!expectedRootWriteId) return 'stale';
     return _withBatchCheckpointRootLock(async () => {
     const newlyStoredKeys = [];
     let writtenStatusKey = null;
     let writtenStatusRecord = null;
     try {
       const initialFilesRec = await storageDB.get(_ACTIVE_BATCH_FILES_KEY);
-      if (!initialFilesRec || _normalizeBatchCheckpointId(initialFilesRec.batchId) !== cleanBatchId) {
+      if (!initialFilesRec || _normalizeBatchCheckpointId(initialFilesRec.batchId) !== cleanBatchId
+          || initialFilesRec.rootWriteId !== expectedRootWriteId) {
         // A FOREIGN root means another tab took the checkpoint slot — disclose it
         // (the run continues; only tab-close resume is lost). A MISSING root is the
         // benign end-of-batch/cleared case and stays silent.
         if (initialFilesRec) _warnBatchTakeoverOnce();
-        return false;
+        _signalBatchCheckpointCommit('stale', 'batch root writer changed before commit', commitReason, commitRevision);
+        return 'stale';
+      }
+      // Reject an older/equal revision before writing any result blobs. This is the checkpoint's
+      // compare-before-set guard; a stale boundary must be a true no-op, not a status no-op that
+      // still overwrites per-file artifacts.
+      const statusKey = _batchStatusKeyFor(cleanBatchId);
+      const statusBeforeWrite = await storageDB.get(statusKey);
+      const priorRevision = Number(statusBeforeWrite && statusBeforeWrite.commitRevision) || 0;
+      if (_statusRecordMatchesBatch(statusBeforeWrite, cleanBatchId, expectedRootWriteId) && priorRevision >= commitRevision) {
+        _signalBatchCheckpointCommit('stale', 'newer checkpoint revision already committed', commitReason, commitRevision);
+        return 'stale';
       }
       // Legacy/global keys and cross-file keys are not valid ownership proofs for
       // this file. Re-serialize the in-memory result into its exact v3 namespace.
       for (const f of files) {
         const expectedKey = _batchResultKeyFor(cleanBatchId, f);
         if (f && f._checkpointResultKey && f._checkpointResultKey !== expectedKey) {
-          f._checkpointResultKey = null;
-          f._checkpointResultBytes = 0;
+          _setBatchCheckpointFileMeta(f, { _checkpointResultKey: null, _checkpointResultBytes: 0 });
         }
       }
       let storedBytes = files.reduce((sum, f) => sum + (Number(f._checkpointResultBytes) || 0), 0);
@@ -14561,13 +15164,13 @@ var createDocPipeline = function(deps) {
         let serialized = null;
         try { serialized = JSON.stringify(_alloStripVerificationHtmlSnapshot(f.result)); }
         catch (_) {
-          f._checkpointResultOmitted = true;
+          _setBatchCheckpointFileMeta(f, { _checkpointResultOmitted: true });
           _warnBatchCheckpointOnce('A batch result could not be checkpointed. That file will be safely re-run if you resume.');
           continue;
         }
         const bytes = typeof TextEncoder !== 'undefined' ? new TextEncoder().encode(serialized).byteLength : serialized.length * 2;
         if (bytes > _ACTIVE_BATCH_RESULT_MAX_BYTES || storedBytes + bytes > _ACTIVE_BATCH_RESULTS_MAX_BYTES) {
-          f._checkpointResultOmitted = true;
+          _setBatchCheckpointFileMeta(f, { _checkpointResultOmitted: true });
           _warnBatchCheckpointOnce('Some large batch results exceed the safe checkpoint budget. Those files will be safely re-run if you resume.');
           continue;
         }
@@ -14575,16 +15178,15 @@ var createDocPipeline = function(deps) {
         try {
           // storageDB.set reports failure as `false` (it never throws) — treat a
           // reported failure exactly like a thrown one so the omission is disclosed.
-          const _resOk = await storageDB.set(resultKey, { serialized, bytes, batchId: cleanBatchId, savedAt: Date.now(), promptVersion: _PIPELINE_PROMPT_VERSION });
+          const _resOk = await storageDB.set(resultKey, { serialized, bytes, batchId: cleanBatchId, rootWriteId: expectedRootWriteId, savedAt: Date.now(), promptVersion: _PIPELINE_PROMPT_VERSION });
           if (_resOk === false) throw new Error('result write failed');
         } catch (_) {
-          f._checkpointResultOmitted = true;
+          _setBatchCheckpointFileMeta(f, { _checkpointResultOmitted: true });
           _warnBatchCheckpointOnce('Browser storage could not save a batch result. That file will be safely re-run if you resume.');
           continue;
         }
         newlyStoredKeys.push(resultKey);
-        f._checkpointResultKey = resultKey;
-        f._checkpointResultBytes = bytes;
+        _setBatchCheckpointFileMeta(f, { _checkpointResultKey: resultKey, _checkpointResultBytes: bytes });
         storedBytes += bytes;
       }
       const activeFilesRec = await storageDB.get(_ACTIVE_BATCH_FILES_KEY);
@@ -14593,15 +15195,22 @@ var createDocPipeline = function(deps) {
         await _deleteNewlyStoredBatchResults(files, newlyStoredKeys);
         return false;
       }
-      const statusKey = _batchStatusKeyFor(cleanBatchId);
       const statusRecord = {
         schemaVersion: 4, batchId: cleanBatchId, writeId: _newBatchCheckpointId(),
+        rootWriteId: expectedRootWriteId,
+        commitRevision: commitRevision, commitReason: commitReason,
         statuses: files.map(_toStatusEntry), lastUpdatedAt: Date.now(),
       };
       writtenStatusKey = statusKey;
       writtenStatusRecord = statusRecord;
       const _statusOk = await storageDB.set(statusKey, statusRecord);
       if (_statusOk === false) throw new Error('status write failed (storage full or unavailable)');
+      // A storage adapter can report success while silently dropping a write. Read back the
+      // unique writeId before advancing the batch; a false/no-op commit is degraded, not success.
+      const persistedStatus = await storageDB.get(statusKey);
+      if (!_sameBatchStatusRecord(persistedStatus, statusRecord, cleanBatchId)) {
+        throw new Error('status write was not observable after commit');
+      }
       // A tab can lose ownership after its initial check. Its scoped write cannot
       // clobber the new batch, but remove it immediately so large blobs do not orphan.
       const activeAfterWrite = await storageDB.get(_ACTIVE_BATCH_FILES_KEY);
@@ -14631,24 +15240,71 @@ var createDocPipeline = function(deps) {
       _warnBatchCheckpointOnce('Browser storage could not update the batch checkpoint. Keep this tab open until the batch finishes.');
       return false;
     }
-    }, 'shared');
+    }, 'exclusive');
   };
   let _batchStatusWriteTail = Promise.resolve();
-  const _batchCheckpointBudgetMs = (deadlineTs) => {
+  const _batchBoundaryRemainingMs = (deadlineTs) => {
     const deadline = Number(deadlineTs);
-    const remaining = Number.isFinite(deadline) && deadline > 0 ? deadline - Date.now() : 5000;
-    return Math.max(0, Math.min(5000, remaining));
+    return Number.isFinite(deadline) && deadline > 0 ? Math.max(0, deadline - Date.now()) : 0;
   };
-  const _saveBatchStatus = (files, batchId, deadlineTs) => {
-    const budget = _batchCheckpointBudgetMs(deadlineTs);
-    if (budget <= 0) return Promise.resolve(false);
-    const run = () => _withTimeout(_saveBatchStatusNow(files, batchId), budget, 'batch checkpoint write')
-      .catch(() => false);
-    const queued = _batchStatusWriteTail.then(run, run);
-    const next = _withTimeout(queued, budget, 'batch checkpoint queue').catch(() => false);
-    _batchStatusWriteTail = next.catch(() => {});
-    return next;
-  };  const _loadActiveBatch = async () => {
+  const _saveBatchStatus = (files, batchId, options) => {
+    const o = options && typeof options === 'object' ? options : {};
+    const timeoutMs = Math.max(1, Math.min(30000, Number(o.timeoutMs) || _BATCH_BOUNDARY_COMMIT_TIMEOUT_MS));
+    const deadlineTs = Number(o.deadlineTs) > 0 ? Number(o.deadlineTs) : Date.now() + timeoutMs;
+    const commitRevision = Number.isSafeInteger(Number(o.commitRevision)) && Number(o.commitRevision) > 0
+      ? Number(o.commitRevision) : _newBatchCommitRevision();
+    const snapshot = _snapshotBatchCheckpointFiles(files);
+    const run = () => {
+      if (_batchBoundaryRemainingMs(deadlineTs) <= 0) return false;
+      return _saveBatchStatusNow(snapshot, batchId, {
+        commitRevision: commitRevision,
+        commitReason: o.commitReason || 'batch-boundary',
+        rootWriteId: o.rootWriteId,
+      });
+    };
+    // Keep serialization tied to the real operation, not its caller timeout. If IndexedDB
+    // resolves late, a newer snapshot must wait behind it rather than overtaking and then being
+    // clobbered by the stale write.
+    const operation = _batchStatusWriteTail.then(run, run);
+    _batchStatusWriteTail = operation.catch(() => {});
+    const remaining = _batchBoundaryRemainingMs(deadlineTs);
+    if (remaining <= 0) return Promise.resolve(false);
+    return _withTimeout(operation, remaining, 'batch checkpoint boundary commit').catch(() => false);
+  };
+  const _commitBatchCheckpointBoundary = async (options) => {
+    const o = options && typeof options === 'object' ? options : {};
+    const context = String(o.context || 'batch-boundary');
+    const commitRevision = Number.isSafeInteger(Number(o.commitRevision)) && Number(o.commitRevision) > 0
+      ? Number(o.commitRevision) : _newBatchCommitRevision();
+    if (typeof o.isCurrent === 'function' && !o.isCurrent()) {
+      _signalBatchCheckpointCommit('stale', 'batch ownership changed before commit', context, commitRevision);
+      return { ok: false, state: 'stale', commitRevision: commitRevision };
+    }
+    const timeoutMs = Math.max(1, Math.min(30000, Number(o.timeoutMs) || _BATCH_BOUNDARY_COMMIT_TIMEOUT_MS));
+    const deadlineTs = Date.now() + timeoutMs;
+    let rootWriteId = null;
+    try {
+      rootWriteId = _normalizeBatchCheckpointId(await _withTimeout(Promise.resolve(o.startWrite), _batchBoundaryRemainingMs(deadlineTs), 'batch checkpoint root boundary'));
+    } catch (_) { rootWriteId = null; }
+    if (!rootWriteId) {
+      _signalBatchCheckpointCommit('degraded', 'checkpoint root was not durably ready', context, commitRevision);
+      return { ok: false, state: 'degraded', commitRevision: commitRevision };
+    }
+    const committed = await _saveBatchStatus(o.files, o.batchId, {
+      deadlineTs: deadlineTs,
+      timeoutMs: timeoutMs,
+      commitRevision: commitRevision,
+      commitReason: context,
+      rootWriteId: rootWriteId,
+    });
+    if (committed !== true) {
+      const state = committed === 'stale' ? 'stale' : 'degraded';
+      _signalBatchCheckpointCommit(state, state === 'stale' ? 'checkpoint root or revision was superseded' : 'status write failed or timed out', context, commitRevision);
+      return { ok: false, state: state, commitRevision: commitRevision };
+    }
+    return { ok: true, state: 'committed', commitRevision: commitRevision };
+  };
+  const _loadActiveBatch = async () => {
     if (typeof window === 'undefined' || !window.idbKeyval) return null;
     try {
       const filesRec = await storageDB.get(_ACTIVE_BATCH_FILES_KEY);
@@ -14689,6 +15345,7 @@ var createDocPipeline = function(deps) {
             const valid = rec && typeof rec.serialized === 'string' && rec.savedAt
               && Date.now() - rec.savedAt <= _remediationRetentionMs(_ACTIVE_BATCH_TTL_MS)
               && rec.promptVersion === _PIPELINE_PROMPT_VERSION
+              && (!filesRec.rootWriteId || rec.rootWriteId === filesRec.rootWriteId)
               && (batchId ? (!rec.batchId || _normalizeBatchCheckpointId(rec.batchId) === batchId)
                 : !rec.batchId)
               && rec.bytes <= _ACTIVE_BATCH_RESULT_MAX_BYTES;
@@ -14724,7 +15381,7 @@ var createDocPipeline = function(deps) {
       };
     } catch (_) { return null; }
   };
-  const _clearActiveBatch = async (batchId) => {
+  const _clearActiveBatch = async (batchId, expectedRootWriteId) => {
     if (typeof window === 'undefined' || !window.idbKeyval) return false;
     try {
       await _batchStatusWriteTail.catch(() => {});
@@ -14732,10 +15389,14 @@ var createDocPipeline = function(deps) {
       const requestedRaw = batchId == null ? '' : String(batchId).trim();
       const requestedId = _normalizeBatchCheckpointId(requestedRaw);
       if (requestedRaw && !requestedId) return false;
+      const requiresRootWriter = expectedRootWriteId !== undefined;
+      const requestedRootWriteId = _normalizeBatchCheckpointId(expectedRootWriteId);
+      if (requiresRootWriter && !requestedRootWriteId) return false;
       const filesRec = await storageDB.get(_ACTIVE_BATCH_FILES_KEY);
       if (!filesRec || !filesRec.files || !filesRec.savedAt) return false;
       const activeId = _normalizeBatchCheckpointId(filesRec.batchId);
       if (requestedId && activeId !== requestedId) return false;
+      if (requiresRootWriter && filesRec.rootWriteId !== requestedRootWriteId) return false;
 
       const statusInfo = await _readBatchStatusForFiles(filesRec);
       const legacyResultKeys = new Set((statusInfo.legacy && statusInfo.record && statusInfo.record.statuses || [])
@@ -15127,13 +15788,17 @@ var createDocPipeline = function(deps) {
       _cacheKey = !_skipCache ? await _auditCacheKey(base64Data, _auditorCount, _outputLanguage, _runDocumentDigest) : null;
       if (_auditCancelled()) { _finishAuditUi(); return null; }
       if (_cacheKey) {
-        const cached = await _readAuditCache(_cacheKey);
+        const _cachedRec = await _readAuditCache(_cacheKey);
+        const cached = _cachedRec && _cachedRec.audit;
         if (_auditCancelled()) { _finishAuditUi(); return null; }
         if (cached && (!cached.documentDigest || cached.documentDigest === _runDocumentDigest)) {
           // Upgrade finalized entries written before documentDigest existed without
           // mutating adapters that preserve the stored object's identity in memory.
-          const cachedForDocument = { ...cached, documentDigest: _runDocumentDigest };
-          if (!cached.documentDigest) { try { _writeAuditCache(_cacheKey, cachedForDocument); } catch (_) {} }
+          // The write-back stays UNstamped; only the UI copy carries cache provenance
+          // (2026-08-10: a silent replay was indistinguishable from a fresh run, so
+          // users read a cache hit as "the modal just exited and never ran").
+          if (!cached.documentDigest) { try { _writeAuditCache(_cacheKey, { ...cached, documentDigest: _runDocumentDigest }); } catch (_) {} }
+          const cachedForDocument = { ...cached, documentDigest: _runDocumentDigest, _fromAuditCache: true, _auditCachedAt: (_cachedRec.savedAt || null) };
           warnLog(`[PDF Audit] Cache hit for ${_cacheKey.slice(0, 24)}... — skipping ${_auditorCount} audit calls`);
           if (_auditUiCurrent()) {
             addToast && addToast('♿ Audit loaded from cache (identical document seen recently)', 'info');
@@ -16232,26 +16897,30 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
     if (_saved) { try { warnLog('[Batch] Resuming with the batch\'s ORIGINAL settings (auditors ' + _batchSettings.pdfAuditorCount + ', target ' + _batchSettings.pdfTargetScore + ', passes ' + _batchSettings.pdfAutoFixPasses + ') — current slider values apply to NEW batches.'); } catch (_) {}
     }
     // Complete the heavy owner record before any lightweight status write.
+    let _batchRootWriteId = null;
     const _batchStartWrite = _withTimeout(
       _saveBatchFiles(queue, _batchSettings, startTime, _batchId, _batchRunIsCurrent),
       5000,
       'batch checkpoint initialization'
-    ).catch(() => {
+    ).then((rootWriteId) => {
+      _batchRootWriteId = _normalizeBatchCheckpointId(rootWriteId);
+      return _batchRootWriteId;
+    }).catch(() => {
       _batchCheckpointDegraded = true;
       _warnBatchCheckpointOnce('Browser storage did not finish the batch checkpoint in time. This run continues, but closing the tab may lose unfinished files.');
       return false;
     });
-    const _persistBatchStatus = (deadlineTs) => {
-      if (!_batchRunIsCurrent()) return;
-      // Fire-and-forget — never block the loop on storage writes, and re-check
-      // ownership after the heavy root write resolves.
-      _batchStartWrite.then(() => {
-        if (!_batchRunIsCurrent()) return false;
-        return _saveBatchStatus(queue, _batchId, deadlineTs);
-      }).catch(() => {});
-    };
-    _persistBatchStatus();
-    const _batchFileDeadlines = new Map();
+    const _persistBatchStatus = (context) => _commitBatchCheckpointBoundary({
+      files: queue,
+      batchId: _batchId,
+      startWrite: _batchStartWrite,
+      isCurrent: _batchRunIsCurrent,
+      context: context || 'batch-status',
+      timeoutMs: _BATCH_BOUNDARY_COMMIT_TIMEOUT_MS,
+    });
+    // Commit the initial status before file 1. Every post-file boundary below awaits the same
+    // serialized tail, so no next file starts before the prior durable outcome resolves.
+    await _persistBatchStatus('batch-start');
 
     // Batch AbortController — separate global from auto-continue so the Stop
     // Batch button doesn't interfere with a single-file auto-continue run if
@@ -16298,7 +16967,6 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
       const _PER_FILE_MS = 8 * 60 * 1000;
       const _deadlineAt = Date.now() + _PER_FILE_MS;
       const _remainingMs = () => Math.max(1, _deadlineAt - Date.now());
-      _batchFileDeadlines.set(item.id, _deadlineAt);
       // ── Tier 4: remediation cache check (covers re-batch use case) ──
       // If we've already processed this PDF with these settings within the
       // last 24 hours by default, return the cached result and skip audit + remediation.
@@ -16528,9 +17196,16 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
           window.__lastOcrLowConfidencePages = [];
           window.__lastGroundTruthDocKey = null;
         } catch (_) {}
+        // This is the durable file boundary. It deliberately uses its own seven-second deadline,
+        // not the just-expired eight-minute remediation wall, and blocks advancement to file i+1
+        // until storage reports committed, degraded, or stale.
+        try {
+          const boundaryStatus = (queue[i] && queue[i].status) || 'unknown';
+          await _persistBatchStatus('file-' + (i + 1) + '-' + boundaryStatus);
+        } catch (commitErr) {
+          _signalBatchCheckpointCommit('degraded', commitErr && commitErr.message || 'boundary commit threw', 'file-' + (i + 1), null);
+        }
       }
-      // Persist after each file so a tab close mid-batch is recoverable.
-      _persistBatchStatus(_batchFileDeadlines.get(item.id));
 
       if (i < queue.length - 1) {
         setPdfBatchStep('Cooling down before next file...');
@@ -16561,8 +17236,14 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
           warnLog(`[Batch Retry] ${_alloDiagnosticDocumentLabel(failedItem.fileName)} failed again:`, err);
           queue[idx] = { ...failedItem, status: 'failed', error: 'Failed after retry: ' + err.message };
           setPdfBatchQueue([...queue]);
+        } finally {
+          try {
+            const retryStatus = (queue[idx] && queue[idx].status) || 'unknown';
+            await _persistBatchStatus('retry-' + (idx + 1) + '-' + retryStatus);
+          } catch (commitErr) {
+            _signalBatchCheckpointCommit('degraded', commitErr && commitErr.message || 'retry boundary commit threw', 'retry-' + (idx + 1), null);
+          }
         }
-        _persistBatchStatus(_batchFileDeadlines.get(failedItem.id));
         await _batchDelay(3000);
       }
     }
@@ -16641,12 +17322,12 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
     // quota resets", so clearing here (pre-2026-07-01 behavior) destroyed the
     // very resume it advertised.
     if (!_batchAbortCtrl.signal.aborted && !_quotaStopped && pending.length === 0) {
-      _clearActiveBatch(_batchId).catch(() => {});
+      _clearActiveBatch(_batchId, _batchRootWriteId).catch(() => {});
     } else {
       // Keep the state, but persist the latest queue (so any in-progress
       // items show as still pending on resume rather than locked at
       // 'processing').
-      _persistBatchStatus();
+      await _persistBatchStatus('batch-final-interrupted');
     }
     // Release batch abort signal so post-batch Gemini calls aren't picked up
     // by a stale aborted controller. Guard against a subsequent run having
@@ -16696,7 +17377,7 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
         }
       }
       setPdfBatchQueue([...queue]);
-      _persistBatchStatus();
+      await _persistBatchStatus('batch-fatal-error');
       const _fatalDone = queue.filter(q => q && q.status === 'done');
       const _fatalFailed = queue.filter(q => q && q.status === 'failed');
       const _fatalPending = queue.filter(q => q && (!q.status || q.status === 'pending' || q.status === 'processing'));
@@ -16728,7 +17409,6 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
         }
         if (window.__alloPdfAbortSignal === _batchAbortCtrl.signal) window.__alloPdfAbortSignal = _alloLiveAbortSignalOrNull(_prevBatchAbortSlot);
       }
-      if (_batchAbortCtrl.signal.aborted) _persistBatchStatus();
     }
   };
 
@@ -23175,6 +23855,11 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     const _runDocumentEpoch = _hasExplicitDocumentEpoch
       ? _normalizeDocumentEpoch(batchOverrides.documentEpoch) : _run.documentEpoch;
     const _onProgress = batchOverrides?.onProgress || null;
+    // Hosted remediation can provide an awaited durability hook. It is intentionally
+    // absent from normal browser/desktop calls, and it only receives validated stage
+    // boundaries (never a live request, DOM node, controller, or partial AI response).
+    const _onCheckpoint = batchOverrides && typeof batchOverrides.onCheckpoint === 'function'
+      ? batchOverrides.onCheckpoint : null;
     const _silentMode = !!_onProgress;
     if (_runDocumentEpoch === null) {
       const ownershipError = new Error('Remediation could not start because this document has no valid ownership epoch. Re-select the document and try again.');
@@ -23777,6 +24462,10 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               if (typeof addToast === 'function') addToast(t('toasts.resume_garbled_reocr') || 'Your saved text from the unfinished session looks garbled — re-scanning with OCR for a clean copy.', 'info');
             } else {
               extractedText = _seed.text;
+              // The per-run reset above intentionally clears every OCR/global evidence field.
+              // Restore only after the seed passes identity and garbage checks so scanned-PDF
+              // word boxes, page evidence, and dual-OCR provenance survive a durable resume.
+              _restoreOcrEvidenceGlobals(_seed);
               warnLog('[Resume] Reusing cached extracted text (' + extractedText.length + ' chars) from a saved project — skipping re-extraction/OCR');
               // Honesty (multisession-resume-2): the cache is the PRIOR pass's OCR text. If the teacher changed
               // the OCR language since, this reuses the old language's text — so don't claim "no re-scanning
@@ -24304,6 +24993,38 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       // Warn if extraction seems thin (< 200 chars/page suggests truncation or image-only pages)
       if (charsPerPage < 200 && effectivePageCount > 1) {
         warnLog(`[PDF Fix] WARNING: Low extraction density (${charsPerPage} chars/page) — possible truncation or scanned/image-only document`);
+      }
+
+      // Durable extraction boundary (hosted runner only). The callback is awaited so a
+      // later throttle/timeout cannot claim this boundary before its immutable snapshot
+      // is committed. Carry the OCR word map and evidence globals: reusing text without
+      // them would make a resumed scanned PDF lose its positioned searchable-text layer.
+      if (_onCheckpoint) {
+        _throwIfRunCancelled();
+        await _onCheckpoint({
+          schema: 1,
+          stage: 'extraction',
+          extraction: {
+            fileName: _fileName,
+            documentDigest: _documentKey,
+            text: extractedText,
+            groundTruthCharCount: window.__lastGroundTruthCharCount || extractedText.length,
+            groundTruthMethod: window.__lastGroundTruthMethod || null,
+            groundTruthPages: Array.isArray(window.__lastGroundTruthPageMap) ? window.__lastGroundTruthPageMap : null,
+            ocrMethod: window.__lastOcrMethod || null,
+            ocrTesseractText: window.__lastOcrTesseractText || '',
+            ocrVisionText: window.__lastOcrVisionText || '',
+            ocrDisagreements: window.__lastOcrDisagreements || [],
+            ocrPageErrors: window.__lastOcrPageErrors || [],
+            ocrLowConfidencePages: window.__lastOcrLowConfidencePages || [],
+            detectedFolios: window.__alloDetectedFolios || [],
+            ocrDupeCollapses: window.__alloOcrDupeCollapses || [],
+            ocrColumnReorders: window.__alloOcrColumnReorders || [],
+            strippedEdgeLines: window.__alloStrippedEdgeLines || [],
+            visionStripTrail: window.__lastVisionStripTrail || [],
+          },
+        });
+        _throwIfRunCancelled();
       }
 
       // ── Step 1b (S2-extracted → _extractPdfImages) ──
@@ -41082,6 +41803,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     precedingHeadingLevel: precedingHeadingLevel,
     headingOutlineIssue: _headingOutlineIssue,
     runPdfAccessibilityAudit: _wrapAsync(runPdfAccessibilityAudit),
+    clearPdfDocumentCaches: _wrapAsync(clearPdfDocumentCaches), // user-facing: force-forget cached audit/remediation results (2026-08-10)
     auditOutputAccessibility: _wrapAsync(auditOutputAccessibility),
     runAxeAudit: _wrapAsync(runAxeAudit),
     runEqualAccessAudit: _wrapAsync(runEqualAccessAudit),

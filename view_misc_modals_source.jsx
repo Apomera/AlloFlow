@@ -27,7 +27,7 @@ function UDLGuideModal(props) {
   const {
     InteractiveBlueprintCard, activeBlueprint, addToast, blueprintExecutionResult, setBlueprintExecutionResult,
     isExecutingBlueprint, handleStopBlueprintRun, archiveLivePlan, archivedPlans, handleRestoreArchivedPlan, handleDeleteArchivedPlan,
-    handleRebuildBlueprintStep,
+    handleRebuildBlueprintStep, handleDownloadBlueprintDiagnostics,
     lessonTemplates, handleSaveLessonTemplate, handleApplyLessonTemplate, handleDeleteLessonTemplate,
     handlePreviewBlueprintStep, blueprintPreview, closeBlueprintPreview,
     aiStandardQuery, aiStandardRegion, autoSendVoice, chatStyles,
@@ -235,6 +235,7 @@ function UDLGuideModal(props) {
                           isRunning={!!isExecutingBlueprint}
                           onStopRun={handleStopBlueprintRun}
                           onRebuildStep={handleRebuildBlueprintStep}
+                          onDownloadDiagnostics={handleDownloadBlueprintDiagnostics}
                           onSaveTemplate={handleSaveLessonTemplate}
                           onPreviewStep={handlePreviewBlueprintStep}
                           onUpdate={handleBlueprintUIUpdate}
@@ -413,6 +414,7 @@ function UDLGuideModal(props) {
                   isRunning={!!isExecutingBlueprint}
                   onStopRun={handleStopBlueprintRun}
                   onRebuildStep={handleRebuildBlueprintStep}
+                  onDownloadDiagnostics={handleDownloadBlueprintDiagnostics}
                   onSaveTemplate={handleSaveLessonTemplate}
                   onPreviewStep={handlePreviewBlueprintStep}
                   onUpdate={handleBlueprintUIUpdate}
@@ -654,6 +656,302 @@ function UDLGuideModal(props) {
   );
 }
 
+// ── PlatformDiagnosticsSection ───────────────────────────────────────────
+// Shared diagnostics for the Canvas and deployed AI settings modals. The
+// probe belongs with AI/runtime troubleshooting, rather than the educator
+// tool directory, because it tests browser capabilities that affect AI,
+// files, storage, and pop-up workflows.
+function PlatformDiagnosticsSection(props) {
+  const { t } = props;
+  const [platProbe, setPlatProbe] = React.useState(null);
+  const [probeRunning, setProbeRunning] = React.useState(false);
+
+  const runPlatformProbe = async () => {
+    const rows = [];
+    const add = (name, status, detail) => rows.push({ name, status, detail: String(detail || '') });
+    setProbeRunning(true);
+    try {
+      try {
+        let origin = 'unknown';
+        try { origin = window.location.origin; } catch (_) {}
+        let inFrame = 'unknown';
+        try { inFrame = window.top === window ? 'no (top window)' : 'yes'; } catch (_) { inFrame = 'yes (cross-origin parent)'; }
+        add('Context', 'info', 'origin: ' + origin + ' · in iframe: ' + inFrame + ' · secure: ' + (typeof isSecureContext !== 'undefined' ? isSecureContext : '?'));
+      } catch (e) { add('Context', 'info', 'unreadable: ' + e.message); }
+
+      // STEAM Lab plugin loading. Inside Canvas the console is unreachable, so a tool
+      // stuck on its skeleton loader is otherwise undiagnosable: the host shows that
+      // skeleton whenever a plugin has not registered AND its load state is neither
+      // 'loaded' nor 'error', and the "never requested" case has no state and no
+      // timeout, so it waits forever with nothing on screen to say why.
+      try {
+        const ensureFn = typeof window.__alloEnsureStemPluginLoaded === 'function';
+        const stateFn = typeof window.__alloGetStemPluginState === 'function';
+        add('STEM plugin loader', ensureFn && stateFn ? 'pass' : 'fail',
+          ensureFn && stateFn
+            ? 'loader hooks present'
+            : 'missing hook(s) — ensure:' + ensureFn + ' getState:' + stateFn +
+              '. Tools cannot be requested at all; every tool will sit on its loading skeleton.');
+
+        const reg = window.StemLab && window.StemLab._registry;
+        const registered = reg ? Object.keys(reg) : [];
+        add('STEM tools registered', registered.length ? 'pass' : 'warn',
+          registered.length
+            ? registered.length + ' registered'
+            : 'none registered yet — open a tool first, or the plugins are not executing');
+
+        // Per-module load state. This is the row that separates the three causes:
+        // absent = never requested, error = download blocked, loaded-but-unregistered
+        // = the file ran without calling registerTool.
+        const seen = window.__alloStemPluginStates || null;
+        const names = seen ? Object.keys(seen) : [];
+        if (stateFn && names.length) {
+          const summary = names.map((mod) => {
+            const st = seen[mod] || {};
+            const short = String(mod).replace(/^.*stem_tool_/, '').replace(/\.js$/, '');
+            const ms = st.finishedAt && st.startedAt ? ' ' + (st.finishedAt - st.startedAt) + 'ms' : '';
+            return short + '=' + (st.status || '?') + (st.attempt > 1 ? ' (try ' + st.attempt + ')' : '') + ms +
+              (st.error ? ' — ' + st.error : '');
+          });
+          const anyError = names.some((mod) => (seen[mod] || {}).status === 'error');
+          add('STEM plugin states', anyError ? 'fail' : 'info', summary.join(' · '));
+        } else {
+          add('STEM plugin states', 'warn',
+            'no plugin has been requested this session. If a tool is showing its loading skeleton right now, ' +
+            'the request was never made — the fault is upstream of the download, not the network.');
+        }
+      } catch (e) { add('STEM plugin loader', 'info', 'unreadable: ' + e.message); }
+
+      // The first uncaught error usually explains dead buttons AND stuck loaders at
+      // once, because an exception thrown during render leaves handlers unattached.
+      try {
+        const first = window.__alloFirstError;
+        add('First page error', first ? 'fail' : 'pass',
+          first
+            ? new Date(first.at).toLocaleTimeString() + ' — ' + first.msg +
+              (first.src ? ' (' + first.src + (first.line ? ':' + first.line : '') + ')' : '')
+            : 'no uncaught error captured this session');
+      } catch (e) { add('First page error', 'info', 'unreadable: ' + e.message); }
+
+      try {
+        const w = window.open('', '_blank', 'width=80,height=60');
+        if (w) { try { w.close(); } catch (_) {} add('Pop-up windows', 'pass', 'window.open works — compare view + Save-as-PDF can open'); }
+        else add('Pop-up windows', 'fail', 'window.open returned null — the compare view and print flow cannot open here');
+      } catch (e) { add('Pop-up windows', 'fail', 'window.open threw: ' + e.message); }
+
+      try {
+        new WebAssembly.Module(new Uint8Array([0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00]));
+        add('WebAssembly', 'pass', 'compiles — Writing Check + OCR can run');
+      } catch (e) { add('WebAssembly', 'fail', 'cannot compile: ' + e.message); }
+
+      try {
+        const prior = localStorage.getItem('allo_platform_probe_marker');
+        localStorage.setItem('allo_platform_probe_marker', new Date().toISOString());
+        if (localStorage.getItem('allo_platform_probe_marker')) {
+          add('localStorage (this session)', 'pass', 'write + read OK');
+          add('localStorage (across sessions)', prior ? 'pass' : 'warn', prior
+            ? ('marker from a previous run found (' + prior.slice(0, 19) + ') — storage persisted')
+            : 'no marker from a previous run — first probe here, or storage was wiped between sessions. Run again in a new session to confirm.');
+        } else add('localStorage (this session)', 'fail', 'wrote but could not read back');
+      } catch (e) { add('localStorage (this session)', 'fail', e.message); }
+
+      try {
+        const idb = await new Promise((resolve) => {
+          const to = setTimeout(() => resolve({ status: 'fail', detail: 'open timed out (3s)' }), 3000);
+          try {
+            const req = indexedDB.open('allo_platform_probe', 1);
+            req.onupgradeneeded = () => { try { req.result.createObjectStore('kv'); } catch (_) {} };
+            req.onerror = () => { clearTimeout(to); resolve({ status: 'fail', detail: 'open error: ' + (req.error && req.error.message) }); };
+            req.onsuccess = () => {
+              try {
+                const db = req.result;
+                const tx = db.transaction('kv', 'readwrite');
+                const st = tx.objectStore('kv');
+                const get = st.get('marker');
+                get.onsuccess = () => {
+                  const prior = get.result;
+                  st.put(new Date().toISOString(), 'marker');
+                  tx.oncomplete = () => {
+                    clearTimeout(to);
+                    try { db.close(); } catch (_) {}
+                    resolve({
+                      status: 'pass',
+                      detail: prior
+                        ? ('works; marker from a previous run found (' + String(prior).slice(0, 19) + ') — persisted')
+                        : 'works this session; no prior marker — first probe here, or wiped between sessions. Re-run in a new session to confirm.'
+                    });
+                  };
+                };
+                get.onerror = () => { clearTimeout(to); resolve({ status: 'fail', detail: 'read failed' }); };
+              } catch (e) { clearTimeout(to); resolve({ status: 'fail', detail: e.message }); }
+            };
+          } catch (e) { clearTimeout(to); resolve({ status: 'fail', detail: e.message }); }
+        });
+        add('IndexedDB', idb.status, idb.detail);
+      } catch (e) { add('IndexedDB', 'fail', e.message); }
+
+      try {
+        const u = URL.createObjectURL(new Blob(['probe'], { type: 'text/plain' }));
+        const r = await fetch(u);
+        const txt = await r.text();
+        URL.revokeObjectURL(u);
+        add('Blob URLs (same window)', txt === 'probe' ? 'pass' : 'warn', txt === 'probe' ? 'create + fetch back OK' : 'fetched but content mismatched');
+      } catch (e) { add('Blob URLs (same window)', 'fail', e.message); }
+
+      try {
+        const u = URL.createObjectURL(new Blob(['AlloFlow probe OK'], { type: 'text/plain' }));
+        const a = document.createElement('a');
+        a.href = u;
+        a.download = 'alloflow-platform-probe.txt';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(u), 4000);
+        add('File downloads', 'info', 'a tiny test file was triggered — if alloflow-platform-probe.txt appears in Downloads, downloads work end-to-end');
+      } catch (e) { add('File downloads', 'fail', e.message); }
+
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText('AlloFlow platform probe');
+          add('Clipboard (API)', 'pass', 'writeText OK');
+        } else add('Clipboard (API)', 'warn', 'navigator.clipboard unavailable');
+      } catch (e) { add('Clipboard (API)', 'warn', 'writeText rejected: ' + String(e && e.message).slice(0, 120)); }
+
+      try {
+        const ta = document.createElement('textarea');
+        ta.setAttribute('aria-label', 'Clipboard fallback text');
+        ta.value = 'AlloFlow platform probe';
+        document.body.appendChild(ta);
+        ta.select();
+        const ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        add('Clipboard (fallback)', ok ? 'pass' : 'warn', ok ? 'execCommand copy works — copy buttons function even where the API is blocked' : 'execCommand returned false');
+      } catch (e) { add('Clipboard (fallback)', 'fail', String(e && e.message).slice(0, 120)); }
+
+      add('Dialogs (confirm/prompt)', 'info', 'typeof confirm = ' + (typeof window.confirm) + ' — use “Test dialog” for the real answer (a sandbox can define it but silently return false)');
+
+      const cdns = [
+        ['jsDelivr', 'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/package.json'],
+        ['unpkg', 'https://unpkg.com/pdf-lib@1.17.1/package.json'],
+        ['cdnjs', 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js'],
+        ['Google Fonts', 'https://fonts.googleapis.com/css2?family=Lexend&display=swap']
+      ];
+      for (const pair of cdns) {
+        try {
+          const t0 = Date.now();
+          const ac = typeof AbortController === 'function' ? new AbortController() : null;
+          const tid = ac ? setTimeout(() => { try { ac.abort(); } catch (_) {} }, 6000) : null;
+          const r = await fetch(pair[1], ac ? { signal: ac.signal } : undefined);
+          if (tid) clearTimeout(tid);
+          add('CDN: ' + pair[0], r.ok ? 'pass' : 'warn', 'HTTP ' + r.status + ' in ' + (Date.now() - t0) + 'ms');
+        } catch (e) { add('CDN: ' + pair[0], 'fail', 'unreachable: ' + (e && e.message)); }
+      }
+
+      try {
+        const t0 = Date.now();
+        const r = await fetch('https://cdn.jsdelivr.net/npm/harper.js@2.4.0/dist/harper_wasm_bg.wasm', { cache: 'force-cache' });
+        if (r.ok) {
+          await r.arrayBuffer();
+          add('Writing-Check cache (10 MB WASM)', 'info', 'fetched in ' + (Date.now() - t0) + 'ms — under ~500ms means the HTTP cache held it; re-run in a fresh session to test cross-session caching');
+        } else add('Writing-Check cache (10 MB WASM)', 'warn', 'HTTP ' + r.status);
+      } catch (e) { add('Writing-Check cache (10 MB WASM)', 'warn', e.message); }
+    } finally {
+      setPlatProbe({ when: new Date().toLocaleString(), rows });
+      setProbeRunning(false);
+    }
+  };
+
+  const runDialogProbe = () => {
+    let value = null;
+    try { value = window.confirm(t('platform_diag.dialog_question') || 'Dialog test: click OK.'); }
+    catch (e) { value = 'threw: ' + e.message; }
+    setPlatProbe((previous) => ({
+      when: (previous && previous.when) || new Date().toLocaleString(),
+      rows: [
+        ...((previous && previous.rows) || []).filter((row) => row.name !== 'Dialogs (live test)'),
+        {
+          name: 'Dialogs (live test)',
+          status: value === true ? 'pass' : (value === false ? 'warn' : 'fail'),
+          detail: value === true
+            ? 'confirm() returned true after OK — dialogs work'
+            : (value === false
+              ? 'confirm() returned FALSE — either Cancel was clicked or the sandbox suppressed the dialog'
+              : String(value))
+        }
+      ]
+    }));
+  };
+
+  const probeReportText = () => !platProbe ? '' : (
+    'AlloFlow Platform Check — ' + platProbe.when + '\n' +
+    (typeof navigator !== 'undefined' ? navigator.userAgent : '') + '\n\n' +
+    platProbe.rows.map((row) => '[' + row.status.toUpperCase() + '] ' + row.name + ' — ' + row.detail).join('\n')
+  );
+
+  const copyProbeReport = async () => {
+    const text = probeReportText();
+    try {
+      if (typeof window.alloCopyText === 'function' && await window.alloCopyText(text)) return;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+        return;
+      }
+    } catch (_) {}
+    try {
+      const ta = document.createElement('textarea');
+      ta.setAttribute('aria-label', 'Clipboard fallback text');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    } catch (_) {}
+  };
+
+  return (
+    <section id="ai-platform-diagnostics-section" data-help-key="ai_platform_diagnostics" className="pt-3 border-t-2 border-violet-50">
+      <div className="flex items-center gap-2 mb-2">
+        <div className="bg-violet-100 p-1.5 rounded-lg"><Cpu size={14} className="text-violet-600"/></div>
+        <div>
+          <h4 id="ai-platform-diagnostics-title" className="text-xs font-black text-slate-700 uppercase tracking-wider">{t('platform_diag.header') || 'Platform & Browser Diagnostics'}</h4>
+          <p className="text-[11px] text-slate-600 mt-0.5">Check capabilities that affect AI, files, storage, and pop-up workflows.</p>
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <button type="button" onClick={runPlatformProbe} disabled={probeRunning} className="bg-violet-600 text-white border-2 border-violet-600 px-3 py-2 rounded-xl font-bold text-xs hover:bg-violet-700 disabled:opacity-60">
+          🔬 {probeRunning ? 'Running platform check…' : (t('platform_diag.run') || 'Run platform check')}
+        </button>
+        <button type="button" data-help-ignore="true" data-a11y-ignore="diagnostic-confirm" onClick={runDialogProbe} className="bg-white text-violet-700 border-2 border-violet-200 px-3 py-2 rounded-xl font-bold text-xs hover:bg-violet-50">
+          🧪 {t('platform_diag.dialog') || 'Test dialog'}
+        </button>
+      </div>
+      <p className="text-[10px] text-slate-500 mt-2">Use this when a feature behaves differently across environments. Copy the report and include it when asking for help.</p>
+      {platProbe && (
+        <>
+          <div className="mt-3 bg-white border border-slate-300 rounded-lg p-2 text-[11px]" role="region" aria-labelledby="ai-platform-results-title">
+            <div className="flex items-center justify-between gap-2 mb-1">
+              <span id="ai-platform-results-title" className="font-bold text-slate-700">{t('platform_diag.results') || 'Results'} — {platProbe.when}</span>
+              <button type="button" onClick={copyProbeReport} aria-label={t('platform_diag.copy') || 'Copy report'} className="min-h-11 shrink-0 px-2 py-0.5 bg-slate-100 rounded text-[10px] font-bold hover:bg-slate-200">
+                📋 {t('platform_diag.copy') || 'Copy report'}
+              </button>
+            </div>
+            <ul className="space-y-0.5">
+              {platProbe.rows.map((row, index) => (
+                <li key={index} className="flex gap-1.5">
+                  <span className={'shrink-0 font-bold ' + (row.status === 'pass' ? 'text-green-700' : row.status === 'fail' ? 'text-red-700' : row.status === 'warn' ? 'text-amber-700' : 'text-slate-500')}>
+                    {row.status === 'pass' ? '✓' : row.status === 'fail' ? '✗' : row.status === 'warn' ? '⚠' : 'ℹ'}
+                  </span>
+                  <span className="min-w-0"><span className="font-bold">{row.name}:</span> {row.detail}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">Platform check complete. {platProbe.rows.length} results available.</div>
+        </>
+      )}
+    </section>
+  );
+}
 // ── ModelDiagnosticsSection ─────────────────────────────────────────────
 // Shared sub-section for both the deploy AIBackendModal and the inline
 // Canvas Advanced Settings modal. Three things:
@@ -1714,6 +2012,7 @@ function AIBackendModalBody(props) {
 
                 {/* ─── Section 5: AI Model Diagnostics (shared with Canvas modal) ─── */}
                 {!isStudentAiSetup && <ModelDiagnosticsSection t={t} _isCanvasEnv={_isCanvasEnv} GEMINI_MODELS={GEMINI_MODELS} />}
+                {!isStudentAiSetup && <PlatformDiagnosticsSection t={t} />}
 
                 {/* ─── Section 6: Device Storage (parity with the Canvas Advanced
                      Settings modal, 2026-07-14) — opens the on-device storage

@@ -320,5 +320,8 @@
   "cmd.run_lesson_blueprint": "Generează planul lecției",
   "cmd.run_lesson_blueprint_done": "Se generează planul — poți urmări fiecare pas pe card.",
   "cmd.run_lesson_blueprint_hint": "Generează toate resursele din planul curent",
-  "cmd.cancelled": "Anularea a fost solicitată. Operația curentă se va opri când furnizorul o va suporta."
+  "cmd.cancelled": "Anularea a fost solicitată. Operația curentă se va opri când furnizorul o va suporta.",
+  "cmd.open_share_collect": "Deschide Share & Collect",
+  "cmd.open_share_collect_hint": "Sondaje, înscrieri, chestionare și rezultatele lor",
+  "cmd.open_share_collect_done": "Share & Collect a fost deschis."
 }

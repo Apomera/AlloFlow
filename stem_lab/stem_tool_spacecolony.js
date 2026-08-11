@@ -31,7 +31,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -52,6 +52,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
     lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
     document.body.appendChild(lr);
   })();
+
+  // The region above had no writer, so turn-phase changes were silent for
+  // screen-reader users. Most other state changes go through addToast, which the
+  // host renders with role=status, so only the untoasted transitions announce
+  // here — announcing toasts again would double up.
+  var _scPoliteTimer = null;
+  function scAnnounce(text) {
+    if (typeof document === 'undefined') return;
+    var lr = document.getElementById('allo-live-spacecolony');
+    if (!lr) return;
+    if (_scPoliteTimer) clearTimeout(_scPoliteTimer);
+    lr.textContent = '';
+    _scPoliteTimer = setTimeout(function () { lr.textContent = String(text || ''); _scPoliteTimer = null; }, 25);
+  }
 
 
   // ── Audio System (auto-injected) ──
@@ -415,7 +429,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
       var callGemini = ctx.callGemini;
       // AI gate (default OFF). The turn-advance "planet event" game-master call
       // fired on EVERY turn with no consent/teacher gate — the largest unmetered
-      // AI surface in STEM Lab. Gate it: when off, the turn still advances and the
+      // AI surface in STEAM Lab. Gate it: when off, the turn still advances and the
       // local (non-AI) dawnData.discovery still shows. Player-initiated generative
       // tools (science gates and Founder Forge) remain explicit; exploration payoffs work offline.
       var aiHintsEnabled = !!(ctx && ctx.aiHintsEnabled);
@@ -1438,6 +1452,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
           // ── Keyboard Shortcuts ──
           if (!window._colonyKeyHandler) {
             window._colonyKeyHandler = function (e) {
+              // _colonyKeyActive keeps its last value after unmount (true if the user
+              // left mid-play) — also require the tool to actually be in the DOM.
+              if (!document.querySelector('[data-spacecolony-root]')) return;
               if (!window._colonyKeyActive) return;
               // Don't capture if typing in an input
               if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
@@ -1694,7 +1711,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
             rule: { title: 'Closed-loop observation cycle', condition: 'always', benefitResource: 'science', benefitAmount: 2, costResource: 'water', costAmount: 1, duration: 4 },
             explanation: 'A transparent seed sphere and sensor ring turn the colony commitment to ecological observation into a visible structure. It produces science while consuming water, so the model remains a strategic tradeoff.'
           });
-          return React.createElement('div', { className: 'bg-gradient-to-b from-slate-900 to-indigo-950 rounded-2xl p-4 md:p-6 border border-slate-700 overflow-hidden' },
+          return React.createElement('div', { className: 'bg-gradient-to-b from-slate-900 to-indigo-950 rounded-2xl p-4 md:p-6 border border-slate-700 overflow-hidden', 'data-spacecolony-root': 'true' },
             React.createElement('div', { className: 'flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-5' },
               React.createElement('div', { className: 'flex items-center gap-3 min-w-0' },
                 React.createElement('button', { type: 'button', onClick: function () { upd('selectedTool', null); }, 'aria-label': t('stem.spacecolony.back_to_colony_overview', 'Back to colony overview'), title: t('stem.spacecolony.back', 'Back'), className: 'transition-colors grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-slate-600 bg-slate-800 text-slate-200 hover:border-indigo-400 hover:text-white text-lg' }, '\u2190'),
@@ -2001,9 +2018,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     guidedCommand.action && React.createElement('button', {
                       type: 'button',
                       onClick: function () {
-                        if (guidedCommand.action === 'begin') { upd('turnPhase', 'day'); upd('actionPoints', maxAP); upd('builtThisTurn', false); upd('dawnData', null); }
-                        else if (guidedCommand.action === 'build') { upd('showBuild', true); }
-                        else if (guidedCommand.action === 'end') { upd('turnPhase', 'dusk'); }
+                        if (guidedCommand.action === 'begin') { upd('turnPhase', 'day'); upd('actionPoints', maxAP); upd('builtThisTurn', false); upd('dawnData', null); scAnnounce('Day ' + turn + ' begins. ' + maxAP + ' action points available.'); }
+                        else if (guidedCommand.action === 'build') { upd('showBuild', true); scAnnounce('Build menu opened.'); }
+                        else if (guidedCommand.action === 'end') { upd('turnPhase', 'dusk'); scAnnounce('Day ' + turn + ' ended. Dusk phase.'); }
                       },
                       className: 'rounded-lg px-3 py-2 text-[11px] font-black text-slate-950', style: { background: missionProfile.accent }
                     }, guidedCommand.action === 'begin' ? 'Begin day' : guidedCommand.action === 'build' ? 'Open Build' : 'End day')
@@ -2131,7 +2148,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                   ),
                   (function(){ var adv = getAdvisorMessage(); return adv ? React.createElement('div', { className: 'bg-indigo-900/30 rounded-lg p-2 mb-3 border border-indigo-700/30 flex items-center gap-2' }, React.createElement('span', { className: 'text-lg' }, (adv.settler||{}).icon||'\uD83D\uDCA1'), React.createElement('div', { className: 'text-[11px] text-indigo-300 flex-1' }, React.createElement('span', { className: 'font-bold text-indigo-200' }, ((adv.settler||{}).name||'Advisor') + ': '), adv.msg)) : null; })(),
                   React.createElement('button', {
-                    onClick: function() { upd('turnPhase', 'day'); upd('actionPoints', maxAP); upd('builtThisTurn', false); upd('dawnData', null); if (d.colonyTTS) colonySpeak('Day ' + turn + ' begins. You have ' + maxAP + ' action points.', 'narrator'); },
+                    onClick: function() { upd('turnPhase', 'day'); upd('actionPoints', maxAP); upd('builtThisTurn', false); upd('dawnData', null); scAnnounce('Day ' + turn + ' begins. ' + maxAP + ' action points available.'); if (d.colonyTTS) colonySpeak('Day ' + turn + ' begins. You have ' + maxAP + ' action points.', 'narrator'); },
                     className: 'w-full py-3 rounded-xl text-sm font-bold text-amber-900 transition-all hover:scale-[1.02]',
                     style: { background: 'linear-gradient(135deg, #f59e0b, #fbbf24)', boxShadow: '0 4px 15px rgba(245,158,11,0.3)' }
                   }, '\u2600\uFE0F Begin Day \u2014 ' + maxAP + ' Actions Available')
@@ -2373,7 +2390,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     React.createElement('div', { className: 'flex gap-1' }, Array.from({length:maxAP},function(_,i){return React.createElement('div',{key:i,className:'w-4 h-4 rounded-full transition-all duration-300',style:{background:i<actionPoints?'linear-gradient(135deg,#818cf8,#6366f1)':'#1e293b',boxShadow:i<actionPoints?'0 0 8px rgba(99,102,241,0.5)':'none',border:i<actionPoints?'2px solid #a5b4fc':'2px solid #334155'}})})),
                     React.createElement('span', { className: 'text-xs font-bold', style: { color: actionPoints > 0 ? '#818cf8' : '#475569' } }, actionPoints + '/' + maxAP)
                   ),
-                  React.createElement('button', { onClick: function() { upd('turnPhase', 'dusk'); }, className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all hover:scale-105', style: { background: 'linear-gradient(135deg, #312e81, #4c1d95)', color: '#c4b5fd', border: '1px solid #6366f140' } }, t('stem.spacecolony.end_day', '\uD83C\uDF19 End Day'))
+                  React.createElement('button', { onClick: function() { upd('turnPhase', 'dusk'); scAnnounce('Day ' + turn + ' ended. Dusk phase.'); }, className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all hover:scale-105', style: { background: 'linear-gradient(135deg, #312e81, #4c1d95)', color: '#c4b5fd', border: '1px solid #6366f140' } }, t('stem.spacecolony.end_day', '\uD83C\uDF19 End Day'))
                 ),
                 React.createElement('div', { className: 'px-3 pb-3 grid grid-cols-4 gap-1.5' },
                   React.createElement('button', { onClick: function() { if(actionPoints<1){if(addToast)addToast('No AP!','error');return;} if(!selectedTile||selectedTile.tile.explored){if(addToast)addToast('Select an unexplored tile!','info');return;} spendAP(1); var nm=JSON.parse(JSON.stringify(mapData)); var er2=1+(researchQueue.indexOf('gravimetrics')>=0?1:0); var newlyExplored2=0; for(var dy2=-er2;dy2<=er2;dy2++)for(var dx2=-er2;dx2<=er2;dx2++){var ni2=(selectedTile.y+dy2)*mapSize+(selectedTile.x+dx2);if(ni2>=0&&ni2<nm.tiles.length){if(!nm.tiles[ni2].explored)newlyExplored2++;nm.tiles[ni2].explored=true;}} upd('colonyMap',nm); var exploreStats2=Object.assign({},stats); exploreStats2.tilesExplored=(exploreStats2.tilesExplored||0)+newlyExplored2; upd('colonyStats',exploreStats2); var nr=Object.assign({},resources); var ec2=(activePolicy==='militarist')?0:2; nr.energy=Math.max(0,nr.energy-ec2); var tb={plains:'food',mountain:'materials',volcanic:'energy',ice:'water',desert:'materials',ocean:'water',radiation:'science'}; var br=tb[selectedTile.tile.type]; if(br&&nr[br]!==undefined)nr[br]+=2; var pkK=selectedTile.x+','+selectedTile.y; var pkp=mapPickups[pkK]; if(pkp){nr[pkp.res]=(nr[pkp.res]||0)+pkp.amt;var npk=Object.assign({},mapPickups);delete npk[pkK];upd('mapPickups',npk);if(addToast)addToast((pkp.rarity==='epic'?'\u2B50 EPIC: ':pkp.rarity==='rare'?'\u2728 RARE: ':'')+pkp.label,'info');} upd('colonyRes',nr); if(addToast)addToast('Explored '+selectedTile.tile.name+'!'+(br?' +2 '+br:''),'info'); }, disabled: actionPoints<1||turnPhase!=='day', className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl transition-all '+(actionPoints>=1?'transition-colors hover:bg-indigo-900/50 hover:scale-105 active:scale-[0.97]':'opacity-40'), style:{background:'#1e293b',border:'1px solid #33415560'} }, React.createElement('span',{className:'text-lg'},'\uD83D\uDDFA\uFE0F'), React.createElement('span',{className:'text-[11px] font-bold text-slate-300'},t('stem.spacecolony.explore', 'Explore')), React.createElement('span',{className:'text-[11px] text-indigo-400'},t('stem.spacecolony.1_ap', '1 AP'))),

@@ -41,3 +41,33 @@ describe('A1: FERPA egress disclosure shows above the audit CTA (audit, 2026-06-
     expect(discIdx).toBeLessThan(btnIdx);
   });
 });
+
+// 2026-08-10: PdfAuditView crashed the whole app with
+// "TypeError: Cannot read properties of null (reading 'passes')" (build 6d46cbbda).
+//
+// On 2026-07-27 the verification block's gate was deliberately widened from
+// `verificationAudit &&` to `(verificationAudit || _aiVerificationIncomplete) &&`, so the
+// "Complete final audit" recovery control survives a throttled audit-only retry — which
+// sets verificationAudit: null alongside _aiVerificationIncomplete: true. That comment
+// promises "the inner reads are null-safe below"; the issues list got its `?.`, the
+// passes list did not. So in precisely the state the widening exists to support, the
+// block rendered and dereferenced null, throwing out to the error boundary.
+describe('the widened verification gate survives a null audit', () => {
+  it('every inner read under the widened gate is null-safe', () => {
+    // The gate itself admits a null audit — that is deliberate, do not "fix" it.
+    expect(view).toContain('{(pdfFixResult.verificationAudit || pdfFixResult._aiVerificationIncomplete) && (');
+    // ...so both list gates inside it must be optional-chained.
+    expect(view).toContain('{(pdfFixResult.verificationAudit?.issues || []).length > 0 && (');
+    expect(view).toContain('{(pdfFixResult.verificationAudit?.passes || []).length > 0 && (');
+    expect(view).not.toContain('(pdfFixResult.verificationAudit.passes || [])');
+    expect(view).not.toContain('(pdfFixResult.verificationAudit.issues || [])');
+  });
+
+  it('the shipped module carries the same guard as the source', () => {
+    // view_pdf_audit is not an enrolled build.js --compile pair, so the module is
+    // hand-mirrored and can drift from the source it is supposed to be built from.
+    const mod = readFileSync(resolve(process.cwd(), 'view_pdf_audit_module.js'), 'utf8');
+    expect(mod).toContain('(pdfFixResult.verificationAudit?.passes || []).length > 0');
+    expect(mod).not.toContain('(pdfFixResult.verificationAudit.passes || []).length > 0');
+  });
+});

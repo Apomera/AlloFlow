@@ -1,4 +1,4 @@
-// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -26,7 +26,7 @@
   if (window.AlloModules && window.AlloModules.StemLab) { console.log('[CDN] StemLab already loaded, skipping duplicate'); } else {
     // stem_lab_module.js
     // Canonical hand-maintained source — edited directly, NOT generated from AlloFlowANTI.txt
-    // STEM Lab module for AlloFlow - loaded from GitHub CDN
+    // STEAM Lab module for AlloFlow - loaded from GitHub CDN
 
     // ── Shared "engaged" definition (2026-07-27) ──────────────────────────────
     // timeSpent quests must mean the same thing as a directions `time` goal and
@@ -253,12 +253,20 @@
           // builds do not wait on a school-network CDN timeout. CDN fallbacks keep
           // the hosted Canvas surface resilient when the local asset is absent.
           var localThreeUrls = [];
+          var localOrbitUrls = [];
           try {
             var stemScripts = document.getElementsByTagName('script');
             for (var si = 0; si < stemScripts.length; si++) {
               var stemSrc = stemScripts[si].src || '';
               if (stemSrc.indexOf('stem_lab_module.js') !== -1) {
                 localThreeUrls.push(new URL('../vendor/three-r128/three.min.js', stemSrc).href);
+                // OrbitControls gets the same local-first treatment as the core.
+                // Without it the core resolved from the bundled asset but orbit still
+                // waited on a CDN, so offline and desktop builds silently lost camera
+                // control in EVERY 3D tool while looking like a successful load.
+                // vendor/three-r128/OrbitControls.js is the classic global build
+                // (assigns THREE.OrbitControls), so a plain <script> is correct here.
+                localOrbitUrls.push(new URL('../vendor/three-r128/OrbitControls.js', stemSrc).href);
                 break;
               }
             }
@@ -270,7 +278,7 @@
           return core.then(function () {
             if (!wantOrbit || window.THREE.OrbitControls) return true;
             var orbit = self.loadScriptResilient(
-              ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js', 'https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js'],
+              localOrbitUrls.concat(['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js', 'https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js']),
               { cacheKey: 'three-orbit', check: function () { return !!(window.THREE && window.THREE.OrbitControls); } });
             return opts.orbitRequired ? orbit : orbit.catch(function () { console.warn('[StemLab] OrbitControls failed to load, proceeding without orbit controls'); return true; });
           }).then(function () { return window.THREE; });
@@ -427,6 +435,11 @@
             var meshes = content.meshes;
             var picks = content.picks;
             var anchor = content.anchor;
+            // Optional scene-owned motion. The shared shell still owns the RAF,
+            // visibility pausing and reduced-motion preference; a content module
+            // can animate its own nodes without rebuilding the whole WebGL scene
+            // or routing frame-by-frame positions through React state.
+            var contentFrame = (typeof content.frame === 'function') ? content.frame : null;
 
             // Selection cage. Emissive alone is not enough — on the pale translucent
             // reservoirs an amber glow washes straight out, and the selected part is
@@ -447,6 +460,7 @@
             return {
               THREE: THREE, node: node, renderer: renderer, scene: scene, camera: camera,
               labels: labels, chipCss: chipCss, meshes: meshes, picks: picks, selBox: selBox,
+              contentFrame: contentFrame,
               raycaster: new THREE.Raycaster(), pointer: new THREE.Vector2(),
               builtDark: props.dark, builtContrast: props.contrast, builtPhase: (props.phase || 0),
               builtSceneKey: (props.sceneKey || ''),
@@ -604,6 +618,19 @@
               S.selBox.material.opacity = S.reduced ? 1 : (0.6 + 0.4 * pulse);
             } else if (S.selBox.visible) {
               S.selBox.visible = false;
+            }
+
+            if (S.contentFrame) {
+              try {
+                // Content animations receive epoch milliseconds so event times
+                // from UI handlers can drive the next rendered frame directly.
+                S.contentFrame(Date.now(), props.sceneProps || {}, S.reduced);
+              } catch (contentFrameError) {
+                // A content animation must never take down camera controls or the
+                // 2D learning path. Disable only the faulty callback, once.
+                console.warn('[StemLab] 3D scene animation disabled after an error', contentFrameError);
+                S.contentFrame = null;
+              }
             }
 
             S.renderer.render(S.scene, S.camera);
@@ -928,7 +955,7 @@
         makeOrbitViewer: function (cfg) {
           cfg = cfg || {};
           var S = null, status = 'idle', pending = null, node = null, sig = '';
-          var notify = null, restoreAttempts = 0;
+          var notify = null, restoreAttempts = 0, attachGeneration = 0;
           var self = this;
 
           function setStatus(next) {
@@ -939,12 +966,26 @@
 
           function disposeGroup(group) {
             if (!group) return;
-            for (var i = group.children.length - 1; i >= 0; i--) {
-              var c = group.children[i];
-              if (c.geometry) c.geometry.dispose();
-              if (c.material) c.material.dispose();
-              group.remove(c);
-            }
+            var objects = [], geometries = [], materials = [];
+            var collect = function(c) {
+              if (!c || c === group) return;
+              if (typeof c.dispose === 'function' && objects.indexOf(c) === -1) objects.push(c);
+              if (c.geometry && geometries.indexOf(c.geometry) === -1) geometries.push(c.geometry);
+              if (c.material) {
+                var list = Array.isArray(c.material) ? c.material : [c.material];
+                for (var mi = 0; mi < list.length; mi++) {
+                  if (list[mi] && materials.indexOf(list[mi]) === -1) materials.push(list[mi]);
+                }
+              }
+            };
+            if (typeof group.traverse === 'function') group.traverse(collect);
+            else for (var ci = 0; ci < group.children.length; ci++) collect(group.children[ci]);
+            // InstancedMesh.dispose() releases renderer-owned instance buffers;
+            // geometry/material disposal alone does not do that in pinned Three r128.
+            for (var oi = 0; oi < objects.length; oi++) { try { objects[oi].dispose(); } catch (e) {} }
+            for (var gi = 0; gi < geometries.length; gi++) { try { geometries[gi].dispose(); } catch (e) {} }
+            for (var mati = 0; mati < materials.length; mati++) { try { materials[mati].dispose(); } catch (e) {} }
+            while (group.children.length) group.remove(group.children[group.children.length - 1]);
           }
 
           function debug() {
@@ -964,30 +1005,62 @@
             return base;
           }
 
+          function ensureFrame() {
+            if (!S || S.raf || S.contextLost || S.failed || !S.renderer) return;
+            if (S.visible === false || (typeof document !== 'undefined' && document.hidden)) return;
+            S.raf = requestAnimationFrame(frame);
+          }
+
+          function failRuntime(error, phase) {
+            if (!S || S.failed) return;
+            S.failed = true;
+            if (S.raf) cancelAnimationFrame(S.raf);
+            S.raf = 0;
+            if (window.console && console.error) console.error('[StemLab] 3D ' + phase + ' failed', error);
+            setStatus('failed');
+          }
           function frame(now) {
             if (!S) return;
-            S.raf = requestAnimationFrame(frame);
-            if (S.contextLost || !S.renderer) return;
+            S.raf = 0;
+            if (S.contextLost || S.failed || !S.renderer) return;
+            var hadPending = false;
             if (pending) {
               var next = pending; pending = null;
+              hadPending = true;
               if (next.sig !== sig) {
                 sig = next.sig;
                 disposeGroup(S.model);
                 S.fitPts = null;
-                try { cfg.build(S.THREE, S, next); } catch (e) {}
+                S.tick = null;
+                try {
+                  cfg.build(S.THREE, S, next);
+                } catch (e) {
+                  disposeGroup(S.model);
+                  failRuntime(e, 'scene build');
+                  return;
+                }
               }
               S.rotY = next.rotY; S.rotX = next.rotX; S.zoom = next.zoom;
               S.data = next;
+              S.dirty = true;
             }
-            if (S.tick) { try { S.tick(now || 0); } catch (e) {} }
+            var isStatic = !!(S.data && S.data.static);
+            if (S.visible === false || (typeof document !== 'undefined' && document.hidden)) return;
+            if (S.tick && (!isStatic || hadPending)) {
+              try { S.tick(now || 0); }
+              catch (e) { failRuntime(e, 'animation'); return; }
+            }
 
             var el = S.renderer.domElement;
             var w = el.clientWidth || 1, hgt = el.clientHeight || 1;
-            if (w !== S.lastW || hgt !== S.lastH) {
+            var sizeChanged = w !== S.lastW || hgt !== S.lastH;
+            if (sizeChanged) {
               S.lastW = w; S.lastH = hgt;
               S.renderer.setSize(w, hgt, false);
               S.camera.aspect = w / Math.max(1, hgt);
+              S.dirty = true;
             }
+            if (isStatic && !hadPending && !sizeChanged && !S.dirty) return;
 
             var THREE = S.THREE;
             var ry = (S.rotY || 0) * Math.PI / 180, rx = (S.rotX || 0) * Math.PI / 180;
@@ -1041,7 +1114,9 @@
             S.camera.far = dist * 8 + 200;
             S.camera.updateProjectionMatrix();
             S.camera.lookAt(tgt);
-            try { S.renderer.render(S.scene, S.camera); } catch (e) { /* keep looping */ }
+            try { S.renderer.render(S.scene, S.camera); S.dirty = false; }
+            catch (e) { failRuntime(e, 'render'); return; }
+            if (!isStatic) ensureFrame();
           }
 
           function build(THREE, host) {
@@ -1076,63 +1151,147 @@
               THREE: THREE, renderer: renderer, scene: scene, camera: camera, model: model,
               rotY: (cfg.rot && cfg.rot.y) || 0, rotX: (cfg.rot && cfg.rot.x) || 0, zoom: 1,
               target: new THREE.Vector3(), half: null, fitPts: null, data: null, tick: null,
-              contextLost: false, lastW: w, lastH: hgt, raf: 0
+              contextLost: false, failed: false, disposing: false, visible: true, dirty: true,
+              observer: null, resizeObserver: null, onWindowResize: null, onVisibilityChange: null,
+              onContextLost: null, onContextRestored: null,
+              lastW: w, lastH: hgt, raf: 0
             };
             if (cfg.lights) { try { cfg.lights(THREE, scene, S); } catch (e) {} }
 
-            el.addEventListener('webglcontextlost', function (ev) {
-              ev.preventDefault(); S.contextLost = true; setStatus('failed');
-            });
-            el.addEventListener('webglcontextrestored', function () {
-              if (restoreAttempts >= 1) return;
-              restoreAttempts++; S.contextLost = false; sig = ''; setStatus('ready');
-            });
+            var localS = S;
+            localS.onContextLost = function (ev) {
+              ev.preventDefault();
+              if (localS.disposing) return;
+              localS.contextLost = true;
+              if (localS.raf) cancelAnimationFrame(localS.raf);
+              localS.raf = 0;
+              setStatus('failed');
+            };
+            localS.onContextRestored = function () {
+              if (localS.disposing || restoreAttempts >= 1) return;
+              restoreAttempts++;
+              localS.contextLost = false;
+              localS.failed = false;
+              localS.dirty = true;
+              sig = '';
+              setStatus('ready');
+              ensureFrame();
+            };
+            el.addEventListener('webglcontextlost', localS.onContextLost);
+            el.addEventListener('webglcontextrestored', localS.onContextRestored);
+            if (typeof window.IntersectionObserver === 'function') {
+              localS.observer = new window.IntersectionObserver(function(entries) {
+                if (!entries || !entries[0] || localS.disposing) return;
+                localS.visible = entries[0].isIntersecting !== false;
+                if (localS.visible) {
+                  localS.dirty = true;
+                  ensureFrame();
+                } else if (localS.raf) {
+                  cancelAnimationFrame(localS.raf);
+                  localS.raf = 0;
+                }
+              });
+              localS.observer.observe(host);
+            }
+            var markDirty = function() {
+              if (localS.disposing) return;
+              localS.dirty = true;
+              ensureFrame();
+            };
+            if (typeof window.ResizeObserver === 'function') {
+              localS.resizeObserver = new window.ResizeObserver(markDirty);
+              localS.resizeObserver.observe(host);
+            } else {
+              localS.onWindowResize = markDirty;
+              window.addEventListener('resize', localS.onWindowResize);
+            }
+            localS.onVisibilityChange = function() {
+              if (localS.disposing) return;
+              if (document.hidden) {
+                if (localS.raf) cancelAnimationFrame(localS.raf);
+                localS.raf = 0;
+              } else {
+                localS.dirty = true;
+                ensureFrame();
+              }
+            };
+            if (typeof document !== 'undefined') document.addEventListener('visibilitychange', localS.onVisibilityChange);
 
             sig = '';
-            S.raf = requestAnimationFrame(frame);
+            ensureFrame();
             return true;
           }
 
+          function teardown(preserveNotify) {
+            if (!preserveNotify) notify = null;
+            var retiring = S;
+            if (retiring) {
+              retiring.disposing = true;
+              if (retiring.raf) cancelAnimationFrame(retiring.raf);
+              retiring.raf = 0;
+              if (retiring.observer) { try { retiring.observer.disconnect(); } catch (e) {} }
+              if (retiring.resizeObserver) { try { retiring.resizeObserver.disconnect(); } catch (e) {} }
+              if (retiring.onWindowResize) window.removeEventListener('resize', retiring.onWindowResize);
+              if (retiring.onVisibilityChange && typeof document !== 'undefined') document.removeEventListener('visibilitychange', retiring.onVisibilityChange);
+              if (retiring.renderer && retiring.renderer.domElement) {
+                var canvas = retiring.renderer.domElement;
+                if (retiring.onContextLost) canvas.removeEventListener('webglcontextlost', retiring.onContextLost);
+                if (retiring.onContextRestored) canvas.removeEventListener('webglcontextrestored', retiring.onContextRestored);
+              }
+              disposeGroup(retiring.model);
+              if (retiring.renderer) {
+                try { retiring.renderer.forceContextLoss(); } catch (e) {}
+                try { retiring.renderer.dispose(); } catch (e) {}
+                if (retiring.renderer.domElement && retiring.renderer.domElement.parentNode) {
+                  retiring.renderer.domElement.parentNode.removeChild(retiring.renderer.domElement);
+                }
+              }
+            }
+            S = null; node = null; pending = null; sig = ''; restoreAttempts = 0;
+            status = 'idle';
+          }
           var api = {
             /** Stable ref callback target. Host div, or null on unmount. */
             attach: function (host) {
-              if (!host) { api.dispose(); return; }
-              if (node === host && S) return;
-              if (S) api.dispose();
+              if (!host) {
+                var detachedGeneration = ++attachGeneration;
+                teardown(true);
+                // Callback refs may detach/re-attach within one commit. Preserve
+                // the subscriber through that cycle, but release it after a real unmount.
+                Promise.resolve().then(function() {
+                  if (!node && attachGeneration === detachedGeneration) notify = null;
+                });
+                return;
+              }
+              if (node === host) return;
+              var generation = ++attachGeneration;
+              if (S || node) teardown(true);
               node = host;
               setStatus('loading');
               var ensure = self.ensureThree
                 ? self.ensureThree({ orbit: false, failMessage: cfg.failMessage || '3D view unavailable' })
                 : Promise.reject(new Error('no host loader'));
               ensure.then(function (THREE) {
-                if (node !== host) return;         // unmounted while loading
+                if (generation !== attachGeneration || node !== host) return;
                 if (!THREE) { setStatus('failed'); return; }
                 setStatus(build(THREE, host) ? 'ready' : 'failed');
-              }).catch(function () { setStatus('failed'); });
+              }).catch(function () {
+                if (generation !== attachGeneration || node !== host) return;
+                setStatus('failed');
+              });
             },
             /** render() calls this. Never touches the GPU — the rAF loop does. */
-            push: function (data) { pending = data; },
+            push: function (data) {
+              pending = data;
+              if (S) { S.dirty = true; ensureFrame(); }
+            },
             /** Wire back into React, or a dead overlay sits on a live canvas. */
             onStatusChange: function (fn) { notify = fn; },
             status: function () { return status; },
             debug: debug,
             dispose: function () {
-              if (S) {
-                if (S.raf) cancelAnimationFrame(S.raf);
-                disposeGroup(S.model);
-                if (S.renderer) {
-                  try { S.renderer.forceContextLoss(); } catch (e) {}
-                  try { S.renderer.dispose(); } catch (e) {}
-                  if (S.renderer.domElement && S.renderer.domElement.parentNode) {
-                    S.renderer.domElement.parentNode.removeChild(S.renderer.domElement);
-                  }
-                }
-              }
-              S = null; node = null; pending = null; sig = ''; restoreAttempts = 0;
-              // Drop the callback BEFORE the final flip: React is unmounting us,
-              // so the write would land on a dead tree.
-              notify = null;
-              setStatus('idle');
+              attachGeneration++;
+              teardown(false);
             }
           };
           return api;
@@ -1404,7 +1563,7 @@
         //
         // The check_find_deref.cjs gate flags new `.find(...).field` writes;
         // existing instances are converted opportunistically as authors touch
-        // each tool. STEM Lab audit (2026-06-07) found ~10 tools with this
+        // each tool. STEAM Lab audit (2026-06-07) found ~10 tools with this
         // pattern; autorepair / learning_lab / rocks were the HIGH-severity
         // first-pass conversions.
         findById: function(arr, id) {
@@ -1446,6 +1605,46 @@
       }
       return false;
     }
+
+    // BEEHIVE_PERSISTENCE_HELPER_START
+    // Keep this payload version independent from the shared STEM localStorage key.
+    // Future Bee migrations can inspect it without invalidating other tool data.
+    var _BEEHIVE_PERSISTENCE_VERSION = 1;
+    function _serializeBeehiveForPersistence(beehive) {
+      if (!beehive || typeof beehive !== 'object' || Array.isArray(beehive)) return null;
+      var persisted = Object.assign({}, beehive, { _persistenceVersion: _BEEHIVE_PERSISTENCE_VERSION });
+      // Simulation clocks are session controls. A reload must wait for an
+      // explicit learner action instead of silently advancing the colony.
+      delete persisted.autoAdvance;
+      if (beehive.queen && typeof beehive.queen === 'object' && !Array.isArray(beehive.queen)) {
+        var queen = Object.assign({}, beehive.queen);
+        // Queen RTS has enough durable state to resume, but an active match
+        // reopens paused so elapsed cycles never accrue during reload/remount.
+        if (queen.active) queen.paused = true;
+        persisted.queen = queen;
+      }
+      if (beehive.drone && typeof beehive.drone === 'object' && !Array.isArray(beehive.drone)) {
+        var drone = Object.assign({}, beehive.drone);
+        // The live flight model is held in refs and cannot be reconstructed from
+        // these UI flags. Reload into preflight/debrief while retaining completed
+        // runs, scores, attempts, route choices, and accessibility preferences.
+        delete drone.active;
+        delete drone.paused;
+        delete drone.carryover;
+        delete drone.replayIndex;
+        delete drone.interrupted;
+        persisted.drone = drone;
+      } else {
+        delete persisted.drone;
+      }
+      return persisted;
+    }
+    // Legacy reads and current writes share one non-mutating safety contract.
+    // This prevents pre-fix localStorage from reviving session-only clocks.
+    function _deserializeBeehiveFromPersistence(beehive) {
+      return _serializeBeehiveForPersistence(beehive);
+    }
+    // BEEHIVE_PERSISTENCE_HELPER_END
 
     window.AlloModules = window.AlloModules || {};
     window.AlloModules.StemLab = function StemLabModal(props) {
@@ -1598,7 +1797,22 @@
       // t (translation function) — pulled from props with a safe fallback
       var t = props.t || function (k) { return k; };
 
-      // ── STEM Lab Global Sound Effect Helper ──
+      // -- Theme Detection (must precede theme-dependent effects) --
+      var _stemTheme = (_themeProp === 'light' || _themeProp === 'dark' || _themeProp === 'contrast')
+        ? _themeProp
+        : null;
+      if (!_stemTheme) {
+        try {
+          _stemTheme = window.AlloStemTheme && window.AlloStemTheme.currentTheme
+            ? window.AlloStemTheme.currentTheme()
+            : null;
+        } catch (e) { _stemTheme = null; }
+      }
+      if (!_stemTheme) _stemTheme = 'light';
+      var isDark = _stemTheme === 'dark';
+      var isContrast = _stemTheme === 'contrast';
+
+      // ── STEAM Lab Global Sound Effect Helper ──
       var _stemAudioCtx = null;
       function stemBeep(freq, dur, vol) {
         try {
@@ -1670,7 +1884,7 @@
           '@media (prefers-reduced-motion: reduce) { .stem-lab-modal *, .stem-lab-modal *::before, .stem-lab-modal *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }',
           // WCAG 1.4.11: Ensure focus indicators have adequate contrast on all backgrounds
           '.stem-lab-modal [role="button"]:focus-visible { outline: 2px solid #6366f1 !important; outline-offset: 2px !important; }',
-          '.stem-lab-modal-shell { max-height: calc(100vh - 16px); }',
+          '.stem-lab-modal-shell { max-height: calc(100dvh - 16px); }',
           '.stem-lab-topbar { gap: 16px; }',
           '.stem-lab-brand-block, .stem-lab-actionbar { min-width: 0; }',
           '.stem-lab-title-lockup { min-width: 0; }',
@@ -1712,6 +1926,7 @@
           '.stem-active-tool-back { display: inline-flex; align-items: center; gap: 7px; min-height: 34px; padding: 0 12px; border-radius: 10px; border: 1px solid rgba(99,102,241,0.35); font-size: 12px; font-weight: 900; }',
           '.stem-active-tool-hint { font-size: 11px; white-space: nowrap; }',
           '@media (max-width: 640px) { .stem-lab-modal-shell { margin: 0 !important; border-radius: 0 !important; max-width: 100vw !important; max-height: 100vh !important; } .stem-lab-topbar { padding: 14px 14px 16px 88px !important; align-items: flex-start !important; flex-wrap: wrap !important; } .stem-lab-brand-block { flex: 1 1 180px !important; gap: 8px !important; } .stem-lab-brand-icon, .stem-lab-keyboard-badge, .stem-lab-xp-badge { display: none !important; } .stem-lab-title-lockup h2 { font-size: 26px !important; line-height: 1.05 !important; max-width: 176px; } .stem-lab-title-lockup p { font-size: 12.5px !important; line-height: 1.35 !important; max-width: 178px; } .stem-lab-actionbar { flex: 0 0 auto !important; margin-left: 0 !important; margin-top: 4px !important; gap: 2px !important; max-width: 184px; flex-wrap: wrap; } .stem-lab-actionbar button { box-sizing: border-box; flex: 0 0 40px !important; width: 40px; min-width: 40px; max-width: 40px; height: 40px; min-height: 40px; padding: 0 !important; justify-content: center; background: rgba(255,255,255,0.14); } .stem-lab-actionbar button span, .stem-lab-subject-select { display: none !important; } .stem-lab-tablist { padding-left: 0 !important; padding-right: 0 !important; } .stem-lab-tablist > button { flex: 1 1 0; justify-content: center; padding: 12px 8px !important; } .stem-active-toolbar { padding: 10px 12px; gap: 10px; } .stem-active-tool-icon { width: 32px; height: 32px; } .stem-active-tool-title p, .stem-active-tool-hint { display: none; } .stem-active-tool-back { min-height: 36px; padding: 0 10px; } .stem-tool-catalog { width: 100%; } .stem-tool-searchbar { position: static; padding-top: 0; } .stem-catalog-context { align-items: flex-start; margin-top: 0; } .stem-catalog-status, .stem-catalog-clear { min-height: 32px; } .stem-catalog-chip { min-height: 38px; font-size: 12px; padding: 0 12px; } .stem-tool-matchmaker-form, .stem-tool-ai-suggestions { grid-template-columns: 1fr; } .stem-tool-matchmaker-button { width: 100%; } .stem-tool-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; } .stem-tool-card { min-height: 220px; padding: 22px !important; } .stem-tool-card h4 { font-size: 20px !important; line-height: 1.25; } .stem-tool-card p { font-size: 16px !important; line-height: 1.55; } }',
+          '@media (max-width: 640px) { .stem-lab-modal-shell { max-height: 100dvh !important; } }',
           '@media (max-width: 430px) { .stem-lab-topbar { padding-left: 96px !important; } .stem-tool-grid { grid-template-columns: 1fr; } .stem-tool-card { min-height: auto; } }'
         ].join('\n');
         document.head.appendChild(s);
@@ -1729,15 +1944,19 @@
         if (isDark) {
           s.textContent = [
             '[data-stem-lab] .bg-white { background-color: #1e293b !important; color: #f1f5f9 !important; }',
+            '[data-stem-lab] [class~="bg-white/60"], [data-stem-lab] [class~="bg-white/70"], [data-stem-lab] [class~="bg-white/75"], [data-stem-lab] [class~="bg-white/80"], [data-stem-lab] [class~="bg-white/85"], [data-stem-lab] [class~="bg-white/90"], [data-stem-lab] [class~="bg-white/95"], [data-stem-lab] [class~="bg-indigo-50/60"], [data-stem-lab] [class~="bg-indigo-50/70"], [data-stem-lab] [class~="bg-indigo-50/80"], [data-stem-lab] [class~="bg-emerald-50/60"], [data-stem-lab] [class~="bg-emerald-50/70"], [data-stem-lab] [class~="bg-emerald-50/80"], [data-stem-lab] [class~="bg-amber-50/60"], [data-stem-lab] [class~="bg-amber-50/70"], [data-stem-lab] [class~="bg-amber-50/75"], [data-stem-lab] [class~="bg-amber-50/80"], [data-stem-lab] [class~="bg-violet-50/60"], [data-stem-lab] [class~="bg-violet-50/70"], [data-stem-lab] [class~="bg-violet-50/80"], [data-stem-lab] [class~="bg-sky-50/65"], [data-stem-lab] [class~="bg-sky-50/70"], [data-stem-lab] [class~="bg-sky-50/80"], [data-stem-lab] [class~="bg-cyan-50/60"], [data-stem-lab] [class~="bg-cyan-50/65"], [data-stem-lab] [class~="bg-cyan-50/70"], [data-stem-lab] [class~="bg-slate-50/70"], [data-stem-lab] [class~="bg-slate-50/95"], [data-stem-lab] [class~="bg-blue-50/70"], [data-stem-lab] [class~="bg-fuchsia-50/60"], [data-stem-lab] [class~="bg-fuchsia-50/70"], [data-stem-lab] [class~="bg-purple-50/60"], [data-stem-lab] [class~="bg-purple-50/70"], [data-stem-lab] [class~="bg-purple-50/80"], [data-stem-lab] [class~="bg-rose-50/60"], [data-stem-lab] [class~="bg-rose-50/70"], [data-stem-lab] [class~="bg-rose-50/80"], [data-stem-lab] [class~="bg-red-50/70"], [data-stem-lab] [class~="bg-teal-50/70"] { background-color: #1e293b !important; color: #f1f5f9 !important; }',
             '[data-stem-lab] .bg-slate-50 { background-color: #0f172a !important; color: #f1f5f9 !important; }',
             '[data-stem-lab] .bg-slate-100 { background-color: #1e293b !important; }',
             '[data-stem-lab] .bg-slate-200 { background-color: #334155 !important; }',
             '[data-stem-lab] .text-slate-900, [data-stem-lab] .text-slate-800, [data-stem-lab] .text-slate-700 { color: #f1f5f9 !important; }',
             '[data-stem-lab] .text-slate-600 { color: #cbd5e1 !important; }',
             '[data-stem-lab] .text-slate-500 { color: #94a3b8 !important; }',
+            '[data-stem-lab] .text-stone-900, [data-stem-lab] .text-stone-800, [data-stem-lab] .text-stone-700 { color: #f5f5f4 !important; }',
+            '[data-stem-lab] .text-stone-600 { color: #d6d3d1 !important; }',
             '[data-stem-lab] .border-slate-200 { border-color: #475569 !important; }',
             '[data-stem-lab] .border-slate-100 { border-color: #334155 !important; }',
             '[data-stem-lab] .border-slate-300 { border-color: #475569 !important; }',
+            '[data-stem-lab] .border-stone-200 { border-color: #78716c !important; }',
             '[data-stem-lab] .bg-indigo-50 { background-color: #312e81 !important; }',
             '[data-stem-lab] .bg-blue-50 { background-color: #1e3a5f !important; }',
             '[data-stem-lab] .bg-green-50 { background-color: #14532d !important; }',
@@ -1771,13 +1990,14 @@
         } else if (isContrast) {
           s.textContent = [
             '[data-stem-lab] .bg-white, [data-stem-lab] .bg-slate-50, [data-stem-lab] .bg-slate-100 { background-color: #000000 !important; color: #ffffff !important; }',
+            '[data-stem-lab] [class~="bg-white/60"], [data-stem-lab] [class~="bg-white/70"], [data-stem-lab] [class~="bg-white/75"], [data-stem-lab] [class~="bg-white/80"], [data-stem-lab] [class~="bg-white/85"], [data-stem-lab] [class~="bg-white/90"], [data-stem-lab] [class~="bg-white/95"], [data-stem-lab] [class~="bg-indigo-50/60"], [data-stem-lab] [class~="bg-indigo-50/70"], [data-stem-lab] [class~="bg-indigo-50/80"], [data-stem-lab] [class~="bg-emerald-50/60"], [data-stem-lab] [class~="bg-emerald-50/70"], [data-stem-lab] [class~="bg-emerald-50/80"], [data-stem-lab] [class~="bg-amber-50/60"], [data-stem-lab] [class~="bg-amber-50/70"], [data-stem-lab] [class~="bg-amber-50/75"], [data-stem-lab] [class~="bg-amber-50/80"], [data-stem-lab] [class~="bg-violet-50/60"], [data-stem-lab] [class~="bg-violet-50/70"], [data-stem-lab] [class~="bg-violet-50/80"], [data-stem-lab] [class~="bg-sky-50/65"], [data-stem-lab] [class~="bg-sky-50/70"], [data-stem-lab] [class~="bg-sky-50/80"], [data-stem-lab] [class~="bg-cyan-50/60"], [data-stem-lab] [class~="bg-cyan-50/65"], [data-stem-lab] [class~="bg-cyan-50/70"], [data-stem-lab] [class~="bg-slate-50/70"], [data-stem-lab] [class~="bg-slate-50/95"], [data-stem-lab] [class~="bg-blue-50/70"], [data-stem-lab] [class~="bg-fuchsia-50/60"], [data-stem-lab] [class~="bg-fuchsia-50/70"], [data-stem-lab] [class~="bg-purple-50/60"], [data-stem-lab] [class~="bg-purple-50/70"], [data-stem-lab] [class~="bg-purple-50/80"], [data-stem-lab] [class~="bg-rose-50/60"], [data-stem-lab] [class~="bg-rose-50/70"], [data-stem-lab] [class~="bg-rose-50/80"], [data-stem-lab] [class~="bg-red-50/70"], [data-stem-lab] [class~="bg-teal-50/70"] { background-color: #000000 !important; color: #ffffff !important; }',
             '[data-stem-lab] .bg-slate-200, [data-stem-lab] .bg-slate-300 { background-color: #1a1a1a !important; color: #ffffff !important; }',
-            '[data-stem-lab] .text-slate-900, [data-stem-lab] .text-slate-800, [data-stem-lab] .text-slate-700, [data-stem-lab] .text-slate-600, [data-stem-lab] .text-slate-500 { color: #ffffff !important; }',
+            '[data-stem-lab] .text-slate-900, [data-stem-lab] .text-slate-800, [data-stem-lab] .text-slate-700, [data-stem-lab] .text-slate-600, [data-stem-lab] .text-slate-500, [data-stem-lab] .text-stone-900, [data-stem-lab] .text-stone-800, [data-stem-lab] .text-stone-700, [data-stem-lab] .text-stone-600 { color: #ffffff !important; }',
             '[data-stem-lab] .text-indigo-700, [data-stem-lab] .text-indigo-600, [data-stem-lab] .text-blue-700, [data-stem-lab] .text-blue-600 { color: #fbbf24 !important; }',
             // all other dark accent text → amber (mirror the -50 gap fix for contrast mode)
             '[data-stem-lab] .text-amber-700, [data-stem-lab] .text-amber-600, [data-stem-lab] .text-orange-700, [data-stem-lab] .text-orange-600, [data-stem-lab] .text-green-700, [data-stem-lab] .text-green-600, [data-stem-lab] .text-emerald-700, [data-stem-lab] .text-emerald-600, [data-stem-lab] .text-teal-700, [data-stem-lab] .text-teal-600, [data-stem-lab] .text-cyan-700, [data-stem-lab] .text-cyan-600, [data-stem-lab] .text-sky-700, [data-stem-lab] .text-sky-600, [data-stem-lab] .text-purple-700, [data-stem-lab] .text-purple-600, [data-stem-lab] .text-violet-700, [data-stem-lab] .text-violet-600, [data-stem-lab] .text-rose-700, [data-stem-lab] .text-rose-600, [data-stem-lab] .text-pink-700, [data-stem-lab] .text-pink-600, [data-stem-lab] .text-red-700, [data-stem-lab] .text-red-600 { color: #fbbf24 !important; }',
-            '[data-stem-lab] .border-slate-200, [data-stem-lab] .border-slate-100, [data-stem-lab] .border-slate-300 { border-color: #fbbf24 !important; }',
-            '[data-stem-lab] .bg-indigo-50, [data-stem-lab] .bg-blue-50, [data-stem-lab] .bg-green-50, [data-stem-lab] .bg-yellow-50, [data-stem-lab] .bg-red-50, [data-stem-lab] .bg-purple-50, [data-stem-lab] .bg-emerald-50, [data-stem-lab] .bg-amber-50, [data-stem-lab] .bg-orange-50, [data-stem-lab] .bg-cyan-50, [data-stem-lab] .bg-sky-50, [data-stem-lab] .bg-teal-50, [data-stem-lab] .bg-lime-50, [data-stem-lab] .bg-rose-50, [data-stem-lab] .bg-pink-50, [data-stem-lab] .bg-violet-50, [data-stem-lab] .bg-fuchsia-50, [data-stem-lab] .bg-gray-50 { background-color: #000000 !important; border: 2px solid #fbbf24 !important; }',
+            '[data-stem-lab] .border-slate-200, [data-stem-lab] .border-slate-100, [data-stem-lab] .border-slate-300, [data-stem-lab] .border-stone-200 { border-color: #fbbf24 !important; }',
+            '[data-stem-lab] .bg-indigo-50, [data-stem-lab] .bg-blue-50, [data-stem-lab] .bg-green-50, [data-stem-lab] .bg-yellow-50, [data-stem-lab] .bg-red-50, [data-stem-lab] .bg-purple-50, [data-stem-lab] .bg-emerald-50, [data-stem-lab] .bg-amber-50, [data-stem-lab] .bg-orange-50, [data-stem-lab] .bg-cyan-50, [data-stem-lab] .bg-sky-50, [data-stem-lab] .bg-teal-50, [data-stem-lab] .bg-lime-50, [data-stem-lab] .bg-rose-50, [data-stem-lab] .bg-pink-50, [data-stem-lab] .bg-violet-50, [data-stem-lab] .bg-fuchsia-50, [data-stem-lab] .bg-gray-50, [data-stem-lab] .bg-stone-50 { background-color: #000000 !important; border: 2px solid #fbbf24 !important; }',
             // gradient cards → solid black + amber border in contrast mode
             '[data-stem-lab] [class~="from-white"], [data-stem-lab] [class~="from-slate-50"], [data-stem-lab] [class~="from-gray-50"], [data-stem-lab] [class~="from-amber-50"], [data-stem-lab] [class~="from-orange-50"], [data-stem-lab] [class~="from-yellow-50"], [data-stem-lab] [class~="from-blue-50"], [data-stem-lab] [class~="from-indigo-50"], [data-stem-lab] [class~="from-sky-50"], [data-stem-lab] [class~="from-cyan-50"], [data-stem-lab] [class~="from-green-50"], [data-stem-lab] [class~="from-emerald-50"], [data-stem-lab] [class~="from-teal-50"], [data-stem-lab] [class~="from-lime-50"], [data-stem-lab] [class~="from-purple-50"], [data-stem-lab] [class~="from-violet-50"], [data-stem-lab] [class~="from-fuchsia-50"], [data-stem-lab] [class~="from-pink-50"], [data-stem-lab] [class~="from-rose-50"] { background-image: none !important; background-color: #000000 !important; border: 2px solid #fbbf24 !important; }',
             '[data-stem-lab] input, [data-stem-lab] textarea, [data-stem-lab] select { background-color: #000000 !important; color: #ffffff !important; border: 2px solid #fbbf24 !important; }',
@@ -1859,7 +2079,7 @@
         return function() { var el = document.getElementById(id); if (el) el.remove(); };
       }, []);
 
-      // ── STEM Lab XP System (per-activity cap: 100 XP) ──
+      // ── STEAM Lab XP System (per-activity cap: 100 XP) ──
       var stemXpData = (labToolData && labToolData._stemXP) || {};
       function awardStemXP(activityId, points, reason) {
         var _awardedPts = Math.min(points, Math.max(0, 100 - getStemXP(activityId)));
@@ -1981,6 +2201,9 @@
       }
       function _openStemTool(id, label) {
         if (!id) return;
+        try {
+          if (typeof window.__alloEnsureStemPluginLoaded === 'function') window.__alloEnsureStemPluginLoaded(id);
+        } catch (e) {}
         setStemLabTool(id);
         _rememberStemToolUse(id);
         _setStemToolSearch('');
@@ -2344,7 +2567,7 @@
       }
 
       // Sync incoming activeStation prop from main app (e.g. resource pack click)
-      // When the main app sets activeStation and opens STEM Lab, auto-load that station
+      // When the main app sets activeStation and opens STEAM Lab, auto-load that station
       React.useEffect(function () {
         if (props.activeStation && props.activeStation.id) {
           _setActiveStationId(props.activeStation.id);
@@ -2355,7 +2578,7 @@
             _setSavedStations(updated);
             try { localStorage.setItem('alloflow_stem_stations', JSON.stringify(updated)); } catch (e) {}
           }
-          // Clear the prop so re-opening STEM Lab without a station click doesn't re-trigger
+          // Clear the prop so re-opening STEAM Lab without a station click doesn't re-trigger
           if (typeof props.setActiveStation === 'function') props.setActiveStation(null);
         }
       }, [props.activeStation]);
@@ -2391,24 +2614,43 @@
       // single guarded ctx.getHint entry point — see getHint above.)
 
       // ── Theme Detection (prop from parent app, falls back to DOM query) ──
-      var _stemTheme = (_themeProp === 'light' || _themeProp === 'dark' || _themeProp === 'contrast')
-        ? _themeProp
-        : null;
-      if (!_stemTheme) {
-        try {
-          _stemTheme = window.AlloStemTheme && window.AlloStemTheme.currentTheme
-            ? window.AlloStemTheme.currentTheme()
-            : null;
-        } catch (e) { _stemTheme = null; }
-      }
-      if (!_stemTheme) _stemTheme = 'light';
-      var isDark = _stemTheme === 'dark';
-      var isContrast = _stemTheme === 'contrast';
-      // Palette shortcuts for canvas rendering
+      // Theme values are resolved above before theme-dependent effects are registered.
+      var _stemOpenerRef = React.useRef(null);
+      React.useEffect(function () {
+        _stemOpenerRef.current = document.activeElement;
+        var focusTimer = setTimeout(function () {
+          var root = document.querySelector('[data-stem-lab]');
+          if (root && typeof root.focus === 'function') {
+            root.setAttribute('tabindex', '-1');
+            root.focus();
+          }
+        }, 0);
+        return function () {
+          clearTimeout(focusTimer);
+          var opener = _stemOpenerRef.current;
+          if (opener && document.contains(opener) && typeof opener.focus === 'function') opener.focus();
+        };
+      }, []);
+      var _previousStemToolRef = React.useRef(null);
+      React.useEffect(function () {
+        var prior = _previousStemToolRef.current;
+        var focusTimer = setTimeout(function () {
+          var target = stemLabTool ? document.querySelector('.stem-active-tool-back') : null;
+          if (!target && prior) {
+            var cards = document.querySelectorAll('[data-stem-tool-id]');
+            for (var i = 0; i < cards.length; i++) {
+              if (cards[i].getAttribute('data-stem-tool-id') === prior) { target = cards[i]; break; }
+            }
+          }
+          if (target && typeof target.focus === 'function') target.focus();
+        }, 0);
+        _previousStemToolRef.current = stemLabTool || null;
+        return function () { clearTimeout(focusTimer); };
+      }, [stemLabTool]);
       // ── Keyboard Accessibility ──
       React.useEffect(function () {
         function handleKeyDown(e) {
-          // Escape to close STEM Lab
+          // Escape to close STEAM Lab
           if (e.key === 'Escape') {
             // If a tool is open, close the tool first
             if (stemLabTool) {
@@ -2417,7 +2659,7 @@
               announceToSR('Tool closed');
               return;
             }
-            // Otherwise close STEM Lab
+            // Otherwise close STEAM Lab
             e.preventDefault();
             if (typeof setShowStemLab === 'function') setShowStemLab(false);
           }
@@ -2452,12 +2694,6 @@
           }
         }
         document.addEventListener('keydown', handleKeyDown);
-        // Auto-focus the dialog on mount
-        var root = document.querySelector('[data-stem-lab]');
-        if (root) {
-          var firstBtn = root.querySelector('button');
-          if (firstBtn) firstBtn.focus();
-        }
         return function () { document.removeEventListener('keydown', handleKeyDown); };
       }, [stemLabTool, stemLabTab]);
 
@@ -2538,8 +2774,9 @@
           if (e.shiftKey) { if (document.activeElement === first) { e.preventDefault(); last.focus(); } }
           else { if (document.activeElement === last) { e.preventDefault(); first.focus(); } }
         }
-        document.addEventListener('keydown', trapFocus);
-        return function () { document.removeEventListener('keydown', trapFocus); };
+        // The primary keyboard handler above owns the single modal focus trap.
+        // Keep this local calculation dormant for compatibility with older mirrors.
+        return undefined;
       }, [stemLabTool]);
 
       // ── Accessibility: aria-live feedback region ──
@@ -2853,7 +3090,12 @@
           if (_saved) {
             var _parsed = JSON.parse(_saved);
             if (_parsed && typeof _parsed === 'object') {
-              setLabToolData(function (prev) { return Object.assign({}, prev, _parsed, { _persisted: true }); });
+              var _parsedForHydration = _parsed;
+              if (_parsed.beehive && typeof _parsed.beehive === 'object' && !Array.isArray(_parsed.beehive)) {
+                var _hydratedBeehive = _deserializeBeehiveFromPersistence(_parsed.beehive);
+                _parsedForHydration = Object.assign({}, _parsed, { beehive: _hydratedBeehive });
+              }
+              setLabToolData(function (prev) { return Object.assign({}, prev, _parsedForHydration, { _persisted: true }); });
             } else {
               setLabToolData(function (prev) { return Object.assign({}, prev, { _persisted: true }); });
             }
@@ -2883,6 +3125,10 @@
             delete _fs.view; delete _fs.rescue; delete _fs.survey;
             delete _fs.weatherLesson; delete _fs.nearestWaypoint; delete _fs.showHelp;
             _toSave.flightSim = _fs;
+          }
+          if (labToolData.beehive) {
+            var _beehive = _serializeBeehiveForPersistence(labToolData.beehive);
+            if (_beehive) _toSave.beehive = _beehive;
           }
           localStorage.setItem('alloflow_stemlab_v2', JSON.stringify(_toSave));
         } catch (e) { }
@@ -3116,7 +3362,7 @@
           // dark navy bg; kept subtle so the build editor stays legible (same tuning
           // philosophy as geometryworld). Plain render until the r128 addons load; any
           // failure falls back to renderer.render — can never break the tool. This is
-          // the LAST un-bloomed 3D surface in STEM Lab.
+          // the LAST un-bloomed 3D surface in STEAM Lab.
           renderer._alloComposer = null;
           (function(){
             if (window.AlloPostFXEnabled === false) return;
@@ -3766,6 +4012,8 @@
       ];
 
       var _activeToolFallbackMeta = {
+        heatLab: { label: 'Heat & Thermodynamics Lab', icon: '\uD83C\uDF21\uFE0F' },
+        nuclearLab: { label: 'Nuclear & Radiation Lab', icon: '\u2622\uFE0F' },
         volume: { label: '3D Volume Explorer', icon: 'ðŸ“¦' },
         numberline: { label: 'Number Line', icon: 'ðŸ“' },
         areamodel: { label: 'Area Model', icon: 'ðŸŸ§' },
@@ -3791,9 +4039,9 @@
       }
       var _activeStemToolMeta = stemLabTool ? _getActiveStemToolMeta(stemLabTool) : null;
 
-      // STEM Lab modal JSX
+      // STEAM Lab modal JSX
       return /*#__PURE__*/React.createElement("div", {
-        "data-stem-lab": "true", role: "dialog", "aria-modal": "true", "aria-label": stemLabTool ? "STEM Lab: " + stemLabTool : "STEM Lab",
+        "data-stem-lab": "true", role: "dialog", "aria-modal": "true", "aria-label": stemLabTool ? "STEAM Lab: " + (_activeStemToolMeta ? _activeStemToolMeta.label : stemLabTool) : "STEAM Lab",
         className: "fixed inset-0 z-[9999] flex items-stretch justify-center stem-lab-modal" + (_reduceMotion ? " reduce-motion" : ""),
         style: {
           zIndex: 10020,
@@ -3808,7 +4056,7 @@
         }, a11yAnnouncement),
         /*#__PURE__*/React.createElement("div", {
         className: "stem-lab-modal-shell w-full max-w-[98vw] m-2 rounded-2xl shadow-2xl flex flex-col overflow-hidden overflow-y-auto stemlab-styled-scrollbar" + (_reduceMotion ? "" : " animate-in zoom-in-95 duration-300"),
-        style: { backgroundColor: _pal.bg, color: _pal.text }
+        style: { backgroundColor: _pal.bg, color: _pal.text, minHeight: 0, overflow: 'hidden' }
       }, /*#__PURE__*/React.createElement("div", {
         className: "stem-lab-topbar flex items-center justify-between px-6 py-3 text-white", role: "banner",
         style: { background: isContrast ? '#000' : 'linear-gradient(to right, #2563eb, #4f46e5, #7c3aed)', borderBottom: isContrast ? '3px solid #fbbf24' : 'none' }
@@ -3858,7 +4106,7 @@
           className: "stem-lab-title-lockup"
         }, /*#__PURE__*/React.createElement("h2", {
           className: "text-lg font-bold tracking-tight"
-        }, "\uD83E\uDDEA STEM Lab"), /*#__PURE__*/React.createElement("p", {
+        }, "\uD83E\uDDEA STEAM Lab"), /*#__PURE__*/React.createElement("p", {
           className: "text-xs text-white/70"
         }, "Create problems, build assessments, explore with manipulatives"))), /*#__PURE__*/React.createElement("div", {
           className: "stem-lab-actionbar flex items-center gap-3"
@@ -3935,11 +4183,11 @@
         /*#__PURE__*/React.createElement("button", {
           onClick: () => setShowStemLab(false),
           className: "p-1.5 hover:bg-white/20 rounded-lg transition-colors",
-          "aria-label": "Close STEM Lab"
+          "aria-label": "Close STEAM Lab"
         }, /*#__PURE__*/React.createElement(X, {
           size: 20
         })))), /*#__PURE__*/React.createElement("div", {
-          className: "stem-lab-tablist flex border-b px-6", role: "tablist", "aria-label": "STEM Lab navigation",
+          className: "stem-lab-tablist flex border-b px-6", role: "tablist", "aria-label": "STEAM Lab navigation",
           style: { backgroundColor: _pal.bgAlt, borderColor: _pal.border }
         }, [{
           id: 'create',
@@ -3965,7 +4213,7 @@
         stemLabTab === 'explore' && stemLabTool && _activeStemToolMeta && /*#__PURE__*/React.createElement("div", {
           className: "stem-active-toolbar",
           role: "region",
-          "aria-label": "Current STEM Lab tool",
+          "aria-label": "Current STEAM Lab tool",
           style: {
             backgroundColor: isContrast ? '#000' : (isDark ? 'rgba(15,23,42,0.94)' : 'rgba(255,255,255,0.94)'),
             borderColor: _pal.border
@@ -3977,9 +4225,9 @@
           className: "stem-active-tool-back",
           onClick: function () {
             setStemLabTool(null);
-            if (typeof announceToSR === 'function') announceToSR('Returned to all STEM Lab tools');
+            if (typeof announceToSR === 'function') announceToSR('Returned to all STEAM Lab tools');
           },
-          "aria-label": "Back to all STEM Lab tools",
+          "aria-label": "Back to all STEAM Lab tools",
           style: {
             backgroundColor: isContrast ? '#111' : (isDark ? 'rgba(99,102,241,0.18)' : '#eef2ff'),
             color: isContrast ? '#fbbf24' : (isDark ? '#c7d2fe' : '#3730a3'),
@@ -4013,7 +4261,7 @@
           ),
           React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'auto 1fr auto 1fr', gap: '4px 16px', fontSize: 12 } },
             React.createElement("kbd", { style: { background: _pal.bgAlt, border: '1px solid ' + _pal.border, padding: '1px 6px', borderRadius: 3, fontFamily: 'monospace', fontSize: 11 } }, "Esc"),
-            React.createElement("span", { style: { color: _pal.textMuted } }, stemLabTool ? "Close tool / Close lab" : "Close STEM Lab"),
+            React.createElement("span", { style: { color: _pal.textMuted } }, stemLabTool ? "Close tool / Close lab" : "Close STEAM Lab"),
             React.createElement("kbd", { style: { background: _pal.bgAlt, border: '1px solid ' + _pal.border, padding: '1px 6px', borderRadius: 3, fontFamily: 'monospace', fontSize: 11 } }, "Alt+1"),
             React.createElement("span", { style: { color: _pal.textMuted } }, "Create tab"),
             React.createElement("kbd", { style: { background: _pal.bgAlt, border: '1px solid ' + _pal.border, padding: '1px 6px', borderRadius: 3, fontFamily: 'monospace', fontSize: 11 } }, "Alt+2"),
@@ -4061,14 +4309,14 @@
         ),
         // ═══ XP Progress Overlay Panel ═══
         _showXpPanel && React.createElement("div", {
-          role: "region", "aria-label": "STEM Lab XP Progress",
+          role: "region", "aria-label": "STEAM Lab XP Progress",
           className: "relative",
           style: { borderBottom: '2px solid ' + _pal.border }
         },
           React.createElement("div", { className: "p-4 max-w-4xl mx-auto", style: { background: 'linear-gradient(135deg, #fffbeb, #fef3c7, #fffbeb)' } },
             React.createElement("div", { className: "flex items-center gap-2 mb-3" },
               React.createElement("span", { style: { fontSize: '20px', filter: 'drop-shadow(0 0 4px rgba(255,200,0,0.7))' } }, "\u2B50"),
-              React.createElement("h4", { className: "text-sm font-black text-amber-800" }, "STEM Lab XP Progress"),
+              React.createElement("h4", { className: "text-sm font-black text-amber-800" }, "STEAM Lab XP Progress"),
               React.createElement("span", { className: "ml-auto text-xs font-black text-amber-700 px-2.5 py-1 rounded-full", style: { background: 'linear-gradient(135deg, #f59e0b, #eab308)', color: '#1e293b', boxShadow: '0 2px 6px rgba(245,158,11,0.3)' } }, totalStemXP + " Total XP"),
               React.createElement("button", { onClick: function() { _setShowXpPanel(false); }, "aria-label": "Close XP panel", className: "ml-2 p-1 rounded-full hover:bg-amber-200 transition-colors text-amber-800" }, "\u2715")
             ),
@@ -4189,7 +4437,7 @@
         ),
         /*#__PURE__*/React.createElement("div", {
           className: "flex-1 overflow-y-auto p-6",
-          style: { backgroundColor: _pal.bg, color: _pal.text }
+          style: { backgroundColor: _pal.bg, color: _pal.text, minHeight: 0, overflowY: 'auto' }
         }, stemLabTab === 'create' && !showAssessmentBuilder && /*#__PURE__*/React.createElement("div", {
           className: "space-y-5 max-w-3xl mx-auto animate-in fade-in duration-200"
         }, /*#__PURE__*/React.createElement("div", {
@@ -4336,7 +4584,9 @@
         }, /*#__PURE__*/React.createElement("div", {
           className: "flex items-center gap-2"
         }, /*#__PURE__*/React.createElement("select", {
-          'aria-label': 'Question type',
+          // 'aria-label': 'Question type' also sat here. This object already ends
+          // with "aria-label": "Block type", and the last duplicate key wins, so
+          // the first was dead — the control has always announced "Block type".
           value: block.type,
           onChange: e => {
             const nb = [...assessmentBlocks];
@@ -4766,6 +5016,11 @@
                 color: 'emerald', ready: true
               },
               {
+                id: 'treeLab', icon: '🌳', label: 'Tree Life Lab',
+                desc: 'Photosynthesis at the whole-tree scale in 3D: what limits the rate hour to hour, what a big tree spends just staying alive, why rings narrow with age, and how trees make more of themselves with seeds and without.',
+                color: 'emerald', ready: true
+              },
+              {
                 id: 'cellAtlasLab', icon: '\u2237', label: 'Cell Atlas Lab',
                 desc: 'Classify human pancreatic cell types from gene-expression evidence, compare marker profiles, solve mystery cells, and follow insulin toward AlphaFold structure.',
                 color: 'cyan', ready: true
@@ -4782,6 +5037,12 @@
                 id: 'evoLab', icon: '🦎', label: 'EvoLab: Evolution',
                 desc: 'Evolution + natural selection: Selection Sandbox, Galápagos Beak Lab, Phylogenetic Tree Builder, plus quick labs on Hardy-Weinberg, genetic drift, common ancestry, evolution misconceptions. Maine wildlife examples.',
                 color: 'emerald', ready: true
+              },
+              {
+                id: 'organismId', icon: '🧬', label: 'Taxonomy Explorer',
+                desc: 'Walk the ranked tree of life, meet the lookalike pairs that fool experienced foragers, and learn why the boxes keep moving — Linnaean ranks vs cladistics, what a species even is, and the organisms that break the system. Photo identification is built but held back pending expert review of its hazard copy.',
+                color: 'emerald', ready: true,
+                aliases: ['taxonomy', 'classification', 'organism id', 'identify organism', 'linnaean', 'cladistics', 'species', 'lookalikes', 'mimicry', 'tree of life', 'dichotomous key']
               },
               { id: 'dinoLab', icon: '🦕', label: 'Dino Lab', desc: 'Explore 360+ dinosaurs across deep time: search, compare, dig fossils, build food webs, and meet the bird connection — with how-we-know notes on every species.', color: 'emerald', ready: true },
               {
@@ -4859,7 +5120,7 @@
               },
               { id: 'birdLab', icon: '\uD83D\uDC26', label: 'BirdLab: I-Spy Ornithology', desc: 'Layered habitat I-Spy with animated birds whose movement signatures double as field marks. Field Marks Trainer, Beak & Feet Lab, Bird Calls, Maine Birds Spotlight, Migration, Citizen Science, Photo ID, and a Life List that persists across habitats. Pairs with Cornell Lab\u2019s Merlin Bird ID.', color: 'emerald', ready: true },
               { id: 'raptorHunt', icon: '\uD83E\uDD85', label: 'Raptor Hunt: Predator Physics + Biology', desc: 'Three.js stoop simulator + deep science of raptor hunt mechanics. Fly as a peregrine at 240 mph, a harpy with 530 psi talons, or a silent great horned owl. 8 species + 12 sections covering talon force, vision (4-8\u00D7 human, UV in kestrels), flight physics, owl silent flight, terminal-velocity calculator, DDT recovery + ongoing conservation crises, field ID by silhouette + gestalt.', color: 'amber', ready: true },
-              { id: 'migration', icon: '🦋', label: 'Animal Migration Lab', desc: 'Track real animal migration routes across continents. Explore navigation, climate triggers, and conservation challenges facing migratory species.', color: 'teal', ready: true },
+              { id: 'migration', icon: '\uD83E\uDDED', label: 'Animal Migration Lab', desc: 'Explore 3D migration routes, navigation, climate triggers, conservation challenges, and an explicit monarch butterfly simulation.', color: 'teal', ready: true },
               {
                 id: 'cephalopodLab', icon: '🐙', label: 'Cephalopod Lab',
                 desc: 'Marine biology + behavioral science of octopuses, squid, cuttlefish, nautilus. Headline: Hunter Sim — pick species + habitat + prey + tactic, run the camouflage minigame, time the strike. Unlocks field-note biology trivia (chromatophore mechanics, 9 brains, blue blood, jet propulsion). 10-species field guide with intelligence + camouflage + jet-speed stats.',
@@ -4941,7 +5202,7 @@
                 color: 'cyan', ready: true
               },
               { id: 'heatLab', icon: '🌡️', label: 'Heat & Thermodynamics Lab', desc: 'Conduction, convection and radiation on a real heat-equation model; insulation R-values; calorimetry mixing; the water heating curve; and why no heat engine reaches 100%.', aliases: ['thermodynamics', 'heat', 'heat transfer', 'conduction', 'convection', 'radiation', 'insulation', 'specific heat', 'calorimetry', 'latent heat', 'phase change', 'heating curve', 'carnot', 'heat engine', 'thermal', 'temperature', 'second law'], color: 'orange', ready: true },
-              { id: 'nuclearLab', icon: '☢️', label: 'Nuclear & Radiation Lab', desc: 'Half-life and decay you can run, what actually stops alpha, beta and gamma, fission and fusion, radiation doses on a readable scale, the three accidents in honest numbers, the waste question, and where small modular reactors really stand.', aliases: ['nuclear', 'radiation', 'radioactive', 'radioactivity', 'half-life', 'isotope', 'decay', 'fission', 'fusion', 'reactor', 'SMR', 'small modular reactor', 'uranium', 'plutonium', 'carbon dating', 'chernobyl', 'fukushima', 'sievert', 'dose', 'radiation safety', 'shielding', 'nuclear waste', 'alpha', 'beta', 'gamma', 'radon', 'meltdown', 'enrichment', 'nuclear power'], color: 'violet', ready: true },
+              { id: 'nuclearLab', icon: '☢️', label: 'Nuclear & Radiation Lab', desc: 'Half-life and decay you can run, what actually stops alpha, beta and gamma, fission and fusion, radiation doses on a readable scale, why the same accident gets two death tolls a hundredfold apart, the three accidents in honest numbers, the waste question, and where small modular reactors really stand.', aliases: ['nuclear', 'radiation', 'radioactive', 'radioactivity', 'half-life', 'isotope', 'decay', 'fission', 'fusion', 'reactor', 'SMR', 'small modular reactor', 'uranium', 'plutonium', 'carbon dating', 'chernobyl', 'fukushima', 'sievert', 'dose', 'radiation safety', 'shielding', 'nuclear waste', 'alpha', 'beta', 'gamma', 'radon', 'meltdown', 'enrichment', 'nuclear power', 'linear no-threshold', 'LNT', 'hormesis', 'low-dose risk', 'radiation risk', 'collective dose', 'person-sievert', 'risk coefficient', 'ICRP', 'radiation epidemiology', 'is a small dose dangerous'], color: 'violet', ready: true },
               { id: 'echolocation', icon: '\uD83E\uDD87', label: 'Echolocation Lab', desc: 'See the world through sound! Sonar vision, wave physics, Doppler effect, bat biology, and acoustic ecology with interactive canvas simulations.', color: 'indigo', ready: true },
               {
                 // @tool magnetism
@@ -4995,6 +5256,12 @@
                 color: 'amber', ready: true
               },
               { id: '_cat_EngineeringDesign', icon: '', label: '\u2699\uFE0F Engineering & Design', desc: '', color: 'slate', chip: 'engineering', category: true },
+              {
+                // @tool machineLab
+                id: 'machineLab', icon: '\u2699\uFE0F', label: 'Machine Lab',
+                desc: 'Levers, pulleys, ramps, wedges and screws. See how simple machines trade distance for force, and prove it with your own predictions.',
+                color: 'amber', ready: true
+              },
               {
                 // @tool circuit
                 id: 'circuit', icon: '🔌', label: t('stem.tools_menu.circuit_builder'),
@@ -5122,19 +5389,6 @@
                 color: 'fuchsia', ready: true
               },
               {
-                // @tool parentingLab — shell + M1 shipped; M2-M9 land module-by-module
-                // behind the SME content-review gate (PARENTING_LAB_SPEC.md).
-                // @tool lawNavigator — renders ONLY verbatim text ingested by
-                // dev-tools/build_law_corpus.cjs into law_corpus/. No regulation
-                // text is authored in the tool or generated by a model.
-                // @tool diagnosisEligibility — quotes 34 CFR 300.8 from the corpus.
-                // Deliberately NOT a DSM navigator: DSM-5-TR is APA-copyrighted
-                // and cannot be reproduced (LAW_NAV_AND_DSM_SCOPING.md).
-                id: 'diagnosisEligibility', icon: '🧩', label: 'Diagnosis vs. Eligibility',
-                desc: 'Why a diagnosis does not equal an IEP — and why a child can qualify with no diagnosis at all. The two-prong federal test, the 13 eligibility categories quoted verbatim from 34 CFR 300.8, worked cases, and what a private evaluation can and cannot do. Never decides eligibility: that is the team\'s job.',
-                color: 'violet', ready: true
-              },
-              {
                 id: 'lawNavigator', icon: '🏛️', label: 'Education Law Navigator',
                 desc: 'Read what special-education law actually says, in its own words. The real text of IDEA Part B and Section 504, fetched from eCFR and date-stamped, searchable, with federal and state rules side by side. Nothing is paraphrased or generated — if the official text is not loaded, the tool says so instead of guessing.',
                 color: 'indigo', ready: true
@@ -5232,7 +5486,7 @@
               { id: 'arccity', icon: '🌆', label: 'Arc City', desc: 'Author functions, re-light a neon city, and battle across two function-powered Circuit Clash arenas.', color: 'fuchsia', ready: true },
               { id: 'spaceColony', label: 'Kepler Colony', icon: '🛖', desc: 'Colonize an alien planet! Turn-based cooperative strategy where mastering science unlocks colony survival.', color: 'indigo', ready: true },
               { id: 'spaceExplorer', label: 'Space Explorer', icon: '🛸', desc: 'Roguelike missions across the solar system. AI-generated challenges teach real science through strategic decisions.', color: 'purple', ready: true },
-              { id: 'alloBotSage', label: 'AlloBot: Starbound Sage', icon: '\uD83E\uDDD9\u200D\u2642\uFE0F', desc: 'Cozy sci-fi roguelite. AlloBot\u2019s spells unlock as you master other STEM Lab tools \u2014 and every cast is a retrieval-practice micro-challenge. Spaced practice, in-game.', color: 'violet', ready: true }
+              { id: 'alloBotSage', label: 'AlloBot: Starbound Sage', icon: '\uD83E\uDDD9\u200D\u2642\uFE0F', desc: 'Cozy sci-fi roguelite. AlloBot\u2019s spells unlock as you master other STEAM Lab tools \u2014 and every cast is a retrieval-practice micro-challenge. Spaced practice, in-game.', color: 'violet', ready: true }
             ];
             // ── Tool search filter ──
             // Lazily built id -> index-entry map; rebuilt if the index arrives late.
@@ -5251,7 +5505,6 @@
               statsLab: 'statistics lab statslab stats lab inferential statistics t test anova chi square correlation regression non parametric power analysis apa write up significance p value hypothesis test',
               dataStudio: 'data studio data plotter dataplot plot plotter chart charts graph graphs bar pie line scatter box plot histogram trendline trend line regression curve fit r squared residuals outliers five number summary csv import spreadsheet',
               paperTrail: 'papertrail paper trail forms form documents official documents job application w4 w-4 tax withholding lease rental apartment medical intake permit drivers permit iep meeting invitation signature ssn social security identity theft paperwork fill out transition life skills self advocacy',
-              diagnosisEligibility: 'diagnosis eligibility iep 504 idea categories child with a disability adhd autism specific learning disability emotional disturbance other health impairment dsm diagnosis versus eligibility qualify special education team determination private evaluation two prong specially designed instruction',
               lawNavigator: 'law legal education law special education law idea part b section 504 cfr regulation regulations statute muser maine chapter 101 iep 504 plan rights procedural safeguards child find manifestation determination prior written notice iee due process federal state ecfr',
               parentingLab: 'parenting parents family science of parenting warmth structure responsiveness demandingness baumrind authoritative authoritarian permissive attachment discipline positive parenting evidence badges styles child development home behavior tantrum bedtime praise',
               molecule: 'periodic table elements element chemistry chemical 118 elements compound creator bond builder molecular geometry reaction simulator orbital clouds orbitals atoms atom valence covalent ionic bonds',
@@ -5447,7 +5700,7 @@
                 };
               });
               var prompt = [
-                'You are helping a student choose a STEM Lab tool.',
+                'You are helping a student choose a STEAM Lab tool.',
                 'Student interest: ' + interest,
                 'Choose up to 4 tools from this catalog. Use only exact ids from the catalog.',
                 'Return strict JSON only, no markdown, as an array of objects: [{"id":"toolId","reason":"short reason","starter":"first thing to try"}].',
@@ -5487,7 +5740,7 @@
             // Reads each tool's persistent window slot (with localStorage
             // fallback) and renders a single dashboard tile per tool that
             // has the mastery primitive wired in. Surfaces 10 simultaneous
-            // engagement counts so kids see their full STEM Lab progress at
+            // engagement counts so kids see their full STEAM Lab progress at
             // a glance and can jump straight into the tool with one click.
             // Only shows tools where the user has mastered ≥1 item, so the
             // atlas stays out of the way for first-time visitors.
@@ -5563,7 +5816,7 @@
           // ── Mastery Atlas (only shows when at least one tool has progress) ──
           _atlasActive.length > 0 && /*#__PURE__*/React.createElement("div", {
             role: 'region',
-            'aria-label': 'STEM Lab Mastery Atlas — ' + _atlasTotal + ' total items mastered across ' + _atlasActive.length + ' tools',
+            'aria-label': 'STEAM Lab Mastery Atlas — ' + _atlasTotal + ' total items mastered across ' + _atlasActive.length + ' tools',
             className: "mb-4 rounded-2xl p-4 border-2",
             style: { background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #312e81 100%)', borderColor: 'rgba(99,102,241,0.50)' }
           },
@@ -5628,7 +5881,7 @@
               },
               placeholder: "Search " + _totalToolCount + " tools...",
               className: "w-full px-4 py-2.5 pl-10 text-sm border border-slate-500 rounded-xl bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all",
-              'aria-label': 'Search STEM Lab tools'
+              'aria-label': 'Search STEAM Lab tools'
             }),
             /*#__PURE__*/React.createElement("span", { className: "absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none" }, "\uD83D\uDD0D"),
               _stemToolSearch && /*#__PURE__*/React.createElement("button", {
@@ -5658,14 +5911,14 @@
               onClick: function () {
                 _setStemToolSearch('');
                 upd('_categoryFilter', '');
-                if (typeof announceToSR === 'function') announceToSR('Showing all STEM Lab tools');
+                if (typeof announceToSR === 'function') announceToSR('Showing all STEAM Lab tools');
               },
               style: {
                 backgroundColor: isContrast ? '#111' : (isDark ? 'rgba(99,102,241,0.18)' : '#eef2ff'),
                 color: isContrast ? '#fbbf24' : (isDark ? '#c7d2fe' : '#3730a3'),
                 borderColor: isContrast ? '#fbbf24' : 'rgba(99,102,241,0.35)'
               },
-              "aria-label": "Clear STEM Lab catalog filters"
+              "aria-label": "Clear STEAM Lab catalog filters"
             }, "\u2715", React.createElement("span", null, "Clear filters"))
           ),
 
@@ -6419,7 +6672,7 @@
           ) : null,
 
           // Tool grid
-          /*#__PURE__*/React.createElement("div", { role: 'region', 'aria-label': _activeStation ? _activeStation.name + ' station tools' : 'STEM Lab tools',
+          /*#__PURE__*/React.createElement("div", { role: 'region', 'aria-label': _activeStation ? _activeStation.name + ' station tools' : 'STEAM Lab tools',
               className: "stem-tool-grid"
             }, _filteredTools.map(function (tool) {
               if (tool.category) {
@@ -6434,10 +6687,13 @@
               var _cm = _toolColorMap[tool.color] || _toolColorMap.slate;
               return /*#__PURE__*/React.createElement("button", { "aria-label": tool.label + ': ' + (tool.desc || 'STEM tool'),
                 key: tool.id,
+                'data-stem-tool-id': tool.id,
                 onClick: function () {
                   if (tool.ready === false) { if (addToast) addToast(tool.label + ' is coming soon!', 'info'); return; }
                   _openStemTool(tool.id, tool.label);
                 },
+                onMouseEnter: function () { try { if (typeof window.__alloEnsureStemPluginLoaded === 'function') window.__alloEnsureStemPluginLoaded(tool.id); } catch (e) {} },
+                onFocus: function () { try { if (typeof window.__alloEnsureStemPluginLoaded === 'function') window.__alloEnsureStemPluginLoaded(tool.id); } catch (e) {} },
                 title: tool.desc || tool.label,
                 className: 'stem-tool-card group p-5 rounded-2xl border-2 text-left transition-all duration-200 ' + _cm.bg + ' ' + _cm.border + ' ' + _cm.hoverBorder,
                 style: _reduceMotion ? {} : { animation: 'stemCardIn 0.35s ease-out both', animationDelay: (_ci * 40) + 'ms' }
@@ -6688,7 +6944,7 @@
             timeSchedule: true,
             // Science
             anatomy: true, aquarium: true, aquacultureLab: true, brainAtlas: true, cell: true, cellAtlasLab: true,
-            chemBalance: true, climateExplorer: true, companionPlanting: true, fisherLab: true, renewablesLab: true, petsLab: true,
+            chemBalance: true, climateExplorer: true, companionPlanting: true, fisherLab: true, heatLab: true, nuclearLab: true, renewablesLab: true, petsLab: true,
             dataPlot: true, dinoLab: true, dissection: true, dnaLab: true, ecosystem: true,
             epidemicSim: true, fireEcology: true, microbiology: true, molecule: true, opticsLab: true, punnett: true,
             rocks: true, rockCycle: true, geologyExplorer: true, science: true, solarSystem: true,
@@ -6736,6 +6992,7 @@
             statsLab: true,
             learningLab: true,
             consciousnessLab: true,
+            organismId: true,
             // Added May 15 2026 — was registering successfully but missing
             // from this map caused the fallback at line ~4489 to return
             // null, so the user saw a blank tile content area.
@@ -6799,9 +7056,76 @@
           }
           if (!_pluginOnlyTools[stemLabTool]) return null;
 
+          var _pluginMeta = _activeStemToolMeta ? _activeStemToolMeta : { label: _formatStemToolId(stemLabTool), icon: '\uD83E\uDDEA' };
+          var _pluginLoadState = null;
+          try {
+            if (typeof window.__alloGetStemPluginState === 'function') {
+              _pluginLoadState = window.__alloGetStemPluginState(stemLabTool);
+            }
+          } catch (_) { _pluginLoadState = null; }
+          function _retryCurrentStemPlugin() {
+            var retried = typeof window.__alloRetryStemPlugin === 'function' ? window.__alloRetryStemPlugin(stemLabTool) : false;
+            if (retried) {
+              if (typeof announceToSR === 'function') announceToSR('Retrying ' + _pluginMeta.label);
+            } else if (addToast) {
+              addToast('This tool could not be retried. Return to all tools and try opening it again.', 'error');
+            }
+          }
+          function _backFromStemPluginError() {
+            setStemLabTool(null);
+            if (typeof announceToSR === 'function') announceToSR('Returned to all STEAM Lab tools');
+          }
+          function _renderStemPluginLoadError(message) {
+            return React.createElement('div', {
+              role: 'region',
+              'aria-label': _pluginMeta.label + ' load error',
+              className: 'max-w-xl mx-auto my-8 rounded-2xl border-2 border-orange-400 bg-white p-6 text-center text-slate-800'
+            },
+              React.createElement('div', { 'aria-hidden': 'true', className: 'text-4xl mb-2' }, _pluginMeta.icon),
+              React.createElement('h3', { className: 'text-lg font-black mb-2' }, _pluginMeta.label + ' could not load'),
+              React.createElement('p', { role: 'alert', className: 'text-sm text-slate-600 mb-4' }, message),
+              React.createElement('button', {
+                type: 'button', onClick: _retryCurrentStemPlugin,
+                className: 'mx-1 px-4 py-2 rounded-xl bg-indigo-600 text-white font-black text-sm',
+                'aria-label': 'Retry loading ' + _pluginMeta.label
+              }, 'Retry'),
+              React.createElement('button', {
+                type: 'button', onClick: _backFromStemPluginError,
+                className: 'mx-1 px-4 py-2 rounded-xl border border-slate-400 font-black text-sm',
+                'aria-label': 'Back to all STEAM Lab tools'
+              }, 'All tools')
+            );
+          }
+
           // Show skeleton loader while plugin hasn't registered yet
           if (!window.StemLab.isRegistered(stemLabTool)) {
-            return React.createElement("div", { className: "animate-pulse space-y-4 p-6" },
+            var _pluginStatus = _pluginLoadState ? _pluginLoadState.status : '';
+            // Safety net: an empty status means NOTHING was ever requested for this
+            // tool, which is the one state that waits forever — the 20s timeout is
+            // armed inside the loader, so with no request there is no timeout and no
+            // error card either. That happens when a caller activates a tool without
+            // going through _openStemTool. Those callers are fixed, but request it
+            // here too so a future entry point cannot reintroduce a silent hang.
+            // Safe to call during render: loadOne() ignores a repeat while a load is
+            // already in flight, and the status stops being empty immediately after.
+            if (!_pluginStatus) {
+              try {
+                if (typeof window.__alloEnsureStemPluginLoaded === 'function') {
+                  window.__alloEnsureStemPluginLoaded(stemLabTool);
+                }
+              } catch (e) {}
+            }
+            if (['error', 'loaded'].indexOf(_pluginStatus) !== -1) {
+              var _pluginError = _pluginLoadState.error ? _pluginLoadState.error : 'The plugin loaded but did not register with STEAM Lab.';
+              return _renderStemPluginLoadError(_pluginError);
+            }
+            return React.createElement("div", {
+              className: "animate-pulse space-y-4 p-6",
+              role: 'status',
+              'aria-live': 'polite',
+              'aria-busy': 'true',
+              'aria-label': 'Loading ' + _pluginMeta.label
+            },
               React.createElement("div", { className: "flex items-center gap-3" },
                 React.createElement("div", { className: "w-10 h-10 bg-slate-200 rounded-lg" }),
                 React.createElement("div", { className: "space-y-2 flex-1" },
@@ -6815,7 +7139,7 @@
                 React.createElement("div", { className: "h-20 bg-slate-100 rounded-lg" }),
                 React.createElement("div", { className: "h-20 bg-slate-100 rounded-lg" })
               ),
-              React.createElement("p", { className: "text-center text-xs text-slate-400", role: 'status', 'aria-live': 'polite' }, "\uD83D\uDD2C Loading " + stemLabTool + "..."),
+              React.createElement("p", { className: "text-center text-xs text-slate-400" }, "\uD83D\uDD2C Loading " + _pluginMeta.label + "..."),
               React.createElement("p", { className: "text-center text-[10px] text-slate-500 mt-1" }, "The tool plugin is being downloaded. This usually takes 1\u20132 seconds.")
             );
           }
@@ -6933,9 +7257,15 @@
             sourceProvenance: sourceProvenance && typeof sourceProvenance === 'object' ? sourceProvenance : null,
             sourceLocator: typeof sourceLocator === 'string' ? sourceLocator : '',
             sourceType: typeof sourceType === 'string' ? sourceType : '',
-            gradeLevel: typeof gradeLevel === 'string' ? gradeLevel : '',
-            studentNickname: typeof studentNickname === 'string' ? studentNickname : '',
-            isTeacherMode: isTeacherMode !== false,
+            // gradeLevel, studentNickname and isTeacherMode were ALSO defined
+            // here, roughly sixty lines above their real definitions further down
+            // this same object literal. Duplicate keys are legal JavaScript and
+            // the LAST one wins, so these three were dead — and the isTeacherMode
+            // one was dangerous: `isTeacherMode !== false` evaluates to TRUE when
+            // the host omits the flag, i.e. it would have defaulted every learner
+            // into teacher mode. The surviving `!!isTeacherMode` defaults to
+            // false, which is the safe reading, but only by accident of ordering.
+            // Removing the dead trio changes no behaviour and removes the trap.
             // Coarse-grained grade banding for tools that target tiers rather than
             // single grades (firstresponse, swimlab, etc. expect 'k2'|'g35'|'g68'|'g912').
             gradeBand: (function() {

@@ -624,7 +624,7 @@
               h('caption', { className: 'sr-only' }, t('stem.arithmetic.place_value_alignment_for', "Place-value alignment for ") + left + t('stem.arithmetic.and', " and ") + right),
               h('thead', null, h('tr', null, h('th', { scope: 'col', className: 'p-1' }, t('stem.arithmetic.number', "Number")), places.map(function (p) { return h('th', { key: p, scope: 'col', className: 'p-1' }, p); }))),
               h('tbody', null,
-                [left, right].map(function (n, row) { return h('tr', { key: row }, h('th', { scope: 'row', className: 'p-1' }, row ? opMeta.symbol + t('stem.arithmetic.second', " second") : 'first'), digits(n).map(function (digit, i) { return h('td', { key: i, className: 'p-1 font-mono font-bold' }, digit); })); })
+                [left, right].map(function (n, row) { return h('tr', { key: row }, h('th', { scope: 'row', className: 'p-1' }, row ? opMeta.symbol + t('stem.arithmetic.second', " second") : t('stem.arithmetic.first', "first")), digits(n).map(function (digit, i) { return h('td', { key: i, className: 'p-1 font-mono font-bold' }, digit); })); })
               )
             )
           )

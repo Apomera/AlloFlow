@@ -1,0 +1,184 @@
+{
+  "ok": true,
+  "page": "home.html",
+  "audit": {
+    "axe": {
+      "available": true,
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/color-contrast?application=axeAPI",
+          "wcag": [
+            "wcag143"
+          ],
+          "nodes": 2,
+          "targets": [
+            "tr[height=\"25px\"]:nth-child(2) > td[bgcolor=\"#A9B8BF\"][width=\"150px\"] > font[color=\"#41545D\"][size=\"2\"] > b",
+            "tr[height=\"25px\"]:nth-child(7) > td[bgcolor=\"#A9B8BF\"][width=\"150px\"] > font[color=\"#41545D\"][size=\"2\"] > b"
+          ]
+        },
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/html-has-lang?application=axeAPI",
+          "wcag": [
+            "wcag311"
+          ],
+          "nodes": 1,
+          "targets": [
+            "html"
+          ]
+        },
+        {
+          "id": "image-alt",
+          "impact": "critical",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/image-alt?application=axeAPI",
+          "wcag": [
+            "wcag111"
+          ],
+          "nodes": 33,
+          "targets": [
+            "img[src$=\"border_left_top.gif\"]",
+            "img[src$=\"border_top.gif\"]",
+            "img[src$=\"border_right_top.gif\"]",
+            "img[src$=\"border_left.gif\"]",
+            "img[src$=\"top_logo_next_end.gif\"]",
+            "img[src$=\"top_weather.gif\"]",
+            "img[src$=\"top_logo_next_start.gif\"]",
+            "img[src$=\"mark.gif\"]"
+          ]
+        },
+        {
+          "id": "landmark-one-main",
+          "impact": "moderate",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/landmark-one-main?application=axeAPI",
+          "wcag": [],
+          "nodes": 1,
+          "targets": [
+            "html"
+          ]
+        },
+        {
+          "id": "link-name",
+          "impact": "serious",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/link-name?application=axeAPI",
+          "wcag": [
+            "wcag244",
+            "wcag412"
+          ],
+          "nodes": 7,
+          "targets": [
+            "#home > a[onfocus=\"blur();\"]",
+            "#news > a[onfocus=\"blur();\"]",
+            "#tickets > a[onfocus=\"blur();\"]",
+            "#survey > a[onfocus=\"blur();\"]",
+            ".story:nth-child(1) > span > a[href$=\"news.html\"][onfocus=\"blur();\"]",
+            ".story:nth-child(2) > span > a[href$=\"news.html\"][onfocus=\"blur();\"]",
+            ".story:nth-child(3) > span > a[href$=\"news.html\"][onfocus=\"blur();\"]"
+          ]
+        },
+        {
+          "id": "region",
+          "impact": "moderate",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/region?application=axeAPI",
+          "wcag": [],
+          "nodes": 22,
+          "targets": [
+            "#logos",
+            "h1",
+            ".subline",
+            "#mnav",
+            "#startcontent",
+            "tr[height=\"10px\"]:nth-child(1)",
+            "td[background=\"./img/border_left.gif\"]",
+            "table[height=\"144px\"]"
+          ]
+        },
+        {
+          "id": "select-name",
+          "impact": "critical",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/select-name?application=axeAPI",
+          "wcag": [
+            "wcag412"
+          ],
+          "nodes": 1,
+          "targets": [
+            "select"
+          ]
+        }
+      ],
+      "incomplete": 1
+    },
+    "keyboard": {
+      "interactiveElements": 56,
+      "reached": 14,
+      "unreachable": [
+        "A ",
+        "A ",
+        "A ",
+        "A ",
+        "A Heat wave linked to temperatures",
+        "A Man Gets Nine Months in Violin Case",
+        "A Lack of brains hinders research",
+        "A ",
+        "A ",
+        "A ",
+        "A Click here",
+        "A Click here",
+        "A Read More...",
+        "A Read More...",
+        "A Copyright",
+        "A W3C",
+        "A MIT",
+        "A ERCIM",
+        "A Keio",
+        "A changelog",
+        "A Shadi Abou-Zahra",
+        "A Education and Outreach Working Group (EOWG)",
+        "A WAI-TIES",
+        "A WAI-AGE",
+        "A Acknowledgements",
+        "A WAI Site Map",
+        "A Help with WAI Website",
+        "A Search",
+        "A Contacting WAI",
+        "A wai-eo-editors@w3.org",
+        "A wai@w3.org",
+        "A Copyright",
+        "A W3C",
+        "A MIT",
+        "A ERCIM",
+        "A Keio",
+        "A liability",
+        "A trademark",
+        "A document use",
+        "A software licensing",
+        "A public",
+        "A Member"
+      ],
+      "suspectedTrap": false
+    },
+    "outline": {
+      "title": "Welcome to CityLights! [Inaccessible Home Page]",
+      "lang": "",
+      "headings": [
+        {
+          "level": 1,
+          "text": "Inaccessible Home Page - Before and After Demonstration"
+        }
+      ],
+      "landmarks": [],
+      "imagesWithoutAlt": 33,
+      "unlabeledControls": 1
+    },
+    "text": {
+      "sha256": "0ffd0b74c2ada4a03aec6bc4084df8264987afdca53ac1d6b7ba3330a648af74",
+      "chars": 2529
+    }
+  },
+  "blockedNetworkRequests": 0,
+  "networkPolicy": "deny",
+  "note": "axe automates only part of WCAG; keyboard reachability is evidence, not usability judgement. A person must still operate the page.",
+  "createdAt": "2026-08-11T16:48:01Z"
+}

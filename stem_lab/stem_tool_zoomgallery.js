@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════
-// AlloFlow STEM Lab — Zoom Gallery (OpenSeadragon deep-zoom + Notice-Wonder coach)
+// AlloFlow STEAM Lab — Zoom Gallery (OpenSeadragon deep-zoom + Notice-Wonder coach)
 //
 // The shelf itself is a COMPANION WINDOW (zoom_gallery/zoom_gallery.html):
 // OpenSeadragon (openseadragon.github.io, BSD-3-Clause) — the deep-zoom / pan
@@ -63,7 +63,8 @@
     label: 'Zoom Gallery',
     desc: 'Zoom deep into real, openly-licensed images — Smithsonian Open Access artifacts (CC0) and famous NASA photographs (public domain) — in OpenSeadragon, the viewer museums use. Magnify to the pixel: the Pillars of Creation, an Apollo bootprint, the Apollo 11 capsule, a coral fan. A Notice → Wonder coach sits beside the viewer.',
     color: 'sky',
-    category: 'general',
+    category: 'creative',
+    aliases: ['deep zoom', 'OpenSeadragon', 'NASA images', 'Smithsonian'],
     questHooks: [
       { id: 'zoom_open', label: 'Open an image and zoom in', icon: '🔍',
         check: function (d) { return !!(d && d.opened); } },
@@ -155,17 +156,17 @@
       function returnToCatalog() {
         if (typeof setStemLabTool !== 'function') return;
         setStemLabTool(null);
-        if (announceToSR) announceToSR(t('stem.zoomGallery.returned_catalog_sr', 'Returned to the STEM Lab tools.'));
+        if (announceToSR) announceToSR(t('stem.zoomGallery.returned_catalog_sr', 'Returned to the STEAM Lab tools.'));
       }
 
       return h('div', { className: 'flex flex-col gap-4 animate-in fade-in duration-300 max-w-2xl' },
         typeof setStemLabTool === 'function' && h('button', {
           onClick: returnToCatalog,
           className: 'inline-flex w-fit items-center gap-2 rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-xs font-bold text-slate-200 transition-colors hover:bg-slate-800 active:scale-[0.97]',
-          'aria-label': t('stem.zoomGallery.back_to_tools', 'Back to STEM Lab tools')
+          'aria-label': t('stem.zoomGallery.back_to_tools', 'Back to STEAM Lab tools')
         },
           ArrowLeft ? h(ArrowLeft, { size: 16 }) : null,
-          h('span', null, t('stem.zoomGallery.back_to_tools', 'Back to STEM Lab tools'))
+          h('span', null, t('stem.zoomGallery.back_to_tools', 'Back to STEAM Lab tools'))
         ),
         h('h2', { className: 'text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-cyan-400' },
           t('stem.zoomGallery.title', '🔍 Zoom Gallery — real images, up close')),

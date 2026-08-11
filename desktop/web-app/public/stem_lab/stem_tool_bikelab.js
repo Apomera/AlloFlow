@@ -18,7 +18,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -542,7 +542,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             miniCards.map(function(c) { return renderCard(c, false); })
           ),
           h('div', { className: 'mt-8 text-center text-xs text-slate-600' },
-            t('stem.bikelab.stem_lab_tool_side_view_2d_canvas_no_p', 'STEM Lab tool · Side-view 2D canvas · No plugins required')
+            t('stem.bikelab.stem_lab_tool_side_view_2d_canvas_no_p', 'STEAM Lab tool · Side-view 2D canvas · No plugins required')
           )
         );
       }

@@ -203,7 +203,7 @@ window.StemLab = window.StemLab || {
     signedOperationChallengeCount: SIGNED_OPERATION_CHALLENGES.length,
     getSignedOperationChallenge: getSignedOperationChallenge
   });
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -1875,6 +1875,16 @@ window.StemLab = window.StemLab || {
     var dpool = difficulty === 'easy' ? [2, 3, 4] : difficulty === 'hard' ? [3, 4, 5, 6, 8, 10, 12, 15, 16, 20] : [2, 3, 4, 5, 6, 8, 10, 12];
     var pick = function(arr) { return arr[Math.floor(Math.random() * arr.length)]; };
     var randInt = function(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; };
+    // Unbiased in-place Fisher-Yates. The .sort(Math.random()-0.5) comparator it
+    // replaces is not uniform: it left correct answers clustered near their
+    // insertion position in the vocab quiz, exam, and estimation choices.
+    var fyShuffle = function(arr) {
+      for (var fyi = arr.length - 1; fyi > 0; fyi--) {
+        var fyj = Math.floor(Math.random() * (fyi + 1));
+        var fyt = arr[fyi]; arr[fyi] = arr[fyj]; arr[fyj] = fyt;
+      }
+      return arr;
+    };
 
     // ═══ BADGE SYSTEM ═══
     var BADGES = [
@@ -2651,7 +2661,7 @@ window.StemLab = window.StemLab || {
           _oTries++;
         } while (_oTries < 60 && (Math.abs(fracs[0].val - fracs[1].val) < 0.001 || Math.abs(fracs[0].val - fracs[2].val) < 0.001 || Math.abs(fracs[1].val - fracs[2].val) < 0.001 || fracs[0].n === fracs[1].n || fracs[0].n === fracs[2].n || fracs[1].n === fracs[2].n));
         fracs.sort(function(a, b) { return a.val - b.val; });
-        var shuffled = fracs.slice().sort(function() { return Math.random() - 0.5; });
+        var shuffled = fyShuffle(fracs.slice());
         var smallest = fracs[0];
         ch = {
           type: type,
@@ -2772,6 +2782,9 @@ window.StemLab = window.StemLab || {
     // ═══ KEYBOARD SHORTCUTS (managed without useEffect) ═══
     if (window._fracKbHandler) window.removeEventListener('keydown', window._fracKbHandler);
     window._fracKbHandler = function(e) {
+      // Window-level handler; the Back button removes it, but hub navigation that
+      // bypasses Back does not — refuse to act once the tool left the DOM.
+      if (!document.querySelector('[data-fractions-root]')) return;
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
       var key = e.key;
       if (key === '1') { upd({ tab: 'practice' }); trackTab('practice'); }
@@ -2990,7 +3003,7 @@ window.StemLab = window.StemLab || {
         // Number line
         h('div', { className: 'bg-white rounded-xl border p-3' },
           h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, __alloT('stem.fractions.number_line_3', '\uD83D\uDCCF Number Line')),
-          h('svg', { viewBox: '0 0 400 50', className: 'w-full', style: { maxHeight: '60px' } },
+          h('svg', { role: 'img', 'aria-label': __alloT('stem.fractions.numberline_img_label', 'Number line showing the current fraction'), viewBox: '0 0 400 50', className: 'w-full', style: { maxHeight: '60px' } },
             h('line', { x1: 20, y1: 30, x2: 380, y2: 30, stroke: '#94a3b8', strokeWidth: 2 }),
             Array.from({ length: nlMax + 1 }, function(_, i) {
               var x = 20 + i * (360 / nlMax);
@@ -3196,7 +3209,7 @@ window.StemLab = window.StemLab || {
         }
         return h('div', { className: 'bg-white rounded-xl border p-3 text-center' },
           h('p', { className: 'text-[11px] font-bold text-green-600 uppercase tracking-wider mb-2' }, __alloT('stem.fractions.area_model', '\uD83D\uDFE9 Area Model')),
-          h('svg', { viewBox: '0 0 ' + totalW + ' ' + totalH, width: Math.min(totalW * 1.2, 300), height: Math.min(totalH * 1.2, 200) }, cells),
+          h('svg', { 'aria-hidden': 'true', viewBox: '0 0 ' + totalW + ' ' + totalH, width: Math.min(totalW * 1.2, 300), height: Math.min(totalH * 1.2, 200) }, cells),
           h('p', { className: 'text-xs text-slate-600 mt-1' },
             'Green = ' + num1 + '\u00D7' + num2 + ' = ' + (num1 * num2) + ' out of ' + (den1 * den2) + ' total cells'
           )
@@ -3621,7 +3634,7 @@ window.StemLab = window.StemLab || {
         ),
         // The wall
         h('div', { className: 'bg-white rounded-xl border-2 border-indigo-200 p-3 overflow-x-auto' },
-          h('svg', { viewBox: '0 0 ' + wallW + ' ' + (wallDenoms.length * (stripH + 2) + 10), width: '100%' },
+          h('svg', { role: 'img', 'aria-label': __alloT('stem.fractions.wall_img_label', 'Fraction wall comparing equivalent fractions'), viewBox: '0 0 ' + wallW + ' ' + (wallDenoms.length * (stripH + 2) + 10), width: '100%' },
             wallDenoms.map(function(den, rowIdx) {
               var pieces2 = [];
               var segW = (wallW - 40) / den;
@@ -3696,7 +3709,7 @@ window.StemLab = window.StemLab || {
           }, '\u00D7')
         ),
         h('div', { className: 'flex gap-2' },
-          h('input', {
+          h('input', { 'aria-label': __alloT('stem.fractions.ai_question_label', 'Ask a question about fractions'),
             type: 'text', value: aiQuestion,
             onChange: function(e) { upd({ aiQuestion: e.target.value }); },
             onKeyDown: function(e) { if (e.key === 'Enter' && aiQuestion.trim()) askAITutor(); },
@@ -4480,7 +4493,7 @@ window.StemLab = window.StemLab || {
           pairs.push({ id: 'b-' + pairId, pairId: pairId, n: equivN, d: equivD });
           used[k] = true;
         }
-        return pairs.sort(function() { return Math.random() - 0.5; });
+        return fyShuffle(pairs);
       };
 
       var startEMGame = function() {
@@ -4584,7 +4597,7 @@ window.StemLab = window.StemLab || {
         }
         var allFish = [{ n: targetN, d: targetD, isTarget: true }].concat(decoys.map(function(d) { return Object.assign({}, d, { isTarget: false }); }));
         // Shuffle
-        allFish.sort(function() { return Math.random() - 0.5; });
+        fyShuffle(allFish);
         return { target: { n: targetN, d: targetD }, fish: allFish };
       };
       var startFishGame = function() {
@@ -4840,7 +4853,7 @@ window.StemLab = window.StemLab || {
             )
           ),
           h('div', { className: 'flex gap-2' },
-            h('input', {
+            h('input', { 'aria-label': __alloT('stem.fractions.pattern_guess_label', 'Next fraction in the pattern'),
               type: 'text', value: pb.answer || '',
               onChange: function(e) { upd({ pbgGame: Object.assign({}, pb, { answer: e.target.value }) }); },
               onKeyDown: function(e) { if (e.key === 'Enter') guessNext(pb.answer || ''); },
@@ -5139,7 +5152,7 @@ window.StemLab = window.StemLab || {
               (hs.hintsShown < 3 ? 'transition-colors bg-pink-200 text-pink-900 hover:bg-pink-300' : 'bg-slate-100 text-slate-600 cursor-not-allowed')
           }, '💡 Reveal clue ' + (hs.hintsShown + 1)),
           !hs.gameOver && h('div', { className: 'flex gap-2 mt-2' },
-            h('input', {
+            h('input', { 'aria-label': __alloT('stem.fractions.hidden_guess_label', 'Guess the hidden fraction'),
               type: 'text', value: hs.guess || '',
               onChange: function(e) { upd({ hsGame: Object.assign({}, hs, { guess: e.target.value }) }); },
               onKeyDown: function(e) { if (e.key === 'Enter') guessHs(hs.guess || ''); },
@@ -8108,7 +8121,7 @@ window.StemLab = window.StemLab || {
             __alloT('stem.fractions.comprehensive_fraction_glossary_with_e', 'Comprehensive fraction glossary with examples. Covers vocabulary from K-8 fraction instruction.')
           )
         ),
-        h('input', {
+        h('input', { 'aria-label': __alloT('stem.fractions.glossary_search_label', 'Search fraction glossary'),
           type: 'text', value: _f.glossarySearch || '',
           onChange: function(e) { upd({ glossarySearch: e.target.value }); },
           placeholder: __alloT('stem.fractions.search_glossary', 'Search glossary...'),
@@ -8231,7 +8244,7 @@ window.StemLab = window.StemLab || {
           if (!distractors.find(function(dx) { return dx.term === d.term; })) distractors.push(d);
         }
         var choices = [v.term].concat(distractors.map(function(d) { return d.term; }));
-        choices.sort(function() { return Math.random() - 0.5; });
+        fyShuffle(choices);
         return { term: v.term, def: v.def, choices: choices };
       };
       var startVq = function() {
@@ -8833,7 +8846,7 @@ window.StemLab = window.StemLab || {
           if (item) {
             item.choices = item.choices.slice(0, 4);
             // Shuffle
-            item.choices.sort(function() { return Math.random() - 0.5; });
+            fyShuffle(item.choices);
             items.push(item);
           }
         }
@@ -9746,11 +9759,11 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'bg-white rounded-lg p-3 border border-indigo-200' },
             h('p', { className: 'text-xs font-bold text-indigo-700 mb-2' }, __alloT('stem.fractions.fraction_a_3', 'Fraction A')),
             h('div', { className: 'flex items-center gap-2 justify-center' },
-              h('input', { type: 'number', min: 1, value: ff1,
+              h('input', { 'aria-label': __alloT('stem.fractions.frac_a_num_label', 'Fraction A numerator'), type: 'number', min: 1, value: ff1,
                 onChange: function(e) { upd({ ffNum1: parseInt(e.target.value) || 1 }); },
                 className: 'w-16 px-2 py-1 rounded border border-indigo-300 text-center text-lg font-bold' }),
               h('span', { className: 'text-xl font-bold text-indigo-900' }, '/'),
-              h('input', { type: 'number', min: 2, value: ffD1,
+              h('input', { 'aria-label': __alloT('stem.fractions.frac_a_den_label', 'Fraction A denominator'), type: 'number', min: 2, value: ffD1,
                 onChange: function(e) { upd({ ffDen1: parseInt(e.target.value) || 2 }); },
                 className: 'w-16 px-2 py-1 rounded border border-indigo-300 text-center text-lg font-bold' })
             )
@@ -9758,11 +9771,11 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'bg-white rounded-lg p-3 border border-indigo-200' },
             h('p', { className: 'text-xs font-bold text-indigo-700 mb-2' }, __alloT('stem.fractions.fraction_b_3', 'Fraction B')),
             h('div', { className: 'flex items-center gap-2 justify-center' },
-              h('input', { type: 'number', min: 1, value: ff2,
+              h('input', { 'aria-label': __alloT('stem.fractions.frac_b_num_label', 'Fraction B numerator'), type: 'number', min: 1, value: ff2,
                 onChange: function(e) { upd({ ffNum2: parseInt(e.target.value) || 1 }); },
                 className: 'w-16 px-2 py-1 rounded border border-indigo-300 text-center text-lg font-bold' }),
               h('span', { className: 'text-xl font-bold text-indigo-900' }, '/'),
-              h('input', { type: 'number', min: 2, value: ffD2,
+              h('input', { 'aria-label': __alloT('stem.fractions.frac_b_den_label', 'Fraction B denominator'), type: 'number', min: 2, value: ffD2,
                 onChange: function(e) { upd({ ffDen2: parseInt(e.target.value) || 2 }); },
                 className: 'w-16 px-2 py-1 rounded border border-indigo-300 text-center text-lg font-bold' })
             )
@@ -9802,35 +9815,43 @@ window.StemLab = window.StemLab || {
     // ── ESTIMATION TRAINER ──
     // Pick the closest benchmark to a randomly-generated fraction.
     // Same as Benchmark Trainer but with explicit "is it closer to A or B" framing.
+    var estLabelOf = function(v) {
+      if (v === 0) return '0';
+      if (v === 0.25) return '1/4';
+      if (v === 0.5) return '1/2';
+      if (v === 0.75) return '3/4';
+      if (v === 1) return '1';
+      if (v === 1.25) return '1 1/4';
+      if (v === 1.5) return '1 1/2';
+      if (v === 1.75) return '1 3/4';
+      if (v === 2) return '2';
+      return v.toString();
+    };
     var renderEstimationTab = function() {
       var estRound = _f.estRound || null;
       var estFeedback = _f.estFeedback || null;
       var estScore = _f.estScore || { correct: 0, total: 0 };
       var newEst = function() {
-        // Generate a fraction with a non-benchmark denominator
-        var d = pick([3, 5, 6, 7, 8, 9, 11, 12, 13, 15]);
-        var n = randInt(1, d);
-        var val = n / d;
-        // Pick two benchmark options that bracket the value (or near-bracket)
+        // Generate a fraction with a non-benchmark denominator. Regenerate when the
+        // value is EQUIDISTANT from the two nearest benchmarks (1/8 sits exactly
+        // between 0 and 1/4): grading a coin-flip tie as right/wrong is unfair.
+        var d, n, val, sorted;
         var benchmarks = [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
-        var labelOf = function(v) {
-          if (v === 0) return '0';
-          if (v === 0.25) return '1/4';
-          if (v === 0.5) return '1/2';
-          if (v === 0.75) return '3/4';
-          if (v === 1) return '1';
-          if (v === 1.25) return '1 1/4';
-          if (v === 1.5) return '1 1/2';
-          if (v === 1.75) return '1 3/4';
-          if (v === 2) return '2';
-          return v.toString();
-        };
-        var sorted = benchmarks.slice().sort(function(a, b) { return Math.abs(a - val) - Math.abs(b - val); });
+        var _eTries = 0;
+        do {
+          d = pick([3, 5, 6, 7, 8, 9, 11, 12, 13, 15]);
+          n = randInt(1, d);
+          val = n / d;
+          sorted = benchmarks.slice().sort(function(a, b) { return Math.abs(a - val) - Math.abs(b - val); });
+          _eTries++;
+        } while (_eTries < 40 && Math.abs(Math.abs(sorted[0] - val) - Math.abs(sorted[1] - val)) < 0.000001);
         var closest = sorted[0];
         // Build choices: closest + two distractors
         var choices = [closest, sorted[1], sorted[2]];
-        choices.sort(function() { return Math.random() - 0.5; });
-        return { n: n, d: d, val: val, choices: choices, answer: closest, labelOf: labelOf };
+        fyShuffle(choices);
+        // Data only — no functions in state (a rehydrated round would lose them
+        // and the renderer's labelOf calls would crash the tab).
+        return { n: n, d: d, val: val, choices: choices, answer: closest };
       };
       var startEst = function() {
         upd({ estRound: newEst(), estFeedback: null, estScore: { correct: 0, total: 0 } });
@@ -9843,13 +9864,13 @@ window.StemLab = window.StemLab || {
           upd({
             estRound: newEst(),
             estScore: { correct: estScore.correct + 1, total: estScore.total + 1 },
-            estFeedback: { correct: true, msg: '✅ Correct! ' + estRound.n + '/' + estRound.d + ' = ' + estRound.val.toFixed(3) + ' ≈ ' + estRound.labelOf(estRound.answer) }
+            estFeedback: { correct: true, msg: '✅ Correct! ' + estRound.n + '/' + estRound.d + ' = ' + estRound.val.toFixed(3) + ' ≈ ' + estLabelOf(estRound.answer) }
           });
         } else {
           sfxWrong();
           upd({
             estScore: { correct: estScore.correct, total: estScore.total + 1 },
-            estFeedback: { correct: false, msg: '❌ Closer to ' + estRound.labelOf(estRound.answer) + '. ' + estRound.n + '/' + estRound.d + ' = ' + estRound.val.toFixed(3) }
+            estFeedback: { correct: false, msg: '❌ Closer to ' + estLabelOf(estRound.answer) + '. ' + estRound.n + '/' + estRound.d + ' = ' + estRound.val.toFixed(3) }
           });
         }
       };
@@ -9883,7 +9904,7 @@ window.StemLab = window.StemLab || {
                 key: 'ec-' + i,
                 onClick: function() { checkEst(c); },
                 className: 'transition-colors px-3 py-3 rounded-lg text-base font-bold bg-emerald-100 text-emerald-800 hover:bg-emerald-300 border-2 border-emerald-300 font-mono'
-              }, er.labelOf(c));
+              }, estLabelOf(c));
             })
           ),
           estFeedback && h('p', { className: 'text-center text-sm font-bold ' + (estFeedback.correct ? 'text-green-700' : 'text-red-700') }, estFeedback.msg),
@@ -10271,7 +10292,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'bg-white rounded-xl border-2 border-fuchsia-200 p-4' },
           h('h5', { className: 'text-xs font-bold text-fuchsia-700 mb-2' }, 'Color wheel (' + wheelN + '/' + wheelD + ' lit)'),
           h('div', { className: 'flex justify-center mb-2' },
-            h('svg', { viewBox: '0 0 200 200', width: 200, height: 200 }, wheelSlices)
+            h('svg', { 'aria-hidden': 'true', viewBox: '0 0 200 200', width: 200, height: 200 }, wheelSlices)
           ),
           h('div', { className: 'grid grid-cols-2 gap-2' },
             h('div', null,
@@ -11140,7 +11161,7 @@ window.StemLab = window.StemLab || {
       tab = visibleTabs[0].id;
     }
 
-    return h('div', { className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200' },
+    return h('div', { className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200', 'data-fractions-root': 'true' },
       // Header
       h('div', { className: 'flex items-center gap-3 mb-2' },
         h('button', { onClick: function() { if (window._fracKbHandler) { window.removeEventListener('keydown', window._fracKbHandler); window._fracKbHandler = null; } setStemLabTool(null); }, className: 'transition-colors p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': __alloT('stem.fractions.back', 'Back') },
@@ -11329,7 +11350,7 @@ window.StemLab = window.StemLab || {
             h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ n: iq.num, d: iq.den, c: iq.count, t: total.toFixed(2), st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.fractions.log', '📋 Log')),
             h('button', { onClick: function() { setIQ({ num: 1, den: 4, count: 3, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.fractions.reset', '↺ Reset'))
           ),
-          h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.fractions.hypothesis_when_do_n_copies_of_a_fract', 'Hypothesis: When do N copies of a fraction equal exactly 1?'),
+          h('textarea', { 'aria-label': __alloT('stem.fractions.hypothesis_input', 'Fraction equivalence hypothesis'), value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.fractions.hypothesis_when_do_n_copies_of_a_fract', 'Hypothesis: When do N copies of a fraction equal exactly 1?'),
             className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug mb-3', rows: 3 }),
           !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300 mb-3' }, __alloT('stem.fractions.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
           iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed mb-3' },
@@ -11339,7 +11360,7 @@ window.StemLab = window.StemLab || {
           h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
             h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
             __alloT('stem.fractions.i_understand_explain_in_own_words', 'I understand — explain in own words')),
-          iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.fractions.explain_how_count_num_den_determines_w', 'Explain how count × (num/den) determines whether you reach 1.'),
+          iq.understood && h('textarea', { 'aria-label': __alloT('stem.fractions.explanation_input', 'Fraction equivalence explanation'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.fractions.explain_how_count_num_den_determines_w', 'Explain how count × (num/den) determines whether you reach 1.'),
             className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 3 }),
           h('div', { className: 'mt-2 text-[10px] italic text-slate-500' }, __alloT('stem.fractions.design_note_discrete_3_state_outcome_n', 'Design note: discrete 3-state outcome; no exact-match score; no reveal — by design.'))
         );
@@ -11382,7 +11403,7 @@ window.StemLab = window.StemLab || {
               ),
               h('p', { className: 'text-sm font-bold text-rose-800' }, challenge.question),
               h('div', { className: 'flex gap-2' },
-                h('input', {
+                h('input', { 'aria-label': __alloT('stem.fractions.challenge_answer_label', 'Your answer'),
                   type: 'number', value: answer,
                   onChange: function(e) { upd({ answer: e.target.value }); },
                   onKeyDown: function(e) { if (e.key === 'Enter' && answer) checkChallenge(); },

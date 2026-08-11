@@ -1,0 +1,435 @@
+{
+  "$schema": "./hazard-rules.schema (informal)",
+  "version": "0.1.0-draft",
+  "status": "STARTER DATA — NOT SHIPPABLE AS-IS",
+  "reviewMandate": "Every entry with tier DEADLY or CONTACT is life-safety content. It MUST be reviewed and signed off by a qualified mycologist / naturalist / herpetologist before this tool ships to students. `needsExpertReview: true` marks entries that have NOT yet been through that review. Do not clear the flag without a named reviewer.",
+  "designPrinciples": [
+    "Warnings fire on the STAKES of the candidate space, never on the CONFIDENCE of the top ID. High confidence must never suppress a DEADLY/CONTACT warning.",
+    "A rule fires if ANY in-play taxon (the top ID OR any candidate, at any confidence) has a lineage that matches the rule's trigger. We warn on the NEIGHBORHOOD of the ID, not just the ID.",
+    "Coverage gaps degrade to a strong generic category warning (see categoryRules), never to silence.",
+    "Tiers exist to prevent alarm fatigue: reserve DEADLY's hard interstitial for genuinely lethal categories so it stays credible when it fires."
+  ],
+  "tiers": {
+    "DEADLY": { "severity": 4, "ui": "Blocking red interstitial; must be dismissed deliberately. Never rendered as reassurance.", "canBeSuppressedByConfidence": false },
+    "CONTACT": { "severity": 3, "ui": "Prominent inline banner above the result.", "canBeSuppressedByConfidence": false },
+    "MILD": { "severity": 2, "ui": "Standard inline note.", "canBeSuppressedByConfidence": false },
+    "INFO": { "severity": 1, "ui": "Teaching aside (e.g. mimicry, conservation status). Not a hazard.", "canBeSuppressedByConfidence": false }
+  },
+  "alwaysOn": {
+    "id": "field-ethics",
+    "title": "Field rules — every observation, no exceptions",
+    "rules": [
+      "Observe, don't disturb. Take a photo, not the organism.",
+      "Keep a safe distance. Don't touch, handle, feed, or provoke.",
+      "Never eat, taste, or brew anything you find in the wild based on this app.",
+      "Some organisms and habitats are protected by law — leave them exactly as you found them."
+    ]
+  },
+  "categoryRules": [
+    {
+      "id": "cat-fungi",
+      "match": { "rank": "kingdom", "name": "Fungi" },
+      "tier": "DEADLY",
+      "domain": "forage",
+      "message": "No app — including this one — can make a wild mushroom safe to eat. Deadly and edible species can look nearly identical, and some deadly ones have no reliable field test. Treat every wild fungus as look-only.",
+      "needsExpertReview": true
+    },
+    {
+      "id": "cat-apiaceae",
+      "match": { "rank": "family", "name": "Apiaceae" },
+      "tier": "DEADLY",
+      "domain": "forage",
+      "message": "The carrot/parsley family contains both edible plants and the most lethal plants in North America (water hemlock, poison hemlock). Edible and deadly members share the same lacy leaves and umbrella flower clusters. Never forage this family from a photo ID.",
+      "needsExpertReview": true
+    },
+    {
+      "id": "cat-elapidae",
+      "match": { "rank": "family", "name": "Elapidae" },
+      "tier": "DEADLY",
+      "domain": "handle",
+      "message": "Elapid snakes (coral snakes, cobras, mambas, and relatives) are dangerously venomous. Color-pattern rhymes are unreliable outside the region they were coined for. Never handle or approach any snake based on an ID.",
+      "needsExpertReview": true
+    },
+    {
+      "id": "cat-viperidae",
+      "match": { "rank": "family", "name": "Viperidae" },
+      "tier": "DEADLY",
+      "domain": "handle",
+      "message": "Vipers and pit vipers (rattlesnakes, copperheads, cottonmouths, adders) are venomous. A bite is a medical emergency. Never handle or approach any snake based on an ID.",
+      "needsExpertReview": true
+    },
+    {
+      "id": "cat-squamata",
+      "match": { "rank": "class", "name": "Squamata" },
+      "tier": "CONTACT",
+      "domain": "handle",
+      "message": "Never handle a wild snake or lizard based on an ID. Harmless and venomous species overlap in range and appearance, and a photo ID can be wrong — venomous snakes especially demand distance.",
+      "needsExpertReview": true
+    },
+    {
+      "id": "cat-toxicodendron",
+      "match": { "rank": "genus", "name": "Toxicodendron" },
+      "tier": "CONTACT",
+      "domain": "touch",
+      "message": "Poison ivy, oak, and sumac carry urushiol, an oil that causes a blistering rash on contact — including from dead stems and smoke. Don't touch. 'Leaves of three, let it be' is a starting rule, not a guarantee.",
+      "needsExpertReview": true
+    }
+  ],
+  "confusions": [
+    {
+      "id": "agaricus-amanita",
+      "tier": "DEADLY",
+      "group": "amanita",
+      "benign": { "common": "Portobello / button / cremini / meadow mushroom", "scientific": "Agaricus bisporus, Agaricus campestris" },
+      "danger": { "common": "Death cap / destroying angel", "scientific": "Amanita phalloides, Amanita bisporigera, Amanita virosa" },
+      "triggerTaxa": [ { "rank": "genus", "name": "Agaricus" }, { "rank": "genus", "name": "Amanita" } ],
+      "tell": "Spore print: Agaricus is chocolate-brown; a deadly Amanita is white. A deadly Amanita also has a volva (a cup or sac at the base) and universal-veil remnants — Agaricus does not. In these two species the divergence is at the FAMILY level (Agaricaceae vs Amanitaceae) though they share the order Agaricales.",
+      "consequence": "Amatoxin poisoning. Symptoms are delayed 6–24h (a false 'all clear'), then cause liver and kidney failure. A single cap can be fatal. There is no reliable home test.",
+      "message": "Even if this looks like an edible Agaricus, its deadliest lookalike — the death cap / destroying angel (Amanita) — can appear almost identical, especially young 'button' stages. This confusion has killed experienced foragers. Look only.",
+      "needsExpertReview": true,
+      "sources": { "gbif": ["5243447", "5240325"], "wikipedia": ["Amanita_phalloides", "Amanita_bisporigera"] }
+    },
+    {
+      "id": "puffball-amanita-egg",
+      "tier": "DEADLY",
+      "group": "amanita",
+      "benign": { "common": "Puffball", "scientific": "Lycoperdon, Calvatia" },
+      "danger": { "common": "Amanita 'egg' (button stage)", "scientific": "Amanita spp." },
+      "triggerTaxa": [ { "rank": "genus", "name": "Lycoperdon" }, { "rank": "genus", "name": "Calvatia" }, { "rank": "genus", "name": "Amanita" } ],
+      "tell": "Cut it top-to-bottom: a true puffball is uniform white inside like a marshmallow. A young Amanita shows the faint outline of a gilled cap and stem inside — a developing deadly mushroom.",
+      "consequence": "A misidentified Amanita button carries the same lethal amatoxins as the adult.",
+      "message": "Young deadly Amanita mushrooms in their 'egg' stage look just like edible puffballs. Look only.",
+      "needsExpertReview": true,
+      "sources": { "wikipedia": ["Puffball", "Amanita"] }
+    },
+    {
+      "id": "honey-galerina",
+      "tier": "DEADLY",
+      "benign": { "common": "Honey mushroom", "scientific": "Armillaria mellea" },
+      "danger": { "common": "Deadly Galerina / funeral bell", "scientific": "Galerina marginata" },
+      "triggerTaxa": [ { "rank": "genus", "name": "Armillaria" }, { "rank": "genus", "name": "Galerina" } ],
+      "tell": "Both grow in clusters on wood. Galerina is smaller with a rusty-brown spore print and carries the same amatoxins as the death cap.",
+      "consequence": "Amatoxin poisoning; potentially fatal.",
+      "message": "Deadly Galerina grows on wood right alongside edible honey mushrooms and is easily confused. Look only.",
+      "needsExpertReview": true,
+      "sources": { "wikipedia": ["Galerina_marginata"] }
+    },
+    {
+      "id": "morel-gyromitra",
+      "tier": "DEADLY",
+      "benign": { "common": "True morel", "scientific": "Morchella" },
+      "danger": { "common": "False morel", "scientific": "Gyromitra esculenta" },
+      "triggerTaxa": [ { "rank": "genus", "name": "Morchella" }, { "rank": "genus", "name": "Gyromitra" } ],
+      "tell": "A true morel is hollow from tip to base when sliced lengthwise, with a honeycomb of pits. A false morel is wrinkled/brain-like and chambered or cottony inside.",
+      "consequence": "Gyromitrin (a rocket-fuel relative) causes severe poisoning and can be fatal.",
+      "message": "False morels contain a toxin related to rocket fuel and are confused with true morels every spring. Look only.",
+      "needsExpertReview": true,
+      "sources": { "wikipedia": ["Gyromitra_esculenta"] }
+    },
+    {
+      "id": "parasol-chlorophyllum",
+      "tier": "DEADLY",
+      "benign": { "common": "Shaggy / true parasol", "scientific": "Macrolepiota, Chlorophyllum rhacodes" },
+      "danger": { "common": "Green-spored parasol / 'the vomiter'", "scientific": "Chlorophyllum molybdites" },
+      "triggerTaxa": [ { "rank": "genus", "name": "Macrolepiota" }, { "rank": "genus", "name": "Chlorophyllum" }, { "rank": "genus", "name": "Lepiota" } ],
+      "tell": "Spore print is the tell: the toxic one is GREEN; the edibles are white. Lepiota itself contains deadly amatoxin species.",
+      "consequence": "Chlorophyllum molybdites is the single most common cause of mushroom poisoning in North America (severe GI). Some Lepiota are lethal.",
+      "message": "Parasol-type mushrooms include the most-often-eaten poisonous mushroom in North America and some deadly relatives. Look only.",
+      "needsExpertReview": true,
+      "sources": { "wikipedia": ["Chlorophyllum_molybdites"] }
+    },
+    {
+      "id": "chanterelle-jackolantern",
+      "tier": "MILD",
+      "benign": { "common": "Chanterelle", "scientific": "Cantharellus" },
+      "danger": { "common": "Jack-o'-lantern", "scientific": "Omphalotus" },
+      "triggerTaxa": [ { "rank": "genus", "name": "Cantharellus" }, { "rank": "genus", "name": "Omphalotus" } ],
+      "tell": "A true chanterelle has blunt, forking false ridges that run down the stem; the toxic jack-o'-lantern has true, sharp, non-forking gills and grows in clumps on wood (and glows faintly in the dark).",
+      "consequence": "Severe (rarely fatal) gastrointestinal illness.",
+      "message": "The toxic jack-o'-lantern is a classic chanterelle lookalike. Look only.",
+      "needsExpertReview": true,
+      "sources": { "wikipedia": ["Omphalotus_olearius"] }
+    },
+    {
+      "id": "wildcarrot-hemlock",
+      "tier": "DEADLY",
+      "benign": { "common": "Wild carrot / Queen Anne's lace / edible parsnip", "scientific": "Daucus carota, Pastinaca" },
+      "danger": { "common": "Water hemlock / poison hemlock", "scientific": "Cicuta, Conium maculatum" },
+      "triggerTaxa": [ { "rank": "genus", "name": "Daucus" }, { "rank": "genus", "name": "Cicuta" }, { "rank": "genus", "name": "Conium" }, { "rank": "family", "name": "Apiaceae" } ],
+      "tell": "Poison hemlock has smooth stems with purple blotches; water hemlock has chambered roots. But these cues are unreliable and deadly to get wrong.",
+      "consequence": "Water hemlock (cicutoxin) causes violent seizures within an hour and is often fatal; poison hemlock (coniine) causes paralysis. Both are among the most lethal plants on the continent.",
+      "message": "The wild-carrot family's deadly lookalikes are the most lethal plants in North America. Never forage this family from a photo. Look only.",
+      "needsExpertReview": true,
+      "sources": { "wikipedia": ["Cicuta", "Conium_maculatum"] }
+    },
+    {
+      "id": "wildonion-deathcamas",
+      "tier": "DEADLY",
+      "benign": { "common": "Wild onion / garlic / ramps", "scientific": "Allium" },
+      "danger": { "common": "Death camas / lily-of-the-valley / false hellebore", "scientific": "Toxicoscordion, Convallaria, Veratrum" },
+      "triggerTaxa": [ { "rank": "genus", "name": "Allium" }, { "rank": "genus", "name": "Toxicoscordion" }, { "rank": "genus", "name": "Zigadenus" }, { "rank": "genus", "name": "Convallaria" }, { "rank": "genus", "name": "Veratrum" } ],
+      "tell": "A true Allium always smells strongly of onion/garlic. Death camas and lily-of-the-valley do NOT. But 'smell' is not a safe field test to bet a life on.",
+      "consequence": "Death camas and lily-of-the-valley are potentially fatal (cardiac/neurotoxic).",
+      "message": "Deadly death camas and lily-of-the-valley grow among wild onions and look like them. Look only.",
+      "needsExpertReview": true,
+      "sources": { "wikipedia": ["Toxicoscordion", "Convallaria"] }
+    },
+    {
+      "id": "berries-nightshade",
+      "tier": "DEADLY",
+      "benign": { "common": "Blueberry / edible dark berry", "scientific": "Vaccinium" },
+      "danger": { "common": "Deadly nightshade / pokeweed / other toxic berries", "scientific": "Atropa belladonna, Phytolacca americana, Solanum" },
+      "triggerTaxa": [ { "rank": "genus", "name": "Atropa" }, { "rank": "genus", "name": "Phytolacca" }, { "rank": "genus", "name": "Solanum" }, { "rank": "family", "name": "Solanaceae" } ],
+      "tell": "Dark, shiny berries are among the most common serious poisonings in young children. Many toxic berries look appetizing.",
+      "consequence": "Belladonna and several Solanum berries are potentially fatal, especially to children.",
+      "message": "Many poisonous berries look like edible ones and are a leading cause of child poisoning. Never eat a wild berry from a photo ID. Look only.",
+      "needsExpertReview": true,
+      "sources": { "wikipedia": ["Atropa_belladonna", "Phytolacca_americana"] }
+    },
+    {
+      "id": "hogweed-cowparsnip",
+      "tier": "CONTACT",
+      "benign": { "common": "Cow parsnip / benign umbellifer", "scientific": "Heracleum maximum" },
+      "danger": { "common": "Giant hogweed", "scientific": "Heracleum mantegazzianum" },
+      "triggerTaxa": [ { "rank": "genus", "name": "Heracleum" } ],
+      "tell": "Giant hogweed is enormous (up to 14 ft) with purple-blotched stems, but younger plants resemble harmless cow parsnip.",
+      "consequence": "Sap causes phytophotodermatitis — severe burns and blistering in sunlight, and permanent blindness if it contacts the eyes.",
+      "message": "Giant hogweed sap causes burns and can blind you in sunlight. Don't touch tall umbrella-flowered plants. Look only.",
+      "needsExpertReview": true,
+      "sources": { "wikipedia": ["Heracleum_mantegazzianum"] }
+    },
+    {
+      "id": "coral-milksnake",
+      "tier": "DEADLY",
+      "benign": { "common": "Milk / king / scarlet snake", "scientific": "Lampropeltis, Cemophora" },
+      "danger": { "common": "Coral snake", "scientific": "Micrurus" },
+      "triggerTaxa": [ { "rank": "genus", "name": "Micrurus" }, { "rank": "genus", "name": "Lampropeltis" }, { "rank": "genus", "name": "Cemophora" }, { "rank": "family", "name": "Elapidae" } ],
+      "tell": "The 'red touches yellow, kills a fellow' rhyme only works for coral snakes in the United States — it is WRONG for coral snakes elsewhere in the Americas and Asia.",
+      "consequence": "Coral snake venom is a potent neurotoxin.",
+      "message": "The venomous coral snake mimics harmless king and milk snakes, and the color rhyme fails outside the US. Never handle any snake based on an ID.",
+      "needsExpertReview": true,
+      "sources": { "wikipedia": ["Micrurus"] }
+    },
+    {
+      "id": "pettable-caterpillar",
+      "tier": "CONTACT",
+      "benign": { "common": "Fuzzy 'pettable' caterpillar", "scientific": "various" },
+      "danger": { "common": "Puss / asp / saddleback caterpillar", "scientific": "Megalopyge opercularis, Acharia stimulea" },
+      "triggerTaxa": [ { "rank": "genus", "name": "Megalopyge" }, { "rank": "genus", "name": "Acharia" } ],
+      "tell": "The soft-looking puss caterpillar hides venomous spines under its fur.",
+      "consequence": "Intense pain, welts, and occasionally systemic symptoms.",
+      "message": "Some of the fuzziest, most 'pettable'-looking caterpillars sting badly. Don't touch.",
+      "needsExpertReview": true,
+      "sources": { "wikipedia": ["Megalopyge_opercularis"] }
+    },
+    {
+      "id": "paddystraw-amanita",
+      "tier": "DEADLY",
+      "group": "amanita",
+      "benign": { "common": "Paddy straw mushroom", "scientific": "Volvariella volvacea" },
+      "danger": { "common": "Death cap / destroying angel", "scientific": "Amanita spp." },
+      "triggerTaxa": [ { "rank": "genus", "name": "Volvariella" }, { "rank": "genus", "name": "Amanita" } ],
+      "tell": "Both grow from an egg-like sac (volva), which is exactly why they are confused. Paddy straw has a pink spore print; a deadly Amanita has a white one. This is a leading cause of fatal mushroom poisonings among foragers who know paddy straw from home.",
+      "consequence": "Amatoxin poisoning; delayed onset; liver and kidney failure; often fatal.",
+      "message": "The edible paddy straw and the deadly Amanita both rise from a volva and are tragically easy to confuse. Look only.",
+      "needsExpertReview": true,
+      "sources": { "wikipedia": ["Volvariella_volvacea", "Amanita_phalloides"] }
+    },
+    {
+      "id": "blewit-cortinarius",
+      "tier": "DEADLY",
+      "benign": { "common": "Blewit", "scientific": "Lepista nuda" },
+      "danger": { "common": "Deadly webcap", "scientific": "Cortinarius rubellus, Cortinarius orellanus" },
+      "triggerTaxa": [ { "rank": "genus", "name": "Lepista" }, { "rank": "genus", "name": "Clitocybe" }, { "rank": "genus", "name": "Cortinarius" } ],
+      "tell": "Deadly webcaps are rusty-brown with a cobweb-like partial veil (cortina) and a rusty spore print. The danger is the delay: there may be NO symptoms for days.",
+      "consequence": "Orellanine destroys the kidneys, with onset delayed 2 days to 3 weeks — long after any 'it was fine' reassurance. Often requires a transplant; can be fatal.",
+      "message": "Deadly webcaps (Cortinarius) can poison the kidneys with symptoms that don't appear for days or weeks. Look only.",
+      "needsExpertReview": true,
+      "sources": { "wikipedia": ["Cortinarius_rubellus"] }
+    },
+    {
+      "id": "grape-moonseed",
+      "tier": "DEADLY",
+      "benign": { "common": "Wild grape", "scientific": "Vitis" },
+      "danger": { "common": "Canada moonseed", "scientific": "Menispermum canadense" },
+      "triggerTaxa": [ { "rank": "genus", "name": "Vitis" }, { "rank": "genus", "name": "Menispermum" } ],
+      "tell": "Crush a berry: a grape has several round/pear-shaped seeds; moonseed has ONE flat crescent-moon seed. Moonseed also lacks the forked tendrils grapes use to climb.",
+      "consequence": "Moonseed (dauricine) can be fatal, especially to children who eat the grape-like fruit.",
+      "message": "Toxic Canada moonseed grows on vines and mimics wild grapes. Never eat wild grapes from a photo ID. Look only.",
+      "needsExpertReview": true,
+      "sources": { "wikipedia": ["Menispermum_canadense"] }
+    },
+    {
+      "id": "comfrey-foxglove",
+      "tier": "DEADLY",
+      "benign": { "common": "Comfrey", "scientific": "Symphytum officinale" },
+      "danger": { "common": "Foxglove", "scientific": "Digitalis purpurea" },
+      "triggerTaxa": [ { "rank": "genus", "name": "Symphytum" }, { "rank": "genus", "name": "Digitalis" } ],
+      "tell": "Before it flowers, a foxglove's leaf rosette closely resembles comfrey. Foxglove leaves have a fine-toothed edge and a netted vein pattern; comfrey leaves are untoothed. This is a hard call and a deadly one.",
+      "consequence": "Foxglove (digitalis cardiac glycosides) can stop the heart. Poisonings happen when the leaves are mistaken for an edible or medicinal plant.",
+      "message": "Foxglove's pre-flower rosette mimics comfrey, and foxglove can stop your heart. Look only.",
+      "needsExpertReview": true,
+      "sources": { "wikipedia": ["Digitalis_purpurea"] }
+    },
+    {
+      "id": "elderberry-raw",
+      "tier": "MILD",
+      "benign": { "common": "Elderberry (cooked)", "scientific": "Sambucus nigra" },
+      "danger": { "common": "Raw / red elderberry parts", "scientific": "Sambucus racemosa" },
+      "triggerTaxa": [ { "rank": "genus", "name": "Sambucus" } ],
+      "tell": "Elderberry's flat-topped flower clusters also resemble deadly water hemlock (see the carrot-family warning). Even true elderberry is toxic raw — the leaves, stems, roots, and unripe/red berries contain cyanide-producing compounds.",
+      "consequence": "Nausea and vomiting from raw parts; the more serious risk is confusing the umbels with water hemlock.",
+      "message": "Elderberry is toxic raw and its flower clusters resemble deadly water hemlock. Look only.",
+      "needsExpertReview": true,
+      "sources": { "wikipedia": ["Sambucus"] }
+    },
+    {
+      "id": "porcini-toxic-bolete",
+      "tier": "MILD",
+      "benign": { "common": "Porcini / king bolete", "scientific": "Boletus edulis" },
+      "danger": { "common": "Toxic boletes", "scientific": "Rubroboletus satanas, Suillellus" },
+      "triggerTaxa": [ { "rank": "genus", "name": "Boletus" }, { "rank": "genus", "name": "Rubroboletus" }, { "rank": "genus", "name": "Suillellus" } ],
+      "tell": "Common heuristics ('avoid red pores and blue-staining flesh') are imperfect and have exceptions in both directions.",
+      "consequence": "Severe gastrointestinal illness from the toxic species.",
+      "message": "Some boletes that resemble edible porcini cause serious stomach illness. Look only.",
+      "needsExpertReview": true,
+      "sources": { "wikipedia": ["Rubroboletus_satanas"] }
+    },
+    {
+      "id": "monarch-viceroy",
+      "tier": "INFO",
+      "benign": { "common": "Monarch", "scientific": "Danaus plexippus" },
+      "danger": null,
+      "triggerTaxa": [ { "rank": "genus", "name": "Danaus" }, { "rank": "genus", "name": "Limenitis" } ],
+      "tell": "The viceroy (Limenitis archippus) mimics the monarch but has an extra black line crossing its hindwings.",
+      "consequence": null,
+      "message": "Teaching note: the monarch and the viceroy are a famous case of mimicry — look for the viceroy's extra hindwing line. (No hazard.)",
+      "needsExpertReview": false,
+      "sources": { "wikipedia": ["Viceroy_(butterfly)"] }
+    }
+  ],
+  "_directHazardsNote": "Fires when the tool thinks the organism IS a known-dangerous species (not a lookalike). Distinct from `confusions`, which fire on the neighborhood. Same stakes-not-confidence rule applies.",
+  "directHazards": [
+    {
+      "id": "oleander",
+      "tier": "DEADLY",
+      "domain": "touch",
+      "taxa": [ { "rank": "genus", "name": "Nerium" } ],
+      "common": "Oleander",
+      "message": "Oleander is one of the most poisonous common garden plants — every part is toxic, and even smoke from burning it is dangerous. Don't touch, don't burn, never put any part near your mouth.",
+      "tell": "Cardiac glycosides (oleandrin) can disrupt the heart from a small amount.",
+      "needsExpertReview": true,
+      "sources": { "wikipedia": ["Nerium_oleander"] }
+    },
+    {
+      "id": "datura-brugmansia",
+      "tier": "DEADLY",
+      "domain": "touch",
+      "taxa": [ { "rank": "genus", "name": "Datura" }, { "rank": "genus", "name": "Brugmansia" } ],
+      "common": "Jimsonweed / angel's trumpet",
+      "message": "Jimsonweed and angel's trumpet are powerful poisons. Every part — including the seeds and nectar — can cause hallucinations, a racing heart, and death. Don't touch, don't taste.",
+      "tell": "Tropane alkaloids (atropine, scopolamine). Poisonings often happen when people experiment with the seeds or flowers.",
+      "needsExpertReview": true,
+      "sources": { "wikipedia": ["Datura_stramonium"] }
+    },
+    {
+      "id": "castor-jequirity",
+      "tier": "DEADLY",
+      "domain": "touch",
+      "taxa": [ { "rank": "genus", "name": "Ricinus" }, { "rank": "genus", "name": "Abrus" } ],
+      "common": "Castor bean / rosary pea",
+      "message": "The bright, bead-like seeds of the castor bean and rosary pea contain some of the most toxic natural substances known (ricin, abrin). A single chewed seed can be lethal. Never pick up or handle the seeds.",
+      "tell": "These seeds are often strung into jewelry and are a serious hazard to curious children.",
+      "needsExpertReview": true,
+      "sources": { "wikipedia": ["Ricinus", "Abrus_precatorius"] }
+    },
+    {
+      "id": "manchineel",
+      "tier": "DEADLY",
+      "domain": "touch",
+      "taxa": [ { "rank": "genus", "name": "Hippomane" } ],
+      "common": "Manchineel ('little apple of death')",
+      "message": "The manchineel is among the most dangerous trees on Earth. Its sap burns skin, its fruit can kill if eaten, and standing under it in the rain — or near its smoke if burned — causes severe injury and can blind you. Do not touch it or shelter under it.",
+      "tell": "Found on tropical beaches; often marked with a painted band where signposted.",
+      "needsExpertReview": true,
+      "sources": { "wikipedia": ["Manchineel"] }
+    },
+    {
+      "id": "widow-recluse",
+      "tier": "CONTACT",
+      "domain": "handle",
+      "taxa": [ { "rank": "genus", "name": "Latrodectus" }, { "rank": "genus", "name": "Loxosceles" } ],
+      "common": "Black widow / brown recluse",
+      "message": "This looks like a medically significant spider (black widow or brown recluse). Don't handle it or reach into spaces you can't see. Most bites happen when a spider is trapped against skin.",
+      "tell": "Black widow: glossy black with a red hourglass. Brown recluse: a violin shape behind the eyes. IDs from photos are unreliable — give any spider space.",
+      "needsExpertReview": true,
+      "sources": { "wikipedia": ["Latrodectus", "Loxosceles_reclusa"] }
+    },
+    {
+      "id": "blue-ringed-octopus",
+      "tier": "DEADLY",
+      "domain": "handle",
+      "taxa": [ { "rank": "genus", "name": "Hapalochlaena" } ],
+      "common": "Blue-ringed octopus",
+      "message": "The blue-ringed octopus carries a venom with no antivenom and can kill a person within hours. It is small and often found in tide pools and shells. Never touch it or pick up shells it may be hiding in.",
+      "tell": "Vivid blue rings flash as a warning when it is disturbed — by then it may be too late.",
+      "needsExpertReview": true,
+      "sources": { "wikipedia": ["Blue-ringed_octopus"] }
+    },
+    {
+      "id": "cone-snail",
+      "tier": "DEADLY",
+      "domain": "handle",
+      "taxa": [ { "rank": "genus", "name": "Conus" } ],
+      "common": "Cone snail",
+      "message": "Cone snails fire a venomous harpoon that can kill; the larger species are nicknamed 'cigarette snails' for how little time you may have. A beautiful shell is not worth the risk — never pick up a live cone snail.",
+      "tell": "Attractive patterned cone-shaped shells on tropical reefs and beaches.",
+      "needsExpertReview": true,
+      "sources": { "wikipedia": ["Cone_snail"] }
+    },
+    {
+      "id": "pufferfish",
+      "tier": "DEADLY",
+      "domain": "forage",
+      "taxa": [ { "rank": "family", "name": "Tetraodontidae" } ],
+      "common": "Pufferfish",
+      "message": "Pufferfish carry tetrodotoxin, a poison with no antidote. Even a small amount is fatal, and no home preparation makes them safe. Never eat one and don't handle a stranded puffer.",
+      "tell": "Tetrodotoxin is concentrated in the organs and skin; safe preparation requires licensed training.",
+      "needsExpertReview": true,
+      "sources": { "wikipedia": ["Tetraodontidae"] }
+    },
+    {
+      "id": "cane-toad",
+      "tier": "CONTACT",
+      "domain": "handle",
+      "taxa": [ { "rank": "genus", "name": "Rhinella" } ],
+      "common": "Cane toad",
+      "message": "Cane toads ooze a milky toxin from glands behind the eyes that is dangerous to pets and irritating to people. Don't handle it, and keep dogs away — mouthing a cane toad can be fatal to a dog.",
+      "tell": "Large toad with prominent parotoid glands over the shoulders.",
+      "needsExpertReview": true,
+      "sources": { "wikipedia": ["Cane_toad"] }
+    },
+    {
+      "id": "lionfish",
+      "tier": "CONTACT",
+      "domain": "handle",
+      "taxa": [ { "rank": "genus", "name": "Pterois" } ],
+      "common": "Lionfish",
+      "message": "A lionfish's showy fin spines deliver an intensely painful venomous sting. Admire it from a distance; never try to touch or catch one by hand.",
+      "tell": "Bold red-and-white stripes with fan-like venomous spines.",
+      "needsExpertReview": true,
+      "sources": { "wikipedia": ["Pterois"] }
+    },
+    {
+      "id": "man-o-war",
+      "tier": "CONTACT",
+      "domain": "touch",
+      "taxa": [ { "rank": "genus", "name": "Physalia" } ],
+      "common": "Portuguese man o' war",
+      "message": "The Portuguese man o' war can sting severely even when washed up and apparently dead. Don't touch it, and keep away from the long trailing tentacles, which can stretch far from the float.",
+      "tell": "A blue-purple balloon-like float with long tentacles; common on beaches after storms.",
+      "needsExpertReview": true,
+      "sources": { "wikipedia": ["Portuguese_man_o'_war"] }
+    }
+  ]
+}

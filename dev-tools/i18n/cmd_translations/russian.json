@@ -320,5 +320,8 @@
   "cmd.run_lesson_blueprint": "Создать план урока",
   "cmd.run_lesson_blueprint_done": "План создаётся — вы можете следить за каждым шагом на карточке.",
   "cmd.run_lesson_blueprint_hint": "Создаёт все ресурсы текущего плана",
-  "cmd.cancelled": "Запрошена отмена. Текущая операция остановится, когда провайдер её поддержит."
+  "cmd.cancelled": "Запрошена отмена. Текущая операция остановится, когда провайдер её поддержит.",
+  "cmd.open_share_collect": "Открыть Share & Collect",
+  "cmd.open_share_collect_hint": "Опросы, записи, анкеты и их результаты",
+  "cmd.open_share_collect_done": "Share & Collect открыт."
 }

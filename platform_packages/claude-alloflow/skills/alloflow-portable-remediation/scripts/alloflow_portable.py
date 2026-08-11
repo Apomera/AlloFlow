@@ -26,7 +26,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 
-VERSION = "0.2.2"
+VERSION = "0.2.9"
 MAX_SOURCE_BYTES = 200 * 1024 * 1024
 MAX_PLAN_BYTES = 8 * 1024 * 1024
 MAX_HTML_BYTES = 8 * 1024 * 1024
@@ -354,15 +354,23 @@ def validate_plan(plan: Dict[str, Any], plan_dir: Path) -> Dict[str, Any]:
     image_blocks = 0
     embedded_image_chars = 0
     allowed_by_type = {
-        "heading": {"type", "level", "text", "source_page"},
-        "paragraph": {"type", "text", "runs", "source_page"},
-        "blockquote": {"type", "text", "cite", "runs", "source_page"},
-        "list": {"type", "ordered", "items", "item_runs", "source_page"},
-        "table": {"type", "caption", "columns", "rows", "row_headers", "cell_runs", "source_page"},
-        "image": {"type", "alt", "decorative", "path", "caption", "source_page"},
-        "link": {"type", "text", "url", "source_page"},
+        "heading": {"type", "level", "text", "source_page", "id"},
+        "paragraph": {"type", "text", "runs", "source_page", "id"},
+        "blockquote": {"type", "text", "cite", "runs", "source_page", "id"},
+        "list": {"type", "ordered", "items", "item_runs", "source_page", "id"},
+        "table": {"type", "caption", "columns", "rows", "row_headers", "cell_runs", "source_page", "id"},
+        "image": {"type", "alt", "decorative", "path", "caption", "source_page", "id"},
+        "link": {"type", "text", "url", "source_page", "id"},
         "page_break": {"type", "page", "label"},
     }
+    # Optional stable anchors (2026-08-10, ed-parent-guide run): a block may
+    # declare an `id` so runs can carry working in-document `#id` links —
+    # source PDFs routinely link footnote markers to their footnotes via GoTo
+    # annotations, and without addressable targets a rebuild silently flattens
+    # that navigation to plain text. Reserved names/prefixes are refused so a
+    # plan id can never collide with the ids the renderer generates itself.
+    declared_ids: set = set()
+    internal_href_sites: List[Tuple[str, str]] = []
 
     for index, raw in enumerate(blocks):
         where = f"blocks[{index}]"
@@ -378,6 +386,17 @@ def validate_plan(plan: Dict[str, Any], plan_dir: Path) -> Dict[str, Any]:
 
         if kind != "page_break":
             expect_int(raw.get("source_page"), where + ".source_page", errors, 1, page_count or 1000)
+
+        if "id" in raw and kind != "page_break":
+            raw_id = raw.get("id")
+            if not isinstance(raw_id, str) or not re.fullmatch(r"[a-z][a-z0-9-]{0,63}", raw_id):
+                errors.append(where + ".id must match [a-z][a-z0-9-]{0,63} (lowercase, hyphenated).")
+            elif raw_id == "main-content" or raw_id.startswith("alloflow-"):
+                errors.append(where + ".id uses a reserved name (main-content / alloflow-*).")
+            elif raw_id in declared_ids:
+                errors.append(where + f".id '{raw_id}' is declared more than once.")
+            else:
+                declared_ids.add(raw_id)
 
         if kind == "heading":
             level = expect_int(raw.get("level"), where + ".level", errors, 1, 6)
@@ -535,6 +554,34 @@ def validate_plan(plan: Dict[str, Any], plan_dir: Path) -> Dict[str, Any]:
         if current > previous + 1:
             errors.append(f"Heading hierarchy skips from h{previous} to h{current}.")
 
+    # Every internal `#target` link must resolve to a declared block id — a
+    # dangling in-document link is worse than no link (it navigates nowhere and
+    # screen readers announce it as actionable).
+    def _collect_internal_hrefs(runs_value: Any, at: str) -> None:
+        if not isinstance(runs_value, list):
+            return
+        for run in runs_value:
+            if isinstance(run, dict):
+                href = run.get("href")
+                if isinstance(href, str) and href.startswith("#"):
+                    internal_href_sites.append((at, href[1:]))
+
+    for index, block in enumerate(normalized_blocks):
+        at = f"blocks[{index}]"
+        _collect_internal_hrefs(block.get("runs"), at + ".runs")
+        for run_index, entry in enumerate(block.get("item_runs") or []):
+            _collect_internal_hrefs(entry, f"{at}.item_runs[{run_index}]")
+        for row_index, row_entry in enumerate(block.get("cell_runs") or []):
+            for cell_index, cell_entry in enumerate(row_entry or []):
+                _collect_internal_hrefs(cell_entry, f"{at}.cell_runs[{row_index}][{cell_index}]")
+        if block.get("type") == "link":
+            url = str(block.get("url") or "")
+            if url.startswith("#"):
+                internal_href_sites.append((at + ".url", url[1:]))
+    for at, target in internal_href_sites:
+        if target not in declared_ids:
+            errors.append(at + f" links to '#{target}' but no block declares id '{target}'.")
+
     review_notes = plan.get("review_notes")
     if not isinstance(review_notes, list):
         errors.append("review_notes must be an array.")
@@ -624,6 +671,10 @@ def render_html(validated: Dict[str, Any]) -> str:
         kind = block["type"]
         page = block.get("source_page")
         source_attr = f' data-source-page="{int(page)}"' if page else ""
+        # Plan-declared anchor ids (validated: unique, non-reserved) let runs
+        # carry working in-document links — e.g. footnote markers → footnotes.
+        if block.get("id"):
+            source_attr = f' id="{esc(block["id"])}"' + source_attr
         if kind == "heading":
             level = int(block["level"])
             parts.append(f"<h{level}{source_attr}>{esc(block['text'])}</h{level}>")
@@ -655,6 +706,32 @@ def render_html(validated: Dict[str, Any]) -> str:
                 for index, value in enumerate(row):
                     runs = row_runs[index] if row_runs and index < len(row_runs) else None
                     body = render_inline(value, runs)
+                    # An EMPTY cell needs something to draw, or it does not
+                    # survive into the tagged PDF at all. Chromium's export
+                    # builds structure elements from MARKED CONTENT, and a cell
+                    # with nothing in it paints nothing, so no /TD is emitted
+                    # and the row reaches veraPDF one column short:
+                    # "Table rows shall have the same number of columns"
+                    # (PDF/UA-1 clause 7.2). It cost 22 failed checks on the
+                    # i1040 rebuild, one for every worksheet whose Amount
+                    # column is blank because that is where a filer writes.
+                    #
+                    # A NO-BREAK SPACE fixes it: it has a nonzero advance
+                    # width, so Chromium always emits a text run (and thus a
+                    # /TD) for the cell, while a screen reader still reports
+                    # the cell as blank and text extraction sees only
+                    # whitespace. A ZERO-WIDTH space was tried first on the
+                    # theory that painting no ink at all was purer - and it
+                    # cut the i1040 failures from 22 to 1, but the last one
+                    # (IRA Deduction Worksheet part 2, 2026-08-09 run) showed
+                    # Chromium CULLS a zero-advance-only cell under some
+                    # fragmentation conditions, dropping exactly one of two
+                    # adjacent ZWSP cells per row while the identically shaped
+                    # part 1 on the previous page kept all of its cells. A
+                    # blank that survives layout beats an invisible one that
+                    # does not.
+                    if not body:
+                        body = "&#160;"
                     if index == 0 and block.get("row_headers"):
                         cells.append(f'<th scope="row">{body}</th>')
                     else:
@@ -714,7 +791,27 @@ def render_html(validated: Dict[str, Any]) -> str:
     subject_meta = (
         f'<meta name="description" content="{esc(document["subject"])}">' if document.get("subject") else ""
     )
-    body = "\n".join(parts)
+    # Review notes travel WITH the deliverable (2026-08-10, ed-parent-guide
+    # verification round): they used to land only in the report JSON, so to any
+    # reader of the HTML/PDF itself every disclosed transformation looked
+    # undisclosed — the independent-verification loop failed its own disclosure
+    # items on an honestly-authored plan. The appendix is explicitly marked as
+    # remediation metadata, not source content, and page-breaks onto its own
+    # page in the tagged PDF.
+    notes = validated.get("review_notes") or []
+    if notes:
+        note_items = "".join(f"<li>{esc_lines(str(note))}</li>" for note in notes)
+        notes_section = (
+            '\n<section class="alloflow-review-notes" aria-labelledby="alloflow-review-notes-heading">'
+            '\n<h2 id="alloflow-review-notes-heading">Remediation notes</h2>'
+            '\n<p>The notes below were written during the accessible rebuild of this document. '
+            "They are part of the remediation record, not of the source document: they disclose "
+            "every transformation, uncertainty, and omission the rebuild made.</p>"
+            f"\n<ol>{note_items}</ol>\n</section>"
+        )
+    else:
+        notes_section = ""
+    body = "\n".join(parts) + notes_section
     return f"""<!doctype html>
 <html lang="{esc(document['language'])}">
 <head>
@@ -739,12 +836,23 @@ a {{ color: #0645ad; text-decoration: underline; text-underline-offset: .12em; }
 blockquote {{ border-left: .3rem solid #475569; margin-left: 0; padding-left: 1rem; }}
 table {{ border-collapse: collapse; width: 100%; margin: 1rem 0; break-inside: avoid; }}
 caption {{ font-weight: 700; text-align: left; margin-bottom: .35rem; }}
+/* A ROW must not straddle a page break: `break-inside: avoid` on the table
+   cannot help a table taller than a page (the i1040 tax tables run to 180
+   rows), so without this a tall row can split and its two halves carry
+   different cell counts.
+   HONEST SCOPE: this is good practice for tagged output, but it did NOT
+   resolve the one remaining PDF/UA-1 clause 7.2 failure on the i1040 rebuild
+   - that count was 1 both before and after. Kept because it is correct, not
+   because it was shown to fix that case. */
+tr, th, td {{ break-inside: avoid; }}
 th, td {{ border: 1px solid #4b5563; padding: .45rem; text-align: left; vertical-align: top; }}
 th {{ background: #e5e7eb; color: #111827; }}
 img {{ display: block; height: auto; max-width: 100%; }}
 figcaption, .alloflow-figure-caption {{ margin-top: .35rem; color: #374151; }}
 .alloflow-figure-fallback {{ border: 2px solid #6b7280; padding: .75rem; }}
 .alloflow-page-break {{ display: block; break-before: page; height: 0; }}
+.alloflow-review-notes {{ break-before: page; margin-top: 2.5rem; border-top: .18rem solid #4b5563; padding-top: 1rem; font-size: .95rem; }}
+.alloflow-review-notes h2 {{ font-size: 1.3rem; }}
 @media print {{
   body {{ max-width: none; padding: 0; }}
   .skip-link {{ display: none; }}
@@ -1233,6 +1341,19 @@ def remediate(args: argparse.Namespace) -> Dict[str, Any]:
             3,
         )
 
+    # Annotation-aware link audit (2026-08-10): warning-only, can never fail a
+    # plan. Catches a GoTo-linked footnote apparatus flattened to plain text
+    # and a written-out URL rebuilt under a different scheme than the source
+    # annotation actually carried.
+    if source_receipt["kind"] == "pdf":
+        try:
+            source_annotations = _pdf_extract_annotations(source.read_bytes())
+            validated["warnings"].extend(
+                _annotation_link_warnings(source_annotations, validated)
+            )
+        except Exception:
+            pass
+
     out_dir.mkdir(parents=True, exist_ok=True)
     stem = safe_stem(source.name)
     names = {
@@ -1365,11 +1486,13 @@ def remediate(args: argparse.Namespace) -> Dict[str, Any]:
                 }
                 pdf_ua = {"status": "not_run", "reason": "No generated PDF was available to validate."}
 
-        if args.verapdf == "required":
-            if pdf_ua.get("status") != "completed":
-                raise PortableError("PDF/UA validation was required but did not complete.", 5)
-            if pdf_ua.get("compliant") is not True:
-                raise PortableError("PDF/UA validation was required to pass but found unresolved rules.", 6)
+        # NOTE: the --verapdf required gate is enforced AFTER publish_staged,
+        # not here. Raising inside the TemporaryDirectory context deletes the
+        # staging dir, which left the output directory EMPTY on gate failure -
+        # so the failure could never be diagnosed from the run that produced
+        # it (every 2026-08 i1040 diagnosis had to re-run with --verapdf
+        # auto). A failed gate now still leaves the artifacts and the report
+        # behind, then exits nonzero.
 
         artifacts = {
             "accessibleHtml": names["html"],
@@ -1422,6 +1545,21 @@ def remediate(args: argparse.Namespace) -> Dict[str, Any]:
                     f"{source_recall}: a measurable share of the source PDF's own text layer "
                     "is absent from the plan. Re-read the source before trusting this rebuild."
                 )
+        elif source_recall_detail.get("status") == "not_measurable":
+            # A pure scan can sail through every OTHER check: the plan renders,
+            # veraPDF passes, outputTextRecall is 1.0 - all true, and none of it
+            # says whether the plan covers the pages. Corpus round 11 probed
+            # this with the 1954 Form 1040 scan and a one-heading plan: every
+            # automated signal read as success. The report must say in its OWN
+            # voice - not only via the recall detail, and independent of any
+            # disclosure the plan author chose to write - that content fidelity
+            # is unverifiable here.
+            manual_review.append(
+                "The source has no usable extractable text layer, so NO automated check in "
+                "this report could compare the rebuild's content against the source. "
+                "outputTextRecall only proves the PDF carries the plan. Fidelity rests "
+                "entirely on the plan author's reading plus independent verification."
+            )
 
         if pdf_result.get("status") != "completed":
             verdict = "html_only_review_required"
@@ -1500,6 +1638,21 @@ def remediate(args: argparse.Namespace) -> Dict[str, Any]:
         if pdf_result.get("status") == "completed":
             staged_pairs.insert(1, (staged_paths["pdf"], final_paths["pdf"]))
         publish_staged(staged_pairs)
+
+    if args.verapdf == "required":
+        if pdf_ua.get("status") != "completed":
+            raise PortableError(
+                "PDF/UA validation was required but did not complete. "
+                "The generated artifacts and report were kept for diagnosis.",
+                5,
+            )
+        if pdf_ua.get("compliant") is not True:
+            raise PortableError(
+                "PDF/UA validation was required to pass but found unresolved rules. "
+                "The generated artifacts and report were kept; see failedRules in the "
+                "accessibility report.",
+                6,
+            )
 
     return {
         "ok": True,
@@ -1713,29 +1866,77 @@ def _write_png(path: Path, width: int, height: int, color_type: int, raw: bytes,
 
 def _resolve_color_space(
     dictionary: bytes, index: Dict[int, Tuple[bytes, Optional[bytes]]]
-) -> Tuple[Optional[int], str]:
-    """Resolve /ColorSpace to (png_color_type, label, palette), following refs.
+) -> Tuple[Optional[int], str, Optional[bytes], Optional[str]]:
+    """Resolve /ColorSpace to (png_color_type, label, palette, transform).
 
     Direct names, indirect refs, and [/ICCBased N 0 R] arrays are handled - an
     ICC profile's /N gives the component count, and decoding its samples as
     Device colour is the standard close-enough treatment (the profile is almost
-    always sRGB-like). Indexed/Separation/Lab return (None, label) so the
-    caller can skip with an honest reason instead of mis-decoding.
+    always sRGB-like). Indexed bases behind indirect refs are resolved and the
+    palette normalised to RGB. `transform` asks the caller for a post-predictor
+    sample rewrite: "cmyk" (4-component naive conversion to RGB) or "invert"
+    (single-ink DeviceN tint to gray). Spaces still outside deterministic
+    scope (Lab, multi-ink DeviceN, Separation) return (None, label, ...) so
+    the caller can skip with an honest reason instead of mis-decoding.
     """
     match = re.search(rb"/ColorSpace\s*(/\w+|\d+\s+0\s+R|\[[^\]]*\])", dictionary)
     if not match:
-        return None, "no /ColorSpace", None
+        return None, "no /ColorSpace", None, None
     blob = match.group(1)
     ref = re.match(rb"(\d+)\s+0\s+R", blob)
     if ref:
         entry = index.get(int(ref.group(1)))
         if entry is None:
-            return None, f"unresolvable colour space ref {int(ref.group(1))}", None
+            return None, f"unresolvable colour space ref {int(ref.group(1))}", None, None
         blob = entry[0]
+
+    def base_components(base_blob: bytes) -> Tuple[Optional[int], str]:
+        """Component count of a base colour space (for Indexed palettes)."""
+        base_ref = re.match(rb"(\d+)\s+0\s+R", base_blob.strip())
+        if base_ref:
+            base_entry = index.get(int(base_ref.group(1)))
+            if base_entry is None:
+                return None, f"unresolvable base ref {int(base_ref.group(1))}"
+            base_blob = base_entry[0]
+        if b"/DeviceRGB" in base_blob:
+            return 3, "DeviceRGB"
+        if b"/DeviceGray" in base_blob:
+            return 1, "DeviceGray"
+        if b"/DeviceCMYK" in base_blob:
+            return 4, "DeviceCMYK"
+        base_icc = re.search(rb"/ICCBased\s+(\d+)\s+0\s+R", base_blob)
+        if base_icc:
+            icc_entry2 = index.get(int(base_icc.group(1)))
+            if icc_entry2 is not None:
+                n2 = re.search(rb"/N\s+(\d+)", icc_entry2[0])
+                if n2:
+                    return int(n2.group(1)), f"ICCBased N={int(n2.group(1))}"
+            return None, "ICCBased base unresolvable"
+        return None, "unsupported base " + base_blob[:30].decode("latin1", "replace")
+
     if re.search(rb"/DeviceRGB\b", blob) and b"/Indexed" not in blob:
-        return 2, "DeviceRGB", None
-    if re.search(rb"/DeviceGray\b", blob) and b"/Indexed" not in blob:
-        return 0, "DeviceGray", None
+        return 2, "DeviceRGB", None, None
+    if re.search(rb"/DeviceGray\b", blob) and b"/Indexed" not in blob and b"/DeviceN" not in blob:
+        return 0, "DeviceGray", None, None
+    if re.search(rb"/DeviceCMYK\b", blob) and b"/Indexed" not in blob and b"/DeviceN" not in blob:
+        # PNG has no CMYK: the caller converts the 4-component scanlines with
+        # the naive formula (no ICC intent). Corpus round 11: NASA Artemis
+        # obj 44 - the only CMYK raster in the corpus - is a chart whose
+        # colours survive the approximation fine; exact colorimetry was never
+        # this pathway's claim.
+        return 2, "DeviceCMYK (converted to RGB, naive)", None, "cmyk"
+    # A single-colorant /DeviceN (one ink over an alternate space) is a tint
+    # ramp: sample 0 = no ink = white, 255 = full ink. Decoding as INVERTED
+    # gray applies the identity tint transform instead of executing the
+    # embedded Type-4 function - the standard close-enough treatment for one
+    # ink (Artemis objs 327/367, [/DeviceN[/Black]/DeviceCMYK ...] figures).
+    device_n = re.search(rb"/DeviceN\s*\[\s*(/\w+)\s*\]", blob)
+    if device_n:
+        return 0, (
+            "DeviceN single ink "
+            + device_n.group(1).decode("latin1", "replace")
+            + " (decoded as inverted gray, naive tint)"
+        ), None, "invert"
     indexed = re.search(
         rb"/Indexed\s*(/\w+|\[[^\]]*\]|\d+\s+0\s+R)\s+(\d+)\s+(\d+\s+0\s+R|\([^)]*\)|<[0-9A-Fa-f\s]*>)",
         blob,
@@ -1754,22 +1955,42 @@ def _resolve_color_space(
             palette = bytes.fromhex(digits.decode("ascii"))
         elif lookup_blob.startswith(b"("):
             palette = lookup_blob[1:-1]
-        base_rgb = b"/DeviceRGB" in indexed.group(1) or b"/ICCBased" in indexed.group(1)
-        if palette is not None and base_rgb and len(palette) >= 3 * (hival + 1):
-            return 3, f"Indexed RGB ({hival + 1} colours)", palette[: 3 * (hival + 1)]
-        return None, f"Indexed with unresolvable base/lookup (hival={hival})", None
+        # The base may be inline OR an indirect ref ([/Indexed 590 0 R 255
+        # 305 0 R] - Artemis objs 309/376/409); resolve it and normalise the
+        # palette to RGB triplets whatever the base's component count.
+        comps, base_label = base_components(indexed.group(1))
+        if palette is not None and comps and len(palette) >= comps * (hival + 1):
+            entries = hival + 1
+            if comps == 3:
+                rgb = palette[: 3 * entries]
+            elif comps == 1:
+                rgb = bytes(b for value in palette[:entries] for b in (value, value, value))
+            else:  # CMYK base: naive conversion per palette entry
+                rgb_list = bytearray()
+                for e in range(entries):
+                    c, m, y, k = palette[4 * e : 4 * e + 4]
+                    rgb_list.append((255 - c) * (255 - k) // 255)
+                    rgb_list.append((255 - m) * (255 - k) // 255)
+                    rgb_list.append((255 - y) * (255 - k) // 255)
+                rgb = bytes(rgb_list)
+            return 3, f"Indexed RGB ({entries} colours, base {base_label})", rgb, None
+        return None, (
+            f"Indexed with unresolvable base/lookup (hival={hival}, base {base_label})"
+        ), None, None
     icc = re.search(rb"/ICCBased\s+(\d+)\s+0\s+R", blob)
     if icc:
         icc_entry = index.get(int(icc.group(1)))
         if icc_entry is not None:
             n = re.search(rb"/N\s+(\d+)", icc_entry[0])
             if n and n.group(1) == b"3":
-                return 2, "ICCBased N=3 (decoded as RGB)", None
+                return 2, "ICCBased N=3 (decoded as RGB)", None, None
             if n and n.group(1) == b"1":
-                return 0, "ICCBased N=1 (decoded as Gray)", None
-            return None, f"ICCBased N={(n.group(1).decode() if n else '?')}", None
-        return None, "ICCBased profile unresolvable", None
-    return None, "unsupported colour space " + blob[:40].decode("latin1", "replace"), None
+                return 0, "ICCBased N=1 (decoded as Gray)", None, None
+            if n and n.group(1) == b"4":
+                return 2, "ICCBased N=4 (converted to RGB, naive CMYK)", None, "cmyk"
+            return None, f"ICCBased N={(n.group(1).decode() if n else '?')}", None, None
+        return None, "ICCBased profile unresolvable", None, None
+    return None, "unsupported colour space " + blob[:40].decode("latin1", "replace"), None, None
 
 
 def extract_images_command(args: argparse.Namespace) -> Dict[str, Any]:
@@ -1832,16 +2053,17 @@ def extract_images_command(args: argparse.Namespace) -> Dict[str, Any]:
                 bits = int(bits_match.group(1)) if bits_match else 8
                 if bits != 8:
                     raise PortableError(f"Unsupported bit depth {bits}.")
-                color_type, cs_label, palette = _resolve_color_space(dictionary, object_index)
+                color_type, cs_label, palette, transform = _resolve_color_space(dictionary, object_index)
                 if color_type is None:
                     raise PortableError(f"Unsupported colour space for deterministic decode: {cs_label}.")
                 entry["colorSpace"] = cs_label
                 parms = _decode_parms(dictionary)
                 pixels = _zlib.decompress(raw)
+                source_colors = 4 if transform == "cmyk" else (3 if color_type == 2 else 1)
                 if parms["predictor"] >= 10:
                     pixels = _undo_png_predictor(
                         pixels,
-                        parms["colors"] or (3 if color_type == 2 else 1),
+                        parms["colors"] or source_colors,
                         parms["bits"],
                         parms["columns"] or width,
                     )
@@ -1849,6 +2071,22 @@ def extract_images_command(args: argparse.Namespace) -> Dict[str, Any]:
                     raise PortableError(
                         f"Unsupported predictor {parms['predictor']} (TIFF prediction)."
                     )
+                if transform == "cmyk":
+                    expected = width * height * 4
+                    if len(pixels) < expected:
+                        raise PortableError(
+                            f"CMYK sample data short: {len(pixels)} of {expected} bytes."
+                        )
+                    rgb_pixels = bytearray(width * height * 3)
+                    for px in range(width * height):
+                        c, m, y, k = pixels[4 * px : 4 * px + 4]
+                        white = 255 - k
+                        rgb_pixels[3 * px] = (255 - c) * white // 255
+                        rgb_pixels[3 * px + 1] = (255 - m) * white // 255
+                        rgb_pixels[3 * px + 2] = (255 - y) * white // 255
+                    pixels = bytes(rgb_pixels)
+                elif transform == "invert":
+                    pixels = pixels.translate(bytes(255 - v for v in range(256)))
                 target = out_dir / f"{name}.png"
                 _write_png(target, width, height, color_type, pixels, palette)
                 entry.update({"file": target.name, "format": "png"})
@@ -1903,7 +2141,12 @@ def audit_source_command(args: argparse.Namespace) -> Dict[str, Any]:
     has_xmp = re.search(rb"/Type\s*/Metadata\b", data) is not None
     claims_pdfua = b"pdfuaid:part" in data or b"http://www.aiim.org/pdfua/ns/id/" in data
     encrypted = re.search(rb"/Encrypt\s+\d+\s+0\s+R", data) is not None
-    has_acroform = b"/AcroForm" in data
+    # Same detector the remediate gate uses: an /AcroForm dictionary alone is
+    # NOT a form - authoring tools leave an empty one behind on ordinary prose
+    # documents (corpus round 12: a USGS teacher-guide booklet carried
+    # /Fields[] and the audit wrongly announced interactive form fields while
+    # the remediate gate, correctly, let the same file through).
+    has_form_fields = _has_interactive_fields(data)
     has_outline = b"/Outlines" in data
     has_title = re.search(rb"/Title\s*[(<]", data) is not None or b"<dc:title>" in data
 
@@ -1950,7 +2193,7 @@ def audit_source_command(args: argparse.Namespace) -> Dict[str, Any]:
         issue("no-title", "moderate", "No document title was found in Info or XMP metadata.")
     if not has_xmp:
         issue("no-xmp-metadata", "minor", "No XMP metadata stream is present.")
-    if has_acroform:
+    if has_form_fields:
         issue(
             "form-fields",
             "review",
@@ -1972,7 +2215,7 @@ def audit_source_command(args: argparse.Namespace) -> Dict[str, Any]:
             "hasXmpMetadata": has_xmp,
             "claimsPdfUa": claims_pdfua,
             "encrypted": encrypted,
-            "hasFormFields": has_acroform,
+            "hasFormFields": has_form_fields,
             "hasOutline": has_outline,
             "contentStreamInflateFailures": inflate_failures,
         },
@@ -2253,6 +2496,24 @@ def _expand_ligatures(text: str) -> str:
     return "".join(_LIGATURE_EXPANSIONS.get(ch, ch) for ch in text)
 
 
+# WinAnsi C1 fallback (corpus round 14): PDF single-byte text overwhelmingly
+# uses WinAnsiEncoding, where 0x80-0x9F are smart quotes, dashes, and daggers —
+# not the C1 control characters latin-1 says they are. Subset ToUnicode CMaps
+# routinely omit these codes, so curly quotes decoded to invisible control
+# chars in both extraction channels ('student’s' read as 'student' + C0092).
+# The five codes cp1252 leaves undefined keep their raw identity.
+_C1_CP1252: Dict[int, str] = {}
+for _c1_code in range(0x80, 0xA0):
+    try:
+        _C1_CP1252[_c1_code] = bytes([_c1_code]).decode("cp1252")
+    except UnicodeDecodeError:
+        pass
+
+
+def _byte_fallback_char(byte: int) -> str:
+    return _C1_CP1252.get(byte, chr(byte))
+
+
 def _decode_font_bytes(raw: bytes, font: Optional[Dict[str, Any]]) -> str:
     """Decode raw string bytes through the current font's ToUnicode CMap.
 
@@ -2264,10 +2525,12 @@ def _decode_font_bytes(raw: bytes, font: Optional[Dict[str, Any]]) -> str:
     """
     mapping = font.get("map") if font else None
     if not mapping:
-        return raw.decode("latin1")
+        return "".join(_byte_fallback_char(byte) for byte in raw)
     code_len = font.get("codeLen") or 1
     if code_len <= 1:
-        return _expand_ligatures("".join(mapping.get(byte, chr(byte)) for byte in raw))
+        return _expand_ligatures(
+            "".join(mapping[byte] if byte in mapping else _byte_fallback_char(byte) for byte in raw)
+        )
     out: List[str] = []
     for index in range(0, len(raw) - (len(raw) % code_len), code_len):
         code = int.from_bytes(raw[index:index + code_len], "big")
@@ -2766,35 +3029,28 @@ def _pdf_extract_text(data: bytes) -> Dict[str, Any]:
         draw_budget = [4000]
 
         def collect(
-            stream_num: int,
-            inherited_fonts: Dict[str, Dict[str, Any]],
-            parent_resources: Optional[bytes],
+            content: bytes,
+            own_fonts: Dict[str, Dict[str, Any]],
+            resources: Optional[bytes],
             depth: int,
             stack: Tuple[int, ...],
         ) -> None:
-            """Extract a content stream, splicing each Form XObject's text in at
+            """Extract page content, splicing each Form XObject's text in at
             its `Do` — text layers routinely live inside Form XObjects, not the
             page's direct content stream (corpus round 1: the 1913 Form 1040's
             hidden print-production text layer), and a stamped XObject may be
             drawn many times (corpus round 8). `stack` guards reference cycles.
+
+            The caller passes the page's /Contents CONCATENATED (round 14): the
+            array is ONE logical stream splittable between any two lexical
+            tokens, so fonts, text state, and even a single TJ array straddle
+            stream boundaries — parsed separately, a whole line of the OSEP
+            letter (8 streams per page) silently vanished and its quote glyphs
+            decoded without their font.
             """
-            if depth > 6 or stream_num in stack:
+            if depth > 6 or not content:
                 return
-            entry = index.get(stream_num)
-            if not entry or entry[1] is None:
-                return
-            content = _decompress_stream(entry[0], entry[1])
-            if not content:
-                return
-            own_resources = _dict_value(index, entry[0], "Resources")
-            own_fonts = inherited_fonts
-            if own_resources is not None:
-                own_font_dict = _fonts_from_resources(index, own_resources)
-                if own_font_dict:
-                    own_fonts = {**inherited_fonts, **own_font_dict}
-            resources = own_resources if own_resources is not None else parent_resources
             xobjects = _dict_value(index, resources, "XObject")
-            next_stack = stack + (stream_num,)
             for kind, body in _page_content_segments(content, own_fonts):
                 if kind == "text":
                     page_text.append(body)
@@ -2806,15 +3062,40 @@ def _pdf_extract_text(data: bytes) -> Dict[str, Any]:
                 )
                 if not named:
                     continue
-                xentry = index.get(int(named.group(1)))
-                if not xentry or not re.search(rb"/Subtype\s*/Form\b", xentry[0]):
+                xnum = int(named.group(1))
+                if xnum in stack:
                     continue
+                xentry = index.get(xnum)
+                if not xentry or xentry[1] is None or not re.search(rb"/Subtype\s*/Form\b", xentry[0]):
+                    continue
+                xcontent = _decompress_stream(xentry[0], xentry[1])
+                if not xcontent:
+                    continue
+                xresources = _dict_value(index, xentry[0], "Resources")
+                xfonts = own_fonts
+                if xresources is not None:
+                    xfont_dict = _fonts_from_resources(index, xresources)
+                    if xfont_dict:
+                        xfonts = {**own_fonts, **xfont_dict}
                 draw_budget[0] -= 1
-                collect(int(named.group(1)), own_fonts, resources, depth + 1, next_stack)
+                collect(
+                    xcontent,
+                    xfonts,
+                    xresources if xresources is not None else resources,
+                    depth + 1,
+                    stack + (xnum,),
+                )
 
         page_resources = _dict_value(index, dictionary, "Resources")
+        stream_parts: List[bytes] = []
         for ref in content_refs:
-            collect(ref, fonts, page_resources, 0, ())
+            entry = index.get(ref)
+            if not entry or entry[1] is None:
+                continue
+            part = _decompress_stream(entry[0], entry[1])
+            if part:
+                stream_parts.append(part)
+        collect(b"\n".join(stream_parts), fonts, page_resources, 0, ())
         pages.append("".join(page_text))
 
     text = "\n".join(pages)
@@ -2825,6 +3106,408 @@ def _pdf_extract_text(data: bytes) -> Dict[str, Any]:
     if not text.strip():
         return {"pages": len(pages), "characters": 0, "text": ""}
     return {"pages": len(pages), "characters": len(text), "text": text[:MAX_TEXT_CHARS]}
+
+
+# ── Reading-order extraction (2026-08-10, ed-parent-guide run) ───────────────
+# The recall-bearing extractor above reports text in OBJECT order, which is
+# routinely not reading order (that run's page 2 preceded page 1). This is a
+# deliberately SEPARATE pass — the recall channels stay pinned to the original
+# extractor so ordering work can never move a corpus scoreboard — that tracks
+# the text-positioning operators (Tm/Td/TD/TL/T*) well enough to group lines
+# and sort them top-down. Honest limits, disclosed in the output note: no CTM
+# math (rotated pages and transformed Form XObjects keep their local
+# coordinates) and single-column assumptions (multi-column pages interleave).
+
+_TEXT_POS_OPS = re.compile(
+    rb"/(?P<font>\w+)\s+[\d.+-]+\s+Tf"
+    rb"|\((?P<lit>(?:[^()\\]|\\.)*)\)\s*(?P<litop>Tj|'|\")"
+    rb"|<(?P<hex>[0-9A-Fa-f\s]+)>\s*Tj"
+    rb"|\[(?P<tj>(?:[^\]\\]|\\.)*)\]\s*TJ"
+    rb"|(?P<tm>(?:[\d.+-]+\s+){5}[\d.+-]+)\s+Tm"
+    rb"|(?P<td>[\d.+-]+\s+[\d.+-]+)\s+(?P<tdop>Td|TD)"
+    rb"|(?P<tl>[\d.+-]+)\s+TL"
+    rb"|(?P<tstar>T\*)"
+    rb"|(?P<bt>\bBT\b)"
+    rb"|/(?P<xobj>\w+)\s+Do\b"
+)
+
+
+def _pdf_extract_text_ordered(data: bytes) -> Dict[str, Any]:
+    index: Dict[int, Tuple[bytes, Optional[bytes]]] = {}
+    for number, dictionary, raw in _pdf_iter_stream_objects(data):
+        index[number] = (dictionary, raw)
+
+    def page_fonts(page_dict: bytes) -> Dict[str, Dict[str, Any]]:
+        resources = _dict_value(index, page_dict, "Resources")
+        seen_parents = 0
+        node = page_dict
+        while resources is None and seen_parents < 8:
+            parent = re.search(rb"/Parent\s+(\d+)\s+0\s+R", node)
+            if not parent:
+                break
+            entry = index.get(int(parent.group(1)))
+            if not entry:
+                break
+            node = entry[0]
+            resources = _dict_value(index, node, "Resources")
+            seen_parents += 1
+        return _fonts_from_resources(index, resources)
+
+    pages: List[List[str]] = []
+    for number, (dictionary, raw) in sorted(index.items(), key=lambda item: item[0]):
+        if not re.search(rb"/Type\s*/Page\b", dictionary) or re.search(rb"/Type\s*/Pages\b", dictionary):
+            continue
+        content_refs: List[int] = []
+        direct = re.search(rb"/Contents\s+(\d+)\s+0\s+R", dictionary)
+        if direct:
+            ref = int(direct.group(1))
+            if ref in index:
+                content_refs.append(ref)
+            else:
+                array_obj = re.search(
+                    rb"(?:^|[\r\n])" + str(ref).encode("ascii") + rb"\s+0\s+obj\s*\[([^\]]*)\]",
+                    data,
+                )
+                if array_obj:
+                    content_refs.extend(
+                        int(item) for item in re.findall(rb"(\d+)\s+0\s+R", array_obj.group(1))
+                    )
+        else:
+            array = re.search(rb"/Contents\s*\[([^\]]*)\]", dictionary)
+            if array:
+                content_refs.extend(int(ref) for ref in re.findall(rb"(\d+)\s+0\s+R", array.group(1)))
+        fonts = page_fonts(dictionary)
+        runs: List[Tuple[float, float, int, str]] = []
+        seq = [0]
+        draw_budget = [4000]
+
+        def collect(content: bytes, own_fonts: Dict[str, Dict[str, Any]], resources: Optional[bytes], depth: int, stack: Tuple[int, ...]) -> None:
+            if depth > 6 or not content:
+                return
+            xobjects = _dict_value(index, resources, "XObject")
+            next_stack = stack
+            current: Optional[Dict[str, Any]] = None
+            # Text LINE matrix [a b c d e f]. Td/TD/T*/TL operands are in
+            # UNSCALED text space — a `-1.15 Td` line advance under an
+            # `11.04 ... Tm` moves ~12.7pt on the page — so translations must
+            # go through the matrix, not straight onto x/y (the first cut did
+            # exactly that and split words across line bins).
+            tm = [1.0, 0.0, 0.0, 1.0, 0.0, 0.0]
+            leading = 0.0
+
+            def translate(dx: float, dy: float) -> None:
+                tm[4] += dx * tm[0] + dy * tm[2]
+                tm[5] += dx * tm[1] + dy * tm[3]
+
+            def emit(piece: str) -> None:
+                if piece:
+                    seq[0] += 1
+                    runs.append((tm[5], tm[4], seq[0], piece))
+
+            for match in _TEXT_POS_OPS.finditer(content):
+                group = match.lastgroup
+                if group == "font":
+                    current = own_fonts.get(match.group("font").decode("latin1"))
+                elif group == "litop":
+                    if match.group("litop") in (b"'", b'"'):
+                        translate(0.0, -leading)
+                    emit(_decode_literal_string(match.group("lit"), current))
+                elif group == "hex":
+                    emit(_decode_hex_string(match.group("hex"), current))
+                elif group == "tj":
+                    pieces: List[str] = []
+                    for lit, hexs, number_str in _TJ_PIECES.findall(match.group("tj")):
+                        if lit:
+                            pieces.append(_decode_literal_string(lit, current))
+                        elif hexs:
+                            pieces.append(_decode_hex_string(hexs, current))
+                        elif number_str and abs(float(number_str)) >= _TJ_SPACE_THRESHOLD:
+                            pieces.append(" ")
+                    emit("".join(pieces))
+                elif group == "tm":
+                    values = [float(value) for value in match.group("tm").split()]
+                    if len(values) == 6:
+                        tm = values
+                elif group == "tdop":
+                    dx, dy = (float(value) for value in match.group("td").split())
+                    if match.group("tdop") == b"TD":
+                        leading = -dy
+                    translate(dx, dy)
+                elif group == "tl":
+                    leading = float(match.group("tl"))
+                elif group == "tstar":
+                    translate(0.0, -leading)
+                elif group == "bt":
+                    tm = [1.0, 0.0, 0.0, 1.0, 0.0, 0.0]
+                    leading = 0.0
+                elif group == "xobj":
+                    if not xobjects or draw_budget[0] <= 0:
+                        continue
+                    named = re.search(
+                        rb"/" + re.escape(match.group("xobj")) + rb"\s+(\d+)\s+0\s+R", xobjects
+                    )
+                    if not named:
+                        continue
+                    xnum = int(named.group(1))
+                    if xnum in stack:
+                        continue
+                    xentry = index.get(xnum)
+                    if not xentry or xentry[1] is None or not re.search(rb"/Subtype\s*/Form\b", xentry[0]):
+                        continue
+                    xcontent = _decompress_stream(xentry[0], xentry[1])
+                    if not xcontent:
+                        continue
+                    xresources = _dict_value(index, xentry[0], "Resources")
+                    xfonts = own_fonts
+                    if xresources is not None:
+                        xfont_dict = _fonts_from_resources(index, xresources)
+                        if xfont_dict:
+                            xfonts = {**own_fonts, **xfont_dict}
+                    draw_budget[0] -= 1
+                    collect(
+                        xcontent,
+                        xfonts,
+                        xresources if xresources is not None else resources,
+                        depth + 1,
+                        next_stack + (xnum,),
+                    )
+
+        # The /Contents array is ONE logical stream: PDF splits it anywhere
+        # between lexical tokens, so fonts, text matrices, and even a single
+        # TJ array routinely straddle stream boundaries (this corpus letter
+        # splits each page into 8 streams — parsing them separately dropped a
+        # whole line and every cross-boundary font binding). Concatenate
+        # before parsing, as the spec instructs readers to.
+        page_resources = _dict_value(index, dictionary, "Resources")
+        stream_parts: List[bytes] = []
+        for ref in content_refs:
+            entry = index.get(ref)
+            if not entry or entry[1] is None:
+                continue
+            part = _decompress_stream(entry[0], entry[1])
+            if part:
+                stream_parts.append(part)
+        collect(b"\n".join(stream_parts), fonts, page_resources, 0, ())
+        # Group runs into lines by y (2pt tolerance via rounding), order lines
+        # top-down, and keep a stable x-then-sequence order within a line
+        # (consecutive show ops share their positioning op's x; stability
+        # preserves their emission order).
+        lines: Dict[int, List[Tuple[float, int, str]]] = {}
+        for y_value, x_value, sequence, piece in runs:
+            key = int(round(y_value / 2.0))
+            lines.setdefault(key, []).append((x_value, sequence, piece))
+        ordered: List[str] = []
+        for key in sorted(lines.keys(), reverse=True):
+            entries = sorted(lines[key], key=lambda item: item[0])
+            ordered.append("".join(piece for _, _, piece in entries))
+        pages.append(ordered)
+
+    page_texts = ["\n".join(lines) for lines in pages]
+    text = "\n\n".join(page_texts)
+    if not text.strip():
+        return {"pages": len(pages), "characters": 0, "text": "", "pageTexts": []}
+    return {
+        "pages": len(pages),
+        "characters": len(text),
+        "text": text[:MAX_TEXT_CHARS],
+        "pageTexts": [value[:MAX_TEXT_CHARS] for value in page_texts],
+    }
+
+
+# ── Link-annotation extraction (2026-08-10, ed-parent-guide run) ─────────────
+# Source PDFs carry navigation the text layer never shows: URI annotations and
+# internal GoTo links (footnote markers → footnotes). Both the plan author and
+# the independent verifier had to hand-write pdfjs scripts to see them, and a
+# rebuild that silently flattens them loses real function. Deterministic,
+# stdlib-only, same byte-level machinery as the extractors above.
+
+_ANNOT_STRING_ESCAPES = {
+    b"n": "\n", b"r": "\r", b"t": "\t", b"b": "\b", b"f": "\f",
+    b"(": "(", b")": ")", b"\\": "\\",
+}
+
+
+def _annot_string(value: bytes) -> str:
+    out: List[str] = []
+    i = 0
+    while i < len(value):
+        ch = value[i:i + 1]
+        if ch == b"\\" and i + 1 < len(value):
+            nxt = value[i + 1:i + 2]
+            if nxt in _ANNOT_STRING_ESCAPES:
+                out.append(_ANNOT_STRING_ESCAPES[nxt])
+                i += 2
+                continue
+            if nxt.isdigit():
+                octal = value[i + 1:i + 4]
+                digits = octal[: len(octal) - len(octal.lstrip(b"01234567"))] or octal[:1]
+                try:
+                    out.append(chr(int(digits[:3], 8)))
+                except ValueError:
+                    pass
+                i += 1 + len(digits[:3])
+                continue
+            i += 1
+            continue
+        out.append(ch.decode("latin1"))
+        i += 1
+    return "".join(out)
+
+
+def _pdf_extract_annotations(data: bytes) -> Dict[str, Any]:
+    index: Dict[int, Tuple[bytes, Optional[bytes]]] = {}
+    for number, dictionary, raw in _pdf_iter_stream_objects(data):
+        index[number] = (dictionary, raw)
+
+    page_numbers: List[int] = []
+    for number, (dictionary, raw) in sorted(index.items(), key=lambda item: item[0]):
+        if re.search(rb"/Type\s*/Page\b", dictionary) and not re.search(rb"/Type\s*/Pages\b", dictionary):
+            page_numbers.append(number)
+    page_object_to_index = {value: position + 1 for position, value in enumerate(page_numbers)}
+
+    def annot_refs_for_page(dictionary: bytes) -> List[int]:
+        inline = re.search(rb"/Annots\s*\[([^\]]*)\]", dictionary)
+        if inline:
+            return [int(ref) for ref in re.findall(rb"(\d+)\s+0\s+R", inline.group(1))]
+        ref = re.search(rb"/Annots\s+(\d+)\s+0\s+R", dictionary)
+        if ref:
+            # The array object may have been yielded into the index (incl. from
+            # inside an /ObjStm container, where a raw-byte scan never sees it).
+            entry = index.get(int(ref.group(1)))
+            if entry and entry[0].lstrip().startswith(b"["):
+                return [int(item) for item in re.findall(rb"(\d+)\s+0\s+R", entry[0])]
+            array_obj = re.search(
+                rb"(?:^|[\r\n])" + ref.group(1) + rb"\s+0\s+obj\s*\[([^\]]*)\]", data
+            )
+            if array_obj:
+                return [int(item) for item in re.findall(rb"(\d+)\s+0\s+R", array_obj.group(1))]
+        return []
+
+    def resolve_action(dictionary: bytes) -> Optional[bytes]:
+        action = _dict_value(index, dictionary, "A")
+        return action
+
+    pages_out: List[Dict[str, Any]] = []
+    totals = {"uri": 0, "internal": 0, "other": 0}
+    for page_number in page_numbers:
+        dictionary = index[page_number][0]
+        links: List[Dict[str, Any]] = []
+        other: Dict[str, int] = {}
+        for annot_ref in annot_refs_for_page(dictionary):
+            entry = index.get(annot_ref)
+            if not entry:
+                continue
+            annot = entry[0]
+            subtype_match = re.search(rb"/Subtype\s*/(\w+)", annot)
+            subtype = subtype_match.group(1).decode("latin1") if subtype_match else "Unknown"
+            if subtype != "Link":
+                totals["other"] += 1
+                other[subtype] = other.get(subtype, 0) + 1
+                continue
+            action = resolve_action(annot)
+            uri_match = None
+            if action is not None and re.search(rb"/S\s*/URI\b", action):
+                uri_match = (
+                    re.search(rb"/URI\s*\(((?:[^()\\]|\\.)*)\)", action)
+                    or re.search(rb"/URI\s*<([0-9A-Fa-f\s]+)>", action)
+                )
+            if uri_match:
+                raw_uri = uri_match.group(1)
+                if b"(" not in uri_match.group(0)[:6] and re.fullmatch(rb"[0-9A-Fa-f\s]+", raw_uri):
+                    try:
+                        uri_value = bytes.fromhex(raw_uri.replace(b" ", b"").decode("ascii")).decode("latin1")
+                    except ValueError:
+                        uri_value = ""
+                else:
+                    uri_value = _annot_string(raw_uri)
+                totals["uri"] += 1
+                links.append({"kind": "uri", "uri": uri_value})
+                continue
+            dest_page = None
+            dest = re.search(rb"/(?:Dest|D)\s*\[\s*(\d+)\s+0\s+R", annot)
+            if not dest and action is not None and re.search(rb"/S\s*/GoTo\b", action):
+                dest = re.search(rb"/D\s*\[\s*(\d+)\s+0\s+R", action)
+            if dest:
+                dest_page = page_object_to_index.get(int(dest.group(1)))
+                totals["internal"] += 1
+                links.append({"kind": "internal", "targetPage": dest_page})
+                continue
+            named = re.search(rb"/(?:Dest|D)\s*(?:\(((?:[^()\\]|\\.)*)\)|/(\w+))", annot) or (
+                re.search(rb"/D\s*(?:\(((?:[^()\\]|\\.)*)\)|/(\w+))", action) if action is not None else None
+            )
+            if named:
+                totals["internal"] += 1
+                name_bytes = named.group(1) or named.group(2) or b""
+                links.append({"kind": "internal", "namedDestination": _annot_string(name_bytes)})
+                continue
+            totals["other"] += 1
+            other["LinkUnresolved"] = other.get("LinkUnresolved", 0) + 1
+        pages_out.append({"page": page_object_to_index[page_number], "links": links, "otherAnnotations": other})
+
+    return {
+        "pages": pages_out,
+        "totals": totals,
+        "note": (
+            "Deterministic byte-level scan. Pages are numbered in object order (matching "
+            "extract-text), which is usually but not always presentation order. Named "
+            "destinations are reported unresolved."
+        ),
+    }
+
+
+def _annotation_link_warnings(annotations: Dict[str, Any], validated: Dict[str, Any]) -> List[str]:
+    """Warning-only cross-check of the plan's links against the source's link
+    annotations. Never fails a plan — it names what may have been flattened."""
+
+    warnings: List[str] = []
+    plan_hrefs: List[str] = []
+    for block in validated["blocks"]:
+        for runs_value in [block.get("runs")] + list(block.get("item_runs") or []):
+            for run in runs_value or []:
+                if isinstance(run, dict) and run.get("href"):
+                    plan_hrefs.append(str(run["href"]))
+        for row_entry in block.get("cell_runs") or []:
+            for cell_entry in row_entry or []:
+                for run in cell_entry or []:
+                    if isinstance(run, dict) and run.get("href"):
+                        plan_hrefs.append(str(run["href"]))
+        if block.get("type") == "link" and block.get("url"):
+            plan_hrefs.append(str(block["url"]))
+
+    totals = annotations.get("totals") or {}
+    internal_count = int(totals.get("internal") or 0)
+    if internal_count and not any(href.startswith("#") for href in plan_hrefs):
+        warnings.append(
+            f"The source carries {internal_count} internal link annotation(s) (e.g. footnote "
+            "markers linking to footnotes) but the plan declares no '#' anchors — in-document "
+            "navigation may have been flattened to plain text. Declare block ids and '#id' "
+            "runs to carry it."
+        )
+
+    def _schemeless(value: str) -> str:
+        stripped = re.sub(r"^https?://", "", value.strip().lower())
+        return stripped.rstrip("/")
+
+    annotation_uris = [
+        str(link.get("uri") or "")
+        for page in annotations.get("pages") or []
+        for link in page.get("links") or []
+        if link.get("kind") == "uri"
+    ]
+    for href in plan_hrefs:
+        if not href.lower().startswith(("http://", "https://")):
+            continue
+        for uri in annotation_uris:
+            if not uri.lower().startswith(("http://", "https://")):
+                continue
+            if _schemeless(href) == _schemeless(uri) and href.split(":", 1)[0].lower() != uri.split(":", 1)[0].lower():
+                warnings.append(
+                    f"Link scheme differs from the source annotation: plan has '{href}' but the "
+                    f"source annotation carries '{uri}'. Keep the source's scheme unless there is "
+                    "a reason not to."
+                )
+                break
+    return warnings
 
 
 def _tokens(text: str) -> "Counter[str]":
@@ -2980,7 +3663,9 @@ def merge_plans_command(args: argparse.Namespace) -> Dict[str, Any]:
 def extract_text_command(args: argparse.Namespace) -> Dict[str, Any]:
     source = Path(args.source).resolve()
     receipt = ensure_source_pdf(source)
-    extraction = _pdf_extract_text(source.read_bytes())
+    data = source.read_bytes()
+    ordered = bool(getattr(args, "ordered", False))
+    extraction = _pdf_extract_text_ordered(data) if ordered else _pdf_extract_text(data)
     token_count = sum(_tokens(extraction["text"]).values())
     result = {
         "ok": True,
@@ -2988,15 +3673,421 @@ def extract_text_command(args: argparse.Namespace) -> Dict[str, Any]:
         "pages": extraction["pages"],
         "characters": extraction["characters"],
         "tokens": token_count,
+        "ordered": ordered,
         "note": (
-            "Deterministic extraction (literal strings + ToUnicode CMaps). Low counts on a "
-            "document that visibly contains text mean the encoding is out of scope, not that "
-            "the document is empty - fall back to reading it."
+            (
+                "Reading-order extraction: lines grouped by text-positioning operators and "
+                "sorted top-down per page. Honest limits: no CTM math (rotated pages and "
+                "transformed Form XObjects keep local coordinates) and single-column "
+                "assumptions (multi-column pages interleave). The unordered channel remains "
+                "the recall reference."
+            )
+            if ordered
+            else (
+                "Deterministic extraction (literal strings + ToUnicode CMaps). Low counts on a "
+                "document that visibly contains text mean the encoding is out of scope, not that "
+                "the document is empty - fall back to reading it. Output is in OBJECT order, "
+                "not reading order; pass --ordered for a best-effort reading-order view."
+            )
         ),
     }
     if args.include_text:
         result["text"] = extraction["text"]
+        if ordered:
+            result["pageTexts"] = extraction.get("pageTexts") or []
     return result
+
+
+def extract_annotations_command(args: argparse.Namespace) -> Dict[str, Any]:
+    source = Path(args.source).resolve()
+    receipt = ensure_source_pdf(source)
+    annotations = _pdf_extract_annotations(source.read_bytes())
+    return {
+        "ok": True,
+        "source": receipt,
+        "pages": annotations["pages"],
+        "totals": annotations["totals"],
+        "note": annotations["note"],
+    }
+
+
+# ── Reviewer evidence summary (round 15) ─────────────────────────────────────
+# The run artifacts are machine-honest JSON, which is exactly wrong for the
+# person who has to sign off: an accessibility coordinator or administrator
+# needs ONE page they can open, read, and file, without a JSON viewer or a
+# git checkout. summary-report folds a run's evidence (accessibility report,
+# optional before-validation, optional verification report, privacy receipt)
+# into a single self-contained HTML page in plain language. It ADDS nothing:
+# every number is read from the stamped artifacts, and the honesty language
+# (review required, no compliance claim) is carried through verbatim.
+
+_VERDICT_PLAIN = {
+    "pdf_generated_validation_passed_review_required": (
+        "A tagged PDF was generated and local veraPDF validation passed every PDF/UA-1 rule. "
+        "A person must still compare meaning and fidelity with the source before distribution."
+    ),
+    "pdf_generated_with_known_issues": (
+        "A tagged PDF was generated, but veraPDF found unresolved PDF/UA rules; see the failed-rule list."
+    ),
+    "pdf_generated_unverified_review_required": (
+        "A tagged PDF was generated but local PDF/UA validation did not complete, so its conformance is unverified."
+    ),
+    "html_only_review_required": (
+        "The semantic accessible HTML rebuild exists, but this machine could not generate a tagged PDF "
+        "(that tier needs a local Chromium renderer). The HTML, report, and receipt are the deliverables."
+    ),
+    "blocked": "The document type or plan could not be processed safely; see the report.",
+}
+
+
+def _load_json_quiet(path: Optional[Path]) -> Optional[Dict[str, Any]]:
+    if not path or not path.is_file():
+        return None
+    try:
+        loaded = json.loads(path.read_text(encoding="utf-8"))
+        return loaded if isinstance(loaded, dict) else None
+    except (OSError, ValueError):
+        return None
+
+
+def _find_one(run_dir: Path, suffix: str) -> Optional[Path]:
+    matches = sorted(run_dir.glob("*" + suffix))
+    return matches[0] if matches else None
+
+
+def _show(value: Any) -> str:
+    """Reviewer-page formatter: zeros and booleans must PRINT (esc() folds
+    falsy values to empty strings, which read as missing data on a page whose
+    whole job is showing '0 discrepancies' and 'no')."""
+    if value is None:
+        return "not recorded"
+    if isinstance(value, bool):
+        return "yes" if value else "no"
+    return esc(value) or "0"
+
+
+def _newest_by_created(paths: List[Path]) -> Optional[Dict[str, Any]]:
+    """Pick the record with the latest createdAt stamp (a run directory can
+    hold several generations, e.g. a v1 and a v2 report)."""
+    best: Optional[Dict[str, Any]] = None
+    best_stamp = ""
+    for path in paths:
+        loaded = _load_json_quiet(path)
+        if not loaded:
+            continue
+        stamp = str(loaded.get("createdAt") or "")
+        if best is None or stamp > best_stamp:
+            best, best_stamp = loaded, stamp
+    return best
+
+
+def batch_summary_command(args: argparse.Namespace) -> Dict[str, Any]:
+    """One scoreboard page across many runs — the pilot deliverable. Adds
+    nothing: every cell is read from each run's stamped artifacts."""
+    runs_dir = Path(args.runs_dir).resolve()
+    if not runs_dir.is_dir():
+        raise PortableError("batch-summary needs an existing directory of run directories.", 2)
+    rows: List[Dict[str, Any]] = []
+    for child in sorted(runs_dir.iterdir()):
+        if not child.is_dir():
+            continue
+        reports = list(child.glob("*-accessibility-report.json")) + list(child.glob("*/*-accessibility-report.json"))
+        report = _newest_by_created(reports)
+        if not report:
+            continue
+        checks = report.get("checks") or {}
+        verification = _newest_by_created(
+            list(child.glob("verification-report*.json")) + list(child.glob("*/verification-report*.json"))
+        )
+        before = _load_json_quiet(child / "before-verapdf.json")
+        ua = checks.get("pdfUaValidation") or {}
+        src = checks.get("sourceTextRecall") or {}
+        counts = (verification or {}).get("counts") or {}
+        rows.append({
+            "run": child.name,
+            "document": str((report.get("source") or {}).get("basename") or child.name),
+            "verdict": str(report.get("verdict") or ""),
+            "beforeFailedRules": before.get("failedRuleCount") if before else None,
+            "uaStatus": ua.get("status"),
+            "uaCompliant": ua.get("compliant"),
+            "srcRecall": src.get("recall") if src.get("status") == "completed" else None,
+            "srcStatus": src.get("status"),
+            "verified": counts.get("verified"),
+            "items": counts.get("items"),
+            "discrepancies": counts.get("discrepancies"),
+            "verificationResult": (verification or {}).get("result"),
+        })
+    if not rows:
+        raise PortableError("No run directories with accessibility reports found.", 2)
+
+    totals = {
+        "documents": len(rows),
+        "uaPasses": sum(1 for r in rows if r["uaCompliant"] is True),
+        "uaRuns": sum(1 for r in rows if r["uaStatus"] == "completed"),
+        "verifiedItems": sum(int(r["verified"] or 0) for r in rows),
+        "worksheetItems": sum(int(r["items"] or 0) for r in rows),
+        "discrepancies": sum(int(r["discrepancies"] or 0) for r in rows),
+        "verificationRuns": sum(1 for r in rows if r["verificationResult"]),
+        "blocked": sum(1 for r in rows if r["verdict"] == "blocked"),
+    }
+
+    def _cell_recall(r: Dict[str, Any]) -> str:
+        if r["srcRecall"] is None:
+            return "not measurable" if r["srcStatus"] != "completed" else "n/a"
+        return f"{float(r['srcRecall']) * 100:.1f}%"
+
+    def _cell_ua(r: Dict[str, Any]) -> str:
+        if r["uaStatus"] != "completed":
+            return "not run"
+        return "PASS" if r["uaCompliant"] else "FAIL"
+
+    body_rows = "".join(
+        "<tr><th scope=\"row\">" + esc(r["document"]) + "<br><small>" + esc(r["run"]) + "</small></th>"
+        + "<td>" + (_show(r["beforeFailedRules"]) + " failed rules" if r["beforeFailedRules"] is not None else "not recorded") + "</td>"
+        + "<td>" + _cell_ua(r) + "</td>"
+        + "<td>" + _cell_recall(r) + "</td>"
+        + "<td>" + (_show(r["verified"]) + "/" + _show(r["items"]) + " (" + _show(r["discrepancies"]) + " discrepancies)" if r["items"] is not None else "not run") + "</td>"
+        + "<td>" + esc(r["verdict"]) + "</td></tr>"
+        for r in rows
+    )
+    page = f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Remediation scoreboard: {esc(args.title or runs_dir.name)}</title>
+<style>
+:root {{ color-scheme: light; }}
+html {{ background: #f5f6f8; color: #16202b; font: 15px/1.55 Arial, Helvetica, sans-serif; }}
+body {{ margin: 0 auto; max-width: 62rem; padding: 1.2rem; }}
+main {{ background: #ffffff; border: 1px solid #c9d1da; border-radius: 10px; padding: 1.4rem 1.7rem; }}
+h1 {{ font-size: 1.4rem; border-bottom: 3px solid #1d4ed8; padding-bottom: .35rem; }}
+table {{ border-collapse: collapse; width: 100%; margin: .9rem 0; font-size: .9rem; }}
+th, td {{ border: 1px solid #64748b; padding: .45rem .55rem; text-align: left; vertical-align: top; }}
+thead th {{ background: #e8edf3; }}
+tbody th {{ font-weight: 600; }}
+tfoot td, tfoot th {{ background: #eef3ff; font-weight: 700; }}
+small {{ color: #475569; font-weight: 400; }}
+.limits {{ border-top: 2px solid #64748b; margin-top: 1.6rem; padding-top: .8rem; font-size: .92rem; }}
+</style>
+</head>
+<body>
+<main>
+<h1>Remediation scoreboard: {esc(args.title or runs_dir.name)}</h1>
+<p>Assembled {esc(utc_now())} from the stamped evidence files of {totals['documents']} run(s); nothing is added or estimated.
+Per-document detail lives in each run's own evidence summary.</p>
+<div style="overflow-x:auto">
+<table>
+<thead><tr><th scope="col">Document (run)</th><th scope="col">Original PDF/UA-1</th><th scope="col">Rebuild PDF/UA-1</th><th scope="col">Source text carried</th><th scope="col">Independent verification</th><th scope="col">Outcome</th></tr></thead>
+<tbody>{body_rows}</tbody>
+<tfoot><tr><th scope="row">Totals</th><td>&#8212;</td><td>{totals['uaPasses']}/{totals['uaRuns']} validated runs passed</td><td>&#8212;</td><td>{totals['verifiedItems']}/{totals['worksheetItems']} items attested; {totals['discrepancies']} open discrepancies across {totals['verificationRuns']} verified runs</td><td>{totals['blocked']} refused</td></tr></tfoot>
+</table>
+</div>
+<div class="limits">
+<p>This scoreboard never determines legal compliance. "PASS" means the rebuilt file passed every machine-checkable
+PDF/UA-1 rule in a local veraPDF run; meaning, fidelity, and distribution decisions belong to a person. Refused
+documents (interactive forms, signed records, legal records) are counted, not hidden.</p>
+</div>
+</main>
+</body>
+</html>
+"""
+    out_path = Path(args.out).resolve() if getattr(args, "out", None) else runs_dir / "scoreboard.html"
+    out_path.write_text(page, encoding="utf-8")
+    return {"ok": True, "scoreboard": out_path.name, "totals": totals, "rows": len(rows)}
+
+
+def summary_report_command(args: argparse.Namespace) -> Dict[str, Any]:
+    run_dir = Path(args.run_dir).resolve()
+    if not run_dir.is_dir():
+        raise PortableError("summary-report needs an existing run directory.", 2)
+    report_path = Path(args.report).resolve() if getattr(args, "report", None) else _find_one(run_dir, "-accessibility-report.json")
+    report = _load_json_quiet(report_path)
+    if not report:
+        raise PortableError("No *-accessibility-report.json found in the run directory.", 2)
+    before = _load_json_quiet(Path(args.before_validation).resolve()) if getattr(args, "before_validation", None) else _load_json_quiet(run_dir / "before-verapdf.json")
+    verification = _load_json_quiet(Path(args.verification).resolve()) if getattr(args, "verification", None) else (
+        _load_json_quiet(_find_one(run_dir, "verification-report-v2.json"))
+        or _load_json_quiet(_find_one(run_dir, "verification-report.json"))
+    )
+    receipt = _load_json_quiet(_find_one(run_dir, "-privacy-receipt.json"))
+
+    checks = report.get("checks") or {}
+    source = report.get("source") or {}
+    ua = checks.get("pdfUaValidation") or {}
+    src_recall = checks.get("sourceTextRecall") or {}
+    out_recall = checks.get("outputTextRecall") or {}
+    audit = checks.get("staticHtmlAudit") or {}
+    verdict = str(report.get("verdict") or "")
+    doc_name = str(source.get("basename") or "document")
+    created = str(report.get("createdAt") or "")
+
+    def _pct(value: Any) -> str:
+        try:
+            return f"{float(value) * 100:.1f}%"
+        except (TypeError, ValueError):
+            return "not measured"
+
+    rows: List[str] = []
+
+    def row(label: str, before_val: str, after_val: str) -> None:
+        rows.append(
+            f"<tr><th scope=\"row\">{esc(label)}</th><td>{esc(before_val)}</td><td>{esc(after_val)}</td></tr>"
+        )
+
+    if before:
+        before_rules = before.get("failedRules") or []
+        before_checks = sum(int(rule.get("failedChecks") or 0) for rule in before_rules if isinstance(rule, dict))
+        row(
+            "PDF/UA-1 validation (veraPDF, ISO 14289-1)",
+            ("FAILED: " + str(before.get("failedRuleCount")) + " rules, " + str(before_checks) + " checks")
+            if before.get("compliant") is False else ("PASSED" if before.get("compliant") else "not run"),
+            ("PASSED: 0 failed rules" if ua.get("compliant") else ("FAILED: " + str(ua.get("failedRuleCount")) + " rules")) if ua.get("status") == "completed" else "not run on this machine",
+        )
+    failed_before_list = ""
+    if before and before.get("failedRules"):
+        items = "".join(
+            "<li><strong>" + esc(rule.get("clause")) + "</strong> (" + _show(rule.get("failedChecks")) + " occurrence(s)): "
+            + esc(str(rule.get("description") or "")[:220]) + "</li>"
+            for rule in before.get("failedRules") if isinstance(rule, dict)
+        )
+        failed_before_list = (
+            "<details><summary>What the original file failed (rule by rule)</summary><ul>" + items + "</ul></details>"
+        )
+
+    recall_block = (
+        "<tr><th scope=\"row\">Source text carried into the rebuild</th><td>reference</td><td>"
+        + esc(_pct(src_recall.get("recall")) if src_recall.get("status") == "completed" else ("not measurable: " + str(src_recall.get("status") or "scanned source")))
+        + (" (" + _show(src_recall.get("missingTokens")) + " of " + _show(src_recall.get("sourceTokens")) + " words missing)" if src_recall.get("status") == "completed" else "")
+        + "</td></tr>"
+        + "<tr><th scope=\"row\">Rebuild text carried into the tagged PDF</th><td>&#8212;</td><td>"
+        + esc(_pct(out_recall.get("recall")) if out_recall.get("status") == "completed" else "no tagged PDF on this run")
+        + "</td></tr>"
+    )
+
+    if verification:
+        counts = verification.get("counts") or {}
+        verifier = verification.get("verifier") or {}
+        result = str(verification.get("result") or "")
+        verification_html = (
+            "<p><strong>Result: " + esc(result or "not run") + ".</strong> "
+            + _show(counts.get("verified")) + " of " + _show(counts.get("items"))
+            + " checks attested by an independent reader who did not build the rebuild ("
+            + _show(counts.get("discrepancies")) + " discrepancies, "
+            + _show(counts.get("unreadable")) + " unreadable).</p>"
+            + ("<p>Reader attestation: " + esc(verifier.get("statement")) + "</p>" if verifier.get("statement") else "")
+        )
+        if verification.get("discrepancies"):
+            verification_html += "<ul>" + "".join(
+                "<li>" + esc((item or {}).get("note")) + "</li>" for item in verification["discrepancies"]
+            ) + "</ul>"
+    else:
+        verification_html = (
+            "<p><strong>Not run.</strong> The independent second-reader check was not performed for this run; "
+            "the rebuild rests on its author's self-report plus the automated evidence above.</p>"
+        )
+
+    manual = report.get("manualReview") or []
+    manual_html = "<ol>" + "".join("<li>" + esc_lines(str(note)) + "</li>" for note in manual) + "</ol>" if manual else "<p>None recorded.</p>"
+
+    receipt_html = ""
+    if receipt:
+        receipt_html = (
+            "<ul>"
+            "<li>Network policy while processing the document: <strong>" + esc(receipt.get("documentNetworkPolicy")) + "</strong>; "
+            "requests blocked by the renderer: " + _show(receipt.get("documentRequestsBlockedByRenderer")) + ".</li>"
+            "<li>AlloFlow service called by the scripts: " + _show(receipt.get("alloflowServiceInvokedByScripts")) + "; "
+            "model API called by the scripts: " + _show(receipt.get("modelApiCalledByScripts")) + "; "
+            "document text logged by the scripts: " + _show(receipt.get("documentTextLoggedByScripts")) + ".</li>"
+            "<li>Scope: " + esc(receipt.get("assuranceScope")) + "</li>"
+            "</ul>"
+        )
+
+    artifacts = report.get("artifacts") or {}
+    artifact_list = "".join(
+        "<li>" + esc(key) + ": <code>" + esc(value) + "</code></li>" for key, value in artifacts.items() if value
+    )
+
+    page = f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Accessibility remediation evidence: {esc(doc_name)}</title>
+<style>
+:root {{ color-scheme: light; }}
+html {{ background: #f5f6f8; color: #16202b; font: 15px/1.55 Arial, Helvetica, sans-serif; }}
+body {{ margin: 0 auto; max-width: 52rem; padding: 1.2rem; }}
+main {{ background: #ffffff; border: 1px solid #c9d1da; border-radius: 10px; padding: 1.4rem 1.7rem 1.7rem; }}
+h1 {{ font-size: 1.45rem; line-height: 1.25; border-bottom: 3px solid #1d4ed8; padding-bottom: .4rem; }}
+h2 {{ font-size: 1.12rem; margin-top: 1.7rem; }}
+table {{ border-collapse: collapse; width: 100%; margin: .8rem 0; }}
+th, td {{ border: 1px solid #64748b; padding: .5rem .6rem; text-align: left; vertical-align: top; }}
+thead th {{ background: #e8edf3; }}
+tbody th {{ background: #f2f5f8; font-weight: 600; width: 40%; }}
+.verdict {{ border: 2px solid #1d4ed8; border-radius: 8px; background: #eef3ff; padding: .8rem 1rem; margin: 1rem 0; }}
+.limits {{ border-top: 2px solid #64748b; margin-top: 2rem; padding-top: .9rem; font-size: .92rem; }}
+details {{ margin: .6rem 0; }}
+code {{ background: #f2f5f8; padding: 0 .25rem; }}
+footer {{ margin-top: 1rem; font-size: .85rem; color: #3d4b5c; }}
+@media print {{ html {{ background: #ffffff; }} main {{ border: 0; padding: 0; }} }}
+</style>
+</head>
+<body>
+<main>
+<h1>Accessibility remediation evidence<br>{esc(doc_name)}</h1>
+<p>Prepared {esc(created)} by the AlloFlow portable remediation workflow, engine {esc(report.get('alloflowPortableVersion') or VERSION)}.
+Every figure on this page is read from the run's stamped evidence files; nothing is added or estimated.</p>
+
+<div class="verdict"><strong>Outcome:</strong> {esc(_VERDICT_PLAIN.get(verdict, verdict or 'see report'))}</div>
+
+<h2>Before and after</h2>
+<table>
+<caption>Independent, deterministic measurements (no AI judgement involved)</caption>
+<thead><tr><th scope="col">Measure</th><th scope="col">Original file</th><th scope="col">Accessible rebuild</th></tr></thead>
+<tbody>
+{''.join(rows)}
+{recall_block}
+<tr><th scope="row">Structural audit of the rebuilt HTML</th><td>&#8212;</td><td>{_show(len(audit.get('errors') or []))} errors, {_show(len(audit.get('warnings') or []))} warnings ({_show((audit.get('counts') or {}).get('headings'))} headings, {_show((audit.get('counts') or {}).get('links'))} links, {_show((audit.get('counts') or {}).get('tables'))} tables, {_show((audit.get('counts') or {}).get('images'))} images)</td></tr>
+</tbody>
+</table>
+{failed_before_list}
+<p>"Words missing" counts every word of the original file's own text layer that does not appear in the rebuild; a scanned
+original has no text layer, so that measure is honestly reported as not measurable rather than invented.</p>
+
+<h2>Independent verification (second reader)</h2>
+{verification_html}
+
+<h2>Disclosures and items needing human review</h2>
+{manual_html}
+
+<h2>Privacy</h2>
+{receipt_html or '<p>No privacy receipt found in this run directory.</p>'}
+
+<h2>Files in this evidence set</h2>
+<ul>{artifact_list}</ul>
+
+<div class="limits">
+<h2>What this page is not</h2>
+<p>This workflow never determines legal compliance. "Validation passed" means the generated PDF passed every
+machine-checkable PDF/UA-1 rule in a local veraPDF run; meaning, fidelity, and the final call about distribution
+belong to a person. Interactive forms, signed records, and legal records are refused by design rather than rebuilt.</p>
+</div>
+<footer>Generated offline by alloflow_portable.py summary-report; the page is self-contained and safe to email or file.</footer>
+</main>
+</body>
+</html>
+"""
+    out_path = Path(args.out).resolve() if getattr(args, "out", None) else run_dir / (safe_stem(doc_name) + "-evidence-summary.html")
+    out_path.write_text(page, encoding="utf-8")
+    return {
+        "ok": True,
+        "summary": out_path.name,
+        "verdict": verdict,
+        "usedBeforeValidation": bool(before),
+        "usedVerification": bool(verification),
+        "note": "Plain-language reviewer page assembled from the run's stamped evidence files only.",
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -3406,6 +4497,35 @@ def build_parser() -> argparse.ArgumentParser:
     )
     text_parser.add_argument("--source", required=True)
     text_parser.add_argument("--include-text", action="store_true")
+    text_parser.add_argument(
+        "--ordered",
+        action="store_true",
+        help="Best-effort reading order (positional line grouping) instead of object order.",
+    )
+
+    annotations_parser = subparsers.add_parser(
+        "extract-annotations",
+        help="Deterministically list a PDF's link annotations (URI + internal GoTo) per page.",
+    )
+    annotations_parser.add_argument("--source", required=True)
+
+    summary_parser = subparsers.add_parser(
+        "summary-report",
+        help="Fold a run's evidence files into one plain-language reviewer HTML page.",
+    )
+    summary_parser.add_argument("--run-dir", required=True)
+    summary_parser.add_argument("--out")
+    summary_parser.add_argument("--report")
+    summary_parser.add_argument("--before-validation")
+    summary_parser.add_argument("--verification")
+
+    batch_summary_parser = subparsers.add_parser(
+        "batch-summary",
+        help="One scoreboard HTML page across a directory of run directories.",
+    )
+    batch_summary_parser.add_argument("--runs-dir", required=True)
+    batch_summary_parser.add_argument("--out")
+    batch_summary_parser.add_argument("--title")
 
     verify_init = subparsers.add_parser(
         "verify-init",
@@ -3463,6 +4583,12 @@ def main() -> int:
             result = merge_plans_command(args)
         elif args.command == "extract-text":
             result = extract_text_command(args)
+        elif args.command == "extract-annotations":
+            result = extract_annotations_command(args)
+        elif args.command == "summary-report":
+            result = summary_report_command(args)
+        elif args.command == "batch-summary":
+            result = batch_summary_command(args)
         elif args.command == "verify-init":
             result = verify_init_command(args)
         elif args.command == "verify-check":

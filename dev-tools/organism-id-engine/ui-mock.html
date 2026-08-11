@@ -1,0 +1,435 @@
+<style>
+  :root {
+    --paper:#E9EDE6; --card:#F5F8F1; --card-2:#EEF2E9;
+    --ink:#16201A; --ink-soft:#48544A; --ink-faint:#727D6F;
+    --border:#D3DACC; --border-strong:#BFC8B5;
+    --accent:#2F6B57; --accent-soft:#4E8A74;
+    --deadly:#AF2620; --contact:#BC5E15; --mild:#8F6A08; --info:#3C6B8C;
+    --deadly-bg:#F6E3E0; --contact-bg:#F7E9DB; --mild-bg:#F3EDD6; --info-bg:#E3ECF1;
+    --shadow:0 1px 2px rgba(20,30,22,.06), 0 10px 30px rgba(20,30,22,.07);
+    --mono:'SF Mono','Cascadia Code',Consolas,ui-monospace,monospace;
+    --serif:Georgia,'Iowan Old Style',Palatino,'Book Antiqua',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    --r:14px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper:#0F130E; --card:#161B14; --card-2:#1C2218;
+      --ink:#E6EADF; --ink-soft:#AEB6A6; --ink-faint:#7F897A;
+      --border:#2A3222; --border-strong:#3B4530;
+      --accent:#66BB9D; --accent-soft:#539A80;
+      --deadly:#EC6155; --contact:#E68A41; --mild:#DEB04A; --info:#78ABCD;
+      --deadly-bg:#291613; --contact-bg:#281A0F; --mild-bg:#241F0E; --info-bg:#132029;
+      --shadow:0 1px 2px rgba(0,0,0,.45), 0 12px 34px rgba(0,0,0,.38);
+    }
+  }
+  :root[data-theme="light"] {
+    --paper:#E9EDE6; --card:#F5F8F1; --card-2:#EEF2E9;
+    --ink:#16201A; --ink-soft:#48544A; --ink-faint:#727D6F;
+    --border:#D3DACC; --border-strong:#BFC8B5;
+    --accent:#2F6B57; --accent-soft:#4E8A74;
+    --deadly:#AF2620; --contact:#BC5E15; --mild:#8F6A08; --info:#3C6B8C;
+    --deadly-bg:#F6E3E0; --contact-bg:#F7E9DB; --mild-bg:#F3EDD6; --info-bg:#E3ECF1;
+    --shadow:0 1px 2px rgba(20,30,22,.06), 0 10px 30px rgba(20,30,22,.07);
+  }
+  :root[data-theme="dark"] {
+    --paper:#0F130E; --card:#161B14; --card-2:#1C2218;
+    --ink:#E6EADF; --ink-soft:#AEB6A6; --ink-faint:#7F897A;
+    --border:#2A3222; --border-strong:#3B4530;
+    --accent:#66BB9D; --accent-soft:#539A80;
+    --deadly:#EC6155; --contact:#E68A41; --mild:#DEB04A; --info:#78ABCD;
+    --deadly-bg:#291613; --contact-bg:#281A0F; --mild-bg:#241F0E; --info-bg:#132029;
+    --shadow:0 1px 2px rgba(0,0,0,.45), 0 12px 34px rgba(0,0,0,.38);
+  }
+
+  * { box-sizing:border-box; }
+  body { margin:0; }
+  .wrap {
+    font-family:var(--sans); color:var(--ink); background:
+      radial-gradient(120% 80% at 50% -10%, color-mix(in srgb, var(--accent) 7%, var(--paper)) 0%, var(--paper) 55%);
+    min-height:100vh; padding:clamp(18px,4vw,52px) clamp(14px,4vw,24px);
+    line-height:1.55; -webkit-font-smoothing:antialiased;
+  }
+  .shell { max-width:760px; margin:0 auto; }
+
+  /* header */
+  .top { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:22px; }
+  .brand { display:flex; gap:13px; align-items:center; }
+  .mark {
+    width:44px; height:44px; flex:none; border-radius:12px; display:grid; place-items:center;
+    font-size:22px; background:var(--card); border:1px solid var(--border); box-shadow:var(--shadow);
+  }
+  .eyebrow { font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent); margin:0 0 3px; font-weight:600; }
+  h1 { font-size:1.32rem; margin:0; font-weight:640; letter-spacing:-.01em; text-wrap:balance; }
+  .tagline { margin:4px 0 0; color:var(--ink-soft); font-size:.9rem; max-width:44ch; }
+  .mock-chip {
+    font-family:var(--mono); font-size:11px; letter-spacing:.04em; color:var(--ink-soft);
+    background:var(--card); border:1px dashed var(--border-strong); border-radius:999px; padding:6px 11px; white-space:nowrap;
+  }
+
+  /* switcher */
+  .switcher { display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap; }
+  .seg {
+    font-family:var(--sans); font-size:.86rem; font-weight:540; cursor:pointer;
+    background:var(--card); color:var(--ink-soft); border:1px solid var(--border); border-radius:10px;
+    padding:8px 14px 8px 12px; display:flex; align-items:center; gap:8px; transition:border-color .15s, color .15s, background .15s;
+  }
+  .seg:hover { color:var(--ink); border-color:var(--border-strong); }
+  .seg[aria-pressed="true"] { color:var(--ink); border-color:var(--accent); background:color-mix(in srgb, var(--accent) 9%, var(--card)); }
+  .seg .dot { width:8px; height:8px; border-radius:50%; flex:none; }
+  .seg .kind { font-family:var(--mono); font-size:9.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); }
+  .seg:focus-visible, .lk:focus-visible, .ack:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+
+  /* card */
+  .card { background:var(--card); border:1px solid var(--border); border-radius:var(--r); box-shadow:var(--shadow); overflow:hidden; }
+  .sec { padding:20px clamp(16px,3vw,26px); border-top:1px solid var(--border); }
+  .sec:first-child { border-top:none; }
+  .label { font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-faint); margin:0 0 12px; display:flex; align-items:center; gap:8px; }
+  .label::after { content:""; height:1px; flex:1; background:var(--border); }
+
+  /* observe scaffold */
+  .scaffold { display:flex; gap:12px; align-items:flex-start; }
+  .scaffold .q { font-size:1.02rem; color:var(--ink); margin:0; }
+  .scaffold .lens { font-size:18px; line-height:1.4; }
+
+  /* candidate head */
+  .headline { display:flex; justify-content:space-between; gap:14px; align-items:flex-start; flex-wrap:wrap; }
+  .common { font-size:1.7rem; font-weight:650; letter-spacing:-.02em; margin:0; line-height:1.15; text-wrap:balance; }
+  .sci { font-family:var(--serif); font-style:italic; font-size:1.12rem; color:var(--ink-soft); margin:3px 0 0; }
+  .verified { display:inline-flex; gap:7px; align-items:center; margin-top:12px; flex-wrap:wrap; }
+  .lk {
+    display:inline-flex; align-items:center; gap:5px; font-size:.8rem; text-decoration:none; color:var(--accent);
+    border:1px solid color-mix(in srgb, var(--accent) 35%, var(--border)); border-radius:999px; padding:4px 10px; background:color-mix(in srgb, var(--accent) 6%, transparent);
+    transition:background .15s;
+  }
+  .lk:hover { background:color-mix(in srgb, var(--accent) 14%, transparent); }
+  .lk svg { width:12px; height:12px; }
+
+  /* ladder */
+  .ladder { display:flex; flex-direction:column; gap:2px; }
+  .rung { display:grid; grid-template-columns:78px 1fr auto; align-items:center; gap:14px; padding:6px 0; }
+  .rk { font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); }
+  .tx { font-size:1rem; font-weight:500; }
+  .tx.it { font-family:var(--serif); font-style:italic; font-weight:400; font-size:1.05rem; }
+  .meter { display:flex; align-items:center; gap:11px; }
+  .track { width:min(190px,34vw); height:7px; border-radius:4px; background:color-mix(in srgb, var(--ink) 8%, var(--card-2)); overflow:hidden; }
+  .fill { height:100%; width:0; border-radius:4px; background:linear-gradient(90deg, var(--accent-soft), var(--accent)); transition:width .85s cubic-bezier(.22,.61,.36,1); }
+  .rung.guess .fill { background:repeating-linear-gradient(45deg, var(--ink-faint) 0 5px, transparent 5px 10px); opacity:.85; }
+  .rung.guess .tx { color:var(--ink-soft); }
+  .pct { font-family:var(--mono); font-size:.8rem; font-variant-numeric:tabular-nums; color:var(--ink-soft); min-width:38px; text-align:right; }
+  .narrow-mark { display:flex; align-items:center; gap:10px; margin:7px 0 3px; padding-left:92px; }
+  .narrow-mark span { font-family:var(--mono); font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--accent); }
+  .narrow-mark .rule { flex:1; height:1px; background:repeating-linear-gradient(90deg, var(--accent) 0 5px, transparent 5px 10px); opacity:.6; }
+
+  /* alt candidates */
+  .cands { display:flex; flex-direction:column; gap:11px; }
+  .cand { display:flex; gap:12px; align-items:baseline; justify-content:space-between; flex-wrap:wrap; }
+  .cand .l { min-width:0; }
+  .cand .cn { font-weight:560; font-size:.98rem; }
+  .cand .cs { font-family:var(--serif); font-style:italic; color:var(--ink-soft); font-size:.92rem; }
+  .cand .tell { color:var(--ink-soft); font-size:.86rem; margin-top:2px; max-width:52ch; }
+  .cand .ruleout { font-family:var(--mono); font-size:9.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--deadly); border:1px solid color-mix(in srgb,var(--deadly) 40%, var(--border)); border-radius:5px; padding:2px 6px; white-space:nowrap; }
+
+  /* key question */
+  .keyq { display:flex; gap:12px; align-items:flex-start; background:color-mix(in srgb, var(--accent) 7%, var(--card)); border:1px solid color-mix(in srgb, var(--accent) 26%, var(--border)); border-radius:11px; padding:13px 15px; }
+  .keyq .ic { color:var(--accent); font-size:15px; margin-top:1px; }
+  .keyq b { font-weight:600; }
+  .keyq p { margin:0; font-size:.94rem; }
+
+  /* warnings */
+  .warns { display:flex; flex-direction:column; gap:12px; }
+  .warn { --sev:var(--info); background:var(--sev-bg,var(--info-bg)); border:1px solid color-mix(in srgb, var(--sev) 34%, var(--border)); border-left:4px solid var(--sev); border-radius:10px; padding:13px 15px; }
+  .warn.deadly { --sev:var(--deadly); --sev-bg:var(--deadly-bg); }
+  .warn.contact { --sev:var(--contact); --sev-bg:var(--contact-bg); }
+  .warn.mild { --sev:var(--mild); --sev-bg:var(--mild-bg); }
+  .warn.info { --sev:var(--info); --sev-bg:var(--info-bg); }
+  .warn-top { display:flex; align-items:center; gap:9px; flex-wrap:wrap; margin-bottom:7px; }
+  .tier { font-family:var(--mono); font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--sev); border:1px solid var(--sev); border-radius:5px; padding:2px 7px; }
+  .why { font-family:var(--mono); font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-faint); }
+  .warn .msg { margin:0; font-size:.96rem; color:var(--ink); font-weight:500; }
+  .warn .detail { margin:9px 0 0; padding-top:9px; border-top:1px dashed color-mix(in srgb, var(--sev) 30%, transparent); font-size:.87rem; color:var(--ink-soft); display:grid; gap:5px; }
+  .warn .detail b { color:var(--ink); font-weight:600; }
+  .related { font-size:.83rem; color:var(--ink-soft); margin:2px 0 0; padding-left:19px; }
+  .related li { margin:3px 0; }
+
+  /* ethics + calm */
+  .ethics { display:grid; grid-template-columns:1fr 1fr; gap:8px 20px; }
+  .ethics li { list-style:none; font-size:.87rem; color:var(--ink-soft); display:flex; gap:9px; align-items:flex-start; }
+  .ethics li::before { content:""; width:6px; height:6px; margin-top:8px; border-radius:50%; background:var(--accent); flex:none; }
+  .calm { display:flex; gap:12px; align-items:center; color:var(--ink-soft); font-size:.94rem; }
+  .calm .ok { width:26px;height:26px;flex:none;border-radius:50%; display:grid; place-items:center; background:color-mix(in srgb,var(--accent) 14%, var(--card)); color:var(--accent); }
+
+  /* footer */
+  .foot { margin-top:18px; padding:15px 18px; border-radius:12px; background:var(--card); border:1px solid var(--border); display:flex; gap:12px; align-items:flex-start; }
+  .foot .warnmark { color:var(--deadly); font-size:15px; margin-top:1px; }
+  .foot p { margin:0; font-size:.83rem; color:var(--ink-soft); }
+  .foot b { color:var(--ink); font-weight:600; }
+  ul { margin:0; padding:0; }
+
+  /* web / enrichment panel — deliberately info-blue + dashed, distinct from the authoritative green */
+  .webbtn { font-family:var(--sans); font-size:.9rem; font-weight:540; cursor:pointer; display:inline-flex; align-items:center; gap:8px; background:var(--card); color:var(--ink); border:1px dashed color-mix(in srgb, var(--info) 48%, var(--border)); border-radius:10px; padding:9px 14px; transition:border-color .15s; }
+  .webbtn:hover { border-color:var(--info); }
+  .webbtn .cap { font-family:var(--mono); font-size:10px; letter-spacing:.02em; color:var(--ink-faint); font-weight:400; }
+  .webpanel { margin-top:14px; border:1px dashed color-mix(in srgb, var(--info) 48%, var(--border)); border-radius:11px; padding:14px 15px; background:color-mix(in srgb, var(--info) 6%, var(--card)); display:grid; gap:11px; }
+  .webpanel[hidden] { display:none; }
+  .webchip { font-family:var(--mono); font-size:9.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--info); border:1px solid color-mix(in srgb, var(--info) 45%, var(--border)); border-radius:999px; padding:3px 9px; }
+  .webrow { display:grid; grid-template-columns:96px 1fr; gap:12px; align-items:baseline; }
+  .webrow .wk { font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); }
+  .webrow p { margin:0; font-size:.9rem; color:var(--ink-soft); }
+  .webadvs { display:flex; flex-direction:column; gap:10px; }
+  .webadv { --sev:var(--info); border-left:3px solid var(--sev); padding-left:12px; }
+  .webadv.contact { --sev:var(--contact); }
+  .webadv.info { --sev:var(--info); }
+  .webadv .wkind { font-family:var(--mono); font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-faint); }
+  .webadv p { margin:6px 0 0; font-size:.9rem; color:var(--ink); }
+  .rednote { margin:0; font-size:.85rem; color:var(--ink-soft); background:color-mix(in srgb, var(--accent) 9%, transparent); border:1px solid color-mix(in srgb, var(--accent) 22%, var(--border)); border-radius:8px; padding:8px 11px; }
+  .lk.web { color:var(--info); border-color:color-mix(in srgb, var(--info) 35%, var(--border)); background:color-mix(in srgb, var(--info) 6%, transparent); }
+  .webempty { color:var(--ink-faint); font-size:.88rem; margin:8px 0 0; }
+
+  /* guided look panel */
+  .guidepanel { margin-top:14px; border:1px solid var(--border); border-radius:11px; padding:14px 15px; background:color-mix(in srgb,var(--accent) 4%, var(--card)); display:grid; gap:10px; }
+  .guidepanel[hidden] { display:none; }
+  .gintro { margin:0; font-size:.9rem; color:var(--ink-soft); }
+  .glead { display:flex; gap:9px; align-items:flex-start; background:color-mix(in srgb,var(--accent) 8%, var(--card)); border:1px solid color-mix(in srgb,var(--accent) 24%, var(--border)); border-radius:9px; padding:9px 12px; font-size:.92rem; }
+  .glead .gic { color:var(--accent); font-weight:700; }
+  .glabel { font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-faint); margin:4px 0 0; }
+  .gstep { display:flex; gap:11px; align-items:flex-start; border-left:3px solid var(--sev,var(--accent)); padding-left:12px; }
+  .gstep.deadly { --sev:var(--deadly); } .gstep.contact { --sev:var(--contact); } .gstep.mild { --sev:var(--mild); } .gstep.info { --sev:var(--info); }
+  .gnum { font-family:var(--mono); font-size:11px; font-weight:700; color:var(--sev,var(--accent)); background:color-mix(in srgb,var(--sev,var(--accent)) 13%, transparent); border-radius:50%; width:20px; height:20px; display:grid; place-items:center; flex:none; margin-top:1px; }
+  .glook { margin:0; font-size:.92rem; color:var(--ink); }
+  .gwrong { margin:5px 0 0; font-size:.84rem; color:var(--ink-soft); }
+  .gchecks { margin:2px 0 0; padding-left:18px; font-size:.88rem; color:var(--ink-soft); }
+  .gchecks li { margin:4px 0; }
+  .gstop { margin:2px 0 0; font-size:.86rem; color:var(--ink); background:color-mix(in srgb,var(--deadly) 8%, transparent); border:1px solid color-mix(in srgb,var(--deadly) 25%, var(--border)); border-radius:8px; padding:9px 11px; }
+
+  @media (max-width:560px) {
+    .rung { grid-template-columns:64px 1fr; }
+    .rung .meter { grid-column:1 / -1; padding-left:64px; }
+    .ethics { grid-template-columns:1fr; }
+    .common { font-size:1.42rem; }
+  }
+  @media (prefers-reduced-motion:reduce) { .fill { transition:none; } }
+</style>
+
+<main class="wrap">
+  <div class="shell">
+    <header class="top">
+      <div class="brand">
+        <span class="mark" aria-hidden="true">🔍</span>
+        <div>
+          <p class="eyebrow">AlloFlow · STEM Lab</p>
+          <h1>Organism ID &amp; Taxonomy</h1>
+          <p class="tagline">An honest identification — certainty that narrows down the ladder, verified references, and warnings sized to what it could be.</p>
+        </div>
+      </div>
+      <span class="mock-chip">Design mock · sample data · not a live identifier</span>
+    </header>
+
+    <div class="switcher" role="group" aria-label="Choose a specimen to preview">
+      <button class="seg" data-key="monarch"   aria-pressed="true"><span class="dot" style="background:var(--info)"></span><span>Monarch</span><span class="kind">benign</span></button>
+      <button class="seg" data-key="portobello" aria-pressed="false"><span class="dot" style="background:var(--deadly)"></span><span>“Portobello”</span><span class="kind">lookalike</span></button>
+      <button class="seg" data-key="oleander"  aria-pressed="false"><span class="dot" style="background:var(--deadly)"></span><span>Oleander</span><span class="kind">direct</span></button>
+    </div>
+
+    <article class="card" id="card" aria-live="polite"></article>
+
+    <footer class="foot">
+      <span class="warnmark" aria-hidden="true">▲</span>
+      <p><b>Never eat, taste, or handle a wild organism based on this app.</b> This is a working prototype — every deadly-hazard message is drawn from a starter dataset and is pending review by a qualified naturalist before classroom use. When in doubt, ask a human expert.</p>
+    </footer>
+  </div>
+</main>
+
+<script>
+  const EXPLORER_URL = "https://claude.ai/code/artifact/d7f0d546-ffbb-48be-8a60-854073564031";
+  const SPECIMENS = {
+    monarch: {
+      state:"benign",
+      web:{ invasive:null, conservation:"IUCN lists the migratory monarch as Vulnerable; the Xerces Society tracks overwintering counts each winter.", advisories:[{tier:"INFO", kind:"context", text:"Some regions ask observers to log monarch sightings and to plant native milkweed for the caterpillars."}], sources:[["Xerces Society","https://www.xerces.org/"],["Journey North","https://journeynorth.org/"]], redactions:0 },
+      scaffold:"Before the answer — count the legs, and notice where the wings attach to the body.",
+      common:"Monarch butterfly", sci:"Danaus plexippus", explore:"Danaus",
+      refs:[["Wikipedia","https://en.wikipedia.org/wiki/Monarch_butterfly"],["GBIF","https://www.gbif.org/species/5133088"],["iNaturalist","https://www.inaturalist.org/taxa/search?q=Danaus%20plexippus"]],
+      ladder:[["kingdom","Animalia",.99,0],["phylum","Arthropoda",.98,0],["class","Insecta",.97,0],["order","Lepidoptera",.95,0],["family","Nymphalidae",.92,0],["genus","Danaus",.90,1],["species","Danaus plexippus",.86,1]],
+      narrowest:"species",
+      keyq:"Does a black line cross the hindwing? If it does, you’re looking at a viceroy, not a monarch.",
+      cands:[
+        {cn:"Viceroy", cs:"Limenitis archippus", tell:"A famous mimic — nearly identical, but with an extra black line arcing across each hindwing."}
+      ],
+      warns:[
+        {tier:"info", why:"teaching note", msg:"The monarch and the viceroy are a classic case of mimicry — a chance to compare two look-alikes feature by feature.", detail:null}
+      ]
+    },
+    portobello: {
+      state:"deadly",
+      web:{ invasive:null, conservation:null, advisories:[{tier:"INFO", kind:"context", text:"Wild-mushroom poisoning reports rise in autumn. If anyone eats a wild mushroom, contact Poison Control (US: 1-800-222-1222) — don’t wait for symptoms."}], sources:[["North American Mycological Assoc.","https://namyco.org/"],["Poison Control","https://www.poison.org/"]], redactions:1 },
+      scaffold:"Before the answer — what color are the gills underneath, and is there a cup at the very base of the stem?",
+      common:"Portobello / button mushroom", sci:"Agaricus bisporus", explore:"Amanita",
+      refs:[["Wikipedia","https://en.wikipedia.org/wiki/Agaricus_bisporus"],["GBIF","https://www.gbif.org/species/5243447"],["iNaturalist","https://www.inaturalist.org/taxa/search?q=Agaricus%20bisporus"]],
+      ladder:[["kingdom","Fungi",.99,0],["phylum","Basidiomycota",.97,0],["class","Agaricomycetes",.95,0],["order","Agaricales",.90,0],["family","Agaricaceae",.80,0],["genus","Agaricus",.70,1],["species","Agaricus bisporus",.55,1]],
+      narrowest:"genus",
+      keyq:"What color is the spore print — chocolate-brown, or white? Brown points to an edible Agaricus; white is a warning sign of a deadly Amanita.",
+      cands:[
+        {cn:"Meadow mushroom", cs:"Agaricus campestris", tell:"A close, common relative that grows in grass."},
+        {cn:"Destroying angel", cs:"Amanita bisporigera", tell:"Pure white with a sac-like cup at the base — deadly. Listed on purpose so it is explicitly ruled out, not ignored.", ruleout:"must rule out"}
+      ],
+      warns:[
+        {tier:"deadly", why:"dangerous lookalike", msg:"Even if this looks like an edible Agaricus, its deadliest lookalike — the death cap / destroying angel (Amanita) — can appear almost identical, especially at the young ‘button’ stage. This confusion has killed experienced foragers.",
+         detail:[["The tell","Spore print — Agaricus is chocolate-brown; a deadly Amanita is white. A deadly Amanita also has a volva (a cup at the base) that Agaricus lacks. The two split at the family level (Agaricaceae vs Amanitaceae) though they share the order Agaricales."],["If you’re wrong","Amatoxin poisoning — no symptoms for 6–24 hours (a false ‘all clear’), then liver and kidney failure. A single cap can be fatal, and there is no reliable home test."]]},
+        {tier:"deadly", why:"category caution", msg:"No app — including this one — can make a wild mushroom safe to eat. Treat every wild fungus as look-only.", detail:null},
+        {tier:"related", items:["Puffball ↔ Amanita ‘egg’ — young deadly Amanitas resemble edible puffballs; cut one open to check.","Paddy straw ↔ Amanita — both rise from a volva, a tragically easy and sometimes fatal confusion."]}
+      ]
+    },
+    oleander: {
+      state:"deadly",
+      web:{ invasive:"Widely planted as an ornamental; naturalizes along roadsides and washes in warm, dry climates.", conservation:null, advisories:[{tier:"CONTACT", kind:"local hazard", text:"Poison Control records oleander ingestions in children and pets. Keep every part — including clippings and smoke — away from mouths and campfires."}], sources:[["Poison Control","https://www.poison.org/"]], redactions:1 },
+      scaffold:"Before the answer — note the narrow leathery leaves and the clusters of five-petaled flowers.",
+      common:"Oleander", sci:"Nerium oleander", explore:"Nerium",
+      refs:[["Wikipedia","https://en.wikipedia.org/wiki/Nerium_oleander"],["GBIF","https://www.gbif.org/species/3169756"],["iNaturalist","https://www.inaturalist.org/taxa/search?q=Nerium%20oleander"]],
+      ladder:[["kingdom","Plantae",.99,0],["phylum","Tracheophyta",.97,0],["class","Magnoliopsida",.95,0],["order","Gentianales",.90,0],["family","Apocynaceae",.88,0],["genus","Nerium",.85,1],["species","Nerium oleander",.80,1]],
+      narrowest:"species",
+      keyq:"Are the leaves in whorls of three and do the stems ooze a milky sap when broken? Both point to oleander.",
+      cands:[],
+      warns:[
+        {tier:"deadly", why:"directly dangerous", msg:"This appears to be oleander — one of the most poisonous common garden plants. Every part is toxic, and even smoke from burning it is dangerous. Don’t touch it, don’t burn it, and keep every part away from your mouth.",
+         detail:[["Why","Cardiac glycosides (oleandrin) can disrupt the heart from a small amount. Poisonings happen through curiosity — a chewed leaf, a skewer, or smoke."]]}
+      ]
+    }
+  };
+
+  const RANKS = ["kingdom","phylum","class","order","family","genus","species"];
+  const card = document.getElementById("card");
+  const reduce = matchMedia("(prefers-reduced-motion:reduce)").matches;
+  const esc = (s)=>String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+  const linkIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>';
+
+  function ladderHTML(sp){
+    const nIdx = RANKS.indexOf(sp.narrowest);
+    let rows = "";
+    sp.ladder.forEach(([rank,name,conf,ital],i)=>{
+      const guess = i > nIdx ? " guess" : "";
+      rows += `<div class="rung${guess}">
+        <span class="rk">${rank}</span>
+        <span class="tx${ital?" it":""}">${esc(name)}</span>
+        <span class="meter"><span class="track"><span class="fill" data-w="${Math.round(conf*100)}"></span></span><span class="pct">${Math.round(conf*100)}%</span></span>
+      </div>`;
+      if(i===nIdx && nIdx<RANKS.length-1){
+        rows += `<div class="narrow-mark"><span>confident to ${sp.narrowest}</span><span class="rule"></span><span>below = a guess</span></div>`;
+      }
+    });
+    return rows;
+  }
+
+  function warnHTML(w){
+    if(w.tier==="related"){
+      return `<div class="warn deadly"><div class="warn-top"><span class="why">also flagged · related lookalikes</span></div>
+        <ul class="related">${w.items.map(t=>`<li>${esc(t)}</li>`).join("")}</ul></div>`;
+    }
+    const detail = w.detail ? `<div class="detail">${w.detail.map(([k,v])=>`<div><b>${esc(k)}:</b> ${esc(v)}</div>`).join("")}</div>` : "";
+    return `<div class="warn ${w.tier}"><div class="warn-top"><span class="tier">${w.tier}</span><span class="why">${esc(w.why)}</span></div>
+      <p class="msg">${esc(w.msg)}</p>${detail}</div>`;
+  }
+
+  function webHTML(w){
+    if(!w) return `<p class="webempty">No web lookup configured for this sample.</p>`;
+    const rows = [];
+    if(w.invasive) rows.push(`<div class="webrow"><span class="wk">status</span><p>${esc(w.invasive)}</p></div>`);
+    if(w.conservation) rows.push(`<div class="webrow"><span class="wk">conservation</span><p>${esc(w.conservation)}</p></div>`);
+    const advs = (w.advisories||[]).map(a=>`<div class="webadv ${a.tier.toLowerCase()}"><div class="warn-top"><span class="tier">${a.tier}</span><span class="wkind">${esc(a.kind)} · web-sourced</span></div><p>${esc(a.text)}</p></div>`).join("");
+    const red = w.redactions ? `<p class="rednote"><span aria-hidden="true">🛡</span> ${w.redactions} unverifiable safety claim${w.redactions>1?"s":""} removed by the firewall — a web source can flag a hazard, but can never clear an organism as safe.</p>` : "";
+    const src = (w.sources||[]).map(([n,u])=>`<a class="lk web" href="${u}" target="_blank" rel="noopener">${linkIcon}${esc(n)}</a>`).join("");
+    return `<div class="webhead"><span class="webchip">from the web · verify independently</span></div>${rows.join("")}${advs?`<div class="webadvs">${advs}</div>`:""}${red}<div class="verified web">${src}</div>`;
+  }
+
+  function guidedHTML(sp){
+    const steps = [];
+    for(const w of (sp.warns||[])){
+      if(w.tier==="related" || !w.detail) continue;
+      let look=null, ifWrong=null;
+      w.detail.forEach(([k,v])=>{ if(/tell/i.test(k)) look=v; else if(/wrong/i.test(k)) ifWrong=v; else if(/why/i.test(k)) look=look||v; });
+      if(look) steps.push({ tier:(w.tier||"").toLowerCase(), look, ifWrong });
+    }
+    const checks = (sp.cands||[]).filter(c=>c.tell).map(c=>`<li><b>${esc(c.cn)}</b> — ${esc(c.tell)}</li>`).join("");
+    const stepHTML = steps.map((s,i)=>`
+      <div class="gstep ${s.tier}">
+        <span class="gnum">${i+1}</span>
+        <div><p class="glook">${esc(s.look)}</p>${s.ifWrong?`<p class="gwrong"><b>If you're wrong:</b> ${esc(s.ifWrong)}</p>`:""}</div>
+      </div>`).join("");
+    return `
+      <p class="gintro">Weigh the candidates — don't accept a verdict. Here's what to look at, and what each answer would mean.</p>
+      ${sp.keyq?`<div class="glead"><span class="gic" aria-hidden="true">❯</span><span><b>Start here:</b> ${esc(sp.keyq)}</span></div>`:""}
+      ${steps.length?`<p class="glabel">Checks that decide it</p>${stepHTML}`:""}
+      ${checks?`<p class="glabel">Features to look for</p><ul class="gchecks">${checks}</ul>`:""}
+      <p class="gstop"><span aria-hidden="true">🛑</span> No observation here makes a wild organism safe to eat or handle. Use it to sharpen your eye — then confirm any high-stakes ID with an expert.</p>`;
+  }
+
+  function render(key){
+    const sp = SPECIMENS[key];
+    const refs = sp.refs.map(([n,u])=>`<a class="lk" href="${u}" target="_blank" rel="noopener">${linkIcon}${n}</a>`).join("");
+    const candSec = sp.cands.length ? `<div class="sec">
+        <p class="label">Also considered</p>
+        <div class="cands">${sp.cands.map(c=>`<div class="cand"><div class="l"><span class="cn">${esc(c.cn)}</span> <span class="cs">${esc(c.cs)}</span><div class="tell">${esc(c.tell)}</div></div>${c.ruleout?`<span class="ruleout">${esc(c.ruleout)}</span>`:""}</div>`).join("")}</div>
+      </div>` : "";
+
+    card.innerHTML = `
+      <div class="sec"><div class="scaffold"><span class="lens" aria-hidden="true">🔍</span><p class="q">${esc(sp.scaffold)}</p></div></div>
+      <div class="sec">
+        <div class="headline">
+          <div><h2 class="common">${esc(sp.common)}</h2><p class="sci">${esc(sp.sci)}</p></div>
+        </div>
+        <div class="verified">${refs}</div>
+      </div>
+      <div class="sec">
+        <p class="label">How sure — down the ladder</p>
+        <div class="ladder">${ladderHTML(sp)}</div>
+        ${sp.explore ? `<a class="lk" style="margin-top:12px" href="${EXPLORER_URL}#t=${encodeURIComponent(sp.explore)}" target="_blank" rel="noopener">🌳 Explore this branch in the Taxonomy Map ↗</a>` : ""}
+      </div>
+      ${candSec}
+      <div class="sec"><div class="keyq"><span class="ic" aria-hidden="true">❯</span><p><b>To narrow it down:</b> ${esc(sp.keyq)}</p></div></div>
+      <div class="sec">
+        <p class="label">Safety</p>
+        ${sp.state==="benign" ? `<div class="calm"><span class="ok" aria-hidden="true">✓</span><span>No hazard flagged for this observation. Field rules below still apply.</span></div><div class="warns" style="margin-top:12px">${sp.warns.map(warnHTML).join("")}</div>` : `<div class="warns">${sp.warns.map(warnHTML).join("")}</div>`}
+      </div>
+      <div class="sec">
+        <p class="label">Guided look</p>
+        <button class="webbtn" aria-expanded="false" type="button"><span aria-hidden="true">🔎</span> Observe before you decide <span class="cap">— turn the answer into an investigation</span></button>
+        <div class="guidepanel" hidden>${guidedHTML(sp)}</div>
+      </div>
+      <div class="sec">
+        <p class="label">Field rules — every observation</p>
+        <ul class="ethics">
+          <li>Observe, don’t disturb. Take a photo, not the organism.</li>
+          <li>Keep a safe distance — don’t touch, handle, or feed.</li>
+          <li>Never eat or brew anything found in the wild.</li>
+          <li>Some species and habitats are protected — leave them be.</li>
+        </ul>
+      </div>
+      <div class="sec">
+        <p class="label">Local &amp; web context</p>
+        <button class="webbtn" aria-expanded="false" type="button"><span class="globe" aria-hidden="true">🌐</span> Check local status <span class="cap">— a separate, grounded web call, on demand</span></button>
+        <div class="webpanel" hidden>${webHTML(sp.web)}</div>
+      </div>`;
+
+    // animate confidence bars
+    const fills = card.querySelectorAll(".fill");
+    if(reduce){ fills.forEach(f=>f.style.width=f.dataset.w+"%"); }
+    else { requestAnimationFrame(()=>requestAnimationFrame(()=>fills.forEach(f=>f.style.width=f.dataset.w+"%"))); }
+
+    card.querySelectorAll(".webbtn").forEach(btn=>{
+      const panel = btn.nextElementSibling;
+      if(!panel) return;
+      btn.addEventListener("click",()=>{
+        const show = panel.hasAttribute("hidden");
+        if(show){ panel.removeAttribute("hidden"); } else { panel.setAttribute("hidden",""); }
+        btn.setAttribute("aria-expanded", show ? "true":"false");
+      });
+    });
+  }
+
+  document.querySelectorAll(".seg").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      document.querySelectorAll(".seg").forEach(b=>b.setAttribute("aria-pressed", b===btn ? "true":"false"));
+      render(btn.dataset.key);
+    });
+  });
+  render("monarch");
+</script>
