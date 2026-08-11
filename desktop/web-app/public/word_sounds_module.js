@@ -3496,6 +3496,16 @@
       const [decodingChoices, setDecodingChoices] = React.useState([]);
       const [decodeDragOver, setDecodeDragOver] = React.useState(false);
       const lastWordForDecoding = React.useRef(null);
+      // Finish the Sentence (read_sentence): the current sentence board. The
+      // ref mirror is for checkAnswer, whose closure must reach the sentence
+      // for the read-back without adding board state to its dep list.
+      const [readSentenceBoard, setReadSentenceBoard] = React.useState(null);
+      const readSentenceBoardRef = React.useRef(null);
+      React.useEffect(() => {
+        readSentenceBoardRef.current = readSentenceBoard;
+      }, [readSentenceBoard]);
+      const [readSentenceDragOver, setReadSentenceDragOver] = React.useState(false);
+      const lastWordForReadSentence = React.useRef(null);
       const [isPrefetching, setIsPrefetching] = React.useState(false);
       const internalAudioCache = React.useRef(new Map());
       const audioInstances = React.useRef(new Map());
@@ -6133,6 +6143,15 @@
           description: ts("word_sounds.decoding_desc") || "Read the word and tap its picture",
           tier: "orthographic",
         },
+        {
+          id: "read_sentence",
+          label: ts("word_sounds.activity_read_sentence") || "Finish the Sentence",
+          icon: "\uD83D\uDCAC",
+          description: ts("word_sounds.read_sentence_desc") || "Read a sentence and pick its missing word",
+          // Connected text is print work \u2014 keep it out of phonological-only
+          // sessions, like the rest of the orthographic tier.
+          tier: "orthographic",
+        },
       ];
       // ── Language capability model (multilingual stage 2, 2026-07-12) ──
       // English sessions take the FIRST branch everywhere below and behave
@@ -6173,6 +6192,7 @@
             case "sound_sort": // estimateFirst/LastPhoneme + SOUND_MATCH_POOL are English
             case "word_families": // RIME_FAMILIES / '-at' derivation are English
             case "letter_tracing": // LETTER_SVG_PATHS covers a–z only
+            case "read_sentence": // sight-word frames + the K-2 sentence gate are English
               return false;
             // Letter-tile / scramble activities need an alphabetic script:
             case "orthography":
@@ -6207,11 +6227,11 @@
         counting: "pa_phoneme", segmentation: "pa_phoneme", isolation: "pa_phoneme", blending: "pa_phoneme", sound_sort: "pa_phoneme", manipulation: "pa_phoneme",
         mapping: "phonics", orthography: "phonics",
         spelling_bee: "spelling", word_scramble: "spelling", missing_letter: "spelling",
-        letter_tracing: "handwriting", decoding: "phonics",
+        letter_tracing: "handwriting", decoding: "phonics", read_sentence: "text",
       };
-      const ACTIVITY_GROUP_ORDER = ["pa_large", "pa_phoneme", "phonics", "spelling", "handwriting"];
-      const ACTIVITY_GROUP_LABELS = { pa_large: "Syllables & Rhyme", pa_phoneme: "Phonemes", phonics: "Phonics", spelling: "Spelling", handwriting: "Writing" };
-      const ACTIVITY_GROUP_FULL = { pa_large: "Sound awareness - larger units (syllables & rhyme)", pa_phoneme: "Phonemic awareness - individual sounds", phonics: "Phonics - sound to letter", spelling: "Spelling / encoding", handwriting: "Handwriting / letter formation" };
+      const ACTIVITY_GROUP_ORDER = ["pa_large", "pa_phoneme", "phonics", "text", "spelling", "handwriting"];
+      const ACTIVITY_GROUP_LABELS = { pa_large: "Syllables & Rhyme", pa_phoneme: "Phonemes", phonics: "Phonics", text: "Sentences", spelling: "Spelling", handwriting: "Writing" };
+      const ACTIVITY_GROUP_FULL = { pa_large: "Sound awareness - larger units (syllables & rhyme)", pa_phoneme: "Phonemic awareness - individual sounds", phonics: "Phonics - sound to letter", text: "Connected text - reading decodable sentences", spelling: "Spelling / encoding", handwriting: "Handwriting / letter formation" };
       const extractWords = React.useCallback((term) => {
         if (!term) return [];
         return term
@@ -7997,6 +8017,73 @@
         // startActivity clears decodingChoices + the word guard; watching the
         // state re-runs the rebuild (the guard above prevents any loop).
         decodingChoices]);
+      // Finish the Sentence (read_sentence): a decodable sentence with the
+      // target word cut out; the child reads it and drops/taps the word that
+      // completes it. Prefers the teacher-reviewed pack board (the AI sentence
+      // is gated by the setup decodability screen); falls back to a sight-word
+      // frame built here so packs from older setups still run. The word's
+      // picture anchors the meaning, so the printed target is never spoken.
+      const READ_SENTENCE_FRAMES = [
+        { before: "I can see the", after: "." },
+        { before: "Look at the", after: "!" },
+        { before: "Here is the", after: "." },
+        { before: "We like the", after: "." },
+      ];
+      const readSentencePreparedForRef = React.useRef(null);
+      React.useEffect(() => {
+        if (wordSoundsActivity !== "read_sentence") return;
+        const target = (currentWordSoundsWord || "").toLowerCase();
+        if (!target) return;
+        const prepared =
+          String(wordSoundsPhonemes?.word || "").trim().toLowerCase() === target
+            ? wordSoundsPhonemes?.activityItems?.read_sentence
+            : null;
+        const preparedUsable =
+          prepared &&
+          typeof prepared.sentence === "string" &&
+          prepared.sentence.trim() &&
+          Array.isArray(prepared.options) &&
+          prepared.options.length >= 2 &&
+          prepared.options.some(
+            (w) => String(w || "").toLowerCase() === target,
+          );
+        // Re-run for the same word only to upgrade the local frame to the
+        // prepared board (pack data can arrive a beat after the word).
+        if (
+          lastWordForReadSentence.current === target &&
+          (!preparedUsable || readSentencePreparedForRef.current === target)
+        )
+          return;
+        lastWordForReadSentence.current = target;
+        readSentencePreparedForRef.current = preparedUsable ? target : null;
+        if (preparedUsable) {
+          setReadSentenceBoard({
+            sentence: prepared.sentence,
+            before: String(prepared.before || ""),
+            after: String(prepared.after || ""),
+            options: [...prepared.options],
+          });
+          return;
+        }
+        const seed = target
+          .split("")
+          .reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
+        const frame = READ_SENTENCE_FRAMES[seed % READ_SENTENCE_FRAMES.length];
+        const shown = currentWordSoundsWord || target;
+        const sentence = `${frame.before} ${shown}${/^[.,!?]/.test(frame.after) ? "" : " "}${frame.after}`.trim();
+        setReadSentenceBoard({
+          sentence,
+          before: frame.before,
+          after: frame.after,
+          options: fisherYatesShuffle([
+            shown,
+            ...buildDecodingDistractors(target),
+          ]),
+        });
+      }, [wordSoundsActivity, currentWordSoundsWord, wordSoundsPhonemes,
+        // startActivity clears the board + word guard; watching the state
+        // re-runs the rebuild (the guard above prevents any loop).
+        readSentenceBoard]);
       const generateOrthographyDistractors = (word) => {
         if (!word || word.length < 2)
           return [`${word}s`, `${word}ed`, `un${word}`];
@@ -10474,9 +10561,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             try {
               if (!isMountedRef.current) return;
               lastPlayedWord.current = playKey;
-              // Read & Match decodes a PRINTED word that must never be spoken,
-              // so do not auto-play it even when instructions are toggled off.
-              if (wordSoundsActivity === "decoding") return;
+              // Read & Match and Finish the Sentence decode PRINTED text that
+              // must never be spoken, so do not auto-play the word even when
+              // instructions are toggled off.
+              if (wordSoundsActivity === "decoding" || wordSoundsActivity === "read_sentence") return;
               if (wordSoundsActivity === "blending") {
                 await playBlending();
               } else {
@@ -10692,6 +10780,11 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           setDecodingChoices([]);
           setDecodeDragOver(false);
           lastWordForDecoding.current = null;
+          // Finish the Sentence: same reset, same reason.
+          setReadSentenceBoard(null);
+          setReadSentenceDragOver(false);
+          lastWordForReadSentence.current = null;
+          readSentencePreparedForRef.current = null;
           // Sight & Spell: the rebuild effect is gated on option COUNT, not
           // word — without this reset, re-entering orthography served the
           // previous word's misspellings with the new word patched at index 0.
@@ -11808,7 +11901,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     tryAgainAudio.onended = () => {
                       // Read & Match decodes a PRINTED word that is never spoken;
                       // skip the re-speak so the modality stays read-only.
-                      if (isMountedRef.current && currentWordSoundsWord && wordSoundsActivity !== "decoding" && audioRunIdRef.current === _fbRun) {
+                      if (isMountedRef.current && currentWordSoundsWord && wordSoundsActivity !== "decoding" && wordSoundsActivity !== "read_sentence" && audioRunIdRef.current === _fbRun) {
                         setTimeout(
                           () => {
                             if (audioRunIdRef.current !== _fbRun) return;
@@ -11821,7 +11914,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   } else {
                     const _fbRun2 = audioRunIdRef.current;
                     setTimeout(() => {
-                      if (isMountedRef.current && currentWordSoundsWord && wordSoundsActivity !== "decoding" && audioRunIdRef.current === _fbRun2)
+                      if (isMountedRef.current && currentWordSoundsWord && wordSoundsActivity !== "decoding" && wordSoundsActivity !== "read_sentence" && audioRunIdRef.current === _fbRun2)
                         wordSoundsActivity === "blending" ? playBlending() : handleAudio(currentWordSoundsWord);
                     }, 800);
                   }
@@ -11869,7 +11962,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     // clip above): never re-speak a stale item or a sentinel.
                     const _almRun = audioRunIdRef.current;
                     almostAudio.onended = () => {
-                      if (isMountedRef.current && wordSoundsActivity !== "decoding" && !_expIsSentinel && audioRunIdRef.current === _almRun) {
+                      if (isMountedRef.current && wordSoundsActivity !== "decoding" && wordSoundsActivity !== "read_sentence" && !_expIsSentinel && audioRunIdRef.current === _almRun) {
                         setTimeout(() => {
                           if (audioRunIdRef.current === _almRun) handleAudio(expectedAnswer);
                         }, 300);
@@ -11878,7 +11971,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   } else {
                     const _almRun2 = audioRunIdRef.current;
                     setTimeout(() => {
-                      if (isMountedRef.current && wordSoundsActivity !== "decoding" && !_expIsSentinel && audioRunIdRef.current === _almRun2) handleAudio(expectedAnswer);
+                      if (isMountedRef.current && wordSoundsActivity !== "decoding" && wordSoundsActivity !== "read_sentence" && !_expIsSentinel && audioRunIdRef.current === _almRun2) handleAudio(expectedAnswer);
                     }, 800);
                   }
                 } catch (e) {
@@ -11919,6 +12012,19 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               }
               setShowWordText(true);
               if (setShowImageForCurrentWord) setShowImageForCurrentWord(true);
+              // Finish the Sentence: the payoff is hearing the completed
+              // sentence read back as connected text (never mid-probe — a
+              // timed CBM should not spend seconds on a read-back).
+              if (wordSoundsActivity === "read_sentence" && !isProbeMode) {
+                const _rsText = readSentenceBoardRef.current?.sentence;
+                if (_rsText) {
+                  const _rsRun = audioRunIdRef.current;
+                  setTimeout(() => {
+                    if (isMountedRef.current && audioRunIdRef.current === _rsRun)
+                      handleAudio(_rsText);
+                  }, 350);
+                }
+              }
             }
             if (!isCorrect && effectiveCheckMode === "afterCompletion") {
               setShowImageForCurrentWord(true);
@@ -12253,6 +12359,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 "decoding",
                 "word_families",
                 "letter_tracing",
+                "read_sentence",
               ];
               if (wordSoundsActivity === "isolation") {
                 const _isoSound =
@@ -12393,7 +12500,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               !isCorrect &&
               expectedAnswer &&
               !_expIsSentinel &&
-              wordSoundsActivity !== "decoding"
+              wordSoundsActivity !== "decoding" &&
+              wordSoundsActivity !== "read_sentence"
             ) {
               setTimeout(() => {
                 if (isMountedRef.current) handleAudio(expectedAnswer);
@@ -15843,6 +15951,75 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                         /*#__PURE__*/ React.createElement("img", { src: dSrc(img), alt: _cn, draggable: false, className: "w-full h-full object-contain rounded-xl pointer-events-none" }));
                       }),
                     ),
+            );
+          }
+          case "read_sentence": {
+            const rsWord = currentWordSoundsWord || "";
+            const rsBoard = readSentenceBoard;
+            const rsReady =
+              rsBoard &&
+              Array.isArray(rsBoard.options) &&
+              rsBoard.options.length >= 2;
+            // Picture anchor — same sources as Read & Match. It is what makes
+            // the cloze answerable without the target ever being spoken.
+            const rsImgRaw = (() => {
+              const lc = rsWord.toLowerCase();
+              const pe = (wordPool || []).find((p) => p.word === lc);
+              return currentWordImage || preparedImageLibrary[lc] || optionImages[rsWord] || optionImages[lc] || (pe && pe.image) || null;
+            })();
+            const rsImg = rsImgRaw
+              ? ((typeof rsImgRaw === "string" && (rsImgRaw.startsWith("data:") || rsImgRaw.startsWith("http"))) ? rsImgRaw : "data:image/png;base64," + rsImgRaw)
+              : null;
+            const rsCheck = (w) => checkAnswer((w || ""), rsWord);
+            // showWordText fills the blank: set on the second attempt (the
+            // standard reveal scaffold) and on a correct answer.
+            const rsSolved = showWordText;
+            return /*#__PURE__*/ React.createElement("div", { className: "flex flex-col items-center gap-5 p-4" },
+              /*#__PURE__*/ React.createElement("p", { className: "text-xs font-semibold text-violet-600 uppercase tracking-wide" }, ts("word_sounds.read_sentence_prompt") || "Read the sentence. Which word finishes it?"),
+              rsImg && /*#__PURE__*/ React.createElement("img", {
+                src: rsImg,
+                alt: ts("word_sounds.read_sentence_picture_hint") || "Picture hint",
+                className: "w-28 h-28 object-contain rounded-2xl border-2 border-slate-200 bg-white shadow-md",
+              }),
+              !rsReady
+                ? /*#__PURE__*/ React.createElement("p", { className: "text-slate-500 text-sm font-semibold italic" }, ts("word_sounds.read_sentence_preparing") || "Preparing your sentence...")
+                : /*#__PURE__*/ React.createElement(React.Fragment, null,
+                    /*#__PURE__*/ React.createElement(
+                      "div",
+                      { className: "flex flex-wrap items-center justify-center gap-2 max-w-xl text-3xl font-black text-slate-800" },
+                      rsBoard.before ? /*#__PURE__*/ React.createElement("span", null, rsBoard.before) : null,
+                      /*#__PURE__*/ React.createElement(
+                        "span",
+                        {
+                          onDragOver: (e) => { e.preventDefault(); if (!readSentenceDragOver) setReadSentenceDragOver(true); },
+                          onDragLeave: () => setReadSentenceDragOver(false),
+                          onDrop: (e) => { e.preventDefault(); setReadSentenceDragOver(false); const _dw = e.dataTransfer.getData("text/plain"); if (_dw) rsCheck(_dw); },
+                          className: "inline-flex items-center justify-center min-w-[5rem] px-3 py-1 rounded-xl border-2 border-dashed transition-colors " + (rsSolved ? "border-emerald-400 bg-emerald-50 text-emerald-700" : readSentenceDragOver ? "border-violet-500 bg-violet-50 text-violet-800" : "border-slate-400 text-slate-400"),
+                        },
+                        rsSolved ? rsWord : "____",
+                      ),
+                      rsBoard.after ? /*#__PURE__*/ React.createElement("span", null, rsBoard.after) : null,
+                    ),
+                    /*#__PURE__*/ React.createElement("p", { className: "text-xs text-slate-500 font-semibold" }, ts("word_sounds.read_sentence_drag_prompt") || "Drag the word into the blank, or tap it"),
+                    /*#__PURE__*/ React.createElement(
+                      "div",
+                      { className: "flex flex-wrap justify-center gap-3 max-w-md w-full" },
+                      // WCAG 2.5.7: dragging is optional — each chip is a
+                      // native button whose onClick supplies the same result.
+                      ...rsBoard.options.map((w, i) => /*#__PURE__*/ React.createElement(
+                        "button",
+                        {
+                          key: "rs-" + i + "-" + w,
+                          draggable: true,
+                          onDragStart: (e) => { e.dataTransfer.setData("text/plain", w); e.dataTransfer.effectAllowed = "move"; },
+                          onDragEnd: () => setReadSentenceDragOver(false),
+                          onClick: () => rsCheck(w),
+                          className: "px-5 py-3 bg-white border-2 border-slate-200 rounded-2xl shadow-md text-2xl font-bold text-slate-800 lowercase hover:border-violet-400 hover:scale-105 transition-all cursor-grab active:cursor-grabbing",
+                        },
+                        w,
+                      )),
+                    ),
+                  ),
             );
           }
           default:

@@ -1056,6 +1056,37 @@ const isUnverifiedK2Word = (w, sessionWords) => {
   if (sessionWords && sessionWords.has(v)) return false;
   return true;
 };
+const READ_SENTENCE_FRAMES = [
+  { before: "I can see the", after: "." },
+  { before: "Look at the", after: "!" },
+  { before: "Here is the", after: "." },
+  { before: "We like the", after: "." }
+];
+const joinPackSentence = (before, word, after) => {
+  const a = String(after || "");
+  return `${before} ${word}${/^[.,!?]/.test(a) ? "" : " "}${a}`.trim();
+};
+const packSentenceWords = (sentence) => String(sentence || "").toLowerCase().replace(/[^a-z\s]/g, " ").split(/\s+/).filter(Boolean);
+const packSentenceIsUsable = (sentence, word, sessionWords) => {
+  const s = String(sentence || "").trim();
+  const w = String(word || "").trim().toLowerCase();
+  if (!s || !w) return false;
+  if (/[^a-zA-Z\s.,!?]/.test(s)) return false;
+  const words = packSentenceWords(s);
+  if (words.length < 3 || words.length > 8) return false;
+  if (words.filter((v) => v === w).length !== 1) return false;
+  return words.every((v) => v === w || v === "a" || v === "i" || !isUnverifiedK2Word(v, sessionWords));
+};
+const splitPackSentence = (sentence, word) => {
+  const s = String(sentence || "").trim();
+  const w = String(word || "").trim();
+  if (!s || !w) return null;
+  const escaped = w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const m = s.match(new RegExp(`(^|[^a-zA-Z])(${escaped})(?=[^a-zA-Z]|$)`, "i"));
+  if (!m || typeof m.index !== "number") return null;
+  const start = m.index + m[1].length;
+  return { before: s.slice(0, start).trim(), after: s.slice(start + w.length).trim() };
+};
 let _espeakPackLoad = null;
 const ensureEspeakLoaded = () => {
   if (_espeakPackLoad) return _espeakPackLoad;
@@ -1171,7 +1202,8 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
     syllable_blending: { enabled: false, count: 5 },
     spelling_bee: { enabled: false, count: 5 },
     missing_letter: { enabled: false, count: 5 },
-    decoding: { enabled: false, count: 5 }
+    decoding: { enabled: false, count: 5 },
+    read_sentence: { enabled: false, count: 5 }
   });
   const [lessonPlanOrder, setLessonPlanOrder] = React.useState([
     "isolation",
@@ -1190,7 +1222,8 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
     "syllable_blending",
     "spelling_bee",
     "missing_letter",
-    "decoding"
+    "decoding",
+    "read_sentence"
   ]);
   const [draggedActivity, setDraggedActivity] = React.useState(null);
   const [lessonPlanReorderStatus, setLessonPlanReorderStatus] = React.useState("");
@@ -1420,6 +1453,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
     const commonWords = packIsEnglish ? PACK_COMMON_WORDS : [];
     const itemWords = items.map((item) => normalizePackKey(item.targetWord || item.word || item.term)).filter(Boolean);
     const wordPool = [.../* @__PURE__ */ new Set([...itemWords, ...commonWords])];
+    const rsSessionWords = new Set(itemWords);
     const allPackPhonemes = [...new Set(items.flatMap((it) => (it.phonemes || []).map(flatPackPhoneme)).filter(Boolean))];
     const allPackLetters = [...new Set(itemWords.join("").split(""))];
     const packRimeOf = (w) => {
@@ -1503,6 +1537,25 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       const familyOptions = shuffleForPack(familySource.length ? familySource : wordPool.filter((value) => value !== word && value.endsWith(rime))).slice(0, word.length <= 3 ? 3 : 5);
       const familyDistractors = shuffleForPack(wordPool.filter((value) => value !== word && !value.endsWith(rime))).slice(0, word.length <= 3 ? 2 : 4);
       const decodingChoices = boardWithAnswer(word, [...itemWords, ...commonWords].filter((value) => value !== word), 3);
+      let readSentence = null;
+      if (packIsEnglish) {
+        const rsText = packSentenceIsUsable(item.sentence, word, rsSessionWords) ? String(item.sentence).trim() : joinPackSentence(
+          READ_SENTENCE_FRAMES[seed % READ_SENTENCE_FRAMES.length].before,
+          word,
+          READ_SENTENCE_FRAMES[seed % READ_SENTENCE_FRAMES.length].after
+        );
+        const rsSplit = splitPackSentence(rsText, word);
+        if (rsSplit) {
+          const rsUsed = new Set(packSentenceWords(rsText));
+          const rsOptions = boardWithAnswer(word, [
+            ...item.sentenceDistractors || [],
+            ...familySource,
+            ...item.blendingDistractors || [],
+            ...otherWords
+          ].map(normalizePackKey).filter((v) => v && v !== word && !rsUsed.has(v) && !isUnusableAsPhonicsWord(v)), 3);
+          readSentence = { sentence: rsText, before: rsSplit.before, after: rsSplit.after, options: rsOptions };
+        }
+      }
       item.activityItems = {
         counting: { options: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "11+"], answer: item.phonemeCount || phonemes.length },
         isolation: { position, correctSound, options: isolationOptions },
@@ -1520,7 +1573,8 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
         sound_sort: { mode, targetChar, difficulty: word.length <= 3 ? "easy" : word.length <= 4 ? "medium" : "hard", options: sortMatches, distractors: sortDistractors },
         letter_tracing: { letter: word[0] || "" },
         word_families: { rime, options: familyOptions, distractors: familyDistractors },
-        decoding: { choices: decodingChoices }
+        decoding: { choices: decodingChoices },
+        ...readSentence ? { read_sentence: readSentence } : {}
       };
     });
     return items;
@@ -1613,6 +1667,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
                          \u2022 "rain" \u2192 ["r", "\u0101", "n"] (3 phonemes, ai = long a)
                          ORTHOGRAPHY DISTRACTORS: Also return 3 plausible misspellings of the target word \u2014 letter substitutions or omissions a K-2 student might reasonably make (e.g. for "corn": ["korn", "cron", "cor"]). These are used for a spelling-choice activity so they should look visually similar to the correct word.
                          MANIPULATION TASK (Sound Swap activity): Return a phoneme deletion OR substitution task. Pick whichever yields a common English answer word. Include a child-friendly instruction line, the target phoneme in plain text (no slashes), the resulting answer word, and 3 distractor words that are also real common English words similar in length to the answer but NOT correct.
+                         DECODABLE SENTENCE (Finish the Sentence activity): Return a short, sensible, concrete sentence of 3 to 7 words that uses "${rawWord}" exactly once and otherwise uses ONLY very common K-2 sight words (the, a, I, can, see, is, in, on, my, we, like, look, here, has, and). No contractions, no proper nouns, no commas. Also return "sentenceDistractors": 3 real words that LOOK similar to "${rawWord}" (same word family, or one letter different) but do NOT make sense in that sentence.
                          Return ONLY JSON:
                          {
                              "word": "${rawWord}",
@@ -1625,6 +1680,8 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
                              "rhymeDistractors": ["dog", "sun", "bed", "leg", "cup"],
                              "blendingDistractors": ["cord", "core", "born", "worn", "torn"],
                              "orthographyDistractors": ["korn", "cron", "cor"],
+                             "sentence": "I can see the corn.",
+                             "sentenceDistractors": ["core", "cord", "torn"],
                              "wordFamily": "-orn",
                              "familyEnding": "-orn",
                              "familyMembers": ["horn", "born", "worn", "torn", "morn"],
@@ -1693,6 +1750,10 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
             rhymeDistractors: (data.rhymeDistractors || []).filter((w) => !isUnusableAsPhonicsWord(w)),
             blendingDistractors: (data.blendingDistractors || []).filter((w) => !isUnusableAsPhonicsWord(w)),
             orthographyDistractors: data.orthographyDistractors || [],
+            // Raw AI sentence; compileActivityItems applies the
+            // decodability gate before anything trusts it.
+            sentence: typeof data.sentence === "string" ? data.sentence.trim() : "",
+            sentenceDistractors: (data.sentenceDistractors || []).filter((w) => !isUnusableAsPhonicsWord(w)),
             familyEnding: data.familyEnding || "",
             familyMembers: (data.familyMembers || []).filter((w) => !isUnusableAsPhonicsWord(w)),
             firstSound: data.firstSound || validatedPhonemes[0] || "",
@@ -1736,7 +1797,8 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
             item.rhymeWord,
             ...item.rhymes || [],
             ...item.familyMembers || [],
-            ...item.rhymeDistractors || []
+            ...item.rhymeDistractors || [],
+            ...item.sentenceDistractors || []
           ].filter(Boolean);
           const unverified = [...new Set(
             candidates.map((w) => String(w).trim().toLowerCase()).filter((w) => isUnverifiedK2Word(w, sessionWords))
@@ -1859,9 +1921,14 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
           ...boards.sound_sort?.options || [],
           ...boards.sound_sort?.distractors || [],
           ...boards.word_families?.options || [],
-          ...boards.word_families?.distractors || []
+          ...boards.word_families?.distractors || [],
+          ...boards.read_sentence?.options || []
         ].forEach((value) => value && tasks.add(String(value)));
         addInstructionParts(tasks, boards.manipulation?.task?.instruction);
+        if (boards.read_sentence?.sentence) {
+          tasks.add(boards.read_sentence.sentence);
+          tasks.add("Read the sentence. Which word finishes it?");
+        }
         tasks.add("Which word did you hear?");
         tasks.add("Which word rhymes with");
         tasks.add("Find words that start with the sound");
@@ -2312,7 +2379,8 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       syllable_blending: { id: "syllable_blending", label: "Syllable Blending", icon: GripHorizontal },
       spelling_bee: { id: "spelling_bee", label: "Spelling Bee", icon: Type },
       missing_letter: { id: "missing_letter", label: "Missing Letter", icon: Type },
-      decoding: { id: "decoding", label: "Read & Match", icon: BookOpen }
+      decoding: { id: "decoding", label: "Read & Match", icon: BookOpen },
+      read_sentence: { id: "read_sentence", label: "Finish the Sentence", icon: BookOpen }
     };
     const activity = activityDefs[actId];
     return /* @__PURE__ */ React.createElement(
