@@ -1,0 +1,107 @@
+{
+ "purpose": "W3C WAI Before/After Demonstration (BAD) pages, fetched for the source-remediation pathway evidence run. Local test use; W3C content licensing applies - see https://www.w3.org/WAI/demos/bad/ and the W3C document/software licenses linked from the pages.",
+ "fetched": "2026-08-11",
+ "baseUrl": "https://www.w3.org/WAI/demos/bad/",
+ "items": [
+  {
+   "file": "after/home.html",
+   "bytes": 11613,
+   "sha256": "476691f17ade929fa5a4a73d18d4d9674121790173eff9a74e063a8eaf8b8e54"
+  },
+  {
+   "file": "after/img/BrainInJar.jpg",
+   "bytes": 18525,
+   "sha256": "a7a14e7e891c972943ddfa811b5a67d16c4012a5501177bb595fb5f7ff7e4b4b"
+  },
+  {
+   "file": "after/img/oldenburgstudentviolin34.jpg",
+   "bytes": 24261,
+   "sha256": "4556b450d08224f1bf6e0f6bd01f1007a76df844bf8a879bd834dec41c74cc7b"
+  },
+  {
+   "file": "after/img/panda-sm.jpg",
+   "bytes": 18720,
+   "sha256": "6490664164aa647815239fce152ae9628e71167ae9acd8a5dc96ad25f4151d68"
+  },
+  {
+   "file": "after/img/teaser_right1.jpg",
+   "bytes": 3072,
+   "sha256": "5d7dcf5260aee2512de8676ff398bddaf393190e406da5a4f1919d937976c4ad"
+  },
+  {
+   "file": "after/img/teaser_right2.jpg",
+   "bytes": 9003,
+   "sha256": "c1a0db64f36db2c60173ca4828c685381f1be71cfeabe45fdb5a3a941319b9d1"
+  },
+  {
+   "file": "after/img/toplogo.png",
+   "bytes": 3419,
+   "sha256": "faf61f9ee8b0fadde8fa55c898e9f4ef90af8afe2874ad5eb82fc7f01d5024e4"
+  },
+  {
+   "file": "after/img/weather.png",
+   "bytes": 2153,
+   "sha256": "3a3bce065a683419e9130e0b6f68b1ba72e922b313efacbfbae97bc2c99eb7b7"
+  },
+  {
+   "file": "before/home.html",
+   "bytes": 24068,
+   "sha256": "70ff29e98abe405d61e952979df308b2b7556827945b7369468db28bca1e3187"
+  },
+  {
+   "file": "before/img/BrainInJar.jpg",
+   "bytes": 18525,
+   "sha256": "a7a14e7e891c972943ddfa811b5a67d16c4012a5501177bb595fb5f7ff7e4b4b"
+  },
+  {
+   "file": "before/img/headline_middle.gif",
+   "bytes": 209,
+   "sha256": "d0c137bf66f3341ed3502298c015407e5d167d3919f771c9608b4a8fc6bf6db1"
+  },
+  {
+   "file": "before/img/list_bullets.gif",
+   "bytes": 104,
+   "sha256": "e1301f6ab418ff763689a2f98c4b071bb49c5e35a641390f85872b5f7fa52d6a"
+  },
+  {
+   "file": "before/img/morearrow.gif",
+   "bytes": 273,
+   "sha256": "422eb5ce9d79e391c343a1312aa6d3a492038e31c93be056b535ca15aa7b7204"
+  },
+  {
+   "file": "before/img/oldenburgstudentviolin34.jpg",
+   "bytes": 24261,
+   "sha256": "4556b450d08224f1bf6e0f6bd01f1007a76df844bf8a879bd834dec41c74cc7b"
+  },
+  {
+   "file": "before/img/panda-sm.jpg",
+   "bytes": 18720,
+   "sha256": "6490664164aa647815239fce152ae9628e71167ae9acd8a5dc96ad25f4151d68"
+  },
+  {
+   "file": "before/img/telefon_white_bg.gif",
+   "bytes": 606,
+   "sha256": "16a4bec5d6c8d76faba710f4526c1f3e47e9aeaa2f21aed371380a24e24a259c"
+  },
+  {
+   "file": "css/main.css",
+   "bytes": 12621,
+   "sha256": "d475fe1769b5ce6d498c70577db4d26a8cddaab9f086daa0af067f80b678059b"
+  },
+  {
+   "file": "css/meta.css",
+   "bytes": 7510,
+   "sha256": "eeb6ecfe1c0f3c035f884208d53d2a58e002d691b82222bc1c82b43a2354182d"
+  },
+  {
+   "file": "img/w3c.png",
+   "bytes": 1779,
+   "sha256": "df81ac7197e6d9d829c0f68ab5eae38845a407df2e6884dbfb25568652900a7c"
+  },
+  {
+   "file": "img/wai.png",
+   "bytes": 4642,
+   "sha256": "692c94472efe9337f61e3525ac2d7ba457e16abf0a33876104ec07a8feb85c6a"
+  }
+ ]
+}
