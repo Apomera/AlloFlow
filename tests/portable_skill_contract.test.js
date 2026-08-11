@@ -191,4 +191,24 @@ describe('summary-report (reviewer evidence page)', () => {
     // Self-contained: no external fetches of any kind.
     expect(page).not.toMatch(/src="http|href="http[^"]*\.(?:css|js)/);
   });
+
+  it('batch-summary aggregates a directory of runs into one scoreboard', () => {
+    const scratch = mkdtempSync(join(tmpdir(), 'alloflow-scoreboard-'));
+    scratchDirectories.push(scratch);
+    const out = join(scratch, 'scoreboard.html');
+    const stdout = execFileSync(PYTHON, [
+      ENGINE, 'batch-summary',
+      '--runs-dir', resolve(ROOT, 'mcp-testing/runs'),
+      '--title', 'contract-test scoreboard',
+      '--out', out,
+    ], { cwd: ROOT, encoding: 'utf8' });
+    const result = JSON.parse(stdout);
+    expect(result.ok).toBe(true);
+    expect(result.rows).toBeGreaterThanOrEqual(3);
+    expect(result.totals.worksheetItems).toBeGreaterThanOrEqual(result.totals.verifiedItems);
+    const page = readFileSync(out, 'utf8');
+    expect(page).toContain('validated runs passed');
+    expect(page).toContain('never determines legal compliance');
+    expect(page).not.toMatch(/src="http|href="http[^"]*\.(?:css|js)/);
+  });
 });

@@ -26,7 +26,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 
-VERSION = "0.2.8"
+VERSION = "0.2.9"
 MAX_SOURCE_BYTES = 200 * 1024 * 1024
 MAX_PLAN_BYTES = 8 * 1024 * 1024
 MAX_HTML_BYTES = 8 * 1024 * 1024
@@ -3739,6 +3739,137 @@ def _show(value: Any) -> str:
     return esc(value) or "0"
 
 
+def _newest_by_created(paths: List[Path]) -> Optional[Dict[str, Any]]:
+    """Pick the record with the latest createdAt stamp (a run directory can
+    hold several generations, e.g. a v1 and a v2 report)."""
+    best: Optional[Dict[str, Any]] = None
+    best_stamp = ""
+    for path in paths:
+        loaded = _load_json_quiet(path)
+        if not loaded:
+            continue
+        stamp = str(loaded.get("createdAt") or "")
+        if best is None or stamp > best_stamp:
+            best, best_stamp = loaded, stamp
+    return best
+
+
+def batch_summary_command(args: argparse.Namespace) -> Dict[str, Any]:
+    """One scoreboard page across many runs — the pilot deliverable. Adds
+    nothing: every cell is read from each run's stamped artifacts."""
+    runs_dir = Path(args.runs_dir).resolve()
+    if not runs_dir.is_dir():
+        raise PortableError("batch-summary needs an existing directory of run directories.", 2)
+    rows: List[Dict[str, Any]] = []
+    for child in sorted(runs_dir.iterdir()):
+        if not child.is_dir():
+            continue
+        reports = list(child.glob("*-accessibility-report.json")) + list(child.glob("*/*-accessibility-report.json"))
+        report = _newest_by_created(reports)
+        if not report:
+            continue
+        checks = report.get("checks") or {}
+        verification = _newest_by_created(
+            list(child.glob("verification-report*.json")) + list(child.glob("*/verification-report*.json"))
+        )
+        before = _load_json_quiet(child / "before-verapdf.json")
+        ua = checks.get("pdfUaValidation") or {}
+        src = checks.get("sourceTextRecall") or {}
+        counts = (verification or {}).get("counts") or {}
+        rows.append({
+            "run": child.name,
+            "document": str((report.get("source") or {}).get("basename") or child.name),
+            "verdict": str(report.get("verdict") or ""),
+            "beforeFailedRules": before.get("failedRuleCount") if before else None,
+            "uaStatus": ua.get("status"),
+            "uaCompliant": ua.get("compliant"),
+            "srcRecall": src.get("recall") if src.get("status") == "completed" else None,
+            "srcStatus": src.get("status"),
+            "verified": counts.get("verified"),
+            "items": counts.get("items"),
+            "discrepancies": counts.get("discrepancies"),
+            "verificationResult": (verification or {}).get("result"),
+        })
+    if not rows:
+        raise PortableError("No run directories with accessibility reports found.", 2)
+
+    totals = {
+        "documents": len(rows),
+        "uaPasses": sum(1 for r in rows if r["uaCompliant"] is True),
+        "uaRuns": sum(1 for r in rows if r["uaStatus"] == "completed"),
+        "verifiedItems": sum(int(r["verified"] or 0) for r in rows),
+        "worksheetItems": sum(int(r["items"] or 0) for r in rows),
+        "discrepancies": sum(int(r["discrepancies"] or 0) for r in rows),
+        "verificationRuns": sum(1 for r in rows if r["verificationResult"]),
+        "blocked": sum(1 for r in rows if r["verdict"] == "blocked"),
+    }
+
+    def _cell_recall(r: Dict[str, Any]) -> str:
+        if r["srcRecall"] is None:
+            return "not measurable" if r["srcStatus"] != "completed" else "n/a"
+        return f"{float(r['srcRecall']) * 100:.1f}%"
+
+    def _cell_ua(r: Dict[str, Any]) -> str:
+        if r["uaStatus"] != "completed":
+            return "not run"
+        return "PASS" if r["uaCompliant"] else "FAIL"
+
+    body_rows = "".join(
+        "<tr><th scope=\"row\">" + esc(r["document"]) + "<br><small>" + esc(r["run"]) + "</small></th>"
+        + "<td>" + (_show(r["beforeFailedRules"]) + " failed rules" if r["beforeFailedRules"] is not None else "not recorded") + "</td>"
+        + "<td>" + _cell_ua(r) + "</td>"
+        + "<td>" + _cell_recall(r) + "</td>"
+        + "<td>" + (_show(r["verified"]) + "/" + _show(r["items"]) + " (" + _show(r["discrepancies"]) + " discrepancies)" if r["items"] is not None else "not run") + "</td>"
+        + "<td>" + esc(r["verdict"]) + "</td></tr>"
+        for r in rows
+    )
+    page = f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Remediation scoreboard: {esc(args.title or runs_dir.name)}</title>
+<style>
+:root {{ color-scheme: light; }}
+html {{ background: #f5f6f8; color: #16202b; font: 15px/1.55 Arial, Helvetica, sans-serif; }}
+body {{ margin: 0 auto; max-width: 62rem; padding: 1.2rem; }}
+main {{ background: #ffffff; border: 1px solid #c9d1da; border-radius: 10px; padding: 1.4rem 1.7rem; }}
+h1 {{ font-size: 1.4rem; border-bottom: 3px solid #1d4ed8; padding-bottom: .35rem; }}
+table {{ border-collapse: collapse; width: 100%; margin: .9rem 0; font-size: .9rem; }}
+th, td {{ border: 1px solid #64748b; padding: .45rem .55rem; text-align: left; vertical-align: top; }}
+thead th {{ background: #e8edf3; }}
+tbody th {{ font-weight: 600; }}
+tfoot td, tfoot th {{ background: #eef3ff; font-weight: 700; }}
+small {{ color: #475569; font-weight: 400; }}
+.limits {{ border-top: 2px solid #64748b; margin-top: 1.6rem; padding-top: .8rem; font-size: .92rem; }}
+</style>
+</head>
+<body>
+<main>
+<h1>Remediation scoreboard: {esc(args.title or runs_dir.name)}</h1>
+<p>Assembled {esc(utc_now())} from the stamped evidence files of {totals['documents']} run(s); nothing is added or estimated.
+Per-document detail lives in each run's own evidence summary.</p>
+<div style="overflow-x:auto">
+<table>
+<thead><tr><th scope="col">Document (run)</th><th scope="col">Original PDF/UA-1</th><th scope="col">Rebuild PDF/UA-1</th><th scope="col">Source text carried</th><th scope="col">Independent verification</th><th scope="col">Outcome</th></tr></thead>
+<tbody>{body_rows}</tbody>
+<tfoot><tr><th scope="row">Totals</th><td>&#8212;</td><td>{totals['uaPasses']}/{totals['uaRuns']} validated runs passed</td><td>&#8212;</td><td>{totals['verifiedItems']}/{totals['worksheetItems']} items attested; {totals['discrepancies']} open discrepancies across {totals['verificationRuns']} verified runs</td><td>{totals['blocked']} refused</td></tr></tfoot>
+</table>
+</div>
+<div class="limits">
+<p>This scoreboard never determines legal compliance. "PASS" means the rebuilt file passed every machine-checkable
+PDF/UA-1 rule in a local veraPDF run; meaning, fidelity, and distribution decisions belong to a person. Refused
+documents (interactive forms, signed records, legal records) are counted, not hidden.</p>
+</div>
+</main>
+</body>
+</html>
+"""
+    out_path = Path(args.out).resolve() if getattr(args, "out", None) else runs_dir / "scoreboard.html"
+    out_path.write_text(page, encoding="utf-8")
+    return {"ok": True, "scoreboard": out_path.name, "totals": totals, "rows": len(rows)}
+
+
 def summary_report_command(args: argparse.Namespace) -> Dict[str, Any]:
     run_dir = Path(args.run_dir).resolve()
     if not run_dir.is_dir():
@@ -4361,6 +4492,14 @@ def build_parser() -> argparse.ArgumentParser:
     summary_parser.add_argument("--before-validation")
     summary_parser.add_argument("--verification")
 
+    batch_summary_parser = subparsers.add_parser(
+        "batch-summary",
+        help="One scoreboard HTML page across a directory of run directories.",
+    )
+    batch_summary_parser.add_argument("--runs-dir", required=True)
+    batch_summary_parser.add_argument("--out")
+    batch_summary_parser.add_argument("--title")
+
     verify_init = subparsers.add_parser(
         "verify-init",
         help="Derive an independent-verification worksheet from a repair plan.",
@@ -4421,6 +4560,8 @@ def main() -> int:
             result = extract_annotations_command(args)
         elif args.command == "summary-report":
             result = summary_report_command(args)
+        elif args.command == "batch-summary":
+            result = batch_summary_command(args)
         elif args.command == "verify-init":
             result = verify_init_command(args)
         elif args.command == "verify-check":
