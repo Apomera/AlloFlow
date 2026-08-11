@@ -145,6 +145,16 @@ describe('the player treats the sentence as print', () => {
     expect(block).toMatch(/onDrop:/);
   });
 
+  it('a placed tile never steals keyboard focus', () => {
+    // A hard `disabled` drops focus to the body the moment a tile is placed,
+    // stranding a keyboard user after their first pick. aria-disabled keeps
+    // the button focusable; smPlace ignores used tiles.
+    const idx = MODULE.indexOf('case "sentence_match": {');
+    const block = MODULE.slice(idx, MODULE.indexOf('default:', idx));
+    expect(block).toMatch(/"aria-disabled": used/);
+    expect(block).not.toMatch(/\bdisabled: used/);
+  });
+
   it('tile order is shuffled once per board, not per render', () => {
     expect(MODULE).toMatch(/board\.tiles = fisherYatesShuffle\(\[\.\.\.board\.sequence, \.\.\.board\.extras\]\)/);
   });

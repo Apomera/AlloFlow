@@ -16520,8 +16520,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                                 key: "sm-tile-" + i + "-" + w,
                                 draggable: !used,
                                 onDragStart: (e) => { e.dataTransfer.setData("text/plain", w); e.dataTransfer.effectAllowed = "move"; },
+                                // aria-disabled instead of disabled: a hard
+                                // disable drops keyboard focus to the body the
+                                // moment a tile is placed, stranding a keyboard
+                                // user after their very first pick. smPlace
+                                // already ignores used tiles.
                                 onClick: () => smPlace(w),
-                                disabled: used,
+                                "aria-disabled": used,
                                 "aria-label": smTileName(w),
                                 className: "w-24 h-24 bg-white border-2 rounded-2xl shadow-md flex items-center justify-center p-2 transition-all " + (used ? "border-slate-100 opacity-30 cursor-default" : "border-slate-200 hover:border-violet-400 hover:scale-105 cursor-grab active:cursor-grabbing"),
                               },

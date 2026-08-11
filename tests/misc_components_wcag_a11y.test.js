@@ -9,8 +9,23 @@ describe('Misc Components WCAG behavior', () => {
   it('honors both app and operating-system reduced-motion preferences', () => {
     expect(source).toContain("window.matchMedia('(prefers-reduced-motion: reduce)')");
     expect(source).toContain('disableAnimations || prefersReducedMotion');
-    expect(source.match(/motion-reduce:animate-none/g)).toHaveLength(27);
-    expect(source.match(/motion-reduce:transition-none/g)).toHaveLength(36);
+    // The real invariant, checked per className instead of pinned counts
+    // (the counts churned on every compliant addition and would PASS a
+    // violating replacement): any chunk that animates or transitions must
+    // carry its motion-reduce partner in the same chunk.
+    const chunks = [];
+    const re = /className=(?:"([^"]*)"|\{`([^`]*)`\})/g;
+    let m;
+    while ((m = re.exec(source)) !== null) chunks.push(m[1] != null ? m[1] : m[2]);
+    expect(chunks.length).toBeGreaterThan(100); // regex sanity: the scan found the file
+    for (const c of chunks) {
+      if (/\banimate-(?!none)[a-z-]+/.test(c.replace(/motion-reduce:animate-none/g, ''))) {
+        expect(c, `animate without motion-reduce partner: ${c.slice(0, 110)}`).toContain('motion-reduce:animate-none');
+      }
+      if (/\btransition-[a-z-]+/.test(c.replace(/motion-reduce:transition-none/g, ''))) {
+        expect(c, `transition without motion-reduce partner: ${c.slice(0, 110)}`).toContain('motion-reduce:transition-none');
+      }
+    }
   });
 
   it('announces Cloze validation without relying on color or animation', () => {
@@ -21,8 +36,10 @@ describe('Misc Components WCAG behavior', () => {
   });
 
   it('uses explicit non-submit types for every native button', () => {
+    // Loop-only: EVERY button is checked, however many exist — an exact
+    // count adds nothing but churn on each compliant addition.
     const buttons = source.match(/<button\b[\s\S]*?>/g) || [];
-    expect(buttons).toHaveLength(41);
+    expect(buttons.length).toBeGreaterThan(20); // regex sanity
     for (const button of buttons) expect(button).toContain('type="button"');
   });
 

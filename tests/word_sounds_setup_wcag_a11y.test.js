@@ -29,8 +29,12 @@ describe('Word Sounds Setup WCAG interaction behavior', () => {
   });
 
   it('uses explicit non-submit types for all native buttons', () => {
-    expect(source.match(/<button\b/g)).toHaveLength(73);
-    expect(source.match(/\btype="button"/g)).toHaveLength(73);
+    // Loop-only: every button tag is checked individually — the old equal-
+    // count pins (73/73) churned on each compliant addition and could pass
+    // with a typeless button offset by a stray type="button" elsewhere.
+    const buttons = source.match(/<button\b[\s\S]*?>/g) || [];
+    expect(buttons.length).toBeGreaterThan(40); // regex sanity
+    for (const button of buttons) expect(button).toContain('type="button"');
   });
 
   it('does not make the image wrapper a pointer-only interaction', () => {
