@@ -604,6 +604,80 @@ describe('Tree Life Lab — banks and mirrors', () => {
     expect(/(\d)\s*kg(?!\s*C)/.test(html.replace(/kg C/g, 'kgC')), 'a bare "kg" survived').toBe(false);
   });
 
+  it('names every glyph-only view control', () => {
+    // The six 3D controls show only "◀ ▶ ▲ ▼ + −". A screen reader announces
+    // those as punctuation or nothing, so each needs an accessible name from
+    // somewhere other than its label text — this was 6 of the repo's a11y
+    // errors. btn() takes opts.ariaLabel; the glyph buttons must pass one.
+    const src = readFileSync(resolve(process.cwd(), SOURCE), 'utf8');
+    // Only real btn(...) calls — searching the file for a glyph also matches the
+    // comment that explains this rule.
+    const calls = src.split('\n').filter(l => /\bbtn\(\s*'/.test(l));
+    expect(calls.length, 'expected btn() calls').toBeGreaterThan(5);
+
+    // Glyph-only means the whole label literal has no letters or digits AND is
+    // not concatenated with translated text — `btn('prev', '← ' + t(...))` is
+    // already named by the text that follows the arrow.
+    const glyphOnly = calls.filter(l => /btn\(\s*'[^']*'\s*,\s*'[^'a-zA-Z0-9]+'\s*,/.test(l));
+    expect(glyphOnly.length, 'expected the glyph view controls').toBeGreaterThanOrEqual(6);
+    for (const line of glyphOnly) {
+      expect(line.trim(), 'glyph-only button needs an ariaLabel').toContain('ariaLabel:');
+    }
+    expect(src, 'btn() must forward ariaLabel to the element').toContain("'aria-label': o.ariaLabel || undefined");
+  });
+
+  it('leaves no user-visible string a language pack cannot reach', () => {
+    // Static greps cannot answer this and never could: a string routed through a
+    // module-scope data table reaches __alloT at RENDER time and looks hardcoded to a
+    // scanner, while a string built inline looks fine and never reaches it at all. A
+    // static pass put coverage at 31% when the real figure was already far higher.
+    //
+    // So render with a translator that replaces every translated string with a marker
+    // and read what English is LEFT. Whatever remains is permanently English no matter
+    // how many packs get written. This tool started at 19 such strings.
+    const MARK = '░';
+    const E = engine();
+    let tree = E.newTree('oak');
+    for (let i = 0; i < 60; i += 1) tree = E.simulateYear(tree, E.speciesById('oak'), GOOD_ENV, ALLOC);
+
+    const SURFACES = [
+      ['grow/k2', { view: 'grow', bandOverride: 'k2', tree }],
+      ['grow/g68', { view: 'grow', bandOverride: 'g68', tree }],
+      ['grow/g912', { view: 'grow', bandOverride: 'g912', tree }],
+      ['chem/k2', { view: 'chem', bandOverride: 'k2', tree }],
+      ['chem/g912', { view: 'chem', bandOverride: 'g912', tree }],
+      ['transport/g68', { view: 'transport', bandOverride: 'g68', tree }],
+      ['transport/g912', { view: 'transport', bandOverride: 'g912', tree }],
+      ['quiz', { view: 'quiz', tree, quizPick: 1 }],
+      ['spread', {
+        view: 'spread',
+        tree,
+        lastSpread: {
+          event: 'pathogen',
+          res: E.resolveSpread({ seed_animal: 6 }, { id: 'pathogen', name: 'Root pathogen' }, E.lcg(11)),
+        },
+      }],
+    ];
+
+    const leftovers = [];
+    for (const [label, state] of SURFACES) {
+      const html = render({ treeLab: state }, { t: (k) => MARK + k + MARK });
+      const text = html
+        .replace(/<style[\s\S]*?<\/style>/g, ' ')
+        .replace(/<[^>]+>/g, '\n')
+        .replace(new RegExp(MARK + '[^' + MARK + ']*' + MARK, 'g'), ' ')
+        .replace(/&[a-z]+;/g, ' ');
+      for (const line of text.split('\n')) {
+        const t = line.trim();
+        // Four or more word-like tokens is prose; anything shorter is a number, a
+        // unit or a symbol that needs no translation.
+        const words = t.split(/\s+/).filter((w) => /[a-zA-Z]{3}/.test(w));
+        if (words.length >= 4 && /[a-z]{3}/.test(t)) leftovers.push(`${label}: ${t.slice(0, 100)}`);
+      }
+    }
+    expect(leftovers, `untranslatable:\n  ${leftovers.join('\n  ')}`).toEqual([]);
+  });
+
   it('avoids var() in canvas and THREE colour paths', () => {
     // ctx.fillStyle = 'var(--x)' is SILENTLY IGNORED (the previous fill persists), and
     // an SVG presentation attribute cannot resolve a token either. Both must be hex.

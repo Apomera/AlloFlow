@@ -600,21 +600,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
 
       var p = strat.establish;
       var note = '';
-      if (strat.strongAgainst.indexOf(event.id) >= 0) { p = clamp(p * 2.1, 0, 0.95); note = 'Comes through ' + event.name.toLowerCase() + ' better than the alternatives.'; }
-      else if (strat.weakAgainst.indexOf(event.id) >= 0) { p = p * 0.25; note = 'Badly hurt by ' + event.name.toLowerCase() + '.'; }
+      var noteKind = null;
+      if (strat.strongAgainst.indexOf(event.id) >= 0) { p = clamp(p * 2.1, 0, 0.95); noteKind = 'favoured'; note = 'Comes through this one better than the alternatives.'; }
+      else if (strat.weakAgainst.indexOf(event.id) >= 0) { p = p * 0.25; noteKind = 'hurt'; note = 'Badly hurt by what happened this decade.'; }
 
       // The clonal penalty that makes the game a real decision: a pathogen travelling
       // through a shared root system does not roll per offspring, it takes the lot.
       var wiped = false;
       if (event.id === 'pathogen' && strat.diversity === 0 && rng() < 0.55) {
         wiped = true;
+        noteKind = 'wiped';
         note = 'The shared root system carried the fungus to every copy at once.';
       }
 
       var took = 0;
       if (!wiped) for (var i = 0; i < attempts; i++) if (rng() < p) took++;
 
-      results.push({ id: sid, name: strat.name, icon: strat.icon, attempts: attempts, took: took, note: note, wiped: wiped, diversity: strat.diversity });
+      results.push({ id: sid, name: strat.name, icon: strat.icon, attempts: attempts, took: took, note: note, noteKind: noteKind, wiped: wiped, diversity: strat.diversity });
       established += took;
       if (strat.diversity === 1) diverseCount += took; else clonalCount += took;
     });
@@ -1437,11 +1439,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         kids.push(card([
           heading(__alloT('stem.treelab.this_year', 'This year’s carbon budget'),
             atLeast(band, 'g68')
-              ? 'Gross photosynthesis minus maintenance respiration is what is left to grow with. Everything below is spent out of that surplus.'
-              : 'Sugar made, minus sugar used just to stay alive. What is left is what the tree can grow with.'),
+              ? __alloT('stem.treelab.budget_sub_g68', 'Gross photosynthesis minus maintenance respiration is what is left to grow with. Everything below is spent out of that surplus.')
+              : __alloT('stem.treelab.budget_sub_k2', 'Sugar made, minus sugar used just to stay alive. What is left is what the tree can grow with.')),
           h('div', { key: 'nums', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: 8, marginBottom: 10 } }, [
             statTile('made', atLeast(band, 'g68') ? 'Gross photosynthesis' : 'Sugar made', round(live.gross, 2) + ' kg C', T.good),
-            statTile('spent', atLeast(band, 'g68') ? 'Maintenance respiration' : 'Sugar used to stay alive', round(liveResp, 2) + ' kg C', T.warn),
+            statTile('spent', atLeast(band, 'g68')
+              ? __alloT('stem.treelab.tile_resp', 'Maintenance respiration')
+              : __alloT('stem.treelab.tile_resp_k2', 'Sugar used to stay alive'), round(liveResp, 2) + ' kg C', T.warn),
             statTile('net', atLeast(band, 'g68') ? 'Net carbon' : 'Left to grow with', round(liveNet, 2) + ' kg C', liveNet >= 0 ? T.accent : T.bad)
           ]),
           h('div', {
@@ -1454,10 +1458,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             h('strong', { key: 'a' }, __alloT('stem.treelab.limiting_now', 'Limiting right now: ') + limName),
             h('div', { key: 'b', style: { fontSize: 12, color: T.dim, marginTop: 4 } },
               atLeast(band, 'g912')
-                ? 'The rate follows the smallest term. Raising any other input changes nothing until this one stops being the smallest.'
+                ? __alloT('stem.treelab.limit_note_g912', 'The rate follows the smallest term. Raising any other input changes nothing until this one stops being the smallest.')
                 : (atLeast(band, 'g35')
-                  ? 'This is the one running short. Adding more of anything else will not help until you fix this one.'
-                  : 'This is what the tree needs more of.')),
+                  ? __alloT('stem.treelab.limit_note_g35', 'This is the one running short. Adding more of anything else will not help until you fix this one.')
+                  : __alloT('stem.treelab.limit_note_k2', 'This is what the tree needs more of.'))),
             // Drought makes the CO2 term the smallest NUMBER, but water is the cause:
             // the stomata that admit CO2 are shut. Saying "CO2" here would send a
             // student off to add CO2, which this tool teaches is useless.
@@ -1485,8 +1489,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           atLeast(band, 'g68') ? h('div', { key: 'ap', style: { marginTop: 6 } },
             bar(__alloT('stem.treelab.stomata_open', 'Stomata open'), aperture, T.accent,
               aperture < 0.5
-                ? 'Closing to save water. Less ' + H2O + ' out, but also less ' + CO2 + ' in.'
-                : 'Wide open. Carbon is coming in and water is going out through the same pores.')) : null
+                ? __alloT('stem.treelab.stomata_closing', 'Closing to save water. Less ' + H2O + ' out, but also less ' + CO2 + ' in.')
+                : __alloT('stem.treelab.stomata_open_note', 'Wide open. Carbon is coming in and water is going out through the same pores.'))) : null
         ]));
 
         kids.push(card([
@@ -1521,8 +1525,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         return card([
           heading(__alloT('stem.treelab.playback', 'Run the clock'),
             atLeast(band, 'g35')
-              ? 'Different parts of a tree run on wildly different clocks. Seasons take months, one ring takes a year, closing a canopy takes decades.'
-              : 'Press play and watch the tree grow.'),
+              ? __alloT('stem.treelab.playback_sub', 'Different parts of a tree run on wildly different clocks. Seasons take months, one ring takes a year, closing a canopy takes decades.')
+              : __alloT('stem.treelab.playback_sub_k2', 'Press play and watch the tree grow.')),
           h('div', { key: 'row', style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2 } }, [
             btn('play', (playing ? '⏸ ' : '▶ ') + (playing
               ? __alloT('stem.treelab.pause', 'Pause')
@@ -1603,8 +1607,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         return card([
           heading(__alloT('stem.treelab.rings', 'Growth rings'),
             atLeast(band, 'g68')
-              ? 'One bar per year, red where the tree ran a deficit. Rings usually narrow with age even in a healthy tree: the same volume of wood spread around a longer circumference is thinner.'
-              : 'One bar for each year. Taller means the tree grew a wider ring that year.'),
+              ? __alloT('stem.treelab.rings_sub_g68', 'One bar per year, red where the tree ran a deficit. Rings usually narrow with age even in a healthy tree: the same volume of wood spread around a longer circumference is thinner.')
+              : __alloT('stem.treelab.rings_sub_k2', 'One bar for each year. Taller means the tree grew a wider ring that year.')),
           h('svg', {
             key: 'svg', viewBox: '0 0 ' + W + ' ' + H, preserveAspectRatio: 'none',
             style: { width: '100%', height: 120, background: T.cardAlt, borderRadius: 8, border: '1px solid ' + T.border },
@@ -1643,8 +1647,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         kids.push(card([
           heading(__alloT('stem.treelab.what_limits', 'What is limiting the rate?'),
             atLeast(band, 'g912')
-              ? 'Four factors, and the rate follows the smallest of them. This is the question a living tree answers every hour, and its answer is recorded permanently in the rings.'
-              : 'Four things a tree needs. Whichever is shortest sets the speed, no matter how much of the others there is.'),
+              ? __alloT('stem.treelab.limits_sub_g912', 'Four factors, and the rate follows the smallest of them. This is the question a living tree answers every hour, and its answer is recorded permanently in the rings.')
+              : __alloT('stem.treelab.limits_sub_g68', 'Four things a tree needs. Whichever is shortest sets the speed, no matter how much of the others there is.')),
           bar(__alloT('stem.treelab.light', 'Light'), live.factors.light, tone('#facc15')),
           bar(CO2, live.factors.co2, tone('#60a5fa')),
           bar(__alloT('stem.treelab.temperature', 'Temperature'), live.factors.temp, tone('#fb923c')),
@@ -1734,20 +1738,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
               h('div', { key: 'h', style: { fontWeight: 700, color: T.text, marginBottom: 4 } }, '↑ ' + (atLeast(band, 'g68') ? 'Xylem' : 'Water pipes')),
               h('div', { key: 'b', style: { fontSize: 12, color: T.dim, lineHeight: 1.55 } },
                 atLeast(band, 'g912')
-                  ? 'Dead, hollow cells. Water is pulled up under tension by evaporation at the leaf surface, not pushed from below. The column is under negative pressure and an air bubble can break it.'
+                  ? __alloT('stem.treelab.xylem_g912', 'Dead, hollow cells. Water is pulled up under tension by evaporation at the leaf surface, not pushed from below. The column is under negative pressure and an air bubble can break it.')
                   : (atLeast(band, 'g68')
-                    ? 'Dead hollow cells carrying water up from the roots. Evaporation at the leaves does the pulling.'
-                    : 'Carries water up from the roots to the leaves.')),
+                    ? __alloT('stem.treelab.xylem_g68', 'Dead hollow cells carrying water up from the roots. Evaporation at the leaves does the pulling.')
+                    : __alloT('stem.treelab.xylem_k2', 'Carries water up from the roots to the leaves.'))),
               h('div', { key: 'm', style: { marginTop: 8 } }, bar(__alloT('stem.treelab.flow_now', 'Flow right now'), aperture, '#38bdf8', flowUp + '% of maximum'))
             ]),
             h('div', { key: 'p', style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, borderLeft: '4px solid #f59e0b' } }, [
               h('div', { key: 'h', style: { fontWeight: 700, color: T.text, marginBottom: 4 } }, '↓ ' + (atLeast(band, 'g68') ? 'Phloem' : 'Sugar pipes')),
               h('div', { key: 'b', style: { fontSize: 12, color: T.dim, lineHeight: 1.55 } },
                 atLeast(band, 'g912')
-                  ? 'Living cells moving sugar from any SOURCE to any SINK. Direction is not fixed: in autumn sugar runs down to the roots, and in early spring it runs back up to build leaves before there are leaves to make it.'
+                  ? __alloT('stem.treelab.phloem_g912', 'Living cells moving sugar from any SOURCE to any SINK. Direction is not fixed: in autumn sugar runs down to the roots, and in early spring it runs back up to build leaves before there are leaves to make it.')
                   : (atLeast(band, 'g68')
-                    ? 'Living cells carrying sugar from where it is made to where it is spent. In spring the flow reverses and runs upward.'
-                    : 'Carries food from the leaves to the rest of the tree.'))
+                    ? __alloT('stem.treelab.phloem_g68', 'Living cells carrying sugar from where it is made to where it is spent. In spring the flow reverses and runs upward.')
+                    : __alloT('stem.treelab.phloem_k2', 'Carries food from the leaves to the rest of the tree.')))
             ])
           ])
         ]));
@@ -1783,8 +1787,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         kids.push(card([
           heading('🌱 ' + __alloT('stem.treelab.spread', 'Making more trees'),
             atLeast(band, 'g68')
-              ? 'Seeds recombine and travel, but almost none survive. Clonal routes nearly always take and cost little, but they produce genetic copies on a shared root system. Spend the reproduction carbon you banked and see what a decade throws at you.'
-              : 'Trees make new trees in more than one way. Some grow from seeds. Some grow straight out of the parent tree. Try spending your seed budget different ways.'),
+              ? __alloT('stem.treelab.spread_sub_g68', 'Seeds recombine and travel, but almost none survive. Clonal routes nearly always take and cost little, but they produce genetic copies on a shared root system. Spend the reproduction carbon you banked and see what a decade throws at you.')
+              : __alloT('stem.treelab.spread_sub_k2', 'Trees make new trees in more than one way. Some grow from seeds. Some grow straight out of the parent tree. Try spending your seed budget different ways.')),
           h('div', { key: 'bud', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: 8, marginBottom: 10 } }, [
             statTile('b', __alloT('stem.treelab.banked', 'Carbon banked'), budget + ' kg C', T.accent),
             statTile('s', __alloT('stem.treelab.committed', 'Committed'), round(totalSpent, 2) + ' kg C', T.warn),
@@ -1800,8 +1804,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           kids.push(card([
             h('div', { key: 'hd', style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, flexWrap: 'wrap' } }, [
               h('div', { key: 'a', style: { flex: '1 1 200px' } }, [
-                h('div', { key: 'n', style: { fontWeight: 700, color: T.text, fontSize: 14 } }, s.icon + ' ' + s.name),
-                h('div', { key: 'b', style: { fontSize: 12, color: T.dim, marginTop: 3, lineHeight: 1.55 } }, s.blurb)
+                h('div', { key: 'n', style: { fontWeight: 700, color: T.text, fontSize: 14 } },
+                  s.icon + ' ' + __alloT('stem.treelab.strategy_' + s.id, s.name)),
+                h('div', { key: 'b', style: { fontSize: 12, color: T.dim, marginTop: 3, lineHeight: 1.55 } },
+                  __alloT('stem.treelab.strategy_blurb_' + s.id, s.blurb))
               ]),
               h('div', { key: 'c', style: { textAlign: 'right', fontSize: 11, color: T.dim, minWidth: 96 } }, [
                 h('div', { key: '1' }, __alloT('stem.treelab.cost', 'Cost ') + s.cost + ' kg C'),
@@ -1882,8 +1888,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         var res = last.res;
         return card([
           h('div', { key: 'ev', style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, borderLeft: '4px solid ' + T.accent, marginBottom: 10 } }, [
-            h('div', { key: 'a', style: { fontWeight: 700, color: T.text } }, ev.icon + ' ' + ev.name),
-            h('div', { key: 'b', style: { fontSize: 12, color: T.dim, marginTop: 3 } }, ev.blurb)
+            h('div', { key: 'a', style: { fontWeight: 700, color: T.text } },
+              ev.icon + ' ' + __alloT('stem.treelab.event_' + ev.id, ev.name)),
+            h('div', { key: 'b', style: { fontSize: 12, color: T.dim, marginTop: 3 } },
+              __alloT('stem.treelab.event_blurb_' + ev.id, ev.blurb))
           ]),
           h('div', { key: 'g', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: 8, marginBottom: 10 } }, [
             statTile('e', __alloT('stem.treelab.established', 'Established'), String(res.established), T.good),
@@ -1896,9 +1904,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
               key: r.id,
               style: { display: 'flex', justifyContent: 'space-between', gap: 8, padding: '7px 0', borderBottom: '1px solid ' + T.border, fontSize: 12, flexWrap: 'wrap' }
             }, [
-              h('span', { key: 'a', style: { color: T.text, fontWeight: 600 } }, (r.icon || '') + ' ' + (r.name || r.id)),
+              h('span', { key: 'a', style: { color: T.text, fontWeight: 600 } },
+                (r.icon || '') + ' ' + __alloT('stem.treelab.strategy_' + r.id, r.name || r.id)),
               h('span', { key: 'b', style: { color: r.took > 0 ? T.good : T.dim } }, r.took + ' / ' + r.attempts),
-              r.note ? h('span', { key: 'c', style: { color: r.wiped ? T.bad : T.dim, flex: '1 1 100%', lineHeight: 1.45 } }, r.note) : null
+              r.note ? h('span', { key: 'c', style: { color: r.wiped ? T.bad : T.dim, flex: '1 1 100%', lineHeight: 1.45 } },
+                __alloT('stem.treelab.spread_note_' + (r.noteKind || 'plain'), r.note)) : null
             ]);
           })),
           atLeast(band, 'g68') ? h('p', { key: 'lesson', style: { fontSize: 12, color: T.dim, lineHeight: 1.55, marginTop: 10 } },
@@ -1915,13 +1925,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         if (pool.length === 0) pool = QUIZ.slice(0, 3);
         var idx = clamp(d.quizIdx || 0, 0, pool.length - 1);
         var q = pool[idx];
+        // Key against the full bank, not the filtered pool: a different grade band shows a
+        // different subset, and a pool-relative key would hand question 3 the translation
+        // written for question 5.
+        var qKey = QUIZ.indexOf(q);
         var picked = d.quizPick;
         var answered = picked != null;
 
         return [card([
           heading(__alloT('stem.treelab.check', 'Knowledge check'),
             __alloT('stem.treelab.check_sub', 'Question ') + (idx + 1) + ' / ' + pool.length + ' · ' + BAND_LABEL[band]),
-          h('p', { key: 'q', style: { fontSize: 14, color: T.text, lineHeight: 1.6, marginBottom: 10, fontWeight: 600 } }, q.q),
+          h('p', { key: 'q', style: { fontSize: 14, color: T.text, lineHeight: 1.6, marginBottom: 10, fontWeight: 600 } },
+            __alloT('stem.treelab.quiz' + qKey + '_q', q.q)),
           h('div', { key: 'opts', role: 'group', 'aria-label': 'Answer choices' }, q.a.map(function (opt, i) {
             var isCorrect = i === q.correct;
             var chosen = picked === i;
@@ -1940,9 +1955,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
                 marginBottom: 6, borderRadius: 8, border: '1px solid ' + bd, background: bg,
                 color: T.text, fontSize: 13, cursor: answered ? 'default' : 'pointer', lineHeight: 1.5
               }
-            }, String.fromCharCode(65 + i) + '. ' + opt);
+            }, String.fromCharCode(65 + i) + '. ' + __alloT('stem.treelab.quiz' + qKey + '_opt' + i, opt));
           })),
-          answered ? h('div', { key: 'why', style: { marginTop: 8, padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, borderLeft: '4px solid ' + T.accent, fontSize: 12, color: T.text, lineHeight: 1.6 } }, q.why) : null,
+          answered ? h('div', { key: 'why', style: { marginTop: 8, padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, borderLeft: '4px solid ' + T.accent, fontSize: 12, color: T.text, lineHeight: 1.6 } },
+            __alloT('stem.treelab.quiz' + qKey + '_why', q.why)) : null,
           h('div', { key: 'nav', style: { marginTop: 10 } }, [
             btn('prev', '← ' + __alloT('stem.treelab.prev', 'Previous'), function () { updMulti({ quizIdx: Math.max(0, idx - 1), quizPick: null }); }, { small: true, disabled: idx === 0 }),
             btn('next', __alloT('stem.treelab.next', 'Next') + ' →', function () { updMulti({ quizIdx: Math.min(pool.length - 1, idx + 1), quizPick: null }); }, { small: true, disabled: idx >= pool.length - 1 })
@@ -2057,8 +2073,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           }
         }, [
           h('div', { key: 'n', style: { fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 3 } },
-            sp.emoji + ' ' + sp.name),
-          h('p', { key: 'b', style: { fontSize: 11, color: T.dim, lineHeight: 1.55, margin: 0 } }, sp.note)
+            sp.emoji + ' ' + __alloT('stem.treelab.species_' + sp.id, sp.name)),
+          h('p', { key: 'b', style: { fontSize: 11, color: T.dim, lineHeight: 1.55, margin: 0 } },
+            __alloT('stem.treelab.species_note_' + sp.id, sp.note))
         ])
       ]);
     }
