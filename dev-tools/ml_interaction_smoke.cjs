@@ -25,7 +25,7 @@ const host = read('stem_lab/stem_lab_module.js');
 const tool = read('stem_lab/stem_tool_machinelab.js');
 
 const SHELL = `
-window.__xp = 0; window.__toasts = []; window.__announced = [];
+window.__xp = 0; window.__toasts = []; window.__announced = []; window.__celebrations = 0;
 window.__state = null;
 window.__mount = function (state, opts) {
   opts = opts || {};
@@ -42,7 +42,7 @@ window.__mount = function (state, opts) {
       addToast: function (m) { window.__toasts.push(m); },
       announceToSR: function (m) { window.__announced.push(m); },
       awardXP: function (n) { window.__xp += (n || 0); },
-      beep: function(){}, celebrate: function(){}, canvasNarrate: function(){},
+      beep: function(){}, celebrate: function () { window.__celebrations++; }, canvasNarrate: function(){},
       canvasA11yDesc: function(){}, callTTS: null, callImagen: null,
       callGemini: (opts.gemini === 'ok') ? function () { return Promise.resolve('The counterweight falls and the arm throws.'); }
               : (opts.gemini === 'reject') ? function () { return Promise.reject(new Error('throttled')); }
@@ -229,6 +229,8 @@ function check(name, cond, detail) {
   check('the Loose button disables once breached', disabled.indexOf('disabled') === 0 || disabled.indexOf('no-button') === 0, disabled);
   const toasts = await pg.evaluate(() => window.__toasts.join(' | '));
   check('a breach raises a toast', /Breach/.test(toasts), toasts.slice(0, 80));
+  const parties = await pg.evaluate(() => window.__celebrations);
+  check('a breach is celebrated, not just toasted', parties > 0, parties + ' celebrations');
 
   // ── 6. Rebuild resets the siege ──
   await pg.evaluate(() => window.__click('Rebuild the wall'));

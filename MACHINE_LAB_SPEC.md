@@ -51,6 +51,154 @@ Note on the harness: `dark` and `contrast` are pushed as SEPARATE flags. A viewe
 infers one from the other cannot render high contrast correctly, which is exactly how
 defect 7 arose.
 
+## Host-edit safety check
+
+Two edits were made to the shared `stem_lab_module.js` for this tool (the OrbitControls
+local-first fix, and the snapshot restore line), and until 2026-08-11 they had only ever
+been exercised by Machine Lab's own tests. Thirteen host-dependent test files from other
+tools were run against them and all pass. The single failure encountered,
+`data_lab_snapshot_values.test.js`, asserts the host does **not** contain a phrase that is
+present in git HEAD, so it is part of the repo's known pre-existing test debt rather than
+anything these edits caused. Worth doing rather than assuming: a shared file touched for one
+tool can break a different one silently.
+
+## Celebration
+
+`ctx.celebrate` fires on the two moments in this tool that are unambiguously achievements
+rather than progress: **breaching a wall** (which takes a machine you tuned, a range you
+found and a wall you battered) and **proving all six benches** (which completes the
+curricular half). Deliberately not on every correct prediction — a celebration that fires
+constantly stops meaning anything. The interaction smoke asserts the breach actually
+celebrates rather than only toasting.
+
+## Work record
+
+The tool accumulates a lot of evidence of thinking — benches proven, a prediction streak,
+machines fired, a shot log, a siege result, and now a written hypothesis and explanation —
+and had nowhere to show any of it. A student finishing a session had nothing to hand anyone.
+
+A "Your work" topic in the Field Manual gathers it into one readable record, with a copy
+button and read-aloud. It says outright that it is **a record of your work, not a mark, and
+nothing here is scored**, which matters given how much of the rest of the tool does grade.
+
+Two details it gets right by construction:
+
+- **Lines that have no content are omitted, not shown empty.** No siege line until there has
+  been a siege; no hypothesis line until something was written. A record padded with
+  "Hypothesis: (none)" reads as a list of things the student failed to do.
+- **Whether the wall fell is derived from the blocks**, not read from a stored flag, so a
+  restored or imported wall reports honestly. That is the same defect as number 3, and
+  writing this record was the second place it would have bitten.
+
+## Inquiry widget
+
+Every other surface in this tool grades you against a number: predict the effort force,
+predict the range, hit the wall. Nothing invited a student to form a theory in their own
+words, and this repo already has a house pattern for exactly that (`stem_tool_atctower.js`
+and friends), which the shared smoke harness even knows how to detect via
+`findInquirySignal`.
+
+It sits on the Compare view, because "which machine is better" genuinely has no single right
+answer: it depends on the stone. It follows the house contract exactly.
+
+- A **hypothesis** box, asked before anything else and pitched at the reader's band (K-2:
+  "Which machine do you think throws best? Say why." / g9-12: predict the ordering at 5 kg
+  and 200 kg and say which term in `m_p/(m_p + m_eff)` decides each case).
+- **Log this comparison**, which records all three machines at the current stone mass into a
+  captioned table, so a student can accumulate evidence rather than remember it.
+- An opt-in **"I'm stuck"** that reveals **open questions and no answers**. A test asserts
+  every revealed line ends in a question mark, so the reveal cannot quietly become an answer
+  key.
+- **"I can explain in my own words"**, which opens an explanation box only once claimed.
+- The signature line: *Inquiry widget — no score, no reveal, no answer dump*, plus the
+  reminder that the table is the tool's simplified model and not a measurement.
+
+## Read aloud
+
+This tool is mostly prose: six bench explanations, three machine explanations, and a Field
+Manual. A student who cannot read it fluently got none of it, which is a poor showing for a
+UDL tool. `ctx.callTTS` had never been touched.
+
+A 🔊 control now sits beside the bench explanation, the machine explanation and the Field
+Manual, following the convention in `stem_tool_anatomy.js` (labelled button, `title` and
+`aria-label`). `force: true` is correct here because the button *is* the explicit user
+action the header mute gate exists to defer to. On a host with no voice the button is
+absent entirely, rather than present and inert.
+
+**The manual speaks exactly what it renders.** Its spoken text is collected as the content
+is built (`para()` pushes, history entries push, and the bullet lists are arrays of strings
+feeding both the `<li>`s and the speech), so it cannot drift from a second hand-maintained
+copy. That drove a small refactor: the two bullet lists were hand-written `<li>` sequences,
+and my first attempt wrapped each one inline, which produced unbalanced parentheses and a
+syntax error. Building the list from one array is both simpler and the reason the speech
+can be trusted.
+
+## First-run tutorial
+
+Six views is a lot to land on cold, and the tool's spine (benches → engine → ledger → range
+→ wall) is not obvious from the nav alone. `ctx.renderTutorial(toolId, steps)` takes the
+steps as a parameter, so unlike the other tools using it — whose arrays sit in
+`stem_lab_module.js` as `_tutGalaxy`, `_tutCompanionPlanting` and so on — Machine Lab's stay
+in its own file, and the host keeps owning the overlay, the step counter and the seen-once
+flag.
+
+Five steps walking that spine, band-aware on the opener, and closing on the two things the
+tool is easiest to get wrong: **the fastest shot is not the furthest**, and **walls are
+battered with direct fire**. Both are pinned by test, since they are the misconceptions the
+tool exists to correct.
+
+## A note on the shared tree
+
+`tests/machinelab_snapshots.test.js` originally asserted byte-parity of the two
+`stem_lab_module.js` copies. That failed on 2026-08-11 for a reason that was nobody's
+mistake: another session had added screen-reader announcements to the CDN copy and had not
+yet mirrored them. Machine Lab's suite was failing for somebody else's in-flight work.
+
+The assertion is gone. What this tool owns is that **its own** restore line is present in
+both host copies, checked directly, and that `stem_tool_machinelab.js` is byte-identical
+across CDN and desktop, which `machinelab_a11y.test.js` asserts. A tool's tests should pin
+its own invariants, not police a shared file that several sessions are editing at once.
+
+## Saving a design (and defect 16, in the host)
+
+`ctx.saveSnapshot` is a host capability the tool had never touched. The Build view now saves
+the current design under a label worth reading in a list: "Trebuchet · 102 m · 34%".
+
+The payload is deliberately the **design** (machine, its controls, the conditions) and not
+the transient shot, wall or tutor state. Restoring should hand back a machine, not replay
+somebody's half-finished siege. A test pins both halves of that: the design fields are in
+the payload and the transient ones are not.
+
+**Defect 16, in `stem_lab_module.js`.** The host's snapshot **Load** button carries a
+hardcoded per-tool restore list (`volume`, `base10`, `coordinate`, `protractor`,
+`codingPlayground`). Any tool not on it saves and lists perfectly well, and Load then just
+*opens the tool without restoring anything* — a button that does not do what it says.
+`machineLab` is on the list now, following the `codingPlayground` line exactly, in both host
+copies, and merged onto the existing slice rather than replacing it wholesale.
+
+This is the one place the tool's own partial-state hardening pays off directly: the payload
+is a subset of the tool's state, and the defaults fill is what makes restoring a subset safe
+instead of blanking everything the payload omits.
+
+## Trajectory overlay
+
+The light-stone / heavy-stone trade-off is the tool's signature lesson, and until now the
+only place you could see it was a table of numbers in the shot log. A table *states* a
+trade-off; two arcs side by side *show* it.
+
+Each logged shot now keeps a compact 40-point trace (`compactPath`), small enough to hold
+several in state and to survive a snapshot round-trip, and the flight graph draws the last
+four behind the current shot as faded dashed arcs. The graph scales to fit **every** trace,
+not just the current one, or a longer earlier shot would run off the edge; a test checks
+exactly that by parsing the rendered points back out.
+
+Same accessibility contract as the ledger and the wall: the picture is never the only
+carrier. A text line states the comparison outright, "Dashed arcs are earlier shots: 5 kg →
+60 m, 200 kg → 75 m, …", and there is a toggle for visual bulk.
+
+One thing it has to tolerate: history rows saved before traces were kept have no `path`.
+They are skipped rather than throwing or drawing a broken line, and that is tested.
+
 ## The reachability audit
 
 The crosswind find prompted a sweep of every field in `defaultState()` against whether a
