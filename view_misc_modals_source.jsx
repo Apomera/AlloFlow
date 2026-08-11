@@ -679,6 +679,60 @@ function PlatformDiagnosticsSection(props) {
         add('Context', 'info', 'origin: ' + origin + ' · in iframe: ' + inFrame + ' · secure: ' + (typeof isSecureContext !== 'undefined' ? isSecureContext : '?'));
       } catch (e) { add('Context', 'info', 'unreadable: ' + e.message); }
 
+      // STEM Lab plugin loading. Inside Canvas the console is unreachable, so a tool
+      // stuck on its skeleton loader is otherwise undiagnosable: the host shows that
+      // skeleton whenever a plugin has not registered AND its load state is neither
+      // 'loaded' nor 'error', and the "never requested" case has no state and no
+      // timeout, so it waits forever with nothing on screen to say why.
+      try {
+        const ensureFn = typeof window.__alloEnsureStemPluginLoaded === 'function';
+        const stateFn = typeof window.__alloGetStemPluginState === 'function';
+        add('STEM plugin loader', ensureFn && stateFn ? 'pass' : 'fail',
+          ensureFn && stateFn
+            ? 'loader hooks present'
+            : 'missing hook(s) — ensure:' + ensureFn + ' getState:' + stateFn +
+              '. Tools cannot be requested at all; every tool will sit on its loading skeleton.');
+
+        const reg = window.StemLab && window.StemLab._registry;
+        const registered = reg ? Object.keys(reg) : [];
+        add('STEM tools registered', registered.length ? 'pass' : 'warn',
+          registered.length
+            ? registered.length + ' registered'
+            : 'none registered yet — open a tool first, or the plugins are not executing');
+
+        // Per-module load state. This is the row that separates the three causes:
+        // absent = never requested, error = download blocked, loaded-but-unregistered
+        // = the file ran without calling registerTool.
+        const seen = window.__alloStemPluginStates || null;
+        const names = seen ? Object.keys(seen) : [];
+        if (stateFn && names.length) {
+          const summary = names.map((mod) => {
+            const st = seen[mod] || {};
+            const short = String(mod).replace(/^.*stem_tool_/, '').replace(/\.js$/, '');
+            const ms = st.finishedAt && st.startedAt ? ' ' + (st.finishedAt - st.startedAt) + 'ms' : '';
+            return short + '=' + (st.status || '?') + (st.attempt > 1 ? ' (try ' + st.attempt + ')' : '') + ms +
+              (st.error ? ' — ' + st.error : '');
+          });
+          const anyError = names.some((mod) => (seen[mod] || {}).status === 'error');
+          add('STEM plugin states', anyError ? 'fail' : 'info', summary.join(' · '));
+        } else {
+          add('STEM plugin states', 'warn',
+            'no plugin has been requested this session. If a tool is showing its loading skeleton right now, ' +
+            'the request was never made — the fault is upstream of the download, not the network.');
+        }
+      } catch (e) { add('STEM plugin loader', 'info', 'unreadable: ' + e.message); }
+
+      // The first uncaught error usually explains dead buttons AND stuck loaders at
+      // once, because an exception thrown during render leaves handlers unattached.
+      try {
+        const first = window.__alloFirstError;
+        add('First page error', first ? 'fail' : 'pass',
+          first
+            ? new Date(first.at).toLocaleTimeString() + ' — ' + first.msg +
+              (first.src ? ' (' + first.src + (first.line ? ':' + first.line : '') + ')' : '')
+            : 'no uncaught error captured this session');
+      } catch (e) { add('First page error', 'info', 'unreadable: ' + e.message); }
+
       try {
         const w = window.open('', '_blank', 'width=80,height=60');
         if (w) { try { w.close(); } catch (_) {} add('Pop-up windows', 'pass', 'window.open works — compare view + Save-as-PDF can open'); }

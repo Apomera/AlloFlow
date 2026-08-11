@@ -633,6 +633,52 @@ function PlatformDiagnosticsSection(props) {
         add("Context", "info", "unreadable: " + e.message);
       }
       try {
+        const ensureFn = typeof window.__alloEnsureStemPluginLoaded === "function";
+        const stateFn = typeof window.__alloGetStemPluginState === "function";
+        add(
+          "STEM plugin loader",
+          ensureFn && stateFn ? "pass" : "fail",
+          ensureFn && stateFn ? "loader hooks present" : "missing hook(s) \u2014 ensure:" + ensureFn + " getState:" + stateFn + ". Tools cannot be requested at all; every tool will sit on its loading skeleton."
+        );
+        const reg = window.StemLab && window.StemLab._registry;
+        const registered = reg ? Object.keys(reg) : [];
+        add(
+          "STEM tools registered",
+          registered.length ? "pass" : "warn",
+          registered.length ? registered.length + " registered" : "none registered yet \u2014 open a tool first, or the plugins are not executing"
+        );
+        const seen = window.__alloStemPluginStates || null;
+        const names = seen ? Object.keys(seen) : [];
+        if (stateFn && names.length) {
+          const summary = names.map((mod) => {
+            const st = seen[mod] || {};
+            const short = String(mod).replace(/^.*stem_tool_/, "").replace(/\.js$/, "");
+            const ms = st.finishedAt && st.startedAt ? " " + (st.finishedAt - st.startedAt) + "ms" : "";
+            return short + "=" + (st.status || "?") + (st.attempt > 1 ? " (try " + st.attempt + ")" : "") + ms + (st.error ? " \u2014 " + st.error : "");
+          });
+          const anyError = names.some((mod) => (seen[mod] || {}).status === "error");
+          add("STEM plugin states", anyError ? "fail" : "info", summary.join(" \xB7 "));
+        } else {
+          add(
+            "STEM plugin states",
+            "warn",
+            "no plugin has been requested this session. If a tool is showing its loading skeleton right now, the request was never made \u2014 the fault is upstream of the download, not the network."
+          );
+        }
+      } catch (e) {
+        add("STEM plugin loader", "info", "unreadable: " + e.message);
+      }
+      try {
+        const first = window.__alloFirstError;
+        add(
+          "First page error",
+          first ? "fail" : "pass",
+          first ? new Date(first.at).toLocaleTimeString() + " \u2014 " + first.msg + (first.src ? " (" + first.src + (first.line ? ":" + first.line : "") + ")" : "") : "no uncaught error captured this session"
+        );
+      } catch (e) {
+        add("First page error", "info", "unreadable: " + e.message);
+      }
+      try {
         const w = window.open("", "_blank", "width=80,height=60");
         if (w) {
           try {

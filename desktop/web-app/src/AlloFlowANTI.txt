@@ -5001,6 +5001,41 @@ const __alloPushLog = (level, args) => {
 };
 const debugLog = (...args) => { __alloPushLog('debug', args); if (DEBUG_LOG) console.log(...args); };
 const warnLog = (...args) => { __alloPushLog('warn', args); console.warn(...args); };
+// Uncaught errors and rejections never reached the ring buffer, so in Canvas — where
+// the console is unreachable — an exception that leaves click handlers unattached was
+// invisible. Record every one, and keep the FIRST separately: when an error is thrown
+// during render, later symptoms (dead buttons, a tool stuck on its loading skeleton)
+// are usually downstream of that first throw rather than separate faults.
+if (typeof window !== 'undefined' && !window.__alloGlobalErrorHooked) {
+  window.__alloGlobalErrorHooked = true;
+  const __alloNoteFirstError = (msg, src, line) => {
+    try {
+      if (!window.__alloFirstError) {
+        window.__alloFirstError = { msg: String(msg || 'unknown'), src: String(src || ''), line: line || 0, at: Date.now() };
+      }
+    } catch (_) {}
+  };
+  window.addEventListener('error', (event) => {
+    try {
+      // ResizeObserver loop notices are browser noise, not faults — the existing
+      // module-script handler skips them for the same reason.
+      const msg = String((event && event.message) || '');
+      if (/ResizeObserver loop /.test(msg)) return;
+      const src = String((event && (event.filename || (event.target && event.target.src))) || '');
+      __alloPushLog('error', ['[Uncaught] ' + msg + (src ? ' @ ' + src + ':' + (event.lineno || 0) : ''),
+        (event && event.error && event.error.stack) ? event.error.stack : '']);
+      __alloNoteFirstError(msg, src, event && event.lineno);
+    } catch (_) {}
+  });
+  window.addEventListener('unhandledrejection', (event) => {
+    try {
+      const reason = event && event.reason;
+      const msg = (reason && (reason.message || reason)) || 'unknown rejection';
+      __alloPushLog('error', ['[UnhandledRejection] ' + String(msg), (reason && reason.stack) ? reason.stack : '']);
+      __alloNoteFirstError('Unhandled promise rejection: ' + String(msg), '', 0);
+    } catch (_) {}
+  });
+}
 const _initAlloData = async () => {
     if (typeof initAlloData === 'function') {
         try {
@@ -15253,6 +15288,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'stem_lab/stem_tool_autorepair.js',
         'stem_lab/stem_tool_learning_lab.js',
         'stem_lab/stem_tool_consciousness.js',
+        'stem_lab/stem_tool_organismid.js',
         // Catch-up batch (May 15 2026): tools that have files + tile catalog
         // entries + _pluginOnlyTools flags but were never added to this
         // loader. Without this list entry the plugin never registers and
@@ -15505,12 +15541,27 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
             syncLoadingFlag();
             fireProgress(mod);
           }
+          // Mirror plugin load outcomes into the diagnostics ring buffer as well as
+          // the console: in Canvas the console is unreachable, and these two lines are
+          // the difference between "never requested", "download blocked" and "ran but
+          // never registered". Written directly to the window buffer because this
+          // loader runs outside warnLog's scope.
+          var pluginDiag = function(level, text) {
+            try {
+              var buf = window.__alloDiagLog;
+              if (!buf) return;
+              buf.push({ t: Date.now(), level: level, msg: text });
+              if (buf.length > 1000) buf.splice(0, buf.length - 1000);
+            } catch (_) {}
+          };
           s.onload = function() {
             console.log('[' + label + ' Plugin] Loaded: ' + mod);
+            pluginDiag('debug', '[' + label + ' Plugin] Loaded: ' + mod);
             finish('loaded', '');
           };
           s.onerror = function() {
             console.warn('[' + label + ' Plugin] Failed to load: ' + mod);
+            pluginDiag('warn', '[' + label + ' Plugin] Failed to load: ' + mod + ' (src: ' + s.src + ')');
             finish('error', 'The plugin file could not be downloaded. Check the connection or school network filter, then try again.');
           };
           timeoutId = setTimeout(function() {
@@ -15535,6 +15586,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
             var mod = resolveModule(toolOrModule);
             return publicState(mod ? states[mod] : null);
           };
+          // Expose the raw per-module load states so the Platform Diagnostics panel
+          // can show them. Canvas has no reachable console, so without this a tool
+          // stuck on its skeleton gives the teacher nothing to report.
+          window.__alloStemPluginStates = states;
           window.__alloRetryStemPlugin = function(toolOrModule) {
             var mod = resolveModule(toolOrModule);
             if (!mod) return false;
