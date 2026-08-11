@@ -159,3 +159,39 @@ describe('open_it_coach command', () => {
     expect(contract && contract.interaction).toBe('external');
   });
 });
+
+// ─── Learner Hub card ───────────────────────────────────────────────────────
+describe('Learning Hub card', () => {
+  const hubSrc = readFileSync(resolve(process.cwd(), 'view_learning_hub_modal_source.jsx'), 'utf-8');
+
+  it('is on the learner surface, in the practice section', () => {
+    expect(hubSrc).toContain('data-hub-id="screen-coach" data-hub-label="Screen Coach" data-hub-section="practice"');
+    expect(hubSrc).toContain('Stuck on a website?');
+  });
+
+  // The card is the way a STUDENT reaches the coach, so it must never be the
+  // way a student reaches the unrestricted posture. The page defaults to
+  // learner anyway; this pins that the learner surface never even asks.
+  it('always opens the learner posture, never the educator one', () => {
+    const card = hubSrc.slice(hubSrc.indexOf('data-hub-id="screen-coach"'), hubSrc.indexOf('data-hub-id="research-hub"'));
+    expect(card).toContain('it_coach.html?posture=learner');
+    expect(card).not.toContain('posture=educator');
+    expect(card).not.toContain('isTeacherMode');
+    // Closes the hub before opening the window, like every other card here.
+    expect(card.indexOf('setShowLearningHub(false)')).toBeLessThan(card.indexOf('window.open'));
+  });
+
+  it('carries the same favourite control and naming as its neighbours', () => {
+    const card = hubSrc.slice(hubSrc.indexOf('data-hub-id="screen-coach"'), hubSrc.indexOf('data-hub-id="research-hub"'));
+    expect(card).toContain("aria-pressed={hubFavoriteIds.includes('screen-coach')}");
+    expect(card).toContain("toggleHubFavorite('screen-coach')");
+    expect(card).toContain('aria-hidden="true"');
+  });
+
+  it('reached the generated module and its mirror', () => {
+    const built = readFileSync(resolve(process.cwd(), 'view_learning_hub_modal_module.js'), 'utf-8');
+    expect(built).toContain('screen-coach');
+    expect(built).toContain('it_coach.html?posture=learner');
+    expect(readFileSync(resolve(process.cwd(), 'desktop/web-app/public/view_learning_hub_modal_module.js'), 'utf-8')).toBe(built);
+  });
+});

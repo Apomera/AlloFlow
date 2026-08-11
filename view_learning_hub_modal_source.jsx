@@ -392,6 +392,21 @@ function LearningHubModal(props) {
 
                 <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('sel-hub')} aria-label={hubFavoriteIds.includes('sel-hub') ? tr('hub.remove_favorite', 'Remove from favorites') + ': SEL Hub' : tr('hub.add_favorite', 'Add to favorites') + ': SEL Hub'} title={hubFavoriteIds.includes('sel-hub') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('sel-hub'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-600 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('sel-hub') ? '★' : '☆'}</button>
               </div>
+              {/* Screen Coach. Opens the standalone page, always in the LEARNER
+                  posture: this is the learner surface, so the card cannot be the
+                  way a student reaches the unrestricted coach. It opens in its
+                  own window because the site it coaches is not AlloFlow. */}
+              <div className="relative group" data-hub-id="screen-coach" data-hub-label="Screen Coach" data-hub-section="practice">
+                <button type="button" data-hub-launch="true" onClick={() => { setShowLearningHub(false); try { window.open('https://alloflow-cdn.pages.dev/it_coach/it_coach.html?posture=learner', 'alloflow-it-coach'); } catch (_) {} }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-sky-50 to-cyan-50 border border-sky-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center">
+                <span className="text-4xl" aria-hidden="true">{'🧭'}</span>
+                <div>
+                  <h3 className="font-bold text-sky-900">{t('learning_hub.screen_coach_title') || 'Screen Coach'}</h3>
+                  <p className="text-xs text-sky-800 mt-1">{t('learning_hub.screen_coach_desc') || 'Stuck on a website? Share it and get the next step. It helps you use the site, not answer your work.'}</p>
+                </div>
+              </button>
+
+                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('screen-coach')} aria-label={hubFavoriteIds.includes('screen-coach') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Screen Coach' : tr('hub.add_favorite', 'Add to favorites') + ': Screen Coach'} title={hubFavoriteIds.includes('screen-coach') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('screen-coach'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-600 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('screen-coach') ? '★' : '☆'}</button>
+              </div>
                             <div className="col-span-full mt-1 mb-[-0.25rem]" data-hub-section-heading="explore">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">

@@ -26,7 +26,7 @@ describe('hub workflow ordering', () => {
   it('keeps learning tools in workflow and DOM order', () => {
     expect(idsInOrder(source('view_learning_hub_modal_source.jsx'))).toEqual([
       'lumen-study', 'reading-library', 'stem-lab', 'text-inquiry',
-      'lingua-practice', 'test-prep', 'sel-hub',
+      'lingua-practice', 'test-prep', 'sel-hub', 'screen-coach',
       'research-hub', 'throughline', 'timeline-studio',
       'storyforge', 'litlab', 'poettree', 'open-groove', 'allohaven'
     ]);
