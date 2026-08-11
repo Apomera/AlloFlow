@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AlloBot Screen Coach</title>
+<!--
+  Standalone Screen Coach. Guides a person through ANY website they choose to
+  share, on screens that have nothing to do with AlloFlow.
+
+  Two things it is NOT, said here so nobody has to read the code to find out:
+    * It cannot click, type, or navigate. It advises; the human acts.
+    * It cannot draw on the site being coached. A page cannot reach into a
+      cross-origin tab, so the highlight lands on OUR mirror of the capture,
+      or on the floating window. That is the whole interaction model.
+
+  The advice sanitizer is NOT copied here. It is loaded from
+  video_studio_module.js, which exposes its pure helpers on
+  window.AlloModules.VideoStudio even with no React present. One copy of the
+  clamp, guarded by the [VS_SHARED] sync gate, is the point: a coach surface
+  that lost the null-when-unsure rule would draw a box at a guessed spot.
+-->
+<style>
+  :root {
+    --bg: #0b1220; --panel: #111a2e; --text: #e6edf7; --dim: #93a3bd;
+    --line: #24314d; --accent: #6ea8ff; --warn: #f59e0b; --ok: #34d399;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 16px; }
+  header { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+  h1 { font-size: 19px; margin: 0; }
+  .badge { font-size: 12px; font-weight: 700; border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; color: var(--dim); }
+  .card { border: 1px solid var(--line); background: var(--panel); border-radius: 12px; padding: 12px 14px; margin: 0 0 12px; }
+  .card > summary { cursor: pointer; font-weight: 700; }
+  .status { font-size: 13px; color: var(--dim); margin: 6px 0 0; }
+  .status.warn { color: var(--warn); }
+  .status.ok { color: var(--ok); }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 8px 0 0; }
+  label { font-size: 13px; }
+  button { font: inherit; min-height: 40px; padding: 8px 14px; border-radius: 9px; cursor: pointer; border: 1px solid var(--line); background: #1b2743; color: var(--text); }
+  button.action { background: var(--accent); border-color: var(--accent); color: #06152e; font-weight: 700; }
+  button:disabled { opacity: .55; cursor: not-allowed; }
+  input[type="text"], input[type="password"], select { font: inherit; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; min-height: 40px; }
+  input[type="text"], input[type="password"] { flex-grow: 1; min-width: 180px; }
+  .stage { position: relative; background: #000; border-radius: 12px; overflow: hidden; min-height: 220px; display: flex; align-items: center; justify-content: center; }
+  .stage video { max-width: 100%; max-height: 56vh; display: block; }
+  .stage .placeholder { color: #46567a; font-size: 14px; padding: 56px 20px; text-align: center; }
+  ol#coachSteps { margin: 8px 0 0 18px; padding: 0; }
+  ol#coachSteps li { margin: 3px 0; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<div id="live" class="sr-only" aria-live="polite" role="status"></div>
+<div class="wrap">
+  <header>
+    <h1>🧭 AlloBot Screen Coach</h1>
+    <span class="badge" id="postureBadge"></span>
+  </header>
+
+  <p class="status" id="introNote"></p>
+
+  <details class="card" id="setupPanel">
+    <summary>⚙️ AI backend</summary>
+    <p class="status">The coach needs a model that can look at a picture. Pick a local backend to keep every frame on this device, or a cloud backend if you have a key. Settings stay in this browser.</p>
+    <div class="row">
+      <label for="beBackend">Backend</label>
+      <select id="beBackend">
+        <option value="ollama">Ollama (on this device)</option>
+        <option value="lmstudio">LM Studio (on this device)</option>
+        <option value="localai">LocalAI (on this device)</option>
+        <option value="gemini">Google Gemini (cloud)</option>
+        <option value="openai">OpenAI (cloud)</option>
+        <option value="claude">Anthropic Claude (cloud)</option>
+        <option value="custom">Custom endpoint</option>
+      </select>
+      <label for="beVisionModel">Vision model</label>
+      <input type="text" id="beVisionModel" placeholder="leave blank for the default" autocomplete="off">
+    </div>
+    <div class="row">
+      <label for="beBaseUrl">Base URL</label>
+      <input type="text" id="beBaseUrl" placeholder="leave blank for the default" autocomplete="off">
+      <label for="beApiKey">API key</label>
+      <input type="password" id="beApiKey" placeholder="cloud backends only" autocomplete="off">
+    </div>
+    <div class="row">
+      <button class="action" id="beSaveBtn" type="button">Save settings</button>
+      <button id="beClearBtn" type="button">Forget key</button>
+    </div>
+    <p class="status" id="beStatus" role="status" aria-live="polite"></p>
+    <p class="status" id="beKeyWarning" hidden>⚠ A cloud key is stored in this browser's local storage, unencrypted. On a shared or student device, prefer a local backend.</p>
+  </details>
+
+  <section class="card">
+    <h2 style="font-size:15px;margin:0 0 4px">Coaching</h2>
+    <p class="status" id="coachBlurb"></p>
+    <p class="status" id="posturePledge" hidden></p>
+    <label class="status" style="display:block;margin:8px 0"><input type="checkbox" id="coachPrivacyAck"> I checked that the screen I am sharing shows nothing private about anyone else</label>
+    <div class="row">
+      <button id="coachWatchBtn" type="button">👁 Start watching</button>
+      <button id="coachPipBtn" type="button" title="Floating always-on-top mirror (Chromium only)">🪟 Float on top</button>
+    </div>
+    <div class="row">
+      <label for="coachGoal" class="sr-only">What are you trying to do?</label>
+      <input type="text" id="coachGoal" maxlength="300" placeholder="What are you trying to do? e.g. turn on captions">
+      <button class="action" id="coachSuggestBtn" type="button">💡 Suggest next step</button>
+    </div>
+    <div class="row">
+      <label><input type="checkbox" id="coachAutoChk"> Suggest again every 12s</label>
+      <label><input type="checkbox" id="coachSpeakChk" checked> Read guidance aloud</label>
+    </div>
+    <p class="status" id="coachStatus" role="status" aria-live="polite" aria-atomic="true"></p>
+    <ol id="coachSteps"></ol>
+  </section>
+
+  <div class="stage">
+    <div class="placeholder" id="stagePlaceholder">Nothing shared yet. Press “Start watching”, then pick the tab or window you want help with.</div>
+    <video id="previewVideo" autoplay muted playsinline hidden></video>
+    <canvas id="coachOverlay" hidden aria-hidden="true" style="position:absolute;left:0;top:0;max-width:none;max-height:none;pointer-events:none;z-index:5"></canvas>
+  </div>
+</div>
+
+<script src="../video_studio_module.js"></script>
+<script src="../ai_backend_module.js"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var live = $('live');
+  function announce(msg) { live.textContent = msg; }
+  function setStatus(el, msg, cls) { el.textContent = msg || ''; el.className = 'status' + (cls ? ' ' + cls : ''); }
+
+  // ── Posture ──────────────────────────────────────────────────────────────
+  // Learner is the DEFAULT and the URL is the only way out of it. A student
+  // handed this link cannot widen the contract from inside the page, and an
+  // educator link says so explicitly. This is a contract, not an access
+  // control: anyone who can edit the address bar can change it. Real
+  // enforcement belongs to the app-launched flow, where roles are known.
+  var params = new URLSearchParams(window.location.search || '');
+  var posture = params.get('posture') === 'educator' ? 'educator' : 'learner';
+  var learner = posture === 'learner';
+  $('postureBadge').textContent = learner ? '📓 Learner mode' : '🍎 Educator mode';
+  $('introNote').textContent = learner
+    ? 'Share a website and I will tell you the next step to take. I can only advise: you do the clicking.'
+    : 'Share any website, tab, or window and get step-by-step guidance. Advisory only: the coach never touches the other page.';
+  $('coachBlurb').textContent = 'Each suggestion sends ONE downscaled picture of the screen you shared to the model configured above. Nothing is recorded, and nothing is saved.';
+  if (learner) {
+    $('posturePledge').hidden = false;
+    setStatus($('posturePledge'), '📓 Learner mode: this coach helps you use the website. It will not answer questions, quizzes, or other schoolwork that is on the screen.');
+  }
+
+  // ── The one clamp, loaded not copied ─────────────────────────────────────
+  var VS = (window.AlloModules && window.AlloModules.VideoStudio) || null;
+  var sanitizeAdvice = VS && VS.vsSanitizeCoachAdvice;
+  if (typeof sanitizeAdvice !== 'function') {
+    // Without the clamp there is no null-when-unsure rule and no learner
+    // guardrail, so the coach does not run at all. Failing loudly beats
+    // drawing a confident box at a guessed position.
+    setStatus($('coachStatus'), 'Could not load the coach safety rules (video_studio_module.js). The coach is disabled on this page.', 'warn');
+    $('coachSuggestBtn').disabled = true;
+    $('coachWatchBtn').disabled = true;
+  }
+
+  // ── Backend settings ─────────────────────────────────────────────────────
+  var BE_KEY = 'allo_it_coach_backend_v1';
+  var CLOUD_BACKENDS = ['gemini', 'openai', 'claude'];
+  function loadBackendCfg() {
+    try {
+      var raw = JSON.parse(localStorage.getItem(BE_KEY) || '{}');
+      return {
+        backend: String(raw.backend || 'ollama'),
+        apiKey: String(raw.apiKey || ''),
+        baseUrl: String(raw.baseUrl || ''),
+        visionModel: String(raw.visionModel || '')
+      };
+    } catch (_) { return { backend: 'ollama', apiKey: '', baseUrl: '', visionModel: '' }; }
+  }
+  var backendCfg = loadBackendCfg();
+  function paintBackendForm() {
+    $('beBackend').value = backendCfg.backend;
+    $('beApiKey').value = backendCfg.apiKey;
+    $('beBaseUrl').value = backendCfg.baseUrl;
+    $('beVisionModel').value = backendCfg.visionModel;
+    var cloud = CLOUD_BACKENDS.indexOf($('beBackend').value) !== -1;
+    $('beKeyWarning').hidden = !(cloud && $('beApiKey').value);
+    if (!backendCfg.apiKey && cloud) {
+      setStatus($('beStatus'), 'This cloud backend needs a key before the coach can look at anything.', 'warn');
+      $('setupPanel').open = true;
+    } else {
+      setStatus($('beStatus'), 'Using ' + $('beBackend').options[$('beBackend').selectedIndex].text + '.');
+    }
+  }
+  paintBackendForm();
+  $('beBackend').addEventListener('change', function () {
+    var cloud = CLOUD_BACKENDS.indexOf(this.value) !== -1;
+    $('beKeyWarning').hidden = !(cloud && $('beApiKey').value);
+    setStatus($('beStatus'), cloud
+      ? 'Cloud backend: each suggestion sends one frame off this device.'
+      : 'Local backend: frames stay on this device. The model has to be running already.');
+  });
+  $('beSaveBtn').addEventListener('click', function () {
+    backendCfg = {
+      backend: $('beBackend').value,
+      apiKey: $('beApiKey').value.trim(),
+      baseUrl: $('beBaseUrl').value.trim(),
+      visionModel: $('beVisionModel').value.trim()
+    };
+    try { localStorage.setItem(BE_KEY, JSON.stringify(backendCfg)); } catch (_) {}
+    provider = null;
+    paintBackendForm();
+    setStatus($('beStatus'), 'Saved.', 'ok');
+    announce('AI backend settings saved');
+  });
+  $('beClearBtn').addEventListener('click', function () {
+    backendCfg.apiKey = '';
+    try { localStorage.setItem(BE_KEY, JSON.stringify(backendCfg)); } catch (_) {}
+    provider = null;
+    paintBackendForm();
+    setStatus($('beStatus'), 'Key forgotten on this device.', 'ok');
+  });
+
+  var provider = null;
+  function getProvider() {
+    if (provider) return provider;
+    if (typeof window.AIProvider !== 'function') return null;
+    provider = new window.AIProvider({
+      backend: backendCfg.backend,
+      apiKey: backendCfg.apiKey,
+      baseUrl: backendCfg.baseUrl || undefined,
+      models: backendCfg.visionModel ? { vision: backendCfg.visionModel } : undefined
+    });
+    return provider;
+  }
+
+  // ── Prompt ───────────────────────────────────────────────────────────────
+  // Kept in step with the module's bridge prompt (video_studio_module.js,
+  // allostudio-coach-request). A test pins that both ask for the "kind"
+  // classification and both resolve ambiguity to "content": if this prompt
+  // ever stopped asking, learner mode would refuse everything, which is the
+  // safe direction to fail but a broken tool.
+  function buildPrompt(goal, history) {
+    return 'You are a patient screen coach helping a user operate software they can see but you cannot touch.\n' +
+      'The image is ONE screenshot of the screen surface the user chose to share (it may be any website or application).\n' +
+      (learner
+        ? 'THE USER IS A STUDENT. Help them OPERATE the software only. Never answer, solve, complete, or hint at academic work shown on the screen: quiz and test questions, problems, prompts, readings, or anything they are being asked to produce. Helping with a button, menu, setting, upload, or submission is always fine.\n'
+        : '') +
+      'USER GOAL: ' + (goal || 'not stated - suggest the most useful next step visible on this screen') + '\n' +
+      (history ? ('GUIDANCE ALREADY GIVEN (do not repeat it):\n' + history.slice(0, 1200) + '\n') : '') +
+      'Give the SINGLE best next step the user should take THEMSELVES. You cannot click, type, or navigate: never claim you performed or will perform anything. ' +
+      'If the goal appears complete, say so. If this screen cannot progress the goal, say what to open first. If you cannot tell what is on screen, say that honestly.\n' +
+      'CLASSIFY the step you are proposing. "navigation" = operating the software (finding or using a control, menu, setting, field, upload, or submit action). ' +
+      '"content" = doing the academic work itself (answering a question, solving a problem, choosing an option in a quiz, writing or revising a response). When both could apply, or you are unsure, answer "content".\n' +
+      'Respond with ONLY JSON (no prose): {"guidance":"one or two short imperative sentences for the user","target":{"x":0-1,"y":0-1,"w":0-1,"h":0-1} or null,"done":true|false,"kind":"navigation"|"content"}. ' +
+      '"target" is a normalized box around the ONE element the user should act on next: use null when unsure rather than guessing.';
+  }
+
+  function parseReply(res) {
+    var text = (typeof res === 'string') ? res : ((res && (res.text || res.output)) || JSON.stringify(res));
+    try { return JSON.parse(text); } catch (_) {}
+    var m = /\{[\s\S]*\}/.exec(String(text || ''));
+    if (m) { try { return JSON.parse(m[0]); } catch (_2) {} }
+    return null;
+  }
+
+  // ── Capture ──────────────────────────────────────────────────────────────
+  var watchStream = null, autoTimer = null, busy = false;
+  var history = [];
+  var pipWin = null, pipRaf = 0, lastAdvice = null;
+
+  function captureActive() {
+    var v = $('previewVideo');
+    return !!(v && v.srcObject && v.videoWidth > 0 && watchStream);
+  }
+  async function startWatch() {
+    if (watchStream) { stopWatch(); return; }
+    try {
+      var s = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+      watchStream = s;
+      var v = $('previewVideo');
+      v.srcObject = s;
+      v.hidden = false;
+      $('stagePlaceholder').hidden = true;
+      try { await v.play(); } catch (_) {}
+      var track = s.getVideoTracks()[0];
+      if (track) track.onended = stopWatch;
+      $('coachWatchBtn').textContent = '⏹ Stop watching';
+      setStatus($('coachStatus'), 'Watching. Nothing is recorded or saved; a picture goes to the model only when you ask for a suggestion.', 'ok');
+      announce('Screen Coach is watching. Nothing is being recorded.');
+    } catch (e) {
+      setStatus($('coachStatus'), 'Could not start watching: ' + ((e && e.name) || 'error') + '. Pick a tab or window in the share dialog.', 'warn');
+    }
+  }
+  function stopWatch() {
+    if (!watchStream) return;
+    try { watchStream.getTracks().forEach(function (tr) { tr.stop(); }); } catch (_) {}
+    watchStream = null;
+    stopAuto();
+    hideOverlay();
+    stopPip();
+    var v = $('previewVideo');
+    v.srcObject = null;
+    v.hidden = true;
+    $('stagePlaceholder').hidden = false;
+    $('coachWatchBtn').textContent = '👁 Start watching';
+    setStatus($('coachStatus'), 'Stopped watching. The share is released.', 'ok');
+    announce('Screen Coach stopped watching');
+  }
+
+  // ── Floating mirror ──────────────────────────────────────────────────────
+  async function togglePip() {
+    if (pipWin) { stopPip(); return; }
+    if (!window.documentPictureInPicture) { setStatus($('coachStatus'), 'Floating mode needs a Chromium browser with Document Picture-in-Picture.', 'warn'); return; }
+    if (!captureActive()) { setStatus($('coachStatus'), 'Start watching first: the floating window mirrors what you shared.', 'warn'); return; }
+    try {
+      var w = await window.documentPictureInPicture.requestWindow({ width: 420, height: 320 });
+      pipWin = w;
+      w.document.body.style.cssText = 'margin:0;background:#000;color:#e6edf7;font:13px system-ui,sans-serif';
+      var cv = w.document.createElement('canvas');
+      cv.style.cssText = 'display:block;width:100%';
+      w.document.body.appendChild(cv);
+      var bar = w.document.createElement('div');
+      bar.style.cssText = 'padding:6px 8px;background:#111a2e;font-weight:600';
+      bar.textContent = '🧭 Screen Coach: suggestions appear here.';
+      w.document.body.appendChild(bar);
+      pipWin.__coachBar = bar;
+      w.addEventListener('pagehide', function () { pipWin = null; });
+      (function draw() {
+        if (!pipWin) return;
+        var v = $('previewVideo');
+        if (v && v.videoWidth) {
+          cv.width = v.videoWidth; cv.height = v.videoHeight;
+          var g = cv.getContext('2d');
+          g.drawImage(v, 0, 0, cv.width, cv.height);
+          if (lastAdvice && lastAdvice.target) {
+            var b = lastAdvice.target;
+            g.strokeStyle = '#f59e0b'; g.lineWidth = Math.max(2, cv.width / 320);
+            g.strokeRect(b.x * cv.width, b.y * cv.height, b.w * cv.width, b.h * cv.height);
+            g.fillStyle = 'rgba(245,158,11,0.15)';
+            g.fillRect(b.x * cv.width, b.y * cv.height, b.w * cv.width, b.h * cv.height);
+          }
+        }
+        pipRaf = requestAnimationFrame(draw);
+      })();
+      setStatus($('coachStatus'), 'Floating coach opened. It stays on top while you work in the other tab.', 'ok');
+    } catch (e) {
+      pipWin = null;
+      setStatus($('coachStatus'), 'Floating window failed: ' + String((e && e.message) || e).slice(0, 120), 'warn');
+    }
+  }
+  function stopPip() {
+    var w = pipWin;
+    pipWin = null;
+    cancelAnimationFrame(pipRaf);
+    try { if (w && !w.closed) w.close(); } catch (_) {}
+  }
+
+  // ── Overlay ──────────────────────────────────────────────────────────────
+  function hideOverlay() {
+    var o = $('coachOverlay');
+    o.hidden = true;
+    try { o.getContext('2d').clearRect(0, 0, o.width, o.height); } catch (_) {}
+  }
+  function drawTarget(box) {
+    var v = $('previewVideo');
+    var o = $('coachOverlay');
+    if (!box || !captureActive()) { hideOverlay(); return; }
+    o.style.left = v.offsetLeft + 'px';
+    o.style.top = v.offsetTop + 'px';
+    o.width = v.clientWidth;
+    o.height = v.clientHeight;
+    o.hidden = false;
+    var g = o.getContext('2d');
+    g.clearRect(0, 0, o.width, o.height);
+    g.strokeStyle = '#f59e0b';
+    g.lineWidth = 3;
+    g.strokeRect(box.x * o.width, box.y * o.height, box.w * o.width, box.h * o.height);
+    g.fillStyle = 'rgba(245,158,11,0.15)';
+    g.fillRect(box.x * o.width, box.y * o.height, box.w * o.width, box.h * o.height);
+  }
+  function grabFrame() {
+    var v = $('previewVideo');
+    if (!captureActive()) return null;
+    var scale = Math.min(1, 1280 / v.videoWidth);
+    var c = document.createElement('canvas');
+    c.width = Math.max(2, Math.round(v.videoWidth * scale));
+    c.height = Math.max(2, Math.round(v.videoHeight * scale));
+    c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
+    var dataUrl = c.toDataURL('image/jpeg', 0.7);
+    return dataUrl.split(',')[1] || null;
+  }
+  function speak(text) {
+    if (!$('coachSpeakChk').checked) return;
+    if (!window.speechSynthesis || typeof SpeechSynthesisUtterance !== 'function') return;
+    try {
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(new SpeechSynthesisUtterance(String(text || '').slice(0, 300)));
+    } catch (_) {}
+  }
+  function stopAuto() {
+    if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+    $('coachAutoChk').checked = false;
+  }
+
+  // ── Ask ──────────────────────────────────────────────────────────────────
+  async function suggest(fromAuto) {
+    if (busy || typeof sanitizeAdvice !== 'function') return;
+    if (!$('coachPrivacyAck').checked) {
+      setStatus($('coachStatus'), 'Tick the check first: you are about to send a picture of the shared screen to the model.', 'warn');
+      if (!fromAuto) { try { $('coachPrivacyAck').focus(); } catch (_) {} }
+      return;
+    }
+    if (!captureActive()) {
+      setStatus($('coachStatus'), 'Press “Start watching” and pick the tab or window you want help with.', 'warn');
+      stopAuto();
+      return;
+    }
+    var p = getProvider();
+    if (!p) { setStatus($('coachStatus'), 'No AI backend is configured. Open “AI backend” above and pick one.', 'warn'); stopAuto(); $('setupPanel').open = true; return; }
+    var frame = grabFrame();
+    if (!frame) { setStatus($('coachStatus'), 'Could not read a picture from the share.', 'warn'); return; }
+
+    busy = true;
+    $('coachSuggestBtn').disabled = true;
+    setStatus($('coachStatus'), 'Asking the coach…');
+    var resp;
+    try {
+      var raw = await p.analyzeImage(buildPrompt(String($('coachGoal').value || '').slice(0, 300), history.slice(-3).join('\n')), frame, { mimeType: 'image/jpeg' });
+      var parsed = parseReply(raw);
+      if (!parsed || typeof parsed !== 'object') throw new Error('the reply was not readable');
+      resp = sanitizeAdvice(parsed, { posture: posture });
+    } catch (e) {
+      busy = false;
+      $('coachSuggestBtn').disabled = false;
+      setStatus($('coachStatus'), 'Coach unavailable: ' + String((e && e.message) || e).slice(0, 160), 'warn');
+      stopAuto();
+      return;
+    }
+    busy = false;
+    $('coachSuggestBtn').disabled = false;
+
+    var guidance = String(resp.guidance || '').slice(0, 400);
+    if (!guidance) { setStatus($('coachStatus'), 'The coach had no suggestion for this screen.', 'warn'); return; }
+
+    // A refusal is not guidance: it stays out of the history so it is never fed
+    // back as "already given", and it stops the loop rather than repeating
+    // itself every 12 seconds at a student doing their homework.
+    if (resp.refused) {
+      lastAdvice = null;
+      hideOverlay();
+      if (pipWin && pipWin.__coachBar) pipWin.__coachBar.textContent = '📓 ' + guidance;
+      setStatus($('coachStatus'), '📓 ' + guidance, 'warn');
+      announce('Coach: ' + guidance);
+      speak(guidance);
+      stopAuto();
+      return;
+    }
+
+    history.push(guidance);
+    lastAdvice = resp;
+    if (pipWin && pipWin.__coachBar) pipWin.__coachBar.textContent = (resp.done ? '✅ ' : '👉 ') + guidance;
+    var li = document.createElement('li');
+    li.className = 'status';
+    li.textContent = guidance;
+    $('coachSteps').appendChild(li);
+    while ($('coachSteps').children.length > 8) $('coachSteps').removeChild($('coachSteps').firstChild);
+    setStatus($('coachStatus'), (resp.done ? '✅ ' : '👉 ') + guidance + (resp.target ? ' (highlighted on the picture below: this is the AI’s estimate of where to look)' : ''), resp.done ? 'ok' : undefined);
+    drawTarget(resp.target);
+    announce('Coach: ' + guidance);
+    speak(guidance);
+    if (resp.done) stopAuto();
+  }
+
+  $('coachSuggestBtn').addEventListener('click', function () { suggest(false); });
+  $('coachWatchBtn').addEventListener('click', startWatch);
+  $('coachPipBtn').addEventListener('click', togglePip);
+  if (!window.documentPictureInPicture) $('coachPipBtn').hidden = true;
+  $('coachAutoChk').addEventListener('change', function () {
+    if (this.checked) {
+      if (!captureActive()) { this.checked = false; setStatus($('coachStatus'), 'Start watching first, then turn this on.', 'warn'); return; }
+      autoTimer = setInterval(function () { suggest(true); }, 12000);
+      suggest(true);
+    } else {
+      stopAuto();
+    }
+  });
+  $('coachGoal').addEventListener('change', function () { history = []; });
+  window.addEventListener('pagehide', function () { try { stopWatch(); } catch (_) {} });
+})();
+</script>
+</body>
+</html>
