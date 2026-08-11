@@ -1067,7 +1067,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
                       var rSquared = ssTot > 0 ? Math.max(0, 1 - ssRes / ssTot) : 0;
                       trendEls.push(React.createElement("line", { key: 'tl', x1: scaleX(minX), y1: scaleY(yAtMin), x2: scaleX(maxX), y2: scaleY(yAtMax), stroke: '#ef4444', strokeWidth: 1.5, strokeDasharray: '6 3', opacity: 0.8 }));
                       trendEls.push(React.createElement("text", { key: 'tl-label', x: W - 12, y: chartTop + 10, textAnchor: "end", style: { fontSize: '8px', fontWeight: 'bold', fill: '#ef4444' } }, 'y=' + tl.slope.toFixed(2) + 'x' + (tl.intercept >= 0 ? '+' : '') + tl.intercept.toFixed(2)));
-                      trendEls.push(React.createElement("text", { key: 'r2', x: W - 12, y: chartTop + 21, textAnchor: "end", style: { fontSize: '8px', fill: '#ef4444' } }, 'R?=' + rSquared.toFixed(3)));
+                      trendEls.push(React.createElement("text", { key: 'r2', x: W - 12, y: chartTop + 21, textAnchor: "end", style: { fontSize: '8px', fill: '#ef4444' } }, 'R²=' + rSquared.toFixed(3)));
                     }
                   }
                   return React.createElement("g", null,
@@ -1901,6 +1901,6 @@ var d = (labToolData && labToolData._dataStudio) || {};
     }
   });
 
-  console.log('[StemLab] stem_tool_creative.js loaded \u2014 3 tools');
+  console.log('[StemLab] stem_tool_datastudio.js loaded \u2014 Charts & Graphs');
 
 })();
