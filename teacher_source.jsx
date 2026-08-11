@@ -4449,6 +4449,15 @@ const LearnerProgressView = React.memo(({
     isParentMode = false, isIndependentMode = false, isTeacherMode = false, t, onClose,
     rosterKey, setRosterKey, onShareWithTeacher
 }) => {
+    // gameCompletions has two shapes in the wild: this view expects the flat
+    // array, but per-student session docs store an OBJECT keyed by game type
+    // (e.g. { conceptSortAttempt: [...] }). A caller passing the object shape
+    // crashed the whole view ("gameCompletions?.filter is not a function"
+    // fatal via ErrorBoundary, field report 2026-08-11). Normalize here:
+    // arrays pass through, object shapes flatten to their entries.
+    gameCompletions = Array.isArray(gameCompletions)
+        ? gameCompletions
+        : Object.values(gameCompletions || {}).flat().filter((g) => g && typeof g === 'object');
     const [showDiagnostics, setShowDiagnostics] = useState(() => isIndependentMode);
     const [selectedChild, setSelectedChild] = useState(null);
     const childProfiles = useMemo(() => {
