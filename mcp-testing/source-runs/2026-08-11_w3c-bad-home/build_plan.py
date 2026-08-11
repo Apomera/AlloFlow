@@ -89,30 +89,30 @@ patch('<A HREF=survey.html ONFOCUS="blur();" STYLE="text-decoration:none;">Read 
 
 # Informative images
 patch('<IMG SRC=./img/top_weather.gif WIDTH=128px HEIGHT=86px>',
-      '<IMG SRC=./img/top_weather.gif WIDTH=128px HEIGHT=86px ALT="Weather today: sunny, 23 degrees Celsius">',
-      "The weather graphic conveys today's forecast and had no text alternative.",
+      '<IMG SRC=./img/top_weather.gif WIDTH=128px HEIGHT=86px ALT="Weather symbol: partly cloudy">',
+      "The weather pictogram (sun behind clouds, viewed) had no text alternative; the adjacent scripted ticker carries the temperature text.",
       ["1.1.1"])
 patch('<IMG SRC=./img/teaser_right1.jpg WIDTH=150px HEIGHT=106px>',
-      '<IMG SRC=./img/teaser_right1.jpg WIDTH=150px HEIGHT=106px ALT="Penguins at the city zoo">',
-      "Teaser photo for the Free Penguins story had no text alternative.",
+      '<IMG SRC=./img/teaser_right1.jpg WIDTH=150px HEIGHT=106px ALT="A performer on stage at a concert">',
+      "Teaser photo for the zoo benefit concert story (viewed: a performer on a dark stage under stage lighting) had no text alternative.",
       ["1.1.1"])
 patch('<IMG SRC=./img/teaser_right2.jpg WIDTH=150px HEIGHT=154px>',
-      '<IMG SRC=./img/teaser_right2.jpg WIDTH=150px HEIGHT=154px ALT="A green city park">',
-      "Teaser photo for the More City Parks story had no text alternative.",
+      '<IMG SRC=./img/teaser_right2.jpg WIDTH=150px HEIGHT=154px ALT="A white crocus flower blooming in dry grass">',
+      "Teaser photo for the city parks story (viewed: a single white crocus with a yellow center in dry grass) had no text alternative.",
       ["1.1.1"])
 
 # News photos rendered as CSS backgrounds with title="image"
 for url, label in (
-    ("panda-sm.jpg", "A panda eating bamboo"),
-    ("oldenburgstudentviolin34.jpg", "A student playing the violin"),
+    ("panda-sm.jpg", "A man shading himself from the sun with a cardboard visor tucked into his hard hat"),
+    ("oldenburgstudentviolin34.jpg", "A violin and bow in an open case"),
 ):
     patch(f'url(./img/{url}) center center no-repeat #cccccc" title="image"',
           f'url(./img/{url}) center center no-repeat #cccccc" role="img" aria-label="{label}"',
           f"News photo delivered as a CSS background with title='image'; role=img plus a real label ('{label}') makes it perceivable.",
           ["1.1.1"])
 patch('url(./img/BrainInJar.jpg) center center no-repeat #cccccc;" title="image"',
-      'url(./img/BrainInJar.jpg) center center no-repeat #cccccc;" role="img" aria-label="A model brain in a jar"',
-      "Third news photo (trailing-semicolon variant of the same pattern).",
+      'url(./img/BrainInJar.jpg) center center no-repeat #cccccc;" role="img" aria-label="A model of a human brain"',
+      "Third news photo (viewed: a gray model brain against a blurred outdoor background; no jar is visible despite the filename).",
       ["1.1.1"])
 
 # Decorative chrome images that are UNIQUE in markup
@@ -158,6 +158,45 @@ patch('<FONT COLOR=#41545D FACE=Verdana SIZE=2>&nbsp;<B>More City Parks</B></FON
       "Second sidebar header, same contrast repair.",
       ["1.4.3"])
 
+# v2 (engine 0.2.0, E-SRC-1): the byte-identical repeated spacers v1 REFUSED,
+# now addressable with occurrence-indexed patches.
+def occ_patch(find, occurrence, rationale):
+    entry = {"file": "before/home.html", "find": find, "replace": find[:-1] + ' ALT="">',
+             "rationale": rationale, "wcag": ["1.1.1"], "occurrence": occurrence}
+    P.append(entry)
+
+for n in range(1, 8):
+    occ_patch('<IMG SRC=./img/marker2_w.gif WIDTH=78px HEIGHT=1px>', n,
+              f"Decorative 1px divider (occurrence {n} of 7 byte-identical spacers); empty alt removes it from the reading order.")
+for n in range(1, 3):
+    occ_patch('<IMG SRC=./img/blank_5x5.gif WIDTH=20px HEIGHT=5px>', n,
+              f"Decorative blank spacer (occurrence {n} of 2); empty alt removes it from the reading order.")
+patch('<IMG SRC=./img/marker2_t.gif WIDTH=1px HEIGHT=30px>',
+      '<IMG SRC=./img/marker2_t.gif WIDTH=1px HEIGHT=30px ALT="">',
+      "Decorative vertical divider; empty alt removes it from the reading order.", ["1.1.1"])
+patch('<IMG SRC=./img/marker2_t.gif WIDTH=1 HEIGHT=30px>',
+      '<IMG SRC=./img/marker2_t.gif WIDTH=1 HEIGHT=30px ALT="">',
+      "Decorative vertical divider (unitless-width variant); empty alt removes it from the reading order.", ["1.1.1"])
+for n in range(1, 4):
+    P.append({"file": "before/home.html",
+              "find": '<img src="./img/headline_middle.gif" width="23" height="24" align="absmiddle">',
+              "replace": '<img src="./img/headline_middle.gif" width="23" height="24" align="absmiddle" alt="">',
+              "rationale": f"Decorative headline icon (occurrence {n} of 3); empty alt removes it from the reading order.",
+              "wcag": ["1.1.1"], "occurrence": n})
+
+# v4 (verification round 2 findings): a WRONG pre-existing alt and decorative
+# bullet noise, both surfaced by the fresh reader's completeness sweep.
+patch('<img src="./img/telefon_white_bg.gif" alt="1234 56789" border="0" align="absmiddle">',
+      '<img src="./img/telefon_white_bg.gif" alt="(1) 269 C-H-O-K-E" border="0" align="absmiddle">',
+      "The hotline image's pre-existing alt told screen-reader users a DIFFERENT phone number (1234 56789) than the pixels show sighted users ((1) 269 C-H-O-K-E, viewed); the prose says to call the number below, so the mismatch is a functional barrier.",
+      ["1.1.1"])
+for n in range(1, 3):
+    P.append({"file": "before/home.html",
+              "find": '<img src="./img/list_bullets.gif" alt="bullet" border="0" align="absmiddle">',
+              "replace": '<img src="./img/list_bullets.gif" alt="" border="0" align="absmiddle">',
+              "rationale": f"Decorative list-bullet graphic (occurrence {n} of 2): alt='bullet' is reading-order noise; empty alt silences it.",
+              "wcag": ["1.1.1"], "occurrence": n})
+
 plan = {
     "schema_version": "0.1",
     "target": {
@@ -166,7 +205,9 @@ plan = {
     },
     "patches": P,
     "review_notes": [
-        "REFUSED (engine limitation, recorded honestly): repeated decorative spacers (./img/marker2_w.gif x6, marker2_t.gif x2, blank_5x5.gif x2, headline_middle.gif x3) share byte-identical markup, and this engine's exactly-once find contract cannot address one occurrence at a time. They remain unlabeled; an occurrence-indexed patch form is the engine follow-up this run motivates.",
+        "v4 note (verification round 2 finding): the fresh reader's completeness sweep caught a pre-existing WRONG alt - the hotline image reads (1) 269 C-H-O-K-E on screen but its alt said 1234 56789, giving screen-reader users a different phone number - plus alt='bullet' noise on two decorative bullets. Both patched after the author viewed the pixels. The engine also now preserves line endings byte-for-byte (E-SRC-3), removing the undeclared LF-to-CRLF rewrite round 2 observed.",
+        "v3 note (verification round 1 finding): the first plan authored image descriptions from filenames and story context WITHOUT viewing the pixels, and the independent verifier rejected five of six (a concert stage labeled as penguins, a crocus flower as a park, a man in a cardboard sun visor as a panda, a cased violin as being played, an invented jar). All six meaningful descriptions were re-authored from direct viewing before this revision. The round-1 worksheet and exit-9 report are preserved as the record.",
+        "v2 note: the byte-identical repeated spacers v1 refused (marker2_w.gif x7, blank_5x5.gif x2, headline_middle.gif x3, plus two unique marker2_t variants) are now patched via the occurrence-indexed form the v1 refusal motivated (engine 0.2.0, E-SRC-1). The v1 refusal note is preserved in the run's NOTES.md as the motivating record.",
         "The QUICKMENU select still navigates on change (WCAG 3.2.2 concern); converting it to a go-button pattern changes behavior and belongs to the page owner, not a surgical patch.",
         "axe 'region' violations only partially improve: role=main covers the content cell, but the table-based chrome outside landmarks would need structural rework beyond surgical scope.",
         "The two 'Click here' links now carry destination-bearing text; rendered text changes are declared on those patches.",

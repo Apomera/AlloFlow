@@ -106,6 +106,10 @@ async function main() {
             helpUrl: v.helpUrl || null,
             wcag: (v.tags || []).filter((t) => /^wcag\d+$/.test(t)),
             nodes: v.nodes.length,
+            // First few node selectors: a violation report an author cannot
+            // LOCATE from is not evidence, it is homework (W3C BAD run:
+            // "image-alt x33" was unactionable without targets).
+            targets: v.nodes.slice(0, 8).map((n) => (n.target || []).join(' ')),
           })),
           incomplete: result.incomplete.length,
         };

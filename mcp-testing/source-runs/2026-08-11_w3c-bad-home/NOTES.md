@@ -1,61 +1,73 @@
 # Source run — W3C BAD "CityLights" inaccessible home page (2026-08-11)
 
-First real-world run of the source-remediation pathway (skill 0.1.0), on the
-best-calibrated target available: the W3C WAI **Before/After Demonstration**
-(https://www.w3.org/WAI/demos/bad/), a page W3C built to be inaccessible and
-for which W3C publishes its own accessible rebuild — ground truth to
-benchmark against. Fetched copies live in `mcp-testing/source-corpus/w3c-bad/`
-(gitignored per the documents-corpus licensing pattern; MANIFEST.json carries
-URLs + SHA-256 for re-fetching).
+First real-world run of the source-remediation pathway, on the best-calibrated
+target available: the W3C WAI **Before/After Demonstration**
+(https://www.w3.org/WAI/demos/bad/), a page W3C built to be inaccessible, with
+W3C's own accessible rebuild as published ground truth. Fetched copies live in
+`mcp-testing/source-corpus/w3c-bad/` (gitignored; MANIFEST.json carries URLs +
+SHA-256). This run drove the skill **0.1.0 → 0.2.0** (occurrence-indexed
+patches, byte-exact application, the ported two-model verification) and went
+through THREE verification-driven plan revisions. That iteration record is the
+point, not a blemish.
 
-## Scoreboard
+## Final scoreboard (plan v4: 56 patches, 14 occurrence-indexed)
 
-| Measure | Before | After (39 surgical patches) | W3C's own official rebuild |
+| Measure | Before | After (56 surgical patches) | W3C's official rebuild |
 | --- | --- | --- | --- |
-| axe violation classes | 7 | **2** | 2 |
-| axe details | image-alt ×33, link-name ×7, region ×22, select-name, html-has-lang, color-contrast ×2, landmark-one-main | image-alt ×14 (refused spacers), region ×12 | landmark-one-main ×1, region ×14 |
+| axe violation classes | 7 | **1** (region ×12, disclosed) | 2 (landmark-one-main, region ×14) |
+| Images without alt | 33 | **0** | 0 |
 | Keyboard-unreachable interactive elements | **42 of 56** | **0** | 0 |
-| Unlabeled controls | 1 | 0 | 0 |
-| `lang` | absent | `en` | `en` |
-| Verdict (engine compare) | — | `improved`, 0 problems, 0 introduced | reference only |
+| Unlabeled controls / `lang` | 1 / absent | 0 / `en` | 0 / `en` |
+| Wrong pre-existing alt (hotline number) | ships to users | **corrected** | (W3C's rebuild rewrote the section) |
+| Compare verdict | — | `improved`, 0 introduced, text changes declared | reference only |
 
-The patched page audits with **no landmark violation and fewer region nodes
-than W3C's official remediation** — while being 39 find/replace patches on the
-original file rather than the ground-up rewrite W3C's after-version is. (Fair
-context: W3C's rebuild dates to 2012, before landmark-one-main was a common
-expectation.) The keyboard result is the headline: the original page threw
-focus away with `onFocus="blur();"` on nearly every link and used
-`javascript:` hrefs on image links with no names — 42 of 56 interactive
-elements were unreachable. All reachable after.
+## The verification loop's three rounds (the headline of this run)
 
-## What the plan deliberately did NOT do (review_notes, disclosed)
+- **Round 1 (11 discrepancy-class items caught as 6 notes): the fresh reader
+  rejected five of six meaningful image descriptions.** The plan author (the
+  AI) had written alt text from FILENAMES and story context without viewing
+  pixels: a concert stage labeled "Penguins at the city zoo", a white crocus
+  labeled "A green city park", a man in a cardboard sun visor labeled "A panda
+  eating bamboo", a cased violin labeled as being played, and a jar invented
+  for a brain photo. Exit 9 stamped (`verification-report-round1.json`,
+  `verify-worksheet-round1.json` preserved). All six re-authored from direct
+  viewing.
+- **Round 2 (56/57): the completeness sweep found a barrier NOBODY had
+  patched** — the hotline image's pre-existing alt tells screen-reader users
+  "1234 56789" while the pixels show "(1) 269 C-H-O-K-E": different phone
+  numbers for different users on a line whose prose says "call the number
+  below". Also caught: `alt="bullet"` noise ×2, and 389 phantom CR bytes —
+  the engine's apply was rewriting LF files as CRLF (**E-SRC-3**, fixed:
+  `newline=''` everywhere, bytes now round-trip).
+- **Round 3:** see the appended result below.
 
-- 14 remaining image-alt nodes are byte-identical repeated spacer GIFs
-  (`marker2_w.gif` ×6, `headline_middle.gif` ×3, `blank_5x5.gif` ×2,
-  `marker2_t.gif` ×2): the engine's exactly-once find contract cannot address
-  one occurrence at a time. **Engine follow-up E-SRC-1: an occurrence-indexed
-  patch form** (`find` + `occurrence: n`, or all-occurrences with a declared
-  count) — this run is its motivating case.
-- The QUICKMENU select still navigates on change (3.2.2); converting it to a
-  go-button changes behavior and belongs to the page owner.
-- `region` improves only partially: table-based chrome outside landmarks
-  needs structural rework beyond surgical scope.
+The pattern to keep: **every round's discrepancies were real** — fabricated
+alt text is the single most dangerous defect class in accessibility
+remediation, and the two-model rule caught it on its first outing in the code
+pathway, exactly as it caught engine gaps in the documents pathway.
 
-## Engine findings this run produced
+## Engine changes this run motivated (skill 0.2.0)
 
-- **E-SRC-1** (above): occurrence-indexed patches for repeated identical markup.
-- **E-SRC-2 (fixed mid-run):** axe violations without node selectors are
-  homework, not evidence — `targets` added to the auditor's violation
-  entries. ("image-alt ×33" was unactionable blind.)
-- Earlier fixture run: the auditor's interactive-element selector must
-  include `[onclick]` or click-only divs are invisible to the keyboard walk.
+- **E-SRC-1** occurrence-indexed patches: byte-identical repeated markup
+  (7 spacer GIFs etc.) is targetable by 1-based occurrence; all positions
+  located in the ORIGINAL bound bytes and applied by descending span, so
+  indices never shift and overlaps are refused. (v1 REFUSED these 14 nodes
+  with a disclosed note; that refusal is preserved in git history as the
+  motivating record.)
+- **E-SRC-2** audit violations carry node `targets` (a count you cannot
+  locate from is homework, not evidence).
+- **E-SRC-3** byte-exact application (line endings preserved).
+- **verify-init / verify-check ported** from the documents pathway: worksheet
+  per patch (+4 globals: behavior, completeness, review notes, keyboard),
+  sha256 binding of plan + both audits, attestation required, exit 9 on
+  discrepancies.
 
-## Method notes
+## Honest remainders
 
-Plan: 39 patches built by `build_plan.py` (rationale + WCAG SC per patch; the
-two link-text rewrites declare `changes_rendered_text`); validated and
-applied to a COPY; before/after audited offline (http(s) blocked, 0 requests
-escaped); `evidence.json` is the stamped compare verdict. Independent
-verification is human-manual in skill 0.1.x, and this record says so:
-these patches await a fresh-context reader/human review before any claim
-beyond "the automated evidence above."
+- `region` ×12: the table-based chrome outside landmarks needs structural
+  rework beyond surgical scope (disclosed in review notes; W3C's own rebuild
+  retains region ×14).
+- The QUICKMENU select still auto-navigates on change (3.2.2): a behavior
+  change that belongs to the page owner.
+- nav_*.gif images are not in the local corpus; their four alt texts were
+  verified from href/id/context, not pixels, and the worksheets say so.

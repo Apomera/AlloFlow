@@ -48,7 +48,12 @@
             "maxItems": 10,
             "items": { "type": "string", "maxLength": 20 }
           },
-          "changes_rendered_text": { "type": "boolean", "default": false }
+          "changes_rendered_text": { "type": "boolean", "default": false },
+          "occurrence": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "1-based occurrence of `find` to patch when the same markup repeats byte-identically (spacer images, repeated chrome). Positions are located in the ORIGINAL bound bytes and applied by span, so occurrence indices never shift as other patches apply. Without this field, `find` must occur exactly once."
+          }
         }
       }
     },

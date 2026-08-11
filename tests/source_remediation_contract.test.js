@@ -124,4 +124,89 @@ describe('source remediation pathway (experimental)', () => {
     expect(text).toContain("not bound in target.files");
     expect(text).toMatch(/occurs \d+ times .*must occur exactly once/);
   }, 60_000);
+
+  it('occurrence-indexed patches target the Nth match by ORIGINAL position (E-SRC-1)', () => {
+    const root = join(scratch, 'occ-root');
+    execFileSync(process.platform === 'win32' ? 'cmd' : 'mkdir', process.platform === 'win32' ? ['/c', 'mkdir', root] : ['-p', root]);
+    const rel = 'rep.html';
+    // Three identical spans; also LF endings that must survive apply (E-SRC-3).
+    writeFileSync(join(root, rel), '<p><i>x</i>alpha\n<i>x</i>beta\n<i>x</i>gamma</p>\n');
+    const sha = createHash('sha256').update(readFileSync(join(root, rel))).digest('hex');
+    const plan = {
+      schema_version: '0.1',
+      target: { description: 'occurrence fixture', files: [{ path: rel, sha256: sha }] },
+      patches: [
+        { file: rel, find: '<i>x</i>', replace: '<em>x</em>', occurrence: 2,
+          rationale: 'Middle italic span becomes semantic emphasis; occurrence-indexed.' },
+        { file: rel, find: 'gamma', replace: 'gamma!',
+          rationale: 'Unique-find patch coexists with occurrence-indexed ones.' },
+      ],
+      review_notes: [],
+    };
+    const planPath = join(scratch, 'occ-plan.json');
+    writeFileSync(planPath, JSON.stringify(plan));
+    const out = join(scratch, 'occ-out');
+    const applied = runJson(PYTHON, [ENGINE, 'apply', '--plan', planPath, '--root', root, '--out-dir', out]);
+    expect(applied.patchesApplied).toBe(2);
+    const patched = readFileSync(join(out, rel), 'utf8');
+    expect(patched).toBe('<p><i>x</i>alpha\n<em>x</em>beta\n<i>x</i>gamma!</p>\n'); // only the 2nd changed; LF intact
+    // Beyond-count occurrence is refused:
+    plan.patches[0].occurrence = 9;
+    writeFileSync(planPath, JSON.stringify(plan));
+    let failed = null;
+    try { execFileSync(PYTHON, [ENGINE, 'validate-plan', '--plan', planPath, '--root', root], { cwd: ROOT, encoding: 'utf8' }); }
+    catch (error) { failed = JSON.parse(error.stdout); }
+    expect(failed.errors.join('\n')).toContain('occurs only 3 time(s)');
+  }, 60_000);
+
+  it('verify-init/verify-check enforce the attested two-model loop', () => {
+    const rel = 'v.html';
+    const root = join(scratch, 'verify-root');
+    execFileSync(process.platform === 'win32' ? 'cmd' : 'mkdir', process.platform === 'win32' ? ['/c', 'mkdir', root] : ['-p', root]);
+    writeFileSync(join(root, rel), '<img src="a.png">');
+    const sha = createHash('sha256').update(readFileSync(join(root, rel))).digest('hex');
+    const planPath = join(scratch, 'v-plan.json');
+    writeFileSync(planPath, JSON.stringify({
+      schema_version: '0.1',
+      target: { description: 'verify fixture', files: [{ path: rel, sha256: sha }] },
+      patches: [{ file: rel, find: '<img src="a.png">', replace: '<img src="a.png" alt="A red circle">',
+        rationale: 'The image conveyed content and had no text alternative.' }],
+      review_notes: ['fixture'],
+    }));
+    const audit = (digest) => ({ ok: true, audit: { axe: { available: true, violations: [], incomplete: 0 },
+      keyboard: { interactiveElements: 0, reached: 0, unreachable: [], suspectedTrap: false },
+      outline: { title: 't', lang: 'en', headings: [], landmarks: [], imagesWithoutAlt: 0, unlabeledControls: 0 },
+      text: { sha256: digest, chars: 1 } } });
+    const beforePath = join(scratch, 'v-before.json');
+    const afterPath = join(scratch, 'v-after.json');
+    writeFileSync(beforePath, JSON.stringify(audit('a'.repeat(64))));
+    writeFileSync(afterPath, JSON.stringify(audit('a'.repeat(64))));
+    const wsPath = join(scratch, 'v-ws.json');
+    const init = runJson(PYTHON, [ENGINE, 'verify-init', '--plan', planPath, '--before', beforePath, '--after', afterPath, '--out', wsPath]);
+    expect(init.items).toBe(5); // 1 patch + 4 globals
+    const ws = JSON.parse(readFileSync(wsPath, 'utf8'));
+    // Text-alternative patches get the judge-the-pixels instruction:
+    expect(ws.items[0].instruction).toContain('not merely plausible');
+    // Unfilled worksheet is refused:
+    let refused = null;
+    try { execFileSync(PYTHON, [ENGINE, 'verify-check', '--worksheet', wsPath, '--plan', planPath, '--before', beforePath, '--after', afterPath], { cwd: ROOT, encoding: 'utf8' }); }
+    catch (error) { refused = JSON.parse(error.stdout); }
+    expect(refused.error).toContain('unfilled');
+    // Filled + attested stamps verified:
+    for (const item of ws.items) item.status = 'verified';
+    ws.verifier = { model: 'test', context_isolation: 'fresh-context', read_source_directly: true,
+      statement: 'I read the patched fixture and both audit files directly and compared every item.' };
+    writeFileSync(wsPath, JSON.stringify(ws));
+    const report = runJson(PYTHON, [ENGINE, 'verify-check', '--worksheet', wsPath, '--plan', planPath, '--before', beforePath, '--after', afterPath]);
+    expect(report.result).toBe('verified');
+    // A discrepancy exits 9 with the note carried:
+    ws.items[0].status = 'discrepancy';
+    ws.items[0].note = 'The alt text does not match the image pixels at all.';
+    writeFileSync(wsPath, JSON.stringify(ws));
+    let nine = null;
+    try { execFileSync(PYTHON, [ENGINE, 'verify-check', '--worksheet', wsPath, '--plan', planPath, '--before', beforePath, '--after', afterPath], { cwd: ROOT, encoding: 'utf8' }); }
+    catch (error) { nine = { status: error.status, body: JSON.parse(error.stdout) }; }
+    expect(nine.status).toBe(9);
+    expect(nine.body.result).toBe('discrepancies-found');
+  }, 60_000);
 });

@@ -6,30 +6,11 @@
       "available": true,
       "violations": [
         {
-          "id": "image-alt",
-          "impact": "critical",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/image-alt?application=axeAPI",
-          "wcag": [
-            "wcag111"
-          ],
-          "nodes": 14,
-          "targets": [
-            "td[width=\"155px\"][background=\"./img/marker2_w.gif\"] > img[src$=\"marker2_w.gif\"][width=\"78px\"][height=\"1px\"]",
-            "img[width=\"1\"]",
-            "tr[height=\"1px\"]:nth-child(3) > td[width=\"154px\"][background=\"./img/marker2_w.gif\"] > img[src$=\"marker2_w.gif\"][width=\"78px\"][height=\"1px\"]",
-            "tr[height=\"1px\"]:nth-child(5) > td[width=\"154px\"][background=\"./img/marker2_w.gif\"] > img[src$=\"marker2_w.gif\"][width=\"78px\"][height=\"1px\"]",
-            "tr[height=\"1px\"]:nth-child(7) > td[width=\"154px\"][background=\"./img/marker2_w.gif\"] > img[src$=\"marker2_w.gif\"][width=\"78px\"][height=\"1px\"]",
-            "tr[height=\"1px\"]:nth-child(9) > td[width=\"154px\"][background=\"./img/marker2_w.gif\"] > img[src$=\"marker2_w.gif\"][width=\"78px\"][height=\"1px\"]",
-            "td[width=\"20px\"]:nth-child(2) > img[src$=\"blank_5x5.gif\"][height=\"5px\"][width=\"20px\"]",
-            ".newsheadline:nth-child(1) > img[src$=\"headline_middle.gif\"][width=\"23\"][height=\"24\"]"
-          ]
-        },
-        {
           "id": "region",
           "impact": "moderate",
           "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/region?application=axeAPI",
           "wcag": [],
-          "nodes": 12,
+          "nodes": 10,
           "targets": [
             "#logos",
             "h1",
@@ -38,7 +19,7 @@
             "#startcontent",
             "table[height=\"144px\"]",
             "td[bgcolor=\"#E4E4E4\"]",
-            "td[width=\"20px\"]:nth-child(2)"
+            "td[width=\"151px\"][valign=\"TOP\"]"
           ]
         }
       ],
@@ -70,7 +51,7 @@
       "landmarks": [
         "td[main]"
       ],
-      "imagesWithoutAlt": 14,
+      "imagesWithoutAlt": 0,
       "unlabeledControls": 0
     },
     "text": {
@@ -81,5 +62,5 @@
   "blockedNetworkRequests": 0,
   "networkPolicy": "deny",
   "note": "axe automates only part of WCAG; keyboard reachability is evidence, not usability judgement. A person must still operate the page.",
-  "createdAt": "2026-08-11T16:50:30Z"
+  "createdAt": "2026-08-11T17:32:52Z"
 }

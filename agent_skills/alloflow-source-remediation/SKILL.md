@@ -33,7 +33,11 @@ Resolve the installed directory containing this SKILL.md as `<skill-dir>`.
 2. Read the audit AND the source. Author `patch-plan.json` conforming to
    [references/patch-plan.schema.json](references/patch-plan.schema.json):
    - every patch is a scoped `find`/`replace` on one file; `find` must occur
-     exactly once in that file or validation fails (no pattern spray);
+     exactly once in that file or validation fails (no pattern spray). When
+     the SAME markup repeats byte-identically (spacer images, repeated
+     chrome), give each patch a 1-based `occurrence` — positions are located
+     in the original bound bytes and applied by span, so indices never shift
+     as other patches apply, and overlapping edits are refused;
    - every patched file is bound by SHA-256 in `target.files`;
    - every patch carries a `rationale` naming what it fixes; set
      `changes_rendered_text: true` on any patch that adds or alters visible
@@ -56,11 +60,31 @@ Resolve the installed directory containing this SKILL.md as `<skill-dir>`.
      rendered-text digest changed with or without disclosure.
 7. Run the project's own test suite on the patched copy. A red suite is a
    stop, not a footnote.
-8. Human review: a person (or a fresh-context model instance that did not
-   author the patches) reads the evidence and the diff before anything
-   merges. The stamped independent-verification loop from the documents
-   pathway will be ported in a later version; until then say plainly that
-   verification was human-manual.
+8. Independent verification (the two-model rule, as in the documents
+   pathway). The patch author graded its own work; a second reader must
+   grade it instead before anything merges:
+
+   ```text
+   python "<skill-dir>/scripts/alloflow_source.py" verify-init \
+     --plan P --before before.json --after after.json --out worksheet.json
+   ```
+
+   Hand `worksheet.json` to a FRESH-CONTEXT reader — a model instance or
+   person who did not author the patches — who reads the patched sources,
+   the audits, and the referenced images directly and fills every item
+   (one per patch, plus behavior/completeness/review-notes/keyboard
+   globals). Then:
+
+   ```text
+   python "<skill-dir>/scripts/alloflow_source.py" verify-check \
+     --worksheet worksheet.json --plan P \
+     --before before.json --after after.json --out verification-report.json
+   ```
+
+   verify-check refuses unfilled, tampered, or unattested worksheets
+   (the binding pins the plan and both audits by SHA-256) and exits 9 when
+   discrepancies were found — fix the plan and re-run the loop. A stamped
+   `result: verified` still upgrades no compliance claim.
 
 ## Honest limits
 

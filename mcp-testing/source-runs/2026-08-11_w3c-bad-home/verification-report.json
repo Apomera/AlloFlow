@@ -1,0 +1,25 @@
+{
+ "schemaVersion": "0.1",
+ "createdAt": "2026-08-11T17:40:28Z",
+ "binding": {
+  "plan_sha256": "c04cabf7743f44ae97c08d7ee0ea3c81e82bf2f8e2871dd8da9125b82cfbda3b",
+  "before_audit_sha256": "6de04f351f7cdab4bf0a3260893cc06c892f0626d2a81abae56b8d0f18375515",
+  "after_audit_sha256": "74e038b635f055ee87a56e20d02ccd5f1c5f1556678b2d184c3a54a31665e827"
+ },
+ "counts": {
+  "items": 60,
+  "verified": 60,
+  "discrepancies": 0,
+  "unreadable": 0
+ },
+ "discrepancies": [],
+ "unreadable": [],
+ "verifier": {
+  "model": "claude-fable-5",
+  "context_isolation": "fresh-context",
+  "statement": "I read the original and patched home.html in full, byte-diffed them (both LF-only, endings identical; every hunk mapped to a declared patch), verified occurrence-indexed counts (marker2_w x7, blank_5x5 x2, headline_middle x3, list_bullets x2), viewed all ten local images and judged each new alt/aria-label against the pixels (the four non-local nav gifs judged from href/id/context as instructed), recomputed the sidebar contrast (3.88:1 before, 6.37:1 after), confirmed the +47-char text delta equals exactly the two declared rendered-text changes, checked all binding SHA-256 hashes against the plan and audits, and independently re-ran the axe/keyboard audit: 56/56 keyboard-reachable, region as the only remaining violation."
+ },
+ "result": "verified",
+ "meaning": "'verified' means an independent reader attested every item against the patched sources and audits. It does not upgrade any compliance claim, and the script cannot prove the reader's independence - it records the attestation.",
+ "ok": true
+}

@@ -1,0 +1,56 @@
+{
+ "schemaVersion": "0.1",
+ "createdAt": "2026-08-11T17:21:54Z",
+ "binding": {
+  "plan_sha256": "c1364975a5de9c78f0e8c2759790ffb27f442333b07a0350aa7a64d9d4d9da45",
+  "before_audit_sha256": "6de04f351f7cdab4bf0a3260893cc06c892f0626d2a81abae56b8d0f18375515",
+  "after_audit_sha256": "77fde5bb381bfe111c76e2b1f439edd70446758d8b4552f18015c1183f897c35"
+ },
+ "counts": {
+  "items": 57,
+  "verified": 51,
+  "discrepancies": 6,
+  "unreadable": 0
+ },
+ "discrepancies": [
+  {
+   "id": "patch-017",
+   "kind": "patch",
+   "note": "Mislabeled image: teaser_right1.jpg (viewed via the same-named W3C asset at after/img/teaser_right1.jpg; the before/img copy was never fetched per MANIFEST.json) shows a performer on a dark concert stage under stage lighting - consistent with the adjacent 'zoo benefit concert / city rockers' story - not 'Penguins at the city zoo'. No penguins are visible; the alt is invented."
+  },
+  {
+   "id": "patch-018",
+   "kind": "patch",
+   "note": "Mislabeled image: teaser_right2.jpg (viewed via the same-named W3C asset at after/img/teaser_right2.jpg) is a close-up of a single white crocus flower with a yellow center amid dry grass - not 'A green city park'. The alt describes a scene that is not in the photo."
+  },
+  {
+   "id": "patch-019",
+   "kind": "patch",
+   "note": "Mislabeled image: before/img/panda-sm.jpg (viewed, including 4x upscale) shows a man in an orange T-shirt wearing a white hard hat with an improvised cardboard sun-shade, sunglasses and mustache, outdoors in bright sun - the heat-wave photo. It is not a panda; 'A panda eating bamboo' appears invented from the filename."
+  },
+  {
+   "id": "patch-020",
+   "kind": "patch",
+   "note": "Inaccurate label: before/img/oldenburgstudentviolin34.jpg (viewed) shows a violin and bow lying in an open green-lined case; no person appears and no one is playing. 'A student playing the violin' describes a scene not in the photo; something like 'A violin and bow in an open case' would be accurate (and fits the story's pun)."
+  },
+  {
+   "id": "patch-021",
+   "kind": "patch",
+   "note": "Partially fabricated label: before/img/BrainInJar.jpg (viewed, 4x upscale) shows a gray model brain against a blurred outdoor background; no jar is visible anywhere in frame. 'A model brain' is accurate but 'in a jar' comes from the filename, not the image."
+  },
+  {
+   "id": "global-review-notes",
+   "kind": "global",
+   "note": "The five recorded review notes are each individually accurate: I confirmed the occurrence-indexed spacer patches all landed (7+2+3+2), the QUICKMENU select still auto-navigates on change in the patched file (line 187), region remains as note 3 says, the two click-here rendered-text changes are declared, and w3c-reference-audit.json exists. However a material caveat is missing: the plan authored confident visual descriptions for photos it evidently never viewed, and five of them are wrong or partly invented (patches 017-021: a concert stage labeled 'Penguins at the city zoo', a white crocus flower labeled 'A green city park', a man in a cardboard sun hat labeled 'A panda eating bamboo', a violin in a case labeled 'A student playing the violin', and a jar that is not in the brain photo). No review note records that image content was unverified, so this known limitation was not disclosed."
+  }
+ ],
+ "unreadable": [],
+ "verifier": {
+  "model": "claude-fable-5",
+  "context_isolation": "fresh-context",
+  "statement": "I read both mcp-testing/source-corpus/w3c-bad/before/home.html and C:\\tmp\\bad-patched-v2\\before\\home.html in full, ran diff --strip-trailing-cr between them (only the 53 declared edits differ, plus an LF->CRLF line-ending conversion), verified the binding SHA-256 of patch-plan.json and both audits, read the plan's review_notes and both audit JSONs, viewed every locally present referenced image (panda-sm.jpg, oldenburgstudentviolin34.jpg, BrainInJar.jpg, morearrow.gif, headline_middle.gif, plus the same-named W3C assets after/img/teaser_right1.jpg, teaser_right2.jpg and weather.png) at up to 4x upscale, recomputed both WCAG contrast ratios, and independently re-ran audit_page.cjs on the patched copy (56/56 keyboard-reachable, region x10 the only remaining violation, text digest identical to the stamped after-audit). Five introduced image descriptions do not match the actual images and are marked as discrepancies."
+ },
+ "result": "discrepancies-found",
+ "meaning": "'verified' means an independent reader attested every item against the patched sources and audits. It does not upgrade any compliance claim, and the script cannot prove the reader's independence - it records the attestation.",
+ "ok": true
+}
