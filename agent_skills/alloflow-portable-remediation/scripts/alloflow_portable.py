@@ -934,11 +934,38 @@ def find_verapdf_jar() -> Optional[Path]:
     return None
 
 
-def verapdf_capability() -> Dict[str, Any]:
+def find_working_java() -> Tuple[Optional[str], Optional[str]]:
+    """Locate a Java launcher that actually runs.
+
+    macOS ships a stub at /usr/bin/java that exists on PATH but fails at
+    runtime ("Unable to locate a Java Runtime.") when no JDK is installed,
+    so `shutil.which` alone is not an honest capability probe.
+    """
     java = shutil.which("java")
+    if not java:
+        return None, "Java is unavailable."
+    try:
+        probe = subprocess.run(
+            [java, "-version"],
+            capture_output=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=20,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        return None, "Java is not runnable: " + compact_error(exc)
+    if probe.returncode != 0:
+        detail = compact_error(probe.stderr or probe.stdout or "java -version failed.")
+        return None, "Java is not runnable: " + detail
+    return java, None
+
+
+def verapdf_capability() -> Dict[str, Any]:
+    java, java_reason = find_working_java()
     jar = find_verapdf_jar()
     if not java:
-        return {"available": False, "reason": "Java is unavailable."}
+        return {"available": False, "reason": java_reason}
     if not jar:
         return {"available": False, "reason": "The local veraPDF CLI JAR is unavailable."}
     return {"available": True, "java": Path(java).name, "validator": "veraPDF CLI"}
@@ -1065,10 +1092,10 @@ def normalize_verapdf(parsed: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def validate_pdf_ua(pdf_path: Path) -> Dict[str, Any]:
-    java = shutil.which("java")
+    java, java_reason = find_working_java()
     jar = find_verapdf_jar()
     if not java or not jar:
-        return {"status": "not_run", "reason": "Local Java and veraPDF are both required."}
+        return {"status": "not_run", "reason": compact_error(java_reason) if java_reason else "Local Java and veraPDF are both required."}
     command = [
         java,
         "-Djava.awt.headless=true",
