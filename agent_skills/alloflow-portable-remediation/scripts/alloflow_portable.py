@@ -26,7 +26,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 
-VERSION = "0.2.6"
+VERSION = "0.2.7"
 MAX_SOURCE_BYTES = 200 * 1024 * 1024
 MAX_PLAN_BYTES = 8 * 1024 * 1024
 MAX_HTML_BYTES = 8 * 1024 * 1024
@@ -2469,6 +2469,24 @@ def _expand_ligatures(text: str) -> str:
     return "".join(_LIGATURE_EXPANSIONS.get(ch, ch) for ch in text)
 
 
+# WinAnsi C1 fallback (corpus round 14): PDF single-byte text overwhelmingly
+# uses WinAnsiEncoding, where 0x80-0x9F are smart quotes, dashes, and daggers —
+# not the C1 control characters latin-1 says they are. Subset ToUnicode CMaps
+# routinely omit these codes, so curly quotes decoded to invisible control
+# chars in both extraction channels ('student’s' read as 'student' + C0092).
+# The five codes cp1252 leaves undefined keep their raw identity.
+_C1_CP1252: Dict[int, str] = {}
+for _c1_code in range(0x80, 0xA0):
+    try:
+        _C1_CP1252[_c1_code] = bytes([_c1_code]).decode("cp1252")
+    except UnicodeDecodeError:
+        pass
+
+
+def _byte_fallback_char(byte: int) -> str:
+    return _C1_CP1252.get(byte, chr(byte))
+
+
 def _decode_font_bytes(raw: bytes, font: Optional[Dict[str, Any]]) -> str:
     """Decode raw string bytes through the current font's ToUnicode CMap.
 
@@ -2480,10 +2498,12 @@ def _decode_font_bytes(raw: bytes, font: Optional[Dict[str, Any]]) -> str:
     """
     mapping = font.get("map") if font else None
     if not mapping:
-        return raw.decode("latin1")
+        return "".join(_byte_fallback_char(byte) for byte in raw)
     code_len = font.get("codeLen") or 1
     if code_len <= 1:
-        return _expand_ligatures("".join(mapping.get(byte, chr(byte)) for byte in raw))
+        return _expand_ligatures(
+            "".join(mapping[byte] if byte in mapping else _byte_fallback_char(byte) for byte in raw)
+        )
     out: List[str] = []
     for index in range(0, len(raw) - (len(raw) % code_len), code_len):
         code = int.from_bytes(raw[index:index + code_len], "big")
@@ -2982,35 +3002,28 @@ def _pdf_extract_text(data: bytes) -> Dict[str, Any]:
         draw_budget = [4000]
 
         def collect(
-            stream_num: int,
-            inherited_fonts: Dict[str, Dict[str, Any]],
-            parent_resources: Optional[bytes],
+            content: bytes,
+            own_fonts: Dict[str, Dict[str, Any]],
+            resources: Optional[bytes],
             depth: int,
             stack: Tuple[int, ...],
         ) -> None:
-            """Extract a content stream, splicing each Form XObject's text in at
+            """Extract page content, splicing each Form XObject's text in at
             its `Do` — text layers routinely live inside Form XObjects, not the
             page's direct content stream (corpus round 1: the 1913 Form 1040's
             hidden print-production text layer), and a stamped XObject may be
             drawn many times (corpus round 8). `stack` guards reference cycles.
+
+            The caller passes the page's /Contents CONCATENATED (round 14): the
+            array is ONE logical stream splittable between any two lexical
+            tokens, so fonts, text state, and even a single TJ array straddle
+            stream boundaries — parsed separately, a whole line of the OSEP
+            letter (8 streams per page) silently vanished and its quote glyphs
+            decoded without their font.
             """
-            if depth > 6 or stream_num in stack:
+            if depth > 6 or not content:
                 return
-            entry = index.get(stream_num)
-            if not entry or entry[1] is None:
-                return
-            content = _decompress_stream(entry[0], entry[1])
-            if not content:
-                return
-            own_resources = _dict_value(index, entry[0], "Resources")
-            own_fonts = inherited_fonts
-            if own_resources is not None:
-                own_font_dict = _fonts_from_resources(index, own_resources)
-                if own_font_dict:
-                    own_fonts = {**inherited_fonts, **own_font_dict}
-            resources = own_resources if own_resources is not None else parent_resources
             xobjects = _dict_value(index, resources, "XObject")
-            next_stack = stack + (stream_num,)
             for kind, body in _page_content_segments(content, own_fonts):
                 if kind == "text":
                     page_text.append(body)
@@ -3022,15 +3035,40 @@ def _pdf_extract_text(data: bytes) -> Dict[str, Any]:
                 )
                 if not named:
                     continue
-                xentry = index.get(int(named.group(1)))
-                if not xentry or not re.search(rb"/Subtype\s*/Form\b", xentry[0]):
+                xnum = int(named.group(1))
+                if xnum in stack:
                     continue
+                xentry = index.get(xnum)
+                if not xentry or xentry[1] is None or not re.search(rb"/Subtype\s*/Form\b", xentry[0]):
+                    continue
+                xcontent = _decompress_stream(xentry[0], xentry[1])
+                if not xcontent:
+                    continue
+                xresources = _dict_value(index, xentry[0], "Resources")
+                xfonts = own_fonts
+                if xresources is not None:
+                    xfont_dict = _fonts_from_resources(index, xresources)
+                    if xfont_dict:
+                        xfonts = {**own_fonts, **xfont_dict}
                 draw_budget[0] -= 1
-                collect(int(named.group(1)), own_fonts, resources, depth + 1, next_stack)
+                collect(
+                    xcontent,
+                    xfonts,
+                    xresources if xresources is not None else resources,
+                    depth + 1,
+                    stack + (xnum,),
+                )
 
         page_resources = _dict_value(index, dictionary, "Resources")
+        stream_parts: List[bytes] = []
         for ref in content_refs:
-            collect(ref, fonts, page_resources, 0, ())
+            entry = index.get(ref)
+            if not entry or entry[1] is None:
+                continue
+            part = _decompress_stream(entry[0], entry[1])
+            if part:
+                stream_parts.append(part)
+        collect(b"\n".join(stream_parts), fonts, page_resources, 0, ())
         pages.append("".join(page_text))
 
     text = "\n".join(pages)
