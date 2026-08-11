@@ -1380,6 +1380,76 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         return function () { window.removeEventListener('alloflow-firstresponse-restored', onRestore); };
       }, []);
 
+      // ── CPR & AED metronome (fixed hook slots) ──
+      // render() runs inline in the host component, so these hooks may NOT
+      // live inside renderCprAed(): that function only runs on the 'cprAed'
+      // dispatch branch, and conditional hooks change the host's hook count
+      // on navigation (React #310). renderCprAed reads them via closure.
+      var cprView = d.cprView || 'overview';
+      var bpm = typeof d.cprBpm === 'number' ? d.cprBpm : 110;
+      if (bpm < 100) bpm = 100;
+      if (bpm > 120) bpm = 120;
+      var audioOn = !!d.cprAudio; // default OFF — sensory accommodation
+
+      // Visual metronome beat tracker — pulses a circle in time with bpm.
+      // Use a state-driven beat counter (re-render on each tick) rather than
+      // raw DOM mutation so the live region announcement works for SR users
+      // when beat lands on certain milestones.
+      var beatTuple = useState(0);
+      var beat = beatTuple[0], setBeat = beatTuple[1];
+      var audioCtxRef = useRef(null);
+      var intervalRef = useRef(null);
+
+      // Close the AudioContext on unmount. Browsers limit ~4-6 contexts
+      // per tab; without this, a student who navigates in and out of
+      // FirstResponse multiple times in a session can silently lose
+      // metronome audio after a few visits.
+      useEffect(function() {
+        return function() {
+          if (audioCtxRef.current && audioCtxRef.current.state !== 'closed') {
+            try { audioCtxRef.current.close(); } catch (e) {}
+            audioCtxRef.current = null;
+          }
+        };
+      }, []);
+
+      // Drive the metronome only while the CPR & AED module is open AND the
+      // user is on its metronome/practice sub-view. Tearing down on view or
+      // sub-view change prevents background audio.
+      useEffect(function() {
+        if (view !== 'cprAed' || (cprView !== 'metronome' && cprView !== 'practice')) {
+          if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
+          return;
+        }
+        var intervalMs = Math.round(60000 / bpm);
+        intervalRef.current = setInterval(function() {
+          setBeat(function(b) { return b + 1; });
+          if (audioOn) {
+            try {
+              if (!audioCtxRef.current) {
+                var AC = window.AudioContext || window.webkitAudioContext;
+                if (AC) audioCtxRef.current = new AC();
+              }
+              var ac = audioCtxRef.current;
+              if (ac) {
+                var osc = ac.createOscillator();
+                var gain = ac.createGain();
+                osc.frequency.value = 880;
+                gain.gain.setValueAtTime(0.0001, ac.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.18, ac.currentTime + 0.005);
+                gain.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + 0.06);
+                osc.connect(gain).connect(ac.destination);
+                osc.start();
+                osc.stop(ac.currentTime + 0.07);
+              }
+            } catch(e) { /* audio init can fail silently on autoplay-blocked tabs */ }
+          }
+        }, intervalMs);
+        return function() {
+          if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
+        };
+      }, [view, cprView, bpm, audioOn]);
+
       // Award badge once (idempotent). frAnnounce + toast for SR + visual feedback.
       function awardBadge(id, label) {
         if (badges[id]) return;
@@ -2021,73 +2091,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       // Clinical numbers checked against the 2025 AHA Adult Basic Life Support Guidelines.
       // ─────────────────────────────────────────
       function renderCprAed() {
-        var cprView = d.cprView || 'overview';
-        var bpm = typeof d.cprBpm === 'number' ? d.cprBpm : 110;
-        if (bpm < 100) bpm = 100;
-        if (bpm > 120) bpm = 120;
-        var audioOn = !!d.cprAudio; // default OFF — sensory accommodation
+        // cprView / bpm / audioOn and the metronome hook slots live in the
+        // fixed hook budget at the top of render() — hooks may not be declared
+        // here, because this function only runs on the 'cprAed' branch.
         var practiceRunning = !!d.cprPracticeRunning;
         var practiceStart = d.cprPracticeStart || 0;
         var practiceTaps = d.cprPracticeTaps || [];
         var practiceBest = d.cprPracticeBest || null;
-
-        // Visual metronome beat tracker — pulses a circle in time with bpm.
-        // Use a state-driven beat counter (re-render on each tick) rather than
-        // raw DOM mutation so the live region announcement works for SR users
-        // when beat lands on certain milestones.
-        var beatTuple = useState(0);
-        var beat = beatTuple[0], setBeat = beatTuple[1];
-        var audioCtxRef = useRef(null);
-        var intervalRef = useRef(null);
-
-        // Close the AudioContext on unmount. Browsers limit ~4-6 contexts
-        // per tab; without this, a student who navigates in and out of
-        // FirstResponse multiple times in a session can silently lose
-        // metronome audio after a few visits.
-        useEffect(function() {
-          return function() {
-            if (audioCtxRef.current && audioCtxRef.current.state !== 'closed') {
-              try { audioCtxRef.current.close(); } catch (e) {}
-              audioCtxRef.current = null;
-            }
-          };
-        }, []);
-
-        // Drive the metronome only while user is on the metronome sub-view.
-        // Tearing down on unmount or sub-view change prevents background audio.
-        useEffect(function() {
-          if (cprView !== 'metronome' && cprView !== 'practice') {
-            if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
-            return;
-          }
-          var intervalMs = Math.round(60000 / bpm);
-          intervalRef.current = setInterval(function() {
-            setBeat(function(b) { return b + 1; });
-            if (audioOn) {
-              try {
-                if (!audioCtxRef.current) {
-                  var AC = window.AudioContext || window.webkitAudioContext;
-                  if (AC) audioCtxRef.current = new AC();
-                }
-                var ac = audioCtxRef.current;
-                if (ac) {
-                  var osc = ac.createOscillator();
-                  var gain = ac.createGain();
-                  osc.frequency.value = 880;
-                  gain.gain.setValueAtTime(0.0001, ac.currentTime);
-                  gain.gain.exponentialRampToValueAtTime(0.18, ac.currentTime + 0.005);
-                  gain.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + 0.06);
-                  osc.connect(gain).connect(ac.destination);
-                  osc.start();
-                  osc.stop(ac.currentTime + 0.07);
-                }
-              } catch(e) { /* audio init can fail silently on autoplay-blocked tabs */ }
-            }
-          }, intervalMs);
-          return function() {
-            if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
-          };
-        }, [cprView, bpm, audioOn]);
 
         var CPR_TAB_IDS = ['overview', 'metronome', 'practice', 'aed'];
         function cprTabKeyDown(e, index) {

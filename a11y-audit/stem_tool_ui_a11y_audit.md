@@ -1,12 +1,12 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-08-10T03:09:09.665Z
+Generated: 2026-08-11T18:08:20.847Z
 
 ## Scope
 
-- Registered STEM tools audited: 140
-- Plugin files loaded: 137
-- Shared shell coverage: 140/140 tools
+- Registered STEM tools audited: 143
+- Plugin files loaded: 140
+- Shared shell coverage: 143/143 tools
 - Light-background opt-outs: 0
 
 ## Summary
@@ -48,7 +48,7 @@ Generated: 2026-08-10T03:09:09.665Z
 | `anatomy` Human Anatomy Explorer | science | standard | 96 | 1 | 1 | 0 | 0 | 0 |  |
 | `appLab` AppLab | technology | standard | 27 | 8 | 0 | 0 | 0 | 0 |  |
 | `aquacultureLab` AquacultureLab: Mussel Farm Sim | science | standard | 181 | 6 | 0 | 0 | 0 | 0 |  |
-| `aquarium` Aquarium Lab | science | standard | 27 | 0 | 0 | 0 | 0 | 0 |  |
+| `aquarium` Aquarium Lab | science | standard | 28 | 0 | 0 | 0 | 0 | 0 |  |
 | `arccity` Arc City | strategy | standard | 27 | 0 | 0 | 0 | 0 | 0 |  |
 | `archStudio` Architecture Studio | engineering | standard | 83 | 2 | 1 | 0 | 0 | 0 |  |
 | `areaPerimeter` Area & Perimeter Lab | math | standard | 8 | 2 | 0 | 0 | 0 | 0 |  |
@@ -61,7 +61,7 @@ Generated: 2026-08-10T03:09:09.665Z
 | `autoRepair` Auto Repair Shop | life-skills | standard | 41 | 0 | 0 | 0 | 0 | 0 |  |
 | `bakingScience` Baking Lab | science | standard | 16 | 0 | 0 | 0 | 0 | 0 |  |
 | `base10` Math Manipulatives | math | standard | 52 | 1 | 0 | 0 | 0 | 0 |  |
-| `beehive` Beehive Simulator | science | standard | 86 | 12 | 1 | 0 | 0 | 0 |  |
+| `beehive` Beehive Simulator | science | standard | 108 | 12 | 1 | 0 | 0 | 0 |  |
 | `behaviorLab` Behavior Lab | science | standard | 24 | 5 | 0 | 0 | 0 | 0 |  |
 | `bikeLab` BikeLab: Physics & Repair | life-skills | standard | 11 | 0 | 0 | 0 | 0 | 0 |  |
 | `birdLab` BirdLab — I-Spy Ornithology | science | standard | 127 | 1 | 0 | 0 | 0 | 0 |  |
@@ -79,7 +79,7 @@ Generated: 2026-08-10T03:09:09.665Z
 | `coasterLab` Coaster Lab | science | standard | 0 | 0 | 0 | 0 | 1 | 0 | no-interactive-controls x1 |
 | `codingPlayground` codingPlayground | creative | standard | 45 | 2 | 1 | 0 | 0 | 0 |  |
 | `companionPlanting` Companion Planting Lab | science | standard | 20 | 0 | 1 | 0 | 0 | 0 |  |
-| `consciousnessLab` Consciousness Theory Lab | science | standard | 13 | 0 | 0 | 0 | 0 | 0 |  |
+| `consciousnessLab` Consciousness Theory Lab | science | standard | 16 | 0 | 0 | 0 | 0 | 0 |  |
 | `coordinate` Coordinate Grid | math | standard | 14 | 1 | 0 | 0 | 0 | 0 |  |
 | `cyberDefense` Cyber Defense Lab | technology | standard | 20 | 0 | 0 | 0 | 0 | 0 |  |
 | `dataLab` Data Lab | data | standard | 2 | 0 | 0 | 0 | 0 | 0 |  |
@@ -113,8 +113,8 @@ Generated: 2026-08-10T03:09:09.665Z
 | `geometryProver` Geometry | math | standard | 17 | 0 | 0 | 0 | 0 | 0 |  |
 | `geometryWorld` Geometry World | math | standard | 0 | 0 | 0 | 0 | 2 | 0 | no-interactive-controls x1, placeholder-render x1 |
 | `gisStudio` GIS Studio | geo | standard | 26 | 10 | 0 | 0 | 0 | 0 |  |
-| `graphCalc` graphCalc | math | standard | 26 | 7 | 1 | 0 | 0 | 0 |  |
-| `heatLab` Heat & Thermodynamics Lab | science | standard | 105 | 15 | 4 | 0 | 0 | 0 |  |
+| `graphCalc` Graphing Calculator | math | standard | 26 | 7 | 1 | 0 | 0 | 0 |  |
+| `heatLab` Heat & Thermodynamics Lab | science | standard | 105 | 15 | 5 | 0 | 0 | 0 |  |
 | `inequality` Inequality Grapher | math | standard | 30 | 8 | 0 | 0 | 0 | 0 |  |
 | `kitchenLab` Kitchen Lab | applied | standard | 8 | 1 | 0 | 0 | 0 | 0 |  |
 | `lawNavigator` Education Law Navigator | applied | standard | 1 | 0 | 0 | 0 | 1 | 0 | placeholder-render x1 |
@@ -123,6 +123,7 @@ Generated: 2026-08-10T03:09:09.665Z
 | `llmLiteracy` AI Literacy Lab | technology | standard | 12 | 0 | 0 | 0 | 0 | 0 |  |
 | `logicLab` Logic Lab | math | standard | 41 | 1 | 0 | 0 | 0 | 0 |  |
 | `lumen` Lumen | data | standard | 2 | 0 | 0 | 0 | 0 | 0 |  |
+| `machineLab` Machine Lab | engineering | standard | 20 | 5 | 0 | 0 | 0 | 0 |  |
 | `magnetism` Magnetism Lab | science | standard | 53 | 5 | 0 | 0 | 0 | 0 |  |
 | `microbiology` Microbiology Lab | science | standard | 14 | 0 | 0 | 0 | 0 | 0 |  |
 | `migration` Migration & Wind Lab | science | standard | 13 | 4 | 0 | 0 | 0 | 0 |  |
@@ -131,18 +132,19 @@ Generated: 2026-08-10T03:09:09.665Z
 | `moneyMath` Money Math | math | standard | 29 | 2 | 0 | 0 | 0 | 0 |  |
 | `moonMission` Moon Mission | science | standard | 8 | 5 | 1 | 0 | 0 | 0 |  |
 | `multtable` Multiplication Table | math | standard | 22 | 5 | 0 | 0 | 0 | 0 |  |
-| `musicSynth` Music Synthesizer | creative | standard | 94 | 19 | 2 | 0 | 0 | 0 |  |
-| `nuclearLab` Nuclear & Radiation Lab | science | standard | 196 | 16 | 8 | 0 | 0 | 0 |  |
+| `musicSynth` Music Synthesizer | creative | standard | 97 | 22 | 2 | 0 | 0 | 0 |  |
+| `nuclearLab` Nuclear & Radiation Lab | science | standard | 212 | 17 | 8 | 0 | 0 | 0 |  |
 | `numberline` Number Line | math | standard | 21 | 5 | 0 | 0 | 0 | 0 |  |
 | `nutritionLab` NutritionLab — Nutrition Science | biology | standard | 19 | 0 | 0 | 0 | 0 | 0 |  |
 | `opticsLab` Optics Lab | science | standard | 34 | 0 | 0 | 0 | 0 | 0 |  |
 | `oratory` Oratory Lab | science | standard | 16 | 0 | 4 | 0 | 0 | 0 |  |
+| `organismId` Taxonomy Explorer | science | standard | 101 | 0 | 0 | 0 | 0 | 0 |  |
 | `paperTrail` PaperTrail: Official Documents | applied | standard | 10 | 0 | 0 | 0 | 0 | 0 |  |
 | `parentingLab` Science of Parenting Lab | science | standard | 10 | 0 | 0 | 0 | 0 | 0 |  |
 | `particleLab3d` Particle Lab 3D | science | standard | 42 | 10 | 1 | 0 | 0 | 0 |  |
 | `petsLab` Science of Pets Lab | life-earth-science | standard | 36 | 7 | 0 | 0 | 0 | 0 |  |
 | `physics` Physics Simulator | science | standard | 36 | 10 | 1 | 0 | 0 | 0 |  |
-| `plateTectonics` Plate Tectonics | science | standard | 27 | 5 | 6 | 0 | 0 | 0 |  |
+| `plateTectonics` Plate Tectonics | science | standard | 29 | 5 | 6 | 0 | 0 | 0 |  |
 | `playlab` PlayLab | science | standard | 31 | 5 | 1 | 0 | 0 | 0 |  |
 | `printingPress` PrintingPress | history-engineering | standard | 25 | 0 | 0 | 0 | 0 | 0 |  |
 | `probability` Probability Lab | math | standard | 39 | 5 | 0 | 0 | 0 | 0 |  |
@@ -170,6 +172,7 @@ Generated: 2026-08-10T03:09:09.665Z
 | `timeSchedule` Time & Schedule Lab | math | standard | 13 | 2 | 0 | 0 | 0 | 0 |  |
 | `timelineStudio` Timeline Studio | history | standard | 2 | 2 | 0 | 0 | 0 | 0 |  |
 | `titrationLab` Titration Lab | science | standard | 9 | 0 | 0 | 0 | 0 | 0 |  |
+| `treeLab` Tree Life Lab | Life Science | standard | 23 | 11 | 0 | 0 | 0 | 0 |  |
 | `typingPractice` Typing Practice | life-skills | standard | 45 | 2 | 0 | 0 | 0 | 0 |  |
 | `unitConvert` Unit Converter | math | standard | 22 | 4 | 1 | 0 | 0 | 0 |  |
 | `universe` Universe Explorer | science | standard | 126 | 5 | 1 | 0 | 0 | 0 |  |

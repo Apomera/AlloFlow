@@ -187,13 +187,17 @@ window.StemLab = window.StemLab || {
       return stored / e;
     },
 
-    crankDetail: function (cwMass, dropHeight, g, ma, etaMech, handleRadius) {
-      if (!pos(cwMass) || !pos(dropHeight) || !pos(g) || !pos(ma)) return null;
-      var e = pos(etaMech) ? etaMech : 1;
-      if (e > 1) return null;
-      var weight = cwMass * g;
-      var force = weight / (ma * e);
-      var distance = dropHeight * ma;
+    // Generic over the three machines. A trebuchet crew winches a counterweight
+    // up through its drop; a torsion crew winches a string back through its
+    // draw against the springs. Both are "do W joules of work over a travel of
+    // d metres", so one function covers both. Keying this to counterweight mass
+    // left the winch panel showing "—" for force and turns on every torsion
+    // machine while still quoting a crank-work figure.
+    crankDetail: function (workNeeded, travel, ma, handleRadius) {
+      if (!pos(workNeeded) || !pos(travel) || !pos(ma)) return null;
+      var resisting = workNeeded / travel;      // average force felt at the load
+      var force = resisting / ma;
+      var distance = travel * ma;
       var turns = pos(handleRadius) ? distance / (2 * Math.PI * handleRadius) : null;
       return { force: force, distance: distance, turns: turns, work: force * distance };
     },
@@ -784,8 +788,12 @@ window.StemLab = window.StemLab || {
       if (tr === null) return null;
       var ma = this.winchMA(s.winchHandleR, s.winchDrumR, s.winchPulleys);
       var etaMech = pos(s.etaMech) ? s.etaMech : 0.85;
-      var crank = (ma === null) ? null
-        : this.crankDetail(s.cwMass, s.cwDrop, g, ma, etaMech, s.winchHandleR);
+      var workNeeded = this.crankWork(stored, etaMech);
+      // What the crew physically hauls: the counterweight through its drop, or
+      // the string back through its draw.
+      var travel = (kind === 'ballista' || kind === 'onager') ? s.drawLength : s.cwDrop;
+      var crank = (ma === null || workNeeded === null) ? null
+        : this.crankDetail(workNeeded, travel, ma, s.winchHandleR);
       var flight = this.integrateFlight({
         v0: tr.v, angleDeg: s.releaseAngle, g: g, y0: s.launchElevation,
         drag: s.drag !== false, mass: s.projMass, diameter: s.projDiameter,
@@ -813,6 +821,10 @@ window.StemLab = window.StemLab || {
         muzzleV: tr.v,
         muzzleKE: tr.muzzleKE,
         range: flight.range,
+        downrange: flight.downrange,
+        // Lateral drift from crosswind. The integrator has always produced it;
+        // it was not carried out of shot(), so nothing downstream could show it.
+        drift: flight.drift,
         apex: flight.apex,
         flightTime: flight.flightTime,
         impactSpeed: flight.impactSpeed,
@@ -928,7 +940,11 @@ window.StemLab = window.StemLab || {
     // toFixed(-0) yields "-0.00"; normalise so a zero never renders signed.
     var v = (Object.is(n, -0)) ? 0 : n;
     var s = v.toFixed(p);
-    return s.replace(/\.?0+$/, function (m) { return m.indexOf('.') === 0 ? '' : m; });
+    // Trim trailing zeros in the fraction, then the bare dot if nothing is
+    // left. The previous form only removed a fully-zero fraction, so 5.1 at two
+    // places rendered as "5.10" while 2 correctly rendered as "2".
+    if (s.indexOf('.') !== -1) s = s.replace(/0+$/, '').replace(/\.$/, '');
+    return s;
   }
 
   function buildBenches(__alloT) {
@@ -1267,6 +1283,9 @@ window.StemLab = window.StemLab || {
 
   var COCKED_DEG = -52;   // long arm down, ready to fire
 
+  // How long the AI tutor may hang before the Explain button is handed back.
+  var AI_TIMEOUT_MS = 30000;
+
   // A torsion engine: a stout frame, one or two arms sprung from twisted rope
   // bundles, and a string. Same lifecycle and same tick contract as the
   // trebuchet, so the viewer does not care which machine is on screen.
@@ -1278,61 +1297,88 @@ window.StemLab = window.StemLab || {
     var sling = twoArmed ? 0 : (g.slingLength || 1.0);
     var projR = Math.max(0.06, Math.min(0.3, (g.projDiameter || 0.24) / 2));
 
-    var frameCol = m.dark === false ? 0x94a3b8 : 0x64748b;
-    var ink = m.dark === false ? 0x475569 : 0xcbd5e1;
+    var frameCol = m.contrast ? 0xc8c8c8 : (m.dark === false ? 0x94a3b8 : 0x64748b);
+    var ink = m.contrast ? 0xffffff : (m.dark === false ? 0x475569 : 0xcbd5e1);
     var ropeCol = m.contrast ? 0xffffff : 0xb45309;
-    var projCol = m.contrast ? 0xffffff : 0xf59e0b;
+    var projCol = m.contrast ? 0xffff00 : 0xf59e0b;
     var mat = function (c) { return new THREE.MeshLambertMaterial({ color: c }); };
 
+    if (S.renderer && S.renderer.setClearColor) S.renderer.setClearColor(m.contrast ? 0x000000 : (m.dark === false ? 0xdfe6ef : 0x0b1220), 1);
     var ground = new THREE.Mesh(
       new THREE.PlaneGeometry(30, 30),
-      new THREE.MeshLambertMaterial({ color: m.dark === false ? 0xd7dfe8 : 0x16233a })
+      new THREE.MeshLambertMaterial({ color: m.contrast ? 0x000000 : (m.dark === false ? 0xd7dfe8 : 0x16233a) })
     );
     ground.rotation.x = -Math.PI / 2;
     S.model.add(ground);
 
-    var deckH = 0.7;
-    var deck = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.16, 1.4), mat(frameCol));
+    var deckH = 0.42;
+    var deckLen = Math.max(1.3, armLen * 1.35);
+    var deckW = Math.max(0.85, armLen * 0.95);
+    var deck = new THREE.Mesh(new THREE.BoxGeometry(deckLen, 0.12, deckW), mat(frameCol));
     deck.position.set(0, deckH, 0);
     S.model.add(deck);
-    [-1.1, 1.1].forEach(function (xx) {
-      [-0.55, 0.55].forEach(function (zz) {
-        var leg = new THREE.Mesh(new THREE.BoxGeometry(0.13, deckH, 0.13), mat(frameCol));
+    [-deckLen / 2 + 0.12, deckLen / 2 - 0.12].forEach(function (xx) {
+      [-deckW / 2 + 0.1, deckW / 2 - 0.1].forEach(function (zz) {
+        var leg = new THREE.Mesh(new THREE.BoxGeometry(0.1, deckH, 0.1), mat(frameCol));
         leg.position.set(xx, deckH / 2, zz);
         S.model.add(leg);
       });
     });
 
     var arms = [];
+    var pivotX = 0, pivotY = deckH;   // set by whichever branch builds the arms
     var stone = new THREE.Mesh(new THREE.SphereGeometry(projR, 16, 12), mat(projCol));
     S.model.add(stone);
 
     if (twoArmed) {
-      // Two spring bundles standing on the deck, one arm from each.
-      [-0.62, 0.62].forEach(function (zz, i) {
-        var bundle = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.5, 14), mat(ropeCol));
-        bundle.position.set(-0.5, deckH + 0.33, zz);
+      // Two spring bundles side by side, each throwing an arm OUTWARD, with the
+      // bowstring stretched between the tips. Both arms previously swung in the
+      // same direction, which read as a pair of parallel sticks rather than as
+      // a bow, and there was no string at all.
+      [-1, 1].forEach(function (side) {
+        var zz = side * 0.6;
+        var br = Math.max(0.12, armLen * 0.15);
+        pivotX = -armLen * 0.42; pivotY = deckH + br * 2.4;
+        var bundle = new THREE.Mesh(new THREE.CylinderGeometry(br, br, br * 3.6, 14), mat(ropeCol));
+        bundle.position.set(-armLen * 0.42, deckH + br * 2.4, zz);
         S.model.add(bundle);
         var pivot = new THREE.Group();
-        pivot.position.set(-0.5, deckH + 0.33, zz);
+        pivot.position.set(-armLen * 0.42, deckH + Math.max(0.12, armLen * 0.15) * 2.4, zz);
+        // Splay the arms out to the sides so the pair forms a bow.
+        pivot.rotation.y = -side * 0.62;
         S.model.add(pivot);
-        var arm = new THREE.Mesh(new THREE.BoxGeometry(armLen, 0.1, 0.1), mat(ink));
+        var arm = new THREE.Mesh(new THREE.BoxGeometry(armLen, 0.11, 0.11), mat(ink));
         arm.position.set(armLen / 2, 0, 0);
         pivot.add(arm);
-        pivot.userData.side = i === 0 ? -1 : 1;
+        pivot.userData.side = side;
         arms.push(pivot);
       });
+      // The bowstring, rebuilt each frame from the live arm tips.
+      var stringMesh = new THREE.Mesh(new THREE.BoxGeometry(1, 0.035, 0.035), mat(0xe2e8f0));
+      S.model.add(stringMesh);
+      S.bowString = stringMesh;
+      // A stock to sight along, so the machine reads as an engine and not a table.
+      var stock = new THREE.Mesh(new THREE.BoxGeometry(deckLen * 0.85, 0.09, 0.12), mat(ink));
+      stock.position.set(deckLen * 0.12, deckH + 0.16, 0);
+      S.model.add(stock);
     } else {
       // One arm, sprung from a single bundle, whipping into a padded stop.
       var bundle1 = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.17, 1.0, 16), mat(ropeCol));
       bundle1.rotation.x = Math.PI / 2;
-      bundle1.position.set(-0.7, deckH + 0.22, 0);
+      bundle1.position.set(-armLen * 0.5, deckH + 0.22, 0);
       S.model.add(bundle1);
-      var stop = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.5, 1.0), mat(frameCol));
-      stop.position.set(0.9, deckH + 0.4, 0);
-      S.model.add(stop);
+      var relRad = 68 * Math.PI / 180;
+      var stopX = -armLen * 0.5 + armLen * 0.82 * Math.cos(relRad);
+      var stopTop = deckH + 0.22 + armLen * 0.82 * Math.sin(relRad);
+      var post = new THREE.Mesh(new THREE.BoxGeometry(0.1, stopTop - deckH, 0.1), mat(frameCol));
+      post.position.set(stopX, deckH + (stopTop - deckH) / 2, 0);
+      S.model.add(post);
+      var pad = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.14, deckW * 0.7), mat(ropeCol));
+      pad.position.set(stopX, stopTop, 0);
+      S.model.add(pad);
+      pivotX = -armLen * 0.5; pivotY = deckH + 0.22;
       var pivot1 = new THREE.Group();
-      pivot1.position.set(-0.7, deckH + 0.22, 0);
+      pivot1.position.set(pivotX, pivotY, 0);
       S.model.add(pivot1);
       var arm1 = new THREE.Mesh(new THREE.BoxGeometry(armLen, 0.12, 0.12), mat(ink));
       arm1.position.set(armLen / 2, 0, 0);
@@ -1346,28 +1392,43 @@ window.StemLab = window.StemLab || {
       arms.push(pivot1);
     }
 
-    S.ml = { arms: arms, stone: stone, twoArmed: twoArmed, armLen: armLen, sling: sling, deckH: deckH, draw: draw };
+    S.ml = { arms: arms, stone: stone, twoArmed: twoArmed, armLen: armLen, sling: sling,
+             deckH: deckH, draw: draw, pivotX: pivotX, pivotY: pivotY };
     S.mlShot = null;
 
-    var reach = armLen + sling + 1.4;
-    S.target = new THREE.Vector3(0, deckH + 0.6, 0);
+    var reachX = Math.max(deckLen * 0.6, armLen * 0.95);
+    var reachY = deckH + 0.5 + armLen * 0.85 + sling;
+    S.target = new THREE.Vector3(0, deckH + (reachY - deckH) * 0.42, 0);
     S.fitPts = [
-      new THREE.Vector3(-reach, 0, 0), new THREE.Vector3(reach, deckH + reach * 0.5, 0),
-      new THREE.Vector3(0, 0, 1.2), new THREE.Vector3(0, 0, -1.2)
+      new THREE.Vector3(-reachX, 0, 0), new THREE.Vector3(reachX, reachY, 0),
+      new THREE.Vector3(0, 0, deckW * 0.75), new THREE.Vector3(0, 0, -deckW * 0.75)
     ];
 
     function pose(k) {
       // k = 0 fully drawn back, k = 1 released.
       var ml = S.ml;
-      var cocked = ml.twoArmed ? -55 : -70;
-      var released = ml.twoArmed ? 10 : 78;
+      var cocked = ml.twoArmed ? -38 : -10;
+      var released = ml.twoArmed ? 26 : 68;
       var deg = cocked + (released - cocked) * k;
       ml.arms.forEach(function (p) { p.rotation.z = deg * Math.PI / 180; });
+      // Stretch the bowstring between the two arm tips so it tracks the draw.
+      if (S.bowString && ml.arms.length === 2 && S.THREE) {
+        var tips = ml.arms.map(function (p) {
+          var v = new S.THREE.Vector3(ml.armLen, 0, 0);
+          p.updateMatrixWorld(true);
+          return v.applyMatrix4(p.matrixWorld);
+        });
+        var mid = tips[0].clone().add(tips[1]).multiplyScalar(0.5);
+        var span = tips[0].distanceTo(tips[1]);
+        S.bowString.position.copy(mid);
+        S.bowString.scale.set(Math.max(0.05, span), 1, 1);
+        S.bowString.rotation.set(0, Math.atan2(tips[1].x - tips[0].x, tips[1].z - tips[0].z) + Math.PI / 2, 0);
+      }
       return deg * Math.PI / 180;
     }
 
     pose(0);
-    stone.position.set(-0.5 + armLen * Math.cos(-0.96), deckH + 0.33 + armLen * Math.sin(-0.96), 0);
+    stone.position.set(pivotX + armLen * Math.cos(-0.96), pivotY + armLen * Math.sin(-0.96) - sling, 0);
 
     S.tick = function (now) {
       var data = S.data || {};
@@ -1376,7 +1437,7 @@ window.StemLab = window.StemLab || {
       if (!data.shotId) {
         var r0 = pose(0);
         ml.stone.visible = true;
-        ml.stone.position.set(-0.5 + ml.armLen * Math.cos(r0), ml.deckH + 0.33 + ml.armLen * Math.sin(r0) - ml.sling, 0);
+        ml.stone.position.set(ml.pivotX + ml.armLen * Math.cos(r0), ml.pivotY + ml.armLen * Math.sin(r0) - ml.sling, 0);
         return;
       }
       if (S.mlShot !== data.shotId) { S.mlShot = data.shotId; S.mlT0 = now; }
@@ -1390,10 +1451,10 @@ window.StemLab = window.StemLab || {
         var vDir = (data.releaseAngle == null ? 45 : data.releaseAngle) * Math.PI / 180;
         var sp = Math.min(data.muzzleV || 20, 70);
         ml.stone.visible = f < 1.0;
-        ml.stone.position.set(sp * f * Math.cos(vDir), ml.deckH + 0.6 + sp * f * Math.sin(vDir) - 4.9 * f * f, 0);
+        ml.stone.position.set(ml.pivotX + sp * f * Math.cos(vDir), ml.pivotY + sp * f * Math.sin(vDir) - 4.9 * f * f, 0);
       } else {
         ml.stone.visible = true;
-        ml.stone.position.set(-0.5 + ml.armLen * Math.cos(rot), ml.deckH + 0.33 + ml.armLen * Math.sin(rot) - ml.sling, 0);
+        ml.stone.position.set(ml.pivotX + ml.armLen * Math.cos(rot), ml.pivotY + ml.armLen * Math.sin(rot) - ml.sling, 0);
       }
     };
   }
@@ -1412,24 +1473,25 @@ window.StemLab = window.StemLab || {
     var projR = Math.max(0.08, Math.min(0.45, (g.projDiameter || 0.24) / 2));
     var pivotH = Math.max(beamShort + 1.4, (g.cwDrop || 3.2) + 1.0);
 
-    var ink = m.dark === false ? 0x475569 : 0xcbd5e1;
-    var frameCol = m.dark === false ? 0x94a3b8 : 0x64748b;
+    var ink = m.contrast ? 0xffffff : (m.dark === false ? 0x475569 : 0xcbd5e1);
+    var frameCol = m.contrast ? 0xc8c8c8 : (m.dark === false ? 0x94a3b8 : 0x64748b);
     var cwCol = m.contrast ? 0xffffff : 0x60a5fa;
-    var projCol = m.contrast ? 0xffffff : 0xf59e0b;
+    var projCol = m.contrast ? 0xffff00 : 0xf59e0b;
 
     var mat = function (c) { return new THREE.MeshLambertMaterial({ color: c }); };
 
     // Ground
+    if (S.renderer && S.renderer.setClearColor) S.renderer.setClearColor(m.contrast ? 0x000000 : (m.dark === false ? 0xdfe6ef : 0x0b1220), 1);
     var ground = new THREE.Mesh(
       new THREE.PlaneGeometry(40, 40),
-      new THREE.MeshLambertMaterial({ color: m.dark === false ? 0xd7dfe8 : 0x16233a })
+      new THREE.MeshLambertMaterial({ color: m.contrast ? 0x000000 : (m.dark === false ? 0xd7dfe8 : 0x16233a) })
     );
     ground.rotation.x = -Math.PI / 2;
     S.model.add(ground);
 
     // A-frame uprights
     [-0.7, 0.7].forEach(function (zz) {
-      var post = new THREE.Mesh(new THREE.BoxGeometry(0.16, pivotH, 0.16), mat(frameCol));
+      var post = new THREE.Mesh(new THREE.BoxGeometry(0.28, pivotH, 0.28), mat(frameCol));
       post.position.set(0, pivotH / 2, zz);
       S.model.add(post);
     });
@@ -1443,7 +1505,7 @@ window.StemLab = window.StemLab || {
     S.model.add(arm);
 
     var span = beamLong + beamShort;
-    var beam = new THREE.Mesh(new THREE.BoxGeometry(span, 0.16, 0.16), mat(ink));
+    var beam = new THREE.Mesh(new THREE.BoxGeometry(span, 0.3, 0.3), mat(ink));
     // Shift so the pivot sits at the short-arm/long-arm boundary.
     beam.position.set(span / 2 - beamShort, 0, 0);
     arm.add(beam);
@@ -1456,28 +1518,46 @@ window.StemLab = window.StemLab || {
     var slingGrp = new THREE.Group();
     slingGrp.position.set(beamLong, 0, 0);
     arm.add(slingGrp);
-    var cord = new THREE.Mesh(new THREE.BoxGeometry(0.04, sling, 0.04), mat(frameCol));
+    var cord = new THREE.Mesh(new THREE.BoxGeometry(0.07, sling, 0.07), mat(frameCol));
     cord.position.set(0, -sling / 2, 0);
     slingGrp.add(cord);
-    var stone = new THREE.Mesh(new THREE.SphereGeometry(projR, 18, 14), mat(projCol));
+    var stone = new THREE.Mesh(new THREE.SphereGeometry(Math.max(projR, 0.22), 18, 14), mat(projCol));
     stone.position.set(0, -sling, 0);
     slingGrp.add(stone);
 
-    S.ml = { arm: arm, sling: slingGrp, stone: stone, pivotH: pivotH, beamLong: beamLong, sling3: sling };
+    S.ml = { arm: arm, sling: slingGrp, stone: stone, cord: cord, pivotH: pivotH,
+             beamLong: beamLong, sling3: sling, stoneR: Math.max(projR, 0.22) };
     S.mlShot = null;
 
-    var reach = beamLong + sling;
-    S.target = new THREE.Vector3(0, pivotH * 0.55, 0);
+    // Frame what the machine actually occupies when cocked, rather than a box
+    // the size of its full swing: it sat small in a mostly empty frame.
+    var reachX = Math.max(beamLong * 0.8, beamShort + cwSize);
+    var topY = pivotH + beamShort * 0.9;
+    S.target = new THREE.Vector3(0, topY * 0.45, 0);
     S.fitPts = [
-      new THREE.Vector3(-reach, 0, 0),
-      new THREE.Vector3(reach, pivotH + reach * 0.4, 0),
-      new THREE.Vector3(0, 0, 1.4),
-      new THREE.Vector3(0, 0, -1.4)
+      new THREE.Vector3(-reachX * 0.7, 0, 0),
+      new THREE.Vector3(reachX, topY, 0),
+      new THREE.Vector3(0, 0, 1.0),
+      new THREE.Vector3(0, 0, -1.0)
     ];
 
     // Idle pose, so a freshly built scene is never a blank frame.
     arm.rotation.z = COCKED_DEG * Math.PI / 180;
     slingGrp.rotation.z = -arm.rotation.z;
+    restSlingOnGround(S.ml, arm.rotation.z);
+
+    // With the arm down, the tip is barely above the ground, so a full-length
+    // sling would put the stone under it. Shorten the drawn cord to rest the
+    // stone on the ground, which is also where a real crew loads it.
+    function restSlingOnGround(ml, armRad) {
+      var tipY = ml.pivotH + ml.beamLong * Math.sin(armRad);
+      var drop = Math.max(0.25, Math.min(ml.sling3, tipY - ml.stoneR));
+      if (ml.cord && ml.sling3 > 0) {
+        ml.cord.scale.y = drop / ml.sling3;
+        ml.cord.position.set(0, -drop / 2, 0);
+      }
+      ml.stone.position.set(0, -drop, 0);
+    }
 
     // Per-frame animation. Runs ONLY while the pushed data says static:false,
     // which the tool sets for the ~1.5 s of a shot and nothing else.
@@ -1486,9 +1566,11 @@ window.StemLab = window.StemLab || {
       var ml = S.ml;
       if (!ml) return;
       if (!data.shotId) {
-        ml.arm.rotation.z = COCKED_DEG * Math.PI / 180;
-        ml.sling.rotation.z = -ml.arm.rotation.z;
+        var cockedRad = COCKED_DEG * Math.PI / 180;
+        ml.arm.rotation.z = cockedRad;
+        ml.sling.rotation.z = -cockedRad;   // cord hangs vertically in world
         ml.stone.visible = true;
+        restSlingOnGround(ml, cockedRad);
         return;
       }
       if (S.mlShot !== data.shotId) { S.mlShot = data.shotId; S.mlT0 = now; }
@@ -1576,9 +1658,10 @@ window.StemLab = window.StemLab || {
     var contrast = !!(m && m.contrast);
     var dark = (m && m.dark) !== false;
 
+    if (S.renderer && S.renderer.setClearColor) S.renderer.setClearColor(contrast ? 0x000000 : (dark ? 0x0b1220 : 0xdfe6ef), 1);
     var ground = new THREE.Mesh(
       new THREE.PlaneGeometry(200, 200),
-      new THREE.MeshLambertMaterial({ color: dark ? 0x16233a : 0xd7dfe8 })
+      new THREE.MeshLambertMaterial({ color: contrast ? 0x000000 : (dark ? 0x16233a : 0xd7dfe8) })
     );
     ground.rotation.x = -Math.PI / 2;
     S.model.add(ground);
@@ -1694,7 +1777,6 @@ window.StemLab = window.StemLab || {
       benchResult: null,
       benchStreak: 0,
       provenBenches: {},
-      showWorkPanel: false,
 
       // ── P2/P3: siege machines ──
       machine: 'trebuchet',          // trebuchet | ballista | onager
@@ -1741,6 +1823,15 @@ window.StemLab = window.StemLab || {
     };
   }
 
+  // Which of the six benches each engine is built from. BOTH the Build panel
+  // and the Machine Shop panel read this, so the two directions of the link
+  // cannot drift apart. Order is the order they are presented in.
+  var MACHINE_BENCHES = {
+    trebuchet: ['lever', 'windlass', 'pulley', 'wedge', 'ramp'],
+    ballista: ['lever', 'windlass', 'pulley', 'wedge', 'screw'],
+    onager: ['lever', 'windlass', 'pulley', 'wedge', 'screw']
+  };
+
   // Per-machine metadata. The comparison view is the payoff of the whole tool:
   // three different ways to store energy, judged on the same ledger.
   var MACHINES = [
@@ -1769,6 +1860,8 @@ window.StemLab = window.StemLab || {
     // Exposed for tests: the pure model, with no DOM or React in sight.
     _math: _machineMath,
     _resolveBand: resolveBand,
+    _aiTimeoutMs: AI_TIMEOUT_MS,
+    _machineBenches: MACHINE_BENCHES,
     // Exposed so the answer-position test can inspect the ROTATED order rather
     // than trusting that rotation happened. Identity translator: the test cares
     // about option order and the correct flag, not about wording.
@@ -1841,12 +1934,12 @@ window.StemLab = window.StemLab || {
       var addToast = (typeof ctx.addToast === 'function') ? ctx.addToast : function () {};
       var announceToSR = (typeof ctx.announceToSR === 'function') ? ctx.announceToSR : function () {};
       var awardStemXP = (typeof ctx.awardXP === 'function') ? ctx.awardXP : function () {};
-      var a11yClick = (typeof ctx.a11yClick === 'function') ? ctx.a11yClick : function (fn) {
-        return {
-          onClick: fn, role: 'button', tabIndex: 0,
-          onKeyDown: function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn(e); } }
-        };
-      };
+      // No ctx.a11yClick helper here on purpose: every interactive element in
+      // this tool is a native <button> or <input>, so the browser supplies the
+      // role, the tab stop and the Enter/Space handling. The helper exists for
+      // tools that must make a div clickable; not needing it is the stronger
+      // position, and machinelab_a11y.test.js fails if a role="button" div ever
+      // appears in the rendered output.
 
       // ctx.srOnly is a function in the host and a style object in the test
       // harness, so neither shape can be trusted. Own it locally.
@@ -2339,14 +2432,26 @@ window.StemLab = window.StemLab || {
             j: s.crankWork, loss: null, cause: null, color: T.effort
           },
           {
-            id: 'stored', label: __alloT('stem.machinelab.stage_stored', 'Stored in the raised counterweight'),
+            id: 'stored',
+            // A ballista has no counterweight. Naming the store after the
+            // trebuchet's on every machine was simply wrong on two of three.
+            label: (machineId === 'ballista')
+              ? __alloT('stem.machinelab.stage_stored_ball', 'Stored in the two twisted bundles')
+              : (machineId === 'onager')
+                ? __alloT('stem.machinelab.stage_stored_ona', 'Stored in the twisted bundle')
+                : __alloT('stem.machinelab.stage_stored', 'Stored in the raised counterweight'),
             j: s.stored, loss: s.crankWork - s.stored,
             cause: __alloT('stem.machinelab.cause_winch', 'winch friction'), color: T.load
           },
           {
             id: 'muzzle', label: __alloT('stem.machinelab.stage_muzzle', 'Kinetic energy of the stone at release'),
             j: s.muzzleKE, loss: s.stored - s.muzzleKE,
-            cause: __alloT('stem.machinelab.cause_arm', 'energy left in the moving arm and counterweight'), color: T.ok
+            cause: (machineId === 'ballista')
+              ? __alloT('stem.machinelab.cause_arm_ball', 'energy left in the two moving arms and the string')
+              : (machineId === 'onager')
+                ? __alloT('stem.machinelab.cause_arm_ona', 'energy left in the moving arm and sling')
+                : __alloT('stem.machinelab.cause_arm', 'energy left in the moving arm and counterweight'),
+            color: T.ok
           },
           {
             id: 'impact', label: __alloT('stem.machinelab.stage_impact', 'Kinetic energy at impact'),
@@ -2439,10 +2544,44 @@ window.StemLab = window.StemLab || {
             style: { margin: '8px 0 0', fontSize: 12, color: T.dim }
           }, __alloT('stem.machinelab.transfer_eff', 'Transfer efficiency: ') + fmt(100 * s.eta, 1) + '%' +
              __alloT('stem.machinelab.eff_tail', ' of the stored energy reached the stone.')),
+          // The effective mass is THE quantity behind that percentage, and the
+          // g9-12 copy quotes the formula it appears in. It was computed and
+          // returned by shot() and then never shown, so a student could not
+          // check the arithmetic they had just been handed.
+          ((band === 'g68' || band === 'g912') && pos(s.effMass)) ? h('p', {
+            key: 'em',
+            style: { margin: '4px 0 0', fontSize: 12, color: T.dim, lineHeight: 1.5 }
+          }, __alloT('stem.machinelab.effmass_a', 'The stone is ') + fmt(d.projMass, 1) +
+             __alloT('stem.machinelab.effmass_b', ' kg, and the moving parts of the machine add another ') +
+             fmt(s.effMass, 1) +
+             __alloT('stem.machinelab.effmass_c', ' kg of effective mass, so the stone gets ') +
+             fmt(d.projMass, 1) + ' ÷ (' + fmt(d.projMass, 1) + ' + ' + fmt(s.effMass, 1) + ') = ' +
+             fmt(100 * s.eta, 1) + '%.') : null,
           // Bars alone are a picture. The table is always reachable, and the
           // numbers are announced regardless of which view is on screen.
           !d.ledgerAsTable ? h('div', { key: 'srtbl', style: srOnlyStyle }, table) : null
         ], key || 'ledger');
+      }
+
+      // Crosswind. The integrator has always modelled it and the wall damage has
+      // always used lateral drift to decide which column is struck, but nothing
+      // could change it, so it sat at zero forever. The siege view was already
+      // telling students "check the wind" about a control that did not exist.
+      function windControl() {
+        return h('div', { key: 'wind' }, [
+          slider({
+            key: 'windZ',
+            label: __alloT('stem.machinelab.wind', 'Crosswind'),
+            min: -20, max: 20, step: 1, unit: 'm/s'
+          }),
+          h('p', { key: 'n', style: { margin: '2px 0 0', fontSize: 12, color: T.dim, lineHeight: 1.45 } },
+            pick({
+              k2: __alloT('stem.machinelab.wind_k2', 'Wind pushes the stone sideways while it flies.'),
+              g35: __alloT('stem.machinelab.wind_g35', 'A crosswind blows the stone off to one side. The longer it is in the air, the further it drifts.'),
+              g68: __alloT('stem.machinelab.wind_g68', 'Drag acts on the stone’s speed THROUGH THE AIR, not over the ground, so a crosswind pushes it sideways for the whole flight. Slow, light stones drift most.'),
+              g912: __alloT('stem.machinelab.wind_g912', 'The drag term uses velocity relative to the air mass, so a steady crosswind produces lateral acceleration until the stone matches the air sideways. Drift therefore grows with flight time and falls as the ballistic coefficient rises.')
+            }, band))
+        ]);
       }
 
       function trajectoryGraph(s) {
@@ -2595,6 +2734,132 @@ window.StemLab = window.StemLab || {
         }
       };
 
+      // ── The link the whole tool rests on ──
+      //
+      // The Field Manual asserts that every siege engine is built out of the
+      // six benches, and until now that was the only place it was said. This
+      // names the parts of the machine ON SCREEN as the machines they are, with
+      // their live mechanical advantage where the tool actually models it, and
+      // a way back to the bench that teaches it.
+      function partsOf(kind) {
+        var winchMA = _machineMath.windlassMA(d.winchHandleR, d.winchDrumR);
+        var tackle = _machineMath.pulleyMA(d.winchPulleys);
+        var torsion = (kind === 'ballista' || kind === 'onager');
+
+        // Details per bench for THIS machine. Membership and order come from
+        // MACHINE_BENCHES, so the Build panel and the Machine Shop panel can
+        // never disagree about what a given engine is made of.
+        var detail = {
+          lever: {
+            icon: '⚖️',
+            part: torsion
+              ? (kind === 'ballista'
+                  ? __alloT('stem.machinelab.part_arms', 'the two spring arms')
+                  : __alloT('stem.machinelab.part_arm', 'the throwing arm'))
+              : __alloT('stem.machinelab.part_beam', 'the throwing beam'),
+            value: torsion ? null : _machineMath.leverMA(d.beamLong, d.beamShort),
+            unit: '×',
+            note: torsion
+              ? __alloT('stem.machinelab.part_arm_n', 'each arm is a lever turning about its bundle, trading a short powerful twist for a long fast sweep')
+              : __alloT('stem.machinelab.part_beam_n', 'long arm ÷ short arm, so the stone end travels that many times further than the counterweight end')
+          },
+          windlass: {
+            icon: '🎡',
+            part: __alloT('stem.machinelab.part_winch', 'the winch drum and handle'),
+            value: winchMA, unit: '×',
+            note: __alloT('stem.machinelab.part_winch_n', 'a big handle circle turning a small drum, which is why one person can cock the machine')
+          },
+          pulley: {
+            icon: '⛓️',
+            part: __alloT('stem.machinelab.part_tackle', 'the cocking tackle'),
+            value: tackle, unit: '×',
+            note: __alloT('stem.machinelab.part_tackle_n', 'every extra rope segment halves the pull again and doubles the rope to haul in')
+          },
+          wedge: {
+            icon: '🪓',
+            part: (kind === 'onager')
+              ? __alloT('stem.machinelab.part_stop', 'the trigger and the padded stop')
+              : __alloT('stem.machinelab.part_trigger', 'the trigger and the ratchet pawl'),
+            value: null, unit: '',
+            note: __alloT('stem.machinelab.part_trigger_n', 'a small wedge holding an enormous force, and releasing it the instant you want it gone')
+          },
+          screw: {
+            icon: '🔩',
+            part: __alloT('stem.machinelab.part_screw', 'the bundle tensioning gear'),
+            value: null, unit: '',
+            note: __alloT('stem.machinelab.part_screw_n', 'tiny turns against a huge load, which is how the springs are tuned at all')
+          },
+          ramp: {
+            icon: '📐',
+            part: __alloT('stem.machinelab.part_ramp', 'the loading ramp'),
+            value: null, unit: '',
+            note: __alloT('stem.machinelab.part_ramp_n', 'rolling a stone up a slope instead of lifting it, which is the only way a crew moves it at all')
+          }
+        };
+
+        return (MACHINE_BENCHES[kind] || MACHINE_BENCHES.trebuchet)
+          .filter(function (b) { return !!detail[b]; })
+          .map(function (b) {
+            var x = detail[b];
+            return { bench: b, icon: x.icon, part: x.part, value: x.value, unit: x.unit, note: x.note };
+          });
+      }
+
+      function partsPanel() {
+        var parts = partsOf(machineId);
+        return card([
+          h('h4', { key: 'h', style: { margin: '0 0 4px', fontSize: 14, color: T.text } },
+            __alloT('stem.machinelab.parts_title', 'Simple machines in this engine')),
+          h('p', { key: 'p', style: { margin: '0 0 10px', fontSize: 13, color: T.muted, lineHeight: 1.5 } },
+            pick({
+              k2: __alloT('stem.machinelab.parts_k2', 'This big machine is made of the small machines you already know.'),
+              g35: __alloT('stem.machinelab.parts_g35', 'Every part of this engine is one of the six simple machines from the Machine Shop. Tap one to go and try it on its own.'),
+              g68: __alloT('stem.machinelab.parts_g68', 'Nothing here is new. Every part is one of the six simple machines, and not one of them adds any energy: they only change the exchange rate between force and distance.'),
+              g912: __alloT('stem.machinelab.parts_g912', 'The engine is a composition of the six machines. Each contributes a mechanical advantage to a different stage, and the ones the tool models numerically show their live value here; the rest are present in the mechanism but not in the energy model.')
+            }, band)),
+          h('ul', { key: 'l', style: { listStyle: 'none', margin: 0, padding: 0 } },
+            parts.map(function (p) {
+              return h('li', {
+                key: p.bench,
+                style: {
+                  display: 'flex', alignItems: 'flex-start', gap: 10, padding: '8px 0',
+                  borderTop: '1px solid ' + T.border
+                }
+              }, [
+                h('span', { key: 'i', 'aria-hidden': 'true', style: { fontSize: 18, lineHeight: 1.2 } }, p.icon),
+                h('div', { key: 'b', style: { flex: '1 1 140px', minWidth: 0 } }, [
+                  h('div', { key: 't', style: { fontSize: 13, fontWeight: 700, color: T.text } }, p.part),
+                  h('div', { key: 'n', style: { fontSize: 12, color: T.dim, lineHeight: 1.45 } }, p.note)
+                ]),
+                h('div', {
+                  key: 'v',
+                  style: { display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }
+                }, [
+                  h('span', {
+                    key: 'ma',
+                    style: {
+                      fontSize: 13, fontWeight: 800, minWidth: 48, textAlign: 'right',
+                      color: (p.value === null) ? T.dim : T.accent, fontVariantNumeric: 'tabular-nums'
+                    }
+                  }, p.value === null
+                    ? __alloT('stem.machinelab.not_modelled', 'in the build')
+                    : fmt(p.value, 2) + p.unit),
+                  h('button', {
+                    key: 'go',
+                    onClick: function () { updMulti({ view: 'machines', bench: p.bench, benchResult: null, benchPrediction: '', benchChoice: null }); },
+                    'aria-label': __alloT('stem.machinelab.aria_open_bench', 'Open the bench for ') + p.part,
+                    style: {
+                      padding: '4px 10px', borderRadius: 8, cursor: 'pointer',
+                      border: '1px solid ' + T.border, background: T.card, color: T.text,
+                      fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap'
+                    }
+                  }, __alloT('stem.machinelab.open_bench', 'Bench'))
+                ])
+              ]);
+            }))
+        ], 'parts');
+      }
+
       function renderBuild() {
         var WINCH_CONTROLS = [
           { key: 'winchHandleR', label: __alloT('stem.machinelab.winch_handle', 'Crank handle radius'), min: 0.1, max: 0.9, step: 0.05, unit: 'm' },
@@ -2642,6 +2907,28 @@ window.StemLab = window.StemLab || {
                 'aria-label': __alloT('stem.machinelab.aria_machine3d', 'Three-dimensional view of the ') + machineLabel(machineId) + __alloT('stem.machinelab.aria_machine3d2', '. The energy ledger beside it carries the same information as numbers.'),
                 style: { width: '100%', height: 260, borderRadius: 10, background: T.bg, border: '1px solid ' + T.border }
               }),
+              // The machine's swing was animated but unreachable: the only Fire
+              // control lived in the Test Range, which has no 3D view, so a
+              // student could never be looking at the machine while it moved.
+              // Watching it work belongs here, where you tune it.
+              h('div', {
+                key: 'tf',
+                style: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginTop: 10 }
+              }, [
+                h('button', {
+                  key: 'go', onClick: fire, disabled: !!d.animating,
+                  style: {
+                    padding: '8px 16px', borderRadius: 9, cursor: d.animating ? 'default' : 'pointer',
+                    border: '1px solid ' + T.accent,
+                    background: d.animating ? T.card : T.accent,
+                    color: d.animating ? T.dim : T.accentInk, fontSize: 14, fontWeight: 700
+                  }
+                }, d.animating
+                  ? __alloT('stem.machinelab.loosing', 'Away!')
+                  : __alloT('stem.machinelab.test_fire', 'Test fire')),
+                preview ? h('span', { key: 'n', style: { fontSize: 12, color: T.dim } },
+                  __alloT('stem.machinelab.test_fire_note', 'Watch the arm. Range and full numbers are in the Test Range.')) : null
+              ]),
               glStatus !== 'ready' ? h('p', {
                 key: 'st', style: { margin: '8px 0 0', fontSize: 12, color: T.dim }
               }, glStatus === 'failed'
@@ -2654,6 +2941,7 @@ window.StemLab = window.StemLab || {
               h('p', { key: 'p', style: { margin: 0, fontSize: 13, color: T.muted, lineHeight: 1.5 } },
                 pick(MACHINE_COPY[machineId] || MACHINE_COPY.trebuchet, band))
             ], 'buildcopy'),
+            partsPanel(),
             card(machineControls().map(slider), 'machinectl')
           ]),
           h('div', { key: 'r' }, [
@@ -2743,7 +3031,10 @@ window.StemLab = window.StemLab || {
                 h('span', { key: 'c', style: { fontSize: 13, color: T.text } },
                   __alloT('stem.machinelab.time_lbl', 'Flight time: ') + fmt(s.flightTime, 2) + ' s'),
                 h('span', { key: 'e', style: { fontSize: 13, color: T.text } },
-                  __alloT('stem.machinelab.impact_lbl', 'Impact speed: ') + fmt(s.impactSpeed, 1) + ' m/s')
+                  __alloT('stem.machinelab.impact_lbl', 'Impact speed: ') + fmt(s.impactSpeed, 1) + ' m/s'),
+                (s.drift !== undefined && Math.abs(s.drift) > 0.05) ? h('span', {
+                  key: 'd', style: { fontSize: 13, color: T.accent, fontWeight: 700 }
+                }, __alloT('stem.machinelab.drift_lbl', 'Blown sideways: ') + fmt(Math.abs(s.drift), 1) + ' m') : null
               ])
             ], 'traj') : null,
             card([
@@ -2774,6 +3065,7 @@ window.StemLab = window.StemLab || {
                 h('span', { key: 's' }, __alloT('stem.machinelab.air_on', 'Air resistance on'))
               ]),
               slider({ key: 'launchElevation', label: __alloT('stem.machinelab.elevation', 'Launch height'), min: 0, max: 20, step: 0.5, unit: 'm' }),
+              windControl(),
               band === 'g912' ? h('p', {
                 key: 'note', style: { margin: '6px 0 0', fontSize: 12, color: T.dim, lineHeight: 1.5 }
               }, __alloT('stem.machinelab.vacuum_note', 'Turn the air off and sweep the stone mass: the range now falls steadily as mass rises, with no best value. The sweet spot you find with air on is a fact about drag, not about levers.')) : null
@@ -2805,6 +3097,47 @@ window.StemLab = window.StemLab || {
             ], 'log') : null
           ])
         ]);
+      }
+
+      // The other half of the link: standing at a bench, show which engines use
+      // it and go straight there. A student who proves the lever should be able
+      // to walk to the trebuchet beam and recognise it.
+      function whereYouMeetIt() {
+        var uses = [];
+        MACHINES.forEach(function (mm) {
+          var hit = partsOf(mm.id).filter(function (p) { return p.bench === bench.id; })[0];
+          if (hit) uses.push({ machine: mm, part: hit.part });
+        });
+        if (!uses.length) return null;
+        return card([
+          h('h4', { key: 'h', style: { margin: '0 0 8px', fontSize: 14, color: T.text } },
+            __alloT('stem.machinelab.meet_title', 'Where you meet this machine')),
+          h('ul', { key: 'l', style: { listStyle: 'none', margin: 0, padding: 0 } },
+            uses.map(function (u) {
+              return h('li', {
+                key: u.machine.id,
+                style: { display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0' }
+              }, [
+                h('span', { key: 'i', 'aria-hidden': 'true' }, u.machine.icon),
+                h('span', { key: 't', style: { flex: '1 1 auto', fontSize: 13, color: T.muted } }, [
+                  h('strong', { key: 'm', style: { color: T.text } }, machineLabel(u.machine.id)),
+                  h('span', { key: 'p' }, ': ' + u.part)
+                ]),
+                h('button', {
+                  key: 'go',
+                  onClick: function () { updMulti({ view: 'build', machine: u.machine.id }); },
+                  'aria-label': __alloT('stem.machinelab.aria_open_machine', 'Open the ') + machineLabel(u.machine.id),
+                  style: {
+                    padding: '4px 10px', borderRadius: 8, cursor: 'pointer',
+                    border: '1px solid ' + T.border, background: T.card, color: T.text,
+                    fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap'
+                  }
+                }, __alloT('stem.machinelab.open_machine', 'Build'))
+              ]);
+            })),
+          h('p', { key: 'n', style: { margin: '8px 0 0', fontSize: 12, color: T.dim, lineHeight: 1.45 } },
+            __alloT('stem.machinelab.meet_note', 'The engines are not new machines. They are these six, bolted together.'))
+        ], 'meet');
       }
 
       // ── Machines view (P1) ──
@@ -2842,7 +3175,8 @@ window.StemLab = window.StemLab || {
             h('div', { key: 'right' }, [
               readout(),
               tradePanel(),
-              proveePanel()
+              proveePanel(),
+              whereYouMeetIt()
             ])
           ])
         ]);
@@ -2943,7 +3277,11 @@ window.StemLab = window.StemLab || {
         if (res.outcome === 'over') {
           msg = __alloT('stem.machinelab.went_over', 'Over the top. Lower the release angle or take some energy out.');
         } else if (res.outcome === 'miss') {
-          msg = __alloT('stem.machinelab.went_wide', 'Wide of the wall. Check the wind.');
+          msg = __alloT('stem.machinelab.went_wide', 'Wide of the wall by ') +
+            fmt(Math.abs(impact.z || 0), 1) +
+            ((d.windZ || 0) !== 0
+              ? __alloT('stem.machinelab.went_wide_wind', ' m. The crosswind is pushing it sideways; aim off into the wind or wait for it to drop.')
+              : __alloT('stem.machinelab.went_wide_calm', ' m.'));
         } else {
           msg = __alloT('stem.machinelab.struck', 'Struck the ') + res.material +
             __alloT('stem.machinelab.struck2', ' at course ') + (res.row + 1) +
@@ -2988,10 +3326,11 @@ window.StemLab = window.StemLab || {
             x: pad + (b.col - ext.minCol) * size + 1,
             y: H - 12 - (b.row + 1) * size + 1,
             width: size - 2, height: size - 2, rx: 2,
-            fill: fillFor(b),
+            fill: b.state === 'breached' ? T.ground : fillFor(b),
             stroke: b.state === 'breached' ? T.border : (b.arch ? T.accent : 'none'),
             strokeWidth: 1,
-            opacity: b.state === 'breached' ? 0.25 : 1
+            strokeDasharray: b.state === 'breached' ? '2 2' : null,
+            opacity: b.state === 'breached' ? 0.35 : 1
           });
         })));
       }
@@ -2999,6 +3338,10 @@ window.StemLab = window.StemLab || {
       function renderSiege() {
         var blocks = currentWall();
         var summary = _machineMath.wallSummary(blocks);
+        // DERIVED, not read from d.breached: a wall restored from a snapshot or
+        // replaced by an import carries block states but not the flag, and
+        // reported itself intact while standing wide open.
+        var wallBreached = _machineMath.isBreached(blocks);
         var ext = _machineMath.wallExtent(blocks);
         // The wall scene is rebuilt only when the wall's IDENTITY changes
         // (which preset, how big, what theme). A shot changes block states, and
@@ -3085,7 +3428,7 @@ window.StemLab = window.StemLab || {
                     summary.intact + __alloT('stem.machinelab.aria_intact', ' blocks intact, ') +
                     summary.cracked + __alloT('stem.machinelab.aria_cracked', ' cracked, ') +
                     summary.breached + __alloT('stem.machinelab.aria_gone', ' gone.') +
-                    (d.breached ? ' ' + __alloT('stem.machinelab.aria_breach', 'The wall is breached.') : '')
+                    (wallBreached ? ' ' + __alloT('stem.machinelab.aria_breach', 'The wall is breached.') : '')
                 }, wallGraphic(blocks)),
                 h('div', {
                   key: 'legend',
@@ -3106,14 +3449,14 @@ window.StemLab = window.StemLab || {
                 h('button', {
                   key: 'loose',
                   onClick: loose,
-                  disabled: !!d.breached,
+                  disabled: !!wallBreached,
                   style: {
-                    padding: '11px 22px', borderRadius: 10, cursor: d.breached ? 'default' : 'pointer',
-                    border: '1px solid ' + T.accent, background: d.breached ? T.card : T.accent,
-                    color: d.breached ? T.dim : T.accentInk, fontSize: 15, fontWeight: 800,
+                    padding: '11px 22px', borderRadius: 10, cursor: wallBreached ? 'default' : 'pointer',
+                    border: '1px solid ' + T.accent, background: wallBreached ? T.card : T.accent,
+                    color: wallBreached ? T.dim : T.accentInk, fontSize: 15, fontWeight: 800,
                     marginRight: 8
                   }
-                }, d.breached
+                }, wallBreached
                   ? __alloT('stem.machinelab.breached_btn', 'Breached')
                   : __alloT('stem.machinelab.loose', 'Loose!')),
                 h('button', {
@@ -3132,7 +3475,7 @@ window.StemLab = window.StemLab || {
                     color: d.siegeFeedback.ok ? T.ok : T.text
                   }
                 }, d.siegeFeedback.message) : null,
-                d.breached ? h('p', {
+                wallBreached ? h('p', {
                   key: 'win',
                   style: { margin: '10px 0 0', fontSize: 14, fontWeight: 800, color: T.ok }
                 }, __alloT('stem.machinelab.breach_in', 'Breached in ') + (d.shotsFired || 0) +
@@ -3149,7 +3492,6 @@ window.StemLab = window.StemLab || {
                 h('div', { key: 'rows', style: { display: 'grid', gap: 5 } }, [
                   [__alloT('stem.machinelab.st_shots', 'Shots loosed'), String(d.shotsFired || 0)],
                   [__alloT('stem.machinelab.st_work', 'Total crank work'), fmt((d.totalCrankWork || 0) / 1000, 1) + ' kJ'],
-                  [__alloT('stem.machinelab.st_standoff', 'Standoff'), fmt(d.standoff, 0) + ' m'],
                   [__alloT('stem.machinelab.st_reach', 'This machine reaches'), preview ? fmt(preview.range, 1) + ' m' : '—'],
                   [__alloT('stem.machinelab.st_wallh', 'Wall height'), ext ? fmt(ext.rows, 0) + ' m' : '—']
                 ].map(function (r, i) {
@@ -3161,8 +3503,10 @@ window.StemLab = window.StemLab || {
                     h('span', { key: 'v', style: { color: T.text, fontWeight: 700, fontVariantNumeric: 'tabular-nums' } }, r[1])
                   ]);
                 })),
-                h('div', { key: 'so', style: { marginTop: 10 } },
-                  slider({ key: 'standoff', label: __alloT('stem.machinelab.standoff', 'Standoff from the wall'), min: 20, max: 300, step: 5, unit: 'm' }))
+                h('div', { key: 'so', style: { marginTop: 10 } }, [
+                  slider({ key: 'standoff', label: __alloT('stem.machinelab.standoff', 'Standoff from the wall'), min: 20, max: 300, step: 5, unit: 'm' }),
+                  windControl()
+                ])
               ], 'stats'),
 
               d.lastImpact && d.lastImpact.outcome === 'hit' ? card([
@@ -3445,14 +3789,38 @@ window.StemLab = window.StemLab || {
             'idea that a machine trades distance for force without creating energy. Three short paragraphs at most. ' +
             'Do not invent historical claims.';
           updMulti({ aiLoading: true, aiError: '', aiText: '' });
+
+          // Settle exactly once, whichever gets there first.
+          //
+          // aiLoading disables the Explain button, and it was only ever cleared
+          // by .then or .catch. A promise that never settles therefore disabled
+          // the tutor PERMANENTLY with no way to retry, and AI calls on this
+          // surface do throttle and hang in practice. The timeout is the only
+          // thing standing between a slow network and a dead button.
+          var settled = false;
+          function settle(patch) {
+            if (settled) return;
+            settled = true;
+            updMulti(patch);
+          }
+          var failMsg = __alloT('stem.machinelab.ai_failed', 'The tutor could not answer just now. Try again in a moment.');
+
           try {
             Promise.resolve(ctx.callGemini(prompt)).then(function (txt) {
-              updMulti({ aiLoading: false, aiText: (typeof txt === 'string' ? txt : (txt && txt.text) || '') });
+              settle({ aiLoading: false, aiText: (typeof txt === 'string' ? txt : (txt && txt.text) || '') });
             }).catch(function () {
-              updMulti({ aiLoading: false, aiError: __alloT('stem.machinelab.ai_failed', 'The tutor could not answer just now. Try again in a moment.') });
+              settle({ aiLoading: false, aiError: failMsg });
             });
           } catch (e) {
-            updMulti({ aiLoading: false, aiError: __alloT('stem.machinelab.ai_failed', 'The tutor could not answer just now. Try again in a moment.') });
+            settle({ aiLoading: false, aiError: failMsg });
+          }
+          if (typeof setTimeout === 'function') {
+            setTimeout(function () {
+              settle({
+                aiLoading: false,
+                aiError: __alloT('stem.machinelab.ai_timeout', 'The tutor did not answer in time. Try again.')
+              });
+            }, AI_TIMEOUT_MS);
           }
         }
 

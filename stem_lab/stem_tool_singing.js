@@ -236,21 +236,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
   // Vibrato analysis — ported from Rachel's biofeedback tools
   // ═══════════════════════════════════════════
 
+  // Vibrato extent is conventionally the peak-to-peak pitch excursion. Estimating it
+  // from RMS rather than from observed max-minus-min keeps one bad frame from
+  // dominating (squaring still pulls the estimate up, but roughly half as far), so
+  // scale RMS to the peak-to-peak of the equivalent sine: pp = 2*sqrt(2)*RMS.
+  var VIBRATO_RMS_TO_EXTENT = 2 * Math.SQRT2;
+  // Zero-crossing rate stays accurate down to about 18 samples/sec for vibrato up to
+  // 8 Hz; below that it collapses (a real 6 Hz read as 1.0 Hz at 12 samples/sec), so
+  // a sparser window must not be turned into a diagnosis.
+  var VIBRATO_MIN_SAMPLE_HZ = 18;
+
   function analyzeVibrato(history) {
-    if (!history || history.length < 10) return { rate: 0, depth: 0 };
+    var none = { rate: 0, depth: 0, extentCents: 0, sampleHz: 0, reliable: false };
+    if (!history || history.length < 10) return none;
     var midiValues = history.map(function(h) { return h.midi; });
     var mean = midiValues.reduce(function(a, b) { return a + b; }, 0) / midiValues.length;
     var deviations = midiValues.map(function(m) { return (m - mean) * 100; });
     var variance = deviations.reduce(function(sum, d) { return sum + d * d; }, 0) / deviations.length;
-    var depth = Math.sqrt(variance) * 2;
+    var rms = Math.sqrt(variance);
     var crossings = 0;
     for (var i = 1; i < deviations.length; i++) {
       if ((deviations[i] >= 0 && deviations[i - 1] < 0) || (deviations[i] < 0 && deviations[i - 1] >= 0)) crossings++;
     }
     var durationSec = (history[history.length - 1].time - history[0].time) / 1000;
-    var rate = durationSec > 0 ? (crossings / 2) / durationSec : 0;
-    return { rate: rate, depth: depth };
+    if (!(durationSec > 0)) return none;
+    var rate = (crossings / 2) / durationSec;
+    var sampleHz = (history.length - 1) / durationSec;
+    return {
+      rate: rate,
+      depth: rms * 2,                              // legacy index, kept for callers
+      extentCents: rms * VIBRATO_RMS_TO_EXTENT,    // peak-to-peak, the displayed unit
+      sampleHz: sampleHz,
+      reliable: sampleHz >= VIBRATO_MIN_SAMPLE_HZ
+    };
   }
+
+  // Thresholds in true peak-to-peak cents. These are the original 10/30/80/100
+  // "depth" boundaries carried across by the same factor, so precisely the same
+  // singing passes each band — only the unit is now the one the UI claims.
+  // The boundaries themselves still want a vocal-pedagogy review; see
+  // MUSIC_TOOLS_REVIEW.md.
+  var VIB_STRAIGHT_MAX = 10 * VIBRATO_RMS_TO_EXTENT / 2;   // 14 cents
+  var VIB_HEALTHY_MIN = 30 * VIBRATO_RMS_TO_EXTENT / 2;    // 42 cents
+  var VIB_HEALTHY_MAX = 80 * VIBRATO_RMS_TO_EXTENT / 2;    // 113 cents
+  var VIB_WIDE_MAX = 100 * VIBRATO_RMS_TO_EXTENT / 2;      // 141 cents
+  var VIB_DEVELOPING_MIN = 15 * VIBRATO_RMS_TO_EXTENT / 2; // 21 cents
 
   // ═══════════════════════════════════════════
   // Reference tone synthesis (shared AudioContext)
@@ -594,7 +624,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
   /**
    * Draw cents meter — horizontal needle gauge from -50 to +50.
    */
-  function drawCentsMeter(canvas, cents, isDark) {
+  function drawCentsMeter(canvas, cents, isDark, labels) {
+    var L = labels || {};
     if (!canvas) return;
     var c = canvas.getContext('2d');
     var W = canvas.width;
@@ -637,8 +668,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     c.font = '8px sans-serif';
     c.fillStyle = isDark ? '#94a3b8' : '#475569';
     c.textAlign = 'center';
-    c.fillText('Flat', barX + 10, barY + barH + 12);
-    c.fillText('Sharp', barX + barW - 10, barY + barH + 12);
+    c.fillText(L.flat || 'Flat', barX + 10, barY + barH + 12);
+    c.fillText(L.sharp || 'Sharp', barX + barW - 10, barY + barH + 12);
     c.fillText('0', center, barY + barH + 12);
 
     // Needle
@@ -665,7 +696,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
   /**
    * Draw vibrato trace — ±50 cents deviation from mean pitch.
    */
-  function drawVibratoTrace(canvas, history, isDark) {
+  function drawVibratoTrace(canvas, history, isDark, labels) {
+    var L = labels || {};
     if (!canvas) return;
     var c = canvas.getContext('2d');
     var W = canvas.width;
@@ -679,7 +711,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       c.fillStyle = isDark ? '#94a3b8' : '#475569';
       c.textAlign = 'center';
       c.font = '12px sans-serif';
-      c.fillText('Sustain a note to see vibrato waveform', W / 2, H / 2);
+      c.fillText(L.empty || 'Sustain a note to see vibrato waveform', W / 2, H / 2);
       return;
     }
 
@@ -837,7 +869,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
   /**
    * Draw interval staff — shows reference note and target note on a staff.
    */
-  function drawIntervalStaff(canvas, refMidi, targetMidi, studentMidi, isDark) {
+  function drawIntervalStaff(canvas, refMidi, targetMidi, studentMidi, isDark, labels) {
+    var L = labels || {};
     if (!canvas) return;
     var c = canvas.getContext('2d');
     var W = canvas.width;
@@ -861,7 +894,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       c.font = '10px sans-serif';
       c.fillStyle = isDark ? '#60a5fa' : '#2563eb';
       c.textAlign = 'center';
-      c.fillText('Reference', W * 0.35, H - 4);
+      c.fillText(L.reference || 'Reference', W * 0.35, H - 4);
       c.fillText(refNote.str, W * 0.35, staffTop - 8);
     }
 
@@ -872,7 +905,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       c.font = '10px sans-serif';
       c.fillStyle = isDark ? '#22c55e' : '#15803d';
       c.textAlign = 'center';
-      c.fillText('Target', W * 0.6, H - 4);
+      c.fillText(L.target || 'Target', W * 0.6, H - 4);
       c.fillText(targetNote.str, W * 0.6, staffTop - 8);
     }
 
@@ -885,7 +918,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       c.font = '10px sans-serif';
       c.fillStyle = stuColor;
       c.textAlign = 'center';
-      c.fillText('You', W * 0.8, H - 4);
+      c.fillText(L.you || 'You', W * 0.8, H - 4);
       c.fillText(stuNote.str, W * 0.8, staffTop - 8);
     }
   }
@@ -2030,7 +2063,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     ctx.font = 'bold 12px sans-serif';
     ctx.fillStyle = isDark ? '#e2e8f0' : '#1e293b';
     ctx.textAlign = 'center';
-    ctx.fillText('Sagittal Cross-Section of the Vocal Tract', LW / 2, 18);
+    ctx.fillText((opts && opts.title) || 'Sagittal Cross-Section of the Vocal Tract', LW / 2, 18);
   }
 
   // ═══════════════════════════════════════════
@@ -2220,7 +2253,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         var vibratoHistory = vibratoHistoryState[0];
         var setVibratoHistory = vibratoHistoryState[1];
 
-        var vibratoResultState = React.useState({ rate: 0, depth: 0 });
+        var vibratoResultState = React.useState({ rate: 0, depth: 0, extentCents: 0, sampleHz: 0, reliable: false });
         var vibratoResult = vibratoResultState[0];
         var setVibratoResult = vibratoResultState[1];
 
@@ -2534,19 +2567,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
         // Cents meter canvas
         React.useEffect(function() {
-          drawCentsMeter(centsMeterCanvasRef.current, currentNote.cents, isDark);
+          drawCentsMeter(centsMeterCanvasRef.current, currentNote.cents, isDark, {
+            flat: __alloT('stem.singing.canvas_flat', 'Flat'),
+            sharp: __alloT('stem.singing.canvas_sharp', 'Sharp')
+          });
         }, [currentNote, isDark]);
 
         // Vibrato trace canvas
         React.useEffect(function() {
-          drawVibratoTrace(vibratoCanvasRef.current, vibratoHistory, isDark);
+          drawVibratoTrace(vibratoCanvasRef.current, vibratoHistory, isDark, {
+            empty: __alloT('stem.singing.canvas_vibrato_empty', 'Sustain a note to see vibrato waveform')
+          });
           // Live vibrato analysis
           if (vibratoHistory.length >= 20) {
             var result = analyzeVibrato(vibratoHistory);
             setVibratoResult(result);
 
             // Check for healthy vibrato achievement
-            if (!achievedHealthyVibrato && result.rate >= 5 && result.rate <= 7 && result.depth >= 30 && result.depth <= 80) {
+            if (!achievedHealthyVibrato && result.reliable &&
+                result.rate >= 5 && result.rate <= 7 &&
+                result.extentCents >= VIB_HEALTHY_MIN && result.extentCents <= VIB_HEALTHY_MAX) {
               upd('achievedHealthyVibrato', true);
               if (addToast) addToast(__alloT('stem.singing.healthy_vibrato_achieved', 'Healthy vibrato achieved!'), 'success');
               if (stemCelebrate) stemCelebrate();
@@ -2576,7 +2616,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
               intervalActive.refMidi,
               intervalActive.targetMidi,
               currentNote.midi > 0 ? currentNote.midi : null,
-              isDark
+              isDark,
+              {
+                reference: __alloT('stem.singing.canvas_reference', 'Reference'),
+                target: __alloT('stem.singing.canvas_target', 'Target'),
+                you: __alloT('stem.singing.canvas_you', 'You')
+              }
             );
           }
         }, [intervalActive, currentNote, isDark]);
@@ -2603,7 +2648,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             drawVocalAnatomy(anatomyCanvasRef.current, anatomyRegion, 0, isDark, 'none', {
               breathPhase: 0,
               pitchHigh: anatomyPitchHigh,
-              vowelShape: vowel
+              vowelShape: vowel,
+              title: __alloT('stem.singing.canvas_anatomy_title', 'Sagittal Cross-Section of the Vocal Tract')
             });
             return;
           }
@@ -2633,7 +2679,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             drawVocalAnatomy(anatomyCanvasRef.current, anatomyRegion, frame, isDark, anatomyAnim, {
               breathPhase: breathPhase,
               pitchHigh: anatomyPitchHigh,
-              vowelShape: vowelShape
+              vowelShape: vowelShape,
+              title: __alloT('stem.singing.canvas_anatomy_title', 'Sagittal Cross-Section of the Vocal Tract')
             });
 
             anatomyRafRef.current = requestAnimationFrame(tick);
@@ -2654,7 +2701,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         // Static redraw when region changes and no animation is active
         React.useEffect(function() {
           if (anatomyAnim !== 'none') return;
-          drawVocalAnatomy(anatomyCanvasRef.current, anatomyRegion, 0, isDark, 'none', {});
+          drawVocalAnatomy(anatomyCanvasRef.current, anatomyRegion, 0, isDark, 'none', { title: __alloT('stem.singing.canvas_anatomy_title', 'Sagittal Cross-Section of the Vocal Tract') });
         }, [anatomyRegion, isDark, anatomyAnim]);
 
         // Sight reading pitch detection logic
@@ -3270,23 +3317,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
         function renderVibratoLab() {
           var rate = vibratoResult.rate;
-          var depth = vibratoResult.depth;
+          var extentCents = vibratoResult.extentCents || 0;
+          var vibratoReliable = !!vibratoResult.reliable;
 
           // Quality assessment
           var quality = { label: t('stem.singing.no_signal', 'No Signal'), color: 'var(--allo-stem-text-soft, #94a3b8)', desc: t('stem.singing.start_singing_a_sustained_note', 'Start singing a sustained note.') };
-          if (vibratoHistory.length >= 20 && currentNote.midi > 0) {
-            if (depth < 10) {
+          if (vibratoHistory.length >= 20 && currentNote.midi > 0 && !vibratoReliable) {
+            // Too few pitch readings per second for zero-crossing counting to mean
+            // anything. Saying nothing beats calling a healthy vibrato a wobble.
+            quality = { label: t('stem.singing.vibrato_measuring', 'Measuring\u2026'), color: '#94a3b8', desc: t('stem.singing.vibrato_low_sample_rate', 'This device is producing too few pitch readings per second to measure vibrato rate. Close other tabs or apps and try again.') };
+          } else if (vibratoHistory.length >= 20 && currentNote.midi > 0) {
+            if (extentCents < VIB_STRAIGHT_MAX) {
               quality = { label: t('stem.singing.straight_tone', 'Straight Tone'), color: '#6366f1', desc: t('stem.singing.very_little_pitch_variation_good_for_c', 'Very little pitch variation. Good for choral blend!') };
             } else if (rate > 8) {
               quality = { label: t('stem.singing.too_fast_tremolo', 'Too Fast (Tremolo)'), color: '#f97316', desc: t('stem.singing.vibrato_rate_is_above_8_hz_try_to_rela', 'Vibrato rate is above 8 Hz. Try to relax and slow down.') };
-            } else if (rate < 4 && depth > 10) {
+            } else if (rate < 4 && extentCents > VIB_STRAIGHT_MAX) {
               quality = { label: t('stem.singing.too_slow_wobble', 'Too Slow (Wobble)'), color: '#f97316', desc: t('stem.singing.vibrato_rate_is_below_4_hz_try_to_ener', 'Vibrato rate is below 4 Hz. Try to energize your airflow.') };
-            } else if (depth > 100) {
-              quality = { label: t('stem.singing.too_wide', 'Too Wide'), color: '#f97316', desc: t('stem.singing.vibrato_width_exceeds_100_cents_try_fo', 'Vibrato width exceeds 100 cents. Try for a narrower oscillation.') };
-            } else if (rate >= 5 && rate <= 7 && depth >= 30 && depth <= 80) {
+            } else if (extentCents > VIB_WIDE_MAX) {
+              quality = { label: t('stem.singing.too_wide', 'Too Wide'), color: '#f97316', desc: t('stem.singing.vibrato_width_too_wide', 'Vibrato width exceeds 140 cents peak to peak. Try for a narrower oscillation.') };
+            } else if (rate >= 5 && rate <= 7 && extentCents >= VIB_HEALTHY_MIN && extentCents <= VIB_HEALTHY_MAX) {
               quality = { label: t('stem.singing.healthy_vibrato', 'Healthy Vibrato'), color: '#22c55e', desc: t('stem.singing.beautiful_rate_and_depth_are_in_the_id', 'Beautiful! Rate and depth are in the ideal range.') };
-            } else if (rate >= 4 && rate <= 8 && depth >= 15 && depth <= 100) {
-              quality = { label: t('stem.singing.developing_vibrato', 'Developing Vibrato'), color: '#eab308', desc: t('stem.singing.getting_there_aim_for_5_7_hz_rate_and_', 'Getting there! Aim for 5-7 Hz rate and 30-80 cents depth.') };
+            } else if (rate >= 4 && rate <= 8 && extentCents >= VIB_DEVELOPING_MIN && extentCents <= VIB_WIDE_MAX) {
+              quality = { label: t('stem.singing.developing_vibrato', 'Developing Vibrato'), color: '#eab308', desc: t('stem.singing.getting_there_aim_for_width', 'Getting there! Aim for a 5-7 Hz rate and a 42-113 cent width.') };
             }
           }
 
@@ -3295,7 +3347,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             { id: 'straight', label: t('stem.singing.steady_tone', 'Steady Tone'), desc: t('stem.singing.sustain_a_note_with_no_vibrato_practic', 'Sustain a note with NO vibrato. Practice controlling your voice to hold it perfectly still.'), target: 'Straight tone (< 10\u00A2 variation)' },
             { id: 'add', label: t('stem.singing.add_vibrato', 'Add Vibrato'), desc: t('stem.singing.sustain_a_note_and_let_your_natural_vi', 'Sustain a note and let your natural vibrato emerge. Don\'t force it \u2014 relax and let it happen.'), target: 'Natural vibrato (5-7 Hz, 30-80\u00A2)' },
             { id: 'speed', label: t('stem.singing.speed_control', 'Speed Control'), desc: t('stem.singing.try_to_vibrate_at_exactly_6_hz_6_oscil', 'Try to vibrate at exactly 6 Hz (6 oscillations per second). Watch the rate readout.'), target: 'Rate: 6 Hz' },
-            { id: 'width', label: t('stem.singing.width_control', 'Width Control'), desc: t('stem.singing.try_to_keep_vibrato_depth_around_50_ce', 'Try to keep vibrato depth around 50 cents. Not too wide, not too narrow.'), target: 'Depth: ~50\u00A2' }
+            { id: 'width', label: t('stem.singing.width_control', 'Width Control'), desc: t('stem.singing.try_to_keep_vibrato_width', 'Try to keep the vibrato width around 75 cents peak to peak. Not too wide, not too narrow.'), target: 'Depth: ~50\u00A2' }
           ];
 
           return h('div', { className: 'space-y-4' },
@@ -3321,12 +3373,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             h('div', { className: 'grid grid-cols-3 gap-3' },
               h('div', { className: cardClass + ' text-center' },
                 h('div', { className: subTextClass + ' mb-1' }, t('stem.singing.rate', 'Rate')),
-                h('div', { className: headingClass + ' text-2xl' }, rate.toFixed(1) + ' Hz'),
+                h('div', { className: headingClass + ' text-2xl' }, vibratoReliable ? rate.toFixed(1) + ' Hz' : '\u2014'),
                 h('div', { className: subTextClass }, t('stem.singing.ideal_5_7_hz', 'Ideal: 5-7 Hz'))),
               h('div', { className: cardClass + ' text-center' },
-                h('div', { className: subTextClass + ' mb-1' }, t('stem.singing.depth', 'Depth')),
-                h('div', { className: headingClass + ' text-2xl' }, Math.round(depth) + '\u00A2'),
-                h('div', { className: subTextClass }, t('stem.singing.ideal_30_80', 'Ideal: 30-80\u00A2'))),
+                h('div', { className: subTextClass + ' mb-1' }, t('stem.singing.width', 'Width')),
+                h('div', { className: headingClass + ' text-2xl' }, Math.round(extentCents) + '\u00A2'),
+                h('div', { className: subTextClass }, t('stem.singing.ideal_width_range', 'Ideal: 42-113\u00A2 peak to peak'))),
               h('div', { className: cardClass + ' text-center' },
                 h('div', { className: subTextClass + ' mb-1' }, t('stem.singing.quality', 'Quality')),
                 h('div', {

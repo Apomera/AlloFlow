@@ -57,6 +57,120 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
   })();
 
 
+  // ═══════════════════════════════════════════
+  // Rhythm Clap-Back — pattern bank and scoring
+  // ═══════════════════════════════════════════
+
+  // Patterns are onset positions in beats within a bar. Fractions are eighth notes
+  // (0.5) and sixteenths (0.25), so every pattern below is playable by the same
+  // scheduler and readable as standard notation.
+  var RHYTHM_PATTERNS = [
+    { id: 'quarters',   beats: 4, onsets: [0, 1, 2, 3],                 level: 1, name: 'Steady quarters' },
+    { id: 'half_notes', beats: 4, onsets: [0, 2],                       level: 1, name: 'Half notes' },
+    { id: 'on_beats13', beats: 4, onsets: [0, 2, 3],                    level: 1, name: 'Long, then two' },
+    { id: 'eighths',    beats: 4, onsets: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5], level: 2, name: 'Running eighths' },
+    { id: 'dotted',     beats: 4, onsets: [0, 1.5, 2, 3],               level: 2, name: 'Dotted feel' },
+    { id: 'gallop',     beats: 4, onsets: [0, 0.75, 1, 2, 2.75, 3],     level: 3, name: 'Gallop' },
+    { id: 'syncopated', beats: 4, onsets: [0, 1.5, 2.5, 3],             level: 3, name: 'Syncopation' },
+    { id: 'clave',      beats: 4, onsets: [0, 0.75, 1.5, 2.5, 3],       level: 4, name: 'Son clave (3-2)' },
+    { id: 'waltz',      beats: 3, onsets: [0, 1, 2],                    level: 1, name: 'Waltz pulse' },
+    { id: 'waltz_sync', beats: 3, onsets: [0, 1.5, 2],                  level: 3, name: 'Waltz with a lift' }
+  ];
+
+  // Grading bands as a fraction of one beat, so they scale with tempo: a 40 ms error
+  // is a different musical size at 60 BPM than at 200 BPM. These numbers are tunable
+  // — see the open questions in MUSIC_TOOLS_REVIEW.md — and are deliberately in one
+  // place rather than scattered through the scorer.
+  var RHYTHM_TIGHT_FRACTION = 0.06;   // within 6% of a beat: on the money
+  var RHYTHM_CLOSE_FRACTION = 0.14;   // within 14%: recognisably the right rhythm
+  var RHYTHM_MATCH_FRACTION = 0.5;    // beyond half a beat a tap belongs to another onset
+
+  /** Absolute onset times in ms for a pattern at a given tempo. */
+  function rhythmOnsetTimes(pattern, beatMs) {
+    if (!pattern || !pattern.onsets) return [];
+    return pattern.onsets.map(function (beat) { return beat * beatMs; });
+  }
+
+  /**
+   * Score a set of taps against the expected onsets.
+   *
+   * Matching is greedy over the closest pairs first, not left-to-right. That matters:
+   * with left-to-right matching a single early tap claims the first onset and pushes
+   * every later tap onto the wrong onset, turning one small error into a whole failed
+   * pattern. Sorting candidate pairs by absolute error and assigning the best ones
+   * first keeps an isolated mistake isolated.
+   *
+   * Returns per-onset results (with signed deviation in ms, negative = early), counts
+   * of missed onsets and extra taps, and summary accuracy in [0, 1].
+   */
+  function scoreRhythm(expectedMs, tapsMs, beatMs) {
+    var expected = (expectedMs || []).slice();
+    var taps = (tapsMs || []).slice().sort(function (a, b) { return a - b; });
+    var beat = (typeof beatMs === 'number' && isFinite(beatMs) && beatMs > 0) ? beatMs : 500;
+    var matchWindow = beat * RHYTHM_MATCH_FRACTION;
+    var tightMs = beat * RHYTHM_TIGHT_FRACTION;
+    var closeMs = beat * RHYTHM_CLOSE_FRACTION;
+
+    var pairs = [];
+    for (var e = 0; e < expected.length; e++) {
+      for (var t = 0; t < taps.length; t++) {
+        var delta = taps[t] - expected[e];
+        if (Math.abs(delta) <= matchWindow) pairs.push({ e: e, t: t, delta: delta, abs: Math.abs(delta) });
+      }
+    }
+    pairs.sort(function (a, b) { return a.abs - b.abs; });
+
+    var usedExpected = {}, usedTaps = {};
+    var byOnset = expected.map(function (ms) { return { expectedMs: ms, tapMs: null, deltaMs: null, grade: 'missed' }; });
+    for (var p = 0; p < pairs.length; p++) {
+      var pr = pairs[p];
+      if (usedExpected[pr.e] || usedTaps[pr.t]) continue;
+      usedExpected[pr.e] = true;
+      usedTaps[pr.t] = true;
+      byOnset[pr.e] = {
+        expectedMs: expected[pr.e],
+        tapMs: taps[pr.t],
+        deltaMs: pr.delta,
+        grade: pr.abs <= tightMs ? 'tight' : (pr.abs <= closeMs ? 'close' : 'loose')
+      };
+    }
+
+    var extras = [];
+    for (var t2 = 0; t2 < taps.length; t2++) { if (!usedTaps[t2]) extras.push(taps[t2]); }
+
+    var hits = byOnset.filter(function (o) { return o.tapMs !== null; });
+    var absErrors = hits.map(function (o) { return Math.abs(o.deltaMs); });
+    var sumAbs = absErrors.reduce(function (a, b) { return a + b; }, 0);
+    var meanAbsMs = absErrors.length ? sumAbs / absErrors.length : 0;
+    var maxAbsMs = absErrors.length ? Math.max.apply(null, absErrors) : 0;
+    var signedSum = hits.reduce(function (a, o) { return a + o.deltaMs; }, 0);
+
+    // Accuracy credits each onset by how tightly it was hit, then penalises extra
+    // taps at the same weight as a miss so machine-gunning cannot score well.
+    var credit = 0;
+    for (var i = 0; i < byOnset.length; i++) {
+      var g = byOnset[i].grade;
+      credit += g === 'tight' ? 1 : g === 'close' ? 0.75 : g === 'loose' ? 0.35 : 0;
+    }
+    var denominator = Math.max(1, expected.length + extras.length);
+    var accuracy = Math.max(0, Math.min(1, credit / denominator));
+
+    return {
+      onsets: byOnset,
+      extras: extras,
+      hit: hits.length,
+      missed: byOnset.length - hits.length,
+      extra: extras.length,
+      meanAbsMs: meanAbsMs,
+      maxAbsMs: maxAbsMs,
+      // Positive means consistently behind the beat, negative consistently ahead.
+      biasMs: hits.length ? signedSum / hits.length : 0,
+      accuracy: accuracy,
+      tightMs: tightMs,
+      closeMs: closeMs
+    };
+  }
+
   window.StemLab.registerTool('musicSynth', {
     icon: '🎹',
     label: 'Music Synthesizer',
@@ -69,7 +183,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
       { id: 'ear_training', label: 'Name 5 intervals by ear', icon: '👂', check: function(d) { return (d.earCorrect || 0) >= 5; }, progress: function(d) { return (d.earCorrect || 0) + '/5'; } },
       { id: 'build_beat', label: 'Build a beat in the sequencer', icon: '🥁', check: function(d) { return !!d.beatBuilt; }, progress: function(d) { return d.beatBuilt ? 'Done!' : 'Not yet'; } },
       { id: 'try_scales', label: 'Play 3 different scales', icon: '🎵', check: function(d) { return (d.scalesTried || []).length >= 3; }, progress: function(d) { return (d.scalesTried || []).length + '/3'; } },
-      { id: 'try_preset', label: 'Try a synth engine preset', icon: '⚡', check: function(d) { return !!d.activePreset; }, progress: function(d) { return d.activePreset ? d.activePreset : 'Pick one'; } }
+      { id: 'try_preset', label: 'Try a synth engine preset', icon: '⚡', check: function(d) { return !!d.activePreset; }, progress: function(d) { return d.activePreset ? d.activePreset : 'Pick one'; } },
+      { id: 'clap_back', label: 'Clap back 3 rhythms accurately', icon: '👏', check: function(d) { return (d.rhythmPassed || 0) >= 3; }, progress: function(d) { return (d.rhythmPassed || 0) + '/3'; } }
     ],
     render: function(ctx) {
       var React = ctx.React;
@@ -696,8 +811,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
           // ═══ DRUM SYNTHESIS ═══
           // ═══ UNIFIED DRUM SYNTHESIZER ═══
           // Handles ALL drum types with Web Audio synthesis
-          function playDrum(type) {
-            var audio = getCtx(); var ctxA = audio.ctx; var now = ctxA.currentTime;
+          function playDrum(type, when) {
+            var audio = getCtx(); var ctxA = audio.ctx;
+            var now = (typeof when === 'number' && isFinite(when) && when > ctxA.currentTime) ? when : ctxA.currentTime;
             var drumGain = ctxA.createGain(); drumGain.connect(audio.effects ? audio.effects.filter : audio.gain);
             if (type === 'kick') {
               var osc = ctxA.createOscillator(); osc.type = 'sine';
@@ -876,8 +992,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               playDrum(type);
             }
           }
-          function playClick(accent) {
-            var audio = getCtx(); var ctx = audio.ctx; var now = ctx.currentTime;
+          function playClick(accent, when) {
+            var audio = getCtx(); var ctx = audio.ctx;
+            // Schedule ahead when asked, so a bar of clicks lands on the sample clock
+            // rather than wherever setTimeout happens to fire.
+            var now = (typeof when === 'number' && isFinite(when) && when > ctx.currentTime) ? when : ctx.currentTime;
             var osc = ctx.createOscillator(); osc.type = 'sine';
             osc.frequency.value = accent ? 1000 : 800;
             var eg = ctx.createGain(); eg.gain.setValueAtTime(accent ? 0.5 : 0.3, now);
@@ -1132,7 +1251,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
           // Single source of tempo for the metronome and arpeggiator. d.bpm was read
           // in both places and written nowhere, pinning them to 120 regardless of the
           // sequencer's BPM slider.
-          var tempoBPM = d.seqBPM || 120;
+          var BPM_MIN = 40, BPM_MAX = 208;   // Largo to Prestissimo
+          var SWING_MAX_PCT = 75;
+          /** Coerce any stored/shared tempo to a usable number of beats per minute. */
+          function safeBPM(v) {
+            var n = Number(v);
+            if (!isFinite(n) || n <= 0) return 120;
+            return Math.max(BPM_MIN, Math.min(BPM_MAX, Math.round(n)));
+          }
+          /** Coerce a stored/shared swing amount to a fraction in [0, 0.75]. */
+          function safeSwingFraction(v) {
+            var n = parseFloat(v);
+            if (!isFinite(n)) return 0;
+            return Math.max(0, Math.min(SWING_MAX_PCT, n)) / 100;
+          }
+          var tempoBPM = safeBPM(d.seqBPM);
           var loopLen = d.loopLen || 16;
           var seq = d.sequence || new Array(loopLen).fill(0);
           var drumSeq = d.drumSequence || d.drumSeq || {};
@@ -1191,13 +1324,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
           // code — the Beat Pad engine below re-declares both names in this same
           // scope, and the later declaration wins. Removed so the shadowing cannot
           // silently reverse if these blocks are ever reordered.
+          // How far ahead to schedule, and how often to look. The window only has to
+          // exceed the polling interval by a comfortable margin; both are well under
+          // the shortest beat the tempo range allows (208 BPM = 288 ms).
+          var METRO_LOOKAHEAD_SEC = 0.15;
+          var METRO_POLL_MS = 25;
+          var _metroState = React.useRef({ nextBeatSec: 0, beat: 0, uiTimers: [] });
+
           function startMetronome() {
-            stopMetronome(); upd('metroOn', true);
-            var beat = 0; var bpm = tempoBPM; var ms = 60000 / bpm;
+            stopMetronome();
+            var audio = getCtx();
+            if (!audio || !audio.ctx) return;
+            var actx = audio.ctx;
+            if (actx.state === 'suspended') actx.resume();
+            upd('metroOn', true);
+
+            var st = _metroState.current;
+            var secPerBeat = 60 / tempoBPM;
             var beatsPerMeasure = TIME_SIGS[timeSig] ? TIME_SIGS[timeSig].beats : 4;
-            window._alloMetronomeInterval = setInterval(function () { playClick(beat === 0); upd('metroBeat', beat); beat = (beat + 1) % beatsPerMeasure; }, ms);
+            st.beat = 0;
+            st.nextBeatSec = actx.currentTime + 0.1;
+            st.uiTimers = [];
+
+            // The polling timer may fire early, late or irregularly; what matters is
+            // that nextBeatSec advances by exactly one beat each time, so the audible
+            // clicks stay locked to the sample clock no matter how the timer behaves.
+            window._alloMetronomeInterval = setInterval(function () {
+              while (st.nextBeatSec < actx.currentTime + METRO_LOOKAHEAD_SEC) {
+                playClick(st.beat === 0, st.nextBeatSec);
+                // Light the lamp when the click is due. A few ms out here is invisible,
+                // so the UI stays on the cheap timer.
+                (function (beatIdx, whenSec) {
+                  var delayMs = Math.max(0, (whenSec - actx.currentTime) * 1000);
+                  st.uiTimers.push(setTimeout(function () { upd('metroBeat', beatIdx); }, delayMs));
+                })(st.beat, st.nextBeatSec);
+                st.beat = (st.beat + 1) % beatsPerMeasure;
+                st.nextBeatSec += secPerBeat;
+              }
+              // Keep the UI timer list from growing without bound over a long session.
+              if (st.uiTimers.length > 64) st.uiTimers = st.uiTimers.slice(-32);
+            }, METRO_POLL_MS);
           }
-          function stopMetronome() { if (window._alloMetronomeInterval) { clearInterval(window._alloMetronomeInterval); window._alloMetronomeInterval = null; } upd('metroOn', false); upd('metroBeat', -1); }
+          function stopMetronome() {
+            if (window._alloMetronomeInterval) { clearInterval(window._alloMetronomeInterval); window._alloMetronomeInterval = null; }
+            var st = _metroState.current;
+            for (var i = 0; i < st.uiTimers.length; i++) clearTimeout(st.uiTimers[i]);
+            st.uiTimers = [];
+            upd('metroOn', false); upd('metroBeat', -1);
+          }
           function startArpeggiator() {
             stopArpeggiator(); upd('arpOn', true);
             var chordData = CHORDS[selectedChord]; if (!chordData) return;
@@ -1219,6 +1393,141 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               else { step = Math.floor(Math.random() * allNotes.length); }
             }, ms);
           }
+          // ═══ RHYTHM CLAP-BACK ═══
+          // Listen to a one-bar pattern, then tap it back. Timing is compared against
+          // the pattern's onsets by scoreRhythm (module scope, tested directly).
+          var _rhythmRun = React.useRef({ timers: [], taps: [], recordStartSec: null, patternId: null, beatMs: 500 });
+
+          function stopRhythm() {
+            var run = _rhythmRun.current;
+            for (var i = 0; i < run.timers.length; i++) clearTimeout(run.timers[i]);
+            run.timers = [];
+          }
+
+          function rhythmPatternById(id) {
+            for (var i = 0; i < RHYTHM_PATTERNS.length; i++) {
+              if (RHYTHM_PATTERNS[i].id === id) return RHYTHM_PATTERNS[i];
+            }
+            return RHYTHM_PATTERNS[0];
+          }
+
+          function startRhythmRound() {
+            // Guard re-entry: a second press mid-round would interleave two schedules.
+            if (d.rhythmPhase === 'listen' || d.rhythmPhase === 'record') return;
+            stopRhythm();
+            var audio = getCtx();
+            if (!audio || !audio.ctx) return;
+            var actx = audio.ctx;
+            if (actx.state === 'suspended') actx.resume();
+
+            var pattern = rhythmPatternById(d.rhythmPatternId);
+            var beatMs = 60000 / tempoBPM;
+            var run = _rhythmRun.current;
+            run.taps = [];
+            run.patternId = pattern.id;
+            run.beatMs = beatMs;
+
+            var countInBeats = pattern.beats;
+            // One list of onset offsets, used BOTH to schedule the audio and to score
+            // the taps. Deriving them twice is how a reference and its measurement
+            // drift apart.
+            var onsets = rhythmOnsetTimes(pattern, beatMs);
+            var barMs = pattern.beats * beatMs;
+
+            // Audio-clock origin, with a short lead-in so the first click is not
+            // clipped by the time it takes to build the nodes.
+            var LEAD_IN_MS = 120;
+            var originSec = actx.currentTime + LEAD_IN_MS / 1000;
+            function audioAt(offsetMs) { return originSec + offsetMs / 1000; }
+            // UI phase flips only; a few ms of setTimeout drift here is invisible.
+            function at(delayMs, fn) { run.timers.push(setTimeout(fn, Math.max(0, LEAD_IN_MS + delayMs))); }
+
+            upd('rhythmPhase', 'listen');
+            upd('rhythmResult', null);
+            if (announceToSR) announceToSR(__alloFmt('stem.music.sr_rhythm_listen', 'Count-in, then listen to {name}. Tap it back when the count-in repeats.', { name: __alloT('stem.music.rhythm_' + pattern.id, pattern.name) }));
+
+            // Count-in bar: plain metronome clicks, accented downbeat.
+            for (var c = 0; c < countInBeats; c++) {
+              playClick(c === 0, audioAt(c * beatMs));
+            }
+            // The pattern itself, one bar later, on a drum so it is distinct from the count.
+            for (var o = 0; o < onsets.length; o++) {
+              playDrum('rim', audioAt(barMs + onsets[o]));
+            }
+            // Second count-in, then the student's bar.
+            for (var c2 = 0; c2 < countInBeats; c2++) {
+              playClick(c2 === 0, audioAt(barMs * 2 + c2 * beatMs));
+            }
+
+            // The student's bar begins at a known point on the audio clock, not
+            // whenever the phase timer happens to fire.
+            run.recordStartSec = audioAt(barMs * 3);
+            at(barMs * 3, function () {
+              run.taps = [];
+              upd('rhythmPhase', 'record');
+              if (announceToSR) announceToSR(__alloT('stem.music.sr_rhythm_go', 'Your turn. Tap the rhythm now.'));
+            });
+            // Score a little after the bar ends so a late final tap still counts.
+            at(barMs * 4 + beatMs * 0.6, function () { finishRhythmRound(pattern, beatMs, onsets); });
+          }
+
+          function finishRhythmRound(pattern, beatMs, onsets) {
+            var run = _rhythmRun.current;
+            // Same onset list the audio was scheduled from, so the student is compared
+            // against what they actually heard.
+            var expected = onsets || rhythmOnsetTimes(pattern, beatMs);
+            var result = scoreRhythm(expected, run.taps, beatMs);
+            var passed = result.accuracy >= 0.75 && result.missed === 0 && result.extra === 0;
+            upd('rhythmPhase', 'result');
+            upd('rhythmResult', {
+              patternId: pattern.id,
+              accuracy: result.accuracy,
+              hit: result.hit,
+              missed: result.missed,
+              extra: result.extra,
+              meanAbsMs: Math.round(result.meanAbsMs),
+              biasMs: Math.round(result.biasMs),
+              grades: result.onsets.map(function (o) { return o.grade; }),
+              passed: passed
+            });
+            if (passed) {
+              upd('rhythmPassed', (d.rhythmPassed || 0) + 1);
+              upd('rhythmStreak', (d.rhythmStreak || 0) + 1);
+              if (ctx.awardXP) ctx.awardXP('musicSynth', 3, __alloT('stem.music.rhythm_clap_back', '\uD83D\uDC4F Rhythm Clap-Back'));
+            } else {
+              upd('rhythmStreak', 0);
+            }
+            var pct = Math.round(result.accuracy * 100);
+            var msg = passed
+              ? '\u2705 ' + __alloFmt('stem.music.rhythm_passed', 'Nice timing! {pct}% accurate.', { pct: pct })
+              : '\uD83C\uDFAF ' + __alloFmt('stem.music.rhythm_try_again', '{pct}% accurate. {detail}', {
+                  pct: pct,
+                  detail: result.missed > 0
+                    ? __alloFmt('stem.music.rhythm_missed', 'You missed {n}.', { n: result.missed })
+                    : result.extra > 0
+                      ? __alloFmt('stem.music.rhythm_extra', '{n} extra taps.', { n: result.extra })
+                      : result.biasMs > 0
+                        ? __alloT('stem.music.rhythm_behind', 'You were behind the beat.')
+                        : __alloT('stem.music.rhythm_ahead', 'You were ahead of the beat.')
+                });
+            addToast(msg, passed ? 'success' : 'info');
+            if (announceToSR) announceToSR(msg);
+          }
+
+          function recordRhythmTap() {
+            if (d.rhythmPhase !== 'record') return;
+            var run = _rhythmRun.current;
+            var audio = getCtx();
+            // Read the same clock the reference was scheduled on. Using Date.now()
+            // against a setTimeout-derived origin folded the timer's lateness into
+            // every measurement.
+            if (audio && audio.ctx && typeof run.recordStartSec === 'number') {
+              run.taps.push((audio.ctx.currentTime - run.recordStartSec) * 1000);
+            }
+            playDrum('rim');
+            upd('rhythmTapCount', run.taps.length);
+          }
+
           function stopArpeggiator() { if (window._alloArpInterval) { clearInterval(window._alloArpInterval); window._alloArpInterval = null; } upd('arpOn', false); }
 
           // ═══ INTERVAL EAR TRAINING ═══
@@ -1604,7 +1913,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             if (taps.length > 1) {
               var ints = []; for (var i = 1; i < Math.min(taps.length, 5); i++) ints.push(taps[i] - taps[i - 1]);
               var avg = ints.reduce(function (a, b) { return a + b; }, 0) / ints.length;
-              upd('seqBPM', Math.max(60, Math.min(200, Math.round(60000 / avg))));
+              upd('seqBPM', safeBPM(60000 / avg));
             }
           }
 
@@ -1676,10 +1985,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               if (!h || h.indexOf('#beat=') !== 0) return;
               var json = decodeURIComponent(escape(atob(h.substring(6))));
               var obj = JSON.parse(json);
-              if (obj.g) upd('seqGrid', obj.g);
-              if (obj.m) upd('beatMelody', obj.m);
-              if (obj.b) upd('seqBPM', obj.b);
-              if (obj.s) upd('seqSwing', obj.s);
+              // Anything in the URL is untrusted input: shape-check the grid and
+              // melody, and range-check the numbers, so a malformed or hand-edited
+              // link cannot wedge the sequencer or persist nonsense.
+              if (obj.g && typeof obj.g === 'object' && !Array.isArray(obj.g)) upd('seqGrid', obj.g);
+              if (Array.isArray(obj.m)) upd('beatMelody', obj.m);
+              if (obj.b != null) upd('seqBPM', safeBPM(obj.b));
+              if (obj.s != null) upd('seqSwing', String(Math.round(safeSwingFraction(obj.s) * 100)));
               history.replaceState(null, '', location.pathname);
               addToast(__alloT('stem.music.loaded_shared_beat', '\uD83C\uDFB5 Loaded shared beat!'), 'success');
             } catch (e) {}
@@ -1759,9 +2071,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
           var _seqTickRef = React.useRef(null);
           // Shared tick function — reads d (grid, melody, BPM, swing) fresh each render
           function _seqTick() {
-            var bpm = d.seqBPM || 120;
+            var bpm = safeBPM(d.seqBPM);
             var baseMs = (60000 / bpm) / 4; // 16th note base
-            var swingPct = parseFloat(d.seqSwing || '0') / 100;
+            var swingPct = safeSwingFraction(d.seqSwing);
             var step = _seqStep.current;
             // Play drum grid
             var grid = d.seqGrid || {};
@@ -1782,7 +2094,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             // Schedule next tick with swing: odd steps get delayed, even steps get shortened
             var isSwungStep = step % 2 === 1;
             var nextDelay = isSwungStep ? baseMs * (1 + swingPct) : baseMs * (1 - swingPct);
-            if (nextDelay < 10) nextDelay = 10; // safety floor
+            // Guard against NaN as well as too-small: NaN < 10 is false, so the old
+            // floor let a NaN delay through and setTimeout treated it as zero.
+            if (!isFinite(nextDelay) || nextDelay < 10) nextDelay = 10;
             // Use ref indirection so the chain always calls the latest render's tick
             _seqTimer.current = setTimeout(function() { if (_seqTickRef.current) _seqTickRef.current(); }, nextDelay);
           }
@@ -1801,7 +2115,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
           }
           // Clean up on unmount — stop the metronome + arpeggiator intervals too (previously only
           // the sequencer was stopped, so those setInterval loops leaked when leaving mid-play).
-          React.useEffect(function () { return function () { stopSequencer(); stopMetronome(); stopArpeggiator(); stopAllNotes(); }; }, []);
+          React.useEffect(function () { return function () { stopSequencer(); stopMetronome(); stopArpeggiator(); stopRhythm(); stopAllNotes(); }; }, []);
           // Restart the metronome when tempo or time signature changes while it runs —
           // startMetronome captures both in its interval closure.
           React.useEffect(function () {
@@ -1974,7 +2288,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
           return React.createElement("div", { className: "allo-music-tool max-w-6xl mx-auto animate-in fade-in duration-200", 'data-allo-theme': isDark ? 'dark' : 'light' },
             // ── Header ──
             React.createElement("div", { className: "flex flex-wrap items-center gap-3 mb-3" },
-              React.createElement("button", { onClick: function () { setStemLabTool(null); stopSequencer(); stopMetronome(); stopArpeggiator(); stopAllNotes(); }, className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors", 'aria-label': __alloT('stem.music.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
+              React.createElement("button", { onClick: function () { setStemLabTool(null); stopSequencer(); stopMetronome(); stopArpeggiator(); stopRhythm(); stopAllNotes(); }, className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors", 'aria-label': __alloT('stem.music.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
               React.createElement("h3", { className: "text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500" }, __alloT('stem.music.music_synthesizer', "\uD83C\uDFB9 Music Synthesizer")),
               React.createElement("span", { className: "px-2 py-0.5 bg-purple-100 text-purple-700 text-[11px] font-bold rounded-full" },
                 synthEngine === 'supersaw' ? '\u26A1 SUPERSAW' : synthEngine === 'fm' ? '\uD83C\uDF1F FM' : synthEngine === 'sub' ? '\uD83C\uDF0A SUB' : synthEngine === 'pad' ? '\u2601\uFE0F PAD' : synthEngine === 'plucked' ? '\uD83C\uDFB8 PLUCKED' : '\u223F ' + (d.waveType || 'sine').toUpperCase()
@@ -2533,8 +2847,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   React.createElement("input", { type: "range",
                     'aria-label': __alloT('stem.music.tempo_bpm', 'Tempo in beats per minute'),
                     'aria-valuetext': tempoBPM + ' BPM',
-                    min: 40, max: 208, step: 1, value: tempoBPM,
-                    onChange: function (e) { upd('seqBPM', parseInt(e.target.value, 10)); },
+                    min: BPM_MIN, max: BPM_MAX, step: 1, value: tempoBPM,
+                    onChange: function (e) { upd('seqBPM', safeBPM(e.target.value)); },
                     className: "w-24 accent-teal-600 h-1.5" }),
                   React.createElement("span", { className: "text-[11px] font-bold text-teal-700 w-14" }, tempoBPM + ' BPM'),
                   React.createElement("span", { className: "text-[11px] font-bold text-slate-600 ml-2" }, __alloT('stem.music.metre', "Metre")),
@@ -2564,6 +2878,95 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     return lamps;
                   })()
                 )
+              ),
+
+              // ── Rhythm Clap-Back ──
+              // The assessment half of the rhythm gap: the metronome above gives the
+              // reference, this measures whether the student can reproduce a pattern.
+              React.createElement("div", { className: "bg-gradient-to-r from-rose-50 to-orange-50 rounded-xl border border-rose-200 p-3 mb-3" },
+                React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap" },
+                  React.createElement("span", { className: "text-xs font-bold text-rose-700" }, __alloT('stem.music.rhythm_clap_back', "\uD83D\uDC4F Rhythm Clap-Back")),
+                  (d.rhythmStreak || 0) > 0 && React.createElement("span", { className: "text-[11px] font-bold text-orange-700" },
+                    "\uD83D\uDD25 " + __alloFmt('stem.music.rhythm_streak', 'Streak {n}', { n: d.rhythmStreak })),
+                  React.createElement("select", {
+                    'aria-label': __alloT('stem.music.rhythm_choose_pattern', 'Choose a rhythm pattern'),
+                    value: d.rhythmPatternId || RHYTHM_PATTERNS[0].id,
+                    disabled: d.rhythmPhase === 'listen' || d.rhythmPhase === 'record',
+                    onChange: function (e) { upd('rhythmPatternId', e.target.value); upd('rhythmResult', null); },
+                    className: "ml-auto px-1.5 py-0.5 rounded text-[11px] font-bold bg-white border border-rose-300"
+                  }, RHYTHM_PATTERNS.map(function (p) {
+                    return React.createElement("option", { key: p.id, value: p.id },
+                      __alloFmt('stem.music.rhythm_option', 'L{level} \u2014 {name}', { level: p.level, name: __alloT('stem.music.rhythm_' + p.id, p.name) }));
+                  })),
+                  React.createElement("button", {
+                    'aria-label': __alloT('stem.music.rhythm_play_pattern', 'Play the rhythm, then tap it back'),
+                    disabled: d.rhythmPhase === 'listen' || d.rhythmPhase === 'record',
+                    onClick: startRhythmRound,
+                    className: "px-3 py-1 rounded-lg text-xs font-bold " + ((d.rhythmPhase === 'listen' || d.rhythmPhase === 'record') ? 'bg-slate-200 text-slate-600' : 'bg-rose-600 text-white hover:bg-rose-700')
+                  }, d.rhythmPhase === 'listen' ? '\uD83D\uDC42 ' + __alloT('stem.music.rhythm_listening', 'Listen\u2026')
+                    : d.rhythmPhase === 'record' ? '\uD83D\uDD34 ' + __alloT('stem.music.rhythm_recording', 'Tap now!')
+                    : '\u25B6 ' + __alloT('stem.music.rhythm_start', 'Start'))
+                ),
+
+                // Notation strip: where the onsets fall inside the bar.
+                (function () {
+                  var pattern = rhythmPatternById(d.rhythmPatternId);
+                  var grades = (d.rhythmResult && d.rhythmResult.patternId === pattern.id) ? d.rhythmResult.grades : null;
+                  return React.createElement("div", { className: "mb-2", role: "img",
+                    'aria-label': __alloFmt('stem.music.aria_rhythm_pattern', '{name}: {count} taps across {beats} beats', { name: __alloT('stem.music.rhythm_' + pattern.id, pattern.name), count: pattern.onsets.length, beats: pattern.beats })
+                  },
+                    React.createElement("div", { className: "relative h-8 rounded-lg bg-white border border-rose-200 overflow-hidden" },
+                      // One faint divider per beat, so the grid is readable.
+                      Array.apply(null, { length: pattern.beats }).map(function (_, b) {
+                        return React.createElement("div", { key: 'b' + b, className: "absolute top-0 bottom-0 border-l border-rose-100",
+                          style: { left: (b / pattern.beats * 100) + '%' } });
+                      }),
+                      pattern.onsets.map(function (beat, i) {
+                        var g = grades ? grades[i] : null;
+                        var colour = g === 'tight' ? 'bg-green-600' : g === 'close' ? 'bg-lime-500'
+                          : g === 'loose' ? 'bg-amber-500' : g === 'missed' ? 'bg-red-500' : 'bg-rose-400';
+                        return React.createElement("div", { key: 'o' + i,
+                          className: "absolute top-1.5 bottom-1.5 w-2 rounded-sm " + colour,
+                          style: { left: 'calc(' + (beat / pattern.beats * 100) + '% + 2px)' } });
+                      })
+                    )
+                  );
+                })(),
+
+                // Tap target. A real button, so Space and Enter work without a
+                // document-level key handler that would fight the piano keys.
+                React.createElement("button", {
+                  'aria-label': __alloT('stem.music.rhythm_tap_here', 'Tap the rhythm here'),
+                  disabled: d.rhythmPhase !== 'record',
+                  onClick: recordRhythmTap,
+                  className: "w-full py-3 rounded-lg text-sm font-black transition-all " +
+                    (d.rhythmPhase === 'record' ? 'bg-rose-600 text-white hover:bg-rose-700 active:scale-[0.99]' : 'bg-slate-100 text-slate-600')
+                }, d.rhythmPhase === 'record'
+                  ? '\uD83D\uDC4F ' + __alloFmt('stem.music.rhythm_taps_so_far', 'Tap!  ({n} so far)', { n: d.rhythmTapCount || 0 })
+                  : '\uD83D\uDC4F ' + __alloT('stem.music.rhythm_tap_prompt', 'Tap area (press Start first)')),
+
+                d.rhythmResult && React.createElement("div", { className: "mt-2 text-[11px] text-slate-700" },
+                  React.createElement("div", { className: "font-bold " + (d.rhythmResult.passed ? 'text-green-700' : 'text-orange-700') },
+                    (d.rhythmResult.passed ? '\u2705 ' : '\uD83C\uDFAF ') +
+                    __alloFmt('stem.music.rhythm_result_accuracy', '{pct}% accurate', { pct: Math.round(d.rhythmResult.accuracy * 100) })),
+                  React.createElement("div", null,
+                    __alloFmt('stem.music.rhythm_result_detail', 'On time: {hit} of {total}. Missed: {missed}. Extra: {extra}. Average error: {mean} ms.', {
+                      hit: d.rhythmResult.hit,
+                      total: d.rhythmResult.hit + d.rhythmResult.missed,
+                      missed: d.rhythmResult.missed,
+                      extra: d.rhythmResult.extra,
+                      mean: d.rhythmResult.meanAbsMs
+                    })),
+                  d.rhythmResult.hit > 0 && React.createElement("div", { className: "italic text-slate-600" },
+                    Math.abs(d.rhythmResult.biasMs) < 10
+                      ? __alloT('stem.music.rhythm_bias_centred', 'Your taps sat right on the beat.')
+                      : d.rhythmResult.biasMs > 0
+                        ? __alloFmt('stem.music.rhythm_bias_late', 'On average you were {n} ms behind the beat.', { n: d.rhythmResult.biasMs })
+                        : __alloFmt('stem.music.rhythm_bias_early', 'On average you were {n} ms ahead of the beat.', { n: Math.abs(d.rhythmResult.biasMs) }))
+                ),
+
+                React.createElement("p", { className: "text-[11px] text-rose-700 mt-2 leading-relaxed" },
+                  __alloT('stem.music.rhythm_help', 'You will hear a count-in, then the pattern, then a second count-in. Tap the pattern back during your bar. Timing tolerance scales with the tempo above, so slow it down while you learn a pattern.'))
               ),
 
               // ── Arpeggiator ──
@@ -2707,8 +3110,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                         ctx2.fillRect(W - 8, H * (1 - peakPct), 6, H * peakPct);
                         // Labels
                         ctx2.fillStyle = 'rgba(255,255,255,0.3)'; ctx2.font = '10px system-ui';
-                        ctx2.fillText('WAVEFORM', 4, 12);
-                        ctx2.fillText('SPECTRUM', 4, H - 4);
+                        ctx2.fillText(__alloT('stem.music.canvas_waveform', 'WAVEFORM'), 4, 12);
+                        ctx2.fillText(__alloT('stem.music.canvas_spectrum', 'SPECTRUM'), 4, H - 4);
                         ctx2.fillText(Math.round(peakPct * 100) + '%', W - 30, 12);
                       }
                       drawMicViz();
@@ -3208,7 +3611,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 // BPM
                 React.createElement("div", { className: "flex items-center gap-1" },
                   React.createElement("span", { className: "text-[11px] font-bold text-slate-600" }, "BPM"),
-                  React.createElement("input", { type: "range", 'aria-label': __alloT('stem.music.sequencer_bpm', 'Sequencer BPM'), 'aria-valuetext': ((d.seqBPM || 120) + ' BPM'), min: 60, max: 200, step: 1, value: d.seqBPM || 120, onChange: function (e) { upd('seqBPM', parseInt(e.target.value)); }, className: "w-20 accent-purple-600" }),
+                  React.createElement("input", { type: "range", 'aria-label': __alloT('stem.music.sequencer_bpm', 'Sequencer BPM'), 'aria-valuetext': ((d.seqBPM || 120) + ' BPM'), min: BPM_MIN, max: BPM_MAX, step: 1, value: tempoBPM, onChange: function (e) { upd('seqBPM', safeBPM(e.target.value)); }, className: "w-20 accent-purple-600" }),
                   React.createElement("span", { className: "text-xs font-bold text-purple-700 w-8 text-center" }, d.seqBPM || 120)
                 ),
                 // Tap Tempo
@@ -4223,9 +4626,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                                   });
                                   // Labels
                                   g.fillStyle = 'rgba(255,255,255,0.3)'; g.font = '9px system-ui'; g.textAlign = 'left';
-                                  g.fillText('WAVEFORM', 4, 10);
+                                  g.fillText(__alloT('stem.music.canvas_waveform', 'WAVEFORM'), 4, 10);
                                   g.textAlign = 'right';
-                                  g.fillText('HARMONICS', W - 4, 10);
+                                  g.fillText(__alloT('stem.music.canvas_harmonics', 'HARMONICS'), W - 4, 10);
                                 }
                               }),
                               React.createElement("p", { className: "text-[11px] text-purple-600 leading-relaxed mt-1" }, inst.waveDesc)
@@ -4411,13 +4814,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                       g.stroke();
                       // Labels
                       g.fillStyle = 'rgba(255,255,255,0.3)'; g.font = '10px system-ui';
-                      g.fillText('Active harmonics: ' + harmonics.sort(function(a,b){return a-b;}).join(', '), 8, 14);
+                      g.fillText(__alloFmt('stem.music.canvas_active_harmonics', 'Active harmonics: {list}', { list: harmonics.sort(function(a,b){return a-b;}).join(', ') }), 8, 14);
                       g.textAlign = 'right';
                       var waveType2 = harmonics.length === 1 ? 'Sine (pure)' : harmonics.every(function(h2){return h2%2===1;}) ? 'Odd harmonics (square/clarinet-like)' : 'All harmonics (sawtooth/violin-like)';
                       g.fillText(waveType2, W - 8, 14);
                       // Play combined button instruction
                       g.fillStyle = 'rgba(167,139,250,0.4)'; g.font = '9px system-ui'; g.textAlign = 'center';
-                      g.fillText('Click harmonics above to add/remove \u2014 watch the wave change!', W / 2, H - 6);
+                      g.fillText(__alloT('stem.music.canvas_harmonics_hint', 'Click harmonics above to add/remove \u2014 watch the wave change!'), W / 2, H - 6);
                     }
                   })
                 ),
@@ -4591,7 +4994,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                             upd('quizScore2', (d.quizScore2 || 0) + (correct ? 1 : 0));
                             upd('quizTotal2', (d.quizTotal2 || 0) + 1);
                             upd('quizStreak2', correct ? (d.quizStreak2 || 0) + 1 : 0);
-                            addToast(correct ? '\u2705 Correct!' : '\u274C The answer is: ' + q.a, correct ? 'success' : 'error');
+                            addToast(correct
+                              ? '\u2705 ' + __alloT('stem.music.quiz_correct', 'Correct!')
+                              : '\u274C ' + __alloFmt('stem.music.quiz_answer_was', 'The answer is: {answer}', { answer: q.a }),
+                              correct ? 'success' : 'error');
                           },
                           className: "px-3 py-2.5 rounded-lg text-xs font-bold border-2 transition-all " + (isCorrect ? 'border-green-400 bg-green-50 text-green-700' : isWrong ? 'border-red-400 bg-red-50 text-red-700' : fb ? 'border-slate-200 bg-slate-50 text-slate-700' : 'border-purple-600 bg-white text-slate-700 hover:border-purple-400 hover:bg-purple-50')
                         }, opt);
@@ -4647,7 +5053,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                           upd('chordDetect', Object.assign({}, d.chordDetect, { answered: true, chosen: opt }));
                           upd('chordDetectScore', (d.chordDetectScore || 0) + (correct ? 1 : 0));
                           upd('chordDetectTotal', (d.chordDetectTotal || 0) + 1);
-                          addToast(correct ? '\u2705 Correct! ' + d.chordDetect.root + ' ' + d.chordDetect.type : '\u274C It was ' + d.chordDetect.root + ' ' + d.chordDetect.type, correct ? 'success' : 'error');
+                          addToast(correct
+                            ? '\u2705 ' + __alloFmt('stem.music.chord_correct', 'Correct! {chord}', { chord: d.chordDetect.root + ' ' + d.chordDetect.type })
+                            : '\u274C ' + __alloFmt('stem.music.chord_it_was', 'It was {chord}', { chord: d.chordDetect.root + ' ' + d.chordDetect.type }),
+                            correct ? 'success' : 'error');
                         },
                         className: "px-3 py-2 rounded-lg text-xs font-bold border-2 transition-all " + (isCorrect ? 'border-green-400 bg-green-50 text-green-700' : isWrong ? 'border-red-400 bg-red-50 text-red-700' : fb ? 'border-slate-200 bg-slate-50 text-slate-700' : 'border-rose-600 bg-white text-slate-700 hover:border-rose-400 hover:bg-rose-50')
                       }, opt);
@@ -4718,7 +5127,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                       upd('dictation', Object.assign({}, d.dictation, { answered: true }));
                       upd('dictationScore', (d.dictationScore || 0) + c);
                       upd('dictationTotal', (d.dictationTotal || 0) + 4);
-                      addToast(c === 4 ? '\u2705 Perfect! All 4 notes!' : c > 0 ? '\uD83C\uDFAF ' + c + '/4 correct' : '\u274C Try again!', c === 4 ? 'success' : c > 0 ? 'info' : 'error');
+                      var dictMsg = c === 4
+                        ? '\u2705 ' + __alloT('stem.music.dictation_perfect', 'Perfect! All 4 notes!')
+                        : c > 0
+                          ? '\uD83C\uDFAF ' + __alloFmt('stem.music.dictation_partial', '{n} of 4 correct', { n: c })
+                          : '\u274C ' + __alloT('stem.music.dictation_none', 'Try again!');
+                      addToast(dictMsg, c === 4 ? 'success' : c > 0 ? 'info' : 'error');
+                      if (announceToSR) announceToSR(dictMsg);
                     },
                     className: "w-full py-2 rounded-lg text-sm font-bold bg-violet-600 text-white hover:bg-violet-700 transition-all"
                   }, __alloT('stem.music.check_dictation_2', "\u2714 Check Dictation")),
@@ -4932,7 +5347,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                       c2.fillStyle = 'rgba(0,0,0,0.85)';
                       c2.fillRect(8, H - 14, W - 16, 12);
                       c2.font = 'bold 8px sans-serif'; c2.fillStyle = '#a5b4fc'; c2.textAlign = 'center';
-                      c2.fillText('Timbre = which harmonics dominate. Violin vs flute play same f, but harmonic mix differs.', W / 2, H - 5);
+                      c2.fillText(__alloT('stem.music.canvas_timbre_caption', 'Timbre = which harmonics dominate. Violin vs flute play same f, but harmonic mix differs.'), W / 2, H - 5);
                       cvEl._hsAnim = requestAnimationFrame(drawHs);
                     }
                     drawHs();

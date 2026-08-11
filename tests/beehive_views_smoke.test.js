@@ -479,6 +479,53 @@ describe('beehive — Field Guide renders every curriculum section (recursive re
     expect(html).toContain('1 km');
     expect(html).not.toContain('75ms');
   });
+
+  // Cards are titled by what the entry IS, not by how it is filed. Three
+  // tables used to be headed by a classifier — every math problem read "3-5",
+  // every failure mode was titled by its season, every policy action by
+  // "Individual" — so six cards in a row shared one meaningless title.
+  describe('entry cards are titled by content, not by classifier', () => {
+    // The title is the only text rendered at text-sm font-bold in a card.
+    const titles = (html) => {
+      const out = [];
+      const re = /<span class="text-sm font-bold [^"]*">([^<]*)<\/span>/g;
+      let m;
+      while ((m = re.exec(html)) !== null) out.push(m[1]);
+      return out;
+    };
+
+    it('heads a math problem with the problem, not with its grade band', () => {
+      const found = titles(render({ showGuide: true, guideSection: 'math' }));
+      expect(found.length).toBeGreaterThan(0);
+      expect(found.some((t) => /worker bee visits/i.test(t))).toBe(true);
+      expect(found.some((t) => /^\s*\d\s*-\s*\d\s*$/.test(t))).toBe(false);
+    });
+
+    it('heads a failure mode with the mode, not with its season', () => {
+      const found = titles(render({ showGuide: true, guideSection: 'failure' }));
+      expect(found).toContain('Starvation');
+    });
+
+    it('heads a policy entry with the action, not with its level', () => {
+      const found = titles(render({ showGuide: true, guideSection: 'policy' }));
+      expect(found.some((t) => /plant native flowers/i.test(t))).toBe(true);
+      expect(found).not.toContain('Individual');
+    });
+
+    // A classifier really IS the right title when it is the only thing naming
+    // the group — plants are grouped by season, vocabulary by grade band.
+    it('still groups plants by season and vocabulary by grade band', () => {
+      expect(titles(render({ showGuide: true, guideSection: 'plants' })).join('|')).toMatch(/spring/i);
+      expect(titles(render({ showGuide: true, guideSection: 'vocab' })).join('|')).toMatch(/K-2/);
+    });
+
+    it('keeps a demoted classifier visible as a labelled chip', () => {
+      // Demoting "grade" must not DELETE it — the band is useful, it is just
+      // not the headline.
+      const html = render({ showGuide: true, guideSection: 'math' });
+      expect(html).toMatch(/Grade:\s*3-5/);
+    });
+  });
 });
 
 // Brief labels intentionally distinguish colony biology from the Queen strategy model.

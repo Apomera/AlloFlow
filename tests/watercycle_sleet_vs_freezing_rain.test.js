@@ -126,6 +126,20 @@ describe('surface effects match the phase', () => {
     const m = K.compute(profile(Object.assign({}, SHALLOW_COLD, { stormTime: 60 })));
     expect(m.lifecycle.accumulation.glaze).toBeGreaterThan(0);
   });
+
+  it('runs off less than rain because the pellets must melt first', () => {
+    // Sleet lands frozen. Treating it like rain overstated immediate runoff;
+    // treating it like snow would understate it. It belongs in between.
+    const storm = { stormTime: 62, moisture: 92, updraft: 70, cloudDepth: 8 };
+    const runoff = (over) => K.compute(profile(Object.assign({}, over, storm))).lifecycle.accumulation.runoff;
+
+    const snow = runoff({ tempC: -12, midLevelTempC: -6, surfaceTempC: -5 });
+    const sleet = runoff(DEEP_COLD);
+    const rain = runoff({ tempC: 4, midLevelTempC: 6, surfaceTempC: 8 });
+
+    expect(sleet, 'sleet should run off more than snow').toBeGreaterThan(snow);
+    expect(sleet, 'sleet should run off less than rain').toBeLessThan(rain);
+  });
 });
 
 describe('the temperature profile chart shows the mechanism', () => {

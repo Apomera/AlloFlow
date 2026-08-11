@@ -1877,7 +1877,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     { fact: 'A bee\'s wings beat about 230 times per second, so the fundamental of the buzz sits near 230 Hz — roughly B♭ below middle C. Higher harmonics from the snapping wings add the brighter overtones you also hear.' },
     { fact: 'Properly ripened honey can remain stable for a very long time when sealed and kept dry; absorbed moisture can let osmophilic yeasts ferment it.' },
     { fact: 'A worker bee produces about 1/12 of a teaspoon of honey in her entire 6-week life.' },
-    { fact: 'A bee can fly about 15 mph and travel up to 6 miles from the hive (though typical foraging is 2-3 miles).' },
+    { fact: 'A bee flies at roughly 15 mph. Most foraging happens within about 2 miles of the hive, and foragers have been recorded out to about 5 miles (8 km) when nearer forage runs out.' },
     { fact: 'A colony of bees collectively consumes about 200 lbs of honey per year. They produce another ~100 lbs as surplus that the beekeeper can harvest.' },
     { fact: 'Each cell in honeycomb is tilted up at a 13-degree angle — preventing honey from running out.' },
     { fact: 'A bee\'s sense of smell is about 50 times more sensitive than a dog\'s.' },
@@ -3132,7 +3132,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     };
   }
 
-  // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+  // ═══════════════════════════════════════════════════════════════════════
   // 3D SCENES FOR THE BEEKEEPER AND QUEEN SIMULATIONS
   //
   // The Drone Flight sim already renders a real WebGL world. The other two
@@ -3141,9 +3141,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
   // box by box, and that an RTS "forage frontline" is a place on the ground
   // rather than a number in a bar.
   //
-  // Everything that is NOT scene content \u2014 WebGL setup, orbit, picking,
+  // Everything that is NOT scene content — WebGL setup, orbit, picking,
   // labels, keyboard camera, context-loss recovery, pause-when-unseen, and
-  // the no-WebGL fallback \u2014 belongs to the host shell
+  // the no-WebGL fallback — belongs to the host shell
   // (window.StemLab.makeBayViewer), so this file builds geometry only and
   // there is no third copy of that lifecycle in the codebase.
   //
@@ -3152,7 +3152,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
   // driven through POSITION, VISIBILITY and inner-child scale in the frame
   // callback instead. Anything animated here must stay inside a registered
   // group's children, never on the group itself.
-  // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+  // ═══════════════════════════════════════════════════════════════════════
 
   var BEE_3D_NULL_VIEWER = {
     attach: function () {}, sync: function () {}, nudge: function () {},
@@ -3196,7 +3196,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     return group;
   }
 
-  // \u2500\u2500 Beekeeper: the hive as a stack you can take apart \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+  // ── Beekeeper: the hive as a stack you can take apart ──────────────────
   // ── What a comb face says ──────────────────────────────────────────────
   // Reading a frame is THE beekeeping skill, and the layout is not decorative:
   //   * the queen lays a solid ellipse in the middle of the frame,
@@ -3223,6 +3223,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     var honey = bhClamp01(s.honeyFill, 0.3);
     var pollen = bhClamp01(s.pollenLevel, 0.5);
     var laying = bhClamp01(s.layingRate, 1);
+    // How far this frame sits from the middle of the box: 0 at the centre of
+    // the nest, 1 at the outside wall.
+    //
+    // This is the idea a single frame face cannot teach. A brood nest is not a
+    // pattern on one comb — it is a rough SPHERE through the whole box, so the
+    // centre frames are wall-to-wall brood and the outer frames are mostly
+    // honey. Every beekeeping decision about where to put a frame, and every
+    // "why is my outside frame empty" question, comes from that geometry.
+    var depth = bhClamp01(s.frameDepth, 0);
+    // A sphere's cross-section shrinks as sqrt(1 - d²). Using the real curve
+    // rather than a linear fade is what makes the middle frames look nearly
+    // identical and the outermost drop off a cliff, which is exactly how a box
+    // of drawn comb reads in the hand.
+    brood = brood * Math.sqrt(Math.max(0, 1 - depth * depth));
+    // What the brood gives up, the colony stores: outer frames carry the
+    // winter honey. The nest displaces stores; it does not sit beside them.
+    honey = Math.min(1, honey + depth * 0.55);
     // Undrawn foundation at the very edges: bees draw comb from the middle out,
     // so a young or shrinking colony has bare corners.
     var drawn = 0.62 + 0.38 * Math.max(brood, honey);
@@ -3280,6 +3297,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
   function bhQueenMarkIndex(year) {
     var y = typeof year === 'number' && isFinite(year) ? Math.floor(year) : 2026;
     return ((y % 10) % 5 + 5) % 5;
+  }
+
+  // ── Queen RTS: where a built structure lands on the 3D map ─────────────
+  // The RTS stores structures as fractions of its 2D battlefield
+  // (x 0.08-0.48 on the player's half, y 0.14-0.86 top to bottom). The 3D map
+  // has to put them on the ground beside the home hive in the SAME relative
+  // arrangement, or a student who built a guard post "at the front" finds it
+  // somewhere else and stops trusting the model.
+  // Pure, exported and tested: it is the one piece of this scene that can be
+  // wrong in a way a screenshot would not show.
+  var QUEEN_MAP_PAD = { cx: -1.82, cz: 0, halfW: 0.26, halfD: 0.55 };
+  function bhQueenStructurePosition(structure, pad) {
+    var box = pad || QUEEN_MAP_PAD;
+    var st = structure || {};
+    // Clamp to the same window the RTS placement clamps to, so corrupt or
+    // legacy saved state cannot scatter comb across the meadow.
+    var fx = Math.max(0.08, Math.min(0.48, typeof st.x === 'number' && isFinite(st.x) ? st.x : 0.28));
+    var fy = Math.max(0.14, Math.min(0.86, typeof st.y === 'number' && isFinite(st.y) ? st.y : 0.5));
+    // x runs across the player's half → the map's x, toward the frontline.
+    // y runs top-to-bottom of the battlefield → the map's z, back to front.
+    var u = (fx - 0.08) / 0.40;
+    var v = (fy - 0.14) / 0.72;
+    return {
+      x: box.cx - box.halfW + u * (box.halfW * 2),
+      z: box.cz - box.halfD + v * (box.halfD * 2)
+    };
   }
 
   var HIVE_3D_PARTS = [
@@ -3428,7 +3471,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       return g;
     }
 
-    // \u2500\u2500 Stand and bottom board \u2500\u2500
+    // ── Stand and bottom board ──
     var standGroup = new THREE.Group();
     standGroup.add(block('stand', BW + 0.14, 0.07, BD + 0.10, 0, -0.92, 0));
     [-1, 1].forEach(function (sx) {
@@ -3438,7 +3481,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     });
     register('stand', standGroup);
 
-    // \u2500\u2500 Entrance and landing board \u2500\u2500
+    // ── Entrance and landing board ──
     var entranceGroup = new THREE.Group();
     var landing = block('entrance', BW, 0.045, 0.34, 0, -0.875, BD / 2 + 0.15);
     landing.rotation.x = -0.10;
@@ -3446,7 +3489,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     entranceGroup.add(block('entrance', BW - 0.34, 0.055, 0.06, 0, -0.845, BD / 2 - 0.02, { color: contrast ? '#ffffff' : '#3b2412' }));
     register('entrance', entranceGroup);
 
-    // \u2500\u2500 Brood box, its frames, and the brood pattern on the front comb \u2500\u2500
+    // ── Brood box, its frames, and the brood pattern on the front comb ──
     var broodY = -0.545, broodH = 0.60;
     register('brood_box', hiveBoxShell('brood_box', broodH, broodY));
 
@@ -3467,27 +3510,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     }
 
     var broodFrameGroup = new THREE.Group();
-    // The frame nearest the front is the one an inspection actually lifts out,
-    // so it gets its own group: selecting it slides it toward the viewer.
-    var broodBackGroup = new THREE.Group();
-    var broodFrontGroup = new THREE.Group();
-    broodFrameGroup.add(broodBackGroup);
-    broodFrameGroup.add(broodFrontGroup);
+    var BROOD_FRAME_COUNT = 6;
+    var broodFrameSlots = [];
     var broodFrameFaces = [];
     var combMat = mat('brood_frames', { color: contrast ? '#ffffff' : '#8a6a34', shininess: 4 });
     var frameBarMat = mat('brood_frames', { color: contrast ? '#ffffff' : '#e8cd94', shininess: 8 });
-    for (var bf = 0; bf < 6; bf++) {
+    for (var bf = 0; bf < BROOD_FRAME_COUNT; bf++) {
       var bz = BD / 2 - 0.14 - bf * 0.125;
-      var intoGroup = bf === 0 ? broodFrontGroup : broodBackGroup;
+      var slotGroup = new THREE.Group();
       var comb = new THREE.Mesh(new THREE.BoxGeometry(BW - 0.16, broodH - 0.13, 0.035), combMat);
       comb.position.set(0, broodY - 0.02, bz);
-      intoGroup.add(comb);
-      addFrameTimber(intoGroup, frameBarMat, broodY - 0.02, broodH - 0.13, bz);
+      slotGroup.add(comb);
+      addFrameTimber(slotGroup, frameBarMat, broodY - 0.02, broodH - 0.13, bz);
+      broodFrameGroup.add(slotGroup);
+      broodFrameSlots.push({ group: slotGroup, z: bz });
       broodFrameFaces.push({ comb: comb, z: bz });
     }
+    // Everything you READ rides this group, and this group rides the selected
+    // frame. Built at frame 0's depth, then offset per selection.
+    var broodFrontGroup = new THREE.Group();
+    broodFrameGroup.add(broodFrontGroup);
     // Brood pattern on the front comb: capped brood in the middle, a pollen
     // band around it, honey arched over the top. That layout is not decoration
-    // \u2014 it is the single picture a beekeeper reads a colony from, and a
+    // — it is the single picture a beekeeper reads a colony from, and a
     // patchy centre is the classic "spotty pattern" queen-failure sign.
     var patternZ = broodFrameFaces[0].z + 0.026;
     var broodFace = buildCombCells(broodFrontGroup, patternZ, broodY - 0.02, BW - 0.20, broodH - 0.19);
@@ -3552,7 +3597,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     }
     queenCellGroup.visible = false;
     broodFrontGroup.add(queenCellGroup);
-    // Varroa. Drawn on the brood face because that is where they reproduce \u2014
+    // Varroa. Drawn on the brood face because that is where they reproduce —
     // a mite count is a brood-cell problem before it is an adult-bee problem.
     var mites = [];
     var miteMat = mat('brood_frames', { color: contrast ? '#ffffff' : '#8e1c1c', shininess: 30 });
@@ -3599,7 +3644,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     }
     register('queen', queenGroup, broodFrontGroup);
 
-    // \u2500\u2500 Queen excluder \u2500\u2500
+    // ── Queen excluder ──
     var excluderGroup = new THREE.Group();
     var excluderY = -0.222;
     excluderGroup.add(block('excluder', BW, 0.018, 0.07, 0, excluderY, -BD / 2 + 0.04));
@@ -3609,7 +3654,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     }
     register('excluder', excluderGroup);
 
-    // \u2500\u2500 Honey super and its filling frames \u2500\u2500
+    // ── Honey super and its filling frames ──
     var superY = 0.045, superH = 0.46;
     var superGroup = new THREE.Group();
     // Every extra super is a whole box: shell, frames, timbers and comb face.
@@ -3674,7 +3719,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     }
     register('honey_super', superGroup);
 
-    // \u2500\u2500 Inner and outer covers \u2500\u2500
+    // ── Inner and outer covers ──
     var innerGroup = new THREE.Group();
     innerGroup.add(block('inner_cover', BW, 0.032, BD, 0, 0.295, 0));
     innerGroup.add(new THREE.Mesh(new THREE.TorusGeometry(0.10, 0.018, 8, 20), mat('inner_cover')));
@@ -3688,7 +3733,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     outerGroup.add(block('outer_cover', BW + 0.09, 0.070, 0.030, 0, 0.322, -BD / 2 - 0.030, { shininess: 52 }));
     register('outer_cover', outerGroup);
 
-    // \u2500\u2500 Foragers \u2500\u2500
+    // ── Foragers ──
     var foragerGroup = new THREE.Group();
     var foragers = [];
     for (var fi = 0; fi < 22; fi++) {
@@ -3779,6 +3824,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       var swarmPressure = Math.max(0, Math.min(1.5, sp.swarmPressure == null ? 0 : sp.swarmPressure));
       var exploded = sp.exploded ? 1 : 0;
       var pulled = sp.pulled ? 1 : 0;
+      var frameIndex = Math.max(0, Math.min(broodFrameSlots.length - 1, Math.round(sp.frameIndex == null ? 0 : sp.frameIndex)));
+      // Frame 0 is the outside wall of the box, so it is the FARTHEST from the
+      // middle of the nest. Depth runs 1 at the wall to 0 at the centre pair,
+      // which is what makes stepping inward reveal the sphere.
+      var frameCount = broodFrameSlots.length;
+      var frameDepth = Math.abs(frameIndex - (frameCount - 1) / 2) / ((frameCount - 1) / 2);
 
       // Bees work UPWARD through a stack and OUTWARD across a box, so the
       // bottom super fills before the one above it, and within each box the
@@ -3819,9 +3870,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       // The arch of honey a BROOD frame carries is the nest's own winter store,
       // not the surplus in the supers — capping it keeps the super's fill from
       // swallowing the brood nest on the one frame the lesson is read from.
-      var combState = { broodFill: broodFill, honeyFill: Math.min(0.5, honeyFill), pollenLevel: pollenLevel, layingRate: layingRate };
+      var combState = { broodFill: broodFill, honeyFill: Math.min(0.5, honeyFill), pollenLevel: pollenLevel, layingRate: layingRate, frameDepth: frameDepth };
       paintCombCells(broodFace, combState,
-        Math.round(broodFill * 40) + '|' + Math.round(honeyFill * 40) + '|' + Math.round(pollenLevel * 20) + '|' + Math.round(layingRate * 20));
+        Math.round(broodFill * 40) + '|' + Math.round(honeyFill * 40) + '|' + Math.round(pollenLevel * 20) + '|' + Math.round(layingRate * 20) + '|f' + frameIndex);
       // Nothing but honey belongs above the excluder, so the super comb is
       // painted with the brood and pollen terms zeroed rather than reusing the
       // brood-nest reading — a super with a brood patch in it would be wrong.
@@ -3881,11 +3932,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         }
       }
 
-      // Selecting the frames (or the queen) draws the front frame out of the
+      // Selecting the frames (or the queen) draws the CHOSEN frame out of the
       // box and turns it slightly, which is exactly the motion an inspection
       // makes: lift, tilt to the light, read the pattern.
+      var slotOffset = broodFrameSlots[frameIndex].z - broodFrameSlots[0].z;
       var wantPullZ = pulled * 0.46, wantPullY = pulled * 0.06;
-      broodFrontGroup.position.z += (wantPullZ - broodFrontGroup.position.z) * (reduced ? 1 : 0.13);
+      for (var fs2 = 0; fs2 < broodFrameSlots.length; fs2++) {
+        var slotSel = fs2 === frameIndex;
+        var slot2 = broodFrameSlots[fs2];
+        var targetZ = slotSel ? wantPullZ : 0;
+        var targetY = slotSel ? wantPullY : 0;
+        slot2.group.position.z += (targetZ - slot2.group.position.z) * (reduced ? 1 : 0.13);
+        slot2.group.position.y += (targetY - slot2.group.position.y) * (reduced ? 1 : 0.13);
+        slot2.group.rotation.y += ((slotSel && pulled ? -0.16 : 0) - slot2.group.rotation.y) * (reduced ? 1 : 0.13);
+      }
+      // The reading overlay rides the selected frame. The slot offset SNAPS
+      // and only the pull is eased: lerping the offset too would slide the
+      // comb sideways THROUGH the frames between it and its slot, which is
+      // both wrong and ugly. Tracking the pull separately is what keeps the
+      // two apart.
+      if (broodFrontGroup.userData.pullZ == null) broodFrontGroup.userData.pullZ = 0;
+      broodFrontGroup.userData.pullZ += (wantPullZ - broodFrontGroup.userData.pullZ) * (reduced ? 1 : 0.13);
+      broodFrontGroup.position.z = slotOffset + broodFrontGroup.userData.pullZ;
       broodFrontGroup.position.y += (wantPullY - broodFrontGroup.position.y) * (reduced ? 1 : 0.13);
       broodFrontGroup.rotation.y += ((pulled ? -0.16 : 0) - broodFrontGroup.rotation.y) * (reduced ? 1 : 0.13);
 
@@ -3950,7 +4018,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     return { meshes: meshes, picks: picks, anchor: anchor, frame: frame };
   }
 
-  // \u2500\u2500 Queen RTS: the frontline as a place, not a percentage \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+  // ── Queen RTS: the frontline as a place, not a percentage ──────────────
   var QUEEN_3D_PARTS = [
     { id: 'home_hive', label: 'Your colony', color: '#a78bfa',
       desc: 'Your hive. It grows and shrinks with colony health \u2014 every order you give is paid for out of this.' },
@@ -3960,6 +4028,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       desc: 'The shared meadow. Each bloom shows who is currently working it, so the "frontline" percentage has a physical place on the ground.' },
     { id: 'swarm', label: 'Your foragers', color: '#fbbf24',
       desc: 'Bees in transit. Nobody is directing them: recruitment by dance plus individual choice produces the whole pattern. That is what decentralized control looks like.' },
+    { id: 'comb_works', label: 'What you built', color: '#fdba74',
+      desc: 'Every chamber, store and guard post you placed, standing on the ground beside your hive in the arrangement you chose. A brood chamber makes workers, a honey store holds surplus, a guard post buys defence — and each one is wax you cannot spend twice.' },
+    { id: 'signals', label: 'Pheromone signals', color: '#c084fc',
+      desc: 'The colony has no chain of command. It runs on chemistry: QMP holds the workers together, alarm pheromone calls guards to a threat, Nasonov calls foragers home. The domes show how far each signal currently reaches — which is the only "control" a queen actually has.' },
+    { id: 'raiders', label: 'Rival raiders', color: '#fb7185',
+      desc: 'Robbing bees from the rival colony. They build up as raid pressure rises and cross the meadow when it breaks. Robbing is real and it is how a weak hive dies fast — guards and a narrow entrance are the defence.' },
     { id: 'guard_line', label: 'Frontline marker', color: '#38bdf8',
       desc: 'Where your foraging range currently meets the rival\u2019s. It moves when scouting, recruitment or defence shifts the balance \u2014 it is an outcome, not an order.' }
   ];
@@ -4002,7 +4076,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       return group;
     }
 
-    var FIELD_W = 3.2, FIELD_D = 2.0, GROUND_Y = -0.62;
+    var FIELD_W = 4.3, FIELD_D = 2.0, GROUND_Y = -0.62;
     var ground = new THREE.Mesh(new THREE.BoxGeometry(FIELD_W, 0.08, FIELD_D), mat('forage_field', { color: contrast ? '#000000' : '#3d6b39', shininess: 2 }));
     ground.position.y = GROUND_Y;
     if (api.wantShadow) ground.receiveShadow = true;
@@ -4041,10 +4115,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     register('home_hive', buildHive('home_hive', -1.24, contrast ? '#ffffff' : '#9d7bf0'));
     register('rival_hive', buildHive('rival_hive', 1.24, contrast ? '#ffffff' : '#ef5f78'));
 
-    // \u2500\u2500 Forage field \u2500\u2500
+    // ── Forage field ──
     // 44 blooms laid out across the contested strip. Each one flips between
     // "yours" and "theirs" as the frontline moves, so the meadow itself is the
-    // scoreboard. Two shared materials, swapped by reference \u2014 recolouring 44
+    // scoreboard. Two shared materials, swapped by reference — recolouring 44
     // materials every frame would be the expensive way to say the same thing.
     var minePetalMat = mat('forage_field', { color: contrast ? '#ffffff' : '#c9a6ff', shininess: 34 });
     var theirsPetalMat = mat('forage_field', { color: contrast ? '#555555' : '#f4778c', shininess: 34 });
@@ -4070,7 +4144,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     }
     register('forage_field', fieldGroup);
 
-    // \u2500\u2500 Frontline marker \u2500\u2500
+    // ── Frontline marker ──
     var guardGroup = new THREE.Group();
     var guardPost = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.016, 0.52, 8), mat('guard_line', { opacity: 0.9 }));
     guardPost.position.y = GROUND_Y + 0.30;
@@ -4084,7 +4158,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     guardGroup.add(guardBase);
     register('guard_line', guardGroup);
 
-    // \u2500\u2500 Forager swarm \u2500\u2500
+    // ── What the player built ──
+    // The RTS's build menu is its main verb, and until now none of it appeared
+    // on the 3D map at all. Every structure is a hex platform in its own type
+    // colour, standing where the player put it, growing with its level.
+    var combWorksGroup = new THREE.Group();
+    var combWorkSlots = [];
+    var QUEEN_STRUCT_COLORS = {
+      brood: '#fdba74', honey: '#f59e0b', pollen: '#facc15',
+      guard: '#ef4444', nursery: '#c084fc', fan: '#38bdf8'
+    };
+    var structHexGeo = new THREE.CylinderGeometry(0.105, 0.115, 0.10, 6);
+    // Twelve slots is more than the RTS lets a player place; they are built up
+    // front and shown as needed, because rebuilding on every placement would
+    // drop the WebGL context mid-game.
+    for (var cw = 0; cw < 12; cw++) {
+      var slotGroup = new THREE.Group();
+      var slotBody = new THREE.Mesh(structHexGeo, mat('comb_works', { shininess: 20 }));
+      slotBody.position.y = GROUND_Y + 0.09;
+      if (api.wantShadow) { slotBody.castShadow = true; slotBody.receiveShadow = true; }
+      slotGroup.add(slotBody);
+      var slotCap = new THREE.Mesh(new THREE.CylinderGeometry(0.078, 0.078, 0.014, 6), mat('comb_works', { shininess: 60 }));
+      slotCap.position.y = GROUND_Y + 0.145;
+      slotGroup.add(slotCap);
+      slotGroup.visible = false;
+      combWorksGroup.add(slotGroup);
+      combWorkSlots.push({ group: slotGroup, body: slotBody, cap: slotCap });
+    }
+    register('comb_works', combWorksGroup);
+
+    // ── Pheromone signals ──
+    // Three translucent domes over the home hive. This is the mechanic the
+    // whole RTS turns on and it was completely invisible: a number labelled
+    // "QMP 72%" does not tell a student that a pheromone is a RANGE.
+    var signalsGroup = new THREE.Group();
+    var signalDomes = [];
+    [['#c084fc', 0.0], ['#f87171', 0.02], ['#67e8f9', 0.04]].forEach(function (spec, sd) {
+      var dome = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 12, 0, Math.PI * 2, 0, Math.PI / 2),
+        mat('signals', { color: contrast ? '#ffffff' : spec[0], opacity: 0.13, shininess: 0 }));
+      dome.material.side = THREE.DoubleSide;
+      dome.material.depthWrite = false;
+      dome.position.set(-1.24, GROUND_Y + 0.05 + spec[1], 0);
+      dome.visible = false;
+      signalsGroup.add(dome);
+      signalDomes.push(dome);
+    });
+    register('signals', signalsGroup);
+
+    // ── Rival raiders ──
+    var raiderGroup = new THREE.Group();
+    var raiders = [];
+    for (var rd = 0; rd < 14; rd++) {
+      var raider = build3dMiniBee(THREE, { body: contrast ? 0xffffff : 0xef5f78, dark: contrast ? 0x000000 : 0x2b1116, scale: 1.35 });
+      raider.userData.raid = { phase: rd / 14, lane: -0.58 + (rd % 7) * 0.19, lift: 0.20 + (rd % 3) * 0.10, speed: 0.8 + (rd % 4) * 0.16 };
+      raider.visible = false;
+      raiderGroup.add(raider);
+      raiders.push(raider);
+    }
+    register('raiders', raiderGroup);
+
+    // ── Forager swarm ──
     var swarmGroup = new THREE.Group();
     var swarmBees = [];
     for (var si2 = 0; si2 < 26; si2++) {
@@ -4102,6 +4235,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       var homeHealth = Math.max(0, Math.min(1, sp.homeHealth == null ? 1 : sp.homeHealth));
       var rivalHealth = Math.max(0, Math.min(1, sp.rivalHealth == null ? 1 : sp.rivalHealth));
       var forageRate = Math.max(0, Math.min(1, sp.forageRate == null ? 0.5 : sp.forageRate));
+      var structures = Array.isArray(sp.structures) ? sp.structures : [];
+      var qmp = Math.max(0, Math.min(1, sp.qmp == null ? 1 : sp.qmp));
+      var alarm = Math.max(0, Math.min(1, sp.alarm == null ? 0 : sp.alarm));
+      var nasonov = Math.max(0, Math.min(1, sp.nasonov == null ? 0 : sp.nasonov));
+      var raidPressure = Math.max(0, Math.min(1, sp.raidPressure == null ? 0 : sp.raidPressure));
 
       var home = meshes.home_hive, rival = meshes.rival_hive;
       if (home && home.userData.body) {
@@ -4127,9 +4265,63 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         guardPost.rotation.z = reduced ? 0 : Math.sin(clock * 0.0022) * 0.05;
       }
 
+      // Structures stand where the player placed them.
+      for (var cs = 0; cs < combWorkSlots.length; cs++) {
+        var slot = combWorkSlots[cs];
+        var structure = structures[cs];
+        slot.group.visible = !!structure;
+        if (!structure) continue;
+        var at = bhQueenStructurePosition(structure, QUEEN_MAP_PAD);
+        slot.group.position.set(at.x, 0, at.z);
+        // Level is the upgrade the player paid for, so it has to be legible as
+        // height rather than only as a tooltip.
+        var level = Math.max(1, Math.min(4, Math.round(structure.level || 1)));
+        slot.body.scale.y = 0.7 + level * 0.5;
+        slot.body.position.y = GROUND_Y + 0.045 * (0.7 + level * 0.5) + 0.02;
+        slot.cap.position.y = GROUND_Y + 0.09 * (0.7 + level * 0.5) + 0.055;
+        var wantColor = contrast ? '#ffffff' : (QUEEN_STRUCT_COLORS[structure.type] || '#fdba74');
+        if (slot.body.material.userData._type !== structure.type) {
+          slot.body.material.userData._type = structure.type;
+          slot.body.material.color.set(wantColor);
+          slot.cap.material.color.set(wantColor);
+        }
+      }
+
+      // Signal domes. Radius, not brightness, carries the reading — a
+      // pheromone is a distance, and that is the whole point.
+      var signalLevels = [qmp, alarm, nasonov];
+      for (var sg = 0; sg < signalDomes.length; sg++) {
+        var level2 = signalLevels[sg];
+        signalDomes[sg].visible = level2 > 0.04;
+        if (!signalDomes[sg].visible) continue;
+        var reach = 0.34 + level2 * 0.92 + sg * 0.03;
+        signalDomes[sg].scale.set(reach, reach * 0.55, reach);
+        signalDomes[sg].material.opacity = 0.07 + level2 * 0.12
+          + (reduced ? 0 : 0.03 * Math.sin(clock * 0.0016 + sg * 2));
+      }
+
+      // Raiders mass at the rival hive and cross as pressure builds. They are
+      // the only thing on this map that moves toward the player.
+      var raidCount = Math.round(raidPressure * raiders.length);
+      for (var rr = 0; rr < raiders.length; rr++) {
+        var raider = raiders[rr];
+        raider.visible = rr < raidCount;
+        if (!raider.visible) continue;
+        var raid = raider.userData.raid;
+        // Progress across the meadow scales with pressure: at low pressure they
+        // circle their own hive, at high pressure they reach yours.
+        var advance = Math.max(0, Math.min(1, (raidPressure - 0.25) / 0.7));
+        var travel = ((clock * 0.00009 * raid.speed) + raid.phase) % 1;
+        var reachX = 1.16 - advance * 2.3;
+        var x2 = 1.16 + travel * (reachX - 1.16);
+        raider.position.set(x2, GROUND_Y + 0.28 + raid.lift + (reduced ? 0 : Math.sin(clock * 0.005 + raid.phase * 9) * 0.05), raid.lane);
+        raider.rotation.y = -Math.PI / 2;
+        beatBeeWings(raider, clock, 1, reduced);
+      }
+
       // Foragers run out to the frontline and back. Their turnaround point is
       // the frontline itself, so pushing the line forward visibly lengthens
-      // every bee's commute \u2014 the cost that makes the RTS a trade-off.
+      // every bee's commute — the cost that makes the RTS a trade-off.
       var activeBees = Math.round(forageRate * swarmBees.length);
       for (var sj = 0; sj < swarmBees.length; sj++) {
         var sb = swarmBees[sj];
@@ -4158,7 +4350,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     });
   }
   var HIVE_3D_VIEWER = makeBeeViewer(HIVE_3D_PARTS, hive3dBuildScene, { yaw: -0.62, pitch: 0.34, dist: 4.3 });
-  var QUEEN_3D_VIEWER = makeBeeViewer(QUEEN_3D_PARTS, queen3dBuildScene, { yaw: 0, pitch: 0.56, dist: 4.7 });
+  var QUEEN_3D_VIEWER = makeBeeViewer(QUEEN_3D_PARTS, queen3dBuildScene, { yaw: 0, pitch: 0.54, dist: 5.4 });
   // Stable identities. A fresh callback each render makes React tear the
   // viewer down and rebuild the WebGL context on every state change.
   function hive3dAttach(node) { HIVE_3D_VIEWER.attach(node || null); }
@@ -4174,7 +4366,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       { id: 'survive_30_days', label: 'Keep the colony alive for 30 days', icon: '\uD83D\uDC1D', check: function(d) { return (d.day || 0) >= 30; }, progress: function(d) { return (d.day || 0) + '/30 days'; } },
       { id: 'produce_honey', label: 'Produce honey for harvest', icon: '\uD83C\uDF6F', check: function(d) { return (d.totalHoney || 0) >= 10; }, progress: function(d) { return (d.totalHoney || 0) + '/10 units'; } },
       { id: 'score_50', label: 'Earn 50+ colony health points', icon: '\u2B50', check: function(d) { return (d.score || 0) >= 50; }, progress: function(d) { return (d.score || 0) + '/50 pts'; } },
-      { id: 'handle_event', label: 'Successfully handle a colony threat event', icon: '\u26A0\uFE0F', check: function(d) { return (d.eventsHandled || 0) >= 1; }, progress: function(d) { return (d.eventsHandled || 0) >= 1 ? 'Handled!' : 'Waiting...'; } }
+      { id: 'handle_event', label: 'Successfully handle a colony threat event', icon: '\u26A0\uFE0F', check: function(d) { return (d.eventsHandled || 0) >= 1; }, progress: function(d) { return (d.eventsHandled || 0) >= 1 ? 'Handled!' : 'Waiting...'; } },
+      { id: 'read_every_frame', label: 'Read every frame in the brood box', icon: '\uD83D\uDD0D',
+        check: function(d) { return ((d && d.hive3dFramesSeen) || []).length >= 6; },
+        progress: function(d) { return (((d && d.hive3dFramesSeen) || []).length) + '/6 frames'; } },
+      { id: 'find_the_queen', label: 'Find the marked queen on the comb', icon: '\uD83D\uDC51',
+        check: function(d) { return !!(d && d.hive3dFoundQueen); },
+        progress: function(d) { return (d && d.hive3dFoundQueen) ? 'Found her!' : 'Not yet spotted'; } }
     ],
     render: function(ctx) {
       var React = ctx.React;
@@ -4461,7 +4659,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           { q: 'Near what temperature do bees usually maintain the brood area?', opts: ['25°C (77°F)', '30°C (86°F)', '35°C (95°F)', '40°C (104°F)'], ans: 2, explain: 'Colonies usually keep the brood area near 34–36°C (93–97°F) through worker-generated heat and evaporative cooling. Temperature varies across the nest and with brood stage, so 35°C is a useful center value rather than an exact whole-nest set point.' },
           { q: 'Why is properly ripened honey highly shelf-stable?', opts: ['Too cold inside the hive', 'Low water activity, acidity, and antimicrobial compounds', 'Beeswax is permanently airtight', 'It always ferments'], ans: 1, explain: 'Honey’s low water activity, acidity, and antimicrobial compounds inhibit most microbial growth. It can remain stable for a very long time when kept sealed and dry, but absorbed moisture can allow osmophilic yeasts to ferment it.' },
           { q: 'What is the primary threat to honeybee colonies worldwide?', opts: ['Bears', 'Varroa destructor mites', 'Cold weather', 'Other bee species'], ans: 1, explain: 'Varroa destructor mites feed on honey bee fat-body tissue and transmit damaging viruses such as deformed wing virus. They are widespread globally. Varroa destructor was detected on mainland Australia in 2022, and Australia shifted from eradication to long-term management in 2023.' },
-          { q: 'How many flowers must bees visit to produce 1 pound of honey?', opts: ['About 2,000', 'About 20,000', 'About 200,000', 'About 2 million'], ans: 3, explain: 'It takes roughly 2 million flower visits and 556 worker bees flying 55,000 miles to produce a single pound of honey. A single forager produces about 1/12 of a teaspoon in her lifetime.' },
+          { q: 'How many flowers must bees visit to produce 1 pound of honey?', opts: ['About 2,000', 'About 20,000', 'About 200,000', 'About 2 million'], ans: 3, explain: 'A single forager produces about 1/12 of a teaspoon of honey in her lifetime. A pound of honey is roughly 65 teaspoons, so it is the life\'s work of about 780 bees — around 2 million flower visits and some 55,000 miles of flying.' },
           { q: 'What chemical does the alarm pheromone smell like?', opts: ['Honey', 'Bananas', 'Roses', 'Smoke'], ans: 1, explain: 'The alarm pheromone isopentyl acetate (isoamyl acetate) smells like bananas. This is why beekeepers avoid eating bananas before inspecting hives — the scent can trigger defensive behavior.' },
           { q: 'Why do beekeepers use smoke?', opts: ['To kill mites', 'To mask alarm pheromone and trigger bees to gorge on honey', 'To warm the hive', 'To attract the queen'], ans: 1, explain: 'Smoke masks alarm pheromone and triggers a "fire evacuation" response — bees gorge on honey to prepare for potentially abandoning the hive, which makes them calmer and less likely to sting.' },
           { q: 'How do bees cool the hive when it gets too hot?', opts: ['Open more entrances', 'Fan wings + spread water for evaporative cooling', 'Move brood outside', 'Stop foraging'], ans: 1, explain: 'Water foragers collect droplets and spread them on comb. Fanner bees beat wings at 230 beats/sec to create airflow, evaporating water and cooling by ~10°C. If still too hot, bees "beard" outside the entrance.' },
@@ -4469,7 +4667,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           { q: 'What happens to drones in autumn?', opts: ['They migrate south', 'They hibernate', 'They are evicted from the hive by workers', 'They become workers'], ans: 2, explain: 'Drones (males) serve only to mate. In autumn, workers drag drones out of the hive and refuse them re-entry — drones cannot forage or sting, making them a resource drain during winter scarcity.' },
           { q: 'How many odorant receptors does a honeybee have?', opts: ['About 10', 'About 50', 'About 170', 'About 1,000'], ans: 2, explain: 'Honeybees have 170+ odorant receptors. While humans have ~400, bees are 50× more sensitive to floral scents. Their antennae are sophisticated chemical sensors that read the colony\'s pheromone "language".' },
           // ── Anatomy ──
-          { q: 'How fast do honeybee wings beat?', opts: ['~60/sec (like a hummingbird)', '~230/sec', '~500/sec', '~1000/sec'], ans: 1, explain: 'Honeybees beat their wings ~230 times per second — the distinctive "buzz" you hear. Indirect flight muscles deform the thorax so the wings snap rather than move muscle-by-wingbeat, generating up to 12,000 "rpm" equivalent.' },
+          { q: 'How fast do honeybee wings beat?', opts: ['~60/sec (like a hummingbird)', '~230/sec', '~500/sec', '~1000/sec'], ans: 1, explain: 'Honeybees beat their wings ~230 times per second — the distinctive "buzz" you hear. Indirect flight muscles deform the thorax so the wings snap rather than moving one beat per nerve impulse — about 13,800 beats a minute.' },
           { q: 'Where on a worker bee is the pollen basket (corbicula)?', opts: ['On her abdomen', 'In her honey stomach', 'On her hind leg tibia', 'Between her antennae'], ans: 2, explain: 'The corbicula is a concave area on the hind-leg tibia ringed with stiff hairs. Foragers pack moistened pollen into this basket — it can hold 15mg (one-third of the bee\'s body weight).' },
           { q: 'How do bees breathe?', opts: ['Lungs like mammals', 'Through spiracles on the body', 'Gills like fish', 'They don\'t — they absorb O₂ through wings'], ans: 1, explain: 'Bees have no lungs. They breathe through 10 pairs of spiracles connected to tracheal tubes that pipe oxygen directly to every cell. Air sacs pump like bellows during flight.' },
           // ── Native Bees ──
@@ -4625,12 +4823,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           return s.charAt(0).toUpperCase() + s.slice(1);
         }
         var GUIDE_HEADING_KEYS = ['common', 'role', 'concept', 'season', 'title', 'term', 'name', 'question', 'q', 'part', 'mode', 'topic', 'era', 'period', 'tool', 'career', 'standard', 'misconception', 'myth', 'level', 'grade', 'stage', 'threat', 'varietal', 'phase', 'connection', 'discipline', 'label'];
+        // Keys that NAME a thing, tried before anything else. Without this pass
+        // the first matching key won, and three tables ended up titled by a
+        // classifier instead: every math problem was headed "3-5", every
+        // failure mode by its season, every policy action by "Individual".
+        // A card called "3-5" tells a learner nothing and, worse, six cards in
+        // a row share the title.
+        var GUIDE_TITLE_KEYS = ['common', 'role', 'concept', 'title', 'term', 'name', 'question', 'q',
+          'problem', 'mode', 'misconception', 'myth', 'threat', 'varietal', 'power', 'fact', 'work',
+          'part', 'tool', 'career', 'standard', 'step', 'topic', 'subject', 'ecosystem', 'month',
+          'action', 'connection', 'discipline', 'label'];
+        // Short classifiers. They are still worth showing — they are just not
+        // titles — so they move to chips beside the heading rather than
+        // becoming another labelled row in the body.
+        var GUIDE_CHIP_KEYS = ['grade', 'gradeBand', 'gradeRange', 'level', 'season', 'era', 'period',
+          'stage', 'framework', 'type', 'origin', 'year', 'lived', 'count', 'cost', 'duration',
+          'durationMins', 'income', 'subtotal', 'essential', 'colonySize', 'lifespan', 'color'];
         function guidePickHeading(item) {
+          for (var t = 0; t < GUIDE_TITLE_KEYS.length; t++) {
+            if (typeof item[GUIDE_TITLE_KEYS[t]] === 'string') return { key: GUIDE_TITLE_KEYS[t], val: item[GUIDE_TITLE_KEYS[t]] };
+          }
+          // Fallback for tables whose only string field IS a classifier —
+          // pollinator plants really are grouped by season, and vocabulary
+          // really is grouped by grade band.
           for (var i = 0; i < GUIDE_HEADING_KEYS.length; i++) {
             if (typeof item[GUIDE_HEADING_KEYS[i]] === 'string') return { key: GUIDE_HEADING_KEYS[i], val: item[GUIDE_HEADING_KEYS[i]] };
           }
           for (var kk in item) { if (item.hasOwnProperty(kk) && typeof item[kk] === 'string') return { key: kk, val: item[kk] }; }
           return null;
+        }
+        // A chip has to be short enough to sit on one line beside the title;
+        // anything longer is a fact and belongs in the body.
+        function guideChipsFor(item, headKey) {
+          var chips = [];
+          for (var c = 0; c < GUIDE_CHIP_KEYS.length; c++) {
+            var key = GUIDE_CHIP_KEYS[c];
+            if (key === headKey) continue;
+            var v = item[key];
+            if (v == null || v === '') continue;
+            if (typeof v === 'number' || typeof v === 'boolean') { chips.push({ key: key, val: String(v) }); continue; }
+            if (typeof v === 'string' && v.length <= 28) chips.push({ key: key, val: v });
+          }
+          return chips;
         }
         // Recursive value renderer — string / number / string[] / object[] / object.
         function renderGuideValue(val) {
@@ -4654,26 +4888,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         }
         function renderGuideObjectFields(obj, skipKey) {
           if (!obj || typeof obj !== 'object') return renderGuideValue(obj);
-          var rows = [];
+          // skipKey accepts a string or a list, because a card now removes both
+          // its heading and every field it promoted to a chip.
+          var skip = skipKey == null ? [] : (Array.isArray(skipKey) ? skipKey : [skipKey]);
+          // Short scalars pair up two-to-a-row on anything wider than a phone;
+          // long prose and nested blocks stay full width. Stacking every field
+          // in one column was what made a dense entry read as a wall.
+          var shortRows = [];
+          var wideRows = [];
           for (var k in obj) {
             if (!obj.hasOwnProperty(k)) continue;
-            if (skipKey && k === skipKey) continue;
+            if (skip.indexOf(k) !== -1) continue;
             var v = obj[k];
             if (v == null || v === '') continue;
             var isBlock = Array.isArray(v) || (typeof v === 'object');
-            rows.push(h('div', { key: k, className: 'py-0.5' },
+            var row = h('div', { key: k, className: 'py-0.5' },
               h('span', { className: 'text-[10px] font-bold uppercase tracking-wide ' + (dk ? 'text-amber-400/80' : 'text-amber-700/80') }, guideHumanize(k) + (isBlock ? '' : ': ')),
-              isBlock ? renderGuideValue(v) : h('span', { className: 'text-[11px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, String(v))));
+              isBlock ? renderGuideValue(v) : h('span', { className: 'text-[11px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, String(v)));
+            if (!isBlock && String(v).length <= 60) shortRows.push(row); else wideRows.push(row);
           }
-          return rows;
+          var out = [];
+          if (shortRows.length) out.push(h('div', { key: '__short', className: 'grid grid-cols-1 sm:grid-cols-2 gap-x-4' }, shortRows));
+          for (var w = 0; w < wideRows.length; w++) out.push(wideRows[w]);
+          return out;
         }
         function renderGuideEntry(item, idx) {
           if (item == null) return null;
           if (typeof item !== 'object') return h('div', { key: idx, className: 'text-[11px] py-1 ' + (dk ? 'text-slate-300' : 'text-slate-600') }, String(item));
           var head = guidePickHeading(item);
+          var chips = guideChipsFor(item, head ? head.key : null);
+          var skipKeys = (head ? [head.key] : []).concat(chips.map(function(chip) { return chip.key; }));
           return h('div', { key: idx, className: 'rounded-xl border p-3 ' + (dk ? 'bg-slate-800/60 border-slate-700' : 'bg-white border-slate-200') },
-            head && h('div', { className: 'text-sm font-bold mb-1 ' + (dk ? 'text-amber-200' : 'text-amber-900') }, head.val),
-            h('div', { className: 'space-y-0.5' }, renderGuideObjectFields(item, head ? head.key : null)));
+            (head || chips.length) && h('div', { className: 'mb-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-1' },
+              head && h('span', { className: 'text-sm font-bold ' + (dk ? 'text-amber-200' : 'text-amber-900') }, head.val),
+              chips.map(function(chip) {
+                return h('span', {
+                  key: chip.key,
+                  className: 'rounded-full border px-2 py-0.5 text-[10px] font-bold ' + (dk ? 'border-slate-600 bg-slate-900/60 text-slate-300' : 'border-slate-300 bg-slate-50 text-slate-600')
+                // The key is kept in the chip so "3-5" still reads as a GRADE
+                // and not as a mystery number sitting next to a title.
+                }, guideHumanize(chip.key) + ': ' + chip.val);
+              })),
+            h('div', { className: 'space-y-0.5' }, renderGuideObjectFields(item, skipKeys)));
         }
         function renderFieldGuide() {
           if (!d.showGuide) return null;
@@ -5543,7 +5799,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 { role: 'Nurse Bees', age: 'Days 1-12', emoji: '🍼', count: nurseCount, pct: 25, desc: __alloT('stem.beehive.feed_larvae_1_300_times_per_day_with_r', 'Feed larvae 1,300+ times per day with royal jelly (from hypopharyngeal glands) and bee bread (pollen + honey + enzymes). Future queens get royal jelly exclusively.'), color: 'bg-pink-500' },
                 { role: 'Wax Builders', age: 'Days 12-18', emoji: '🏗️', count: builderCount, pct: 15, desc: __alloT('stem.beehive.secrete_beeswax_from_8_abdominal_gland', 'Secrete beeswax from 8 abdominal glands. Wax flakes are chewed and shaped into hexagonal cells — the most space-efficient structure in nature (proven by the "honeycomb conjecture" in mathematics).'), color: 'bg-yellow-500' },
                 { role: 'Guard Bees', age: 'Days 18-21', emoji: '🛡️', count: guardCount, pct: 5, desc: __alloT('stem.beehive.station_at_the_entrance_and_inspect_ev', 'Station at the entrance and inspect every bee by antennating (touching antennae to read chemical ID). Each colony has a unique pheromone signature. Intruders are stung or wrestled out.'), color: 'bg-red-500' },
-                { role: 'Foragers', age: 'Days 21-42', emoji: '🌸', count: foragerCount, pct: 40, desc: __alloT('stem.beehive.fly_up_to_5_miles_round_trip_visiting_', 'Fly up to 5 miles round-trip, visiting 50-1,000 flowers per trip. They carry nectar in their honey stomach (a separate organ) and pollen in corbiculae (leg baskets). A forager makes 1/12 of a teaspoon of honey in her lifetime.'), color: 'bg-green-500' },
+                { role: 'Foragers', age: 'Days 21-42', emoji: '🌸', count: foragerCount, pct: 40, desc: __alloT('stem.beehive.fly_up_to_5_miles_round_trip_visiting_', 'Forage within about 2 miles of the hive, and up to about 5 miles when they must, visiting 50-100 flowers per trip. They carry nectar in their honey stomach (a separate organ) and pollen in corbiculae (leg baskets). A forager makes 1/12 of a teaspoon of honey in her lifetime.'), color: 'bg-green-500' },
                 { role: 'Scouts', age: 'Experienced', emoji: '🗺️', count: scoutCount, pct: 5, desc: __alloT('stem.beehive.the_boldest_foragers_become_scouts_exp', 'The boldest foragers become scouts — exploring new territory for nectar sources or nest sites. They perform waggle dances to report their findings. During swarming, scouts use a democratic "quorum sensing" process to choose a new home.'), color: 'bg-blue-500' },
                 { role: 'Undertakers', age: 'Specialized', emoji: '⚰️', count: undertakerCount, pct: 5, desc: __alloT('stem.beehive.remove_dead_bees_and_diseased_brood_fr', 'Remove dead bees and diseased brood from the hive — critical hygiene behavior. Colonies bred for high "hygienic behavior" are more resistant to varroa and disease.'), color: 'bg-slate-500' },
                 { role: 'Fanners', age: 'As needed', emoji: '💨', count: fannerCount, pct: 5, desc: __alloT('stem.beehive.stand_at_the_entrance_and_fan_their_wi', 'Stand at the entrance and fan their wings at 230 beats/second to control temperature and humidity. They also fan Nasonov pheromone (lemon-scented) to guide lost bees home.'), color: 'bg-cyan-500' }
@@ -5600,7 +5856,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('p', { className: 'text-xs text-amber-200 mb-1' }, __alloT('stem.beehive.three_castes_three_lifecycles_all_from', 'Three castes, three lifecycles — all from the same egg. The only difference is diet:')),
               [
                 { caste: '👑 Queen', egg: '3 days', larva: '5.5 days', pupa: '7.5 days', total: '16 days', lifespan: '2-5 years', diet: 'Royal jelly only (entire life)', note: __alloT('stem.beehive.mates_once_on_nuptial_flight_with_10_2', 'Mates with multiple drones during one or more nuptial flights early in adult life. Observed mating heights vary with terrain and conditions. She stores sperm for years, then can lay up to 2,000 eggs/day without repeating that early-life mating period.') },
-                { caste: '👷 Worker', egg: '3 days', larva: '6 days', pupa: '12 days', total: '21 days', lifespan: '6 weeks (summer) / 6 months (winter)', diet: 'Royal jelly 3 days, then bee bread', note: __alloT('stem.beehive.all_female_cannot_mate_changes_jobs_by', 'All female. Cannot mate. Changes jobs by age (temporal polyethism). Winter bees have more fat body and live 10× longer.') },
+                { caste: '👷 Worker', egg: '3 days', larva: '6 days', pupa: '12 days', total: '21 days', lifespan: '6 weeks (summer) / 6 months (winter)', diet: 'Royal jelly 3 days, then bee bread', note: __alloT('stem.beehive.all_female_cannot_mate_changes_jobs_by', 'All female. Cannot mate. Changes jobs by age (temporal polyethism). Winter bees have more fat body and live 3-4× longer (4-6 months against a summer bee\'s ~6 weeks).') },
                 { caste: '♂ Drone', egg: '3 days', larva: '6.5 days', pupa: '14.5 days', total: '24 days', lifespan: '~90 days', diet: 'Royal jelly 3 days, then bee bread', note: __alloT('stem.beehive.all_male_no_stinger_sole_purpose_mate_', 'All male. No stinger. Sole purpose: mate with a queen from another colony. Dies immediately after mating. Surviving drones are evicted from the hive in autumn.') }
               ].map(function(c) {
                 return h('div', { key: c.caste, className: 'bg-amber-900/40 rounded-lg p-3 border border-amber-700/30' },
@@ -5761,7 +6017,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('div', { className: 'bg-amber-900/40 rounded-lg p-3 border border-amber-700/30' },
                 h('div', { className: 'font-bold text-amber-200 text-xs mb-2' }, __alloT('stem.beehive.thorax_locomotion_power', '💪 Thorax — Locomotion Power')),
                 [
-                  { part: 'Wings (2 pairs)', emoji: '🦋', desc: __alloT('stem.beehive.forewings_hook_into_hindwings_via_tiny', 'Forewings hook into hindwings via tiny "hamuli" to form one unified airfoil. Wings beat 230× per second (12,000 rpm). Muscles contract 5–10× per nerve impulse — one of the fastest motion systems in biology. Top speed: ~15 mph; range: up to 5 miles from home.') },
+                  { part: 'Wings (2 pairs)', emoji: '🦋', desc: __alloT('stem.beehive.forewings_hook_into_hindwings_via_tiny', 'Forewings hook into hindwings via tiny "hamuli" to form one unified airfoil. Wings beat 230× per second — about 13,800 beats a minute. Muscles contract 5–10× per nerve impulse — one of the fastest motion systems in biology. Top speed: ~15 mph; foraging range: about 2 miles typically, up to about 5 miles.') },
                   { part: 'Flight Muscles', emoji: '⚡', desc: __alloT('stem.beehive.indirect_flight_muscles_don_t_attach_t', 'Indirect flight muscles don\'t attach to the wings directly — they deform the thorax, which snaps wings up and down. Can generate heat by shivering without moving wings (used for thermoregulation).') },
                   { part: 'Legs (3 pairs)', emoji: '🦵', desc: __alloT('stem.beehive.front_legs_clean_antennae_special_notc', 'Front legs clean antennae (special notch). Middle legs push pollen. Hind legs have the pollen basket (corbicula) — a shiny concave area ringed with hairs that packs pollen into a visible ball during foraging.') },
                   { part: 'Corbicula', emoji: '🧺', desc: __alloT('stem.beehive.the_pollen_basket_on_the_hind_tibia_ca', 'The pollen basket on the hind tibia. Can hold up to 15mg of pollen — one-third the bee\'s body weight. Foragers moisten pollen with nectar to make it stick.') }
@@ -6613,7 +6869,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.fillText('Rev. L. L. Langstroth discovered "bee space" (3/8 in.) in 1851 — every modern hive uses his design', W / 2, 46);
 
             // ═══ LEFT: exploded Langstroth hive ═══
-            var lhX = W * 0.30;
+            var lhX = W * 0.34;
             var lhY = H * 0.12 + 60;
             var lhW = 140;
             var gap = 6;
@@ -6628,6 +6884,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             // Draw each layer with a label + leader line
             var totalH = layers.reduce(function(a, l) { return a + l.h + gap; }, 0);
             var curY = lhY;
+            // Running floor for the de-overlap pass below.
+            var lhLastLabelY = -Infinity;
             layers.forEach(function(lay) {
               // Subtle shadow
               c.fillStyle = 'rgba(0,0,0,0.15)';
@@ -6693,14 +6951,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
               // Label with leader line (to the left)
               c.strokeStyle = '#78350f'; c.lineWidth = 0.8;
-              c.beginPath(); c.moveTo(lhX - lhW / 2, curY + lay.h / 2);
-              c.lineTo(lhX - lhW / 2 - 20, curY + lay.h / 2);
-              c.lineTo(lhX - lhW - 10, curY + lay.h / 2);
+              var anchorY = curY + lay.h / 2;
+              var labelY = Math.max(anchorY, lhLastLabelY + 21);
+              lhLastLabelY = labelY;
+              c.beginPath(); c.moveTo(lhX - lhW / 2, anchorY);
+              c.lineTo(lhX - lhW / 2 - 20, anchorY);
+              c.lineTo(lhX - lhW - 10, labelY);
               c.stroke();
               c.font = 'bold 10px system-ui'; c.fillStyle = '#78350f'; c.textAlign = 'right';
-              c.fillText(lay.name, lhX - lhW - 14, curY + lay.h / 2 - 1);
+              c.fillText(lay.name, lhX - lhW - 14, labelY - 1);
               c.font = 'italic 8px system-ui'; c.fillStyle = '#92400e';
-              c.fillText(lay.desc, lhX - lhW - 14, curY + lay.h / 2 + 10);
+              c.fillText(lay.desc, lhX - lhW - 14, labelY + 10);
 
               curY += lay.h + gap;
             });
@@ -7842,16 +8103,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             if (c.roundRect) { c.beginPath(); c.roundRect(vnX - 95, vnY, 190, 190, 8); c.stroke(); }
             c.fillStyle = '#fecaca'; c.textAlign = 'center';
             c.font = 'bold 12px "Inter", sans-serif';
-            c.fillText('Venom (Apitoxin)', vnX, vnY + 16);
+            c.fillText(__alloT('stem.beehive.venom_apitoxin', 'Venom (Apitoxin)'), vnX, vnY + 16);
+            c.fillStyle = '#fca5a5';
+            c.font = '8px "Inter", sans-serif';
+            c.fillText(__alloT('stem.beehive.percentages_by_dry_weight', 'percentages by dry weight'), vnX, vnY + 28);
+            c.fillStyle = '#fecaca';
             var venomComp = [
               { name: __alloT('stem.beehive.melittin', 'Melittin'), pct: 50, desc: __alloT('stem.beehive.membrane_disrupting_peptide', 'membrane-disrupting peptide') },
               { name: __alloT('stem.beehive.phospholipase_a', 'Phospholipase A₂'), pct: 12, desc: __alloT('stem.beehive.enzyme_cell_membrane_attack', 'enzyme — cell-membrane attack') },
               { name: __alloT('stem.beehive.apamin', 'Apamin'), pct: 2, desc: __alloT('stem.beehive.neurotoxin_blocks_k_channels', 'neurotoxin · blocks K⁺ channels') },
               { name: __alloT('stem.beehive.histamine', 'Histamine'), pct: 1, desc: __alloT('stem.beehive.triggers_pain_inflammation', 'triggers pain + inflammation') },
-              { name: __alloT('stem.beehive.water_others', 'Water + others'), pct: 35, desc: __alloT('stem.beehive.carrier_minor_compounds', 'carrier & minor compounds') }
+              { name: __alloT('stem.beehive.other_peptides_enzymes', 'Other peptides & enzymes'), pct: 35, desc: __alloT('stem.beehive.hyaluronidase_mcd_peptide_and_more', 'hyaluronidase, MCD peptide and more') }
             ];
             venomComp.forEach(function(v, vi) {
-              var vy = vnY + 36 + vi * 28;
+              var vy = vnY + 50 + vi * 29;
               // Bar background
               c.fillStyle = 'rgba(252,165,165,0.2)';
               c.fillRect(vnX - 75, vy, 150, 8);
@@ -7860,12 +8125,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.fillRect(vnX - 75, vy, 150 * (v.pct / 100), 8);
               c.fillStyle = '#fecaca'; c.textAlign = 'left';
               c.font = 'bold 9.5px "Inter", sans-serif';
-              c.fillText(v.name, vnX - 75, vy - 2);
+              c.fillText(v.name, vnX - 75, vy - 13);
               c.textAlign = 'right'; c.fillStyle = '#fee2e2';
-              c.fillText(v.pct + '%', vnX + 75, vy - 2);
+              c.fillText(v.pct + '%', vnX + 75, vy - 13);
               c.textAlign = 'left'; c.fillStyle = '#fca5a5';
               c.font = '8px "Inter", sans-serif';
-              c.fillText(v.desc, vnX - 75, vy + 18);
+              c.fillText(v.desc, vnX - 75, vy - 3);
             });
 
             // ═══ RIGHT: defense tactics ═══
@@ -7940,6 +8205,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
             // ═══ LEFT: live oscilloscope trace of the wingbeat ═══
             var oscX0 = 18, oscX1 = W * 0.58;
+            // One span of the scope, in milliseconds, at the wingbeat rate the
+            // rest of the tool teaches. Cycles across the trace follow from these.
+            var oscMs = 40, oscHz = 230;
+            var oscCycles = oscMs * oscHz / 1000;
             var oscY = H * 0.33;
             var oscH = 85;
             c.fillStyle = 'rgba(0,0,0,0.35)';
@@ -7949,7 +8218,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             if (c.roundRect) { c.beginPath(); c.roundRect(oscX0, oscY - oscH / 2 - 10, oscX1 - oscX0, oscH + 34, 6); c.stroke(); }
             c.fillStyle = '#5eead4'; c.textAlign = 'left';
             c.font = 'bold 10.5px "Inter", sans-serif';
-            c.fillText('Wingbeat Waveform · 230 Hz', oscX0 + 10, oscY - oscH / 2 + 3);
+            c.fillText(__alloT('stem.beehive.wingbeat_waveform', 'Wingbeat Waveform') + ' \u00b7 ' + oscHz + ' Hz', oscX0 + 10, oscY - oscH / 2 + 3);
             // Grid
             c.strokeStyle = 'rgba(94,234,212,0.15)'; c.lineWidth = 0.5;
             for (var gx = 1; gx < 8; gx++) {
@@ -7963,7 +8232,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.beginPath();
             var scrollT = t2 * 3;
             for (var wx = 0; wx < (oscX1 - oscX0); wx++) {
-              var phase = wx * 0.17 - scrollT * 0.08;
+              var phase = wx * ((Math.PI * 2 * oscCycles) / Math.max(1, oscX1 - oscX0)) - scrollT * 0.08;
               var fundamental = Math.sin(phase);
               var harmonic = 0.25 * Math.sin(phase * 2 + 0.8);
               var amp = (fundamental + harmonic) * (oscH * 0.38);
@@ -7977,7 +8246,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.font = '8.5px "Inter", sans-serif';
             c.fillText('0 ms', oscX0 + 4, oscY + oscH / 2 + 12);
             c.textAlign = 'right';
-            c.fillText('40 ms (≈ 9 wingbeats)', oscX1 - 6, oscY + oscH / 2 + 12);
+            c.fillText(oscMs + ' ms (\u2248 ' + Math.round(oscCycles) + ' ' + __alloT('stem.beehive.wingbeats', 'wingbeats') + ')', oscX1 - 6, oscY + oscH / 2 + 12);
 
             // ═══ MIDDLE: frequency comparison chart — bee species ═══
             var chY = oscY + oscH + 30;
@@ -8514,7 +8783,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.fillText('Bees communicate mostly by SMELL — ~50 known pheromones, each a precise chemical instruction', W / 2, 46);
 
             // Central queen bee emitting pheromones outward
-            var qX = W / 2, qY = H * 0.40;
+            var qX = W / 2, qY = H * 0.44;
             // Glow halo
             c.save();
             c.shadowColor = '#a855f7'; c.shadowBlur = 20;
@@ -8545,7 +8814,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
             // ── Radiating pheromone clouds (6 different types, color-coded) ──
             var pheromones = [
-              { ang: -Math.PI / 2, col: '#c084fc', name: 'QMP', fullName: 'Queen Mandibular Pheromone', effect: 'Suppresses worker ovaries · marks queen presence · calms colony', desc: __alloT('stem.beehive.9_oda_acid_8_others_without_qmp_worker', '9-ODA acid + 8 others. Without QMP, workers start laying (unfertilized) eggs within hours.') },
+              { ang: -Math.PI / 2, col: '#c084fc', name: 'QMP', fullName: 'Queen Mandibular Pheromone', effect: 'Suppresses worker ovaries · marks queen presence · calms colony', desc: __alloT('stem.beehive.9_oda_acid_8_others_without_qmp_worker', '9-ODA acid + 8 others. Without QMP the colony knows within hours, but worker ovaries take days to develop and laying workers usually appear weeks later — which is the window a beekeeper has to requeen.') },
               { ang: -Math.PI / 2 + Math.PI / 3, col: '#f87171', name: 'ALARM', fullName: 'Alarm Pheromone (isoamyl acetate)', effect: 'Smells like BANANA · mobilizes guards to sting intruders', desc: __alloT('stem.beehive.released_from_stinger_1_bee_stings_10_', 'Released from stinger. 1 bee stings → 10 more come. Never eat bananas near a hive!') },
               { ang: -Math.PI / 2 + Math.PI * 2 / 3, col: '#60a5fa', name: 'NASONOV', fullName: 'Nasonov Pheromone', effect: 'Orientation signal · "come home" · rally the swarm', desc: __alloT('stem.beehive.released_from_nasonov_gland_abdomen_ti', 'Released from Nasonov gland (abdomen tip). Workers fan wings + expose gland = scent beacon.') },
               { ang: -Math.PI / 2 + Math.PI, col: '#fbbf24', name: 'BROOD', fullName: 'Brood Recognition Pheromone', effect: 'Larvae signal "feed me" · regulates comb capping', desc: __alloT('stem.beehive.released_by_larvae_triggers_nurse_bees', 'Released by larvae — triggers nurse bees to supply food and causes workers to cap cells at the right time.') },
@@ -9203,15 +9472,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             })();
 
             // Bottom: year-long temperature graph (outside vs inside)
-            var stripY = H - 68;
+            var stripY = H - 80;
             c.fillStyle = 'rgba(255,255,255,0.8)';
-            c.fillRect(0, stripY, W, 68);
+            c.fillRect(0, stripY, W, 80);
             c.strokeStyle = '#78350f'; c.lineWidth = 1;
-            c.strokeRect(0, stripY, W, 68);
+            c.strokeRect(0, stripY, W, 80);
             c.font = 'bold 10px system-ui'; c.textAlign = 'left'; c.fillStyle = '#78350f';
-            c.fillText('Inside vs Outside temperature through the year:', 10, stripY + 14);
+            c.fillText(__alloT('stem.beehive.inside_vs_outside_temp_year', 'Inside vs Outside temperature through the year:'), 10, stripY + 14);
             // Axes: x = months, y = temp
-            var gX = 20, gY = stripY + 18, gW = W - 170, gH = 36;
+            var gX = 20, gY = stripY + 18, gW = W - 170, gH = 32;
             c.strokeStyle = '#a8a29e'; c.lineWidth = 0.6;
             c.beginPath(); c.moveTo(gX, gY); c.lineTo(gX, gY + gH); c.lineTo(gX + gW, gY + gH); c.stroke();
             // 0°C line
@@ -9249,7 +9518,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             });
             // Caption
             c.font = 'italic 9px system-ui'; c.fillStyle = '#78350f'; c.textAlign = 'center';
-            c.fillText('Bees are the only insects that stay warm year-round. Solo they\'re cold-blooded — together they\'re collectively warm-blooded.', W / 2, stripY + 62);
+            c.fillText(__alloT('stem.beehive.bees_only_insects_warm_year_round', 'Bees are the only insects that stay warm year-round. Solo they\'re cold-blooded — together they\'re collectively warm-blooded.'), W / 2, stripY + 72);
           }
 
           // ═══ WAGGLE DANCE DIAGRAM (Karl von Frisch's symbolic-language decoding) ═══
@@ -9278,10 +9547,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.strokeStyle = '#ea580c'; c.lineWidth = 2;
               c.beginPath(); if (c.roundRect) c.roundRect(pX, pY, pW2, pH2, 10); else c.rect(pX, pY, pW2, pH2); c.stroke();
               c.font = 'bold 12px system-ui'; c.textAlign = 'center'; c.fillStyle = '#9a3412';
-              c.fillText('ON THE COMB (vertical surface, in the dark hive)', pX + pW2 / 2, pY + 20);
+              c.fillText(__alloT('stem.beehive.on_the_comb_vertical_surface', 'ON THE COMB (vertical surface, in the dark hive)'), pX + pW2 / 2, pY + 15);
 
               // Draw the vertical comb background inside the panel
-              var combX = pX + 20, combY = pY + 40, combW = pW2 - 40, combH = pH2 - 60;
+              var combX = pX + 20, combY = pY + 62, combW = pW2 - 40, combH = pH2 - 82;
               c.fillStyle = '#d4aa40';
               c.fillRect(combX, combY, combW, combH);
               // Hexagonal comb pattern
@@ -21752,6 +22021,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         // so the queen cells on the frame and the event in the log never
         // disagree about whether this colony is about to swarm.
         var hive3dSwarmPressure = workers / Math.max(1, hive3dCapacity * 350);
+        // Which frame the learner is holding. Six frames, 0 at the box wall.
+        var HIVE_3D_FRAME_COUNT = 6;
+        var hive3dFrame = Math.max(0, Math.min(HIVE_3D_FRAME_COUNT - 1, Math.round(bhBoundedNumber(d.hive3dFrame, 0, 0, HIVE_3D_FRAME_COUNT - 1))));
+        // 1 at the wall, 0 at the middle pair — the same number the scene uses
+        // to cut the nest sphere, so the caption and the comb cannot disagree.
+        var hive3dFrameDepth = Math.abs(hive3dFrame - (HIVE_3D_FRAME_COUNT - 1) / 2) / ((HIVE_3D_FRAME_COUNT - 1) / 2);
+        var hive3dFrameReading = hive3dFrameDepth > 0.75
+          ? 'An outside frame: almost all honey, little or no brood. This is the colony’s winter store.'
+          : hive3dFrameDepth > 0.35
+            ? 'A shoulder frame: brood in the middle, a pollen band around it, honey arched over the top.'
+            : 'A centre frame: the widest slice of the brood nest, wall-to-wall if the queen is laying well.';
         React.useEffect(function() {
           HIVE_3D_VIEWER.sync({
             selected: hive3dPart,
@@ -21764,24 +22044,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               pollenLevel: hive3dPollen, layingRate: hive3dLaying,
               season: season, pulled: hive3dPulled,
               superCount: hive3dSuperCount, honeyBoxes: hive3dHoneyBoxes,
-              swarmPressure: hive3dSwarmPressure
+              swarmPressure: hive3dSwarmPressure, frameIndex: hive3dFrame
             },
             onPick: function(id) {
-              upd('hive3dPart', id);
+              // Picking her out of a crowded frame by eye counts every bit as
+              // much as pressing the button — arguably more.
+              updFn(function(b) {
+                b.hive3dPart = id;
+                if (id === 'queen') b.hive3dFoundQueen = true;
+              });
               for (var i = 0; i < HIVE_3D_PARTS.length; i++) {
-                if (HIVE_3D_PARTS[i].id === id) { announceBee(HIVE_3D_PARTS[i].label + '. ' + HIVE_3D_PARTS[i].desc, false); break; }
+                if (HIVE_3D_PARTS[i].id === id) { announceBee(bee3dPartText(HIVE_3D_PARTS[i], 'label') + '. ' + bee3dPartText(HIVE_3D_PARTS[i], 'desc'), false); break; }
               }
             },
             onStatus: function(next) { setHive3dStatus(next); }
           });
         }, [hive3dPart, hive3dExploded, isDark, isContrast, hive3dHoneyFill, hive3dBroodFill,
           hive3dVarroa, hive3dTraffic, hive3dPollen, hive3dLaying, hive3dPulled, season,
-          hive3dSuperCount, hive3dHoneyBoxes, hive3dSwarmPressure]);
+          hive3dSuperCount, hive3dHoneyBoxes, hive3dSwarmPressure, hive3dFrame]);
 
         var queen3dShare = Math.max(0, Math.min(1, (queenTerritory || 50) / 100));
         var queen3dHome = Math.max(0, Math.min(1, (queenHiveHealth || 0) / 100));
         var queen3dRival = Math.max(0, Math.min(1, ((queenRival && queenRival.health) || 0) / 100));
         var queen3dForage = Math.max(0, Math.min(1, ((queenPopulation && queenPopulation.foragers) || 0) / 600));
+        // The build menu is the RTS's main verb, so what the player placed has
+        // to stand on the map. Passed as the raw list; the scene clamps each
+        // one through the same window the 2D placement grid clamps to.
+        var queen3dStructures = Array.isArray(queenStructures) ? queenStructures.slice(0, 12) : [];
+        // Pheromones are the only "control" a queen has, and they were entirely
+        // invisible in 3D — three numbers in a panel say nothing about RANGE.
+        var queen3dQmp = Math.max(0, Math.min(1, ((queenPheromones && queenPheromones.qmp) || 0) / 100));
+        var queen3dAlarm = Math.max(0, Math.min(1, ((queenPheromones && queenPheromones.alarm) || 0) / 100));
+        var queen3dNasonov = Math.max(0, Math.min(1, ((queenPheromones && queenPheromones.nasonov) || 0) / 100));
+        var queen3dRaid = Math.max(0, Math.min(1, ((queenRival && queenRival.pressure) || 0) / 100));
+        // A cheap signature so the effect re-syncs when a structure is placed
+        // or upgraded, without a deep compare on every render.
+        var queen3dStructureSig = queen3dStructures.map(function(st) {
+          return (st && st.type) + ':' + (st && st.x) + ':' + (st && st.y) + ':' + (st && st.level);
+        }).join('|');
         React.useEffect(function() {
           QUEEN_3D_VIEWER.sync({
             selected: queen3dPart,
@@ -21789,34 +22089,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             contrast: isContrast,
             sceneProps: {
               share: queen3dShare, homeHealth: queen3dHome,
-              rivalHealth: queen3dRival, forageRate: queen3dForage
+              rivalHealth: queen3dRival, forageRate: queen3dForage,
+              structures: queen3dStructures, qmp: queen3dQmp,
+              alarm: queen3dAlarm, nasonov: queen3dNasonov,
+              raidPressure: queen3dRaid
             },
             onPick: function(id) {
               upd('queen3dPart', id);
               for (var i = 0; i < QUEEN_3D_PARTS.length; i++) {
-                if (QUEEN_3D_PARTS[i].id === id) { announceBee(QUEEN_3D_PARTS[i].label + '. ' + QUEEN_3D_PARTS[i].desc, false); break; }
+                if (QUEEN_3D_PARTS[i].id === id) { announceBee(bee3dPartText(QUEEN_3D_PARTS[i], 'label') + '. ' + bee3dPartText(QUEEN_3D_PARTS[i], 'desc'), false); break; }
               }
             },
             onStatus: function(next) { setQueen3dStatus(next); }
           });
-        }, [queen3dPart, isDark, isContrast, queen3dShare, queen3dHome, queen3dRival, queen3dForage]);
+        }, [queen3dPart, isDark, isContrast, queen3dShare, queen3dHome, queen3dRival, queen3dForage,
+          queen3dStructureSig, queen3dQmp, queen3dAlarm, queen3dNasonov, queen3dRaid]);
 
         // One panel shell for both bays. The two scenes differ only in their
         // parts list, their caption and one extra control, so a second copy of
         // the surrounding chrome would be a second thing to keep accessible.
+        function bee3dPartText(part, field) {
+          if (!part || !part[field]) return '';
+          return __alloT('stem.beehive.part3d_' + part.id + '_' + field, part[field]);
+        }
         function renderBee3dBay(cfg) {
           var ready = cfg.status === 'ready';
           var accent = cfg.accent;
           var selected = null;
           for (var pi = 0; pi < cfg.parts.length; pi++) if (cfg.parts[pi].id === cfg.selected) selected = cfg.parts[pi];
           var controls = [
-            ['◀', 'Rotate left', function() { cfg.viewer.nudge(-0.3, 0); }],
-            ['▶', 'Rotate right', function() { cfg.viewer.nudge(0.3, 0); }],
-            ['▲', 'Tilt up', function() { cfg.viewer.nudge(0, 0.2); }],
-            ['▼', 'Tilt down', function() { cfg.viewer.nudge(0, -0.2); }],
-            ['＋', 'Zoom in', function() { cfg.viewer.zoom(-0.6); }],
-            ['－', 'Zoom out', function() { cfg.viewer.zoom(0.6); }],
-            ['↺', 'Reset view', function() { cfg.viewer.reset(); }]
+            ['◀', __alloT('stem.beehive.bay3d_rotate_left', 'Rotate left'), function() { cfg.viewer.nudge(-0.3, 0); }],
+            ['▶', __alloT('stem.beehive.bay3d_rotate_right', 'Rotate right'), function() { cfg.viewer.nudge(0.3, 0); }],
+            ['▲', __alloT('stem.beehive.bay3d_tilt_up', 'Tilt up'), function() { cfg.viewer.nudge(0, 0.2); }],
+            ['▼', __alloT('stem.beehive.bay3d_tilt_down', 'Tilt down'), function() { cfg.viewer.nudge(0, -0.2); }],
+            ['＋', __alloT('stem.beehive.bay3d_zoom_in', 'Zoom in'), function() { cfg.viewer.zoom(-0.6); }],
+            ['－', __alloT('stem.beehive.bay3d_zoom_out', 'Zoom out'), function() { cfg.viewer.zoom(0.6); }],
+            ['↺', __alloT('stem.beehive.bay3d_reset_view', 'Reset view'), function() { cfg.viewer.reset(); }]
           ];
           return h('section', {
             key: 'beehive-3d-' + cfg.id,
@@ -21835,7 +22143,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 'aria-expanded': cfg.open ? 'true' : 'false',
                 'aria-label': (cfg.open ? 'Hide ' : 'Show ') + cfg.title,
                 className: 'inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-lg border px-3 text-[11px] font-black ' + accent.button
-              }, h('span', { 'aria-hidden': 'true' }, cfg.open ? '▾' : '▸'), cfg.open ? 'Hide 3D' : 'Show 3D')),
+              }, h('span', { 'aria-hidden': 'true' }, cfg.open ? '▾' : '▸'), cfg.open ? __alloT('stem.beehive.bay3d_hide', 'Hide 3D') : __alloT('stem.beehive.bay3d_show', 'Show 3D'))),
             cfg.open && h('div', { className: 'mt-2 space-y-2' },
               h('div', {
                 className: 'relative overflow-hidden rounded-xl border ' + accent.frame,
@@ -21849,9 +22157,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 },
                   h('p', { className: 'text-[11px] font-bold ' + (dk ? 'text-slate-300' : 'text-slate-600') },
                     cfg.status === 'loading'
-                      ? 'Loading the 3D view…'
+                      ? __alloT('stem.beehive.bay3d_loading', 'Loading the 3D view…')
                       : (BEE_3D_MISSING === 'host'
-                        ? 'The 3D view needs a newer STEAM Lab host than this build has. Everything else in this simulation still works.'
+                        ? __alloT('stem.beehive.bay3d_host_too_old', 'The 3D view needs a newer STEAM Lab host than this build has. Everything else in this simulation still works.')
                         : cfg.fallback)))),
               h('div', { role: 'group', 'aria-label': cfg.title + ' camera controls', className: 'flex flex-wrap gap-1' },
                 controls.map(function(control) {
@@ -21869,19 +22177,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   return h('button', {
                     key: part.id, type: 'button',
                     'aria-pressed': on ? 'true' : 'false',
-                    'aria-label': (on ? 'Hide' : 'Show') + ' details for ' + part.label,
+                    'aria-label': (on ? __alloT('stem.beehive.bay3d_hide_details', 'Hide details for') : __alloT('stem.beehive.bay3d_show_details', 'Show details for')) + ' ' + bee3dPartText(part, 'label'),
                     onClick: function() {
                       var next = on ? null : part.id;
                       upd(cfg.partKey, next);
-                      if (next) announceBee(part.label + '. ' + part.desc, false);
+                      if (next) announceBee(bee3dPartText(part, 'label') + '. ' + bee3dPartText(part, 'desc'), false);
                     },
                     className: 'min-h-[44px] rounded-lg border px-3 text-[11px] font-bold ' + (on ? accent.chipOn : accent.chip)
-                  }, part.label);
+                  }, bee3dPartText(part, 'label'));
                 })),
               selected && h('div', {
                 role: 'status',
                 className: 'rounded-xl border p-3 text-[11px] leading-relaxed ' + accent.frame + ' ' + (dk ? 'bg-slate-950/50 text-slate-200' : 'bg-slate-50 text-slate-700')
-              }, h('strong', { className: accent.label }, selected.label + ' — '), selected.desc),
+              }, h('strong', { className: accent.label }, bee3dPartText(selected, 'label') + ' — '), bee3dPartText(selected, 'desc')),
               cfg.readout));
         }
 
@@ -22997,6 +23305,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             snapshot = 'Flight ' + (flight.phase || (droneFlightActive ? 'launch' : 'briefing')) + ' | Energy ' + Math.round(flight.energy || 0) + ' | Peak altitude ' + Math.round(flight.maxAlt || 0) + ' ft | Distance ' + Math.round(flight.distance || 0) + ' m | Boosts ' + boosts + (flight.flightEnvelope ? ' | Readiness ' + flight.flightEnvelope.overallLabel : '') + (flight.lastManeuver ? ' | Last maneuver ' + flight.lastManeuver.action + ': ' + flight.lastManeuver.impact : '');
           } else {
             snapshot = 'Day ' + day + ' | Colony health ' + colonyHealth + '% | Workers ' + fmtPop(workers) + ' | Honey ' + honey + ' lb | Varroa ' + varroaLevel + '% | Morale ' + morale + '%';
+            if (show3dHive) {
+              snapshot += ' | Frame ' + (hive3dFrame + 1) + '/' + HIVE_3D_FRAME_COUNT + ': ' + hive3dFrameReading;
+            }
           }
           var entry = currentBeeNotebookEntry();
           var currentEvidence = String(entry.evidence || '').trim();
@@ -23754,11 +24065,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             partKey: 'hive3dPart',
             toggleKey: 'show3dHive',
             open: show3dHive,
-            title: '3D hive',
-            eyebrow: '🧰 The hive in 3D',
-            blurb: 'Drag to turn the hive, or use the buttons and the parts list. The comb is drawn cell by cell from this colony right now — worker and drone brood, pollen, honey, and the gaps a failing queen leaves. Supers you add appear on the stack, the meadow follows the season, and picking the frames or the queen slides the front frame out the way an inspection lifts it.',
-            pickPrompt: 'Pick a part of the hive',
-            fallback: 'The 3D hive could not start on this device, usually because WebGL is unavailable or blocked. The hive cross-section in the Inspect hive panel shows the same structure.',
+            title: __alloT('stem.beehive.hive3d_title', '3D hive'),
+            eyebrow: __alloT('stem.beehive.hive3d_eyebrow', '🧰 The hive in 3D'),
+            blurb: __alloT('stem.beehive.hive3d_blurb', 'Drag to turn the hive, or use the buttons and the parts list. The comb is drawn cell by cell from this colony right now — worker and drone brood, pollen, honey, and the gaps a failing queen leaves. Supers you add appear on the stack, the meadow follows the season, and picking the frames or the queen slides the front frame out the way an inspection lifts it.'),
+            pickPrompt: __alloT('stem.beehive.hive3d_pick_prompt', 'Pick a part of the hive'),
+            fallback: __alloT('stem.beehive.hive3d_fallback', 'The 3D hive could not start on this device, usually because WebGL is unavailable or blocked. The hive cross-section in the Inspect hive panel shows the same structure.'),
             accent: {
               label: dk ? 'text-amber-300' : 'text-amber-700',
               frame: dk ? 'border-amber-700/45' : 'border-amber-300',
@@ -23778,21 +24089,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               // Same Label-in-Name rule as the queen button: the accessible name
               // opens with the visible text so speech input can reach it.
               'aria-label': hive3dExploded
-                ? 'Close hive: stack the boxes back together'
-                : 'Open hive: lift the boxes apart in inspection order — outer cover, inner cover, honey super, queen excluder, then the brood frames',
+                ? __alloT('stem.beehive.hive3d_close_aria', 'Close hive: stack the boxes back together')
+                : __alloT('stem.beehive.hive3d_open_aria', 'Open hive: lift the boxes apart in inspection order — outer cover, inner cover, honey super, queen excluder, then the brood frames'),
               title: hive3dExploded ? 'Close hive' : 'Open hive',
               disabled: hive3dStatus !== 'ready',
               className: 'min-h-[44px] rounded-lg border px-3 text-[11px] font-black ' + (hive3dExploded
                 ? (dk ? 'border-amber-400 bg-amber-500/25 text-amber-100' : 'border-amber-500 bg-amber-100 text-amber-900')
                 : (dk ? 'border-amber-600/45 bg-slate-900 text-amber-100 hover:bg-slate-800' : 'border-amber-300 bg-white text-amber-800 hover:bg-amber-50')),
               style: { opacity: hive3dStatus === 'ready' ? 1 : 0.45 }
-            }, hive3dExploded ? '⇊ Close hive' : '⇈ Open hive'),
+            }, hive3dExploded ? __alloT('stem.beehive.hive3d_close_label', '⇊ Close hive') : __alloT('stem.beehive.hive3d_open_label', '⇈ Open hive')),
             h('button', {
               key: 'hive-find-queen',
               type: 'button',
               onClick: function() {
                 var next = hive3dPart === 'queen' ? null : 'queen';
-                upd('hive3dPart', next);
+                updFn(function(b) {
+                  b.hive3dPart = next;
+                  if (next === 'queen') b.hive3dFoundQueen = true;
+                });
                 announceBee(next
                   ? 'Front frame drawn out. The queen is the long bee with the ' + BH_QUEEN_MARK_NAMES[bhQueenMarkIndex(2026)] + ' mark on her thorax, ringed by nurses facing inward.'
                   : 'Queen deselected. The frame slides back into the brood box.', false);
@@ -23805,17 +24119,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               // earlier version announced "Find the queen" year-round while the
               // visible text had already changed.
               'aria-label': season === 3
-                ? 'Queen in cluster: the colony is wintering, so she cannot be shown on a frame'
+                ? __alloT('stem.beehive.hive3d_queen_cluster_aria', 'Queen in cluster: the colony is wintering, so she cannot be shown on a frame')
                 : hive3dPart === 'queen'
-                  ? 'Find the queen: pressed. Stop highlighting her and slide the frame back'
-                  : 'Find the queen: draw out the front frame and highlight her',
-              title: season === 3 ? 'Queen in cluster' : 'Find the queen',
+                  ? __alloT('stem.beehive.hive3d_queen_pressed_aria', 'Find the queen: pressed. Stop highlighting her and slide the frame back')
+                  : __alloT('stem.beehive.hive3d_queen_find_aria', 'Find the queen: draw out the front frame and highlight her'),
+              title: season === 3 ? __alloT('stem.beehive.hive3d_queen_cluster_title', 'Queen in cluster') : __alloT('stem.beehive.hive3d_queen_find_title', 'Find the queen'),
               disabled: hive3dStatus !== 'ready' || season === 3,
               className: 'min-h-[44px] rounded-lg border px-3 text-[11px] font-black ' + (hive3dPart === 'queen'
                 ? (dk ? 'border-fuchsia-400 bg-fuchsia-500/25 text-fuchsia-100' : 'border-fuchsia-500 bg-fuchsia-100 text-fuchsia-900')
                 : (dk ? 'border-amber-600/45 bg-slate-900 text-amber-100 hover:bg-slate-800' : 'border-amber-300 bg-white text-amber-800 hover:bg-amber-50')),
               style: { opacity: hive3dStatus === 'ready' && season !== 3 ? 1 : 0.45 }
-            }, season === 3 ? '❄ Queen in cluster' : '\uD83D\uDC51 Find the queen')],
+            }, season === 3 ? __alloT('stem.beehive.hive3d_queen_cluster_label', '❄ Queen in cluster') : '\uD83D\uDC51 Find the queen'),
+            h('span', { key: 'hive-frame-group', role: 'group', 'aria-label': __alloT('stem.beehive.hive3d_frame_group_aria', 'Choose which brood frame to read'), className: 'inline-flex items-center gap-1' },
+              [['◀', -1, __alloT('stem.beehive.hive3d_frame_prev', 'Previous frame, toward the front of the box')], ['▶', 1, __alloT('stem.beehive.hive3d_frame_next', 'Next frame, toward the back of the box')]].map(function(step, stepIndex) {
+                var nextFrame = Math.max(0, Math.min(HIVE_3D_FRAME_COUNT - 1, hive3dFrame + step[1]));
+                var atEnd = nextFrame === hive3dFrame;
+                return h('button', {
+                  key: 'hive-frame-' + stepIndex,
+                  type: 'button',
+                  onClick: function() {
+                    if (atEnd) return;
+                    updFn(function(b) {
+                      b.hive3dFrame = nextFrame;
+                      var seen = Array.isArray(b.hive3dFramesSeen) ? b.hive3dFramesSeen.slice() : [];
+                      [hive3dFrame, nextFrame].forEach(function(idx) {
+                        if (seen.indexOf(idx) === -1) seen.push(idx);
+                      });
+                      b.hive3dFramesSeen = seen;
+                    });
+                    var nextDepth = Math.abs(nextFrame - (HIVE_3D_FRAME_COUNT - 1) / 2) / ((HIVE_3D_FRAME_COUNT - 1) / 2);
+                    announceBee('Frame ' + (nextFrame + 1) + ' of ' + HIVE_3D_FRAME_COUNT + '. '
+                      + (nextDepth > 0.75 ? 'An outside frame: almost all honey.'
+                        : nextDepth > 0.35 ? 'A shoulder frame: brood ringed by pollen, honey above.'
+                          : 'A centre frame: the widest slice of the brood nest.'), false);
+                  },
+                  'aria-label': step[2],
+                  title: step[2],
+                  disabled: hive3dStatus !== 'ready' || atEnd,
+                  className: 'min-h-[44px] min-w-[44px] rounded-lg border text-[11px] font-black ' + (dk ? 'border-amber-600/45 bg-slate-900 text-amber-100 hover:bg-slate-800' : 'border-amber-300 bg-white text-amber-800 hover:bg-amber-50'),
+                  style: { opacity: hive3dStatus === 'ready' && !atEnd ? 1 : 0.4 }
+                }, step[0]);
+              }).concat([
+                h('span', {
+                  key: 'hive-frame-readout',
+                  role: 'status',
+                  className: 'px-1 text-[11px] font-black ' + (dk ? 'text-amber-200' : 'text-amber-800')
+                }, 'Frame ' + (hive3dFrame + 1) + '/' + HIVE_3D_FRAME_COUNT)
+              ]))],
             readout: h('p', { className: 'text-[10px] leading-relaxed ' + (dk ? 'text-slate-400' : 'text-slate-500') },
               'Showing now: super ' + Math.round(hive3dHoneyFill * 100) + '% capped (' + honey + ' lb) · brood pattern ' + Math.round(hive3dBroodFill * 100) + '% (' + brood + ' cells) · mite load ' + Math.round(hive3dVarroa * 100) + '% · entrance traffic ' + Math.round(hive3dTraffic * 100) + '%' + (season === 3 ? ' (winter cluster — bees stay in)' : '') + '. '
               + hive3dSuperCount + (hive3dSuperCount === 1 ? ' super' : ' supers') + ' on the stack. '
@@ -23824,6 +24174,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 : queenHealth >= 55
                   ? 'Gaps are opening in the brood — a spotty pattern is the first sign a queen is failing.'
                   : 'The pattern is badly broken. Check for a queen before anything else.')
+              + ' Frame ' + (hive3dFrame + 1) + ' of ' + HIVE_3D_FRAME_COUNT + ': ' + hive3dFrameReading
+              + ' The nest is a rough sphere through the box, so step toward the middle and the brood widens.'
               + (hive3dSwarmPressure > 0.55 && season !== 3
                 ? ' Queen cells are hanging off the bottom bar: this colony is crowded and preparing to swarm. Add a super before it leaves.'
                 : ''))
@@ -24257,11 +24609,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     partKey: 'queen3dPart',
                     toggleKey: 'show3dQueen',
                     open: show3dQueen,
-                    title: '3D forage map',
-                    eyebrow: '🗺️ The frontline in 3D',
-                    blurb: 'Drag to turn the meadow. Each bloom shows who is working it, the flag marks where your range meets the rival’s, and the swarm turns around at that flag.',
-                    pickPrompt: 'Pick something on the map',
-                    fallback: 'The 3D forage map could not start on this device, usually because WebGL is unavailable or blocked. The 2D battlefield above carries the same frontline reading.',
+                    title: __alloT('stem.beehive.queen3d_title', '3D forage map'),
+                    eyebrow: __alloT('stem.beehive.queen3d_eyebrow', '🗺️ The frontline in 3D'),
+                    blurb: 'Drag to turn the meadow. Each bloom shows who is working it, the flag marks where your range meets the rival’s, and the swarm turns around at that flag. Everything you build stands beside your hive, the coloured domes are how far each pheromone signal reaches, and rival raiders cross the field as raid pressure rises.',
+                    pickPrompt: __alloT('stem.beehive.queen3d_pick_prompt', 'Pick something on the map'),
+                    fallback: __alloT('stem.beehive.queen3d_fallback', 'The 3D forage map could not start on this device, usually because WebGL is unavailable or blocked. The 2D battlefield above carries the same frontline reading.'),
                     accent: {
                       label: dk ? 'text-purple-300' : 'text-purple-700',
                       frame: dk ? 'border-purple-700/45' : 'border-purple-300',
@@ -24270,7 +24622,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       chipOn: dk ? 'border-purple-400 bg-purple-500/25 text-purple-100' : 'border-purple-500 bg-purple-100 text-purple-900'
                     },
                     readout: h('p', { className: 'text-[10px] leading-relaxed ' + (dk ? 'text-slate-400' : 'text-slate-500') },
-                      'Showing now: you hold ' + Math.round(queen3dShare * 100) + '% of the forage strip · brood core ' + Math.round(queenHiveHealth) + '% · ' + queenRival.name + ' ' + Math.round(queenRival.health) + '% · ' + Math.round(queenPopulation.foragers) + ' foragers assigned.')
+                      'Showing now: you hold ' + Math.round(queen3dShare * 100) + '% of the forage strip · brood core ' + Math.round(queenHiveHealth) + '% · ' + queenRival.name + ' ' + Math.round(queenRival.health) + '% · ' + Math.round(queenPopulation.foragers) + ' foragers assigned · ' + queen3dStructures.length + (queen3dStructures.length === 1 ? ' structure' : ' structures') + ' built · QMP reaches ' + Math.round(queen3dQmp * 100) + '%. '
+                      + (queen3dRaid > 0.55
+                        ? 'Raiders are crossing the meadow — guards and a narrow entrance are what stop robbing.'
+                        : queen3dRaid > 0.25
+                          ? 'Raiders are massing at the rival hive.'
+                          : 'No raid pressure worth watching yet.'))
                   }),
                   renderQueenImpactTimeline(),
                   (function() {
@@ -24743,7 +25100,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             // Legend
             h('div', { className: 'text-[11px] p-2 rounded ' + (dk ? 'bg-slate-800/50 text-slate-400' : 'bg-slate-50 text-slate-600') },
               h('strong', null, __alloT('stem.beehive.monitoring_threshold', 'Monitoring threshold: ')),
-              __alloT('stem.beehive.treat_when_mite_count_exceeds_2_of_bee', 'Treat when mite count exceeds ~2% of bees (about 15–20% on the Varroa meter here). Below that, the colony can usually manage mites via hygienic behavior.'))),
+              __alloT('stem.beehive.treat_when_mite_count_exceeds_2_of_bee', 'Treat when the mite count exceeds about 3 mites per 100 bees — the 3% threshold used elsewhere in this tool (roughly 15–20% on the Varroa meter here). Below that, a colony with good hygienic behaviour can usually hold the mites in check.'))),
 
           // Event popup (beekeeper mode only)
           viewMode === 'beekeeper' && activeEvent && h('div', { id: 'beehive-active-event', tabIndex: -1, 'data-beehive-focus-panel': 'event', role: 'region', 'aria-labelledby': 'beehive-active-event-title', className: 'rounded-xl border-2 p-4 space-y-2 ' + (activeEvent.effect && activeEvent.effect.morale > 0 ? (dk ? 'bg-amber-900/30 border-amber-600/50' : 'bg-amber-50 border-amber-300') : (dk ? 'bg-red-900/30 border-red-600/50' : 'bg-red-50 border-red-300')) },
@@ -24995,7 +25352,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   widthFor,
                   {
                     cardCls: dk ? 'bg-emerald-900/15 border-emerald-500' : 'bg-emerald-50/70 border-emerald-300',
-                    what: 'Percentage of forager-age workers actively bringing nectar + pollen home. Driven by weather, bloom availability, distance to forage, and pesticide load. Each forager visits 50–1,000 flowers per trip.',
+                    what: 'Percentage of forager-age workers actively bringing nectar + pollen home. Driven by weather, bloom availability, distance to forage, and pesticide load. Each forager visits 50–100 flowers per trip.',
                     healthy: '70–100%',
                     watch: '40–69%',
                     danger: '<25%',
@@ -25813,6 +26170,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       HIVE_3D_PARTS: HIVE_3D_PARTS, QUEEN_3D_PARTS: QUEEN_3D_PARTS,
       bhCombCellRole: bhCombCellRole, bhCombCellColor: bhCombCellColor,
       bhQueenMarkIndex: bhQueenMarkIndex, BH_QUEEN_MARK_NAMES: BH_QUEEN_MARK_NAMES,
+      bhQueenStructurePosition: bhQueenStructurePosition, QUEEN_MAP_PAD: QUEEN_MAP_PAD,
       hive3dBuildScene: hive3dBuildScene, queen3dBuildScene: queen3dBuildScene,
       build3dMiniBee: build3dMiniBee, beatBeeWings: beatBeeWings,
       BEE_SPECIES: BEE_SPECIES, COLONY_ROLES: COLONY_ROLES,

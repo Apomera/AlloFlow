@@ -68,7 +68,9 @@ describe('Music Synthesizer — metronome is reachable', () => {
 describe('Music Synthesizer — one tempo, and it is settable', () => {
   it('reads tempo from the value the UI writes', () => {
     const source = read();
-    expect(source).toContain('var tempoBPM = d.seqBPM || 120;');
+    // Originally `var tempoBPM = d.seqBPM || 120;`. It now runs through safeBPM, so
+    // assert the invariant — tempo derives from d.seqBPM — rather than the spelling.
+    expect(source).toMatch(/var tempoBPM = \w+\(d\.seqBPM\);/);
     // d.bpm had no writer, so anything reading it was pinned to the default.
     expect(source).not.toMatch(/d\.bpm \|\| 120/);
     const writesSeqBPM = (source.match(/upd\('seqBPM'/g) || []).length;
@@ -94,8 +96,22 @@ describe('Music Synthesizer — held notes are released', () => {
     // The note registry lives on window and outlives the component, so a note held
     // while navigating away sustained forever — and its stale registry entry made
     // playNote() early-return for that key on every later visit.
-    expect(source).toMatch(/return function \(\) \{ stopSequencer\(\); stopMetronome\(\); stopArpeggiator\(\); stopAllNotes\(\); \};/);
-    expect(source).toMatch(/setStemLabTool\(null\); stopSequencer\(\); stopMetronome\(\); stopArpeggiator\(\); stopAllNotes\(\);/);
+    //
+    // Assert that each transport is stopped in both teardown paths, rather than
+    // pinning the exact call sequence: new transports get added to these lists (the
+    // rhythm scheduler was, after this test was first written) and an order-sensitive
+    // assertion fails on a correct change.
+    const required = ['stopSequencer()', 'stopMetronome()', 'stopArpeggiator()', 'stopAllNotes()'];
+
+    const unmountAt = source.indexOf('React.useEffect(function () { return function () { stopSequencer()');
+    expect(unmountAt, 'unmount teardown effect').toBeGreaterThan(-1);
+    const unmount = source.slice(unmountAt, source.indexOf('}, []);', unmountAt));
+    for (const call of required) expect(unmount, 'unmount should call ' + call).toContain(call);
+
+    const backAt = source.indexOf('setStemLabTool(null); stopSequencer()');
+    expect(backAt, 'back-to-tools handler').toBeGreaterThan(-1);
+    const back = source.slice(backAt, backAt + 220);
+    for (const call of required) expect(back, 'back button should call ' + call).toContain(call);
   });
 
   it('iterates the whole registry rather than a known list of ids', () => {

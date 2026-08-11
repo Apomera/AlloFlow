@@ -36,13 +36,20 @@ import { GlHarness } from './helpers/stem_gl_harness';
 // (An element screenshot scrolls implicitly, which is why the clip rewrite that
 // dropped the scroll broke three tests at once.) The clip is then taken against
 // the full-page image so a bay below the fold still resolves.
+// NOT fullPage. A full-page rasterise of this harness (a tall unstyled page
+// carrying a live 2D beekeeper canvas as well as the WebGL bay) costs several
+// seconds per shot under SwiftShader, and four shots a test pushed two tests
+// past the 180s budget whenever the suite ran under load — they passed alone
+// and flaked in company, which is the signature of a cost problem rather than
+// a race. Scrolling first puts the canvas inside the viewport, so a plain
+// viewport clip resolves and costs a fraction as much.
 async function shotBay(page: any, selector: string, path?: string): Promise<Buffer> {
   const canvas = page.locator(selector + ' canvas');
   await canvas.scrollIntoViewIfNeeded();
   await page.waitForTimeout(250);
   const box = await canvas.boundingBox();
   if (!box) throw new Error('no canvas to screenshot for ' + selector);
-  const opts: Record<string, unknown> = { clip: box, fullPage: true, timeout: 60_000 };
+  const opts: Record<string, unknown> = { clip: box, timeout: 60_000 };
   if (path) opts.path = path;
   return page.screenshot(opts);
 }
@@ -202,6 +209,43 @@ test.describe('Beehive 3D hive bay', () => {
     await expect(page.getByRole('button', { name: /Queen in cluster/i })).toBeDisabled();
   });
 
+  // Stepping through the frames is what an inspection IS, and it carries the
+  // one idea a single comb face cannot: the nest is a sphere through the box,
+  // so an outside frame is honey and a middle frame is brood.
+  test('stepping through the frames reads a different comb each time', async ({ page }, testInfo) => {
+    await harness.mount(page, { beehive: Object.assign({}, STRONG_COLONY, { hive3dPart: 'brood_frames', hive3dFrame: 0 }) });
+    await page.waitForTimeout(1600);
+    await shotBay(page, '[data-beehive-3d-bay="hive"]', testInfo.outputPath('beehive-hive-3d-frame-outer.png'));
+    const outer = await shotBay(page, '[data-beehive-3d-bay="hive"]');
+
+    const next = page.getByRole('button', { name: /Next frame, toward the back of the box/i });
+    for (let i = 0; i < 3; i += 1) {
+      await next.click();
+      await page.waitForTimeout(500);
+    }
+    expect(await page.evaluate(() => (window as any).__toolData.beehive.hive3dFrame)).toBe(3);
+    await page.waitForTimeout(1400);
+    await shotBay(page, '[data-beehive-3d-bay="hive"]', testInfo.outputPath('beehive-hive-3d-frame-centre.png'));
+    const centre = await shotBay(page, '[data-beehive-3d-bay="hive"]');
+
+    expect(Buffer.compare(outer, centre), 'an outside frame and a centre frame rasterised identically').not.toBe(0);
+    // The stepper has to stop at the ends rather than wrapping or running off.
+    await expect(page.getByRole('button', { name: /Previous frame, toward the front of the box/i })).toBeEnabled();
+  });
+
+  test('the frame stepper stops at both walls of the box', async ({ page }) => {
+    await harness.mount(page, { beehive: Object.assign({}, STRONG_COLONY, { hive3dFrame: 0 }) });
+    await page.waitForTimeout(1200);
+    const prev = page.getByRole('button', { name: /Previous frame, toward the front of the box/i });
+    const next = page.getByRole('button', { name: /Next frame, toward the back of the box/i });
+    await expect(prev).toBeDisabled();
+
+    for (let i = 0; i < 5; i += 1) { await next.click(); await page.waitForTimeout(220); }
+    expect(await page.evaluate(() => (window as any).__toolData.beehive.hive3dFrame)).toBe(5);
+    await expect(next).toBeDisabled();
+    await expect(prev).toBeEnabled();
+  });
+
   test('colony state reaches the geometry — a full super differs from an empty one', async ({ page }) => {
     await harness.mount(page, { beehive: Object.assign({}, STRONG_COLONY, { honey: 0, brood: 0, varroaLevel: 0, workers: 0 }) });
     const empty = await shotBay(page, '[data-beehive-3d-bay="hive"]');
@@ -236,6 +280,55 @@ test.describe('Beehive 3D forage map', () => {
 
     const errors = await page.evaluate(() => (window as any).__events.errors);
     expect(errors, 'errors while building the forage map').toEqual([]);
+  });
+
+  // Building is the RTS's main verb. If a placed structure does not appear on
+  // the map, the 3D view is scenery rather than a model of this colony.
+  test('what the player built stands on the map', async ({ page }, testInfo) => {
+    await harness.mount(page, { beehive: Object.assign({}, QUEEN_RUN, {
+      queen: Object.assign({}, QUEEN_RUN.queen, { structures: [] })
+    }) }, undefined, { expectCanvas: false });
+    await page.waitForSelector('[data-beehive-3d-bay="queen"] canvas', { timeout: 30_000 });
+    await page.waitForTimeout(1400);
+    const empty = await shotBay(page, '[data-beehive-3d-bay="queen"]');
+
+    await page.evaluate(() => {
+      const d: any = (window as any).__toolData.beehive;
+      (window as any).__ctx.updateMulti('beehive', {
+        queen: Object.assign({}, d.queen, {
+          structures: [
+            { type: 'brood', x: 0.25, y: 0.5, level: 2 },
+            { type: 'guard', x: 0.44, y: 0.62, level: 3 },
+            { type: 'nursery', x: 0.32, y: 0.22, level: 1 }
+          ]
+        })
+      });
+    });
+    await page.waitForTimeout(1800);
+    await shotBay(page, '[data-beehive-3d-bay="queen"]', testInfo.outputPath('beehive-forage-3d-built.png'));
+    const built = await shotBay(page, '[data-beehive-3d-bay="queen"]');
+
+    expect(Buffer.compare(empty, built), 'placing three structures changed nothing on the map').not.toBe(0);
+  });
+
+  test('raid pressure sends raiders across the meadow', async ({ page }) => {
+    await harness.mount(page, { beehive: Object.assign({}, QUEEN_RUN, {
+      queen: Object.assign({}, QUEEN_RUN.queen, { rival: { name: 'Thistle Crown', health: 90, pressure: 0 } })
+    }) }, undefined, { expectCanvas: false });
+    await page.waitForSelector('[data-beehive-3d-bay="queen"] canvas', { timeout: 30_000 });
+    await page.waitForTimeout(1400);
+    const calm = await shotBay(page, '[data-beehive-3d-bay="queen"]');
+
+    await page.evaluate(() => {
+      const d: any = (window as any).__toolData.beehive;
+      (window as any).__ctx.updateMulti('beehive', {
+        queen: Object.assign({}, d.queen, { rival: Object.assign({}, d.queen.rival, { pressure: 88 }) })
+      });
+    });
+    await page.waitForTimeout(1800);
+    const raided = await shotBay(page, '[data-beehive-3d-bay="queen"]');
+
+    expect(Buffer.compare(calm, raided), 'raid pressure did not put raiders on the map').not.toBe(0);
   });
 
   test('the frontline moves the meadow, not just a number', async ({ page }) => {

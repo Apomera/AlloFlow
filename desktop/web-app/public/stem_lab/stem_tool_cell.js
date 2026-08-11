@@ -17779,6 +17779,32 @@ var d = labToolData.cell || {};
 
           ];
 
+          // ── The 200 questions that were authored and never wired ──────────
+          // EXTRA_QUIZ was declared and referenced nowhere, so 200 questions —
+          // 40 each across Anatomy, Function, History, Behavior and
+          // Reproduction — never reached a learner while the live bank held 20.
+          //
+          // The two use different field names (question/correctAnswer vs q/a).
+          // This quiz grades by TEXT, case-insensitively, so before wiring it
+          // was verified that all 200 correctAnswers match exactly one of their
+          // own four options under that comparison, and that none duplicates a
+          // live question. Anything that stops matching is dropped rather than
+          // shown as a question where every choice is wrong.
+          Array.prototype.push.apply(QUIZ_BANK, EXTRA_QUIZ.map(function (q) {
+            if (!q || !Array.isArray(q.options) || typeof q.correctAnswer !== 'string') return null;
+            var target = q.correctAnswer.toLowerCase();
+            if (!q.options.some(function (o) { return typeof o === 'string' && o.toLowerCase() === target; })) return null;
+            return {
+              q: q.question,
+              a: q.correctAnswer,
+              options: q.options.slice(),
+              hint: q.hint || q.explanation,
+              explanation: q.explanation,
+              category: q.category,
+              difficulty: q.difficulty
+            };
+          }).filter(Boolean));
+
 
 
           // ── Canvas ref callback for simulation ──
@@ -21207,7 +21233,7 @@ var d = labToolData.cell || {};
                   { id: 'knowledge', label: 'Knowledge & History', icon: '📚', desc: 'History, biologists, labs, diseases, ecology', color: 'amber',
                     modes: ['history', 'biologists', 'lab', 'disease', 'ecology'] },
                   { id: 'reference', label: 'Reference & Reflection', icon: '✨', desc: 'Glossary + finale', color: 'indigo',
-                    modes: ['glossary', 'finale'] }
+                    modes: ['glossary', 'library', 'finale'] }
                 ];
                 var CELL_MODE_LABELS = {
                   observe: '👁 Observe', interior: '🔬 Inside the Cell', play: '🎮 Play', quiz: '🧠 Quiz',
@@ -21216,7 +21242,7 @@ var d = labToolData.cell || {};
                   encyclopedia: '📚 Encyclopedia', filter: '🔍 Filter', compare: '⚖ Compare',
                   history: '📜 History', biologists: '🧑‍🔬 Biologists', lab: '🔬 Lab Techniques',
                   disease: '🦠 Diseases', ecology: '🌍 Ecology',
-                  glossary: '📖 Glossary', finale: '🎆 Finale'
+                  glossary: '📖 Glossary', library: '📚 Library', finale: '🎆 Finale'
                 };
                 var CELL_CATEGORY_STYLE = {
                   interactive: { border: '#86efac', active: '#15803d', bg: '#f0fdf4', text: '#166534' },
@@ -21231,7 +21257,7 @@ var d = labToolData.cell || {};
                 var atHub = !d._cellCategory && !d._cellSearch && !d._cellPicked;
                 var activeCat = CELL_CATEGORIES.find(function(c) { return c.id === activeCategoryId; });
                 var searchTerm = (d._cellSearch || '').toLowerCase();
-                var allModes = ['observe','interior','microdissection','processes','play','quiz','encyclopedia','filter','compare','history','biologists','lab','disease','ecology','glossary','finale'];
+                var allModes = ['observe','interior','microdissection','processes','play','quiz','encyclopedia','filter','compare','history','biologists','lab','disease','ecology','glossary','library','finale'];
                 // Grade gate: hide the Diseases mode (STIs, death tolls) from K-2 and 3-5.
                 if (!cellBandAllowsClinical) { CELL_CATEGORIES.forEach(function(c) { c.modes = c.modes.filter(function(m) { return m !== 'disease'; }); }); allModes = allModes.filter(function(m) { return m !== 'disease'; }); }
                 var searchResults = searchTerm ? allModes.filter(function(m) { return (CELL_MODE_LABELS[m] || m).toLowerCase().indexOf(searchTerm) !== -1; }) : null;
@@ -22241,6 +22267,14 @@ var d = labToolData.cell || {};
                 d.quizFeedback && React.createElement("div", { role: "status", "aria-live": "polite", className: "mt-3 p-3 bg-white rounded-lg border text-left text-xs font-normal space-y-2 " + (d.quizFeedback.correct ? "border-green-200 animate-pulse" : "border-red-200") },
 
                   React.createElement("p", { className: "font-bold text-sm " + (d.quizFeedback.correct ? "text-green-700" : "text-red-600") }, d.quizFeedback.msg),
+
+                  // A correct answer previously said only "Correct! +10 XP" and
+                  // taught nothing. Questions that carry an explanation now show
+                  // it either way; the older bank entries have none, so their
+                  // feedback is unchanged.
+                  quizQuestion.explanation && React.createElement("p", {
+                    className: "text-slate-700 leading-relaxed font-normal mt-1"
+                  }, quizQuestion.explanation),
 
                   !d.quizFeedback.correct && React.createElement("div", { className: "space-y-2" },
                     React.createElement("p", { className: "text-slate-700 leading-relaxed font-normal" },
@@ -24039,6 +24073,145 @@ var d = labToolData.cell || {};
               );
             })(),
 
+            // ═══════════════════════════════════════════════════════════
+            // LIBRARY MODE — the reference tables that were never wired
+            // ═══════════════════════════════════════════════════════════
+            // Twenty-six tables in this file were authored and then referenced
+            // nowhere: a 213-entry microbe catalogue, 200 trivia items, 200
+            // study questions, organelle and human-cell atlases, metabolic and
+            // signalling pathways, lab equipment and safety, careers and lesson
+            // plans. Roughly 1,770 entries that no learner could reach.
+            //
+            // The index lives inside this block because every table is declared
+            // within render(). `titleKey` names the field to use as an entry's
+            // heading, since several of these tables key on a slug id.
+            d.mode === 'library' && (function () {
+              var LIBRARY = [
+                { id: 'MICROBE_SPECIES', title: 'Microbe species catalogue', group: 'Organisms', titleKey: 'name', data: MICROBE_SPECIES },
+                { id: 'HUMAN_CELLS', title: 'Human cell types', group: 'Organisms', titleKey: 'name', data: HUMAN_CELLS },
+                { id: 'ORGANELLE_ATLAS', title: 'Organelle atlas', group: 'Organisms', titleKey: 'name', data: ORGANELLE_ATLAS },
+                { id: 'EVOLUTION_LINEAGES', title: 'Evolution lineages', group: 'Organisms', titleKey: 'event', data: EVOLUTION_LINEAGES },
+
+                { id: 'CELL_PROCESSES', title: 'Cell processes', group: 'Processes', titleKey: 'process', data: CELL_PROCESSES },
+                { id: 'METABOLIC_PATHWAYS', title: 'Metabolic pathways', group: 'Processes', titleKey: 'pathway', data: METABOLIC_PATHWAYS },
+                { id: 'SIGNAL_PATHWAYS', title: 'Signalling pathways', group: 'Processes', titleKey: 'pathway', data: SIGNAL_PATHWAYS },
+                { id: 'DNA_REFERENCE', title: 'DNA reference', group: 'Processes', titleKey: 'concept', data: DNA_REFERENCE },
+                { id: 'INHERITANCE', title: 'Inheritance patterns', group: 'Processes', titleKey: 'pattern', data: INHERITANCE },
+                { id: 'MICRO_CASES', title: 'Microbial mechanisms', group: 'Processes', titleKey: 'process', data: MICRO_CASES },
+
+                { id: 'LAB_EQUIPMENT', title: 'Lab equipment', group: 'Lab & technique', titleKey: 'item', data: LAB_EQUIPMENT },
+                { id: 'LAB_SAFETY', title: 'Lab safety scenarios', group: 'Lab & technique', titleKey: 'scenario', data: LAB_SAFETY },
+                { id: 'MICROSCOPY', title: 'Microscopy techniques', group: 'Lab & technique', titleKey: 'technique', data: MICROSCOPY },
+                { id: 'FAMOUS_EXPERIMENTS', title: 'Famous experiments', group: 'Lab & technique', titleKey: 'name', data: FAMOUS_EXPERIMENTS },
+
+                { id: 'MICRO_NICHES', title: 'Microbial niches', group: 'Ecology', titleKey: 'niche', data: MICRO_NICHES },
+                { id: 'MICROBIOME_STUDIES', title: 'Microbiome studies', group: 'Ecology', titleKey: 'microbiome', data: MICROBIOME_STUDIES },
+
+                { id: 'LESSON_PLANS', title: 'Lesson plans', group: 'Teaching & study', titleKey: 'title', data: LESSON_PLANS },
+                { id: 'STUDY_QS', title: 'Study questions', group: 'Teaching & study', titleKey: 'question', data: STUDY_QS },
+                { id: 'CELL_CAREERS', title: 'Careers in cell biology', group: 'Teaching & study', titleKey: 'title', data: CELL_CAREERS },
+
+                { id: 'CELL_TRIVIA', title: 'Trivia', group: 'Facts & culture', titleKey: 'fact', data: CELL_TRIVIA },
+                { id: 'QUICK_FACTS', title: 'Quick facts', group: 'Facts & culture', titleKey: 'fact', data: QUICK_FACTS },
+                { id: 'CELL_RECORDS', title: 'Record holders', group: 'Facts & culture', titleKey: 'record', data: CELL_RECORDS },
+                { id: 'CELL_QUOTES', title: 'Quotations', group: 'Facts & culture', titleKey: 'quote', data: CELL_QUOTES },
+                { id: 'MICRO_MYTHS', title: 'Myths corrected', group: 'Facts & culture', titleKey: 'myth', data: MICRO_MYTHS }
+              ];
+              // Clinical tables follow the same grade gate the Diseases mode
+              // uses, so pathogen case studies and antibiotics stay out of K-5.
+              if (cellBandAllowsClinical) {
+                LIBRARY.push({ id: 'CASE_STUDIES', title: 'Outbreak case studies', group: 'Health & disease', titleKey: 'event', data: CASE_STUDIES });
+                LIBRARY.push({ id: 'ANTIBIOTICS', title: 'Antibiotics', group: 'Health & disease', titleKey: 'name', data: ANTIBIOTICS });
+              }
+
+              var groups = [];
+              LIBRARY.forEach(function (s) { if (groups.indexOf(s.group) === -1) groups.push(s.group); });
+              // A stored shelf can disappear between visits — the clinical shelf
+              // is gated by grade band. Falling through to LIBRARY[0] then showed
+              // an Organisms table under a shelf that was not even on screen, so
+              // an unavailable selection resets to the first real shelf instead.
+              var group = groups.indexOf(d._libGroup) !== -1 ? d._libGroup : groups[0];
+              var visible = LIBRARY.filter(function (s) { return s.group === group; });
+              var pickId = d._libSection || (visible[0] || LIBRARY[0]).id;
+              // Likewise, a stored table from another shelf must not leak into
+              // the shelf the learner is actually looking at.
+              var active = visible.filter(function (s) { return s.id === pickId; })[0] || visible[0] || LIBRARY[0];
+              var totalEntries = LIBRARY.reduce(function (n, s) { return n + (s.data ? s.data.length : 0); }, 0);
+
+              function labelOf(key) {
+                return key.replace(/([A-Z])/g, ' $1').replace(/^./, function (c) { return c.toUpperCase(); });
+              }
+              function valueOf(v) {
+                if (v == null) return null;
+                if (Array.isArray(v)) return React.createElement('span', { className: 'text-slate-700' }, v.join(', '));
+                if (typeof v === 'object') {
+                  return React.createElement('span', { className: 'text-slate-700' },
+                    Object.keys(v).map(function (k) { return k + ': ' + v[k]; }).join(' · '));
+                }
+                return React.createElement('span', { className: 'text-slate-700' }, String(v));
+              }
+              function entryOf(item, i) {
+                if (typeof item === 'string') {
+                  return React.createElement('li', { key: i, className: 'bg-indigo-50 border border-indigo-200 rounded p-2 text-xs text-slate-800' }, item);
+                }
+                var heading = (active.titleKey && item[active.titleKey] != null)
+                  ? String(item[active.titleKey]) : ('Entry ' + (i + 1));
+                return React.createElement('li', { key: i, className: 'bg-indigo-50 border border-indigo-200 rounded p-2 text-xs' },
+                  React.createElement('div', { className: 'font-bold text-indigo-800 mb-0.5' }, heading),
+                  Object.keys(item).filter(function (k) { return k !== active.titleKey && k !== 'id'; }).map(function (k) {
+                    var node = valueOf(item[k]);
+                    if (!node) return null;
+                    return React.createElement('div', { key: k, className: 'text-slate-700' },
+                      React.createElement('span', { className: 'font-bold text-indigo-600' }, labelOf(k) + ': '), node);
+                  })
+                );
+              }
+
+              return React.createElement('div', { className: 'mt-4 bg-white rounded-xl border-2 border-indigo-300 p-4', 'data-cell-library': 'true' },
+                React.createElement('div', { className: 'flex items-center gap-2 mb-1' },
+                  React.createElement('h3', { className: 'text-base font-bold text-indigo-700' }, '📚 Reference Library'),
+                  React.createElement('span', { className: 'ml-auto text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-full px-2 py-0.5' },
+                    LIBRARY.length + ' tables · ' + totalEntries + ' entries')
+                ),
+                React.createElement('p', { className: 'text-xs text-slate-600 mb-2' },
+                  'Catalogues, atlases, pathways, lab references and study sets. Pick a shelf, then a table.'),
+
+                React.createElement('div', { role: 'group', 'aria-label': 'Library shelves', className: 'flex flex-wrap gap-1 mb-2' },
+                  groups.map(function (g) {
+                    var sel = g === group;
+                    return React.createElement('button', {
+                      key: g, type: 'button', 'aria-pressed': sel ? 'true' : 'false',
+                      onClick: function () {
+                        var first = LIBRARY.filter(function (s) { return s.group === g; })[0];
+                        upd('_libGroup', g);
+                        if (first) upd('_libSection', first.id);
+                      },
+                      className: 'px-2.5 py-1 rounded-full border text-[11px] font-bold ' +
+                        (sel ? 'bg-indigo-700 text-white border-indigo-800' : 'bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-50')
+                    }, g);
+                  })
+                ),
+
+                React.createElement('div', { role: 'group', 'aria-label': 'Tables on this shelf', className: 'flex flex-wrap gap-1 mb-2' },
+                  visible.map(function (s) {
+                    var sel = s.id === active.id;
+                    return React.createElement('button', {
+                      key: s.id, type: 'button', 'aria-pressed': sel ? 'true' : 'false',
+                      onClick: function () { upd('_libSection', s.id); },
+                      className: 'px-2 py-1 rounded border text-[11px] ' +
+                        (sel ? 'bg-indigo-600 text-white border-indigo-700 font-bold' : 'bg-slate-50 text-slate-700 border-slate-300 hover:border-indigo-300')
+                    }, s.title + ' (' + s.data.length + ')');
+                  })
+                ),
+
+                React.createElement('div', { className: 'text-xs font-bold text-slate-700 mb-1' },
+                  active.title + ' — ' + active.data.length + ' entries'),
+                React.createElement('ul', {
+                  className: 'space-y-1 list-none max-h-96 overflow-y-auto pr-1',
+                  'aria-label': active.title
+                }, active.data.map(entryOf))
+              );
+            })(),
             // ═══════════════════════════════════════════════════════════
             // FINALE MODE
             // ═══════════════════════════════════════════════════════════

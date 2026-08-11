@@ -123,6 +123,14 @@ describe('Machine Lab: the build view', () => {
     expect(html).toContain('Stored in the raised counterweight');
   });
 
+  it('offers Test fire beside the 3D machine, so the swing is reachable', () => {
+    // The only Fire control used to live in the Test Range, which has no 3D
+    // view, so the machine's animation could not be watched by anyone.
+    const html = renderTool('machineLab', state({ view: 'build' }));
+    expect(html).toContain('Test fire');
+    expect(html).toContain('Watch the arm');
+  });
+
   it('shows the winch panel with the numbers that move and the one that does not', () => {
     const html = renderTool('machineLab', state({ view: 'build' }));
     expect(html).toContain('Winch mechanical advantage');
@@ -176,6 +184,31 @@ describe('Machine Lab: the energy ledger', () => {
   it('reports transfer efficiency as a percentage', () => {
     const html = renderTool('machineLab', state({ view: 'build' }));
     expect(html).toMatch(/Transfer efficiency: [\d.]+%/);
+  });
+
+  it('shows the effective mass that produces that percentage, from g68 up', () => {
+    // The efficiency is m_p/(m_p + m_eff), and the g9-12 copy quotes that
+    // formula. m_eff was computed and returned by shot() and then never shown,
+    // so the arithmetic the student was handed could not be checked.
+    const g68 = renderTool('machineLab', state({ view: 'build', bandOverride: 'g68' }));
+    expect(g68).toContain('of effective mass');
+    expect(g68).toMatch(/The stone is [\d.]+ kg, and the moving parts of the machine add another [\d.]+ kg/);
+    expect(g68).toMatch(/= [\d.]+%\./);
+
+    // Lower bands get the percentage without the algebra behind it.
+    const g35 = renderTool('machineLab', state({ view: 'build', bandOverride: 'g35' }));
+    expect(g35).toContain('Transfer efficiency');
+    expect(g35).not.toContain('of effective mass');
+  });
+
+  it('states an effective mass consistent with the efficiency it quotes', () => {
+    const html = renderTool('machineLab', state({ view: 'build', bandOverride: 'g912', projMass: 25 }));
+    const m = html.match(/The stone is ([\d.]+) kg, and the moving parts of the machine add another ([\d.]+) kg/);
+    const pct = html.match(/Transfer efficiency: ([\d.]+)%/);
+    expect(m).toBeTruthy();
+    expect(pct).toBeTruthy();
+    const mp = parseFloat(m[1]), me = parseFloat(m[2]);
+    expect(100 * (mp / (mp + me))).toBeCloseTo(parseFloat(pct[1]), 0);
   });
 
   it('refuses to draw a ledger for a machine that cannot store energy', () => {

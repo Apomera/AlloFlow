@@ -9017,6 +9017,83 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { quote: '"Maine\'s loons sing for all of us. May we listen well + protect them better."', author: 'Maine Loon Project' }
   ];
 
+  // ── Phase-4/5 deep-dive views (MODULE scope on purpose) ──
+  // A component defined inside render() gets a new function identity every
+  // host re-render, so React unmounts and remounts it — wiping its local
+  // useState (the student's place in the species browser) whenever anything
+  // writes toolData (XP awards, badges, view sync, hydration). Stable
+  // identities here mean re-renders reconcile instead of remounting.
+  // Gate: tests/stem_birdlab_view_state_stability.test.js.
+  function BirdSpeciesFamilyView(props) {
+    var ctx = props.ctx;
+    var React = ctx.React || window.React;
+    var h = React.createElement;
+    var useState = React.useState;
+    var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+    var title = props.title, icon = props.icon, items = props.items, accent = props.accent;
+    var idxState = useState(0);
+    var idx = idxState[0], setIdx = idxState[1];
+    var cur = items[idx];
+    var bg = accent.replace('bg-', '').split('-')[0];
+    return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+      h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+        h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, icon + ' ' + title),
+        h('button', { onClick: props.onMenu,
+          className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, __alloT('stem.birdlab.menu_32', '← Menu'))),
+      h('p', { className: 'text-sm text-slate-700 italic mb-3' }, items.length + ' species in this group.'),
+      h('div', { className: 'flex gap-2 flex-wrap mb-3' },
+        items.map(function(it, i) {
+          return h('button', { key: i, onClick: function() { setIdx(i); },
+            className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? accent + ' text-white' : 'bg-' + bg + '-100 text-' + bg + 'transition-colors -900 hover:bg- active:scale-[0.97]' + bg + '-200')
+          }, it.name);
+        })),
+      h('div', { className: 'bg-white rounded-xl shadow border-2 border-' + bg + '-200 p-5' },
+        h('h2', { className: 'text-xl font-black text- tracking-tight' + bg + '-900 mb-1' }, icon + ' ' + cur.name),
+        h('div', { className: 'text-xs italic text-slate-600 mb-3' }, cur.sci + (cur.size ? ' · ' + cur.size : '')),
+        h('div', { className: 'space-y-2 text-sm text-slate-700' },
+          cur.habitat ? h('div', { className: 'p-2 bg-' + bg + '-50 rounded' }, h('b', null, __alloT('stem.birdlab.habitat_10', '🌳 Habitat: ')), cur.habitat) : null,
+          cur.key_mark ? h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, __alloT('stem.birdlab.key_mark_4', '👁 Key mark: ')), cur.key_mark) : null,
+          cur.song ? h('div', { className: 'p-2 bg-purple-50 rounded' }, h('b', null, __alloT('stem.birdlab.song_2', '🎵 Song: ')), cur.song) : null,
+          cur.voice ? h('div', { className: 'p-2 bg-purple-50 rounded' }, h('b', null, __alloT('stem.birdlab.voice_5', '🔊 Voice: ')), cur.voice) : null,
+          cur.tip ? h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, __alloT('stem.birdlab.tip_5', '💡 Tip: ')), cur.tip) : null,
+          cur.maine ? h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, __alloT('stem.birdlab.maine_11', '📍 Maine: ')), cur.maine) : null,
+          cur.story ? h('div', { className: 'p-3 bg-rose-50 italic rounded' }, cur.story) : null)));
+  }
+
+  function BirdReproDeepView(props) {
+    var ctx = props.ctx;
+    var React = ctx.React || window.React;
+    var h = React.createElement;
+    var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+    return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+      h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+        h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, __alloT('stem.birdlab.bird_reproduction_deep_2', '🥚 Bird Reproduction Deep')),
+        h('button', { onClick: props.onMenu,
+          className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, __alloT('stem.birdlab.menu_31', '← Menu'))),
+      h('p', { className: 'text-sm text-slate-700 italic mb-4' }, __alloT('stem.birdlab.how_birds_make_eggs_brood_them_hatch_c', 'How birds make eggs, brood them, hatch chicks, raise young. The biology of bird reproduction.')),
+      h('div', { className: 'space-y-3' },
+        REPRO_DEEP.map(function(r, i) {
+          return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
+            h('h2', { className: 'text-lg font-black text-amber-900 mb-2 tracking-tight' }, '🥚 ' + r.topic),
+            h('div', { className: 'space-y-2 text-sm text-slate-700' },
+              r.process ? h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Process: '), r.process) : null,
+              r.mechanism ? h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Mechanism: '), r.mechanism) : null,
+              r.timing ? h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, 'Timing: '), r.timing) : null,
+              r.duration ? h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, 'Duration: '), r.duration) : null,
+              r.energetics ? h('div', { className: 'p-2 bg-rose-50 rounded' }, h('b', null, 'Energetics: '), r.energetics) : null,
+              r.eggs_under_belly ? h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, __alloT('stem.birdlab.eggs_under_belly', 'Eggs under belly: ')), r.eggs_under_belly) : null,
+              r.altricial ? h('div', { className: 'p-2 bg-rose-50 rounded' }, h('b', null, 'Altricial: '), r.altricial) : null,
+              r.precocial ? h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, 'Precocial: '), r.precocial) : null,
+              r.post_fledge ? h('div', { className: 'p-2 bg-violet-50 rounded' }, h('b', null, 'Post-fledge: '), r.post_fledge) : null,
+              r.bald_eagle ? h('div', { className: 'p-2 bg-amber-50 italic rounded' }, h('b', null, __alloT('stem.birdlab.bald_eagle_example', 'Bald Eagle example: ')), r.bald_eagle) : null,
+              r.examples ? h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, 'Examples: '), r.examples) : null,
+              r.hosts ? h('div', { className: 'p-2 bg-rose-50 rounded' }, h('b', null, 'Hosts: '), r.hosts) : null,
+              r.conservation ? h('div', { className: 'p-2 bg-rose-50 italic rounded' }, h('b', null, 'Conservation: '), r.conservation) : null,
+              r.reality ? h('div', { className: 'p-2 bg-violet-50 rounded' }, h('b', null, 'Reality: '), r.reality) : null,
+              r.function ? h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Function: '), r.function) : null));
+        })));
+  }
+
   window.StemLab.registerTool('birdLab', {
     category: 'science',
     name: 'BirdLab — I-Spy Ornithology',
@@ -21681,35 +21758,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       }
 
       // ── REPRO DEEP VIEW ─────────────────────────────────────────
-      function ReproDeepView() {
-        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
-          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, __alloT('stem.birdlab.bird_reproduction_deep_2', '🥚 Bird Reproduction Deep')),
-            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, __alloT('stem.birdlab.menu_31', '← Menu'))),
-          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, __alloT('stem.birdlab.how_birds_make_eggs_brood_them_hatch_c', 'How birds make eggs, brood them, hatch chicks, raise young. The biology of bird reproduction.')),
-          h('div', { className: 'space-y-3' },
-            REPRO_DEEP.map(function(r, i) {
-              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-amber-900 mb-2 tracking-tight' }, '🥚 ' + r.topic),
-                h('div', { className: 'space-y-2 text-sm text-slate-700' },
-                  r.process ? h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Process: '), r.process) : null,
-                  r.mechanism ? h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Mechanism: '), r.mechanism) : null,
-                  r.timing ? h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, 'Timing: '), r.timing) : null,
-                  r.duration ? h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, 'Duration: '), r.duration) : null,
-                  r.energetics ? h('div', { className: 'p-2 bg-rose-50 rounded' }, h('b', null, 'Energetics: '), r.energetics) : null,
-                  r.eggs_under_belly ? h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, __alloT('stem.birdlab.eggs_under_belly', 'Eggs under belly: ')), r.eggs_under_belly) : null,
-                  r.altricial ? h('div', { className: 'p-2 bg-rose-50 rounded' }, h('b', null, 'Altricial: '), r.altricial) : null,
-                  r.precocial ? h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, 'Precocial: '), r.precocial) : null,
-                  r.post_fledge ? h('div', { className: 'p-2 bg-violet-50 rounded' }, h('b', null, 'Post-fledge: '), r.post_fledge) : null,
-                  r.bald_eagle ? h('div', { className: 'p-2 bg-amber-50 italic rounded' }, h('b', null, __alloT('stem.birdlab.bald_eagle_example', 'Bald Eagle example: ')), r.bald_eagle) : null,
-                  r.examples ? h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, 'Examples: '), r.examples) : null,
-                  r.hosts ? h('div', { className: 'p-2 bg-rose-50 rounded' }, h('b', null, 'Hosts: '), r.hosts) : null,
-                  r.conservation ? h('div', { className: 'p-2 bg-rose-50 italic rounded' }, h('b', null, 'Conservation: '), r.conservation) : null,
-                  r.reality ? h('div', { className: 'p-2 bg-violet-50 rounded' }, h('b', null, 'Reality: '), r.reality) : null,
-                  r.function ? h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Function: '), r.function) : null));
-            })));
-      }
+      // ReproDeepView moved to module scope (BirdReproDeepView) so its
+      // identity is stable across host re-renders — see the comment above
+      // BirdSpeciesFamilyView.
 
       // VIEW DISPATCH
       // ─────────────────────────────────────────────────────
@@ -21755,58 +21806,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       if (view === 'hotspotsDeep') return h(HotspotsDeepView);
       if (view === 'duckId') return h(DuckIdView);
       if (view === 'vocalDeep') return h(VocalDeepView);
-      if (view === 'reproDeep') return h(ReproDeepView);
+      var goToMenu = function() { setView('menu'); upd('view', 'menu'); };
+      if (view === 'reproDeep') return h(BirdReproDeepView, { ctx: ctx, onMenu: goToMenu });
 
       // ═══════════════════════════════════════════════════════════
       // PHASE 4 VIEWS — species family deep dives
       // ═══════════════════════════════════════════════════════════
-      function makeSpeciesView(title, icon, items, accent) {
-        return function() {
-          var idxState = useState(0);
-          var idx = idxState[0], setIdx = idxState[1];
-          var cur = items[idx];
-          var bg = accent.replace('bg-', '').split('-')[0];
-          return h('div', { className: 'p-4 max-w-5xl mx-auto' },
-            h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-              h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, icon + ' ' + title),
-              h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-                className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, __alloT('stem.birdlab.menu_32', '← Menu'))),
-            h('p', { className: 'text-sm text-slate-700 italic mb-3' }, items.length + ' species in this group.'),
-            h('div', { className: 'flex gap-2 flex-wrap mb-3' },
-              items.map(function(it, i) {
-                return h('button', { key: i, onClick: function() { setIdx(i); },
-                  className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? accent + ' text-white' : 'bg-' + bg + '-100 text-' + bg + 'transition-colors -900 hover:bg- active:scale-[0.97]' + bg + '-200')
-                }, it.name);
-              })),
-            h('div', { className: 'bg-white rounded-xl shadow border-2 border-' + bg + '-200 p-5' },
-              h('h2', { className: 'text-xl font-black text- tracking-tight' + bg + '-900 mb-1' }, icon + ' ' + cur.name),
-              h('div', { className: 'text-xs italic text-slate-600 mb-3' }, cur.sci + (cur.size ? ' · ' + cur.size : '')),
-              h('div', { className: 'space-y-2 text-sm text-slate-700' },
-                cur.habitat ? h('div', { className: 'p-2 bg-' + bg + '-50 rounded' }, h('b', null, __alloT('stem.birdlab.habitat_10', '🌳 Habitat: ')), cur.habitat) : null,
-                cur.key_mark ? h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, __alloT('stem.birdlab.key_mark_4', '👁 Key mark: ')), cur.key_mark) : null,
-                cur.song ? h('div', { className: 'p-2 bg-purple-50 rounded' }, h('b', null, __alloT('stem.birdlab.song_2', '🎵 Song: ')), cur.song) : null,
-                cur.voice ? h('div', { className: 'p-2 bg-purple-50 rounded' }, h('b', null, __alloT('stem.birdlab.voice_5', '🔊 Voice: ')), cur.voice) : null,
-                cur.tip ? h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, __alloT('stem.birdlab.tip_5', '💡 Tip: ')), cur.tip) : null,
-                cur.maine ? h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, __alloT('stem.birdlab.maine_11', '📍 Maine: ')), cur.maine) : null,
-                cur.story ? h('div', { className: 'p-3 bg-rose-50 italic rounded' }, cur.story) : null)));
-        };
+      // Species-family views are one module-scope component
+      // (BirdSpeciesFamilyView) parameterized per family and keyed, so
+      // switching families remounts fresh while re-renders of the same
+      // family keep the student's place.
+      var speciesFamilyProps = {
+        sparrows:    { title: 'Maine Sparrows',            icon: '🐦', items: SPARROWS,           accent: 'bg-stone-700' },
+        thrushes:    { title: 'Maine Thrushes',            icon: '🎵', items: THRUSHES,           accent: 'bg-amber-700' },
+        woodpeckers: { title: 'Maine Woodpeckers',         icon: '🪓', items: WOODPECKERS,        accent: 'bg-rose-700' },
+        finches:     { title: 'Maine Finches',             icon: '🌻', items: FINCHES,            accent: 'bg-yellow-700' },
+        blackbirds:  { title: 'Maine Blackbirds + Corvids', icon: '⬛', items: BLACKBIRDS_CROWS,   accent: 'bg-slate-700' },
+        hummswift:   { title: 'Hummingbirds + Swifts',     icon: '🐝', items: HUMM_SWIFT,         accent: 'bg-emerald-700' },
+        flyvireo:    { title: 'Flycatchers + Vireos',      icon: '🦟', items: FLYCATCHERS_VIREOS, accent: 'bg-teal-700' }
+      };
+      if (speciesFamilyProps[view]) {
+        var sfp = speciesFamilyProps[view];
+        return h(BirdSpeciesFamilyView, {
+          key: view, ctx: ctx, onMenu: goToMenu,
+          title: sfp.title, icon: sfp.icon, items: sfp.items, accent: sfp.accent
+        });
       }
-
-      var SparrowsView = makeSpeciesView('Maine Sparrows', '🐦', SPARROWS, 'bg-stone-700');
-      var ThrushesView = makeSpeciesView('Maine Thrushes', '🎵', THRUSHES, 'bg-amber-700');
-      var WoodpeckersView = makeSpeciesView('Maine Woodpeckers', '🪓', WOODPECKERS, 'bg-rose-700');
-      var FinchesView = makeSpeciesView('Maine Finches', '🌻', FINCHES, 'bg-yellow-700');
-      var BlackbirdsCrowsView = makeSpeciesView('Maine Blackbirds + Corvids', '⬛', BLACKBIRDS_CROWS, 'bg-slate-700');
-      var HummSwiftView = makeSpeciesView('Hummingbirds + Swifts', '🐝', HUMM_SWIFT, 'bg-emerald-700');
-      var FlyVireoView = makeSpeciesView('Flycatchers + Vireos', '🦟', FLYCATCHERS_VIREOS, 'bg-teal-700');
-
-      if (view === 'sparrows') return h(SparrowsView);
-      if (view === 'thrushes') return h(ThrushesView);
-      if (view === 'woodpeckers') return h(WoodpeckersView);
-      if (view === 'finches') return h(FinchesView);
-      if (view === 'blackbirds') return h(BlackbirdsCrowsView);
-      if (view === 'hummswift') return h(HummSwiftView);
-      if (view === 'flyvireo') return h(FlyVireoView);
 
       // ═══════════════════════════════════════════════════════════
       // PHASE 5 VIEWS

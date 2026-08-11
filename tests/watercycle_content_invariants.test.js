@@ -28,12 +28,19 @@ beforeAll(() => {
   const src = fs.readFileSync(SRC_PATH, 'utf8');
   const fnStart = src.indexOf('function wcShuffleOpts');
   const fnEnd = src.indexOf('\n  }', fnStart);
-  const litStart = src.indexOf('var WATER_CYCLE_QUIZZES = {');
-  const litEnd = src.indexOf('\n  };', litStart);
-  if (fnStart < 0 || litStart < 0) throw new Error('waterCycle source markers not found');
+  // The bank is now built by wcQuizBank(t) so its strings can be translated.
+  // Lift the builder plus the bank and evaluate it with an English translator —
+  // this exercises the real shipped assembly rather than a copy of the data.
+  const qStart = src.indexOf('function wcQuizQuestion(');
+  const bankStart = src.indexOf('function wcQuizBank(');
+  const bankEnd = src.indexOf('\n  }', src.indexOf('    };', bankStart));
+  if (fnStart < 0 || qStart < 0 || bankStart < 0) throw new Error('waterCycle source markers not found');
   pure = new Function(
-    src.slice(fnStart, fnEnd + 4) + '\n' + src.slice(litStart, litEnd + 4) +
-    '\nreturn { wcShuffleOpts: wcShuffleOpts, WATER_CYCLE_QUIZZES: WATER_CYCLE_QUIZZES };'
+    src.slice(fnStart, fnEnd + 4) + '\n'
+    + src.slice(qStart, bankStart) + '\n'
+    + src.slice(bankStart, bankEnd + 4) + '\n'
+    + 'var __english = function (key, fallback) { return fallback == null ? key : fallback; };'
+    + '\nreturn { wcShuffleOpts: wcShuffleOpts, WATER_CYCLE_QUIZZES: wcQuizBank(__english) };'
   )();
 });
 

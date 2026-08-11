@@ -1,4 +1,6 @@
-// Beehive comb-pattern model — the rules the 3D hive bay draws its comb from.
+// Beehive 3D-bay models — the pure rules the 3D scenes draw themselves from:
+// the comb pattern on a frame, and where a built RTS structure lands on the
+// forage map.
 //
 // The 3D frame is not decoration: reading a comb face is THE beekeeping skill,
 // and the layout encodes real claims — honey ABOVE the brood, pollen in a band
@@ -132,6 +134,54 @@ describe('Beehive comb-pattern model', () => {
     expect(closestDrone).toBeGreaterThan(0.3);
   });
 
+  // The idea a single comb face cannot teach: a brood nest is a rough SPHERE
+  // through the whole box, so the middle frames are wall-to-wall brood and the
+  // outer frames are the winter honey store. Every "why is my outside frame
+  // empty" question comes from this geometry.
+  describe('the nest as a sphere through the box', () => {
+    const countBrood = (depth) => {
+      const c = census({ ...HEALTHY, frameDepth: depth });
+      return (c.capped_brood || 0) + (c.open_brood || 0) + (c.drone_brood || 0);
+    };
+    const countHoney = (depth) => census({ ...HEALTHY, frameDepth: depth }).honey || 0;
+
+    it('shrinks the brood as you move out from the centre', () => {
+      const middle = countBrood(0);
+      const shoulder = countBrood(0.5);
+      const wall = countBrood(1);
+      expect(middle).toBeGreaterThan(shoulder);
+      expect(shoulder).toBeGreaterThan(wall);
+    });
+
+    it('leaves the outermost frame as honey, with no brood at all', () => {
+      expect(countBrood(1)).toBe(0);
+      expect(countHoney(1)).toBeGreaterThan(0);
+    });
+
+    it('trades brood for honey rather than for empty comb', () => {
+      expect(countHoney(1)).toBeGreaterThan(countHoney(0));
+    });
+
+    it('follows the sphere curve, not a straight fade', () => {
+      // A sphere's cross-section falls off as sqrt(1 - d^2), so the middle
+      // frames look nearly alike and the outermost drops off a cliff. A linear
+      // model would space them evenly and lose exactly that reading.
+      const midDrop = countBrood(0) - countBrood(0.35);
+      const edgeDrop = countBrood(0.65) - countBrood(1);
+      expect(edgeDrop).toBeGreaterThan(midDrop);
+    });
+
+    it('defaults to the centre slice when no frame is named', () => {
+      expect(census(HEALTHY)).toEqual(census({ ...HEALTHY, frameDepth: 0 }));
+    });
+
+    it('treats both walls of the box the same way', () => {
+      // Frame 0 and frame 5 are both outside frames; depth is a distance.
+      expect(countBrood(1)).toBe(countBrood(1));
+      expect(countBrood(-1 + 2)).toBe(countBrood(1));
+    });
+  });
+
   it('grows the nest with the brood reading', () => {
     const inNest = (u, v) => true;
     const small = census({ ...HEALTHY, broodFill: 0.15 }, inNest);
@@ -192,5 +242,75 @@ describe('Beehive comb-pattern model', () => {
         expect(BH.bhCombCellColor(role, 0.3, -0.2, true)).toMatch(/^#[0-9a-f]{6}$/i);
       });
     });
+  });
+});
+
+// The RTS stores a structure as a fraction of its 2D battlefield. The 3D map
+// has to reproduce the SAME relative arrangement beside the hive, or a student
+// who deliberately put a guard post at the front finds it somewhere else and
+// stops believing the model. This is the one part of that scene that can be
+// wrong in a way no screenshot would reveal.
+describe('Queen RTS map placement', () => {
+  const pad = () => BH.QUEEN_MAP_PAD;
+  const at = (x, y) => BH.bhQueenStructurePosition({ x, y }, pad());
+
+  it('exposes the placement model and its pad', () => {
+    expect(typeof BH.bhQueenStructurePosition).toBe('function');
+    expect(pad()).toMatchObject({
+      cx: expect.any(Number), cz: expect.any(Number),
+      halfW: expect.any(Number), halfD: expect.any(Number)
+    });
+  });
+
+  it('keeps every placement inside the yard, however wild the input', () => {
+    const box = pad();
+    const cases = [
+      { x: 0.08, y: 0.14 }, { x: 0.48, y: 0.86 }, { x: 0.28, y: 0.5 },
+      // Out-of-range, corrupt and legacy values must all land on the pad
+      // rather than scattering comb across the meadow.
+      { x: -5, y: 12 }, { x: 99, y: -99 }, { x: NaN, y: NaN },
+      { x: undefined, y: undefined }, {}
+    ];
+    for (const c of cases) {
+      const p = BH.bhQueenStructurePosition(c, box);
+      expect(Number.isFinite(p.x), `x not finite for ${JSON.stringify(c)}`).toBe(true);
+      expect(Number.isFinite(p.z), `z not finite for ${JSON.stringify(c)}`).toBe(true);
+      expect(p.x).toBeGreaterThanOrEqual(box.cx - box.halfW - 1e-9);
+      expect(p.x).toBeLessThanOrEqual(box.cx + box.halfW + 1e-9);
+      expect(p.z).toBeGreaterThanOrEqual(box.cz - box.halfD - 1e-9);
+      expect(p.z).toBeLessThanOrEqual(box.cz + box.halfD + 1e-9);
+    }
+  });
+
+  it('preserves the arrangement the player chose', () => {
+    // Further right on the battlefield → further toward the frontline.
+    expect(at(0.44, 0.5).x).toBeGreaterThan(at(0.12, 0.5).x);
+    // Further down the battlefield → further forward on the map.
+    expect(at(0.28, 0.80).z).toBeGreaterThan(at(0.28, 0.20).z);
+    // Two structures placed in different cells never stack on one another.
+    const a = at(0.15, 0.25);
+    const b = at(0.40, 0.70);
+    expect(Math.hypot(a.x - b.x, a.z - b.z)).toBeGreaterThan(0.1);
+  });
+
+  it('maps the corners of the placement window onto the corners of the yard', () => {
+    const box = pad();
+    const topLeft = at(0.08, 0.14);
+    const bottomRight = at(0.48, 0.86);
+    expect(topLeft.x).toBeCloseTo(box.cx - box.halfW, 6);
+    expect(topLeft.z).toBeCloseTo(box.cz - box.halfD, 6);
+    expect(bottomRight.x).toBeCloseTo(box.cx + box.halfW, 6);
+    expect(bottomRight.z).toBeCloseTo(box.cz + box.halfD, 6);
+  });
+
+  it('keeps the yard clear of the home hive it stands beside', () => {
+    // The hive sits at x -1.24 with a skep radius of about 0.34. Structures
+    // placed inside it were invisible, which is what this guards against.
+    const box = pad();
+    expect(box.cx + box.halfW).toBeLessThan(-1.24 + 0.34);
+  });
+
+  it('is deterministic', () => {
+    expect(at(0.31, 0.44)).toEqual(at(0.31, 0.44));
   });
 });

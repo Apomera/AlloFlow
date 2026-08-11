@@ -2094,7 +2094,7 @@
                   DECADES.map(function (v) {
                     return h('span', {
                       key: v,
-                      className: 'absolute text-[9px] font-bold',
+                      className: 'absolute text-[10px] font-bold',
                       style: {
                         left: (fracOf(v) * 100).toFixed(4) + '%',
                         transform: 'translateX(-50%)',
@@ -2104,7 +2104,7 @@
                     }, v >= 1 ? String(v) : String(v));
                   })
                 ),
-                h('span', { className: 'w-16 flex-shrink-0 text-[9px] font-bold text-right', style: { color: isDark ? '#94a3b8' : '#64748b' } }, 'W/m·K')
+                h('span', { className: 'w-16 flex-shrink-0 text-[10px] font-bold text-right', style: { color: isDark ? '#94a3b8' : '#64748b' } }, 'W/m·K')
               )
             );
           })(),

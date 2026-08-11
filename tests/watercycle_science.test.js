@@ -24,7 +24,11 @@ describe('water cycle teaching-model boundaries', () => {
       expect(source).toContain('Relative teaching indices, not measurements or a forecast.');
       expect(source).toContain('the vertical temperature profile matters');
       expect(source).toContain('Infiltration does not automatically become groundwater recharge.');
-      expect(source).toContain("    'infiltration': 'The process by which water on the ground surface enters soil and rock; some infiltrated water can contribute to groundwater recharge.'");
+      // The invariant is the HEDGE — infiltration must not be presented as
+      // guaranteed recharge. Pinned as wording rather than as an exact source
+      // line, because the definition now lives inside a t() call for
+      // translation and its indentation/quoting is no longer fixed.
+      expect(source).toContain('some infiltrated water can contribute to groundwater recharge.');
       expect(source).toContain("Forest and permeable ground");
       expect(source).toContain('Infiltration does not guarantee recharge.');
       expect(source).not.toContain("forest_recharge: { label: 'Forest recharge'");

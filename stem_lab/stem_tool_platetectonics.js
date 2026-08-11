@@ -1732,9 +1732,68 @@
       }
     };
   })();
+  // The 2D sim draws its own cone on canvas, so it needs the edifice in PIXELS
+  // while the block model works in scene units. Deriving one from the other beats
+  // keeping a second table: two hand-maintained lists drift the moment a
+  // composition is added or retuned, and the entire point of this profile is that
+  // both views show the SAME volcano.
+  var PT_2D_PER_3D_W = 4.0, PT_2D_PER_3D_H = 2.7;
+  function eruptProfileFor(id) {
+    var types = VentGL.magmaTypes();
+    var rec = null;
+    for (var i = 0; i < types.length; i++) {
+      if (types[i].id === id) { rec = types[i]; break; }
+    }
+    if (!rec) rec = types[1];
+    return {
+      id: rec.id,
+      coneW: Math.round(rec.coneR * PT_2D_PER_3D_W),
+      coneH: Math.round(rec.coneH * PT_2D_PER_3D_H)
+    };
+  }
+  try { window.__alloPtEruptProfile = eruptProfileFor; } catch (e) {}
+
+  // Spread the correct answer evenly across the option slots.
+  //
+  // As authored, the bank put 13% of its answers in slot A, 38% in B, 38% in C
+  // and 13% in D — so a student who simply never picked the first or last option
+  // scored 75% without knowing any geology. That measures test-wiseness, not
+  // understanding, and it is worst for exactly the students the tool is for.
+  //
+  // The rotation is derived from the question INDEX, never Math.random. A shuffle
+  // evaluated at render time would reorder the options underneath the student on
+  // every repaint, and one evaluated per session would make the same question
+  // grade differently for two children sitting side by side.
+  function ptBalanceAnswers(bank) {
+    return bank.map(function (q, i) {
+      var n = q.opts ? q.opts.length : 0;
+      if (!n || typeof q.ans !== 'number') return q;
+      var target = i % n;
+      var shift = (target - q.ans + n) % n;
+      if (!shift) return q;
+      function rot(arr) {
+        if (!arr || arr.length !== n) return arr;
+        var out = new Array(n);
+        for (var k = 0; k < n; k++) out[(k + shift) % n] = arr[k];
+        return out;
+      }
+      // wrongFeedback is indexed in PARALLEL with opts (the renderer reads
+      // wrongFeedback[chosenOpt]). Rotating the options without it would hand
+      // every student the explanation for a choice they did not make.
+      return Object.assign({}, q, {
+        opts: rot(q.opts),
+        wrongFeedback: rot(q.wrongFeedback),
+        ans: target
+      });
+    });
+  }
+  try { window.__alloPtBalanceAnswers = ptBalanceAnswers; } catch (e) {}
+
   // Drag state for the vent canvas. Module-scope on purpose: the host component
   // is the whole tool, so a per-move React state update would re-render it.
   var ventDrag = null;
+  // Debounce handle for the keyboard plate gesture (see the canvas onKeyDown).
+  var ptKbSettle = null;
   function ventGlRef(el) { if (el) VentGL.mount(el); else VentGL.unmount(); }
   try { window.__alloVentGL = VentGL; } catch (e) {}
 
@@ -2612,6 +2671,19 @@ var d = labToolData.plateTectonics || {};
 
 
 
+          // Read-modify-write against the CURRENT state, not the render closure.
+          // upd() is fine for assignment (`{ speed: 2 }`), but any accumulator —
+          // points, a completed list — must be computed from `prev` or two calls
+          // landing before a re-render both read the same stale total.
+          var updFn = function(fn) {
+            setLabToolData(function(prev) {
+              var cur = (prev && prev.plateTectonics) || {};
+              var patch = fn(cur);
+              if (!patch) return prev;
+              return Object.assign({}, prev, { plateTectonics: Object.assign({}, cur, patch) });
+            });
+          };
+
           var upd = function(patch) {
 
             setLabToolData(function(prev) {
@@ -2624,15 +2696,15 @@ var d = labToolData.plateTectonics || {};
 
           // --- UDL Challenges & Vocabulary ---
           var CHALLENGES = [
-            { id: 'first_quake', name: __alloT('stem.platetectonics.plate_boundary_shaker', 'Plate Boundary Shaker'), desc: __alloT('stem.platetectonics.trigger_an_earthquake', 'Trigger an earthquake'), icon: '📈', rp: 10, check: function() { return (d.quakeCount || 0) >= 1; } },
-            { id: 'major_quake', name: __alloT('stem.platetectonics.cataclysmic_rumble', 'Cataclysmic Rumble'), desc: __alloT('stem.platetectonics.trigger_a_magnitude_8_0_earthquake', 'Trigger a magnitude 8.0+ earthquake'), icon: '⚡', rp: 25, check: function() { return d.eqMagnitude >= 8.0 && (d.quakeCount || 0) >= 1; } },
-            { id: 'erupt_volcano', name: __alloT('stem.platetectonics.magma_vent', 'Magma Vent'), desc: __alloT('stem.platetectonics.trigger_a_volcanic_eruption', 'Trigger a volcanic eruption'), icon: '🌋', rp: 15, check: function() { return (d.eruptionCount || 0) >= 1; } },
-            { id: 'five_eruptions', name: __alloT('stem.platetectonics.volcanic_ring', 'Volcanic Ring'), desc: __alloT('stem.platetectonics.trigger_5_volcanic_eruptions', 'Trigger 5+ volcanic eruptions'), icon: '🔥', rp: 30, check: function() { return (d.eruptionCount || 0) >= 5; } },
-            { id: 'read_cascadia', name: __alloT('stem.platetectonics.cascadia_scholar', 'Cascadia Scholar'), desc: __alloT('stem.platetectonics.read_the_cascadia_subduction_zone_tab', 'Read the Cascadia Subduction Zone tab'), icon: '🌲', rp: 20, check: function() { return d.simTab === 'cascadia'; } },
-            { id: 'quiz_pass', name: __alloT('stem.platetectonics.tectonics_scholar', 'Tectonics Scholar'), desc: __alloT('stem.platetectonics.score_5_on_the_plate_tectonics_quiz', 'Score 5+ on the Plate Tectonics Quiz'), icon: '🎓', rp: 50, check: function() { return d.quizScore >= 5; } },
-            { id: 'vocab_look', name: __alloT('stem.platetectonics.earth_glossary', 'Earth Glossary'), desc: __alloT('stem.platetectonics.look_up_3_vocabulary_terms_in_the_dict', 'Look up 3 vocabulary terms in the dictionary'), icon: '📖', rp: 15, check: function() { return (d.vocabLookedUp || []).length >= 3; } },
-            { id: 'timelapse_drift', name: __alloT('stem.platetectonics.continental_drift', 'Continental Drift'), desc: __alloT('stem.platetectonics.play_the_continental_drift_time_lapse', 'Play the continental drift time-lapse'), icon: '⏳', rp: 20, check: function() { return d.timelapsePlayed; } },
-            { id: 'myth_buster', name: __alloT('stem.platetectonics.myth_buster', 'Myth Buster'), desc: __alloT('stem.platetectonics.answer_3_tectonics_myths', 'Answer 3 tectonics myths (True/False)'), icon: '🧠', rp: 30, check: function() { return (d.ptMythsDone || 0) >= 3; } }
+            { id: 'first_quake', name: __alloT('stem.platetectonics.plate_boundary_shaker', 'Plate Boundary Shaker'), desc: __alloT('stem.platetectonics.trigger_an_earthquake', 'Trigger an earthquake'), icon: '📈', rp: 10, check: function(s) { return (s.quakeCount || 0) >= 1; } },
+            { id: 'major_quake', name: __alloT('stem.platetectonics.cataclysmic_rumble', 'Cataclysmic Rumble'), desc: __alloT('stem.platetectonics.trigger_a_magnitude_8_0_earthquake', 'Trigger a magnitude 8.0+ earthquake'), icon: '⚡', rp: 25, check: function(s) { return s.eqMagnitude >= 8.0 && (s.quakeCount || 0) >= 1; } },
+            { id: 'erupt_volcano', name: __alloT('stem.platetectonics.magma_vent', 'Magma Vent'), desc: __alloT('stem.platetectonics.trigger_a_volcanic_eruption', 'Trigger a volcanic eruption'), icon: '🌋', rp: 15, check: function(s) { return (s.eruptionCount || 0) >= 1; } },
+            { id: 'five_eruptions', name: __alloT('stem.platetectonics.volcanic_ring', 'Volcanic Ring'), desc: __alloT('stem.platetectonics.trigger_5_volcanic_eruptions', 'Trigger 5+ volcanic eruptions'), icon: '🔥', rp: 30, check: function(s) { return (s.eruptionCount || 0) >= 5; } },
+            { id: 'read_cascadia', name: __alloT('stem.platetectonics.cascadia_scholar', 'Cascadia Scholar'), desc: __alloT('stem.platetectonics.read_the_cascadia_subduction_zone_tab', 'Read the Cascadia Subduction Zone tab'), icon: '🌲', rp: 20, check: function(s) { return s.simTab === 'cascadia'; } },
+            { id: 'quiz_pass', name: __alloT('stem.platetectonics.tectonics_scholar', 'Tectonics Scholar'), desc: __alloT('stem.platetectonics.score_5_on_the_plate_tectonics_quiz', 'Score 5+ on the Plate Tectonics Quiz'), icon: '🎓', rp: 50, check: function(s) { return s.quizScore >= 5; } },
+            { id: 'vocab_look', name: __alloT('stem.platetectonics.earth_glossary', 'Earth Glossary'), desc: __alloT('stem.platetectonics.look_up_3_vocabulary_terms_in_the_dict', 'Look up 3 vocabulary terms in the dictionary'), icon: '📖', rp: 15, check: function(s) { return (s.vocabLookedUp || []).length >= 3; } },
+            { id: 'timelapse_drift', name: __alloT('stem.platetectonics.continental_drift', 'Continental Drift'), desc: __alloT('stem.platetectonics.play_the_continental_drift_time_lapse', 'Play the continental drift time-lapse'), icon: '⏳', rp: 20, check: function(s) { return s.timelapsePlayed; } },
+            { id: 'myth_buster', name: __alloT('stem.platetectonics.myth_buster', 'Myth Buster'), desc: __alloT('stem.platetectonics.answer_3_tectonics_myths', 'Answer 3 tectonics myths (True/False)'), icon: '🧠', rp: 30, check: function(s) { return (s.ptMythsDone || 0) >= 3; } }
           ];
 
           var TECT_VOCAB = {
@@ -2647,26 +2719,58 @@ var d = labToolData.plateTectonics || {};
           };
 
           function checkChallenges() {
-            var newCompleted = completedChallenges.slice();
-            var rpGain = 0;
-            CHALLENGES.forEach(function(ch) {
-              if (newCompleted.indexOf(ch.id) === -1 && ch.check()) {
-                newCompleted.push(ch.id);
-                rpGain += ch.rp;
-                if (typeof addToast === 'function') addToast('🏆 Challenge: ' + ch.name + ' (+' + ch.rp + ' RP)', 'success');
-                sfxTectCorrect();
-              }
+            // Everything is decided against `cur`, the live state, so two calls
+            // landing before a re-render cannot both award the same challenge or
+            // both add their points to the same stale total. Previously each read
+            // completedChallenges and researchPoints from the render closure, and
+            // a second call in that window re-awarded a challenge already earned
+            // and overwrote the first call's points.
+            var earned = [];
+            updFn(function(cur) {
+              earned = [];
+              var done = (cur.completedChallenges || []).slice();
+              var rpGain = 0;
+              CHALLENGES.forEach(function(ch) {
+                if (done.indexOf(ch.id) === -1 && ch.check(cur)) {
+                  done.push(ch.id);
+                  rpGain += ch.rp;
+                  earned.push(ch);
+                }
+              });
+              if (!rpGain) return null;
+              return {
+                completedChallenges: done,
+                researchPoints: (cur.researchPoints || 0) + rpGain,
+                totalRP: (cur.totalRP || 0) + rpGain
+              };
             });
-            if (rpGain > 0) {
-              upd({ completedChallenges: newCompleted, researchPoints: researchPoints + rpGain, totalRP: totalRP + rpGain });
-            }
+            // Toasts and sound live OUT here: an updater can legitimately run
+            // twice, and a student should not hear the fanfare twice for one win.
+            earned.forEach(function(ch) {
+              if (typeof addToast === 'function') addToast('🏆 Challenge: ' + ch.name + ' (+' + ch.rp + ' RP)', 'success');
+              sfxTectCorrect();
+            });
           }
 
-          // Track tab views automatically
-          var currentViews = d.tabsViewed || {};
-          if (!currentViews[simTab]) {
-            currentViews[simTab] = true;
-            upd({ tabsViewed: currentViews });
+          // Track tab views automatically.
+          //
+          // Never mutate d.tabsViewed. The guard below reads the very object the
+          // old code mutated first, so the guard lied: if this render's write was
+          // superseded, the next render saw the tab already marked, skipped the
+          // write, and the visit was lost for good. The "Explore 3 tectonics
+          // topics" challenge counts exactly these, so a dropped visit is a
+          // challenge the student can no longer complete.
+          //
+          // updFn re-checks against live state, which also makes it idempotent:
+          // two renders racing on the same tab produce one recorded visit.
+          if (!(d.tabsViewed || {})[simTab]) {
+            updFn(function(cur) {
+              var seen = cur.tabsViewed || {};
+              if (seen[simTab]) return null;
+              var next = Object.assign({}, seen);
+              next[simTab] = true;
+              return { tabsViewed: next };
+            });
             setTimeout(checkChallenges, 50);
           }
 
@@ -5573,12 +5677,12 @@ var d = labToolData.plateTectonics || {};
             {
               id: 40,
               term: "Richter magnitude",
-              definition: "Logarithmic scale of earthquake size. Each unit = 10x amplitude."
+              definition: "The original 1935 logarithmic scale of earthquake size; each unit = 10x amplitude. It saturates above about M7, so moment magnitude is used for large quakes."
             },
             {
               id: 41,
               term: "Moment magnitude (Mw)",
-              definition: "Modern earthquake scale. Used for large quakes."
+              definition: "The modern scale, based on fault area times slip times rigidity. It does not saturate, so it is used for earthquakes of every size."
             },
             {
               id: 42,
@@ -6544,7 +6648,7 @@ var d = labToolData.plateTectonics || {};
 
           // ---- Quiz data ----
 
-          var QUIZZES = [
+          var QUIZZES = ptBalanceAnswers([
             {
               q: 'What type of boundary creates the Himalayas?',
               opts: ['Divergent', 'Convergent', 'Transform', 'Subduction'],
@@ -6649,7 +6753,7 @@ var d = labToolData.plateTectonics || {};
                 'Incorrect. There is no air in the word Pangaea.'
               ]
             }
-          ];
+          ]);
 
 
 
@@ -6974,16 +7078,6 @@ var d = labToolData.plateTectonics || {};
             // stale flag left in tool data by a previous mount.
             var eruptPub = null;
 
-            // Edifice profile per magma composition, matching the 3D cutaway's
-            // MAGMA table. Without this the two views contradicted each other:
-            // picking basalt gave a broad shield in 3D and the same steep
-            // stratovolcano cone here.
-            var ERUPT_PROFILE = {
-              basalt:   { coneW: 104, coneH: 20 },
-              andesite: { coneW: 60,  coneH: 45 },
-              rhyolite: { coneW: 44,  coneH: 58 }
-            };
-
             // Helper: trigger eruption at x
             function triggerEruption(atX) {
               eruptState.active = true;
@@ -6991,13 +7085,16 @@ var d = labToolData.plateTectonics || {};
               eruptState.tick = 0;
               eruptState.coneX = atX;
               eruptState.coneBaseY = cH * 0.30;
-              var prof = ERUPT_PROFILE[(canvasEl._ptLive || {}).ptVentMagma] || ERUPT_PROFILE.andesite;
+              // Same composition the 3D cutaway uses. Without this the two views
+              // contradicted each other: basalt gave a broad shield in the block
+              // model and the same steep stratovolcano cone here.
+              var prof = eruptProfileFor((canvasEl._ptLive || {}).ptVentMagma);
               eruptState.coneW = prof.coneW;
               eruptState.coneH = prof.coneH;
               // Inspection hook, same pattern as _ptLive / _ptEra above. The 2D
               // cone is drawn straight to canvas, so this is the only way a test
               // can tell a reshaped edifice from an unchanged one.
-              canvasEl._ptEruptProfile = { coneW: prof.coneW, coneH: prof.coneH };
+              canvasEl._ptEruptProfile = { coneW: prof.coneW, coneH: prof.coneH, id: prof.id };
               eruptState.lavaFlows = [];
               eruptState.ashParticles = [];
               // Spawn rumble quake particles
@@ -7031,6 +7128,7 @@ var d = labToolData.plateTectonics || {};
                 if (mx >= p.x && mx <= p.x + p.w && my >= crustY - p.thick && my <= crustY + 20) {
 
                   dragIdx = i; dragStartX = mx; dragPlateStartX = p.x;
+                  publishSelectedPlate(p);
 
                   break;
 
@@ -7056,17 +7154,23 @@ var d = labToolData.plateTectonics || {};
 
             });
 
-            var mouseUp = function() {
+            // Boundary consequences of having just moved a plate. Extracted from
+            // mouseUp so the KEYBOARD path produces exactly the same quakes,
+            // eruptions, counters and XP. A keyboard route that moved plates but
+            // never triggered anything would look supported and teach nothing.
+            function settleBoundary(idx) {
 
-              if (dragIdx >= 0) {
+              var report = { collided: false, withName: '', erupted: false };
+
+              if (idx >= 0) {
 
                 // Check boundary interactions
 
-                var dp = plates[dragIdx];
+                var dp = plates[idx];
 
                 for (var j = 0; j < plates.length; j++) {
 
-                  if (j === dragIdx) continue;
+                  if (j === idx) continue;
 
                   var op = plates[j];
 
@@ -7093,9 +7197,13 @@ var d = labToolData.plateTectonics || {};
                     var liveD = live.d || d;
                     var liveUpd = live.upd || upd;
 
+                    report.collided = true;
+                    report.withName = op.name || op.id || '';
+
                     if ((dp.type !== op.type || Math.random() > 0.4) && !eruptState.active) {
                       triggerEruption(bx);
                       sfxTectErupt();
+                      report.erupted = true;
                       var curErupt = (liveD.eruptionCount || 0) + 1;
                       liveUpd({ eruptionCount: curErupt });
                     }
@@ -7113,8 +7221,74 @@ var d = labToolData.plateTectonics || {};
 
               }
 
+              return report;
+
+            }
+
+            var mouseUp = function() {
+
+              settleBoundary(dragIdx);
+
               dragIdx = -1;
 
+            };
+
+            // Publish which plate the student is working with. Cheap: it fires on
+            // a pick, not per frame, and skips the write when nothing changed so
+            // picking the same plate twice does not re-render the tool.
+            function publishSelectedPlate(pl) {
+              if (!pl || !pl.name) return;
+              var live = canvasEl._ptLive || {};
+              var liveD = live.d || d;
+              if (liveD.selectedPlate === pl.name) return;
+              (live.upd || upd)({ selectedPlate: pl.name });
+              setTimeout(live.checkChallenges || checkChallenges, 50);
+            }
+
+            // ── Keyboard equivalent of the drag (WCAG 2.1.1) ──
+            // The canvas is already a focus stop and its own label tells the
+            // student to move the plates, so without this a keyboard user tabs
+            // into the tool's PRIMARY interaction and finds nothing there.
+            var kbIdx = -1;
+
+            canvasEl._ptKb = {
+              // Selection is sticky, so arrow-move does not need a pointer first.
+              select: function (delta) {
+                if (!plates.length) return null;
+                kbIdx = kbIdx < 0 ? 0 : (kbIdx + delta + plates.length) % plates.length;
+                publishSelectedPlate(plates[kbIdx]);
+                return plates[kbIdx];
+              },
+              // The end of a keyboard gesture, matching what mouseup does for a
+              // drag: exactly one boundary settlement per gesture, however many
+              // key presses it took.
+              settle: function () {
+                if (kbIdx < 0) return null;
+                return settleBoundary(kbIdx);
+              },
+              current: function () { return kbIdx >= 0 ? plates[kbIdx] : null; },
+              // Step sizes are in canvas units. The coarse step is deliberately
+              // large enough to close a boundary gap in a few presses; at the
+              // fine step alone, reaching a collision took dozens.
+              move: function (dir, big) {
+                if (!plates.length) return null;
+                if (kbIdx < 0) kbIdx = 0;
+                var p = plates[kbIdx];
+                var was = p.x;
+                p.x = Math.max(0, Math.min(cW - p.w, p.x + dir * (big ? 48 : 14)));
+                p.vx = dir;
+                // Movement ONLY. settleBoundary awards a quake, XP and possibly an
+                // eruption, and calling it per key press let a held arrow key farm
+                // one quake per press: 14 presses gave 14 quakes, scoring a
+                // keyboard user on key-repeat rate. The caller settles once when
+                // the gesture ends, which is what mouseup does for a drag.
+                var rep2 = { collided: false, withName: '', erupted: false };
+                // moved:false when the clamp refused. A plate parked against the
+                // edge of the world otherwise announced "moved left" on every
+                // press, which for a nonvisual user is indistinguishable from
+                // actually moving and hides the fact that they are stuck.
+                return { plate: p, report: rep2, moved: p.x !== was };
+              }
             };
 
             _ptHandlers.mouseup = mouseUp; canvasEl.addEventListener('mouseup', mouseUp);
@@ -7143,7 +7317,7 @@ var d = labToolData.plateTectonics || {};
 
                 if (mx >= p.x && mx <= p.x + p.w && my >= crustY - p.thick && my <= crustY + 20) {
 
-                  dragIdx = i; dragStartX = mx; dragPlateStartX = p.x; break;
+                  dragIdx = i; dragStartX = mx; dragPlateStartX = p.x; publishSelectedPlate(p); break;
 
                 }
 
@@ -7845,7 +8019,9 @@ var d = labToolData.plateTectonics || {};
 
                 ctx.textAlign = 'center';
 
-                ctx.fillText('\u2B05 Drag plates to see interactions \u27A1', cW / 2, crustY - 70);
+                // Names BOTH routes. The hint used to advertise dragging only, so the
+                // keyboard path was undiscoverable even once it existed.
+                ctx.fillText('\u2B05 Drag plates, or press \u2191\u2193 to pick and \u2190\u2192 to move \u27A1', cW / 2, crustY - 70);
 
               }
 
@@ -8030,7 +8206,7 @@ var d = labToolData.plateTectonics || {};
           return React.createElement("div", {
               className: "pt-sim-shell max-w-6xl mx-auto",
               role: "region",
-              "aria-label": __alloT('stem.platetectonics.plate_tectonics_keyboard_shortcuts_1_t', "Plate Tectonics. Keyboard shortcuts: 1 through 4 switch tabs, L toggles labels, C toggles convection currents."),
+              "aria-label": __alloT('stem.platetectonics.plate_tectonics_keyboard_shortcuts_1_t', "Plate Tectonics. Keyboard shortcuts: 1 through 4 switch tabs, L toggles labels, C toggles convection currents. On the simulation canvas, up and down arrows pick a plate and left and right arrows move it."),
               tabIndex: 0,
               onKeyDown: onPtKey
             },
@@ -8255,7 +8431,50 @@ var d = labToolData.plateTectonics || {};
 
                     ref: canvasRef,
 
-                    'aria-label': __alloT('stem.platetectonics.interactive_plate_tectonics_cross_sect', 'Interactive plate tectonics cross-section visualization. Drag crust plates left or right to create convergent, divergent, and transform boundary events.'), role: 'img', tabIndex: 0, title: __alloT('stem.platetectonics.interactive_plate_tectonics_cross_sect', 'Interactive plate tectonics cross-section visualization'), 'data-pt-main-canvas': 'true',
+                    'aria-label': __alloT('stem.platetectonics.main_canvas_label', 'Interactive plate tectonics cross-section. Drag crust plates left or right, or focus this canvas and use the up and down arrows to pick a plate and the left and right arrows to move it, to create convergent, divergent, and transform boundary events. Hold Shift for larger steps.'), role: 'img', tabIndex: 0, title: __alloT('stem.platetectonics.interactive_plate_tectonics_cross_sect', 'Interactive plate tectonics cross-section visualization'), 'data-pt-main-canvas': 'true',
+                    // Keyboard route to the tool's PRIMARY interaction. The canvas
+                    // already took focus but had no key handler, so tabbing into it
+                    // was a dead stop: WCAG 2.1.1 against the one thing this tab is
+                    // for. Movement runs through the same settleBoundary() the drag
+                    // uses, so quakes, eruptions, counters and XP all still fire.
+                    onKeyDown: function (e) {
+                      var el = canvasRef._last;
+                      if (!el || !el._ptKb) return;
+                      var k = e.key;
+                      var say = function (msg) {
+                        if (typeof announceToSR === 'function') announceToSR(msg);
+                      };
+                      if (k === 'ArrowUp' || k === 'ArrowDown') {
+                        e.preventDefault();
+                        var picked = el._ptKb.select(k === 'ArrowDown' ? 1 : -1);
+                        if (picked) {
+                          say(picked.name + ', ' + picked.type + ' plate, selected. Left and right arrows move it.');
+                        }
+                        return;
+                      }
+                      if (k === 'ArrowLeft' || k === 'ArrowRight') {
+                        e.preventDefault();
+                        var res = el._ptKb.move(k === 'ArrowRight' ? 1 : -1, e.shiftKey);
+                        if (!res || !res.plate) return;
+                        // One settlement per gesture. A run of arrow presses is a
+                        // single push of the plate, the keyboard equivalent of a
+                        // drag, so the boundary resolves when the pushing stops.
+                        if (ptKbSettle) clearTimeout(ptKbSettle);
+                        ptKbSettle = setTimeout(function () {
+                          ptKbSettle = null;
+                          var done = el._ptKb.settle();
+                          if (done && done.collided) {
+                            say('Boundary formed with the ' + done.withName + ' plate. Earthquake triggered' +
+                              (done.erupted ? ' and a volcano erupted' : '') + '.');
+                          }
+                        }, 350);
+                        if (!res.moved) {
+                          say(res.plate.name + ' is already at the ' + (k === 'ArrowRight' ? 'right' : 'left') + ' edge.');
+                          return;
+                        }
+                        say(res.plate.name + ' moved ' + (k === 'ArrowRight' ? 'right' : 'left') + '.');
+                      }
+                    },
 
                     className: "pt-primary-canvas w-full cursor-grab active:cursor-grabbing",
 
@@ -8561,7 +8780,7 @@ var d = labToolData.plateTectonics || {};
                 }
               },
                 React.createElement("strong", { style: { color: '#b45309' } }, "Goal: "),
-                __alloT('stem.platetectonics.feel_the_richter_scale_it_is_logarithm', "feel the Richter scale. It is logarithmic: each whole number is 10x more shaking and about 32x more energy. A 7.0 is not twice a 3.5, it is over 100,000x more energy. Slide through magnitudes and watch the damage tier flip from green to amber to red. P-waves arrive first, S-waves second, surface waves do most of the damage.")
+                __alloT('stem.platetectonics.feel_the_magnitude_scale', "feel the magnitude scale. This slider reads in moment magnitude (Mw), the scale seismologists actually use for large earthquakes. Charles Richter's original 1935 scale is where the idea came from, but it saturates above about M7, so the great quakes on this slider could not be measured with it. Either way the scale is logarithmic: each whole number is 10x more shaking and about 32x more energy. A 7.0 is not twice a 3.5, it is over 100,000x more energy. Slide through magnitudes and watch the damage tier flip from green to amber to red. P-waves arrive first, S-waves second, surface waves do most of the damage.")
               ),
 
               React.createElement("div", { className: "p-5 rounded-2xl border-2 " + (isDark ? "border-slate-800" : "border-red-200"), style: { background: _gCard } },
@@ -8578,9 +8797,9 @@ var d = labToolData.plateTectonics || {};
 
                 React.createElement("div", { className: "flex items-center gap-3 mb-4" },
 
-                  React.createElement("span", { className: "text-xs font-bold w-20 " + (isDark ? "text-red-400" : "text-red-600") }, "Magnitude:"),
+                  React.createElement("span", { className: "text-xs font-bold w-20 " + (isDark ? "text-red-400" : "text-red-600") }, __alloT('stem.platetectonics.magnitude_mw', "Magnitude (Mw):")),
 
-                  React.createElement("input", { type: "range", "aria-label": __alloT('stem.platetectonics.earthquake_magnitude_richter_scale', "Earthquake magnitude (Richter scale)"), min: "1", max: "9", step: "0.1", value: eqMagnitude, onChange: function(e) { upd({ eqMagnitude: parseFloat(e.target.value) }); setTimeout(checkChallenges, 50); }, className: "flex-1 accent-red-500 focus:ring-2 focus:ring-yellow-500 focus:outline-none" }),
+                  React.createElement("input", { type: "range", "aria-label": __alloT('stem.platetectonics.earthquake_magnitude_moment', "Earthquake magnitude on the moment magnitude scale, M w, from 1 to 9"), min: "1", max: "9", step: "0.1", value: eqMagnitude, onChange: function(e) { upd({ eqMagnitude: parseFloat(e.target.value) }); setTimeout(checkChallenges, 50); }, className: "flex-1 accent-red-500 focus:ring-2 focus:ring-yellow-500 focus:outline-none" }),
 
                   React.createElement("span", { className: "text-lg font-black px-3 py-1 rounded-lg", style: { background: eqMagnitude >= 7 ? '#dc2626' : eqMagnitude >= 5 ? '#f59e0b' : '#22c55e', color: 'white' } }, eqMagnitude.toFixed(1))
 
@@ -9772,7 +9991,15 @@ var d = labToolData.plateTectonics || {};
                 React.createElement('div', { className: 'space-y-2' },
                   (function() {
                     var H = [["1669","Nicolas Steno proposes superposition","Steno (a Danish anatomist living in Italy) publishes Prodromus, articulating that lower rock layers are older than upper layers. Foundation of stratigraphy."],["1785","Hutton: Earth is unimaginably old","James Hutton presents Theory of the Earth to the Royal Society of Edinburgh. Argues for deep time and uniformitarianism: the present is the key to the past."],["1815","William Smith geological map","British surveyor produces the first geological map of any country (Britain). Realized fossils could correlate rocks. Called father of English geology."],["1830","Lyell's Principles of Geology","Charles Lyell's textbook codifies uniformitarianism and influences Darwin. Multiple volumes; reprinted for decades; standard text for a century."],["1837","Agassiz: ice ages","Louis Agassiz proposes that Northern Hemisphere was once covered in continental ice sheets. Initially mocked; later confirmed."],["1859","Darwin publishes On the Origin of Species","Built on Lyell's deep time; biological and geological history must reconcile."],["1862","Lord Kelvin 100 Myr Earth","Kelvin calculates Earth's age based on cooling and gets 20-400 million years. Wrong because he did not know about radioactive heating."],["1896","Becquerel discovers radioactivity","Soon (1907) used by Rutherford and Boltwood to date rocks by uranium-lead. Sets Earth's real age in motion."],["1912","Wegener proposes continental drift","Alfred Wegener (German meteorologist) argues continents move based on fit, fossils, paleoclimate. Ridiculed by geologists for lacking mechanism."],["1928","Holmes proposes mantle convection","Arthur Holmes (British geologist) suggests convection currents in the mantle drive continental motion. Mostly ignored at the time."],["1965","Bullard fit of continents","Sir Edward Bullard computes best mathematical fit of Africa and South America at continental shelf depth. Confirms Wegener."],["1956","Paleomagnetism reveals polar wander","Studies of magnetic alignment in old rocks show polar wander paths only make sense if continents moved."],["1957","Tharp and Heezen map the ocean floor","Marie Tharp and Bruce Heezen produce the first detailed bathymetric map. Reveals mid-ocean ridge with central rift valley."],["1962","Hess proposes seafloor spreading","Princeton's Harry Hess: ocean crust forms at ridges and is consumed at trenches. Revolutionary."],["1963","Vine-Matthews magnetic stripes","Magnetic stripes on either side of mid-ocean ridges symmetrically record paleomagnetic reversals, confirming seafloor spreading."],["1965","Wilson defines transform faults","Canadian J. Tuzo Wilson recognizes a third boundary type. Plate tectonics now has its three pillars."],["1967","Plate tectonics synthesized","Jason Morgan, Dan McKenzie, and Xavier Le Pichon independently formalize: Earth has ~12 rigid plates moving on a viscous mantle. Paradigm shift complete."],["1977","Hydrothermal vents discovered","Alvin submersible at Galapagos Rift finds black smokers and chemosynthetic life. New ecosystem informs life-on-Mars debate."],["1980","Alvarez: iridium at K-Pg boundary","Father-son Alvarez team finds iridium spike at Cretaceous-Paleogene boundary, evidence for asteroid impact at Chicxulub."],["1991","GPS measures plates directly","Continuous GPS networks measure plate motions in real time at millimeters per year."],["1993","Slow earthquakes detected","Cascadia and Japan show tremor lasting weeks, not normal earthquakes but slow-slip on subduction interface."],["2008","InSAR maps deformation","Satellite radar interferometry measures cm-scale ground motion across entire fault zones."],["2011","Tohoku M9 instrumented","Densest ever recorded megathrust; data continues to reshape subduction theory."],["2017","Subduction Earthquake Early Warning operational","ShakeAlert (USGS Pacific NW) begins delivering seconds of warning to subscribers."],["2023","AI seismic detection mature","Machine learning detects 10x more small earthquakes than humans; tracks fault behavior at unprecedented resolution."]];
-                    return H.map(function(h, i) {
+                    // Sorted, not trusted to authoring order: the Bullard entry was
+                    // written between 1928 and 1956, so the discovery timeline read
+                    // 1928, 1965, 1956, 1957. Sorting here also means a future entry
+                    // appended to the end cannot silently break the sequence again.
+                    // Array.prototype.sort is stable, so entries sharing a year keep
+                    // the order the author chose for them.
+                    return H.slice().sort(function(a, b) {
+                      return parseInt(a[0], 10) - parseInt(b[0], 10);
+                    }).map(function(h, i) {
                       return React.createElement('div', { key: i, className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                         React.createElement('div', { className: 'flex justify-between mb-1' },
                           React.createElement('div', { className: 'font-bold text-indigo-800 text-sm' }, h[1]),
@@ -9859,7 +10086,7 @@ var d = labToolData.plateTectonics || {};
                 React.createElement('input', { type: 'text', "aria-label": __alloT('stem.platetectonics.search_input', "Search this Plate Tectonics section"), placeholder: 'Search...', value: d['_quakeStoriesSearch'] || '', onChange: function(e) { var u = {}; u['_quakeStoriesSearch'] = e.target.value; upd(u); }, className: 'w-full px-3 py-2 text-sm border rounded-lg mb-3 focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'border-slate-700 bg-slate-900 text-slate-200' : 'border-red-300 bg-white text-slate-700') }),
                 React.createElement('div', { className: 'space-y-2' },
                   (function() {
-                    var ENTRIES = [{"name":__alloT('stem.platetectonics.1700_cascadia_m9', "1700 Cascadia M9"),"date":"January 26, 1700","region":"Pacific Northwest, USA/Canada","magnitude":"M9.0 (estimated)","boundary":"Cascadia Subduction Zone (Juan de Fuca plate diving under North American plate)","deaths":"Unknown (precontact)","duration":"~5-7 minutes (estimated)","evidence":"Ghost forests of drowned cedars dated by tree rings to 1699-1700; Japan's 'orphan tsunami' records pinpoint the date and time; Native American oral histories describe a great shaking","impact":"Tsunami waves up to 30m on local shore reached Japan ~10 hours later. Land subsided 1-2m along 1000km of coast.","legacy":"First confirmed in the 1980s by Brian Atwater (USGS) combining sediment cores, tree-ring dating, and Japanese tsunami records. Now drives Pacific Northwest building codes, ShakeAlert system, school drills.","lesson":"Pre-instrumental megaquakes leave detectable signatures in trees, soils, and oral history. Aaron Bock (Quileute), Mary Kallappa (Hoh), and Henry Adams (Quinault) had recorded oral histories long before scientific confirmation."},{"name":__alloT('stem.platetectonics.1755_lisbon_m8_7', "1755 Lisbon M8.7"),"date":"November 1, 1755","region":"Atlantic Ocean off Portugal","magnitude":"M8.5-9.0 (estimated)","boundary":"Africa-Eurasia plate boundary (Azores-Gibraltar fracture zone)","deaths":"30,000-60,000 in Lisbon alone, more across Iberia and Morocco","duration":"3-5 minutes","evidence":"Contemporary descriptions by survivors including Voltaire's correspondence, Marquês de Pombal's reconstruction records, geological evidence in deep sea sediments and uplifted coral.","impact":"Tsunami swept up Tagus River into central Lisbon. Six-day fires destroyed remaining structures. Felt as far as Sweden and the Caribbean.","legacy":"Catalyzed European Enlightenment philosophy: Voltaire's Poem on the Lisbon Disaster (1756) and Candide (1759) challenged Leibniz's optimism. Pombal's interview-based recovery (the 'Pombaline' rebuild with quake-resistant timber cages) was the first systematic engineering response.","lesson":"Atlantic Ocean is not exempt from megaquake hazards. Catholic Portugal's All Saints Day liturgy meant churches were packed, multiplying casualties."},{"name":__alloT('stem.platetectonics.1811_12_new_madrid', "1811-12 New Madrid"),"date":"December 16, 1811 - February 7, 1812","region":"New Madrid, Missouri","magnitude":"M7.5, M7.3, M7.5 (three main shocks)","boundary":"Intraplate (Reelfoot Rift, Mississippi embayment)","deaths":"Few documented (sparsely settled)","duration":"Multiple events over 2 months","evidence":"Eli Bowman, John James Audubon, Tecumseh's people, riverboat pilots all left accounts. Sand blows preserved geologic record.","impact":"Mississippi River briefly reversed course; created Reelfoot Lake; church bells rang in Boston and Charleston; chimneys fell as far as Cincinnati.","legacy":"Largest intraplate earthquake sequence in continental US history. Defined the New Madrid Seismic Zone, which would devastate modern Memphis, St Louis, and Little Rock if repeated.","lesson":"Far-from-plate-boundary regions can produce major quakes. Tecumseh allegedly predicted the shaking, using it to rally indigenous resistance."},{"name":__alloT('stem.platetectonics.1857_fort_tejon_m7_9', "1857 Fort Tejon M7.9"),"date":"January 9, 1857","region":"Southern California (San Andreas Fault)","magnitude":"M7.9","boundary":"Pacific-North American transform (San Andreas)","deaths":"2","duration":"~2-3 minutes","evidence":"350km surface rupture from Cholame to Wrightwood. Trees along Carrizo Plain offset by ~9m. Mission San Fernando reportedly damaged.","impact":"Largest historical California quake. The Kern River reportedly flowed backward briefly.","legacy":"Together with the 1906 SF quake, defined two great segments of the southern San Andreas. Pallett Creek paleoseismology shows ~150-year intervals for southern segment, so it is 'overdue.'","lesson":"Quiet centuries on a fault do not mean safety. The San Andreas accumulates strain steadily."},{"name":__alloT('stem.platetectonics.1886_charleston_m7_3', "1886 Charleston M7.3"),"date":"August 31, 1886","region":"Charleston, South Carolina","magnitude":"M7.3 (estimated)","boundary":"Intraplate (Atlantic margin)","deaths":"60","duration":"~1 minute","evidence":"60% of Charleston buildings damaged. Earthquake of August 31, 1886 (Dutton 1889) - first major US earthquake studied with modern scientific methods.","impact":"Felt from Cuba to NY to Bermuda to Wisconsin. Sand boils, liquefaction, cracked plaster as far as Boston.","legacy":"Showed eastern US faults remain seismically dangerous. Helped found USGS earthquake studies. Maine and other east-coast cities lack code preparation for similar events.","lesson":"East coast quakes are infrequent but possible. Buildings shake longer because crust transmits seismic waves more efficiently than the more fractured west."},{"name":__alloT('stem.platetectonics.1906_san_francisco_m7_9', "1906 San Francisco M7.9"),"date":"April 18, 1906","region":"San Francisco, California","magnitude":"M7.9 (Mw)","boundary":"Pacific-North American transform (San Andreas)","deaths":"~3000 (recent revised estimates; original count was 700)","duration":"~45-60 seconds","evidence":"G.K. Gilbert and H.F. Reid (Carnegie) led the State Earthquake Investigation Commission, which produced the foundational geological survey of any earthquake. Reid's elastic rebound theory was born here.","impact":"Three-day firestorm destroyed 80% of San Francisco. Chinatown leveled. Estimated $400 million 1906 damage ($11 billion 2020).","legacy":"Established that earthquakes are caused by rapid slip on faults, not vice versa. Reid's elastic rebound theory remains the basic model. The San Andreas Fault entered popular consciousness.","lesson":"Earthquakes do not kill: collapsed buildings and post-quake fires do. Modern California is more resilient but still vulnerable to fire after large quakes."},{"name":__alloT('stem.platetectonics.1923_great_kanto_m7_9', "1923 Great Kanto M7.9"),"date":"September 1, 1923","region":"Sagami Bay, Japan","magnitude":"M7.9","boundary":"Sagami Trough (Philippine Sea plate under Okhotsk plate)","deaths":"142,000 (most from fire)","duration":"4-10 minutes (multiple sub-events)","evidence":"Imperial Earthquake Investigation Committee detailed records. Hongo Tokyo seismograph trace.","impact":"Tokyo and Yokohama both devastated. Fires consumed 38% of Tokyo. Tsunami in Sagami Bay. Korean residents falsely blamed for fires, leading to a massacre of 6,000+.","legacy":"Drove Japanese seismic engineering revolution. Spurred building code reforms that made modern Japanese buildings among the most quake-resistant globally.","lesson":"Quake disasters can amplify pre-existing prejudices. Japanese government has formally acknowledged the 1923 Korean massacre."},{"name":__alloT('stem.platetectonics.1933_long_beach_m6_4', "1933 Long Beach M6.4"),"date":"March 10, 1933","region":"Long Beach, California (Newport-Inglewood Fault)","magnitude":"M6.4","boundary":"Strike-slip fault east of Pacific margin","deaths":"120","duration":"~10 seconds","evidence":"70 schools were severely damaged or destroyed. Catalyzed California's Field Act (1933) requiring all California schools meet earthquake standards.","impact":"If the quake had struck during school hours, casualties would have been catastrophic.","legacy":"Field Act remains a model for life-safety legislation. Modern California schools survived the 1994 Northridge quake with no fatalities.","lesson":"Building codes save lives when enforced before the next event. Charles Richter developed his magnitude scale partly with Long Beach data."},{"name":__alloT('stem.platetectonics.1960_valdivia_m9_5', "1960 Valdivia M9.5"),"date":"May 22, 1960","region":"Valdivia, Chile","magnitude":"M9.5 (Mw) - largest ever recorded","boundary":"Peru-Chile Trench (Nazca plate under South American plate)","deaths":"5700 (Chile), plus deaths from tsunami across Pacific basin","duration":"10-15 minutes","evidence":"Pacific-wide tsunami; Cintura Volcano triggered eruption 2 days later. Modern instrumental record.","impact":"Coastal subsidence up to 5m. Tsunami waves reached Hawaii (14m), Japan (5m), Philippines. Earth's free oscillations measurable for weeks.","legacy":"Defined the upper limit of earthquake size in the modern record. Sparked global Pacific Tsunami Warning System founding (Pacific Tsunami Warning Center, Honolulu).","lesson":"Subduction megathrusts dominate the largest earthquakes. South America's western edge remains active and produces ~M8+ quakes every few decades."},{"name":__alloT('stem.platetectonics.1964_alaska_good_friday_m9_2', "1964 Alaska Good Friday M9.2"),"date":"March 27, 1964","region":"Prince William Sound, Alaska","magnitude":"M9.2 (Mw)","boundary":"Aleutian Trench (Pacific under North American)","deaths":"139 (most from tsunami)","duration":"4-5 minutes","evidence":"First systematic megathrust study. George Plafker (USGS) walked the coast measuring uplift and subsidence. Established the subduction-zone earthquake mechanism.","impact":"Coast uplifted 11m in places, subsided 2m elsewhere. Tsunami struck Crescent City, California (11 deaths). Anchorage Turnagain Heights neighborhood slid into the sea.","legacy":"Plafker's 1965 paper definitively linked great earthquakes to subduction. This finding revolutionized understanding of plate tectonics.","lesson":"Megathrust earthquakes shape entire coastlines in minutes. Native Alaskan villages (especially Chenega Bay) suffered catastrophic damage and tsunami."}];
+                    var ENTRIES = [{"name":__alloT('stem.platetectonics.1700_cascadia_m9', "1700 Cascadia M9"),"date":"January 26, 1700","region":"Pacific Northwest, USA/Canada","magnitude":"M9.0 (estimated)","boundary":"Cascadia Subduction Zone (Juan de Fuca plate diving under North American plate)","deaths":"Unknown (precontact)","duration":"~5-7 minutes (estimated)","evidence":"Ghost forests of drowned cedars dated by tree rings to 1699-1700; Japan's 'orphan tsunami' records pinpoint the date and time; Native American oral histories describe a great shaking","impact":"Tsunami waves up to 30m on local shore reached Japan ~10 hours later. Land subsided 1-2m along 1000km of coast.","legacy":"First confirmed in the 1980s by Brian Atwater (USGS) combining sediment cores, tree-ring dating, and Japanese tsunami records. Now drives Pacific Northwest building codes, ShakeAlert system, school drills.","lesson":"Pre-instrumental megaquakes leave detectable signatures in trees, soils, and oral history. Aaron Bock (Quileute), Mary Kallappa (Hoh), and Henry Adams (Quinault) had recorded oral histories long before scientific confirmation."},{"name":__alloT('stem.platetectonics.1755_lisbon_m8_7', "1755 Lisbon M8.7"),"date":"November 1, 1755","region":"Atlantic Ocean off Portugal","magnitude":"M8.5-9.0 (estimated)","boundary":"Africa-Eurasia plate boundary (Azores-Gibraltar fracture zone)","deaths":"30,000-60,000 in Lisbon alone, more across Iberia and Morocco","duration":"3-5 minutes","evidence":"Contemporary descriptions by survivors including Voltaire's correspondence, Marquês de Pombal's reconstruction records, geological evidence in deep sea sediments and uplifted coral.","impact":"Tsunami swept up Tagus River into central Lisbon. Six-day fires destroyed remaining structures. Felt as far as Sweden and the Caribbean.","legacy":"Catalyzed European Enlightenment philosophy: Voltaire's Poem on the Lisbon Disaster (1756) and Candide (1759) challenged Leibniz's optimism. Pombal's interview-based recovery (the 'Pombaline' rebuild with quake-resistant timber cages) was the first systematic engineering response.","lesson":"Atlantic Ocean is not exempt from megaquake hazards. Catholic Portugal's All Saints Day liturgy meant churches were packed, multiplying casualties."},{"name":__alloT('stem.platetectonics.1811_12_new_madrid', "1811-12 New Madrid"),"date":"December 16, 1811 - February 7, 1812","region":"New Madrid, Missouri","magnitude":"M7.5, M7.3, M7.5 (three main shocks)","boundary":"Intraplate (Reelfoot Rift, Mississippi embayment)","deaths":"Few documented (sparsely settled)","duration":"Multiple events over 2 months","evidence":"Eli Bowman, John James Audubon, Tecumseh's people, riverboat pilots all left accounts. Sand blows preserved geologic record.","impact":"Mississippi River briefly reversed course; created Reelfoot Lake; church bells rang in Boston and Charleston; chimneys fell as far as Cincinnati.","legacy":"Largest intraplate earthquake sequence in continental US history. Defined the New Madrid Seismic Zone, which would devastate modern Memphis, St Louis, and Little Rock if repeated.","lesson":"Far-from-plate-boundary regions can produce major quakes. Tecumseh allegedly predicted the shaking, using it to rally indigenous resistance."},{"name":__alloT('stem.platetectonics.1857_fort_tejon_m7_9', "1857 Fort Tejon M7.9"),"date":"January 9, 1857","region":"Southern California (San Andreas Fault)","magnitude":"M7.9","boundary":"Pacific-North American transform (San Andreas)","deaths":"2","duration":"~2-3 minutes","evidence":"350km surface rupture from Cholame to Wrightwood. Trees along Carrizo Plain offset by ~9m. Mission San Fernando reportedly damaged.","impact":"Largest historical California quake. The Kern River reportedly flowed backward briefly.","legacy":"Together with the 1906 SF quake, defined two great segments of the southern San Andreas. Pallett Creek paleoseismology shows ~150-year intervals for southern segment, so it is 'overdue.'","lesson":"Quiet centuries on a fault do not mean safety. The San Andreas accumulates strain steadily."},{"name":__alloT('stem.platetectonics.1886_charleston_m7_3', "1886 Charleston M7.3"),"date":"August 31, 1886","region":"Charleston, South Carolina","magnitude":"M7.3 (estimated)","boundary":"Intraplate (Atlantic margin)","deaths":"60","duration":"~1 minute","evidence":"60% of Charleston buildings damaged. Earthquake of August 31, 1886 (Dutton 1889) - first major US earthquake studied with modern scientific methods.","impact":"Felt from Cuba to NY to Bermuda to Wisconsin. Sand boils, liquefaction, cracked plaster as far as Boston.","legacy":"Showed eastern US faults remain seismically dangerous. Helped found USGS earthquake studies. Maine and other east-coast cities lack code preparation for similar events.","lesson":"East coast quakes are infrequent but possible. Buildings shake longer because crust transmits seismic waves more efficiently than the more fractured west."},{"name":__alloT('stem.platetectonics.1906_san_francisco_m7_9', "1906 San Francisco M7.9"),"date":"April 18, 1906","region":"San Francisco, California","magnitude":"M7.9 (Mw)","boundary":"Pacific-North American transform (San Andreas)","deaths":"~3000 (recent revised estimates; original count was 700)","duration":"~45-60 seconds","evidence":"G.K. Gilbert and H.F. Reid (Carnegie) led the State Earthquake Investigation Commission, which produced the foundational geological survey of any earthquake. Reid's elastic rebound theory was born here.","impact":"Three-day firestorm destroyed 80% of San Francisco. Chinatown leveled. Estimated $400 million 1906 damage ($11 billion 2020).","legacy":"Established that earthquakes are caused by rapid slip on faults, not vice versa. Reid's elastic rebound theory remains the basic model. The San Andreas Fault entered popular consciousness.","lesson":"Earthquakes do not kill: collapsed buildings and post-quake fires do. Modern California is more resilient but still vulnerable to fire after large quakes."},{"name":__alloT('stem.platetectonics.1923_great_kanto_m7_9', "1923 Great Kanto M7.9"),"date":"September 1, 1923","region":"Sagami Bay, Japan","magnitude":"M7.9","boundary":"Sagami Trough (Philippine Sea plate under Okhotsk plate)","deaths":"142,000 (most from fire)","duration":"4-10 minutes (multiple sub-events)","evidence":"Imperial Earthquake Investigation Committee detailed records. Hongo Tokyo seismograph trace.","impact":"Tokyo and Yokohama both devastated. Fires consumed 38% of Tokyo. Tsunami in Sagami Bay. Korean residents falsely blamed for fires, leading to a massacre of 6,000+.","legacy":"Drove Japanese seismic engineering revolution. Spurred building code reforms that made modern Japanese buildings among the most quake-resistant globally.","lesson":"Quake disasters can amplify pre-existing prejudices. Japanese government has formally acknowledged the 1923 Korean massacre."},{"name":__alloT('stem.platetectonics.1933_long_beach_m6_4', "1933 Long Beach M6.4"),"date":"March 10, 1933","region":"Long Beach, California (Newport-Inglewood Fault)","magnitude":"M6.4","boundary":"Strike-slip fault east of Pacific margin","deaths":"120","duration":"~10 seconds","evidence":"70 schools were severely damaged or destroyed. Catalyzed California's Field Act (1933) requiring all California schools meet earthquake standards.","impact":"If the quake had struck during school hours, casualties would have been catastrophic.","legacy":"Field Act remains a model for life-safety legislation. Modern California schools survived the 1994 Northridge quake with no fatalities.","lesson":"Building codes save lives when enforced before the next event. Charles Richter developed his magnitude scale partly with Long Beach data."},{"name":__alloT('stem.platetectonics.1960_valdivia_m9_5', "1960 Valdivia M9.5"),"date":"May 22, 1960","region":"Valdivia, Chile","magnitude":"M9.5 (Mw) - largest ever recorded","boundary":"Peru-Chile Trench (Nazca plate under South American plate)","deaths":"5700 (Chile), plus deaths from tsunami across Pacific basin","duration":"10-15 minutes","evidence":"Pacific-wide tsunami; the Cordon Caulle vent (Puyehue-Cordon Caulle complex) erupted 2 days later, one of the clearest cases of a megathrust earthquake triggering an eruption. Modern instrumental record.","impact":"Coastal subsidence up to 5m. Tsunami waves reached Hawaii (14m), Japan (5m), Philippines. Earth's free oscillations measurable for weeks.","legacy":"Defined the upper limit of earthquake size in the modern record. Sparked global Pacific Tsunami Warning System founding (Pacific Tsunami Warning Center, Honolulu).","lesson":"Subduction megathrusts dominate the largest earthquakes. South America's western edge remains active and produces ~M8+ quakes every few decades."},{"name":__alloT('stem.platetectonics.1964_alaska_good_friday_m9_2', "1964 Alaska Good Friday M9.2"),"date":"March 27, 1964","region":"Prince William Sound, Alaska","magnitude":"M9.2 (Mw)","boundary":"Aleutian Trench (Pacific under North American)","deaths":"139 (most from tsunami)","duration":"4-5 minutes","evidence":"First systematic megathrust study. George Plafker (USGS) walked the coast measuring uplift and subsidence. Established the subduction-zone earthquake mechanism.","impact":"Coast uplifted 11m in places, subsided 2m elsewhere. Tsunami struck Crescent City, California (11 deaths). Anchorage Turnagain Heights neighborhood slid into the sea.","legacy":"Plafker's 1965 paper definitively linked great earthquakes to subduction. This finding revolutionized understanding of plate tectonics.","lesson":"Megathrust earthquakes shape entire coastlines in minutes. Native Alaskan villages (especially Chenega Bay) suffered catastrophic damage and tsunami."}];
                     var s = (d['_quakeStoriesSearch'] || '').toLowerCase();
                     return ENTRIES.filter(function(e) {
                       if (!s) return true;
@@ -23462,12 +23689,35 @@ var d = labToolData.plateTectonics || {};
             simTab === 'boundaryHunt' && (function() {
               var h = React.createElement;
               var iq = d.boundaryHunt || { btype: 'convergent', force: 50, friction: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
-              function setIQ(patch) { upd({ boundaryHunt: Object.assign({}, iq, patch) }); }
-              var stress = iq.force * (iq.friction / 100);
+              // Merge against LIVE state, not the render closure. Dragging both
+              // sliders quickly, or logging a run mid-drag, otherwise wrote a
+              // record built from a stale `iq` and silently dropped the change
+              // that landed first.
+              function setIQ(patch) {
+                updFn(function(cur) {
+                  var prevIq = cur.boundaryHunt || iq;
+                  return { boundaryHunt: Object.assign({}, prevIq, patch) };
+                });
+              }
+              // A fault slips when the driving stress overcomes the friction
+              // holding it locked, so friction SUBTRACTS. The previous model
+              // multiplied by it (force * friction/100), which inverted the
+              // physics twice over: a frictionless fault could never fail, and
+              // winding friction up to maximum was the fastest way to break the
+              // rock. This activity asks the student to form a hypothesis about
+              // exactly that relationship, so an inverted model does not merely
+              // look odd, it teaches the opposite of what is true.
+              var netStress = iq.force - iq.friction * 0.6;
+              // Andersonian faulting: for the same rock at the same depth, thrusts
+              // need the greatest differential stress, strike-slip an intermediate
+              // amount, and normal faults the least. The old thresholds had
+              // divergent and transform the other way round.
+              var threshold = iq.btype === 'convergent' ? 25 : iq.btype === 'transform' ? 15 : 8;
               var failure;
-              if (iq.btype === 'convergent') failure = stress > 50 ? 'thrust' : 'stable';
-              else if (iq.btype === 'divergent') failure = stress > 40 ? 'normal' : 'stable';
-              else failure = stress > 35 ? 'strikeSlip' : 'stable';
+              if (netStress <= threshold) failure = 'stable';
+              else if (iq.btype === 'convergent') failure = 'thrust';
+              else if (iq.btype === 'divergent') failure = 'normal';
+              else failure = 'strikeSlip';
               var fMeta = {
                 thrust:     { label: __alloT('stem.platetectonics.thrust_faulting', '🔺 Thrust faulting'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.platetectonics.compression_overcomes_friction', 'Compression overcomes friction.') },
                 normal:     { label: __alloT('stem.platetectonics.normal_faulting', '⬇️ Normal faulting'),  color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: __alloT('stem.platetectonics.tension_cracks_crust_rift_valleys', 'Tension cracks crust. Rift valleys.') },
@@ -23476,7 +23726,7 @@ var d = labToolData.plateTectonics || {};
               }[failure];
               return h('div', { className: 'p-4 rounded-xl bg-white border border-amber-300 shadow-sm space-y-3 mb-6' },
                 h('h3', { className: 'text-sm font-black text-amber-700' }, __alloT('stem.platetectonics.plate_boundary_stress_discovery', '🔐 Plate boundary stress discovery')),
-                h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, __alloT('stem.platetectonics.pick_boundary_type_adjust_force_and_fr', 'Pick boundary type. Adjust force and friction. Discrete failure mode appears. No score, no reveal.')),
+                h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, __alloT('stem.platetectonics.pick_boundary_type_adjust_force_and_fr', 'Pick a boundary type, then adjust the driving stress and the friction locking the fault. Stress pushes it toward failure; friction holds it back. A discrete failure mode appears. No score, no reveal.')),
                 h('div', { className: 'p-3 rounded-lg text-center', style: { background: fMeta.bg, border: '2px solid ' + fMeta.border } },
                   h('div', { className: 'text-base font-black', style: { color: fMeta.color } }, fMeta.label),
                   h('div', { className: 'text-[11px] text-slate-700 mt-1' }, fMeta.desc)
@@ -23506,8 +23756,9 @@ var d = labToolData.plateTectonics || {};
                 !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.platetectonics.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
                 iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
                   h('ul', { className: 'list-disc pl-5 space-y-1' },
-                    h('li', null, __alloT('stem.platetectonics.for_each_boundary_type_find_the_force_', 'For each boundary type, find the force level that causes failure.')),
-                    h('li', null, __alloT('stem.platetectonics.friction_matters_more_in_transform_fau', 'Friction matters more in transform faults — investigate why.')))),
+                    h('li', null, __alloT('stem.platetectonics.for_each_boundary_type_find_the_force_', 'For each boundary type, find the stress level that causes failure.')),
+                    h('li', null, __alloT('stem.platetectonics.friction_resists_slip', 'Friction resists slip: raise it and the fault holds, lower it and the same stress breaks through.')),
+                    h('li', null, __alloT('stem.platetectonics.which_type_gives_way_first', 'Compare the three boundary types at the same settings. Which gives way first, and which holds longest?')))),
                 h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
                   h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
                     h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),

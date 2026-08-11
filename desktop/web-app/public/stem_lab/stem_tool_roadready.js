@@ -5332,6 +5332,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   // SECTION 10: REGISTER TOOL & RENDER
   // ─────────────────────────────────────────────────────────
 
+  // ── CountUp (module-scope factory on purpose) ──
+  // A component defined inside render() gets a new function identity every
+  // host re-render, so React remounts it — restarting the 0→target animation
+  // on every toolData write. Built once here with a stable identity; render
+  // grabs it via getRoadReadyCountUp(React) so call sites stay unchanged.
+  // Gate: tests/stem_roadready_countup_identity.test.js.
+  var _RoadReadyCountUp = null;
+  function getRoadReadyCountUp(React) {
+    if (_RoadReadyCountUp) return _RoadReadyCountUp;
+    var h = React.createElement;
+    var useState = React.useState;
+    var useRef = React.useRef;
+    var useEffect = React.useEffect;
+    _RoadReadyCountUp = function CountUp(props) {
+      var target = Number(props.value) || 0;
+      var duration = props.duration || 800;
+      var stateTuple = useState(0);
+      var shown = stateTuple[0], setShown = stateTuple[1];
+      var startRef = useRef(null);
+      useEffect(function() {
+        startRef.current = Date.now();
+        setShown(0);
+        var rafId = null;
+        var cancelled = false;
+        var tick = function() {
+          if (cancelled) return; // stop touching state after unmount / target change
+          var elapsed = Date.now() - startRef.current;
+          var t = Math.min(1, elapsed / duration);
+          // Ease-out cubic for a natural settle.
+          var eased = 1 - Math.pow(1 - t, 3);
+          setShown(eased * target);
+          if (t < 1) rafId = requestAnimationFrame(tick);
+          else setShown(target);
+        };
+        rafId = requestAnimationFrame(tick);
+        return function() { cancelled = true; if (rafId) cancelAnimationFrame(rafId); };
+      }, [target]);
+      var decimals = props.decimals || 0;
+      var formatted = decimals > 0 ? shown.toFixed(decimals) : Math.round(shown);
+      return h('span', { style: props.style || null }, (props.prefix || '') + formatted + (props.suffix || ''));
+    };
+    return _RoadReadyCountUp;
+  }
+
   window.StemLab.registerTool('roadReady', {
     name: "RoadReady: Driver's Ed & Auto Science",
     icon: '🚗',
@@ -5350,34 +5394,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var useState = React.useState;
       // CountUp helper component: animates numbers from 0 → target over ~800ms.
       // Used on stat cards so numbers feel earned rather than just appearing.
-      function CountUp(props) {
-        var target = Number(props.value) || 0;
-        var duration = props.duration || 800;
-        var stateTuple = useState(0);
-        var shown = stateTuple[0], setShown = stateTuple[1];
-        var startRef = useRef(null);
-        useEffect(function() {
-          startRef.current = Date.now();
-          setShown(0);
-          var rafId = null;
-          var cancelled = false;
-          var tick = function() {
-            if (cancelled) return; // stop touching state after unmount / target change
-            var elapsed = Date.now() - startRef.current;
-            var t = Math.min(1, elapsed / duration);
-            // Ease-out cubic for a natural settle.
-            var eased = 1 - Math.pow(1 - t, 3);
-            setShown(eased * target);
-            if (t < 1) rafId = requestAnimationFrame(tick);
-            else setShown(target);
-          };
-          rafId = requestAnimationFrame(tick);
-          return function() { cancelled = true; if (rafId) cancelAnimationFrame(rafId); };
-        }, [target]);
-        var decimals = props.decimals || 0;
-        var formatted = decimals > 0 ? shown.toFixed(decimals) : Math.round(shown);
-        return h('span', { style: props.style || null }, (props.prefix || '') + formatted + (props.suffix || ''));
-      }
+      // Module-scope identity (see getRoadReadyCountUp above) so host
+      // re-renders reconcile instead of remounting and restarting it.
+      var CountUp = getRoadReadyCountUp(React);
 
       var d = (ctx.toolData && ctx.toolData['roadReady']) || {};
       // Live ref to `d` for the continuous simulation loop. The main

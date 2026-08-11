@@ -2151,6 +2151,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       };
     }, [view, sensoryActive]);
 
+    // ESC dismisses the Toxic Foods Sleuth modal (keyboard accessibility).
+    // Hoisted here from renderNutrition(): that helper only runs on the
+    // 'nutrition' branch of the view switch, and a hook inside it changed the
+    // host's hook count on navigation (React #310) — exactly the rule the
+    // sensory-3D comment above spells out. Gate: tests/stem_pets_hook_order.test.js.
+    React.useEffect(function() {
+      if (view !== 'nutrition' || !d.tfsOpen) return undefined;
+      function onEsc(e) {
+        if (e.key === 'Escape') { e.preventDefault(); upd('tfsOpen', false); }
+      }
+      document.addEventListener('keydown', onEsc);
+      return function() { document.removeEventListener('keydown', onEsc); };
+    }, [view, d.tfsOpen]);
+
     // Pet Picker state
     var pickHousing = d.pickHousing || 'house';
     var pickKids = d.pickKids != null ? d.pickKids : false;
@@ -3906,16 +3920,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           var tfsBest = d.tfsBest || 0;
           var tfsShown = d.tfsShown || [];
           var tfsOpen = !!d.tfsOpen;
-
-          // ESC dismisses the Toxic Foods Sleuth modal (keyboard accessibility)
-          React.useEffect(function() {
-            if (!tfsOpen) return;
-            function onEsc(e) {
-              if (e.key === 'Escape') { e.preventDefault(); upd('tfsOpen', false); }
-            }
-            document.addEventListener('keydown', onEsc);
-            return function() { document.removeEventListener('keydown', onEsc); };
-          }, [tfsOpen]);
+          // The ESC-dismiss effect for this modal lives in the fixed hook
+          // budget at the top of _renderPets — hooks may not be declared here,
+          // because this function only runs on the 'nutrition' branch.
 
           function startTfs() {
             var pool = [];

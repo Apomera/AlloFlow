@@ -91,3 +91,60 @@ describe('cell — quiz answer position', () => {
     expect(q.options).toEqual(snapshot);
   });
 });
+
+describe('cell — EXTRA_QUIZ wiring', () => {
+  // EXTRA_QUIZ held 200 authored questions and was referenced nowhere, while the
+  // live bank had 20. The two use different field names (question/correctAnswer
+  // vs q/a), and this quiz grades by TEXT, case-insensitively:
+  //     opt.toLowerCase() === quizQuestion.a.toLowerCase()
+  // so a mismapped answer produces a question where every choice is wrong.
+  // Evaluate the real literals and the real append rather than trusting either.
+  let liveBank;
+
+  beforeAll(async () => {
+    const { runInNewContext } = await import('node:vm');
+    const src = fs.readFileSync(SRC_PATH, 'utf8');
+    const slice = (from, to) => {
+      const i = src.indexOf(from);
+      if (i < 0) throw new Error('missing marker: ' + from);
+      const j = src.indexOf(to, i);
+      return src.slice(i, j + to.length);
+    };
+    const program = [
+      slice('var EXTRA_QUIZ = [', '\n          ];'),
+      slice('var QUIZ_BANK = [', '\n          ];'),
+      slice('Array.prototype.push.apply(QUIZ_BANK, EXTRA_QUIZ.map(', '.filter(Boolean));')
+    ].join('\n');
+    liveBank = runInNewContext('(function(){ ' + program + '; return QUIZ_BANK; })()',
+      { Math, Number, Array, Object, String, isFinite });
+  });
+
+  it('adds the dormant bank to the live one', () => {
+    const wired = liveBank.filter(q => q.explanation);
+    expect(wired.length, 'all 200 dormant questions should be wired in').toBe(200);
+    expect(liveBank.length).toBe(220);
+  });
+
+  it('leaves every multiple-choice question answerable', () => {
+    liveBank.forEach(q => {
+      if (!Array.isArray(q.options)) return;   // organism-spotter entries have none
+      const matches = q.options.filter(o => String(o).toLowerCase() === String(q.a).toLowerCase());
+      expect(matches.length, `"${String(q.q).slice(0, 60)}" must have exactly one correct option`).toBe(1);
+    });
+  });
+
+  it('spreads the wired answers across slots once rotated', () => {
+    // Every authored question puts its answer first, the wired ones included,
+    // so the rotation is what keeps the quiz from being passable by position.
+    const counts = [0, 0, 0, 0];
+    liveBank.forEach((q, i) => {
+      if (!Array.isArray(q.options) || q.options.length !== 4) return;
+      const shown = rotate(q, i);
+      counts[shown.options.findIndex(o => String(o).toLowerCase() === String(shown.a).toLowerCase())]++;
+    });
+    const total = counts.reduce((a, b) => a + b, 0);
+    expect(total).toBeGreaterThan(200);
+    counts.forEach((n, p) => expect(n, `slot ${p} of ${counts.join('/')}`).toBeGreaterThan(0));
+    expect(Math.max(...counts) / total).toBeLessThan(0.4);
+  });
+});

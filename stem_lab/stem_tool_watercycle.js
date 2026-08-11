@@ -476,96 +476,151 @@
   var MAINE_WATERSHED_COMPONENTS = [
     {
       id: 'headwaterStreams', name: 'Headwater Streams', icon: '🏔️', color: '#0ea5e9',
-      role: 'Cold-water indicator',
-      desc: 'High-elevation forested streams. Native brook trout, native eastern brook trout, water temperature below 20°C. The cleanest water in the watershed; everything downstream is shaped by what happens here.',
-      defaultState: { quality: 62, connectivity: 78, support: 60 }, targets: { quality: 78, connectivity: 80, support: 65 },
-      deepDive: {
-        knowledge: 'Headwater streams are first-order channels: small enough to step across, fed by springs and seeps, almost always shaded by mature forest. They make up roughly 60 to 80 percent of the total stream-mile length in a typical Maine watershed but receive a fraction of the regulatory attention. Native brook trout require water below about 20°C, dissolved oxygen above 7 mg/L, and woody debris for cover. Every degree of warming pushes their range north and uphill.',
-        casework: 'The Eastern Brook Trout Joint Venture maps the status of native populations across the species range. Maine retains an unusually large portion of historic native brook trout habitat compared to the rest of the Northeast. Most successful headwater protection has come from upper-watershed conservation easements and replacement of undersized culverts that act as warm-water bottlenecks.',
-        modernContext: 'Climate change is the central long-term threat to Maine headwater streams. Several Maine Audubon and Wabanaki community projects have led culvert replacement and shade-tree planting campaigns. The 2023 Maine Climate Action Plan named cold-water-fishery protection as a priority but funding has lagged.'
-      }
+      defaultState: {quality: 62, connectivity: 78, support: 60}, targets: {quality: 78, connectivity: 80, support: 65},
+      // Copy lives in wcWatershedCopy() so the English sits beside its key.
+      // Empty object kept so `c.deepDive ?` still offers the deep-dive button.
+      deepDive: {}
     },
     {
       id: 'riverMainstem', name: 'River Mainstem', icon: '🌊', color: '#1d4ed8',
-      role: 'Migratory fish corridor',
-      desc: 'The big channel through the watershed. Historically the route for Atlantic salmon, alewife, sea-run brook trout, eels, sturgeon. In Maine, dam barriers block most of these runs; recent removals (Edwards Dam 1999, Fort Halifax 2008, Veazie 2012, Great Works 2013) reopened sections.',
-      defaultState: { quality: 48, connectivity: 25, support: 65 }, targets: { quality: 70, connectivity: 70, support: 70 },
-      deepDive: {
-        knowledge: 'Anadromous fish (born in fresh water, mature at sea, return upstream to spawn) include Atlantic salmon, alewife, blueback herring, American shad, sea lamprey, and sea-run brook trout. Each species has different barrier-passage tolerance: alewife can use modest fish ladders; Atlantic salmon need near-full passage; sturgeon need almost-complete connectivity. Dam barriers degrade water quality upstream too: stagnant impoundments warm, accumulate sediment, and lose dissolved oxygen.',
-        casework: 'The Penobscot River Restoration Project (Penobscot Nation, NGOs, hydro companies) removed Veazie Dam in 2012 and Great Works Dam in 2013 while preserving most generation through upgrades elsewhere. River herring returns increased over 1000-fold in the first decade post-removal. The Kennebec saw Edwards Dam come down in 1999 and Fort Halifax in 2008. The Sebasticook tributary alone now hosts the largest river-herring run on the East Coast.',
-        modernContext: 'The Penobscot Nation has led the legal, political, and ecological work on its ancestral river. Ongoing dam-removal campaigns target the Mattaceunk, Milford, and lower Kennebec dams. NOAA and the Atlantic Salmon Federation track returns annually; numbers are recovering but still well below historic.'
-      }
+      defaultState: {quality: 48, connectivity: 25, support: 65}, targets: {quality: 70, connectivity: 70, support: 70},
+      // Copy lives in wcWatershedCopy() so the English sits beside its key.
+      // Empty object kept so `c.deepDive ?` still offers the deep-dive button.
+      deepDive: {}
     },
     {
       id: 'floodplainWetlands', name: 'Floodplain Wetlands', icon: '🪷', color: '#16a34a',
-      role: 'Beaver-built flood storage',
-      desc: 'Beaver dam complexes and adjacent wet meadows. Slow flood pulses, recharge groundwater, filter nutrients, support amphibians, waterfowl, moose, otter. Beaver Dam Analogs (BDAs) mimic this work where beavers have not returned.',
-      defaultState: { quality: 55, connectivity: 60, support: 50 }, targets: { quality: 75, connectivity: 70, support: 65 },
-      deepDive: {
-        knowledge: 'Beaver-built wetlands are the textbook example of ecosystem engineering. A single beaver complex can create up to 10 acres of wet meadow that stores flood water, recharges groundwater, traps sediment, filters nutrients, and supports moose, waterfowl, river otter, brook trout, and amphibians. Wetland complexes also act as firebreaks during dry years. North American beaver populations were estimated at 60 to 400 million pre-contact; the European fur trade crashed them to under 100,000 by 1900.',
-        casework: 'Beaver populations have recovered to perhaps 10 to 15 million across North America but remain far below historic in most Northeast watersheds. Beaver Dam Analog (BDA) restoration mimics beaver work with imported wood, rock, and posts; it is increasingly used where beavers have not naturally recolonized. The Methow Beaver Project in Washington and similar Maine pilots have shown that BDAs can trigger natural beaver return within 2 to 4 years.',
-        modernContext: 'Beavers face conflict with road managers and downstream landowners over flooding. Lethal trapping continues in Maine. Beaver Deceiver flow-control devices are the non-lethal alternative; Wabanaki communities have led some of the strongest beaver-protection advocacy in the region. Climate-resilience planners increasingly cite beavers as low-cost natural infrastructure.'
-      }
+      defaultState: {quality: 55, connectivity: 60, support: 50}, targets: {quality: 75, connectivity: 70, support: 65},
+      // Copy lives in wcWatershedCopy() so the English sits beside its key.
+      // Empty object kept so `c.deepDive ?` still offers the deep-dive button.
+      deepDive: {}
     },
     {
       id: 'forestBuffer', name: 'Forested Buffer Zones', icon: '🌲', color: '#15803d',
-      role: 'Riparian shade and filter',
-      desc: 'The strip of mature forest along stream banks. Shade keeps water cold, roots stabilize banks, leaf litter feeds aquatic insects, wood falls in to create habitat. A 50-foot intact buffer is the single most cost-effective stream protection.',
-      defaultState: { quality: 58, connectivity: 50, support: 60 }, targets: { quality: 75, connectivity: 70, support: 70 },
-      deepDive: {
-        knowledge: 'Riparian buffers do five distinct jobs at once: shade keeps water cold for trout and salmon parr, root systems stabilize banks against erosion, leaf litter is the primary food source for stream insects (which feed fish), woody debris falls in to create pools and cover, and the buffer filters runoff from adjacent agricultural and developed land. The pioneering research by Allan and others established that even a 30-foot intact buffer captures most of the runoff-quality benefit, and a 100-foot buffer provides the full hydrological function.',
-        casework: 'Maine\'s Shoreland Zoning Act (1971) regulates the first 75 feet around great ponds and 250 feet around rivers, but enforcement is uneven and exemptions for development are routine. Land trust easements have been more effective than regulation in many Maine watersheds. The Maine Coast Heritage Trust and Atlantic Salmon Federation have funded buffer-replanting on hundreds of farm streams; cover-cropping plus tree-row plantings cut runoff measurably within 3 to 5 years.',
-        modernContext: 'Buffer policy in Maine remains fragmented across jurisdictions. The strongest buffer protections often come from voluntary landowner agreements rather than zoning. Climate-driven storm events make buffers MORE important (they hold the streambank during high flows), so the federal Infrastructure Investment and Jobs Act has lifted buffer-restoration funding.'
-      }
+      defaultState: {quality: 58, connectivity: 50, support: 60}, targets: {quality: 75, connectivity: 70, support: 70},
+      // Copy lives in wcWatershedCopy() so the English sits beside its key.
+      // Empty object kept so `c.deepDive ?` still offers the deep-dive button.
+      deepDive: {}
     },
     {
       id: 'agriculturalWatershed', name: 'Agricultural Watershed', icon: '🚜', color: '#a16207',
-      role: 'Nutrient + sediment source',
-      desc: 'Dairy farms, hay fields, row crops, blueberry barrens. The dominant land use in central Maine watersheds. Manure runoff, fertilizer, sediment from tilled land all flow downstream. BMPs (Best Management Practices) can cut runoff by 50-80%.',
-      defaultState: { quality: 45, connectivity: 55, support: 55 }, targets: { quality: 65, connectivity: 60, support: 65 },
-      deepDive: {
-        knowledge: 'Agricultural land delivers three primary watershed insults: sediment from tilled or overgrazed land, nutrients (nitrogen and phosphorus) from manure and fertilizer, and pathogens from livestock waste. Best Management Practices include cover cropping, contour farming, livestock fencing from streams, manure storage upgrades, riparian buffer easements, and reduced-till or no-till cropping. Documented BMP implementations cut watershed nutrient export by 50 to 80 percent on participating farms.',
-        casework: 'Maine has roughly 7,500 farms covering about 1.3 million acres. The Maine Soil and Water Conservation Districts operate the state-side BMP outreach; USDA NRCS provides federal cost-share. Dairy farms in the Sebasticook and Kennebec watersheds have implemented manure-handling and buffer projects with measurable downstream quality improvement; comparable work in the St. John watershed has helped Aroostook potato production.',
-        modernContext: 'Farm consolidation pressures BMP adoption (the smallest farms have the thinnest margins to invest in capital improvements). PFAS contamination from historic biosolid spreading has surfaced as a major Maine farm-water issue post-2022, with state-led testing and remediation programs. The Maine Farmland Trust links farmland protection to watershed protection.'
-      }
+      defaultState: {quality: 45, connectivity: 55, support: 55}, targets: {quality: 65, connectivity: 60, support: 65},
+      // Copy lives in wcWatershedCopy() so the English sits beside its key.
+      // Empty object kept so `c.deepDive ?` still offers the deep-dive button.
+      deepDive: {}
     },
     {
       id: 'suburbanEdges', name: 'Suburban Edges', icon: '🏘️', color: '#7c3aed',
-      role: 'Stormwater + impervious surface',
-      desc: 'Subdivisions, parking lots, lawns. Impervious surfaces deliver pulses of warm polluted water to streams during storms. Lawn fertilizer and pet waste are the modern eutrophication inputs. Green stormwater infrastructure can offset the impact.',
-      defaultState: { quality: 50, connectivity: 60, support: 50 }, targets: { quality: 65, connectivity: 65, support: 65 },
-      deepDive: {
-        knowledge: 'Impervious surface (roads, roofs, parking lots, driveways) shapes urban and suburban hydrology more than any other variable. Above 10 percent watershed-wide impervious cover, stream biology measurably degrades; above 25 percent, most native fish populations are gone. Stormwater pulses are warm, fast, and pollutant-laden: lawn fertilizer, dog waste, vehicle drip, road salt, sediment from construction. Conventional drainage (curb, gutter, pipe) delivers all of it directly to streams.',
-        casework: 'Portland, ME has documented stream impairment along the Capisic Brook and Stroudwater drainages tied directly to impervious cover. Green Stormwater Infrastructure (rain gardens, swales, permeable pavement, detention basins, green roofs) can offset 50 to 80 percent of the conventional pulse. The Maine Stormwater BMP Manual is the regulatory reference; municipal stormwater (MS4) permits require larger towns to implement.',
-        modernContext: 'Most suburban watershed work in Maine happens at municipal scale through MS4 permits, town stormwater ordinances, and watershed-association advocacy. Climate-resilience funding under the Infrastructure Investment and Jobs Act has dramatically increased available capital for retrofit. The biggest challenge is older developments built before stormwater regulation that have no easy retrofit path.'
-      }
+      defaultState: {quality: 50, connectivity: 60, support: 50}, targets: {quality: 65, connectivity: 65, support: 65},
+      // Copy lives in wcWatershedCopy() so the English sits beside its key.
+      // Empty object kept so `c.deepDive ?` still offers the deep-dive button.
+      deepDive: {}
     }
   ];
 
+  // Localised copy for the Maine watershed module. Keys are LITERAL so the
+  // string extractors can see them; a computed key never reaches a pack.
+  // NOTE: `name` is intentionally NOT translated. Component and technique
+  // names are persisted into the saved action log and used as lookup keys,
+  // so translating them would break a campaign saved in another language.
+  function wcWatershedCopy(t) {
+    return {
+      headwaterStreams: {
+        role: t('stem.watercycle.ws_headwaterStreams_role', 'Cold-water indicator'),
+        desc: t('stem.watercycle.ws_headwaterStreams_desc', 'High-elevation forested streams. Native brook trout, native eastern brook trout, water temperature below 20°C. The cleanest water in the watershed; everything downstream is shaped by what happens here.'),
+        deepDive: {
+          knowledge: t('stem.watercycle.ws_headwaterStreams_knowledge', 'Headwater streams are first-order channels: small enough to step across, fed by springs and seeps, almost always shaded by mature forest. They make up roughly 60 to 80 percent of the total stream-mile length in a typical Maine watershed but receive a fraction of the regulatory attention. Native brook trout require water below about 20°C, dissolved oxygen above 7 mg/L, and woody debris for cover. Every degree of warming pushes their range north and uphill.'),
+          casework: t('stem.watercycle.ws_headwaterStreams_casework', 'The Eastern Brook Trout Joint Venture maps the status of native populations across the species range. Maine retains an unusually large portion of historic native brook trout habitat compared to the rest of the Northeast. Most successful headwater protection has come from upper-watershed conservation easements and replacement of undersized culverts that act as warm-water bottlenecks.'),
+          modernContext: t('stem.watercycle.ws_headwaterStreams_moderncontext', 'Climate change is the central long-term threat to Maine headwater streams. Several Maine Audubon and Wabanaki community projects have led culvert replacement and shade-tree planting campaigns. The 2023 Maine Climate Action Plan named cold-water-fishery protection as a priority but funding has lagged.'),
+        },
+      },
+      riverMainstem: {
+        role: t('stem.watercycle.ws_riverMainstem_role', 'Migratory fish corridor'),
+        desc: t('stem.watercycle.ws_riverMainstem_desc', 'The big channel through the watershed. Historically the route for Atlantic salmon, alewife, sea-run brook trout, eels, sturgeon. In Maine, dam barriers block most of these runs; recent removals (Edwards Dam 1999, Fort Halifax 2008, Veazie 2012, Great Works 2013) reopened sections.'),
+        deepDive: {
+          knowledge: t('stem.watercycle.ws_riverMainstem_knowledge', 'Anadromous fish (born in fresh water, mature at sea, return upstream to spawn) include Atlantic salmon, alewife, blueback herring, American shad, sea lamprey, and sea-run brook trout. Each species has different barrier-passage tolerance: alewife can use modest fish ladders; Atlantic salmon need near-full passage; sturgeon need almost-complete connectivity. Dam barriers degrade water quality upstream too: stagnant impoundments warm, accumulate sediment, and lose dissolved oxygen.'),
+          casework: t('stem.watercycle.ws_riverMainstem_casework', 'The Penobscot River Restoration Project (Penobscot Nation, NGOs, hydro companies) removed Veazie Dam in 2012 and Great Works Dam in 2013 while preserving most generation through upgrades elsewhere. River herring returns increased over 1000-fold in the first decade post-removal. The Kennebec saw Edwards Dam come down in 1999 and Fort Halifax in 2008. The Sebasticook tributary alone now hosts the largest river-herring run on the East Coast.'),
+          modernContext: t('stem.watercycle.ws_riverMainstem_moderncontext', 'The Penobscot Nation has led the legal, political, and ecological work on its ancestral river. Ongoing dam-removal campaigns target the Mattaceunk, Milford, and lower Kennebec dams. NOAA and the Atlantic Salmon Federation track returns annually; numbers are recovering but still well below historic.'),
+        },
+      },
+      floodplainWetlands: {
+        role: t('stem.watercycle.ws_floodplainWetlands_role', 'Beaver-built flood storage'),
+        desc: t('stem.watercycle.ws_floodplainWetlands_desc', 'Beaver dam complexes and adjacent wet meadows. Slow flood pulses, recharge groundwater, filter nutrients, support amphibians, waterfowl, moose, otter. Beaver Dam Analogs (BDAs) mimic this work where beavers have not returned.'),
+        deepDive: {
+          knowledge: t('stem.watercycle.ws_floodplainWetlands_knowledge', 'Beaver-built wetlands are the textbook example of ecosystem engineering. A single beaver complex can create up to 10 acres of wet meadow that stores flood water, recharges groundwater, traps sediment, filters nutrients, and supports moose, waterfowl, river otter, brook trout, and amphibians. Wetland complexes also act as firebreaks during dry years. North American beaver populations were estimated at 60 to 400 million pre-contact; the European fur trade crashed them to under 100,000 by 1900.'),
+          casework: t('stem.watercycle.ws_floodplainWetlands_casework', 'Beaver populations have recovered to perhaps 10 to 15 million across North America but remain far below historic in most Northeast watersheds. Beaver Dam Analog (BDA) restoration mimics beaver work with imported wood, rock, and posts; it is increasingly used where beavers have not naturally recolonized. The Methow Beaver Project in Washington and similar Maine pilots have shown that BDAs can trigger natural beaver return within 2 to 4 years.'),
+          modernContext: t('stem.watercycle.ws_floodplainWetlands_moderncontext', 'Beavers face conflict with road managers and downstream landowners over flooding. Lethal trapping continues in Maine. Beaver Deceiver flow-control devices are the non-lethal alternative; Wabanaki communities have led some of the strongest beaver-protection advocacy in the region. Climate-resilience planners increasingly cite beavers as low-cost natural infrastructure.'),
+        },
+      },
+      forestBuffer: {
+        role: t('stem.watercycle.ws_forestBuffer_role', 'Riparian shade and filter'),
+        desc: t('stem.watercycle.ws_forestBuffer_desc', 'The strip of mature forest along stream banks. Shade keeps water cold, roots stabilize banks, leaf litter feeds aquatic insects, wood falls in to create habitat. A 50-foot intact buffer is the single most cost-effective stream protection.'),
+        deepDive: {
+          knowledge: t('stem.watercycle.ws_forestBuffer_knowledge', 'Riparian buffers do five distinct jobs at once: shade keeps water cold for trout and salmon parr, root systems stabilize banks against erosion, leaf litter is the primary food source for stream insects (which feed fish), woody debris falls in to create pools and cover, and the buffer filters runoff from adjacent agricultural and developed land. The pioneering research by Allan and others established that even a 30-foot intact buffer captures most of the runoff-quality benefit, and a 100-foot buffer provides the full hydrological function.'),
+          casework: t('stem.watercycle.ws_forestBuffer_casework', 'Maine\'s Shoreland Zoning Act (1971) regulates the first 75 feet around great ponds and 250 feet around rivers, but enforcement is uneven and exemptions for development are routine. Land trust easements have been more effective than regulation in many Maine watersheds. The Maine Coast Heritage Trust and Atlantic Salmon Federation have funded buffer-replanting on hundreds of farm streams; cover-cropping plus tree-row plantings cut runoff measurably within 3 to 5 years.'),
+          modernContext: t('stem.watercycle.ws_forestBuffer_moderncontext', 'Buffer policy in Maine remains fragmented across jurisdictions. The strongest buffer protections often come from voluntary landowner agreements rather than zoning. Climate-driven storm events make buffers MORE important (they hold the streambank during high flows), so the federal Infrastructure Investment and Jobs Act has lifted buffer-restoration funding.'),
+        },
+      },
+      agriculturalWatershed: {
+        role: t('stem.watercycle.ws_agriculturalWatershed_role', 'Nutrient + sediment source'),
+        desc: t('stem.watercycle.ws_agriculturalWatershed_desc', 'Dairy farms, hay fields, row crops, blueberry barrens. The dominant land use in central Maine watersheds. Manure runoff, fertilizer, sediment from tilled land all flow downstream. BMPs (Best Management Practices) can cut runoff by 50-80%.'),
+        deepDive: {
+          knowledge: t('stem.watercycle.ws_agriculturalWatershed_knowledge', 'Agricultural land delivers three primary watershed insults: sediment from tilled or overgrazed land, nutrients (nitrogen and phosphorus) from manure and fertilizer, and pathogens from livestock waste. Best Management Practices include cover cropping, contour farming, livestock fencing from streams, manure storage upgrades, riparian buffer easements, and reduced-till or no-till cropping. Documented BMP implementations cut watershed nutrient export by 50 to 80 percent on participating farms.'),
+          casework: t('stem.watercycle.ws_agriculturalWatershed_casework', 'Maine has roughly 7,500 farms covering about 1.3 million acres. The Maine Soil and Water Conservation Districts operate the state-side BMP outreach; USDA NRCS provides federal cost-share. Dairy farms in the Sebasticook and Kennebec watersheds have implemented manure-handling and buffer projects with measurable downstream quality improvement; comparable work in the St. John watershed has helped Aroostook potato production.'),
+          modernContext: t('stem.watercycle.ws_agriculturalWatershed_moderncontext', 'Farm consolidation pressures BMP adoption (the smallest farms have the thinnest margins to invest in capital improvements). PFAS contamination from historic biosolid spreading has surfaced as a major Maine farm-water issue post-2022, with state-led testing and remediation programs. The Maine Farmland Trust links farmland protection to watershed protection.'),
+        },
+      },
+      suburbanEdges: {
+        role: t('stem.watercycle.ws_suburbanEdges_role', 'Stormwater + impervious surface'),
+        desc: t('stem.watercycle.ws_suburbanEdges_desc', 'Subdivisions, parking lots, lawns. Impervious surfaces deliver pulses of warm polluted water to streams during storms. Lawn fertilizer and pet waste are the modern eutrophication inputs. Green stormwater infrastructure can offset the impact.'),
+        deepDive: {
+          knowledge: t('stem.watercycle.ws_suburbanEdges_knowledge', 'Impervious surface (roads, roofs, parking lots, driveways) shapes urban and suburban hydrology more than any other variable. Above 10 percent watershed-wide impervious cover, stream biology measurably degrades; above 25 percent, most native fish populations are gone. Stormwater pulses are warm, fast, and pollutant-laden: lawn fertilizer, dog waste, vehicle drip, road salt, sediment from construction. Conventional drainage (curb, gutter, pipe) delivers all of it directly to streams.'),
+          casework: t('stem.watercycle.ws_suburbanEdges_casework', 'Portland, ME has documented stream impairment along the Capisic Brook and Stroudwater drainages tied directly to impervious cover. Green Stormwater Infrastructure (rain gardens, swales, permeable pavement, detention basins, green roofs) can offset 50 to 80 percent of the conventional pulse. The Maine Stormwater BMP Manual is the regulatory reference; municipal stormwater (MS4) permits require larger towns to implement.'),
+          modernContext: t('stem.watercycle.ws_suburbanEdges_moderncontext', 'Most suburban watershed work in Maine happens at municipal scale through MS4 permits, town stormwater ordinances, and watershed-association advocacy. Climate-resilience funding under the Infrastructure Investment and Jobs Act has dramatically increased available capital for retrofit. The biggest challenge is older developments built before stormwater regulation that have no easy retrofit path.'),
+        },
+      },
+    };
+  }
+
+  // Overlay the localised copy onto the static component data. Ids, colours,
+  // icons, targets and default state are untouched.
+  function localizeWatershedComponents(t) {
+    var copy = wcWatershedCopy(t);
+    return MAINE_WATERSHED_COMPONENTS.map(function (component) {
+      var localized = copy[component.id];
+      if (!localized) return component;
+      var merged = Object.assign({}, component, localized);
+      if (component.deepDive || localized.deepDive) {
+        merged.deepDive = Object.assign({}, component.deepDive, localized.deepDive);
+      }
+      return merged;
+    });
+  }
+
   var STEWARD_TECHNIQUES = [
-    { id: 'bufferPlant', name: 'Riparian buffer planting', icon: '🌲', hours: 5, desc: 'Plant native trees and shrubs along stream banks. Slow buildup that pays off in shade, bank stability, and nutrient filtering for decades.', effects: { quality: 8, connectivity: 4 }, appliesTo: ['forestBuffer', 'headwaterStreams'] },
-    { id: 'beaverDamAnalog', name: 'Beaver Dam Analog', icon: '🦫', hours: 6, desc: 'Build a low-cost wood-and-stone structure that mimics beaver dam function. Encourages real beaver recolonization. Restores wet meadow conditions.', effects: { quality: 11, connectivity: 6 }, appliesTo: ['floodplainWetlands'] },
-    { id: 'damRemoval', name: 'Dam removal', icon: '🪨', hours: 15, desc: 'Remove or breach a barrier dam. Huge connectivity gain. Politically expensive: some landowners and recreational users will be upset.', effects: { connectivity: 28, quality: 8, support: -12 }, appliesTo: ['riverMainstem'] },
-    { id: 'fishPassage', name: 'Fish passage installation', icon: '🐟', hours: 10, desc: 'Build a fish ladder or nature-like bypass around a barrier. Cheaper than dam removal and politically easier, but less effective for some species.', effects: { connectivity: 14, quality: 2 }, appliesTo: ['riverMainstem'] },
-    { id: 'bmpOutreach', name: 'BMP outreach', icon: '🤝', hours: 4, desc: 'Work with farmers on Best Management Practices: cover crops, livestock fencing, manure storage, buffer easements. Real Maine programs.', effects: { quality: 7, support: 4 }, appliesTo: ['agriculturalWatershed'] },
-    { id: 'easement', name: 'Conservation easement', icon: '📜', hours: 12, desc: 'Pay a landowner to permanently protect a riparian or upland parcel. The single highest-impact and highest-cost intervention.', effects: { quality: 15, connectivity: 12, support: 3 }, appliesTo: 'any' },
-    { id: 'stormwater', name: 'Stormwater retrofit', icon: '🌧️', hours: 8, desc: 'Install rain gardens, swales, permeable pavement, or detention basins in developed areas. Slows and filters stormwater pulses.', effects: { quality: 13, connectivity: 3 }, appliesTo: ['suburbanEdges'] },
-    { id: 'citizenScience', name: 'Citizen science monitoring', icon: '🔬', hours: 3, desc: 'Train volunteer water-quality monitors. Slow but builds long-term community support and detects problems early.', effects: { quality: 2, support: 7 }, appliesTo: 'any' },
-    { id: 'publicEd', name: 'Public education + River Days', icon: '📣', hours: 3, desc: 'Watershed festivals, school programs, paddle events. Build community ownership of the watershed.', effects: { support: 9 }, appliesTo: 'any' },
-    { id: 'rest', name: 'Hold steady', icon: '🍃', hours: 0, desc: 'No active intervention this year. Some natural recovery; some drift.', effects: {}, appliesTo: 'any' }
+    { id: 'bufferPlant', name: 'Riparian buffer planting', icon: '🌲', hours: 5, effects: { quality: 8, connectivity: 4 }, appliesTo: ['forestBuffer', 'headwaterStreams'] },
+    { id: 'beaverDamAnalog', name: 'Beaver Dam Analog', icon: '🦫', hours: 6, effects: { quality: 11, connectivity: 6 }, appliesTo: ['floodplainWetlands'] },
+    { id: 'damRemoval', name: 'Dam removal', icon: '🪨', hours: 15, effects: { connectivity: 28, quality: 8, support: -12 }, appliesTo: ['riverMainstem'] },
+    { id: 'fishPassage', name: 'Fish passage installation', icon: '🐟', hours: 10, effects: { connectivity: 14, quality: 2 }, appliesTo: ['riverMainstem'] },
+    { id: 'bmpOutreach', name: 'BMP outreach', icon: '🤝', hours: 4, effects: { quality: 7, support: 4 }, appliesTo: ['agriculturalWatershed'] },
+    { id: 'easement', name: 'Conservation easement', icon: '📜', hours: 12, effects: { quality: 15, connectivity: 12, support: 3 }, appliesTo: 'any' },
+    { id: 'stormwater', name: 'Stormwater retrofit', icon: '🌧️', hours: 8, effects: { quality: 13, connectivity: 3 }, appliesTo: ['suburbanEdges'] },
+    { id: 'citizenScience', name: 'Citizen science monitoring', icon: '🔬', hours: 3, effects: { quality: 2, support: 7 }, appliesTo: 'any' },
+    { id: 'publicEd', name: 'Public education + River Days', icon: '📣', hours: 3, effects: { support: 9 }, appliesTo: 'any' },
+    { id: 'rest', name: 'Hold steady', icon: '🍃', hours: 0, effects: {}, appliesTo: 'any' }
   ];
 
   var STEWARD_EVENTS = [
-    { id: 'majorFlood', name: 'Major flood', icon: '🌊', desc: 'A 10-year flood scoured stream banks and washed sediment downstream. Buffers without good root systems lost ground.', apply: function(comps) { comps.forEach(function(c) { if (c.id === 'forestBuffer' && c.quality < 65) c.quality = Math.max(0, c.quality - 7); if (c.id === 'floodplainWetlands') c.quality = Math.min(100, c.quality + 3); }); } },
-    { id: 'drought', name: 'Drought year', icon: '☀️', desc: 'Low summer flows raised stream temperatures and concentrated pollutants. Cold-water species took a hit.', apply: function(comps) { comps.forEach(function(c) { if (c.id === 'headwaterStreams') c.quality = Math.max(0, c.quality - 8); if (c.id === 'riverMainstem') c.quality = Math.max(0, c.quality - 4); }); } },
-    { id: 'sewageRelease', name: 'Sewage discharge', icon: '⚠️', desc: 'A wastewater treatment plant bypass during a heavy storm released untreated discharge. Mainstem quality drops.', apply: function(comps) { comps.forEach(function(c) { if (c.id === 'riverMainstem' || c.id === 'suburbanEdges') c.quality = Math.max(0, c.quality - 10); }); } },
-    { id: 'algalBloom', name: 'Cyanobacteria bloom', icon: '🟢', desc: 'A cyanobacteria bloom closed swim beaches and prompted advisories. Public support shifts toward stronger watershed protection.', apply: function(comps) { comps.forEach(function(c) { c.support = Math.min(100, c.support + 5); if (c.id === 'agriculturalWatershed') c.quality = Math.max(0, c.quality - 5); }); } },
-    { id: 'volunteerSurge', name: 'Volunteer surge', icon: '🙌', desc: 'A successful River Day brought 200+ volunteers. Citizen monitoring + cleanup boost across the board.', apply: function(comps) { comps.forEach(function(c) { c.support = Math.min(100, c.support + 7); c.quality = Math.min(100, c.quality + 2); }); } },
-    { id: 'farmSold', name: 'Farm sold for development', icon: '🚜', desc: 'A long-running family dairy operation sold to a residential developer. BMP gains on that land reset.', apply: function(comps) { comps.forEach(function(c) { if (c.id === 'agriculturalWatershed') c.quality = Math.max(0, c.quality - 6); if (c.id === 'suburbanEdges') c.quality = Math.max(0, c.quality - 3); }); } },
-    { id: 'salmonReturn', name: 'Atlantic salmon detected', icon: '🐟', desc: 'Returning Atlantic salmon (or alewife runs) detected in the mainstem. Major morale boost and federal attention.', apply: function(comps, state) { if (state.connectivityBoosts >= 1) comps.forEach(function(c) { c.support = Math.min(100, c.support + 10); }); else comps.forEach(function(c) { c.support = Math.min(100, c.support + 4); }); } },
-    { id: 'beaverExpand', name: 'Beaver complex expands', icon: '🦫', desc: 'Beavers expanded their territory and built three new dam complexes in the floodplain.', apply: function(comps) { comps.forEach(function(c) { if (c.id === 'floodplainWetlands') { c.quality = Math.min(100, c.quality + 9); c.connectivity = Math.min(100, c.connectivity + 5); } }); } },
-    { id: 'fundingBump', name: 'EPA / FEMA grant', icon: '💵', desc: 'A federal grant lands. Stewardship hours next year will be +5.', apply: function(comps, state) { state.fundingBonusNextYear = (state.fundingBonusNextYear || 0) + 5; } },
-    { id: 'erosionEvent', name: 'Major bank erosion', icon: '🏞️', desc: 'A bend in the river undercut a road shoulder. Public attention focuses on streambank stabilization.', apply: function(comps) { comps.forEach(function(c) { if (c.id === 'forestBuffer') c.support = Math.min(100, c.support + 8); }); } }
+    { id: 'majorFlood', icon: '🌊', apply: function(comps) { comps.forEach(function(c) { if (c.id === 'forestBuffer' && c.quality < 65) c.quality = Math.max(0, c.quality - 7); if (c.id === 'floodplainWetlands') c.quality = Math.min(100, c.quality + 3); }); } },
+    { id: 'drought', icon: '☀️', apply: function(comps) { comps.forEach(function(c) { if (c.id === 'headwaterStreams') c.quality = Math.max(0, c.quality - 8); if (c.id === 'riverMainstem') c.quality = Math.max(0, c.quality - 4); }); } },
+    { id: 'sewageRelease', icon: '⚠️', apply: function(comps) { comps.forEach(function(c) { if (c.id === 'riverMainstem' || c.id === 'suburbanEdges') c.quality = Math.max(0, c.quality - 10); }); } },
+    { id: 'algalBloom', icon: '🟢', apply: function(comps) { comps.forEach(function(c) { c.support = Math.min(100, c.support + 5); if (c.id === 'agriculturalWatershed') c.quality = Math.max(0, c.quality - 5); }); } },
+    { id: 'volunteerSurge', icon: '🙌', apply: function(comps) { comps.forEach(function(c) { c.support = Math.min(100, c.support + 7); c.quality = Math.min(100, c.quality + 2); }); } },
+    { id: 'farmSold', icon: '🚜', apply: function(comps) { comps.forEach(function(c) { if (c.id === 'agriculturalWatershed') c.quality = Math.max(0, c.quality - 6); if (c.id === 'suburbanEdges') c.quality = Math.max(0, c.quality - 3); }); } },
+    { id: 'salmonReturn', icon: '🐟', apply: function(comps, state) { if (state.connectivityBoosts >= 1) comps.forEach(function(c) { c.support = Math.min(100, c.support + 10); }); else comps.forEach(function(c) { c.support = Math.min(100, c.support + 4); }); } },
+    { id: 'beaverExpand', icon: '🦫', apply: function(comps) { comps.forEach(function(c) { if (c.id === 'floodplainWetlands') { c.quality = Math.min(100, c.quality + 9); c.connectivity = Math.min(100, c.connectivity + 5); } }); } },
+    { id: 'fundingBump', icon: '💵', apply: function(comps, state) { state.fundingBonusNextYear = (state.fundingBonusNextYear || 0) + 5; } },
+    { id: 'erosionEvent', icon: '🏞️', apply: function(comps) { comps.forEach(function(c) { if (c.id === 'forestBuffer') c.support = Math.min(100, c.support + 8); }); } }
   ];
 
   // Hydrological cascade rules. These tie the watershed components together
@@ -575,10 +630,10 @@
   // Helper: null-safe id lookup. Falls back to inline find if window.StemLab isn't loaded.
   var _wcById = function(arr, id) { return window.StemLab && window.StemLab.findById ? window.StemLab.findById(arr, id) : null; };
   var STEWARD_FEEDBACK_RULES = [
-    { id: 'bufferFeedsHeadwaters', when: function(s) { var c = _wcById(s, 'forestBuffer'); return !!c && c.quality > 70; }, apply: function(s) { var h = _wcById(s, 'headwaterStreams'); if (h) h.quality = Math.min(100, h.quality + 4); }, msg: 'Healthy forest buffers cooled and cleaned headwater streams.' },
-    { id: 'beaverHelpsFloodplain', when: function(s) { var c = _wcById(s, 'floodplainWetlands'); return !!c && c.quality > 60; }, apply: function(s) { var m = _wcById(s, 'riverMainstem'); if (m) { m.quality = Math.min(100, m.quality + 3); m.connectivity = Math.min(100, m.connectivity + 2); } }, msg: 'Beaver-built wetlands attenuated flood pulses and improved mainstem water quality.' },
-    { id: 'agCleansUp', when: function(s) { var c = _wcById(s, 'agriculturalWatershed'); return !!c && c.quality > 60; }, apply: function(s) { var m = _wcById(s, 'riverMainstem'); if (m) m.quality = Math.min(100, m.quality + 4); }, msg: 'Lower agricultural runoff cleaned up the river mainstem.' },
-    { id: 'runRestoration', when: function(s) { var m = _wcById(s, 'riverMainstem'); var b = _wcById(s, 'forestBuffer'); return !!m && !!b && m.connectivity > 60 && b.quality > 60; }, apply: function(s) { s.forEach(function(c) { c.support = Math.min(100, c.support + 2); }); }, msg: 'Connected, shaded river segments support documented anadromous fish returns.' }
+    { id: 'bufferFeedsHeadwaters', when: function(s) { var c = _wcById(s, 'forestBuffer'); return !!c && c.quality > 70; }, apply: function(s) { var h = _wcById(s, 'headwaterStreams'); if (h) h.quality = Math.min(100, h.quality + 4); }, },
+    { id: 'beaverHelpsFloodplain', when: function(s) { var c = _wcById(s, 'floodplainWetlands'); return !!c && c.quality > 60; }, apply: function(s) { var m = _wcById(s, 'riverMainstem'); if (m) { m.quality = Math.min(100, m.quality + 3); m.connectivity = Math.min(100, m.connectivity + 2); } }, },
+    { id: 'agCleansUp', when: function(s) { var c = _wcById(s, 'agriculturalWatershed'); return !!c && c.quality > 60; }, apply: function(s) { var m = _wcById(s, 'riverMainstem'); if (m) m.quality = Math.min(100, m.quality + 4); }, },
+    { id: 'runRestoration', when: function(s) { var m = _wcById(s, 'riverMainstem'); var b = _wcById(s, 'forestBuffer'); return !!m && !!b && m.connectivity > 60 && b.quality > 60; }, apply: function(s) { s.forEach(function(c) { c.support = Math.min(100, c.support + 2); }); }, }
   ];
 
   // Parallel "coaching" view of the feedback rules above: the same thresholds,
@@ -588,24 +643,125 @@
   // Kept in lockstep with STEWARD_FEEDBACK_RULES by hand (only 4 rules).
   var STEWARD_CASCADE_HINTS = [
     { id: 'bufferFeedsHeadwaters', comp: 'forestBuffer', field: 'quality', threshold: 70,
-      fired: 'Your forest buffers crossed 70% quality — shade cooled the water and roots filtered it, so cleaner cold water flowed downhill into the headwaters (+quality there, for free).',
-      near: 'Forest-buffer quality is at {v}. Get it past 70 (one riparian buffer planting) and it will cool and clean the headwaters automatically every year after.' },
+      
+      },
     { id: 'beaverHelpsFloodplain', comp: 'floodplainWetlands', field: 'quality', threshold: 60,
-      fired: 'Your floodplain wetlands crossed 60% — beaver-built storage slowed the flood pulses and let sediment settle, improving mainstem water quality downstream.',
-      near: 'Floodplain wetlands sit at {v}. A single Beaver Dam Analog would push past 60 and start cleaning the mainstem for you.' },
+      
+      },
     { id: 'agCleansUp', comp: 'agriculturalWatershed', field: 'quality', threshold: 60,
-      fired: 'Farm runoff dropped enough (agricultural quality over 60) that the mainstem cleaned up on its own — less nitrogen, phosphorus, and sediment reaching the river.',
-      near: 'Agricultural quality is {v}. BMP outreach is cheap (4h) and would tip it past 60, cleaning the mainstem via the runoff feedback.' },
+      
+      },
     { id: 'runRestoration', comp: 'riverMainstem', field: 'connectivity', threshold: 60,
-      fired: 'A connected, shaded mainstem (connectivity over 60, with healthy buffers) is now supporting documented anadromous fish returns — morale rose across every component.',
-      near: 'Mainstem connectivity is {v}. Cross 60 with buffers already healthy and you unlock fish returns plus a support boost watershed-wide.' }
+      
+      }
   ];
 
   var STEWARD_DIFFICULTIES = {
-    volunteer:   { id: 'volunteer',   label: 'New Volunteer',         hoursPerYear: 24, eventSkip: 0.3, severity: 0.8, desc: '24 hours / year, gentler events. For first runs.' },
-    coordinator: { id: 'coordinator', label: 'Watershed Coordinator', hoursPerYear: 18, eventSkip: 0,   severity: 1.0, desc: '18 hours / year, standard events. Default.' },
-    director:    { id: 'director',    label: 'Watershed Director',    hoursPerYear: 14, eventSkip: 0,   severity: 1.4, desc: '14 hours / year, harsher events. Real constraint.' }
+    volunteer:   { id: 'volunteer',   hoursPerYear: 24, eventSkip: 0.3, severity: 0.8, },
+    coordinator: { id: 'coordinator', hoursPerYear: 18, eventSkip: 0,   severity: 1.0, },
+    director:    { id: 'director',    hoursPerYear: 14, eventSkip: 0,   severity: 1.4, }
   };
+
+  // Remaining steward copy. Literal keys so the extractors can see them.
+  // technique.name and the event strings are intentionally absent - see
+  // the note on applyStewardCopy().
+  function wcStewardCopy(t) {
+    return {
+      ev: {
+        majorFlood_name: t('stem.watercycle.sw_ev_majorFlood_name', 'Major flood'),
+        majorFlood_desc: t('stem.watercycle.sw_ev_majorFlood_desc', 'A 10-year flood scoured stream banks and washed sediment downstream. Buffers without good root systems lost ground.'),
+        drought_name: t('stem.watercycle.sw_ev_drought_name', 'Drought year'),
+        drought_desc: t('stem.watercycle.sw_ev_drought_desc', 'Low summer flows raised stream temperatures and concentrated pollutants. Cold-water species took a hit.'),
+        sewageRelease_name: t('stem.watercycle.sw_ev_sewageRelease_name', 'Sewage discharge'),
+        sewageRelease_desc: t('stem.watercycle.sw_ev_sewageRelease_desc', 'A wastewater treatment plant bypass during a heavy storm released untreated discharge. Mainstem quality drops.'),
+        algalBloom_name: t('stem.watercycle.sw_ev_algalBloom_name', 'Cyanobacteria bloom'),
+        algalBloom_desc: t('stem.watercycle.sw_ev_algalBloom_desc', 'A cyanobacteria bloom closed swim beaches and prompted advisories. Public support shifts toward stronger watershed protection.'),
+        volunteerSurge_name: t('stem.watercycle.sw_ev_volunteerSurge_name', 'Volunteer surge'),
+        volunteerSurge_desc: t('stem.watercycle.sw_ev_volunteerSurge_desc', 'A successful River Day brought 200+ volunteers. Citizen monitoring + cleanup boost across the board.'),
+        farmSold_name: t('stem.watercycle.sw_ev_farmSold_name', 'Farm sold for development'),
+        farmSold_desc: t('stem.watercycle.sw_ev_farmSold_desc', 'A long-running family dairy operation sold to a residential developer. BMP gains on that land reset.'),
+        salmonReturn_name: t('stem.watercycle.sw_ev_salmonReturn_name', 'Atlantic salmon detected'),
+        salmonReturn_desc: t('stem.watercycle.sw_ev_salmonReturn_desc', 'Returning Atlantic salmon (or alewife runs) detected in the mainstem. Major morale boost and federal attention.'),
+        beaverExpand_name: t('stem.watercycle.sw_ev_beaverExpand_name', 'Beaver complex expands'),
+        beaverExpand_desc: t('stem.watercycle.sw_ev_beaverExpand_desc', 'Beavers expanded their territory and built three new dam complexes in the floodplain.'),
+        fundingBump_name: t('stem.watercycle.sw_ev_fundingBump_name', 'EPA / FEMA grant'),
+        fundingBump_desc: t('stem.watercycle.sw_ev_fundingBump_desc', 'A federal grant lands. Stewardship hours next year will be +5.'),
+        erosionEvent_name: t('stem.watercycle.sw_ev_erosionEvent_name', 'Major bank erosion'),
+        erosionEvent_desc: t('stem.watercycle.sw_ev_erosionEvent_desc', 'A bend in the river undercut a road shoulder. Public attention focuses on streambank stabilization.'),
+      },
+      tech: {
+        bufferPlant_desc: t('stem.watercycle.sw_tech_bufferPlant_desc', 'Plant native trees and shrubs along stream banks. Slow buildup that pays off in shade, bank stability, and nutrient filtering for decades.'),
+        beaverDamAnalog_desc: t('stem.watercycle.sw_tech_beaverDamAnalog_desc', 'Build a low-cost wood-and-stone structure that mimics beaver dam function. Encourages real beaver recolonization. Restores wet meadow conditions.'),
+        damRemoval_desc: t('stem.watercycle.sw_tech_damRemoval_desc', 'Remove or breach a barrier dam. Huge connectivity gain. Politically expensive: some landowners and recreational users will be upset.'),
+        fishPassage_desc: t('stem.watercycle.sw_tech_fishPassage_desc', 'Build a fish ladder or nature-like bypass around a barrier. Cheaper than dam removal and politically easier, but less effective for some species.'),
+        bmpOutreach_desc: t('stem.watercycle.sw_tech_bmpOutreach_desc', 'Work with farmers on Best Management Practices: cover crops, livestock fencing, manure storage, buffer easements. Real Maine programs.'),
+        easement_desc: t('stem.watercycle.sw_tech_easement_desc', 'Pay a landowner to permanently protect a riparian or upland parcel. The single highest-impact and highest-cost intervention.'),
+        stormwater_desc: t('stem.watercycle.sw_tech_stormwater_desc', 'Install rain gardens, swales, permeable pavement, or detention basins in developed areas. Slows and filters stormwater pulses.'),
+        citizenScience_desc: t('stem.watercycle.sw_tech_citizenScience_desc', 'Train volunteer water-quality monitors. Slow but builds long-term community support and detects problems early.'),
+        publicEd_desc: t('stem.watercycle.sw_tech_publicEd_desc', 'Watershed festivals, school programs, paddle events. Build community ownership of the watershed.'),
+        rest_desc: t('stem.watercycle.sw_tech_rest_desc', 'No active intervention this year. Some natural recovery; some drift.'),
+      },
+      fb: {
+        bufferFeedsHeadwaters_msg: t('stem.watercycle.sw_fb_bufferFeedsHeadwaters_msg', 'Healthy forest buffers cooled and cleaned headwater streams.'),
+        beaverHelpsFloodplain_msg: t('stem.watercycle.sw_fb_beaverHelpsFloodplain_msg', 'Beaver-built wetlands attenuated flood pulses and improved mainstem water quality.'),
+        agCleansUp_msg: t('stem.watercycle.sw_fb_agCleansUp_msg', 'Lower agricultural runoff cleaned up the river mainstem.'),
+        runRestoration_msg: t('stem.watercycle.sw_fb_runRestoration_msg', 'Connected, shaded river segments support documented anadromous fish returns.'),
+      },
+      hint: {
+        bufferFeedsHeadwaters_fired: t('stem.watercycle.sw_hint_bufferFeedsHeadwaters_fired', 'Your forest buffers crossed 70% quality — shade cooled the water and roots filtered it, so cleaner cold water flowed downhill into the headwaters (+quality there, for free).'),
+        beaverHelpsFloodplain_fired: t('stem.watercycle.sw_hint_beaverHelpsFloodplain_fired', 'Your floodplain wetlands crossed 60% — beaver-built storage slowed the flood pulses and let sediment settle, improving mainstem water quality downstream.'),
+        agCleansUp_fired: t('stem.watercycle.sw_hint_agCleansUp_fired', 'Farm runoff dropped enough (agricultural quality over 60) that the mainstem cleaned up on its own — less nitrogen, phosphorus, and sediment reaching the river.'),
+        runRestoration_fired: t('stem.watercycle.sw_hint_runRestoration_fired', 'A connected, shaded mainstem (connectivity over 60, with healthy buffers) is now supporting documented anadromous fish returns — morale rose across every component.'),
+        bufferFeedsHeadwaters_near: t('stem.watercycle.sw_hint_bufferFeedsHeadwaters_near', 'Forest-buffer quality is at {v}. Get it past 70 (one riparian buffer planting) and it will cool and clean the headwaters automatically every year after.'),
+        beaverHelpsFloodplain_near: t('stem.watercycle.sw_hint_beaverHelpsFloodplain_near', 'Floodplain wetlands sit at {v}. A single Beaver Dam Analog would push past 60 and start cleaning the mainstem for you.'),
+        agCleansUp_near: t('stem.watercycle.sw_hint_agCleansUp_near', 'Agricultural quality is {v}. BMP outreach is cheap (4h) and would tip it past 60, cleaning the mainstem via the runoff feedback.'),
+        runRestoration_near: t('stem.watercycle.sw_hint_runRestoration_near', 'Mainstem connectivity is {v}. Cross 60 with buffers already healthy and you unlock fish returns plus a support boost watershed-wide.'),
+      },
+      diff: {
+        volunteer_label: t('stem.watercycle.sw_diff_volunteer_label', 'New Volunteer'),
+        coordinator_label: t('stem.watercycle.sw_diff_coordinator_label', 'Watershed Coordinator'),
+        director_label: t('stem.watercycle.sw_diff_director_label', 'Watershed Director'),
+        volunteer_desc: t('stem.watercycle.sw_diff_volunteer_desc', '24 hours / year, gentler events. For first runs.'),
+        coordinator_desc: t('stem.watercycle.sw_diff_coordinator_desc', '18 hours / year, standard events. Default.'),
+        director_desc: t('stem.watercycle.sw_diff_director_desc', '14 hours / year, harsher events. Real constraint.'),
+      },
+    };
+  }
+
+  // Write the localised copy back onto the constants. They hold functions, so
+  // they cannot be rebuilt; mutating them in place means every existing usage
+  // site keeps working without plumbing an accessor through all of them.
+  // Idempotent: always assigned from the same keys and fallbacks.
+  function applyStewardCopy(t) {
+    // The load-time seed below runs before `var _wcT` has been assigned (var
+    // hoists the declaration, not the value), and callers may reasonably pass
+    // nothing. Fall back to the reviewed English rather than throwing.
+    if (typeof t !== 'function') t = function (key, fallback) { return fallback == null ? key : fallback; };
+    var copy = wcStewardCopy(t);
+    STEWARD_EVENTS.forEach(function (item) {
+      if (copy.ev[item.id + '_name'] != null) item.name = copy.ev[item.id + '_name'];
+      if (copy.ev[item.id + '_desc'] != null) item.desc = copy.ev[item.id + '_desc'];
+    });
+    STEWARD_TECHNIQUES.forEach(function (item) {
+      if (copy.tech[item.id + '_desc'] != null) item.desc = copy.tech[item.id + '_desc'];
+    });
+    STEWARD_FEEDBACK_RULES.forEach(function (rule) {
+      if (copy.fb[rule.id + '_msg'] != null) rule.msg = copy.fb[rule.id + '_msg'];
+    });
+    STEWARD_CASCADE_HINTS.forEach(function (hint) {
+      if (copy.hint[hint.id + '_fired'] != null) hint.fired = copy.hint[hint.id + '_fired'];
+      if (copy.hint[hint.id + '_near'] != null) hint.near = copy.hint[hint.id + '_near'];
+    });
+    Object.keys(STEWARD_DIFFICULTIES).forEach(function (key) {
+      var d = STEWARD_DIFFICULTIES[key];
+      if (copy.diff[d.id + '_label'] != null) d.label = copy.diff[d.id + '_label'];
+      if (copy.diff[d.id + '_desc'] != null) d.desc = copy.diff[d.id + '_desc'];
+    });
+  }
+
+  // Seed the reviewed English at load so the constants are never blank, even if
+  // something reads them before the first render.
+  applyStewardCopy(_wcT);
 
   function defaultStewardState() {
     var diff = STEWARD_DIFFICULTIES.coordinator;
@@ -630,8 +786,27 @@
     };
   }
 
+  // The watershed constants are module-level, so they exist before any
+  // translator does. The prose lives in wcWatershedCopy() next to its keys, so
+  // the components are ALWAYS assembled through the overlay — never handed out
+  // raw, which would render blank role/desc text. Until a render sets the real
+  // translator, this identity function supplies the reviewed English.
+  var _wcT = function (key, fallback) { return fallback == null ? key : fallback; };
+  var _wcLocalizedCache = null;
+  var _wcLocalizedFor = null;
+
+  function watershedComponents() {
+    // ctx.t is rebuilt every render, so identity comparison rebuilds the cache
+    // exactly once per render rather than once per lookup.
+    if (_wcLocalizedCache && _wcLocalizedFor === _wcT) return _wcLocalizedCache;
+    _wcLocalizedFor = _wcT;
+    _wcLocalizedCache = localizeWatershedComponents(_wcT);
+    return _wcLocalizedCache;
+  }
+
   function getWatershedComponent(id) {
-    for (var i = 0; i < MAINE_WATERSHED_COMPONENTS.length; i++) if (MAINE_WATERSHED_COMPONENTS[i].id === id) return MAINE_WATERSHED_COMPONENTS[i];
+    var list = watershedComponents();
+    for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
     return null;
   }
 
@@ -647,23 +822,37 @@
     };
   }
 
-  var WATER_CYCLE_VOCAB = {
-    'evaporation': 'The process where liquid water absorbs thermal energy and changes into water vapor gas, rising into the atmosphere.',
-    'condensation': 'The process where water vapor gas cools and changes back into liquid water droplets, forming clouds.',
-    'precipitation': 'Water falling from clouds to Earth\'s surface as rain, snow, sleet, or hail when droplets grow too heavy.',
-    'collection': 'The accumulation of water in oceans, lakes, rivers, and underground reservoirs, completing the surface loop.',
-    'transpiration': 'The evaporation of water from plant leaves through tiny pores called stomata, acting as a natural pump.',
-    'infiltration': 'The process by which water on the ground surface enters soil and rock; some infiltrated water can contribute to groundwater recharge.',
-    'sublimation': 'The direct transition of water from solid ice or snow into water vapor gas, bypassing the liquid phase.',
-    'aquifer': 'An underground layer of water-bearing permeable rock, gravel, sand, or silt from which groundwater can be extracted.',
-    'watershed': 'An area of land where all of the water that falls in it drains off into a common outlet like a river or bay.',
-    'riparian buffer': 'A vegetated area next to a water body, usually forested, which helps shade streams and filter run-off.',
-    'Darcy\'s Law': 'A mathematical equation that describes the flow of a fluid through a porous medium, governing groundwater.',
-    'PFAS': 'Synthetic per- and polyfluoroalkyl substances that contaminate water supplies and resist natural breakdown.',
-    'latent heat': 'The heat energy absorbed or released by water during a phase change (like liquid to gas) without changing temperature.',
-    'Bowen ratio': 'The ratio of sensible heat to latent heat loss from the surface, determining local climate feedbacks.',
-    'Clausius-Clapeyron': 'The thermodynamic relationship showing that atmospheric moisture capacity increases by about 7% per degree Celsius of warming.'
-  };
+    // Glossary definitions. The map is keyed by concept id and looked up by id,
+  // so only these values are student-facing — safe to translate outright.
+  function wcVocabCopy(t) {
+    return {
+      'evaporation': t('stem.watercycle.vocab_evaporation', 'The process where liquid water absorbs thermal energy and changes into water vapor gas, rising into the atmosphere.'),
+      'condensation': t('stem.watercycle.vocab_condensation', 'The process where water vapor gas cools and changes back into liquid water droplets, forming clouds.'),
+      'precipitation': t('stem.watercycle.vocab_precipitation', 'Water falling from clouds to Earth\'s surface as rain, snow, sleet, or hail when droplets grow too heavy.'),
+      'collection': t('stem.watercycle.vocab_collection', 'The accumulation of water in oceans, lakes, rivers, and underground reservoirs, completing the surface loop.'),
+      'transpiration': t('stem.watercycle.vocab_transpiration', 'The evaporation of water from plant leaves through tiny pores called stomata, acting as a natural pump.'),
+      'infiltration': t('stem.watercycle.vocab_infiltration', 'The process by which water on the ground surface enters soil and rock; some infiltrated water can contribute to groundwater recharge.'),
+      'sublimation': t('stem.watercycle.vocab_sublimation', 'The direct transition of water from solid ice or snow into water vapor gas, bypassing the liquid phase.'),
+      'aquifer': t('stem.watercycle.vocab_aquifer', 'An underground layer of water-bearing permeable rock, gravel, sand, or silt from which groundwater can be extracted.'),
+      'watershed': t('stem.watercycle.vocab_watershed', 'An area of land where all of the water that falls in it drains off into a common outlet like a river or bay.'),
+      'riparian buffer': t('stem.watercycle.vocab_riparian_buffer', 'A vegetated area next to a water body, usually forested, which helps shade streams and filter run-off.'),
+      'Darcy\'s Law': t('stem.watercycle.vocab_darcy_s_law', 'A mathematical equation that describes the flow of a fluid through a porous medium, governing groundwater.'),
+      'PFAS': t('stem.watercycle.vocab_pfas', 'Synthetic per- and polyfluoroalkyl substances that contaminate water supplies and resist natural breakdown.'),
+      'latent heat': t('stem.watercycle.vocab_latent_heat', 'The heat energy absorbed or released by water during a phase change (like liquid to gas) without changing temperature.'),
+      'Bowen ratio': t('stem.watercycle.vocab_bowen_ratio', 'The ratio of sensible heat to latent heat loss from the surface, determining local climate feedbacks.'),
+      'Clausius-Clapeyron': t('stem.watercycle.vocab_clausius_clapeyron', 'The thermodynamic relationship showing that atmospheric moisture capacity increases by about 7% per degree Celsius of warming.'),
+    };
+  }
+
+  var _wcVocabCache = null;
+  var _wcVocabFor = null;
+  function waterCycleVocab() {
+    if (_wcVocabCache && _wcVocabFor === _wcT) return _wcVocabCache;
+    _wcVocabFor = _wcT;
+    _wcVocabCache = wcVocabCopy(_wcT);
+    return _wcVocabCache;
+  }
+
 
   var WATER_CYCLE_STAGE_COUNT = 6;
   var WATER_CYCLE_STAGE_IDS = ['evaporation', 'condensation', 'precipitation', 'collection', 'transpiration', 'infiltration'];
@@ -717,368 +906,585 @@
     return out;
   }
 
-  var WATER_CYCLE_QUIZZES = {
-    'K-2': [
-      {
-        q: 'What makes puddles disappear on sunny days?',
-        a: 'The sun heats the water',
-        opts: ['The ground drinks it', 'The sun heats the water', 'Wind blows it away', 'It goes to sleep'],
-        concept: 'evaporation',
-        wrongFeedback: {
-          'The ground drinks it': 'While some water soaks into the ground, puddles on sidewalks and streets mostly disappear because the sun heats them up into vapor.',
-          'Wind blows it away': 'Wind can help water evaporate faster by moving air, but the sun\'s heat is the main reason liquid water changes into gas.',
-          'It goes to sleep': 'Water molecules never sleep! The sun\'s energy makes them move faster and float up into the sky.'
-        }
-      },
-      {
-        q: 'What are clouds made of?',
-        a: 'Tiny water drops',
-        opts: ['Cotton', 'Tiny water drops', 'Smoke', 'Air bubbles'],
-        concept: 'condensation',
-        wrongFeedback: {
-          'Cotton': 'Clouds look soft like cotton, but they are actually made of billions of tiny liquid water droplets floating in the air.',
-          'Smoke': 'Smoke comes from fires, but clouds in the sky are made of clean water droplets and ice crystals.',
-          'Air bubbles': 'Air bubbles are trapped inside water, but clouds are water droplets trapped in the air!'
-        }
-      },
-      {
-        q: 'What falls from clouds?',
-        a: 'Rain and snow',
-        opts: ['Stars', 'Rain and snow', 'Leaves', 'Rocks'],
-        concept: 'precipitation',
-        wrongFeedback: {
-          'Stars': 'Stars are huge, burning suns far away in space. They do not fall from clouds!',
-          'Leaves': 'Leaves fall from trees in autumn, not from clouds in the sky.',
-          'Rocks': 'Rocks are heavy parts of the ground. Only liquid or frozen water falls from clouds.'
-        }
-      },
-      {
-        q: 'Where does rain go after it falls?',
-        a: 'Rivers, lakes, and oceans',
-        opts: ['It disappears', 'Back up to the sky', 'Rivers, lakes, and oceans', 'Into outer space'],
-        concept: 'collection',
-        wrongFeedback: {
-          'It disappears': 'Water does not vanish! It collects in lakes, flows down rivers, and fills the oceans.',
-          'Back up to the sky': 'Rain must collect on the ground first before the sun can heat it to rise back up later.',
-          'Into outer space': 'Earth\'s gravity keeps water on our planet. It collects in oceans and lakes rather than escaping into space.'
-        }
-      },
-      {
-        q: 'How do plants drink water?',
-        a: 'Through their roots',
-        opts: ['Through their leaves', 'Through their roots', 'Through their flowers', 'They don\'t drink water'],
-        concept: 'transpiration',
-        wrongFeedback: {
-          'Through their leaves': 'Leaves can absorb a tiny bit of moisture, but plants get almost all their water by drinking it from the soil through their roots.',
-          'Through their flowers': 'Flowers attract bees and make seeds, but they do not drink water from the soil.',
-          'They don\'t drink water': 'All living things need water to survive, including plants!'
-        }
-      },
-      {
-        q: 'What does the sun do to ocean water?',
-        a: 'Heats it up so it rises as vapor',
-        opts: ['Freezes it', 'Heats it up so it rises as vapor', 'Turns it green', 'Makes it salty'],
-        concept: 'evaporation',
-        wrongFeedback: {
-          'Freezes it': 'The sun provides warm heat, which warms water up instead of freezing it into ice.',
-          'Turns it green': 'Algae and plants can make water look green, but the sun heats it up so it evaporates.',
-          'Makes it salty': 'Ocean water is already salty because of dissolved minerals, not because of the sun.'
-        }
-      },
-      {
-        q: 'What happens when water vapor gets cold up high?',
-        a: 'It turns into cloud drops',
-        opts: ['It turns into cloud drops', 'It becomes a star', 'It stays invisible', 'It catches fire'],
-        concept: 'condensation',
-        wrongFeedback: {
-          'It becomes a star': 'Stars are massive bodies in space, whereas water vapor just condenses into cloud droplets.',
-          'It stays invisible': 'Water vapor gas is invisible, but when it cools and condenses, it becomes visible liquid droplets (clouds).',
-          'It catches fire': 'Water does not catch fire! Cooling vapor turns back into liquid water.'
-        }
-      },
-      {
-        q: 'Can water underground come back up?',
-        a: 'Yes, through springs and wells',
-        opts: ['No, never', 'Yes, through springs and wells', 'Only if you dig', 'Only on rainy days'],
-        concept: 'infiltration',
-        wrongFeedback: {
-          'No, never': 'Groundwater is part of the cycle. It flows slowly and emerges at natural springs or is pumped up through wells.',
-          'Only if you dig': 'Digger wells do reach groundwater, but natural springs bubble up to the surface without any digging.',
-          'Only on rainy days': 'Springs flow continuously, even on sunny days, because groundwater moves very slowly.'
-        }
-      }
-    ],
-    '3-5': [
-      {
-        q: 'What drives evaporation?',
-        a: 'Solar energy',
-        opts: ['Wind', 'Solar energy', 'Gravity', 'Moon'],
-        concept: 'evaporation',
-        wrongFeedback: {
-          'Wind': 'Wind helps speed up evaporation by carrying moist air away, but solar energy is the heat source that drives the phase change.',
-          'Gravity': 'Gravity pulls water downward (precipitation, runoff), whereas solar energy drives it upward via evaporation.',
-          'Moon': 'The Moon causes ocean tides but does not heat water to drive evaporation.'
-        }
-      },
-      {
-        q: 'What forms clouds?',
-        a: 'Condensation',
-        opts: ['Evaporation', 'Precipitation', 'Condensation', 'Infiltration'],
-        concept: 'condensation',
-        wrongFeedback: {
-          'Evaporation': 'Evaporation is liquid water turning into invisible gas. Clouds are formed when this gas cools and turns back to liquid.',
-          'Precipitation': 'Precipitation is rain or snow falling out of clouds, not the process that forms the clouds themselves.',
-          'Infiltration': 'Infiltration is water soaking into the soil, which is the opposite of cloud formation.'
-        }
-      },
-      {
-        q: 'Where does most evaporation occur?',
-        a: 'Oceans',
-        opts: ['Lakes', 'Rivers', 'Oceans', 'Soil'],
-        concept: 'evaporation',
-        wrongFeedback: {
-          'Lakes': 'Lakes evaporate water, but oceans cover over 70% of Earth\'s surface and contain 97% of its water, making them the primary source.',
-          'Rivers': 'Rivers flow to the sea and have small surface areas compared to the vast oceans.',
-          'Soil': 'Soil releases moisture (evapotranspiration), but oceans are by far the largest source of atmospheric moisture.'
-        }
-      },
-      {
-        q: 'What is transpiration?',
-        a: 'Water release from plants',
-        opts: ['Rain falling', 'Water release from plants', 'Snow melting', 'Rivers flowing'],
-        concept: 'transpiration',
-        wrongFeedback: {
-          'Rain falling': 'Rain falling is precipitation. Transpiration is water rising up through plants and escaping from their leaves.',
-          'Snow melting': 'Snow melting is a phase change from solid to liquid, not related to plant transpiration.',
-          'Rivers flowing': 'Rivers flowing is runoff or collection, not a biological release of water.'
-        }
-      },
-      {
-        q: 'How much of Earth\'s water is freshwater?',
-        a: '3%',
-        opts: ['3%', '10%', '25%', '50%'],
-        concept: 'collection',
-        wrongFeedback: {
-          '10%': 'Freshwater is much scarcer! Only 3% of Earth\'s water is fresh, and most of that is frozen in ice caps.',
-          '25%': 'A quarter of Earth\'s water is not fresh. Over 97% is salty ocean water.',
-          '50%': 'Half of Earth\'s water is not fresh. Freshwater is a tiny fraction of global water.'
-        }
-      },
-      {
-        q: 'What are stomata?',
-        a: 'Tiny pores on leaves',
-        opts: ['Types of clouds', 'Tiny pores on leaves', 'Underground rivers', 'Rain droplets'],
-        concept: 'transpiration',
-        wrongFeedback: {
-          'Types of clouds': 'Clouds are made of condensed water droplets. Stomata are biological structures on plant leaves.',
-          'Underground rivers': 'Underground channels are part of aquifers. Stomata are tiny leaf pores used for gas exchange.',
-          'Rain droplets': 'Rain droplets are precipitation. Stomata are pores that let plants release water vapor.'
-        }
-      },
-      {
-        q: 'What is sublimation?',
-        a: 'Ice turning directly to vapor',
-        opts: ['Ice turning directly to vapor', 'Water freezing', 'Rain evaporating', 'Clouds forming'],
-        concept: 'sublimation',
-        wrongFeedback: {
-          'Water freezing': 'Freezing is liquid water turning to solid ice. Sublimation bypasses the liquid state entirely.',
-          'Rain evaporating': 'Rain evaporating is liquid turning to gas, whereas sublimation starts with solid ice or snow.',
-          'Clouds forming': 'Cloud formation is condensation (gas to liquid), not solid to gas.'
-        }
-      },
-      {
-        q: 'How does deforestation affect the water cycle?',
-        a: 'Reduces transpiration and increases runoff',
-        opts: ['Increases evaporation', 'Reduces transpiration and increases runoff', 'Creates more clouds', 'Has no effect'],
-        concept: 'watershed',
-        wrongFeedback: {
-          'Increases evaporation': 'Removing trees reduces the total leaf area, which decreases transpiration and makes the local climate drier.',
-          'Creates more clouds': 'Fewer trees mean less moisture is pumped into the air, leading to fewer clouds and less local rainfall.',
-          'Has no effect': 'Trees are key hydrologic pumps. Removing them severely disrupts local water cycles and increases flooding.'
-        }
-      }
-    ],
-    '6-8': [
-      {
-        q: 'What drives evaporation?',
-        a: 'Solar energy',
-        opts: ['Wind', 'Solar energy', 'Gravity', 'Moon'],
-        concept: 'evaporation',
-        wrongFeedback: {
-          'Wind': 'Wind enhances the evaporation rate by removing the boundary layer of moist air, but solar radiation is the thermodynamic driver.',
-          'Gravity': 'Gravity is a downward force driving infiltration and precipitation, whereas solar energy drives water upward.',
-          'Moon': 'The Moon drives tides but does not supply the heat energy required for the latent heat of vaporization.'
-        }
-      },
-      {
-        q: 'What forms clouds?',
-        a: 'Condensation',
-        opts: ['Evaporation', 'Precipitation', 'Condensation', 'Infiltration'],
-        concept: 'condensation',
-        wrongFeedback: {
-          'Evaporation': 'Evaporation is liquid transitioning to gas. Clouds form when this gas cools and condenses back into liquid droplets.',
-          'Precipitation': 'Precipitation occurs when cloud droplets grow too heavy and fall, not when clouds form.',
-          'Infiltration': 'Infiltration is surface water soaking into ground soil, unrelated to atmospheric clouds.'
-        }
-      },
-      {
-        q: 'Where does most evaporation occur?',
-        a: 'Oceans',
-        opts: ['Lakes', 'Rivers', 'Oceans', 'Soil'],
-        concept: 'evaporation',
-        wrongFeedback: {
-          'Lakes': 'Lakes contribute a tiny fraction of global evaporation compared to the vast surface area of the oceans.',
-          'Rivers': 'Rivers represent a tiny portion of global surface water and account for very little evaporation.',
-          'Soil': 'Soil moisture evaporation is limited by capillary action and plant coverage.'
-        }
-      },
-      {
-        q: 'What is transpiration?',
-        a: 'Water release from plants',
-        opts: ['Rain falling', 'Water release from plants', 'Snow melting', 'Rivers flowing'],
-        concept: 'transpiration',
-        wrongFeedback: {
-          'Rain falling': 'Rain falling is precipitation. Transpiration is water vapor release from plant stomata.',
-          'Snow melting': 'Melting is a solid-to-liquid transition, not a biological release of moisture.',
-          'Rivers flowing': 'River flow is runoff and collection, not a plant-driven water transport process.'
-        }
-      },
-      {
-        q: 'How much of Earth\'s water is freshwater?',
-        a: '3%',
-        opts: ['3%', '10%', '25%', '50%'],
-        concept: 'collection',
-        wrongFeedback: {
-          '10%': 'Freshwater is much scarcer! Only 3% is fresh, and about 68% of that is locked in glaciers and ice sheets.',
-          '25%': 'Over 97% of Earth\'s water is salty ocean water. Fresh water is a tiny portion.',
-          '50%': 'Half of Earth\'s water is saline. Freshwater is a scarce resource.'
-        }
-      },
-      {
-        q: 'What are stomata?',
-        a: 'Tiny pores on leaves',
-        opts: ['Types of clouds', 'Tiny pores on leaves', 'Underground rivers', 'Rain droplets'],
-        concept: 'transpiration',
-        wrongFeedback: {
-          'Types of clouds': 'Clouds are made of condensed vapor. Stomata are microscopic pores in plant epidermal layers.',
-          'Underground rivers': 'Subsurface channels are aquifers. Stomata are biological valves regulating leaf transpiration.',
-          'Rain droplets': 'Rain droplets are precipitation. Stomata are microscopic openings on leaves.'
-        }
-      },
-      {
-        q: 'What is sublimation?',
-        a: 'Ice turning directly to vapor',
-        opts: ['Ice turning directly to vapor', 'Water freezing', 'Rain evaporating', 'Clouds forming'],
-        concept: 'sublimation',
-        wrongFeedback: {
-          'Water freezing': 'Freezing is liquid to solid. Sublimation is the transition from solid directly to gas.',
-          'Rain evaporating': 'Rain evaporating is liquid to gas, whereas sublimation starts with solid ice or snow.',
-          'Clouds forming': 'Cloud formation is condensation, which is gas to liquid.'
-        }
-      },
-      {
-        q: 'How does deforestation affect the water cycle?',
-        a: 'Reduces transpiration and increases runoff',
-        opts: ['Increases evaporation', 'Reduces transpiration and increases runoff', 'Creates more clouds', 'Has no effect'],
-        concept: 'watershed',
-        wrongFeedback: {
-          'Increases evaporation': 'Without tree leaves to transpire and block wind, overall evapotranspiration drops, drying the local climate.',
-          'Creates more clouds': 'Deforestation reduces the water pump effect, decreasing atmospheric humidity and cloud formation.',
-          'Has no effect': 'Trees are vital hydrological regulators. Deforestation leads to severe soil erosion and immediate flooding.'
-        }
-      }
-    ],
-    '9-12': [
-      {
-        q: 'At what rate does air temperature decrease with altitude (environmental lapse rate)?',
-        a: '~6.5°C per 1000m',
-        opts: ['~2°C per 1000m', '~6.5°C per 1000m', '~10°C per 1000m', '~15°C per 1000m'],
-        concept: 'condensation',
-        wrongFeedback: {
-          '~2°C per 1000m': 'This rate is too low. The average environmental lapse rate in the troposphere is 6.5°C per kilometer.',
-          '~10°C per 1000m': 'This is the dry adiabatic lapse rate (9.8°C/km) for dry rising air, not the environmental profile.',
-          '~15°C per 1000m': 'This cooling rate is too high. The average atmospheric cooling is around 6.5°C per 1000m.'
-        }
-      },
-      {
-        q: 'What law governs groundwater flow through saturated porous media?',
-        a: 'Darcy\'s Law',
-        opts: ['Darcy\'s Law', 'Boyle\'s Law', 'Ohm\'s Law', 'Bernoulli\'s Principle'],
-        concept: 'Darcy\'s Law',
-        wrongFeedback: {
-          'Boyle\'s Law': 'Boyle\'s Law relates gas pressure to volume, not fluid flow through soils.',
-          'Ohm\'s Law': 'Ohm\'s Law relates voltage and current, though it shares mathematical forms with Darcy\'s Law.',
-          'Bernoulli\'s Principle': 'Bernoulli\'s equation applies to open pipe flow, not flow within saturated media.'
-        }
-      },
-      {
-        q: 'What is the latent heat of vaporization of water at 20°C?',
-        a: '~2.45 MJ/kg',
-        opts: ['~1.0 MJ/kg', '~2.45 MJ/kg', '~4.18 MJ/kg', '~0.33 MJ/kg'],
-        concept: 'latent heat',
-        wrongFeedback: {
-          '~1.0 MJ/kg': 'This value is too low. Water requires about 2.45 megajoules per kilogram to vaporize.',
-          '~4.18 MJ/kg': 'This is the specific heat capacity of liquid water, not its latent heat of vaporization.',
-          '~0.33 MJ/kg': 'This is close to the latent heat of fusion (melting ice) which is 0.334 MJ/kg.'
-        }
-      },
-      {
-        q: 'The Clausius-Clapeyron relation predicts saturation vapor pressure increases by what per °C?',
-        a: '~7%',
-        opts: ['~2%', '~7%', '~15%', '~25%'],
-        concept: 'Clausius-Clapeyron',
-        wrongFeedback: {
-          '~2%': 'This is too low. Saturation vapor pressure increases by approximately 7% per degree of heating.',
-          '~15%': 'This is too high. The capacity grows exponentially but is about 7% per degree Celsius.',
-          '~25%': 'This is too high. A 1 degree Celsius increase corresponds to a 7% capacity expansion.'
-        }
-      },
-      {
-        q: 'What equation extends Darcy\'s Law to unsaturated flow?',
-        a: 'Richards\' equation',
-        opts: ['Navier-Stokes', 'Richards\' equation', 'Bernoulli\'s equation', 'Poiseuille\'s equation'],
-        concept: 'infiltration',
-        wrongFeedback: {
-          'Navier-Stokes': 'Navier-Stokes equations model momentum in open fluid dynamics, not unsaturated flow in soils.',
-          'Bernoulli\'s equation': 'Bernoulli\'s equation relates pressure and speed in open inviscid flows.',
-          'Poiseuille\'s equation': 'Poiseuille\'s equation describes flow through open cylindrical pipes.'
-        }
-      },
-      {
-        q: 'What is cloud albedo\'s approximate effect on solar radiation?',
-        a: 'Reflects ~30%',
-        opts: ['Reflects ~5%', 'Reflects ~30%', 'Reflects ~60%', 'Reflects ~90%'],
-        concept: 'condensation',
-        wrongFeedback: {
-          'Reflects ~5%': 'This is too low. Average global cloud albedo is significant, reflecting about 30% of incoming light.',
-          'Reflects ~60%': 'While specific storm clouds can be highly reflective, the global average is around 30%.',
-          'Reflects ~90%': 'Only the densest storm clouds reflect 90%, whereas the global average is much lower.'
-        }
-      },
-      {
-        q: 'What is the average residence time of a water molecule in the ocean?',
-        a: '~3,200 years',
-        opts: ['~9 days', '~100 years', '~3,200 years', '~1 million years'],
-        concept: 'collection',
-        wrongFeedback: {
-          '~9 days': 'This is the atmospheric residence time before precipitation, not the ocean residence time.',
-          '~100 years': 'This is too short. Due to ocean volume, the average water molecule remains there for about 3,200 years.',
-          '~1 million years': 'This is too long. Oceanic circulation and evaporation cycle molecules much faster.'
-        }
-      },
-      {
-        q: 'What is the Bowen ratio?',
-        a: 'Ratio of sensible to latent heat flux',
-        opts: ['Ratio of sensible to latent heat flux', 'Ratio of runoff to infiltration', 'Ratio of evaporation to precipitation', 'Ratio of cloud cover to clear sky'],
-        concept: 'Bowen ratio',
-        wrongFeedback: {
-          'Ratio of runoff to infiltration': 'This is a hydrological partition ratio, not the thermodynamic Bowen ratio.',
-          'Ratio of evaporation to precipitation': 'This is a global water budget balance, not the Bowen ratio.',
-          'Ratio of cloud cover to clear sky': 'This relates to cloud cover fraction, not the Bowen heat flux ratio.'
-        }
-      }
-    ]
-  };
+    // Assemble one quiz question. Taking the correct answer as an INDEX makes
+  // the bank invariants structural: `a` is by construction one of `opts`, and
+  // the correct option can never receive wrong-answer feedback.
+  function wcQuizQuestion(question, opts, correctIndex, feedback, concept) {
+    var wrongFeedback = {};
+    for (var i = 0; i < opts.length; i++) {
+      if (i === correctIndex) continue;
+      if (feedback[i] != null) wrongFeedback[opts[i]] = feedback[i];
+    }
+    return { q: question, a: opts[correctIndex], opts: opts, concept: concept, wrongFeedback: wrongFeedback };
+  }
+
+  // The authored quiz bank. Keys are literal so the extractors can see them.
+  function wcQuizBank(t) {
+    return {
+      'K-2': [
+        wcQuizQuestion(
+          t('stem.watercycle.quiz_k2_1_q', 'What makes puddles disappear on sunny days?'),
+          [
+            t('stem.watercycle.quiz_k2_1_opt1', 'The ground drinks it'),
+            t('stem.watercycle.quiz_k2_1_opt2', 'The sun heats the water'),
+            t('stem.watercycle.quiz_k2_1_opt3', 'Wind blows it away'),
+            t('stem.watercycle.quiz_k2_1_opt4', 'It goes to sleep'),
+          ],
+          1,
+          [
+            t('stem.watercycle.quiz_k2_1_fb1', 'While some water soaks into the ground, puddles on sidewalks and streets mostly disappear because the sun heats them up into vapor.'),
+            null,
+            t('stem.watercycle.quiz_k2_1_fb3', 'Wind can help water evaporate faster by moving air, but the sun\'s heat is the main reason liquid water changes into gas.'),
+            t('stem.watercycle.quiz_k2_1_fb4', 'Water molecules never sleep! The sun\'s energy makes them move faster and float up into the sky.'),
+          ],
+          'evaporation'
+        ),
+        wcQuizQuestion(
+          t('stem.watercycle.quiz_k2_2_q', 'What are clouds made of?'),
+          [
+            t('stem.watercycle.quiz_k2_2_opt1', 'Cotton'),
+            t('stem.watercycle.quiz_k2_2_opt2', 'Tiny water drops'),
+            t('stem.watercycle.quiz_k2_2_opt3', 'Smoke'),
+            t('stem.watercycle.quiz_k2_2_opt4', 'Air bubbles'),
+          ],
+          1,
+          [
+            t('stem.watercycle.quiz_k2_2_fb1', 'Clouds look soft like cotton, but they are actually made of billions of tiny liquid water droplets floating in the air.'),
+            null,
+            t('stem.watercycle.quiz_k2_2_fb3', 'Smoke comes from fires, but clouds in the sky are made of clean water droplets and ice crystals.'),
+            t('stem.watercycle.quiz_k2_2_fb4', 'Air bubbles are trapped inside water, but clouds are water droplets trapped in the air!'),
+          ],
+          'condensation'
+        ),
+        wcQuizQuestion(
+          t('stem.watercycle.quiz_k2_3_q', 'What falls from clouds?'),
+          [
+            t('stem.watercycle.quiz_k2_3_opt1', 'Stars'),
+            t('stem.watercycle.quiz_k2_3_opt2', 'Rain and snow'),
+            t('stem.watercycle.quiz_k2_3_opt3', 'Leaves'),
+            t('stem.watercycle.quiz_k2_3_opt4', 'Rocks'),
+          ],
+          1,
+          [
+            t('stem.watercycle.quiz_k2_3_fb1', 'Stars are huge, burning suns far away in space. They do not fall from clouds!'),
+            null,
+            t('stem.watercycle.quiz_k2_3_fb3', 'Leaves fall from trees in autumn, not from clouds in the sky.'),
+            t('stem.watercycle.quiz_k2_3_fb4', 'Rocks are heavy parts of the ground. Only liquid or frozen water falls from clouds.'),
+          ],
+          'precipitation'
+        ),
+        wcQuizQuestion(
+          t('stem.watercycle.quiz_k2_4_q', 'Where does rain go after it falls?'),
+          [
+            t('stem.watercycle.quiz_k2_4_opt1', 'It disappears'),
+            t('stem.watercycle.quiz_k2_4_opt2', 'Back up to the sky'),
+            t('stem.watercycle.quiz_k2_4_opt3', 'Rivers, lakes, and oceans'),
+            t('stem.watercycle.quiz_k2_4_opt4', 'Into outer space'),
+          ],
+          2,
+          [
+            t('stem.watercycle.quiz_k2_4_fb1', 'Water does not vanish! It collects in lakes, flows down rivers, and fills the oceans.'),
+            t('stem.watercycle.quiz_k2_4_fb2', 'Rain must collect on the ground first before the sun can heat it to rise back up later.'),
+            null,
+            t('stem.watercycle.quiz_k2_4_fb4', 'Earth\'s gravity keeps water on our planet. It collects in oceans and lakes rather than escaping into space.'),
+          ],
+          'collection'
+        ),
+        wcQuizQuestion(
+          t('stem.watercycle.quiz_k2_5_q', 'How do plants drink water?'),
+          [
+            t('stem.watercycle.quiz_k2_5_opt1', 'Through their leaves'),
+            t('stem.watercycle.quiz_k2_5_opt2', 'Through their roots'),
+            t('stem.watercycle.quiz_k2_5_opt3', 'Through their flowers'),
+            t('stem.watercycle.quiz_k2_5_opt4', 'They don\'t drink water'),
+          ],
+          1,
+          [
+            t('stem.watercycle.quiz_k2_5_fb1', 'Leaves can absorb a tiny bit of moisture, but plants get almost all their water by drinking it from the soil through their roots.'),
+            null,
+            t('stem.watercycle.quiz_k2_5_fb3', 'Flowers attract bees and make seeds, but they do not drink water from the soil.'),
+            t('stem.watercycle.quiz_k2_5_fb4', 'All living things need water to survive, including plants!'),
+          ],
+          'transpiration'
+        ),
+        wcQuizQuestion(
+          t('stem.watercycle.quiz_k2_6_q', 'What does the sun do to ocean water?'),
+          [
+            t('stem.watercycle.quiz_k2_6_opt1', 'Freezes it'),
+            t('stem.watercycle.quiz_k2_6_opt2', 'Heats it up so it rises as vapor'),
+            t('stem.watercycle.quiz_k2_6_opt3', 'Turns it green'),
+            t('stem.watercycle.quiz_k2_6_opt4', 'Makes it salty'),
+          ],
+          1,
+          [
+            t('stem.watercycle.quiz_k2_6_fb1', 'The sun provides warm heat, which warms water up instead of freezing it into ice.'),
+            null,
+            t('stem.watercycle.quiz_k2_6_fb3', 'Algae and plants can make water look green, but the sun heats it up so it evaporates.'),
+            t('stem.watercycle.quiz_k2_6_fb4', 'Ocean water is already salty because of dissolved minerals, not because of the sun.'),
+          ],
+          'evaporation'
+        ),
+        wcQuizQuestion(
+          t('stem.watercycle.quiz_k2_7_q', 'What happens when water vapor gets cold up high?'),
+          [
+            t('stem.watercycle.quiz_k2_7_opt1', 'It turns into cloud drops'),
+            t('stem.watercycle.quiz_k2_7_opt2', 'It becomes a star'),
+            t('stem.watercycle.quiz_k2_7_opt3', 'It stays invisible'),
+            t('stem.watercycle.quiz_k2_7_opt4', 'It catches fire'),
+          ],
+          0,
+          [
+            null,
+            t('stem.watercycle.quiz_k2_7_fb2', 'Stars are massive bodies in space, whereas water vapor just condenses into cloud droplets.'),
+            t('stem.watercycle.quiz_k2_7_fb3', 'Water vapor gas is invisible, but when it cools and condenses, it becomes visible liquid droplets (clouds).'),
+            t('stem.watercycle.quiz_k2_7_fb4', 'Water does not catch fire! Cooling vapor turns back into liquid water.'),
+          ],
+          'condensation'
+        ),
+        wcQuizQuestion(
+          t('stem.watercycle.quiz_k2_8_q', 'Can water underground come back up?'),
+          [
+            t('stem.watercycle.quiz_k2_8_opt1', 'No, never'),
+            t('stem.watercycle.quiz_k2_8_opt2', 'Yes, through springs and wells'),
+            t('stem.watercycle.quiz_k2_8_opt3', 'Only if you dig'),
+            t('stem.watercycle.quiz_k2_8_opt4', 'Only on rainy days'),
+          ],
+          1,
+          [
+            t('stem.watercycle.quiz_k2_8_fb1', 'Groundwater is part of the cycle. It flows slowly and emerges at natural springs or is pumped up through wells.'),
+            null,
+            t('stem.watercycle.quiz_k2_8_fb3', 'Digger wells do reach groundwater, but natural springs bubble up to the surface without any digging.'),
+            t('stem.watercycle.quiz_k2_8_fb4', 'Springs flow continuously, even on sunny days, because groundwater moves very slowly.'),
+          ],
+          'infiltration'
+        ),
+      ],
+      '3-5': [
+        wcQuizQuestion(
+          t('stem.watercycle.quiz_35_1_q', 'What drives evaporation?'),
+          [
+            t('stem.watercycle.quiz_35_1_opt1', 'Wind'),
+            t('stem.watercycle.quiz_35_1_opt2', 'Solar energy'),
+            t('stem.watercycle.quiz_35_1_opt3', 'Gravity'),
+            t('stem.watercycle.quiz_35_1_opt4', 'Moon'),
+          ],
+          1,
+          [
+            t('stem.watercycle.quiz_35_1_fb1', 'Wind helps speed up evaporation by carrying moist air away, but solar energy is the heat source that drives the phase change.'),
+            null,
+            t('stem.watercycle.quiz_35_1_fb3', 'Gravity pulls water downward (precipitation, runoff), whereas solar energy drives it upward via evaporation.'),
+            t('stem.watercycle.quiz_35_1_fb4', 'The Moon causes ocean tides but does not heat water to drive evaporation.'),
+          ],
+          'evaporation'
+        ),
+        wcQuizQuestion(
+          t('stem.watercycle.quiz_35_2_q', 'What forms clouds?'),
+          [
+            t('stem.watercycle.quiz_35_2_opt1', 'Evaporation'),
+            t('stem.watercycle.quiz_35_2_opt2', 'Precipitation'),
+            t('stem.watercycle.quiz_35_2_opt3', 'Condensation'),
+            t('stem.watercycle.quiz_35_2_opt4', 'Infiltration'),
+          ],
+          2,
+          [
+            t('stem.watercycle.quiz_35_2_fb1', 'Evaporation is liquid water turning into invisible gas. Clouds are formed when this gas cools and turns back to liquid.'),
+            t('stem.watercycle.quiz_35_2_fb2', 'Precipitation is rain or snow falling out of clouds, not the process that forms the clouds themselves.'),
+            null,
+            t('stem.watercycle.quiz_35_2_fb4', 'Infiltration is water soaking into the soil, which is the opposite of cloud formation.'),
+          ],
+          'condensation'
+        ),
+        wcQuizQuestion(
+          t('stem.watercycle.quiz_35_3_q', 'Where does most evaporation occur?'),
+          [
+            t('stem.watercycle.quiz_35_3_opt1', 'Lakes'),
+            t('stem.watercycle.quiz_35_3_opt2', 'Rivers'),
+            t('stem.watercycle.quiz_35_3_opt3', 'Oceans'),
+            t('stem.watercycle.quiz_35_3_opt4', 'Soil'),
+          ],
+          2,
+          [
+            t('stem.watercycle.quiz_35_3_fb1', 'Lakes evaporate water, but oceans cover over 70% of Earth\'s surface and contain 97% of its water, making them the primary source.'),
+            t('stem.watercycle.quiz_35_3_fb2', 'Rivers flow to the sea and have small surface areas compared to the vast oceans.'),
+            null,
+            t('stem.watercycle.quiz_35_3_fb4', 'Soil releases moisture (evapotranspiration), but oceans are by far the largest source of atmospheric moisture.'),
+          ],
+          'evaporation'
+        ),
+        wcQuizQuestion(
+          t('stem.watercycle.quiz_35_4_q', 'What is transpiration?'),
+          [
+            t('stem.watercycle.quiz_35_4_opt1', 'Rain falling'),
+            t('stem.watercycle.quiz_35_4_opt2', 'Water release from plants'),
+            t('stem.watercycle.quiz_35_4_opt3', 'Snow melting'),
+            t('stem.watercycle.quiz_35_4_opt4', 'Rivers flowing'),
+          ],
+          1,
+          [
+            t('stem.watercycle.quiz_35_4_fb1', 'Rain falling is precipitation. Transpiration is water rising up through plants and escaping from their leaves.'),
+            null,
+            t('stem.watercycle.quiz_35_4_fb3', 'Snow melting is a phase change from solid to liquid, not related to plant transpiration.'),
+            t('stem.watercycle.quiz_35_4_fb4', 'Rivers flowing is runoff or collection, not a biological release of water.'),
+          ],
+          'transpiration'
+        ),
+        wcQuizQuestion(
+          t('stem.watercycle.quiz_35_5_q', 'How much of Earth\'s water is freshwater?'),
+          [
+            t('stem.watercycle.quiz_35_5_opt1', '3%'),
+            t('stem.watercycle.quiz_35_5_opt2', '10%'),
+            t('stem.watercycle.quiz_35_5_opt3', '25%'),
+            t('stem.watercycle.quiz_35_5_opt4', '50%'),
+          ],
+          0,
+          [
+            null,
+            t('stem.watercycle.quiz_35_5_fb2', 'Freshwater is much scarcer! Only 3% of Earth\'s water is fresh, and most of that is frozen in ice caps.'),
+            t('stem.watercycle.quiz_35_5_fb3', 'A quarter of Earth\'s water is not fresh. Over 97% is salty ocean water.'),
+            t('stem.watercycle.quiz_35_5_fb4', 'Half of Earth\'s water is not fresh. Freshwater is a tiny fraction of global water.'),
+          ],
+          'collection'
+        ),
+        wcQuizQuestion(
+          t('stem.watercycle.quiz_35_6_q', 'What are stomata?'),
+          [
+            t('stem.watercycle.quiz_35_6_opt1', 'Types of clouds'),
+            t('stem.watercycle.quiz_35_6_opt2', 'Tiny pores on leaves'),
+            t('stem.watercycle.quiz_35_6_opt3', 'Underground rivers'),
+            t('stem.watercycle.quiz_35_6_opt4', 'Rain droplets'),
+          ],
+          1,
+          [
+            t('stem.watercycle.quiz_35_6_fb1', 'Clouds are made of condensed water droplets. Stomata are biological structures on plant leaves.'),
+            null,
+            t('stem.watercycle.quiz_35_6_fb3', 'Underground channels are part of aquifers. Stomata are tiny leaf pores used for gas exchange.'),
+            t('stem.watercycle.quiz_35_6_fb4', 'Rain droplets are precipitation. Stomata are pores that let plants release water vapor.'),
+          ],
+          'transpiration'
+        ),
+        wcQuizQuestion(
+          t('stem.watercycle.quiz_35_7_q', 'What is sublimation?'),
+          [
+            t('stem.watercycle.quiz_35_7_opt1', 'Ice turning directly to vapor'),
+            t('stem.watercycle.quiz_35_7_opt2', 'Water freezing'),
+            t('stem.watercycle.quiz_35_7_opt3', 'Rain evaporating'),
+            t('stem.watercycle.quiz_35_7_opt4', 'Clouds forming'),
+          ],
+          0,
+          [
+            null,
+            t('stem.watercycle.quiz_35_7_fb2', 'Freezing is liquid water turning to solid ice. Sublimation bypasses the liquid state entirely.'),
+            t('stem.watercycle.quiz_35_7_fb3', 'Rain evaporating is liquid turning to gas, whereas sublimation starts with solid ice or snow.'),
+            t('stem.watercycle.quiz_35_7_fb4', 'Cloud formation is condensation (gas to liquid), not solid to gas.'),
+          ],
+          'sublimation'
+        ),
+        wcQuizQuestion(
+          t('stem.watercycle.quiz_35_8_q', 'How does deforestation affect the water cycle?'),
+          [
+            t('stem.watercycle.quiz_35_8_opt1', 'Increases evaporation'),
+            t('stem.watercycle.quiz_35_8_opt2', 'Reduces transpiration and increases runoff'),
+            t('stem.watercycle.quiz_35_8_opt3', 'Creates more clouds'),
+            t('stem.watercycle.quiz_35_8_opt4', 'Has no effect'),
+          ],
+          1,
+          [
+            t('stem.watercycle.quiz_35_8_fb1', 'Removing trees reduces the total leaf area, which decreases transpiration and makes the local climate drier.'),
+            null,
+            t('stem.watercycle.quiz_35_8_fb3', 'Fewer trees mean less moisture is pumped into the air, leading to fewer clouds and less local rainfall.'),
+            t('stem.watercycle.quiz_35_8_fb4', 'Trees are key hydrologic pumps. Removing them severely disrupts local water cycles and increases flooding.'),
+          ],
+          'watershed'
+        ),
+      ],
+      '6-8': [
+        wcQuizQuestion(
+          t('stem.watercycle.quiz_68_1_q', 'What drives evaporation?'),
+          [
+            t('stem.watercycle.quiz_68_1_opt1', 'Wind'),
+            t('stem.watercycle.quiz_68_1_opt2', 'Solar energy'),
+            t('stem.watercycle.quiz_68_1_opt3', 'Gravity'),
+            t('stem.watercycle.quiz_68_1_opt4', 'Moon'),
+          ],
+          1,
+          [
+            t('stem.watercycle.quiz_68_1_fb1', 'Wind enhances the evaporation rate by removing the boundary layer of moist air, but solar radiation is the thermodynamic driver.'),
+            null,
+            t('stem.watercycle.quiz_68_1_fb3', 'Gravity is a downward force driving infiltration and precipitation, whereas solar energy drives water upward.'),
+            t('stem.watercycle.quiz_68_1_fb4', 'The Moon drives tides but does not supply the heat energy required for the latent heat of vaporization.'),
+          ],
+          'evaporation'
+        ),
+        wcQuizQuestion(
+          t('stem.watercycle.quiz_68_2_q', 'What forms clouds?'),
+          [
+            t('stem.watercycle.quiz_68_2_opt1', 'Evaporation'),
+            t('stem.watercycle.quiz_68_2_opt2', 'Precipitation'),
+            t('stem.watercycle.quiz_68_2_opt3', 'Condensation'),
+            t('stem.watercycle.quiz_68_2_opt4', 'Infiltration'),
+          ],
+          2,
+          [
+            t('stem.watercycle.quiz_68_2_fb1', 'Evaporation is liquid transitioning to gas. Clouds form when this gas cools and condenses back into liquid droplets.'),
+            t('stem.watercycle.quiz_68_2_fb2', 'Precipitation occurs when cloud droplets grow too heavy and fall, not when clouds form.'),
+            null,
+            t('stem.watercycle.quiz_68_2_fb4', 'Infiltration is surface water soaking into ground soil, unrelated to atmospheric clouds.'),
+          ],
+          'condensation'
+        ),
+        wcQuizQuestion(
+          t('stem.watercycle.quiz_68_3_q', 'Where does most evaporation occur?'),
+          [
+            t('stem.watercycle.quiz_68_3_opt1', 'Lakes'),
+            t('stem.watercycle.quiz_68_3_opt2', 'Rivers'),
+            t('stem.watercycle.quiz_68_3_opt3', 'Oceans'),
+            t('stem.watercycle.quiz_68_3_opt4', 'Soil'),
+          ],
+          2,
+          [
+            t('stem.watercycle.quiz_68_3_fb1', 'Lakes contribute a tiny fraction of global evaporation compared to the vast surface area of the oceans.'),
+            t('stem.watercycle.quiz_68_3_fb2', 'Rivers represent a tiny portion of global surface water and account for very little evaporation.'),
+            null,
+            t('stem.watercycle.quiz_68_3_fb4', 'Soil moisture evaporation is limited by capillary action and plant coverage.'),
+          ],
+          'evaporation'
+        ),
+        wcQuizQuestion(
+          t('stem.watercycle.quiz_68_4_q', 'What is transpiration?'),
+          [
+            t('stem.watercycle.quiz_68_4_opt1', 'Rain falling'),
+            t('stem.watercycle.quiz_68_4_opt2', 'Water release from plants'),
+            t('stem.watercycle.quiz_68_4_opt3', 'Snow melting'),
+            t('stem.watercycle.quiz_68_4_opt4', 'Rivers flowing'),
+          ],
+          1,
+          [
+            t('stem.watercycle.quiz_68_4_fb1', 'Rain falling is precipitation. Transpiration is water vapor release from plant stomata.'),
+            null,
+            t('stem.watercycle.quiz_68_4_fb3', 'Melting is a solid-to-liquid transition, not a biological release of moisture.'),
+            t('stem.watercycle.quiz_68_4_fb4', 'River flow is runoff and collection, not a plant-driven water transport process.'),
+          ],
+          'transpiration'
+        ),
+        wcQuizQuestion(
+          t('stem.watercycle.quiz_68_5_q', 'How much of Earth\'s water is freshwater?'),
+          [
+            t('stem.watercycle.quiz_68_5_opt1', '3%'),
+            t('stem.watercycle.quiz_68_5_opt2', '10%'),
+            t('stem.watercycle.quiz_68_5_opt3', '25%'),
+            t('stem.watercycle.quiz_68_5_opt4', '50%'),
+          ],
+          0,
+          [
+            null,
+            t('stem.watercycle.quiz_68_5_fb2', 'Freshwater is much scarcer! Only 3% is fresh, and about 68% of that is locked in glaciers and ice sheets.'),
+            t('stem.watercycle.quiz_68_5_fb3', 'Over 97% of Earth\'s water is salty ocean water. Fresh water is a tiny portion.'),
+            t('stem.watercycle.quiz_68_5_fb4', 'Half of Earth\'s water is saline. Freshwater is a scarce resource.'),
+          ],
+          'collection'
+        ),
+        wcQuizQuestion(
+          t('stem.watercycle.quiz_68_6_q', 'What are stomata?'),
+          [
+            t('stem.watercycle.quiz_68_6_opt1', 'Types of clouds'),
+            t('stem.watercycle.quiz_68_6_opt2', 'Tiny pores on leaves'),
+            t('stem.watercycle.quiz_68_6_opt3', 'Underground rivers'),
+            t('stem.watercycle.quiz_68_6_opt4', 'Rain droplets'),
+          ],
+          1,
+          [
+            t('stem.watercycle.quiz_68_6_fb1', 'Clouds are made of condensed vapor. Stomata are microscopic pores in plant epidermal layers.'),
+            null,
+            t('stem.watercycle.quiz_68_6_fb3', 'Subsurface channels are aquifers. Stomata are biological valves regulating leaf transpiration.'),
+            t('stem.watercycle.quiz_68_6_fb4', 'Rain droplets are precipitation. Stomata are microscopic openings on leaves.'),
+          ],
+          'transpiration'
+        ),
+        wcQuizQuestion(
+          t('stem.watercycle.quiz_68_7_q', 'What is sublimation?'),
+          [
+            t('stem.watercycle.quiz_68_7_opt1', 'Ice turning directly to vapor'),
+            t('stem.watercycle.quiz_68_7_opt2', 'Water freezing'),
+            t('stem.watercycle.quiz_68_7_opt3', 'Rain evaporating'),
+            t('stem.watercycle.quiz_68_7_opt4', 'Clouds forming'),
+          ],
+          0,
+          [
+            null,
+            t('stem.watercycle.quiz_68_7_fb2', 'Freezing is liquid to solid. Sublimation is the transition from solid directly to gas.'),
+            t('stem.watercycle.quiz_68_7_fb3', 'Rain evaporating is liquid to gas, whereas sublimation starts with solid ice or snow.'),
+            t('stem.watercycle.quiz_68_7_fb4', 'Cloud formation is condensation, which is gas to liquid.'),
+          ],
+          'sublimation'
+        ),
+        wcQuizQuestion(
+          t('stem.watercycle.quiz_68_8_q', 'How does deforestation affect the water cycle?'),
+          [
+            t('stem.watercycle.quiz_68_8_opt1', 'Increases evaporation'),
+            t('stem.watercycle.quiz_68_8_opt2', 'Reduces transpiration and increases runoff'),
+            t('stem.watercycle.quiz_68_8_opt3', 'Creates more clouds'),
+            t('stem.watercycle.quiz_68_8_opt4', 'Has no effect'),
+          ],
+          1,
+          [
+            t('stem.watercycle.quiz_68_8_fb1', 'Without tree leaves to transpire and block wind, overall evapotranspiration drops, drying the local climate.'),
+            null,
+            t('stem.watercycle.quiz_68_8_fb3', 'Deforestation reduces the water pump effect, decreasing atmospheric humidity and cloud formation.'),
+            t('stem.watercycle.quiz_68_8_fb4', 'Trees are vital hydrological regulators. Deforestation leads to severe soil erosion and immediate flooding.'),
+          ],
+          'watershed'
+        ),
+      ],
+      '9-12': [
+        wcQuizQuestion(
+          t('stem.watercycle.quiz_912_1_q', 'At what rate does air temperature decrease with altitude (environmental lapse rate)?'),
+          [
+            t('stem.watercycle.quiz_912_1_opt1', '~2°C per 1000m'),
+            t('stem.watercycle.quiz_912_1_opt2', '~6.5°C per 1000m'),
+            t('stem.watercycle.quiz_912_1_opt3', '~10°C per 1000m'),
+            t('stem.watercycle.quiz_912_1_opt4', '~15°C per 1000m'),
+          ],
+          1,
+          [
+            t('stem.watercycle.quiz_912_1_fb1', 'This rate is too low. The average environmental lapse rate in the troposphere is 6.5°C per kilometer.'),
+            null,
+            t('stem.watercycle.quiz_912_1_fb3', 'This is the dry adiabatic lapse rate (9.8°C/km) for dry rising air, not the environmental profile.'),
+            t('stem.watercycle.quiz_912_1_fb4', 'This cooling rate is too high. The average atmospheric cooling is around 6.5°C per 1000m.'),
+          ],
+          'condensation'
+        ),
+        wcQuizQuestion(
+          t('stem.watercycle.quiz_912_2_q', 'What law governs groundwater flow through saturated porous media?'),
+          [
+            t('stem.watercycle.quiz_912_2_opt1', 'Darcy\'s Law'),
+            t('stem.watercycle.quiz_912_2_opt2', 'Boyle\'s Law'),
+            t('stem.watercycle.quiz_912_2_opt3', 'Ohm\'s Law'),
+            t('stem.watercycle.quiz_912_2_opt4', 'Bernoulli\'s Principle'),
+          ],
+          0,
+          [
+            null,
+            t('stem.watercycle.quiz_912_2_fb2', 'Boyle\'s Law relates gas pressure to volume, not fluid flow through soils.'),
+            t('stem.watercycle.quiz_912_2_fb3', 'Ohm\'s Law relates voltage and current, though it shares mathematical forms with Darcy\'s Law.'),
+            t('stem.watercycle.quiz_912_2_fb4', 'Bernoulli\'s equation applies to open pipe flow, not flow within saturated media.'),
+          ],
+          'Darcy\'s Law'
+        ),
+        wcQuizQuestion(
+          t('stem.watercycle.quiz_912_3_q', 'What is the latent heat of vaporization of water at 20°C?'),
+          [
+            t('stem.watercycle.quiz_912_3_opt1', '~1.0 MJ/kg'),
+            t('stem.watercycle.quiz_912_3_opt2', '~2.45 MJ/kg'),
+            t('stem.watercycle.quiz_912_3_opt3', '~4.18 MJ/kg'),
+            t('stem.watercycle.quiz_912_3_opt4', '~0.33 MJ/kg'),
+          ],
+          1,
+          [
+            t('stem.watercycle.quiz_912_3_fb1', 'This value is too low. Water requires about 2.45 megajoules per kilogram to vaporize.'),
+            null,
+            t('stem.watercycle.quiz_912_3_fb3', 'This is the specific heat capacity of liquid water, not its latent heat of vaporization.'),
+            t('stem.watercycle.quiz_912_3_fb4', 'This is close to the latent heat of fusion (melting ice) which is 0.334 MJ/kg.'),
+          ],
+          'latent heat'
+        ),
+        wcQuizQuestion(
+          t('stem.watercycle.quiz_912_4_q', 'The Clausius-Clapeyron relation predicts saturation vapor pressure increases by what per °C?'),
+          [
+            t('stem.watercycle.quiz_912_4_opt1', '~2%'),
+            t('stem.watercycle.quiz_912_4_opt2', '~7%'),
+            t('stem.watercycle.quiz_912_4_opt3', '~15%'),
+            t('stem.watercycle.quiz_912_4_opt4', '~25%'),
+          ],
+          1,
+          [
+            t('stem.watercycle.quiz_912_4_fb1', 'This is too low. Saturation vapor pressure increases by approximately 7% per degree of heating.'),
+            null,
+            t('stem.watercycle.quiz_912_4_fb3', 'This is too high. The capacity grows exponentially but is about 7% per degree Celsius.'),
+            t('stem.watercycle.quiz_912_4_fb4', 'This is too high. A 1 degree Celsius increase corresponds to a 7% capacity expansion.'),
+          ],
+          'Clausius-Clapeyron'
+        ),
+        wcQuizQuestion(
+          t('stem.watercycle.quiz_912_5_q', 'What equation extends Darcy\'s Law to unsaturated flow?'),
+          [
+            t('stem.watercycle.quiz_912_5_opt1', 'Navier-Stokes'),
+            t('stem.watercycle.quiz_912_5_opt2', 'Richards\' equation'),
+            t('stem.watercycle.quiz_912_5_opt3', 'Bernoulli\'s equation'),
+            t('stem.watercycle.quiz_912_5_opt4', 'Poiseuille\'s equation'),
+          ],
+          1,
+          [
+            t('stem.watercycle.quiz_912_5_fb1', 'Navier-Stokes equations model momentum in open fluid dynamics, not unsaturated flow in soils.'),
+            null,
+            t('stem.watercycle.quiz_912_5_fb3', 'Bernoulli\'s equation relates pressure and speed in open inviscid flows.'),
+            t('stem.watercycle.quiz_912_5_fb4', 'Poiseuille\'s equation describes flow through open cylindrical pipes.'),
+          ],
+          'infiltration'
+        ),
+        wcQuizQuestion(
+          t('stem.watercycle.quiz_912_6_q', 'What is cloud albedo\'s approximate effect on solar radiation?'),
+          [
+            t('stem.watercycle.quiz_912_6_opt1', 'Reflects ~5%'),
+            t('stem.watercycle.quiz_912_6_opt2', 'Reflects ~30%'),
+            t('stem.watercycle.quiz_912_6_opt3', 'Reflects ~60%'),
+            t('stem.watercycle.quiz_912_6_opt4', 'Reflects ~90%'),
+          ],
+          1,
+          [
+            t('stem.watercycle.quiz_912_6_fb1', 'This is too low. Average global cloud albedo is significant, reflecting about 30% of incoming light.'),
+            null,
+            t('stem.watercycle.quiz_912_6_fb3', 'While specific storm clouds can be highly reflective, the global average is around 30%.'),
+            t('stem.watercycle.quiz_912_6_fb4', 'Only the densest storm clouds reflect 90%, whereas the global average is much lower.'),
+          ],
+          'condensation'
+        ),
+        wcQuizQuestion(
+          t('stem.watercycle.quiz_912_7_q', 'What is the average residence time of a water molecule in the ocean?'),
+          [
+            t('stem.watercycle.quiz_912_7_opt1', '~9 days'),
+            t('stem.watercycle.quiz_912_7_opt2', '~100 years'),
+            t('stem.watercycle.quiz_912_7_opt3', '~3,200 years'),
+            t('stem.watercycle.quiz_912_7_opt4', '~1 million years'),
+          ],
+          2,
+          [
+            t('stem.watercycle.quiz_912_7_fb1', 'This is the atmospheric residence time before precipitation, not the ocean residence time.'),
+            t('stem.watercycle.quiz_912_7_fb2', 'This is too short. Due to ocean volume, the average water molecule remains there for about 3,200 years.'),
+            null,
+            t('stem.watercycle.quiz_912_7_fb4', 'This is too long. Oceanic circulation and evaporation cycle molecules much faster.'),
+          ],
+          'collection'
+        ),
+        wcQuizQuestion(
+          t('stem.watercycle.quiz_912_8_q', 'What is the Bowen ratio?'),
+          [
+            t('stem.watercycle.quiz_912_8_opt1', 'Ratio of sensible to latent heat flux'),
+            t('stem.watercycle.quiz_912_8_opt2', 'Ratio of runoff to infiltration'),
+            t('stem.watercycle.quiz_912_8_opt3', 'Ratio of evaporation to precipitation'),
+            t('stem.watercycle.quiz_912_8_opt4', 'Ratio of cloud cover to clear sky'),
+          ],
+          0,
+          [
+            null,
+            t('stem.watercycle.quiz_912_8_fb2', 'This is a hydrological partition ratio, not the thermodynamic Bowen ratio.'),
+            t('stem.watercycle.quiz_912_8_fb3', 'This is a global water budget balance, not the Bowen ratio.'),
+            t('stem.watercycle.quiz_912_8_fb4', 'This relates to cloud cover fraction, not the Bowen heat flux ratio.'),
+          ],
+          'Bowen ratio'
+        ),
+      ],
+    };
+  }
+
+  var _wcQuizCache = null;
+  var _wcQuizFor = null;
+  function waterCycleQuizzes() {
+    if (_wcQuizCache && _wcQuizFor === _wcT) return _wcQuizCache;
+    _wcQuizFor = _wcT;
+    _wcQuizCache = wcQuizBank(_wcT);
+    return _wcQuizCache;
+  }
+
 
   function stewardClamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
@@ -1327,8 +1733,13 @@
     var puddleIndex = visualType === 'rain' ? Math.round(groundExposure * 0.74)
       : visualType === 'mix' ? Math.round(groundExposure * 0.28) : 0;
     var runoffTerrainFactor = cfg.terrain === 'mountains' ? 0.82 : cfg.terrain === 'coast' ? 0.68 : 0.54;
-    var runoffIndex = reachesGround && visualType !== 'snow'
-      ? Math.round(groundExposure * runoffTerrainFactor) : Math.round(snowIndex * 0.12);
+    // Sleet lands frozen and has to melt before any of it runs off, so it sits
+    // between snow (almost nothing runs off now) and rain (most of it does).
+    // Sending pellets down the rain path overstated immediate runoff.
+    var runoffIndex = !reachesGround ? Math.round(snowIndex * 0.12)
+      : visualType === 'snow' ? Math.round(snowIndex * 0.12)
+      : visualType === 'sleet' ? Math.round(groundExposure * runoffTerrainFactor * 0.35)
+      : Math.round(groundExposure * runoffTerrainFactor);
     var stageCopy = stageKey === 'developing'
       ? 'Updrafts strengthen, the cloud tower grows, and precipitation organizes.'
       : stageKey === 'mature'
@@ -1625,7 +2036,7 @@
   };
 
   if(!window.StemLab||!window.StemLab.registerTool) return;
-  try { window.__waterCyclePure = { WATER_CYCLE_QUIZZES: WATER_CYCLE_QUIZZES, wcShuffleOpts: wcShuffleOpts }; } catch (_e) {}
+  try { window.__waterCyclePure = { WATER_CYCLE_QUIZZES: waterCycleQuizzes(), wcShuffleOpts: wcShuffleOpts }; } catch (_e) {}
 
   window.StemLab.registerTool('waterCycle',{
     icon:'\uD83C\uDF0A', label:'Water Cycle', desc:'Live water cycle canvas plus Journey Mode: ride one droplet through evaporation, condensation, precipitation, collection, transpiration, and infiltration with real choices along the way.',
@@ -1645,6 +2056,10 @@
       var toolSnapshots=ctx.toolSnapshots; var setToolSnapshots=ctx.setToolSnapshots;
       // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
       var t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      // Hand the real translator to the watershed overlay now that one exists.
+      // Everything downstream reads copy through watershedComponents().
+      _wcT = t;
+      applyStewardCopy(t);
       var ArrowLeft=ctx.icons.ArrowLeft;
       var announceToSR=ctx.announceToSR;
       // ctx.addToast was never bound here, yet the tool calls addToast in 14
@@ -2102,7 +2517,7 @@ const d = labToolData.waterCycle || {};
             });
 
             var snap = {
-              year: steward.year, event: ev.name, eventIcon: ev.icon, eventDesc: ev.desc,
+              year: steward.year, eventId: ev.id, event: ev.name, eventIcon: ev.icon, eventDesc: ev.desc,
               pre: pre, post: drifted.map(function(c) { return Object.assign({}, c); }),
               actions: steward.yearActions.slice(), cascades: fired
             };
@@ -2362,7 +2777,7 @@ const d = labToolData.waterCycle || {};
             var w = 600, hgt = 220, padL = 36, padR = 110, padT = 12, padB = 24;
             var ix = w - padL - padR;
             var iy = hgt - padT - padB;
-            var components = MAINE_WATERSHED_COMPONENTS;
+            var components = watershedComponents();
             function ptsFor(cid) {
               return yearLog.map(function(snap, i) {
                 var post = (snap.post || []).find(function(p) { return p.id === cid; });
@@ -2576,7 +2991,7 @@ const d = labToolData.waterCycle || {};
 
                 // Component preview cards
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 } },
-                  MAINE_WATERSHED_COMPONENTS.map(function(c) {
+                  watershedComponents().map(function(c) {
                     return h('div', {
                       key: c.id,
                       style: {
@@ -3594,15 +4009,23 @@ const d = labToolData.waterCycle || {};
                   ctx2.fill();
                   ctx2.stroke();
                 } else if (type === 'sleet') {
-                  // Ice pellets: small, hard, opaque — deliberately smaller than
-                  // a hailstone and solid, unlike the freezing-rain streak.
-                  ctx2.fillStyle = '#e0f2fe';
-                  ctx2.strokeStyle = '#bae6fd';
-                  ctx2.lineWidth = 1;
+                  // Ice pellets: small, hard, opaque — smaller than a hailstone,
+                  // solid unlike the freezing-rain streak. They fall through the
+                  // PALE lower half of the sky, where a light fill alone
+                  // disappears, so they carry a dark rim for contrast and a
+                  // specular dot so they read as ice rather than as bubbles.
+                  var pelletRadius = Math.max(2.1, size * 0.62);
+                  ctx2.fillStyle = '#f0f9ff';
+                  ctx2.strokeStyle = 'rgba(30,64,90,.55)';
+                  ctx2.lineWidth = 1.1;
                   ctx2.beginPath();
-                  ctx2.arc(x, y, Math.max(1.4, size * 0.46), 0, Math.PI * 2);
+                  ctx2.arc(x, y, pelletRadius, 0, Math.PI * 2);
                   ctx2.fill();
                   ctx2.stroke();
+                  ctx2.fillStyle = 'rgba(255,255,255,.95)';
+                  ctx2.beginPath();
+                  ctx2.arc(x - pelletRadius * 0.3, y - pelletRadius * 0.32, Math.max(0.6, pelletRadius * 0.26), 0, Math.PI * 2);
+                  ctx2.fill();
                 } else if (type === 'mix' && particle.z > 0.5) {
                   ctx2.fillStyle = '#e0f2fe';
                   ctx2.beginPath();
@@ -3927,7 +4350,7 @@ const d = labToolData.waterCycle || {};
                       ? model.lifecycle.accumulation.snow
                       : model.lifecycle.accumulation.glaze;
                     context.lineWidth = 2 + surfaceAccumulation / (model.visualType === 'snow' ? 11
-                      : model.visualType === 'sleet' ? 14 : 18);
+                      : model.visualType === 'sleet' ? 10 : 18);
                     if (model.visualType === 'freezing-rain') context.setLineDash([5, 3]);
                     if (model.visualType === 'sleet') context.setLineDash([2, 3]);
                     var previousSurfaceX = footprintStart;
@@ -12928,7 +13351,7 @@ React.createElement("div", {
 
               React.createElement("button", { type: "button", "aria-label": t('stem.watercycle.start_water_cycle_quiz', "Start water cycle quiz"),
                 onClick: function () {
-                  var pool = WATER_CYCLE_QUIZZES[gradeBand] || WATER_CYCLE_QUIZZES['3-5'];
+                  var pool = waterCycleQuizzes()[gradeBand] || waterCycleQuizzes()['3-5'];
                   var q = pool[Math.floor(Math.random() * pool.length)];
                   upd('wcQuiz', {
                     q: q.q,
@@ -13127,9 +13550,9 @@ React.createElement("div", {
                   ),
 
                   // Concept study card
-                  d.wcQuiz.concept && WATER_CYCLE_VOCAB[d.wcQuiz.concept] && (function() {
+                  d.wcQuiz.concept && waterCycleVocab()[d.wcQuiz.concept] && (function() {
                     var concept = d.wcQuiz.concept;
-                    var definition = WATER_CYCLE_VOCAB[concept];
+                    var definition = waterCycleVocab()[concept];
                     var studied = (d.vocabWordsStudied || []).indexOf(concept) !== -1;
                     return React.createElement("div", { className: "p-3 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in " + (isDark ? "bg-indigo-950/40 border border-indigo-900/50" : "bg-indigo-50 border border-indigo-200") },
                       React.createElement("div", { className: "flex-1" },

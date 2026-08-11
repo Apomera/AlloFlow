@@ -274,9 +274,21 @@ async function testKeyboardActivation(page) {
     // costs two dispatches plus a paint.
     for (const el of candidates.slice(0, 60)) {
       out.tested++;
-      const before = document.body.innerHTML.length + '|' + document.activeElement?.tagName;
 
-      let reacted = false;
+      // A MutationObserver, not a size comparison. Comparing innerHTML.length
+      // misses any change that keeps the total length identical — a toggle
+      // swapping equal-length text, an attribute flipped between same-length
+      // values — and reports the control as dead. Verified against a fixture:
+      // the length signature called an equal-length swap inert; the observer
+      // caught it. Under-reporting a working control as broken is the failure
+      // mode most likely to send someone off "fixing" correct code.
+      let mutated = false;
+      const observer = new MutationObserver(() => { mutated = true; });
+      observer.observe(document.documentElement, {
+        subtree: true, childList: true, attributes: true, characterData: true,
+      });
+      const focusBefore = document.activeElement;
+
       for (const key of ['Enter', ' ']) {
         for (const type of ['keydown', 'keyup']) {
           el.dispatchEvent(new KeyboardEvent(type, {
@@ -285,9 +297,11 @@ async function testKeyboardActivation(page) {
           }));
         }
         await new Promise(r => setTimeout(r, 30));
-        const after = document.body.innerHTML.length + '|' + document.activeElement?.tagName;
-        if (after !== before) { reacted = true; break; }
+        if (mutated) break;
       }
+
+      observer.disconnect();
+      const reacted = mutated || document.activeElement !== focusBefore;
 
       if (reacted) out.reacted++;
       else out.inert.push(describe(el));
@@ -343,6 +357,55 @@ async function main() {
 
     const page = await browser.newPage();
     await page.setViewport(VIEWPORT);
+
+    // Abort third-party requests. Two reasons, one of them load-bearing:
+    //
+    // 1. Correctness. Offline or sandboxed, CDN requests (fonts, drag-drop-touch,
+    //    idb-keyval) fail slowly rather than instantly, so document.readyState
+    //    stays "interactive" forever and axe-core refuses to analyse the frame
+    //    with "Page/Frame is not ready". The app itself renders perfectly — 200KB
+    //    of DOM, 42 focusables — but the audit never got to look at it.
+    // 2. Determinism. A late-arriving webfont reflows the page mid-audit and
+    //    changes contrast and target-size results between runs.
+    const targetOrigin = new URL(url).origin;
+    const REPO_ROOT = path.resolve(__dirname, '..');
+
+    // Serve CDN module requests from the WORKING TREE. Tool modules load from
+    // https://alloflow-cdn.pages.dev/<name>.js?v=<hash> at runtime, so without
+    // this the audit can only ever see the app shell — never the tools, and so
+    // never the code being changed. Local edits are what we want to test, and
+    // the published bundle is precisely what we do not.
+    const serveLocalModule = (req, pathname) => {
+      const base = path.basename(pathname);
+      for (const dir of ['stem_lab', '.', 'desktop/web-app/public']) {
+        const candidate = path.join(REPO_ROOT, dir, base);
+        if (!path.resolve(candidate).startsWith(REPO_ROOT)) continue;
+        if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
+          req.respond({
+            status: 200,
+            contentType: 'text/javascript',
+            body: fs.readFileSync(candidate),
+          });
+          return true;
+        }
+      }
+      return false;
+    };
+
+    await page.setRequestInterception(true);
+    page.on('request', req => {
+      try {
+        const reqUrl = req.url();
+        if (reqUrl.startsWith(targetOrigin)) return req.continue();
+        if (/alloflow-cdn\.pages\.dev/.test(reqUrl)) {
+          const pathname = new URL(reqUrl).pathname;
+          if (serveLocalModule(req, pathname)) return;
+          // Fall through to abort: a module we cannot supply locally must fail
+          // loudly rather than silently load a stale published copy.
+        }
+        req.abort();
+      } catch (_) { /* request already handled */ }
+    });
 
     console.log(`Navigating to ${url}...`);
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
@@ -486,4 +549,10 @@ async function main() {
   }
 }
 
-main();
+// Run only when invoked directly, so tests can import the checks and exercise
+// the SHIPPED function instead of a copy of it. A self-test that duplicates the
+// logic it is verifying proves the algorithm and nothing about the code that
+// actually runs.
+if (require.main === module) main();
+
+module.exports = { testKeyboardActivation, testKeyboardNavigation, runCustomChecks };

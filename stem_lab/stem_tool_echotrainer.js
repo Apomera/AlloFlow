@@ -113,16 +113,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
     challenge: { requires: 'goalsFound >= 8', label: 'Find 8 goals' }
   };
 
-  function isEnvUnlocked(envId, toolData) {
+  /**
+   * Goals needed to unlock an environment, or 0 when it is open from the start.
+   * Parsed from the requirement string so a new tier cannot be added without the
+   * gate understanding it.
+   */
+  function envUnlockThreshold(envId) {
     var u = ENV_UNLOCK[envId];
-    if (!u || !u.requires) return true;
-    var g = toolData.goalsFound || 0;
-    if (u.requires === 'goalsFound >= 1') return g >= 1;
-    if (u.requires === 'goalsFound >= 2') return g >= 2;
-    if (u.requires === 'goalsFound >= 3') return g >= 3;
-    if (u.requires === 'goalsFound >= 5') return g >= 5;
-    if (u.requires === 'goalsFound >= 8') return g >= 8;
-    return true;
+    if (!u || !u.requires) return 0;
+    var m = /goalsFound\s*>=\s*(\d+)/.exec(String(u.requires));
+    // Fail CLOSED on an unrecognised requirement: an unparseable gate used to
+    // return true, so a typo or a new tier silently unlocked the content.
+    return m ? Number(m[1]) : Infinity;
+  }
+
+  function isEnvUnlocked(envId, toolData) {
+    var need = envUnlockThreshold(envId);
+    if (!need) return true;
+    return ((toolData && toolData.goalsFound) || 0) >= need;
   }
 
   // ── Material glow colors for 3D sonar illumination ──
@@ -1592,8 +1600,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           if (!isMinimap) {
             gfx.save(); gfx.translate(map.W - 30, 40); gfx.strokeStyle = 'rgba(148,163,184,0.3)'; gfx.lineWidth = 1;
             gfx.beginPath(); gfx.moveTo(0, -16); gfx.lineTo(0, 16); gfx.stroke(); gfx.beginPath(); gfx.moveTo(-16, 0); gfx.lineTo(16, 0); gfx.stroke();
-            gfx.fillStyle = 'rgba(239,68,68,0.5)'; gfx.font = 'bold 8px sans-serif'; gfx.textAlign = 'center'; gfx.fillText('N', 0, -19);
-            gfx.fillStyle = 'rgba(148,163,184,0.3)'; gfx.fillText('S', 0, 24); gfx.fillText('E', 20, 3); gfx.fillText('W', -20, 3); gfx.restore();
+            gfx.fillStyle = 'rgba(239,68,68,0.5)'; gfx.font = 'bold 8px sans-serif'; gfx.textAlign = 'center'; gfx.fillText(t('stem.echotrainer.compass_n', 'N'), 0, -19);
+            gfx.fillStyle = 'rgba(148,163,184,0.3)'; gfx.fillText(t('stem.echotrainer.compass_s', 'S'), 0, 24); gfx.fillText(t('stem.echotrainer.compass_e', 'E'), 20, 3); gfx.fillText(t('stem.echotrainer.compass_w', 'W'), -20, 3); gfx.restore();
           }
           gfx.restore();
           if (!isMinimap) {
@@ -1603,7 +1611,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             var elapsed2d = Math.floor((Date.now() - runStartRef.current) / 1000);
             var timeStr2d = Math.floor(elapsed2d / 60) + ':' + ('0' + (elapsed2d % 60)).slice(-2);
             var cpm2d = Math.round((d.clicks || 0) / Math.max(1, elapsed2d / 60));
-            gfx.fillText('Echo Navigator  |  Clicks: ' + (d.clicks || 0) + '  |  Bumps: ' + (d.bumps || 0) + '  |  Goals: ' + goalsFound + '  |  ' + modeLabel + '  |  ' + envType + '  |  ' + diff.label + '  |  Time: ' + timeStr2d + '  |  ' + cpm2d + ' clicks/min', 8, 17);
+            gfx.fillText(tFmt('stem.echotrainer.hud_line',
+              'Echo Navigator  |  Clicks: {clicks}  |  Bumps: {bumps}  |  Goals: {goals}  |  {mode}  |  {env}  |  {difficulty}  |  Time: {time}  |  {cpm} clicks/min',
+              { clicks: d.clicks || 0, bumps: d.bumps || 0, goals: goalsFound, mode: modeLabel,
+                env: t('stem.echotrainer.env_' + envType + '_name', envType), difficulty: diff.label,
+                time: timeStr2d, cpm: cpm2d }), 8, 17);
             goalCheckTimer2d++;
             if (goalCheckTimer2d % 10 === 0) {
               map.objects.forEach(function(o) {
@@ -1828,12 +1840,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           ENVIRONMENTS.map(function(env) {
             var active = envType === env.id; var is3D = !!ENV_3D_READY[env.id];
             var unlocked = isEnvUnlocked(env.id, d);
+            var envName = t('stem.echotrainer.env_' + env.id + '_name', env.name);
+            var envDesc = t('stem.echotrainer.env_' + env.id + '_desc', env.desc);
+            var envHint = t('stem.echotrainer.unlock_' + env.id, (ENV_UNLOCK[env.id] && ENV_UNLOCK[env.id].label) || '');
             return h('button', { key: env.id,
               disabled: !unlocked,
-              'aria-label': unlocked ? (env.name + ': ' + env.desc + (is3D ? ' (3D available)' : '')) : (env.name + ' (Locked: ' + (ENV_UNLOCK[env.id] && ENV_UNLOCK[env.id].label || '') + ')'),
+              'aria-label': unlocked
+                ? tFmt('stem.echotrainer.aria_env_open', '{name}: {desc}{threeD}', { name: envName, desc: envDesc, threeD: is3D ? ' ' + t('stem.echotrainer.three_d_available', '(3D available)') : '' })
+                : tFmt('stem.echotrainer.aria_env_locked', '{name} (Locked: {hint})', { name: envName, hint: envHint }),
               'aria-pressed': active ? 'true' : 'false',
-              title: unlocked ? env.desc : 'Locked: ' + (ENV_UNLOCK[env.id] && ENV_UNLOCK[env.id].label || ''),
-              onClick: unlocked ? function() { var envId = env.id; return function() { var newSeed = Math.floor(Math.random() * 999999); updMulti({ envType: envId, seed: newSeed, viewMode: 'echo', hasRevealed: false, goalFoundThisRun: false, clicks: 0, bumps: 0, waypointMode: false, waypointIdx: 0, matQuiz: null }); mapRef.current = null; agentsRef.current = []; playerRef.current = { x: 400, y: 700, angle: -Math.PI / 2 }; yawRef.current = -Math.PI / 2; pitchRef.current = 0; carHitRef.current = false; goalFoundRef.current = false; coverageRef.current = null; runStartRef.current = Date.now(); if (announceToSR) announceToSR(tFmt('stem.echotrainer.sr_environment_selected', 'Environment: {name}. {desc} {mode} Press Space to click.', { name: env.name, desc: env.desc, mode: is3D ? t('stem.echotrainer.sr_mode_3d', '3D mode.') : t('stem.echotrainer.sr_mode_2d', '2D mode.') })); }; }() : undefined,
+              title: unlocked ? envDesc : tFmt('stem.echotrainer.title_env_locked', 'Locked: {hint}', { hint: envHint }),
+              onClick: unlocked ? function() { var envId = env.id; return function() { var newSeed = Math.floor(Math.random() * 999999); updMulti({ envType: envId, seed: newSeed, viewMode: 'echo', hasRevealed: false, goalFoundThisRun: false, clicks: 0, bumps: 0, waypointMode: false, waypointIdx: 0, matQuiz: null }); mapRef.current = null; agentsRef.current = []; playerRef.current = { x: 400, y: 700, angle: -Math.PI / 2 }; yawRef.current = -Math.PI / 2; pitchRef.current = 0; carHitRef.current = false; goalFoundRef.current = false; coverageRef.current = null; runStartRef.current = Date.now(); if (announceToSR) announceToSR(tFmt('stem.echotrainer.sr_environment_selected', 'Environment: {name}. {desc} {mode} Press Space to click.', { name: envName, desc: envDesc, mode: is3D ? t('stem.echotrainer.sr_mode_3d', '3D mode.') : t('stem.echotrainer.sr_mode_2d', '2D mode.') })); }; }() : undefined,
               style: {
                 padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 700,
                 cursor: unlocked ? 'pointer' : 'not-allowed',
@@ -1842,14 +1859,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
                 background: active ? '#4338ca' : (isDark ? '#1e293b' : '#fff'),
                 color: active ? '#fff' : (isDark ? '#94a3b8' : '#475569')
               }
-            }, (unlocked ? '' : '\uD83D\uDD12 ') + env.icon + ' ' + env.name + (is3D ? ' [3D]' : '') + (!unlocked ? ' (' + (ENV_UNLOCK[env.id] && ENV_UNLOCK[env.id].label || '') + ')' : ''));
+            }, (unlocked ? '' : '\uD83D\uDD12 ') + env.icon + ' ' + envName + (is3D ? ' [3D]' : '') + (!unlocked ? ' (' + envHint + ')' : ''));
           })
         ),
         h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' } },
           h('button', { onClick: emitClick, style: { padding: '8px 20px', borderRadius: '8px', border: 'none', background: '#7c3aed', color: '#fff', fontSize: '13px', fontWeight: 800, cursor: 'pointer' } }, t('stem.echotrainer.click_space', '\uD83D\uDD0A Click (Space)')),
           h('button', { onClick: function() { upd('clickType', clickType === 'tongue' ? 'cane' : 'tongue'); if (announceToSR) announceToSR(tFmt('stem.echotrainer.sr_sound_changed', 'Sound: {sound}', { sound: clickType === 'tongue' ? t('stem.echotrainer.sound_cane_tap', 'Cane tap') : t('stem.echotrainer.sound_tongue_click', 'Tongue click') })); }, style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), background: isDark ? '#1e293b' : '#fff', color: isDark ? '#94a3b8' : '#475569', fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, clickType === 'tongue' ? '\uD83D\uDC45 Tongue Click' : '\uD83E\uDDAF Cane Tap'),
           h('button', { onClick: cycleViewMode, 'aria-label': tFmt('stem.echotrainer.aria_cycle_view', 'Cycle view mode: currently {mode}', { mode: d.viewMode || 'echo' }), style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + viewModeColor + '80', background: isDark ? '#1e293b' : '#fff', color: viewModeColor, fontSize: '12px', fontWeight: 800, cursor: 'pointer' } }, viewModeLabel),
-          h('button', { onClick: function() { upd('multiBounce', !multiBounce); if (announceToSR) announceToSR(multiBounce ? 'Multi-bounce echoes off' : 'Multi-bounce echoes on \u2014 more realistic but harder'); }, 'aria-label': multiBounce ? 'Turn off multi-bounce echoes' : 'Turn on multi-bounce echoes (advanced)', 'aria-pressed': multiBounce ? 'true' : 'false', style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (multiBounce ? '#f59e0b' : (isDark ? '#334155' : '#e2e8f0')), background: multiBounce ? '#78350f' : (isDark ? '#1e293b' : '#fff'), color: multiBounce ? '#fbbf24' : (isDark ? '#94a3b8' : '#475569'), fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, multiBounce ? '\uD83D\uDD04 Multi-Bounce ON' : '\uD83D\uDD04 Multi-Bounce'),
+          h('button', { onClick: function() { upd('multiBounce', !multiBounce); if (announceToSR) announceToSR(multiBounce ? t('stem.echotrainer.sr_multibounce_off', 'Multi-bounce echoes off') : t('stem.echotrainer.sr_multibounce_on', 'Multi-bounce echoes on \u2014 more realistic but harder')); }, 'aria-label': multiBounce ? 'Turn off multi-bounce echoes' : 'Turn on multi-bounce echoes (advanced)', 'aria-pressed': multiBounce ? 'true' : 'false', style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (multiBounce ? '#f59e0b' : (isDark ? '#334155' : '#e2e8f0')), background: multiBounce ? '#78350f' : (isDark ? '#1e293b' : '#fff'), color: multiBounce ? '#fbbf24' : (isDark ? '#94a3b8' : '#475569'), fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, multiBounce ? '\uD83D\uDD04 Multi-Bounce ON' : '\uD83D\uDD04 Multi-Bounce'),
           h('button', {
             onClick: startDistanceChallenge,
             'aria-label': t('stem.echotrainer.start_a_distance_estimation_challenge', 'Start a distance estimation challenge'),
@@ -1865,7 +1882,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
               var newMode = !waypointMode;
               updMulti({ waypointMode: newMode, waypointIdx: 0, goalFoundThisRun: false });
               goalFoundRef.current = false;
-              if (announceToSR) announceToSR(newMode ? 'Waypoint challenge ON! Navigate to: ' + WAYPOINT_ROUTES[envType].points[0].label : 'Waypoint challenge OFF. Find the single goal.');
+              if (announceToSR) announceToSR(newMode ? tFmt('stem.echotrainer.sr_waypoint_on', 'Waypoint challenge ON! Navigate to: {label}', { label: WAYPOINT_ROUTES[envType].points[0].label }) : t('stem.echotrainer.sr_waypoint_off', 'Waypoint challenge OFF. Find the single goal.'));
             },
             'aria-label': waypointMode ? 'Disable waypoint challenge' : 'Enable waypoint navigation challenge',
             style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (waypointMode ? '#22c55e' : (isDark ? '#334155' : '#e2e8f0')), background: waypointMode ? '#166534' : (isDark ? '#1e293b' : '#fff'), color: waypointMode ? '#86efac' : (isDark ? '#94a3b8' : '#475569'), fontSize: '12px', fontWeight: 700, cursor: 'pointer' }

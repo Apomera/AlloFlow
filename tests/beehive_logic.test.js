@@ -7,15 +7,21 @@
 // (single day) and advanceDays (batch) — so testing it here covers both paths.
 // It is pure except for cfg.rand(), which we inject as a deterministic sequence.
 
+import { readFileSync } from 'node:fs';
 import { describe, it, expect, beforeAll } from 'vitest';
 import { loadTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
+// Some claims are stated in canvas draw calls and quiz explanations, not in an
+// exported table, so the consistency guards below read the source directly.
+const SRC_TEXT = readFileSync('stem_lab/stem_tool_beehive.js', 'utf8');
+
 let BH;
+let CONFIG;
 
 beforeAll(() => {
   resetStemLab();
   window.__RR_TEST_EXPORTS__ = window.__RR_TEST_EXPORTS__ || {};
-  loadTool('stem_lab/stem_tool_beehive.js', 'beehive');
+  CONFIG = loadTool('stem_lab/stem_tool_beehive.js', 'beehive');
   BH = window.__RR_TEST_EXPORTS__.beehive;
   if (!BH) throw new Error('beehive did not populate __RR_TEST_EXPORTS__ — is the export block present?');
 });
@@ -254,6 +260,57 @@ describe('curriculum data — shape + accuracy regression guards', () => {
     // the worked math problem must agree with the 1 km/sec rule too
     const mp = BH.BEE_MATH_PROBLEMS.find((p) => /conversion rate/.test(p.problem || ''));
     expect(mp.solution).toContain('1000 m/sec');
+  });
+
+  // One fact, one number, one unit. Each of the three below was taught two or
+  // three different ways in different panels — the same failure the waggle
+  // tempo had. No gate can catch it: every statement is plausible alone and
+  // only the SET is wrong, so it has to be pinned here.
+  it('states the wingbeat rate and its per-minute conversion consistently', () => {
+    // 230 beats/second is 13,800 a minute. Two panels said "12,000 rpm", which
+    // both contradicts the tool's own 230 Hz figure and uses a rotational unit
+    // for a wing that reciprocates.
+    expect(SRC_TEXT).not.toContain('12,000 rpm');
+    expect(SRC_TEXT).not.toContain('12,000 "rpm"');
+    expect(SRC_TEXT).toContain('13,800 beats a minute');
+    // The underlying rate itself must stay put wherever it is quoted.
+    expect(SRC_TEXT).not.toMatch(/wings? beat (?!~?230)\d/i);
+  });
+
+  it('states the foraging range in ONE measure — distance from the hive', () => {
+    // Previously: "up to 6 miles from the hive", "up to 5 miles from home",
+    // and "up to 5 miles ROUND-TRIP" — the last being half the distance of the
+    // other two while sounding like the same claim.
+    expect(SRC_TEXT).not.toContain('round-trip, visiting');
+    expect(SRC_TEXT).not.toContain('up to 6 miles');
+    expect(SRC_TEXT).toMatch(/about 2 miles/);
+  });
+
+  it('states flowers-per-trip consistently', () => {
+    // "50-1,000 per trip" sat beside "up to 100 per trip" in another panel.
+    expect(SRC_TEXT).not.toContain('1,000 flowers per trip');
+    expect(SRC_TEXT).toMatch(/50[-–]100 flowers per trip/);
+  });
+
+  it('keeps the pound-of-honey figures consistent with 1/12 teaspoon per bee', () => {
+    // A pound of honey is ~65 tsp (453.6 g ÷ 1.42 g/mL ÷ 4.93 mL/tsp), so at
+    // 1/12 tsp per forager it is ~780 bees. The tool used to state "556 bees"
+    // and "1/12 of a teaspoon" in the SAME sentence — 556 would mean 1/8.6.
+    expect(SRC_TEXT).not.toContain('556 worker bees');
+    expect(SRC_TEXT).toContain('about 780 bees');
+    expect(SRC_TEXT).toContain('1/12 of a teaspoon');
+  });
+
+  it('states the winter-bee lifespan ratio its own numbers support', () => {
+    // ~6 weeks summer vs 4-6 months winter is 3-4x, not 10x.
+    expect(SRC_TEXT).not.toContain('live 10× longer');
+    expect(SRC_TEXT).toMatch(/live 3-4× longer/);
+  });
+
+  it('teaches ONE varroa treatment threshold', () => {
+    // Actionable guidance, so a 2% / 3% split matters more than most.
+    expect(SRC_TEXT).not.toMatch(/mite count exceeds ~?2%/);
+    expect(SRC_TEXT).toMatch(/3 mites per 100 bees/);
   });
 
   it('bumblebee range no longer wrongly excludes "most of Asia"', () => {
@@ -510,5 +567,100 @@ describe('honey production accounting', () => {
       const { next } = BH.bhStepColony(state({ day, workers: 30000, brood: 20000, honey: 50 }), cfg());
       expect(next.honeyGrossIn, 'day ' + day).toBeGreaterThanOrEqual(0);
     }
+  });
+});
+
+// The 3D hive bay is the most hands-on part of the beekeeper mode, and until
+// it fed the quest system and the Science Notebook it was invisible to the
+// learning loop the rest of the tool runs on. Both quests below measure a
+// DELIBERATE act — stepping frames, or picking the queen out — never "you
+// opened the panel", which is the standing rule for quest hooks in this lab.
+describe('3D hive inspection feeds the learning loop', () => {
+  const hook = (id) => CONFIG.questHooks.find((q) => q.id === id);
+
+  it('registers the inspection quests', () => {
+    expect(hook('read_every_frame')).toBeTruthy();
+    expect(hook('find_the_queen')).toBeTruthy();
+  });
+
+  it('completes "read every frame" only after all six are read', () => {
+    const q = hook('read_every_frame');
+    expect(q.check({})).toBe(false);
+    expect(q.check({ hive3dFramesSeen: [0, 1, 2] })).toBe(false);
+    expect(q.progress({ hive3dFramesSeen: [0, 1, 2] })).toBe('3/6 frames');
+    expect(q.check({ hive3dFramesSeen: [0, 1, 2, 3, 4, 5] })).toBe(true);
+  });
+
+  it('survives absent or malformed saved state', () => {
+    // Tool data is user-persisted, so a legacy save has neither key.
+    const q = hook('read_every_frame');
+    expect(() => q.check(undefined)).not.toThrow();
+    expect(() => q.progress(undefined)).not.toThrow();
+    expect(q.check(undefined)).toBe(false);
+    expect(hook('find_the_queen').check(undefined)).toBe(false);
+  });
+
+  it('completes "find the queen" once she has been picked', () => {
+    const q = hook('find_the_queen');
+    expect(q.check({})).toBe(false);
+    expect(q.check({ hive3dFoundQueen: true })).toBe(true);
+    expect(q.progress({ hive3dFoundQueen: true })).toMatch(/Found/);
+  });
+
+  it('records the frame reading in the Science Notebook snapshot', () => {
+    // The notebook exists to hold observations, and the frame reading was the
+    // one part of an inspection a learner could not write down.
+    expect(SRC_TEXT).toMatch(/snapshot \+= ' \| Frame ' \+ \(hive3dFrame \+ 1\)/);
+  });
+});
+
+// Diagrams that contradict their own captions. Found by screenshotting all 18
+// educational canvas views — no gate can see either of these, because the
+// canvas draws fine and throws nothing.
+describe('canvas diagrams agree with their own labels', () => {
+  it('derives the buzz waveform from the frequency it claims to show', () => {
+    // The trace advanced a magic 0.17 rad/px, drawing ~14.7 cycles under an
+    // axis reading "40 ms (≈ 9 wingbeats)". A learner counting peaks to check
+    // the 230 Hz figure would have got the wrong answer.
+    expect(SRC_TEXT).not.toContain('wx * 0.17');
+    expect(SRC_TEXT).toMatch(/var oscMs = 40, oscHz = 230;/);
+    expect(SRC_TEXT).toMatch(/oscCycles = oscMs \* oscHz \/ 1000/);
+    // 40 ms at 230 Hz is 9.2 cycles, so the caption must round to 9.
+    expect(Math.round(40 * 230 / 1000)).toBe(9);
+  });
+
+  it('de-overlaps the Langstroth stack labels', () => {
+    // Each label is a two-line block ~20px tall, but a thin layer's row pitch
+    // is only h + gap (15-16px for the covers and the excluder), so 'Outer
+    // Cover' and 'Inner Cover' were drawn on top of each other. The leader
+    // line still points at the true layer; only the text slides down.
+    // Plain substring checks, not regex — the text is full of parentheses and
+    // dots, and escaping them through a patch script is how this test got
+    // written with an unterminated group in the first place.
+    expect(SRC_TEXT).toContain('lhLastLabelY');
+    expect(SRC_TEXT).toContain('labelY = Math.max(anchorY, lhLastLabelY + 21)');
+    expect(SRC_TEXT).not.toContain('fillText(lay.name, lhX - lhW - 14, curY');
+  });
+
+  it('leaves room for every row of the thermoregulation year-chart', () => {
+    // The band was 68px and had to hold a title, a 36px chart, a month axis
+    // and a caption: the month letters landed at y=526 and the caption at
+    // y=524, printed through each other. These constants are pinned because
+    // the collision is invisible to every other check.
+    expect(SRC_TEXT).toContain('var gX = 20, gY = stripY + 18, gW = W - 170, gH = 32;');
+    expect(SRC_TEXT).not.toContain('var gX = 20, gY = stripY + 18, gW = W - 170, gH = 36;');
+  });
+
+  it('keeps the waggle panel title clear of the virtual-sun marker', () => {
+    // The sun disc is pinned 20px above the comb, so a comb starting 40px
+    // below the panel top put the disc exactly on the title's baseline.
+    expect(SRC_TEXT).toContain('combY = pY + 62, combW = pW2 - 40, combH = pH2 - 82');
+  });
+
+  it('states the venom chart on one denominator', () => {
+    // Melittin ~50% and phospholipase ~12% are DRY-WEIGHT fractions; fresh
+    // venom is about 88% water, so a "Water 35%" slice cannot share that 100%.
+    expect(SRC_TEXT).not.toContain("'Water + others'");
+    expect(SRC_TEXT).toContain('percentages by dry weight');
   });
 });

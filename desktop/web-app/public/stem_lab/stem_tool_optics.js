@@ -9919,8 +9919,22 @@
       { id: 'quotes', label: '💬 Quotes', count: OPTICS_QUOTES.length },
       { id: 'safety', label: '🛡 Safety', count: SAFETY_SCENARIOS.length },
       { id: 'refIndex', label: '📊 Refractive indices', count: REFRACTIVE_INDEX_DATA.length },
-      { id: 'teaching', label: '🎓 Teaching tips', count: TEACHING_TIPS.length }
+      { id: 'teaching', label: '🎓 Teaching tips', count: TEACHING_TIPS.length },
+      // Four more tables were authored and never given a sub-view, so nothing in
+      // the tool could reach them. They are rendered by the table-driven branch
+      // below rather than four more hand-written layouts.
+      { id: 'spectrum', label: '🌈 EM spectrum', count: EM_SPECTRUM_BANDS.length },
+      { id: 'animalVision', label: '🦅 Animal vision', count: ANIMAL_VISION.length },
+      { id: 'experiments', label: '🔬 Famous experiments', count: FAMOUS_EXPERIMENTS.length },
+      { id: 'maine', label: '🦞 Optics in Maine', count: OPTICS_MAINE.length }
     ];
+    // id -> { data, titleKey } for the generically rendered sub-views.
+    var GENERIC_SUBS = {
+      spectrum: { data: EM_SPECTRUM_BANDS, titleKey: 'band' },
+      animalVision: { data: ANIMAL_VISION, titleKey: 'name' },
+      experiments: { data: FAMOUS_EXPERIMENTS, titleKey: 'title' },
+      maine: { data: OPTICS_MAINE, titleKey: 'title' }
+    };
     return h('div', null,
       h('div', { style: { background: 'rgba(20,184,166,0.10)', border: '1px solid rgba(20,184,166,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
         h('h3', { style: { color: '#5eead4', fontSize: 17, fontWeight: 900, margin: '0 0 6px' } }, '📊 Reference Library'),
@@ -10020,6 +10034,35 @@
               h('span', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', marginLeft: 'auto' } }, t.topic)
             ),
             h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, margin: 0 } }, t.tip)
+          );
+        })
+      ),
+
+      // The four previously unreachable tables. One layout drives all of them:
+      // each entry shows its title, then every remaining field as a labelled
+      // line, so a table with a different shape still renders sensibly.
+      GENERIC_SUBS[subView] && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+        GENERIC_SUBS[subView].data.map(function (item, i) {
+          var titleKey = GENERIC_SUBS[subView].titleKey;
+          var heading = item[titleKey] != null ? String(item[titleKey]) : ('Entry ' + (i + 1));
+          return h('div', {
+            key: item.id || i,
+            style: {
+              background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(20,184,166,0.30)',
+              borderRadius: 10, padding: '10px 12px'
+            }
+          },
+            h('div', { style: { color: '#5eead4', fontWeight: 800, fontSize: 13, marginBottom: 4 } },
+              (item.icon ? item.icon + ' ' : '') + heading),
+            Object.keys(item).filter(function (k) {
+              return k !== titleKey && k !== 'id' && k !== 'icon' && item[k] != null;
+            }).map(function (k) {
+              var v = item[k];
+              return h('div', { key: k, style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginTop: 2 } },
+                h('span', { style: { color: '#99f6e4', fontWeight: 700 } },
+                  k.replace(/([A-Z])/g, ' $1').replace(/^./, function (c) { return c.toUpperCase(); }) + ': '),
+                Array.isArray(v) ? v.join(', ') : String(v));
+            })
           );
         })
       )
@@ -10266,7 +10309,13 @@
       { id: 'photography', label: '📷 Photography', data: PHOTOGRAPHY_DEEP },
       { id: 'holography', label: '✨ Holography', data: HOLOGRAPHY_DEEP },
       { id: 'spectroscopy', label: '📊 Spectroscopy', data: SPECTROSCOPY_DEEP },
-      { id: 'medical', label: '⚕ Medical', data: MEDICAL_OPTICS_DEEP }
+      { id: 'medical', label: '⚕ Medical', data: MEDICAL_OPTICS_DEEP },
+      // Four more deep dives were authored in the same schema and never added
+      // to this list, so they could not be opened from anywhere in the tool.
+      { id: 'quantum', label: '⚛ Quantum optics', data: QUANTUM_OPTICS_DEEP },
+      { id: 'computational', label: '🖥 Computational photo', data: COMPUTATIONAL_PHOTO_DEEP },
+      { id: 'biophotonics', label: '🧬 Biophotonics', data: BIOPHOTONICS_DEEP },
+      { id: 'arvr', label: '🥽 AR and VR', data: AR_VR_DEEP }
     ];
     var active = topics.find(function(t) { return t.id === topic; }) || topics[0];
     var openId = d.deepDiveOpenId || null;

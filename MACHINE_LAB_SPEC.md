@@ -4,7 +4,207 @@
 undeployed. All six design questions resolved by Aaron (see section 13). Remaining: P4b
 (`archStudio` import) and P5 (rigid-body debris).
 
-**Recommendation on P5b: do not vendor `cannon-es`.** The library check in section 6.2 stands
+**Visual verification, 2026-08-11.** `dev-tools/ml_scene_shots.cjs` renders the tool in a
+real Chromium with the REAL host module and THREE/OrbitControls preloaded from `vendor/`
+(so `ensureThree` short-circuits; a harness that lets it reach for a CDN silently produces
+the 2D fallback and the shots then "prove" a 3D view that never rendered). It writes 18
+shots across every view, all three machines, four wall presets and four battered walls,
+the last computed by the tool's own damage model rather than hand-authored.
+
+Six defects that 263 passing tests could not see, all now fixed:
+
+1. **The ledger said "Stored in the raised counterweight" on a ballista and an onager.**
+   Neither has a counterweight. Same for the loss line, "energy left in the moving arm and
+   counterweight". Both are machine-aware now.
+2. **The winch panel showed "—" for crank force and turns on both torsion machines**, while
+   still quoting a crank-work figure. `crankDetail` was keyed to counterweight mass;
+   it now takes (work, travel, MA, handle radius) and covers all three machines.
+3. **`breached` was stored state, not derived**, so a wall restored from a snapshot or
+   replaced by an import reported itself intact while standing wide open, with the Loose
+   button still live. It is computed from the blocks at render time now.
+4. **The 3D bay was hardcoded dark navy** and stayed that way on a light-theme page.
+   `clearColor` follows the pushed theme in all three scenes.
+5. **Breached blocks in the 2D wall were drawn in near-background colour**, present in the
+   markup and all but invisible on screen. They now render as dashed rubble at 0.35.
+6. **The trebuchet framed a box the size of its whole swing**, so it sat small in a mostly
+   empty frame with hairline members, and the cocked sling hung the stone *below ground*,
+   out of frame entirely. It now frames the machine's real extents, the members read as
+   timber, and the sling rests on the ground where a crew would load it.
+
+Also fixed while looking: the ballista's two arms swung in the same direction with no
+bowstring, so it read as parallel sticks rather than a bow.
+
+**All three themes have now been looked at**, not just contrast-checked numerically
+(`--dark` and `--contrast` on the harness). Two more defects, both fixed:
+
+7. **The 3D scenes derived their colours from `dark` alone**, so high contrast (a distinct
+   THIRD palette, not dark with the knobs turned up) rendered a navy bay and mid-grey
+   framing on a pure-black page. All three scenes now honour `contrast`: black bay, white
+   structure, yellow payload.
+8. The same omission left the ground plane navy in contrast mode.
+
+The K-2 band was also viewed for the first time and reads correctly: no formula, mechanical
+advantage shown as a plain multiplier beside a "How it feels" word, and a three-option
+question with a labelled diagram.
+
+Note on the harness: `dark` and `contrast` are pushed as SEPARATE flags. A viewer that
+infers one from the other cannot render high contrast correctly, which is exactly how
+defect 7 arose.
+
+## The reachability audit
+
+The crosswind find prompted a sweep of every field in `defaultState()` against whether a
+control writes it or the UI reads it, and of every value `shot()` returns against whether
+anything displays it. Two more:
+
+**Defect 15. `effMass` was computed, returned, and never shown.** It is *the* quantity
+behind the transfer efficiency, and the g9-12 copy quotes the formula it appears in, so a
+student was handed `m_p/(m_p + m_eff)` with no way to see `m_eff` and check it. The ledger
+now spells the arithmetic out from g68 up: "The stone is 25 kg, and the moving parts of the
+machine add another 48.6 kg of effective mass, so the stone gets 25 ÷ (25 + 48.6) = 34%."
+A test asserts the stated masses actually reproduce the stated percentage, so the sentence
+cannot drift from the model.
+
+**`showWorkPanel` was dead state** — its own default and nothing else. Removed.
+
+The audit script over-reports (bench fields are reached dynamically through `d[c.key]`, so
+a `d.<field>` grep misses them), which is worth knowing before trusting it on another tool.
+It is a starting list, not a verdict.
+
+## Crosswind (dead capability, now reachable)
+
+**Defect 14.** The integrator has modelled crosswind since P2, `shot()` threaded `windZ`
+into it, the wall damage has always used lateral drift to decide which column is struck,
+and one of the flight tests asserted "drifts downwind and only downwind" and passed. But
+**no control anywhere could change it**, so it sat at zero forever, and `shot()` did not
+even carry `drift` back out. The siege view was already telling students "Wide of the wall.
+**Check the wind.**" — advice about a control that did not exist.
+
+Now: a crosswind slider in the Test Range conditions and at the Target Wall (where aiming
+off matters most), band-appropriate copy explaining it, drift reported alongside range and
+apex, and the wide-miss feedback says how far off it went and why.
+
+The physics was already right and already tested, which is exactly why this survived: a
+green suite proves the model, and says nothing at all about whether a student can reach it.
+
+## The bench ↔ engine link
+
+The tool's whole thesis is that a siege engine is the six benches bolted together. Until
+2026-08-11 that was asserted **only in Field Manual prose**: a student could prove all six
+benches and never once see the trebuchet beam *as* the lever they had just proved. Two
+panels now carry it, and they read one table so they cannot drift apart.
+
+- **Build → bench.** "Simple machines in this engine" names each part as the machine it is
+  (the throwing beam, the winch drum and handle, the cocking tackle, the trigger and pawl,
+  the tensioning gear or the loading ramp), shows its **live** mechanical advantage where
+  the tool genuinely models it, and offers a button through to that bench.
+- **Bench → Build.** "Where you meet this machine" lists the engines that use the bench you
+  are standing at, names the part in each, and offers a button through to it.
+
+Where an advantage is real in the mechanism but not in the energy model (the trigger wedge,
+the tensioning screw, the loading ramp) the panel says **"in the build"** rather than
+printing a number the model never derived.
+
+`MACHINE_BENCHES` at module scope is the single source for which engine uses which bench;
+both panels and `tests/machinelab_bench_machine_link.test.js` read it. The test inverts the
+table and asserts the Machine Shop panel names **precisely** the engines the table claims,
+with no missing and no invented ones, and that the Build panel lists exactly as many bench
+buttons as the table declares. A one-directional check would have let the two halves drift.
+
+## Quest hooks
+
+`tests/machinelab_quest_hooks.test.js`, 15 tests. The five `check`/`progress` functions in
+the registered config had never been called by anything. The host reads quest state with
+`_getToolQuestState()`, which resolves `toolData[toolId]` (`stem_lab_module.js:2425`); this
+tool stores at `toolData.machineLab` and declares no `questDataKey`, so the hooks receive
+that slice directly. Verified rather than assumed, because a hook reading a key the tool
+never writes can never fire and nothing else would notice.
+
+Pinned: all five survive `{}`, `undefined` and `null` without throwing and return a string
+progress containing no `undefined` or `NaN`; a fresh tool reads `0/6 benches` rather than
+blank; and `breach_efficiently` refuses to credit a breach with an unknown shot count, so
+`shotsFired: 0` on an untouched tool cannot read as "breached in zero".
+
+## Frame budget
+
+`dev-tools/ml_frame_budget.cjs` counts real `WebGLRenderer.render` calls. **7 checks, exit
+2 on failure.** The `static: true` claim was asserted in the spec, in the code comments and
+in the memory notes, and measured nowhere. A no-tick orbit bay quietly burning 60 fps is a
+documented regression here and is invisible to every other kind of test: identical markup,
+identical numbers, and the only symptom is a warm laptop.
+
+Measured: **0 frames** on the Machine Shop (no 3D at all), **0 frames in 2.5 s** on an idle
+trebuchet bay, **0** on an idle target wall, **74 frames in 1.2 s** during a shot (~62 fps),
+**0** once the swing ends, and **0** while the tab is hidden. The design does what it
+claimed.
+
+**Two defects it found:**
+
+9. **The machine's animation was unreachable.** The only Fire control lived in the Test
+   Range, which has no 3D view, so nobody could be looking at the machine while it moved.
+   You would have had to fire and switch to Build within 1.8 seconds. There is a **Test
+   fire** button beside the 3D machine now, which is where watching it belongs anyway.
+10. **The first version of the harness counted nothing.** three.js r128 assigns `render` as
+    an OWN property on each `WebGLRenderer` instance, not on the prototype, so wrapping the
+    prototype intercepted nothing and the run reported a serene 0 frames everywhere,
+    including while the scene was visibly animating. It wraps the constructor now, and it
+    **proves the counter ticks on a scene that must render before trusting a single zero**.
+    Worth copying: in a file where every check reads a zero as good news, a dead instrument
+    turns the whole run green while measuring nothing.
+
+## Interaction smoke
+
+`dev-tools/ml_interaction_smoke.cjs` presses the buttons. **43 checks, exit 2 on failure.**
+
+Everything above it is server-side render only: it proves the markup and the pure model,
+and it never once runs an `onClick`. So `fire()`, `loose()`, `submitTyped()`,
+`markProven()` and `importArch()` — which award XP, count streaks, accumulate crank work,
+flip the animation flag and mutate the wall — had never executed anywhere. This drives them
+through the real DOM event path (a control that is present but disabled or not actually a
+button fails), against the real host module with THREE preloaded.
+
+What it pins that nothing else could: a correct prediction proves the bench and awards XP
+while a later miss resets the streak without re-awarding or un-proving; a blank answer is
+rejected rather than scored as zero; firing records a shot, announces it, and **clears its
+own animation flag after the swing** (otherwise the 3D loop runs at 60 fps forever); the
+Loose button disables on breach and Rebuild restores a full wall; an import switches the
+target and carries its depth multiplier.
+
+**Defect 13, found by driving the AI tutor:** `callGemini` was hardcoded `null` in every
+harness, so the tutor's success, failure, synchronous-throw and hang paths had never run
+anywhere. `aiLoading` disables the Explain button and was cleared only by `.then` or
+`.catch`, so **a promise that never settled disabled the tutor permanently with no way to
+retry** — and AI calls on this surface do throttle and hang in practice. It now settles
+exactly once, whichever of resolve / reject / timeout arrives first, with the timeout
+(`_aiTimeoutMs`, 30 s) as the backstop. All four paths are driven, including the retry
+after a failure.
+
+**A behaviour it discovered:** the first draft aimed a 45-degree lob at a 6 m wall from
+60 m and never touched it in 61 shots. Both halves of that are the tool being right. A high
+lob clears a low wall entirely, and a 120 kg stone cannot reach 60 m from this machine, so
+the shot correctly reported "Short by …" every time. Walls are battered with DIRECT fire;
+a lob is for throwing things *over* them, which is a different job. The smoke now pins both
+paths, and a shallow 12-degree shot from 25 m breaches a curtain wall in seven.
+
+**Deck proportions, now fixed.** The torsion deck was a fixed 2.6 x 1.4 slab on 0.7 m legs
+regardless of arm length, so on a 1.1 m machine the furniture outweighed the engine. Deck,
+legs, bundles and stock are all sized from the arm now, and the camera frames the machine
+rather than the table.
+
+**A defect that fix exposed, and one it caused:**
+
+11. **The onager's arm was invisible.** Cocked at -70 degrees it pointed straight through
+    the deck and under the ground, so the machine rendered as a table with a cylinder on
+    it. A cocked onager lies nearly flat, winched down, and whips up into a padded stop;
+    it poses at -10 degrees now, and the stop is placed programmatically at the angle the
+    arm actually finishes at rather than guessed at a spot the arm never reached.
+12. Scaling the deck moved the arm pivots, but the tick still placed the stone from the old
+    hardcoded offsets, which would have floated it off the arm tip. The pivot is recorded
+    on `S.ml` and read from there now. Caught by re-shooting immediately after the change.
+
+**Recommendation on P5b: do not vendor `cannon-es`.** The rubble heap was screenshotted
+across four presets and reads convincingly as a collapsed wall with the surviving towers
+standing. The library check in section 6.2 stands
 and the dependency would work, but P5a made it close to pointless. The 3D wall is an
 instanced voxel batch, and a breached block is displaced by a hash of its own grid
 coordinates. That delivers the visible collapse at zero dependency cost, and it is
@@ -24,6 +224,27 @@ Aaron's eyes on it rather than another test.
 **Scope note on the wall:** it renders in BOTH the 3D scene and a 2D SVG diagram, with a
 course-by-course table always in the markup. The 3D view failing changes nothing about the
 numbers or the other two representations.
+
+**The accessibility suite** (`tests/machinelab_a11y.test.js`) closes the gap left by
+section 7. It asserts against the RENDERED output rather than source strings, across all
+six views and all four grade bands: no hand-rolled clickable div anywhere (every control is
+a native `<button>` or `<input>`, so the browser supplies role, tab stop and Enter/Space),
+every button has an accessible name, every slider and text input is labelled, every
+`for`/`id` pair resolves, every graphic has a text alternative and its SVG is hidden from
+the accessibility tree, every table is captioned with `scope` on both header axes, results
+carry `role="status"` and errors `role="alert"`, and neither the ledger nor the wall is
+ever picture-only.
+
+It also computes **WCAG 2.1 contrast ratios from the palettes parsed out of the source**,
+so the test cannot drift from what the tool renders. All three themes (light, dark, high
+contrast) meet AA 4.5:1 for body text on both surfaces, for the muted and dim secondary
+text used at 11 to 13 px, for button labels on the accent fill, for the ok and bad status
+colours, and for the accent used as text in the ledger.
+
+Two things it caught immediately: a number-formatting bug (`fmt` stripped a fully-zero
+fraction but not trailing zeros in a partial one, so 5.1 at two places rendered "5.10"),
+and CDN/desktop mirror drift the moment the source was edited without the mirror. The
+mirror-parity check now guards that permanently.
 
 **One structural finding from P4:** the gatehouse arch was a floating block, because a
 block-grid support rule ("rest on the block below") has no way to express an arch. Arch
@@ -64,7 +285,8 @@ store. The copy now says that, and a test pins both halves.
 | P3 Ballista + onager, `compare` view, Field Manual, AI panel, i18n | **Built.** |
 | P4 `siege` view, 4 wall presets, deterministic damage, breach scoring | **Built.** |
 | P4b `archStudio` import | **Built.** |
-| P5a Wall in the 3D scene, deterministic rubble, no dependency | **Built.** 235 tests across 9 files |
+| P5a Wall in the 3D scene, deterministic rubble, no dependency | **Built.** |
+| A11y suite (spec section 7) | **Built.** 263 tests across 10 files |
 | P5b `cannon-es` rigid-body debris | **Probably unnecessary now.** See below |
 | P4 / P4b `siege` view, wall presets, archStudio import | Not started |
 | P5 `cannon-es` debris | Not started |
