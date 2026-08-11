@@ -97,9 +97,23 @@ describe('command coverage drift guards', () => {
     const groupBlock = source.match(/const CMD_GROUP = \{([\s\S]*?)\n\};/);
     expect(registry).toBeTruthy();
     expect(groupBlock).toBeTruthy();
-    const commandIds = [...new Set([...registry[1].matchAll(/\{ id: '([^']+)'/g)].map((m) => m[1]))];
+    // BOTH quote styles. This regex used to read single-quoted keys only, and
+    // the registry has long carried double-quoted entries (pasted in from the
+    // generated module during the 2026-08-04 drift recovery). Twenty-seven
+    // commands were invisible to this gate and silently ungrouped as a result.
+    const commandIds = [...new Set([...registry[1].matchAll(/\{ id: (['"])([^'"]+)\1/g)].map((m) => m[2]))];
     const missing = commandIds.filter((id) => !new RegExp('\\b' + id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*:').test(groupBlock[1]));
     expect(missing).toEqual([]);
+  });
+
+  // The same drift recovery pasted a block of 27 commands that the source
+  // already had, so the palette listed each of them twice and alias scoring saw
+  // two identical candidates. Deduplicated at the source; pinned here because
+  // the next accidental paste will look exactly like the last one.
+  it('registers each command id exactly once', () => {
+    const counts = {};
+    AC.buildAlloCommands({}, { includeGated: true }).forEach((c) => { counts[c.id] = (counts[c.id] || 0) + 1; });
+    expect(Object.entries(counts).filter(([, n]) => n > 1).map(([id]) => id)).toEqual([]);
   });
 
   it('keeps command context tags backed by active-state flags and labels', () => {
