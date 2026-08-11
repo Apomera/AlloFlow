@@ -1300,7 +1300,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                                 data-help-key="word_sounds_review_distractor_input" placeholder={t('common.placeholder_distractor')}
                                                             />
                                                             <button type="button"
-                                                                aria-label={t('common.play_tts')}
+                                                                aria-label={(t('common.play_tts') || 'Play') + ': ' + d}
                                                                 onClick={async (e) => {
                                                                     e.stopPropagation();
                                                                     const key = `${idx}-rhyme-${i}`;
@@ -1360,7 +1360,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                                 className="flex-1 px-3 py-1.5 font-medium border-2 border-slate-200 rounded-lg focus:border-violet-400 focus:ring-2 focus:ring-violet-300 focus:ring-offset-1 outline-none"
                                                             />
                                                             <button type="button"
-                                                                aria-label={t('common.play_tts')}
+                                                                aria-label={(t('common.play_tts') || 'Play') + ': ' + d}
                                                                 onClick={async (e) => {
                                                                     e.stopPropagation();
                                                                     const key = `${idx}-blend-${i}`;

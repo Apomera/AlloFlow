@@ -1,37 +1,36 @@
+// Row-action accessibility in the LIVE review panel (misc_components). The
+// old version of this suite asserted word-specific labels and busy states on
+// the setup FOSSIL deleted 2026-08-11 — meaning those guarantees held for UI
+// nobody could reach, while the panel teachers actually used had a wall of
+// identical "Play" buttons. The distractor labels are now item-specific in
+// the live panel; the rest was already there and is pinned here.
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 
-const source = readFileSync('word_sounds_setup_source.jsx', 'utf8');
+const source = readFileSync('misc_components_source.jsx', 'utf8');
 
-describe('Word Sounds review-row actions', () => {
-  it('does not wrap native image actions in an inert simulated button', () => {
-    expect(source).not.toContain('<div role="button" tabIndex={0} className="relative group/img"');
-    expect(source).toContain('<div className="relative group/img">');
-    expect(source).not.toContain('className="relative group/img" onClick=');
+describe('Word Sounds review-row actions (live panel)', () => {
+  it('names every distractor play button by its word, not a bare "Play"', () => {
+    // Two sites (rhyme + blend rows); a screen-reader user hears which word
+    // each of the forty buttons will speak.
+    const named = source.match(/aria-label=\{\(t\('common\.play_tts'\) \|\| 'Play'\) \+ ': ' \+ d\}/g) || [];
+    expect(named.length).toBe(2);
+    // And no play button anywhere in the panel keeps the bare generic label
+    // (CRLF-safe: exact-string match, not a line-anchored one).
+    expect(source.match(/aria-label=\{t\('common\.play_tts'\)\}/g)).toBeNull();
   });
 
-  it('gives audio actions word-specific names and large visible focus targets', () => {
-    expect(source).toContain("aria-label={`${t('word_sounds.play_word') || 'Play word'}: ${word.targetWord || word.word}`}");
-    expect(source).toContain("aria-label={`${t('common.play_phoneme_sequence')}: ${word.targetWord || word.word}`}");
-    expect(source).toContain('aria-busy={playingWordIndex === idx}');
-    expect(source.match(/min-w-11 min-h-11/g)?.length).toBeGreaterThanOrEqual(2);
-    expect(source).toContain('focus-visible:ring-2 focus-visible:ring-pink-600');
-    expect(source).toContain('focus-visible:ring-2 focus-visible:ring-violet-600');
-  });
-
-  it('keeps image generation visible, named, stateful, and pointer-independent', () => {
-    expect(source).toContain("aria-label={`${t('common.regenerate_image')}: ${word.targetWord || word.word}`}");
-    expect(source).toContain("aria-label={`${t('common.generate_image_for_this_word')}: ${word.targetWord || word.word}`}");
+  it('exposes busy state on the word-level audio and image actions', () => {
+    expect(source).toContain('aria-busy={playingWordIndex === idx');
     expect(source.match(/aria-busy=\{generatingImageIndex === idx\}/g)?.length).toBeGreaterThanOrEqual(2);
-    expect(source).not.toContain('opacity-0 group-hover/img:opacity-100');
-    expect(source).toContain('absolute -top-3 -right-3 min-w-11 min-h-11');
-    expect(source).toContain('min-h-11 px-3 py-2 rounded-lg');
+    expect(source).toContain('aria-busy={regeneratingIndex === idx}');
   });
 
-  it('uses the select native role and synchronizes generated module copies', () => {
-    expect(source).toContain("<select aria-label={`${t('common.selection')}: ${word.targetWord || word.word}`}");
-    expect(source).not.toContain('role="dialog" onClick={(e) => e.stopPropagation()}');
-    expect(readFileSync('desktop/web-app/public/word_sounds_setup_module.js', 'utf8'))
-      .toBe(readFileSync('word_sounds_setup_module.js', 'utf8'));
+  it('ties a failed regeneration to its row via aria-describedby', () => {
+    expect(source).toContain("aria-describedby={reviewError?.index === idx ? 'word-sounds-review-error' : undefined}");
+  });
+
+  it('names the connected-text play buttons by what they play', () => {
+    expect(source).toContain("aria-label={(t('common.play_tts') || 'Play') + ' — ' + line.label}");
   });
 });

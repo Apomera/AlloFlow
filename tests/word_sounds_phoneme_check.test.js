@@ -6,9 +6,12 @@ const setupSource = fs.readFileSync('word_sounds_setup_source.jsx', 'utf8');
 
 describe('Word Sounds per-word phoneme check', () => {
   it('keeps audio regeneration and phoneme checking as separate controls', () => {
-    expect(setupSource).toContain('onRegenerateWord,');
-    expect(setupSource).toContain('onCheckPhonemes,');
-    expect(setupSource).toContain('onClick={() => onCheckPhonemes && onCheckPhonemes(idx)}');
+    // The LIVE panel (misc_components — the setup fossil was deleted
+    // 2026-08-11) accepts both props and prefers the tri-source checker.
+    const miscSource = fs.readFileSync('misc_components_source.jsx', 'utf8');
+    expect(miscSource).toContain('onRegenerateWord,');
+    expect(miscSource).toContain('onCheckPhonemes,');
+    expect(miscSource).toContain('onClick={() => (onCheckPhonemes || onRegenerateWord) && (onCheckPhonemes || onRegenerateWord)(idx)}');
     expect(moduleSource).toContain('const handleRegenerateWord = React.useCallback(');
     expect(moduleSource).toContain('await handleAudio(targetWord, true);');
     expect(moduleSource).toContain('const handleCheckPhonemes = React.useCallback(');

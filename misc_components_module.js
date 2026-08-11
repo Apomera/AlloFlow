@@ -1163,7 +1163,7 @@ const WordSoundsReviewPanel = ({
       "button",
       {
         type: "button",
-        "aria-label": t("common.play_tts"),
+        "aria-label": (t("common.play_tts") || "Play") + ": " + d,
         onClick: async (e) => {
           e.stopPropagation();
           const key = `${idx}-rhyme-${i}`;
@@ -1231,7 +1231,7 @@ const WordSoundsReviewPanel = ({
       "button",
       {
         type: "button",
-        "aria-label": t("common.play_tts"),
+        "aria-label": (t("common.play_tts") || "Play") + ": " + d,
         onClick: async (e) => {
           e.stopPropagation();
           const key = `${idx}-blend-${i}`;
