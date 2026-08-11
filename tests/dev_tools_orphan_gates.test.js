@@ -1,0 +1,66 @@
+// Runs the dev-tools gates that had NO caller anywhere.
+//
+// A 2026-08-11 audit of all 102 `dev-tools/check_*|scan_*` scripts found 18
+// with zero references in deploy.sh, .github/workflows, package.json, tests, or
+// any other dev-tools script. This repo has already shipped bugs exactly that
+// way, twice by its own record:
+//   * check_deploy_mirror existed with zero callers in deploy.sh, and on
+//     2026-08-10 nuclearlab (+6,919 bytes) and titration (+307) were caught
+//     drifted by hand, minutes before a deploy; manipulatives had already
+//     shipped drifted.
+//   * _check_tool_catalog shipped in 2026-07 telling you to "run before
+//     deploys" and then had zero callers until 2026-07-27.
+// A gate nobody runs is not a gate. Every script below passed when wired, so
+// this file starts green and only ever goes red on a real regression.
+//
+// Excluded on purpose:
+//   * network / browser / visual QA (check_cdn_live, check_search_live,
+//     check_sel_browser_qa, check_da_e2e_qa) — they need a live endpoint or a
+//     browser and are manual tools by design.
+//   * check_collision_risk — takes required <path> args, so it is a manual
+//     query tool, not a repo-wide invariant.
+//   * check_staged_file_sizes — inspects the git index, which is a
+//     pre-commit concern and would be meaningless (or flaky) here.
+//   * check_sel_tool_interactions — passes (96 checks) but takes ~25s, enough
+//     to be worth a deliberate decision rather than a silent add.
+
+import { describe, it, expect } from 'vitest';
+import { execFileSync } from 'node:child_process';
+import { resolve } from 'node:path';
+
+// [script, budget ms, why it matters]
+const GATES = [
+  ['scan_canvas_var_colors.cjs', 60_000,
+    "canvas ctx.fillStyle='var(--x)' is SILENTLY IGNORED (so is SVG stroke=/fill=), which paints nothing and throws nothing"],
+  ['check_shadowed_idents.cjs', 60_000,
+    'a local shadow of the injected t / d / h breaks i18n, tool state or createElement inside that scope only'],
+  ['check_stem_ctx.cjs', 90_000,
+    "a field missing from the loader's _ctx literal is undefined for every tool that reads it"],
+  ['check_conflict_replay_floor.cjs', 30_000,
+    'pins the 10 Conflict Replay invariants against a wording or logic refactor'],
+  ['check_sel_hub_wcag.cjs', 60_000, 'SEL Hub WCAG errors and warnings'],
+  ['check_ai_backend_image_routing.cjs', 30_000, 'image generation must route to the intended backend'],
+  ['check_sd_turbo_math.cjs', 30_000, 'SD Turbo step/CFG math'],
+  ['check_sre_math_speech.cjs', 60_000, 'math is spoken correctly by screen readers'],
+  ['scan_silent_announcer.cjs', 60_000,
+    'a tool that defines its own announceToSR which only parks a string in toolData discards EVERY screen-reader announcement (lifeskills lost 67, epidemic before it) — the live region exists so axe passes and nothing else can see it'],
+];
+
+function run(script) {
+  try {
+    return { code: 0, out: execFileSync('node', [resolve(process.cwd(), 'dev-tools', script)], {
+      cwd: process.cwd(), encoding: 'utf8', timeout: 120_000,
+    }) };
+  } catch (e) {
+    return { code: e.status == null ? -1 : e.status, out: String(e.stdout || '') + String(e.stderr || '') };
+  }
+}
+
+describe('dev-tools gates that nothing else runs', () => {
+  it.each(GATES)('%s stays green', (script, budget, why) => {
+    const r = run(script);
+    // Tail only: these print full reports, and the failing detail is at the end.
+    const tail = r.out.split('\n').filter(Boolean).slice(-25).join('\n');
+    expect(r.code, why + '\n\n' + tail).toBe(0);
+  }, 130_000);
+});
