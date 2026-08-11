@@ -1068,6 +1068,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
   }
 
 
+  var TICK_MS = 200;                 // 5 Hz: smooth enough to read, cheap enough to run
+  var HEARTBEAT_STALE_MS = 1500;     // ~7 missed renders means nobody is watching
+
+  var CLOCK = (function () {
+    var id = null;
+    var onTick = null;
+    var lastSeen = 0;
+    function stop() {
+      if (id) { clearInterval(id); id = null; }
+    }
+    function beat(fn) { onTick = fn; lastSeen = Date.now(); }
+    function ensure(running) {
+      if (!running) { stop(); return; }
+      if (id) return;
+      id = setInterval(function () {
+        if (Date.now() - lastSeen > HEARTBEAT_STALE_MS) { stop(); return; }
+        if (!onTick) return;
+        try { onTick(); } catch (e) { console.warn('[TreeLab] clock stopped', e); stop(); }
+      }, TICK_MS);
+    }
+    return { beat: beat, ensure: ensure, stop: stop, running: function () { return !!id; } };
+  })();
+
+  // Playback speeds in simulated years per real second. The slowest is deliberately
+  // sub-year so the seasons actually cycle on screen; above that they would only
+  // strobe, so the scene pins to summer and the speed buys decades instead.
+  var SPEEDS = [
+    { id: 'seasons', label: 'Seasons', yps: 0.5, seasonal: true, hint: 'One year every two seconds. Watch the canopy come and go.' },
+    { id: 'slow', label: '1 yr/s', yps: 1, seasonal: false, hint: 'A ring a second.' },
+    { id: 'fast', label: '5 yr/s', yps: 5, seasonal: false, hint: 'A decade every two seconds.' },
+    { id: 'century', label: '25 yr/s', yps: 25, seasonal: false, hint: 'A century every four seconds.' }
+  ];
+  function speedById(id) {
+    for (var i = 0; i < SPEEDS.length; i++) if (SPEEDS[i].id === id) return SPEEDS[i];
+    return SPEEDS[1];
+  }
+  // Sub-year phase drives the visible season at the slow speed. Northern-hemisphere
+  // ordering, starting at leaf-out.
+  function seasonForPhase(phase) {
+    var p = phase - Math.floor(phase);
+    if (p < 0.25) return 'spring';
+    if (p < 0.55) return 'summer';
+    if (p < 0.78) return 'autumn';
+    return 'winter';
+  }
+
   // ─────────────────────────────────────────────────────────
   // SECTION 7: REGISTRATION + RENDER
   // ─────────────────────────────────────────────────────────
@@ -1142,7 +1188,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       var view = d.view || 'grow';
       var sp = speciesById(d.speciesId || 'oak');
       var tree = normaliseTree(d.tree, sp.id);
-      var season = d.season || 'summer';
+      var speed = speedById(d.speed || 'slow');
+      var playing = !!d.playing && tree.alive;
+      var yearPhase = typeof d.yearPhase === 'number' && isFinite(d.yearPhase) ? d.yearPhase : 0;
+      // Seasons only cycle at the slow speed. Above that they would strobe, and every
+      // change rebuilds the whole WebGL scene — at 25 yr/s that is 100 rebuilds a
+      // second for something nobody can see.
+      var season = (playing && speed.seasonal) ? seasonForPhase(yearPhase) : (d.season || 'summer');
 
       var envCfg = {
         tempC: d.tempC == null ? 22 : d.tempC,
@@ -1255,6 +1307,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         }
         if (n >= 10) xp(4);
       }
+      // One clock tick. Fractional years accumulate in yearPhase; simulateYear runs
+      // only when a whole one has passed, so the seasons animate smoothly without
+      // running the engine five times a second.
+      function tick() {
+        var advance = (speed.yps * TICK_MS) / 1000;
+        var phase = yearPhase + advance;
+        var whole = Math.floor(phase);
+        if (whole < 1) { upd('yearPhase', phase); return; }
+        var st = tree;
+        var seen = Object.assign({}, d.limitsSeen || {});
+        for (var i = 0; i < whole && st.alive; i++) {
+          var env = envForYear(envCfg, st.age);
+          var probe = grossPhotosynthesis(sp, env, st.leafArea, stomatalAperture(env.soilWater, sp.droughtTol, false));
+          seen[probe.limiting.id] = true;
+          st = simulateYear(st, sp, env, alloc);
+        }
+        var patch = { tree: st, limitsSeen: seen, yearPhase: phase - whole };
+        if (!st.alive) {
+          patch.playing = false;
+          sfxBad();
+          srSay('The tree died at age ' + st.age + '. ' +
+            (st.causeOfDeath === 'senescence' ? 'It reached the end of its lifespan.' : 'It spent more than it made for too long.'));
+          if (addToast) addToast('The tree died at age ' + st.age, 'error');
+        }
+        updMulti(patch);
+      }
+      // Hand the clock this render's closure, then start or stop it. beat() also
+      // stamps the heartbeat that stops the clock if the tool is unmounted.
+      CLOCK.beat(tick);
+      CLOCK.ensure(playing);
+
+      function togglePlay() {
+        var next = !d.playing;
+        if (next && !tree.alive) { sfxBad(); srSay('This tree has died. Start a new seedling first.'); return; }
+        upd('playing', next);
+        sfxTick();
+        srSay(next ? 'Playing at ' + speed.label + '.' : 'Paused at age ' + tree.age + '.');
+      }
+
       function resetTree(newSpeciesId) {
         var sid = newSpeciesId || sp.id;
         // Committed carbon and the last result belong to the OLD species. Left in
@@ -1262,7 +1353,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         // oak would carry that commitment across and resolve a strategy oak does not
         // have — the Spread list would offer three routes while the results reported
         // a fourth. Reproduction carbon is reset with the tree anyway.
-        updMulti({ tree: newTree(sid), speciesId: sid, spend: {}, lastSpread: null });
+        updMulti({ tree: newTree(sid), speciesId: sid, spend: {}, lastSpread: null, playing: false, yearPhase: 0 });
+        CLOCK.stop();
         srSay('Reset to a new ' + speciesById(sid).name + ' seedling.');
       }
 
@@ -1275,7 +1367,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         contrast: isContrast,
         onPick: function (id) { upd('selectedPart', id); },
         onStatus: function (next) { upd('viewerStatus', next); },
-        sceneKey: [sp.id, Math.round(tree.heightM * 4), Math.round(tree.dbhCm), season, cloneCount, tree.alive ? 1 : 0].join('|'),
+        sceneKey: [
+          sp.id,
+          // Coarser while the clock runs: a rebuild is a full scene teardown, and at
+          // 25 yr/s a per-tick key would thrash WebGL for sub-pixel growth.
+          playing ? Math.round(tree.heightM * 1.5) : Math.round(tree.heightM * 4),
+          Math.round(tree.dbhCm), season, cloneCount, tree.alive ? 1 : 0
+        ].join('|'),
         sceneProps: {
           species: sp, tree: tree, season: season, clones: cloneCount,
           stressed: tree.reserves < 0, wind: reduceMotion ? 0 : 0.4
@@ -1325,6 +1423,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         var kids = [];
 
         kids.push(viewerPanel());
+        kids.push(playbackPanel());
 
         kids.push(card([
           heading(__alloT('stem.treelab.this_year', 'This year’s carbon budget'),
@@ -1403,6 +1502,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
 
         if (tree.rings.length > 0) kids.push(ringPanel());
         return kids;
+      }
+
+      // Playback. Step buttons jump; a clock lets a student WATCH, which is the only
+      // way the slow parts of the story (a canopy closing, rings narrowing, a stand of
+      // clones appearing) read as processes rather than as before-and-after numbers.
+      function playbackPanel() {
+        var seasonLabel = { spring: 'Spring', summer: 'Summer', autumn: 'Autumn', winter: 'Winter' }[season] || 'Summer';
+        return card([
+          heading(__alloT('stem.treelab.playback', 'Run the clock'),
+            atLeast(band, 'g35')
+              ? 'Different parts of a tree run on wildly different clocks. Seasons take months, one ring takes a year, closing a canopy takes decades.'
+              : 'Press play and watch the tree grow.'),
+          h('div', { key: 'row', style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2 } }, [
+            btn('play', (playing ? '⏸ ' : '▶ ') + (playing
+              ? __alloT('stem.treelab.pause', 'Pause')
+              : __alloT('stem.treelab.play', 'Play')), togglePlay, { pressed: playing, disabled: !tree.alive }),
+            h('span', { key: 'gap', style: { display: 'inline-block', width: 10 } }),
+            SPEEDS.map(function (option) {
+              return btn('sp-' + option.id, option.label, function () {
+                updMulti({ speed: option.id });
+                srSay('Speed set to ' + option.label + '. ' + option.hint);
+              }, { small: true, pressed: speed.id === option.id });
+            })
+          ]),
+          h('div', { key: 'read', style: { marginTop: 10, display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(110px,1fr))', gap: 8 } }, [
+            statTile('age', __alloT('stem.treelab.age_label', 'Age'), tree.age + ' yr', T.accent),
+            statTile('ht', __alloT('stem.treelab.height_label', 'Height'), round(tree.heightM, 1) + ' m', tone('#22c55e')),
+            speed.seasonal
+              ? statTile('sea', __alloT('stem.treelab.season_label', 'Season'), seasonLabel, tone('#f59e0b'))
+              : statTile('rings', __alloT('stem.treelab.rings_laid', 'Rings laid'), String(tree.rings.length), tone('#a16207'))
+          ]),
+          h('div', { key: 'hint', style: { fontSize: 11, color: T.dim, marginTop: 6, lineHeight: 1.5 } }, speed.hint),
+          !tree.alive ? h('div', { key: 'dead', style: { fontSize: 12, color: T.bad, marginTop: 6, lineHeight: 1.5 } },
+            __alloT('stem.treelab.clock_stopped', 'The clock stopped when the tree died. Start a new seedling to run it again.')) : null
+        ]);
       }
 
       function statTile(key, labelTxt, valueTxt, hex) {
@@ -1884,6 +2018,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     grossPhotosynthesis: grossPhotosynthesis, maintenanceRespiration: maintenanceRespiration,
     ringWidthMm: ringWidthMm, newTree: newTree, simulateYear: simulateYear,
     normaliseAlloc: normaliseAlloc, normaliseTree: normaliseTree, envForYear: envForYear,
+    seasonForPhase: seasonForPhase, speedById: speedById, SPEEDS: SPEEDS, CLOCK: CLOCK,
     resolveSpread: resolveSpread, lcg: lcg, speciesById: speciesById,
     strategyById: strategyById, resolveBand: resolveBand, atLeast: atLeast,
     SPECIES: SPECIES, STRATEGIES: STRATEGIES, QUIZ: QUIZ, BANDS: BANDS

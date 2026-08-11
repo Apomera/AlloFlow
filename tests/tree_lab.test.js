@@ -320,6 +320,106 @@ describe('Tree Life Lab — renders every view', () => {
   });
 });
 
+describe('Tree Life Lab — the playback clock', () => {
+  // The clock cannot be a hook: renderTool() inlines tool.render(ctx) into the bridge
+  // fiber, so the hook COUNT would change whenever a student switches tools and React
+  // would tear. It lives at module scope instead, which creates the opposite hazard —
+  // nothing tells a module-scope timer that the tool unmounted.
+  afterEach(() => {
+    try { window.__alloTreeLabEngine.CLOCK.stop(); } catch { /* not loaded */ }
+    vi.useRealTimers();
+  });
+
+  it('maps a sub-year phase onto the four seasons in order', () => {
+    const E = engine();
+    expect(E.seasonForPhase(0.0)).toBe('spring');
+    expect(E.seasonForPhase(0.3)).toBe('summer');
+    expect(E.seasonForPhase(0.6)).toBe('autumn');
+    expect(E.seasonForPhase(0.9)).toBe('winter');
+    // Whole years must not shift the season: only the fraction matters.
+    expect(E.seasonForPhase(7.3)).toBe('summer');
+    expect(E.seasonForPhase(112.9)).toBe('winter');
+  });
+
+  it('offers a sub-year speed so the seasons can actually be seen', () => {
+    const E = engine();
+    const seasonal = E.SPEEDS.filter((s) => s.seasonal);
+    expect(seasonal.length).toBeGreaterThan(0);
+    // Above roughly one year a second the seasons would only strobe, and every change
+    // rebuilds the whole WebGL scene.
+    for (const s of seasonal) expect(s.yps).toBeLessThanOrEqual(1);
+    for (const s of E.SPEEDS) {
+      expect(typeof s.label).toBe('string');
+      expect(Number.isFinite(s.yps)).toBe(true);
+      expect(s.yps).toBeGreaterThan(0);
+    }
+    expect(E.speedById('nonsense').id).toBeTruthy();   // unknown id must not throw
+  });
+
+  it('stops itself when nothing has rendered for a while (the unmount case)', () => {
+    // A student navigates away. No render happens, so no heartbeat lands, and the
+    // clock must notice and stop rather than simulate forever in the background.
+    vi.useFakeTimers();
+    const E = engine();
+    let ticks = 0;
+    E.CLOCK.beat(() => { ticks += 1; });
+    E.CLOCK.ensure(true);
+    vi.advanceTimersByTime(600);
+    const whileMounted = ticks;
+    expect(whileMounted).toBeGreaterThan(0);
+
+    // Now stop stamping the heartbeat, as an unmounted tool would.
+    vi.advanceTimersByTime(5000);
+    expect(E.CLOCK.running()).toBe(false);
+    const afterUnmount = ticks;
+    vi.advanceTimersByTime(5000);
+    expect(ticks).toBe(afterUnmount);   // truly stopped, not just slowed
+  });
+
+  it('keeps running while renders keep stamping the heartbeat', () => {
+    vi.useFakeTimers();
+    const E = engine();
+    let ticks = 0;
+    // A healthy loop: each tick writes state, which re-renders, which re-stamps.
+    E.CLOCK.beat(function stamp() { ticks += 1; E.CLOCK.beat(stamp); });
+    E.CLOCK.ensure(true);
+    vi.advanceTimersByTime(3000);
+    expect(E.CLOCK.running()).toBe(true);
+    expect(ticks).toBeGreaterThan(5);
+  });
+
+  it('survives a tick callback that throws instead of spinning on it', () => {
+    vi.useFakeTimers();
+    const E = engine();
+    E.CLOCK.beat(() => { throw new Error('boom'); });
+    E.CLOCK.ensure(true);
+    expect(() => vi.advanceTimersByTime(1000)).not.toThrow();
+    expect(E.CLOCK.running()).toBe(false);
+  });
+
+  it('renders the play control and reflects the running state', () => {
+    const E = engine();
+    let tree = E.newTree('oak');
+    for (let i = 0; i < 30; i += 1) tree = E.simulateYear(tree, E.speciesById('oak'), GOOD_ENV, ALLOC);
+    const paused = render({ treeLab: { view: 'grow', tree, playing: false } });
+    expect(paused).toContain('Run the clock');
+    expect(paused).toContain('Play');
+    const running = render({ treeLab: { view: 'grow', tree, playing: true, speed: 'seasons' } });
+    expect(running).toContain('Pause');
+    expect(running).toContain('Season');
+  });
+
+  it('will not run the clock on a dead tree', () => {
+    const E = engine();
+    let tree = E.newTree('oak');
+    for (let i = 0; i < 30; i += 1) tree = E.simulateYear(tree, E.speciesById('oak'), GOOD_ENV, ALLOC);
+    const dead = { ...tree, alive: false, causeOfDeath: 'senescence' };
+    const html = render({ treeLab: { view: 'grow', tree: dead, playing: true } });
+    expect(html).toContain('clock stopped');
+    expect(html).toContain('Play');       // not Pause: playing is forced false
+  });
+});
+
 describe('Tree Life Lab — never renders blank', () => {
   // StemLab.renderTool() CATCHES and returns null, so any throw in render is a
   // silently blank tool: no console error, no failing gate, nothing a teacher could
