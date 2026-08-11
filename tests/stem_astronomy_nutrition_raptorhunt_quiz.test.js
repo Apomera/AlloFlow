@@ -204,10 +204,78 @@ describe('Raptor Hunt shuffles', () => {
   });
 });
 
+describe('Raptor Hunt Field ID quiz rotation (correctIdx schema)', () => {
+  // This 70-question bank uses `correctIdx`, a key none of the scanner's
+  // schemas matched until the deep-dive found it — the bank had 46 of 70
+  // correct answers at option B.
+  function loadFieldId(withRotation) {
+    const start = rap.indexOf('var QUIZ_QUESTIONS = [');
+    const end = rap.indexOf(withRotation ? 'PELLET LAB DATA' : '// The authored bank put 46 of 70', start);
+    expect(start).toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(start);
+    const src = rap.slice(start, rap.lastIndexOf('\n', end)) + '\n';
+    // eslint-disable-next-line no-new-func
+    return new Function(src + '\nreturn QUIZ_QUESTIONS;')();
+  }
+  const raw = loadFieldId(false);
+  const rotated = loadFieldId(true);
+
+  it('the authored bank put 46 of 70 answers at B, only 4 at A (the tell)', () => {
+    expect(raw.length).toBe(70);
+    const slots = [0, 0, 0, 0];
+    raw.forEach((q) => slots[q.correctIdx]++);
+    expect(slots[1]).toBeGreaterThanOrEqual(46);
+    expect(slots[0]).toBeLessThanOrEqual(4);
+  });
+
+  it('rotation matches the recipe and preserves answer text', () => {
+    raw.forEach((q, i) => {
+      const shift = (i * 7 + 3) % q.options.length;
+      expect(rotated[i].options).toEqual(q.options.slice(shift).concat(q.options.slice(0, shift)));
+      expect(rotated[i].options[rotated[i].correctIdx], q.id).toBe(q.options[q.correctIdx]);
+    });
+    expect(new Set(rotated.map((q) => q.correctIdx)).size).toBe(4);
+  });
+
+  it('field-ID answers hold', () => {
+    const correctOf = (needle) => {
+      const q = rotated.find((qq) => qq.q.includes(needle));
+      return q.options[q.correctIdx];
+    };
+    expect(correctOf('paper airplane')).toBe('Falcon');
+    expect(correctOf('daylight visible between the primaries')).toContain('Eagle');
+  });
+});
+
+describe('Raptor Hunt contested-science softening', () => {
+  it('the kestrel UV vole-trail story is presented as debated, not fact', () => {
+    // The old phrasing stated Viitala 1995 as settled fact; Lind et al. 2013
+    // (cited in this file header) found vole urine reflects little UV.
+    expect(rap.includes('Vole urine + dung trails reflect UV strongly, so the kestrel sees')).toBe(false);
+    expect(rap.includes('Vole urine + dung trails reflect UV strongly, so the kestrel literally sees')).toBe(false);
+    expect((rap.match(/Lind et al/g) || []).length).toBeGreaterThanOrEqual(4);
+    expect(rap).toMatch(/debated/);
+  });
+
+  it('the outdated New World vultures near storks claim is corrected', () => {
+    expect(rap.includes("closer to storks than to hawks/falcons")).toBe(false);
+    expect(rap.includes('sister group to hawks (Accipitriformes)')).toBe(true);
+  });
+
+  it('the ui_strings entries carry the same softening and stay valid JSON', () => {
+    const strings = JSON.parse(fs.readFileSync('ui_strings.js', 'utf8'));
+    const rh = strings.stem.raptorhunt;
+    expect(rh.which_family_of_raptor_can_see_ultravi).toContain('now-debated');
+    expect(rh.american_kestrels_falco_sparverius_can).toContain('Lind et al. 2013');
+    expect(rh.american_kestrels_falco_sparverius_can).toContain('debated');
+  });
+});
+
 describe('deployment copies', () => {
   it('public mirrors are byte-identical to the root copies', () => {
     expect(pub('stem_tool_astronomy.js')).toBe(astro);
     expect(pub('stem_tool_nutritionlab.js')).toBe(nut);
     expect(pub('stem_tool_raptorhunt.js')).toBe(rap);
+    expect(fs.readFileSync('desktop/web-app/public/ui_strings.js', 'utf8')).toBe(fs.readFileSync('ui_strings.js', 'utf8'));
   });
 });

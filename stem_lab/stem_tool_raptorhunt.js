@@ -303,7 +303,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       ecology: 'Smallest North American falcon. Most cosmopolitan raptor on the continent — found in every state. Documented declining ~50% since 1970, cause unknown but suspected: pesticide-driven insect crash + nest-cavity loss + mesopredator release (Cooper\'s hawk recovery).',
       conservation: 'Declining — listed as state Special Concern in several US states despite global Least Concern',
       range: 'Americas (Alaska to Tierra del Fuego, including Caribbean)',
-      weird: 'Sees UV light + uses it to track vole urine trails (Viitala et al 1995, Nature). The original UV-vision raptor discovery. Despite tiny size, holds the record for "most widely distributed falcon in the Americas."',
+      weird: 'Star of the famous "sees vole urine trails in UV" study (Viitala et al 1995, Nature) — though later measurements (Lind et al 2013) found vole urine reflects little UV and kestrel eyes are only weakly UV-sensitive, so the trail-tracking story is now debated. Despite tiny size, holds the record for "most widely distributed falcon in the Americas."',
       biome: 'grassland',
       stoopDiveBonus: 1.4, pullupG: 8 },
 
@@ -777,7 +777,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
     keyPoints: [
       { title: 'Acuity comes from packing density', text: 'Human fovea: ~200,000 cones/mm². Raptor central fovea: ~1,000,000+ cones/mm². The fovea itself is also relatively larger. Together this gives raptors the ability to resolve detail 4-8× finer than humans.' },
       { title: 'Two foveas per eye', text: 'Most raptors have a deep central fovea (for binocular forward gaze on prey) AND a shallow temporal fovea (for monocular sideways gaze). The two foveas let them maintain detail in two directions at once — useful when stooping while also scanning for kleptoparasites.' },
-      { title: 'UV vision in falconids', text: 'American kestrels can see ultraviolet light. Vole urine + dung trails reflect UV strongly, so the kestrel literally sees a glowing "highway" of vole travel routes across a meadow. Discovered by Viitala et al. (1995) Nature.' },
+      { title: 'UV vision in falconids', text: 'A famous Nature study (Viitala et al. 1995) reported that American kestrels track vole urine trails by their UV reflection — a glowing "highway" of rodent routes across a meadow. Later measurements (Lind et al. 2013) found vole urine reflects little UV and falcon eyes are only weakly UV-sensitive, so the story is debated. A great example of science re-checking its own most exciting results.' },
       { title: 'The eye is massive relative to body', text: 'Great horned owl eye = ~5% of body mass (a human equivalent would be a 7-lb eye each). Eagles\' eyes are also so large they cannot rotate them — they must move the whole head. Hence the constant head-tilting of perched raptors.' },
       { title: 'Owls are different', text: 'Owls have tubular eyes (not spherical) and pack rods, not cones — they trade color resolution for low-light sensitivity. A great horned owl can spot prey at light levels ~100× dimmer than a human can. Most owls have one fovea, not two.' },
       { title: 'Pecten oculi', text: 'A unique vascular comb-shaped structure in the back of the bird eye. It supplies nutrients to the retina without blood vessels crossing the retina itself — keeping the visual field clean of shadows. No mammal has this.' }
@@ -1173,7 +1173,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       explanation: 'Slotted "fingered" wingtips during slow soaring = eagle. The slots reduce induced drag for efficient thermal soaring.' },
     { id: 'q3', difficulty: 'easy', q: 'Which raptor sees ULTRAVIOLET light?',
       options: ['Red-tailed hawk', 'American kestrel', 'Bald eagle', 'Great horned owl'], correctIdx: 1,
-      explanation: 'Kestrels (Falconidae) can see UV light. Vole urine + dung trails reflect UV strongly, so the kestrel sees "highways" of rodent travel routes glowing across the meadow. Viitala et al 1995 Nature.' },
+      explanation: 'The American kestrel is the classic answer: a famous Nature study (Viitala et al 1995) reported kestrels tracking vole urine trails by UV. Later work (Lind et al 2013) found vole urine reflects little UV and kestrel eyes are only weakly UV-sensitive, so the trail story is debated — but kestrels remain the most-studied case of UV sensitivity in raptors.' },
     { id: 'q4', difficulty: 'easy', q: 'You see a hawk hovering with active wingbeats over a roadside field. The most likely species is:',
       options: ['Red-tailed hawk', 'American kestrel', 'Bald eagle', 'Cooper\'s hawk'], correctIdx: 1,
       explanation: 'Active hovering over open ground = American kestrel (or, in winter, rough-legged hawk). Red-tails kite but don\'t actively hover; eagles don\'t hover; Cooper\'s hawks don\'t hover.' },
@@ -1384,8 +1384,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       explanation: '1.5-2 million pairs is both the theoretical maximum + the actual current population. Red-tails are at carrying capacity across most of their range. This is why they\'re NOT a conservation concern — they\'ve filled the available niche. Compare to peregrines at ~3,200 pairs (limited by cliff nest sites + urban skyscraper alternatives) or California condors at 530 (limited by habitat + lead-shot exposure).' },
     { id: 'q70', difficulty: 'hard', q: 'The "raptor question" — are turkey vultures + black vultures actually raptors?',
       options: ['Yes, they are', 'No — DNA evidence places them in Cathartiformes, separate from true raptors (Accipitriformes + Falconiformes). Convergent evolution of the raptor body plan from carrion-eating ancestors.', 'Sometimes', 'Depends on the country'], correctIdx: 1,
-      explanation: 'Strict taxonomy: New World vultures (turkey, black, condor) are NOT true raptors. DNA (early 2000s) placed them in Cathartiformes — they\'re closer to storks than to hawks/falcons. The hooked beak + talons + soaring lifestyle are CONVERGENT EVOLUTION from carrion-eating ancestors. But conventionally, hawkwatch sites count them as raptors because they share migration corridors + threats. Both perspectives valid — taxonomic vs ecological.' }
+      explanation: 'Strict taxonomy: New World vultures (turkey, black, condor) are NOT true raptors. DNA work places them in their own order, Cathartiformes; an early DNA-era idea even put them near storks, though genome-scale studies (Jarvis et al 2014) now make them the sister group to hawks (Accipitriformes). The hooked beak + talons + soaring lifestyle are CONVERGENT EVOLUTION from carrion-eating ancestors. But conventionally, hawkwatch sites count them as raptors because they share migration corridors + threats. Both perspectives valid — taxonomic vs ecological.' }
   ];
+
+  // The authored bank put 46 of 70 correct answers at option B (and only 4
+  // at A), so "always pick B" beat chance 2.6×. Rotate each question's
+  // options deterministically and remap correctIdx to match.
+  QUIZ_QUESTIONS.forEach(function (q, i) {
+    var len = q.options.length;
+    var shift = (i * 7 + 3) % len;
+    if (!shift) return;
+    q.options = q.options.slice(shift).concat(q.options.slice(0, shift));
+    q.correctIdx = (q.correctIdx - shift + len) % len;
+  });
 
   // ───────────────────────────────────────────────────────────
   // PELLET LAB DATA — what's inside an owl pellet + ID key
@@ -7410,7 +7421,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               { icon: '🪝', title: __alloT('stem.raptorhunt.rank_by_talon_force', 'Rank by talon force'), prompt: __alloT('stem.raptorhunt.from_memory_order_these_5_species_by_g', 'From memory: order these 5 species by grip force, weakest to strongest — bald eagle, harpy eagle, golden eagle, great horned owl, peregrine.'), jumpTo: 'talons', answer: __alloT('stem.raptorhunt.peregrine_230_psi_bald_eagle_400_great', 'Peregrine (230 psi) → Bald eagle (400) → Great horned owl (500) → Harpy eagle (530) → Golden eagle (750)') },
               { icon: '🎯', title: __alloT('stem.raptorhunt.match_silhouette_to_family', 'Match silhouette to family'), prompt: __alloT('stem.raptorhunt.which_family_has_pointed_swept_back_wi', 'Which family has POINTED swept-back wings + a medium tail with a tomial-tooth notch on the upper beak?'), jumpTo: 'fieldid', answer: __alloT('stem.raptorhunt.falconidae_falcons_pointed_wings_the_t', 'Falconidae — falcons. Pointed wings + the tomial tooth (used to sever the cervical vertebrae) are diagnostic.') },
               { icon: '📐', title: __alloT('stem.raptorhunt.stoop_physics', 'Stoop physics'), prompt: __alloT('stem.raptorhunt.estimate_a_peregrine_at_242_mph_termin', 'Estimate: a peregrine at 242 mph terminal velocity carries roughly how much kinetic energy at impact?'), jumpTo: 'stoop', answer: __alloT('stem.raptorhunt.5_000_j_pistol_bullet_class_ke_0_95_kg', '~5,000 J — pistol-bullet class. KE = ½ × 0.95 kg × (108 m/s)² ≈ 5,540 J.') },
-              { icon: '👁', title: __alloT('stem.raptorhunt.uv_vision', 'UV vision'), prompt: __alloT('stem.raptorhunt.which_family_of_raptor_can_see_ultravi', 'Which family of raptor can see ultraviolet light + uses it to track vole urine trails?'), jumpTo: 'vision', answer: __alloT('stem.raptorhunt.falconidae_kestrels_especially_vole_ur', 'Falconidae (kestrels especially). Vole urine reflects UV strongly; the kestrel sees "glowing highways" of rodent travel routes. Viitala et al 1995 Nature.') },
+              { icon: '👁', title: __alloT('stem.raptorhunt.uv_vision', 'UV vision'), prompt: __alloT('stem.raptorhunt.which_family_of_raptor_can_see_ultravi', 'Which raptor family starred in the famous (now-debated) study claiming it tracks vole urine trails in ultraviolet?'), jumpTo: 'vision', answer: __alloT('stem.raptorhunt.falconidae_kestrels_especially_vole_ur', 'Falconidae (kestrels especially). Vole urine reflects UV strongly; the kestrel sees "glowing highways" of rodent travel routes. Viitala et al 1995 Nature.') },
               { icon: '🤫', title: __alloT('stem.raptorhunt.silent_flight_mechanism', 'Silent flight mechanism'), prompt: __alloT('stem.raptorhunt.name_the_3_owl_feather_features_that_p', 'Name the 3 owl-feather features that produce silent flight.'), jumpTo: 'silent', answer: __alloT('stem.raptorhunt.comb_leading_edge_serrated_primaries_f', 'Comb leading edge (serrated primaries) + fringed trailing edge + velvety dorsal surface. Shifts noise to ~16 kHz, above prey hearing range.') },
               { icon: '🦉', title: __alloT('stem.raptorhunt.owl_3d_hearing', 'Owl 3D hearing'), prompt: __alloT('stem.raptorhunt.how_does_an_owl_tell_whether_a_sound_c', 'How does an owl tell whether a sound came from ABOVE or BELOW its head?'), jumpTo: 'senses', answer: __alloT('stem.raptorhunt.ear_asymmetry_left_ear_opening_sits_hi', 'Ear asymmetry: left ear opening sits higher on the skull than the right. Sound from above hits left ear first by ~30 microseconds; from below, right first. Payne 1962.') },
               { icon: '🧭', title: __alloT('stem.raptorhunt.where_the_rivers_meet', 'Where the rivers meet'), prompt: __alloT('stem.raptorhunt.what_is_the_world_s_largest_single_sit', 'What is the world\'s largest single-site raptor migration count? About how many birds pass through each fall?'), jumpTo: 'migration', answer: __alloT('stem.raptorhunt.veracruz_river_of_raptors_mexico_5_mil', 'Veracruz River of Raptors (Mexico) — ~5 million birds per fall. Atlantic + Mississippi + Central flyways all converge before crossing into Central America.') },
@@ -11633,9 +11644,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-3xl' }, '🦅'),
               h('div', null,
-                h('div', { className: 'text-sm font-bold text-violet-300 mb-1' }, __alloT('stem.raptorhunt.kestrels_see_vole_urine_trails_in_uv_l', 'Kestrels see vole urine trails — in UV light')),
+                h('div', { className: 'text-sm font-bold text-violet-300 mb-1' }, __alloT('stem.raptorhunt.kestrels_see_vole_urine_trails_in_uv_l', 'Kestrels + UV vole trails — a famous, now-debated study')),
                 h('div', { className: 'text-xs text-violet-100/90 leading-relaxed' },
-                  __alloT('stem.raptorhunt.american_kestrels_falco_sparverius_can', 'American kestrels (Falco sparverius) can see ultraviolet light. Vole urine + dung trails reflect UV strongly. To a kestrel scanning a meadow, the rodents\' travel routes look like glowing highways painted across the grass. The bird perches near the brightest "trail" and ambushes — no wonder kestrels hunt successfully from telephone wires year-round. Discovered by Viitala, Korpimäki, Palokangas, Koivula (1995) Nature 373:425-427.')
+                  __alloT('stem.raptorhunt.american_kestrels_falco_sparverius_can', 'A famous Nature study (Viitala, Korpimäki, Palokangas, Koivula 1995, Nature 373:425-427) reported that American kestrels (Falco sparverius) see ultraviolet light and that vole urine + dung trails reflect UV strongly — glowing rodent highways painted across the grass, with the kestrel perching near the brightest trail to ambush. Later measurements (Lind et al. 2013) found vole urine reflects little UV and kestrel eyes are only weakly UV-sensitive, so the trail-tracking story is now debated. Either way, kestrels hunt successfully from telephone wires year-round.')
                 )
               )
             )

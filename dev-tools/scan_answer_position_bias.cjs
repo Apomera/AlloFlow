@@ -89,7 +89,7 @@ for (const f of files) {
   // Schema A: options array followed by `correct: n`  (options|opts|a|choices)
   // `choices` was missed in the first pass and hid 68 questions in autorepair
   // alone — keep this alternation in sync with any new authoring style.
-  const reA = /(?:options|opts|choices|a):\s*\[([^\]]{4,600})\]\s*,\s*(?:correct|answer):\s*(\d+)/g;
+  const reA = /(?:options|opts|choices|a):\s*\[([^\]]{4,600})\]\s*,\s*(?:correctIdx|correct|answer):\s*(\d+)/g;
   let m;
   while ((m = reA.exec(src))) {
     const opts = splitOptions(m[1]);
@@ -99,7 +99,7 @@ for (const f of files) {
     counts[opts.length][idx]++; total++;
   }
   // Schema A': `correct: n` preceding the array
-  const reA2 = /(?:correct|answer):\s*(\d+)\s*,\s*(?:options|opts|choices|a):\s*\[([^\]]{4,600})\]/g;
+  const reA2 = /(?:correctIdx|correct|answer):\s*(\d+)\s*,\s*(?:options|opts|choices|a):\s*\[([^\]]{4,600})\]/g;
   while ((m = reA2.exec(src))) {
     const opts = splitOptions(m[2]);
     const idx = parseInt(m[1], 10);
