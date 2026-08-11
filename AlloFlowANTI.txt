@@ -13433,6 +13433,17 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         return !!(window.AlloModules && window.AlloModules[name]);
       });
     };
+    // Post-load registration probe. Most modules register
+    // window.AlloModules[<name>] directly; standards snapshot modules
+    // (StandardsSnapshot*) instead feed the shared LocalStandardsSnapshot
+    // registry — current CDN files also write the per-module alias, but older
+    // cached copies may not, so accept the registry as proof for them.
+    // NOT used by the loadModule dedup check: that must stay strict on the
+    // per-module key or the second/third snapshot would be skipped once the
+    // first one populates the shared registry.
+    const __alloModuleRegistered = (name) =>
+      !!(window.AlloModules && (window.AlloModules[name]
+        || (name.indexOf('StandardsSnapshot') === 0 && window.AlloModules.LocalStandardsSnapshot)));
     const loadModule = (name, url) => {
       // Dedup: already registered (module executed) or already in flight.
       if (window.AlloModules && window.AlloModules[name]) {
@@ -13524,7 +13535,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           if (entry.loadGeneration !== loadGeneration) { try { s2.remove(); } catch (_) {} return; }
           clearModuleLoadWatchdog();
           cleanupModuleListener();
-          var f2 = window.AlloModules && window.AlloModules[name];
+          var f2 = __alloModuleRegistered(name);
           console.log('[CDN-FALLBACK] ' + name + ': ' + (f2 ? 'SUCCESS' : 'FAILED'));
           __alloSetModuleStatus(name, f2 ? 'loaded' : 'failed');
         };
@@ -13539,7 +13550,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       s.onload = () => {
         if (entry.loadGeneration !== loadGeneration) return;
-        const found = window.AlloModules && window.AlloModules[name];
+        const found = __alloModuleRegistered(name);
         console.log('[CDN] ' + name + ' script executed. Registration: ' + (found ? 'SUCCESS' : 'FAILED'));
         if (!found) {
           console.error('[CDN] ' + name + ' loaded but NOT registered, trying GitHub raw fallback');
