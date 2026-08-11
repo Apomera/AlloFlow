@@ -200,6 +200,46 @@ describe('formatting helpers', () => {
   });
 });
 
+describe('immersive checkpoint runner stage sync', () => {
+  // The runner previously advanced only the prompt text, so a 'front'
+  // checkpoint could ask about a front boundary that the stations-only focus
+  // profile was hiding, with the camera still parked on the previous step.
+  // Both the open and advance paths must sync focus layers + camera the same
+  // way openImmersiveTourStep does.
+  const fnOf = (name) => {
+    const start = src.indexOf('function ' + name + '(');
+    const end = src.indexOf('\n      function ', start + 10);
+    expect(start, name).toBeGreaterThan(-1);
+    return src.slice(start, end);
+  };
+
+  it('advancing the runner applies the next step focus and camera', () => {
+    const advance = fnOf('advanceImmersiveCheckpointRunner');
+    expect(advance).toContain('applyImmersiveFocus(next.focus)');
+    expect(advance).toContain('setImmersiveCameraPreset(next.camera)');
+    expect(advance).toContain('immersiveCameraPreset: next.camera'); // pre-runtime fallback
+  });
+
+  it('opening the runner syncs the stage to the current checkpoint', () => {
+    const toggle = fnOf('toggleImmersiveCheckpointRunner');
+    expect(toggle).toContain('applyImmersiveFocus(current.focus)');
+    expect(toggle).toContain('setImmersiveCameraPreset(current.camera)');
+  });
+
+  it('every tour step focus and camera id resolves', () => {
+    const stepsStart = src.indexOf('var IMMERSIVE_TOUR_STEPS = [');
+    const stepsEnd = src.indexOf('\n  ];', stepsStart);
+    // eslint-disable-next-line no-new-func
+    const steps = new Function(src.slice(stepsStart, stepsEnd) + '\n];\nreturn IMMERSIVE_TOUR_STEPS;')();
+    expect(steps.length).toBe(4);
+    const profileBlock = src.slice(src.indexOf('var IMMERSIVE_FOCUS_PROFILES = {'), src.indexOf('function immersiveFocusProfile'));
+    for (const step of steps) {
+      expect(profileBlock, step.id).toContain(step.focus + ':');
+      expect(['overview', 'front', 'surface'], step.id).toContain(step.camera);
+    }
+  });
+});
+
 describe('deployment copies', () => {
   it('public mirror is byte-identical to the root copy', () => {
     expect(publicSrc()).toBe(src);

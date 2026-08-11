@@ -3331,6 +3331,15 @@ var GEOGRAPHY_PROFILES = {
         var current = immersiveTourStep(d.immersiveTourStep);
         var status = next ? 'Guided checkpoint run opened at ' + current.label + '.' : 'Guided checkpoint run paused.';
         update({ immersiveCheckpointRunnerOpen: next, immersiveStageMode: next ? true : d.immersiveStageMode, immersivePresenterMode: next, immersiveAudienceMode: 'teacher', immersiveTourStatus: status });
+        if (next) {
+          // Sync the stage to the checkpoint being presented — opening the
+          // runner previously kept whatever focus layers and camera were
+          // active, so its prompt could reference features the current focus
+          // was hiding.
+          applyImmersiveFocus(current.focus);
+          if (immersiveRuntimeRef.current && immersiveRuntimeRef.current.camera) setImmersiveCameraPreset(current.camera);
+          else update({ immersiveCameraPreset: current.camera });
+        }
         if (announce) announce(status);
       }
 
@@ -3348,6 +3357,13 @@ var GEOGRAPHY_PROFILES = {
         var next = immersiveTourStep(current.nextId);
         var status = 'Next checkpoint: ' + next.label + '. ' + next.prompt;
         update({ immersiveTourCompletedSteps: completed, immersiveTourStep: next.id, immersiveTourStatus: status });
+        // Keep the stage in sync with the checkpoint, matching
+        // openImmersiveTourStep: advancing previously changed only the prompt,
+        // so a 'front' checkpoint could ask about a front boundary that the
+        // stations-only focus profile was hiding.
+        applyImmersiveFocus(next.focus);
+        if (immersiveRuntimeRef.current && immersiveRuntimeRef.current.camera) setImmersiveCameraPreset(next.camera);
+        else update({ immersiveCameraPreset: next.camera });
         if (announce) announce(status);
       }
 
