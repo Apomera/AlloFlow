@@ -434,7 +434,7 @@
         if (nextTiles[key]) delete nextTiles[key]; else nextTiles[key] = true;
         var count = countValidTiles(nextTiles, width, height);
         patch({ revealedTiles: nextTiles, revealedBest: Math.max(state.revealedBest || 0, count) });
-        speak((nextTiles[key] ? t('stem.areaperimeter.revealed', "Revealed") : 'Hid') + t('stem.areaperimeter.unit_square_at_column', " unit square at column ") + (column + 1) + t('stem.areaperimeter.row', ", row ") + (row + 1) + '. ' + count + t('stem.areaperimeter.of', " of ") + area + t('stem.areaperimeter.revealed_2', " revealed."));
+        speak((nextTiles[key] ? t('stem.areaperimeter.revealed', "Revealed") : t('stem.areaperimeter.hid', "Hid")) + t('stem.areaperimeter.unit_square_at_column', " unit square at column ") + (column + 1) + t('stem.areaperimeter.row', ", row ") + (row + 1) + '. ' + count + t('stem.areaperimeter.of', " of ") + area + t('stem.areaperimeter.revealed_2', " revealed."));
       }
 
       function revealAll() {
@@ -543,7 +543,7 @@
           h('rect', { key: 'b', x: 475 - secondW / 2, y: y2, width: secondW, height: secondH, rx: 3, fill: isContrast ? '#000000' : (isDark ? '#1e3a5f' : '#dbeafe'), stroke: COLORS.blue, strokeWidth: 4 }),
           h('text', { key: 'bd', x: 475, y: 250, textAnchor: 'middle', fill: COLORS.text, fontSize: 15 }, compareWidth + ' \u00D7 ' + compareHeight),
           h('line', { key: 'divider', x1: 320, y1: 30, x2: 320, y2: 270, stroke: COLORS.border, strokeDasharray: '7 7' }),
-          h('text', { key: 'summary', x: 320, y: 295, textAnchor: 'middle', fill: COLORS.muted, fontSize: 14 }, 'Drawn with the same unit scale')
+          h('text', { key: 'summary', x: 320, y: 295, textAnchor: 'middle', fill: COLORS.muted, fontSize: 14 }, t('stem.areaperimeter.drawn_with_the_same_unit_scale', "Drawn with the same unit scale"))
         ]);
       }
 
@@ -578,7 +578,7 @@
           h('text', { key: 'two', x: x + (leftWidth + outerWidth) * scale / 2, y: y + (notchHeight + outerHeight) * scale / 2, fill: COLORS.text, textAnchor: 'middle', fontSize: 17, fontWeight: 800 }, 'B')
         ] : [
           h('rect', { key: 'cut', x: x + leftWidth * scale, y: y, width: cutWidth * scale, height: notchHeight * scale, fill: 'none', stroke: COLORS.red, strokeWidth: 3, strokeDasharray: '8 5' }),
-          h('text', { key: 'minus', x: x + (leftWidth + outerWidth) * scale / 2, y: y + notchHeight * scale / 2 + 6, fill: COLORS.red, textAnchor: 'middle', fontSize: 16, fontWeight: 800 }, 'subtract')
+          h('text', { key: 'minus', x: x + (leftWidth + outerWidth) * scale / 2, y: y + notchHeight * scale / 2 + 6, fill: COLORS.red, textAnchor: 'middle', fontSize: 16, fontWeight: 800 }, t('stem.areaperimeter.subtract', "subtract"))
         ];
         return h('svg', {
           key: 'composite-svg',
