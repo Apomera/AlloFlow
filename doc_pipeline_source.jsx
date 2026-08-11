@@ -6115,6 +6115,9 @@ var createDocPipeline = function(deps) {
   // run to record an honest "failed at Stage N" history row (the success path
   // carries the same numbers in fixResult.pipelineStats).
   var _getPipelineStats = function() {
+    // Fold the throttle rollup into the same log the teacher copies. Cheap and
+    // idempotent-ish: it only writes when the run actually hit the gate.
+    try { if (_throttleTrace.length) _pipeThrottleSummary(null); } catch (_) {}
     return {
       runId: _pipelineStats.runId || null, // #15: per-run identity — history rows dedupe on this
       runSequence: _pipelineStats.runSequence || null,
@@ -6259,6 +6262,105 @@ var createDocPipeline = function(deps) {
   var _geminiLastStormTripAt = 0;   // L7 (2026-07-26): when the breaker last actually tripped — see recentlyThrottled
   var _geminiOffRouteOkStreak = 0;  // M16 (2026-07-26): consecutive successes on a DIFFERENT route than the one that failed — a run that has moved on can never produce the failed route's evidence, so enough of these clear the wave on their own
   var _geminiCooldownUntil = 0;     // epoch ms; no NEW call starts before this
+
+  // ── Throttle telemetry (2026-08-11) ────────────────────────────────────
+  // Why: the gate constants above were tuned by hand against symptoms. To tune
+  // them against BEHAVIOUR we need to know, per decision: what tripped, what the
+  // streaks were, how much concurrency was actually in flight, how long we then
+  // waited, and whether the next call after that wait succeeded. Everything here
+  // is a number or an enum — no prompt text, no document content, no student data,
+  // so a teacher can paste the log back without disclosing anything.
+  var _throttleTrace = [];          // structured records for the end-of-run rollup
+  var _throttleRunStartedAt = 0;
+  var _throttleCooldownMsTotal = 0; // wall-clock deliberately spent backing off
+  var _throttlePendingProbe = null; // set when a cooldown ends, resolved by the next outcome
+  var _THROTTLE_TRACE_MAX = 400;
+  var _pipeThrottleEvent = function(kind, fields, owner) {
+    try {
+      var rec = Object.assign({
+        kind: kind,
+        atMs: (typeof Date !== "undefined" && Date.now) ? Date.now() : 0,
+        cap: _geminiCap,
+        inFlight: _geminiInFlight,
+        queued: (_geminiWaiters && _geminiWaiters.length) || 0,
+        authStreak: _geminiAuthStreak,
+        transientStreak: _geminiTransientStreak,
+        okStreak: _geminiOkStreak
+      }, fields || {});
+      _throttleTrace.push(rec);
+      if (_throttleTrace.length > _THROTTLE_TRACE_MAX) _throttleTrace.splice(0, _throttleTrace.length - _THROTTLE_TRACE_MAX);
+      // One compact line into the copyable log. Decisions only — see header.
+      var bits = [];
+      Object.keys(rec).forEach(function (k) {
+        if (k === "kind" || k === "atMs") return;
+        if (rec[k] === null || rec[k] === undefined || rec[k] === "") return;
+        bits.push(k + "=" + rec[k]);
+      });
+      _pipeLog("ThrottleData", kind + " " + bits.join(" "), rec, owner);
+    } catch (_) { /* telemetry must never break a run */ }
+  };
+  // Called by the outcome paths so a cooldown can be scored: did the FIRST call
+  // after backing off succeed? That is the number that says whether a given
+  // cooldown length is buying recovery or just costing the teacher time.
+  // Rollup for a finished run. Answers the three questions the tuned constants
+  // rest on: (1) is the limit driven by CONCURRENCY or by call RATE — compare the
+  // in-flight counts recorded at each trip against the cap in force; (2) is a
+  // given cooldown length buying recovery — post_cooldown_ok vs post_cooldown_fail;
+  // (3) how much wall-clock the run actually spent backing off.
+  var _pipeThrottleSummary = function(owner) {
+    try {
+      if (!_throttleTrace.length) return null;
+      var byKind = {};
+      var tripInFlight = [];
+      var cooldownOk = 0, cooldownFail = 0;
+      var cooldownsByMs = {};
+      for (var i = 0; i < _throttleTrace.length; i++) {
+        var r = _throttleTrace[i];
+        byKind[r.kind] = (byKind[r.kind] || 0) + 1;
+        if (r.kind === "auth_trip" || r.kind === "transient_trip") {
+          tripInFlight.push(r.inFlight);
+          if (r.cooldownMs) cooldownsByMs[r.cooldownMs] = (cooldownsByMs[r.cooldownMs] || 0) + 1;
+        }
+        if (r.kind === "post_cooldown_ok") cooldownOk++;
+        if (r.kind === "post_cooldown_fail") cooldownFail++;
+      }
+      var avgInFlight = tripInFlight.length
+        ? Math.round((tripInFlight.reduce(function (a, b) { return a + b; }, 0) / tripInFlight.length) * 10) / 10
+        : 0;
+      var maxInFlight = tripInFlight.length ? Math.max.apply(null, tripInFlight) : 0;
+      var summary = {
+        events: _throttleTrace.length,
+        byKind: byKind,
+        tripsAtInFlightAvg: avgInFlight,
+        tripsAtInFlightMax: maxInFlight,
+        cooldownMsTotal: _throttleCooldownMsTotal,
+        cooldownRecoveredFirstTry: cooldownOk,
+        cooldownStillFailing: cooldownFail,
+        cooldownLengthsUsed: cooldownsByMs,
+        effectiveMax: _geminiEffectiveMax,
+        stormMin: _GEMINI_STORM_MIN,
+        authTrip: _GEMINI_STORM_TRIP,
+        transientTrip: _GEMINI_TRANSIENT_TRIP,
+        baseCooldownMs: _GEMINI_COOLDOWN_MS,
+        staggerMs: _geminiStaggerMs
+      };
+      var line = "run rollup — " + _throttleTrace.length + " throttle event(s); "
+        + "trips at in-flight avg " + avgInFlight + " / max " + maxInFlight + " (cap ceiling " + _geminiEffectiveMax + "); "
+        + "cooldown total " + Math.round(_throttleCooldownMsTotal / 1000) + "s; "
+        + "first call after cooldown: " + cooldownOk + " ok / " + cooldownFail + " still failing.";
+      _pipeLog("ThrottleSummary", line, summary, owner);
+      return summary;
+    } catch (_) { return null; }
+  };
+  var _pipeThrottleScoreProbe = function(outcome, owner) {
+    try {
+      if (!_throttlePendingProbe) return;
+      var waited = _throttlePendingProbe.cooldownMs || 0;
+      _throttlePendingProbe = null;
+      _pipeThrottleEvent("post_cooldown_" + outcome, { cooldownMs: waited }, owner);
+    } catch (_) {}
+  };
+
   var _geminiCooldownTimer = null;
   var _geminiStormAnnounced = false; // user-facing "Canvas is rate-limiting" message emitted once per sustained storm
   var _geminiLastFailureProfile = null; // representative recovery must match the route and prompt volume that actually failed
@@ -6400,6 +6502,7 @@ var createDocPipeline = function(deps) {
     });
   };
   var _geminiNoteAuthFail = function(stats, owner) {
+    _pipeThrottleScoreProbe("fail", owner);
     _geminiOkStreak = 0;
     _geminiAuthStreak++;
     if (_geminiAuthStreak >= _GEMINI_STORM_TRIP) {
@@ -6412,6 +6515,9 @@ var createDocPipeline = function(deps) {
       _geminiCooldownUntil = ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0) + _cd;
       var _stats = stats || _pipelineStats;
       _stats.authThrottles = (_stats.authThrottles || 0) + 1;
+      _throttleCooldownMsTotal += _cd;
+      _throttlePendingProbe = { cooldownMs: _cd };
+      _pipeThrottleEvent('auth_trip', { cooldownMs: _cd, capTo: _GEMINI_STORM_MIN, trip: _GEMINI_STORM_TRIP }, owner);
       // Surface a clear, honest message ONCE per sustained storm — this is a Canvas quota/rate-limit,
       // not an AlloFlow bug; heavy/scanned docs (many calls) trip it sooner. _pipeLog also emits the
       // canvas-visible 'alloflow:pipeline-warn' event (which the heartbeat watchdog + panel observe).
@@ -6428,6 +6534,7 @@ var createDocPipeline = function(deps) {
   // back off to 1 concurrent + an escalating cooldown so the proxy recovers (counter-intuitively
   // faster end-to-end — same rationale as the auth breaker). Fed from _geminiCall's generic-transient path.
   var _geminiNoteTransientFail = function(stats, owner) {
+    _pipeThrottleScoreProbe("fail", owner);
     _geminiOkStreak = 0;
     _geminiTransientStreak++;
     if (_geminiTransientStreak >= _GEMINI_TRANSIENT_TRIP) {
@@ -6438,6 +6545,9 @@ var createDocPipeline = function(deps) {
       _geminiCooldownUntil = ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0) + _cd;
       var _stats = stats || _pipelineStats;
       _stats.authThrottles = (_stats.authThrottles || 0) + 1;
+      _throttleCooldownMsTotal += _cd;
+      _throttlePendingProbe = { cooldownMs: _cd };
+      _pipeThrottleEvent('transient_trip', { cooldownMs: _cd, capTo: _GEMINI_STORM_MIN, trip: _GEMINI_TRANSIENT_TRIP }, owner);
       if (!_geminiStormAnnounced && _geminiTransientStreak >= _GEMINI_TRANSIENT_TRIP + 2) {
         _geminiStormAnnounced = true;
         _pipeLog('Throttle', 'The AI service is rate-limiting this session — it is returning empty responses under load (a temporary throttle, not an AlloFlow error). Backing off to let it recover; this run will be slow. Large or scanned documents hit this sooner — a smaller doc or waiting a few minutes helps.', null, owner);
@@ -6484,6 +6594,7 @@ var createDocPipeline = function(deps) {
     return failedVolume <= 0 || successVolume >= Math.ceil(failedVolume * 0.8);
   };
   var _geminiNoteSuccess = function(requestProfile) {
+    _pipeThrottleScoreProbe("ok", null);
     var _failureWaveActive = (_geminiAuthStreak > 0 || _geminiTransientStreak > 0) && !!_geminiLastFailureProfile;
     if (_failureWaveActive && !_geminiSuccessRepresentsFailure(requestProfile)) {
       // M16: a run that has MOVED ON to a different route has no way to produce the old route's
@@ -6510,6 +6621,7 @@ var createDocPipeline = function(deps) {
         // up to 90s out; without this, _geminiPump still refuses to start queued waiters until that stale
         // timestamp elapses, so "restoring concurrency to 3" was a lie for up to ~90s.
         _geminiCooldownUntil = 0;
+        _pipeThrottleEvent('recovered', { capTo: _geminiEffectiveMax, hitsNeeded: _GEMINI_RECOVER_HITS });
         warnLog('[GeminiGate] Throttle cleared — restoring concurrency to ' + _geminiEffectiveMax);
         _geminiPump();
       }
