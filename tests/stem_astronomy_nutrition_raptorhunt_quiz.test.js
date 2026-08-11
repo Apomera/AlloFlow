@@ -247,6 +247,47 @@ describe('Raptor Hunt Field ID quiz rotation (correctIdx schema)', () => {
   });
 });
 
+describe('Raptor Hunt wing-loading predictor classifier', () => {
+  // The old loading×AR threshold tree misfiled most of the tool's own roster
+  // (condor and both big eagles → "Generalist", Cooper's hawk and osprey →
+  // "Owl — Silent Glide", light-loaded owls → Buteo). The classifier is now
+  // nearest-neighbor against the roster with a per-species archetype label.
+  const sStart = rap.indexOf('var SPECIES = [');
+  const sEnd = rap.indexOf('\n  ];', sStart);
+  // eslint-disable-next-line no-new-func
+  const SPECIES = new Function(rap.slice(sStart, sEnd) + '\n];\nreturn SPECIES;')();
+  const am = rap.match(/var ARCHETYPE = \{[\s\S]*?\};/);
+  // eslint-disable-next-line no-new-func
+  const ARCHETYPE = new Function(am[0] + '\nreturn ARCHETYPE;')();
+
+  it('every roster species round-trips to its own archetype', () => {
+    expect(SPECIES.length).toBe(20);
+    for (const sp of SPECIES) {
+      expect(ARCHETYPE[sp.id], sp.id).toBeTruthy();
+      // Replicate the in-tool classifier exactly (normalized nearest-neighbor
+      // with distance-weighted votes; insertion order breaks ties toward the
+      // nearest species).
+      const sorted = SPECIES.map((s) => ({
+        s,
+        d: Math.sqrt(Math.pow((sp.wingLoading - s.wingLoading) / 18, 2) + Math.pow((sp.aspectRatio - s.aspectRatio) / 12, 2)),
+      })).sort((a, b) => a.d - b.d);
+      const closest = sorted.slice(0, 3);
+      expect(closest[0].s.id, sp.id).toBe(sp.id);
+      const votes = {};
+      closest.forEach((c, ci) => { const a = ARCHETYPE[c.s.id]; votes[a] = (votes[a] || 0) + (3 - ci); });
+      const best = Object.keys(votes).sort((a, b) => votes[b] - votes[a])[0];
+      expect(best, sp.id).toBe(ARCHETYPE[sp.id]);
+    }
+  });
+
+  it('all seven archetypes carry a style card and the old threshold tree is gone', () => {
+    for (const a of ['falcon', 'soaring', 'buteo', 'accipiter', 'owl', 'fisher', 'generalist']) {
+      expect(rap.includes(a + ': { huntStyle:'), a).toBe(true);
+    }
+    expect(rap.includes('wingLoading > 7 && aspectRatio > 8')).toBe(false);
+  });
+});
+
 describe('Raptor Hunt contested-science softening', () => {
   it('the kestrel UV vole-trail story is presented as debated, not fact', () => {
     // The old phrasing stated Viitala 1995 as settled fact; Lind et al. 2013
@@ -268,6 +309,37 @@ describe('Raptor Hunt contested-science softening', () => {
     expect(rh.which_family_of_raptor_can_see_ultravi).toContain('now-debated');
     expect(rh.american_kestrels_falco_sparverius_can).toContain('Lind et al. 2013');
     expect(rh.american_kestrels_falco_sparverius_can).toContain('debated');
+  });
+});
+
+describe('Raptor Hunt owl hearing lab interaction', () => {
+  const hearing = (() => {
+    const start = rap.indexOf('function renderHearing()');
+    const end = rap.indexOf('      function render', start + 10);
+    expect(start).toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(start);
+    return rap.slice(start, end);
+  })();
+
+  it('once-bound listeners read current state from the element, not a stale closure', () => {
+    // The click listener bound once but closed over the first render's hl
+    // (started: false), leaving the strike permanently dead — and, after a
+    // section switch, grading against a stale mouse position.
+    expect(hearing).toContain('canvasEl._hlState = { hl: hl, errRadius: errRadius, setHL: setHL, awardXP: ctx.awardXP };');
+    const strike = hearing.slice(hearing.indexOf('var strikeAt = function'), hearing.indexOf("addEventListener('click'"));
+    expect(strike).toContain('canvasEl._hlState');
+    expect(strike).not.toMatch(/[^.]hl\.mouseX/); // only st.hl.* inside the strike path
+    expect(strike).toContain('st.hl.mouseX');
+  });
+
+  it('the canvas keyboard path matches its role and tabIndex', () => {
+    expect(hearing).toContain("tabIndex: 0");
+    expect(hearing).toContain("canvasEl.addEventListener('keydown'");
+    for (const key of ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Enter']) {
+      expect(hearing, key).toContain("e.key === '" + key + "'");
+    }
+    expect(hearing).toContain('hl.crossX != null'); // crosshair is drawn
+    expect(hearing).toContain('arrow keys'); // aria-label describes the path
   });
 });
 

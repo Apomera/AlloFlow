@@ -52745,7 +52745,7 @@
       "of_canvas_base": " of canvas (base ",
       "from_asymmetry": " from asymmetry + ",
       "noise_widening_real_barn_owls_operate_": " noise widening). Real barn owls operate at ~1° error in pitch black silence; even moderate wind degrades that. Hawkesford 2019 measured ~3× detection-radius widening at 60 dB ambient.",
-      "owl_hearing_lab_click_anywhere_on_the_": "Owl hearing lab. Click anywhere on the dark canvas where you think the mouse is. Detection radius shows as a ring; click to strike.",
+      "owl_hearing_lab_click_anywhere_on_the_": "Owl hearing lab. Click anywhere on the dark canvas where you think the mouse is, or move the crosshair with the arrow keys and strike with Enter. Detection radius shows as a ring.",
       "release_new_mouse": "Release new mouse",
       "release_mouse": "🦉 Release Mouse",
       "reset_stats": "Reset stats",

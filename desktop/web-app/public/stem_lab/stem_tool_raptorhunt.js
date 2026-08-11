@@ -13757,12 +13757,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('canvas', {
               'data-hearing-canvas': 'true',
               role: 'application',
-              'aria-label': __alloT('stem.raptorhunt.owl_hearing_lab_click_anywhere_on_the_', 'Owl hearing lab. Click anywhere on the dark canvas where you think the mouse is. Detection radius shows as a ring; click to strike.'),
+              'aria-label': __alloT('stem.raptorhunt.owl_hearing_lab_click_anywhere_on_the_', 'Owl hearing lab. Click anywhere on the dark canvas where you think the mouse is, or move the crosshair with the arrow keys and strike with Enter. Detection radius shows as a ring.'),
               tabIndex: 0,
               width: 600, height: 450,
               style: { width: '100%', height: '100%', cursor: 'crosshair', display: 'block' },
               ref: function(canvasEl) {
                 if (!canvasEl) return;
+                // Stash the CURRENT render's state + setter for the
+                // once-bound listeners below. Binding per render would stack
+                // duplicate listeners, but a once-bound listener otherwise
+                // closes over the FIRST render's hl (started: false), which
+                // left the strike click permanently dead — and, after a
+                // section switch, graded strikes against a stale mouse
+                // position.
+                canvasEl._hlState = { hl: hl, errRadius: errRadius, setHL: setHL, awardXP: ctx.awardXP };
                 var ctx2 = canvasEl.getContext('2d');
                 var W = canvasEl.width, H = canvasEl.height;
                 // Draw scene
@@ -13834,6 +13842,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     ctx2.textAlign = 'center';
                     ctx2.fillText(le.hit ? '✓ STRIKE' : '✗ MISS', clickX, clickY - 22);
                   }
+                  // Keyboard crosshair (arrow keys move it, Enter strikes)
+                  if (hl.started && hl.crossX != null) {
+                    var chX = hl.crossX * W, chY = (hl.crossY == null ? 0.5 : hl.crossY) * H;
+                    ctx2.strokeStyle = 'rgba(165, 180, 252, 0.9)';
+                    ctx2.lineWidth = 1.5;
+                    ctx2.beginPath();
+                    ctx2.moveTo(chX - 10, chY); ctx2.lineTo(chX + 10, chY);
+                    ctx2.moveTo(chX, chY - 10); ctx2.lineTo(chX, chY + 10);
+                    ctx2.stroke();
+                    ctx2.beginPath();
+                    ctx2.arc(chX, chY, 7, 0, Math.PI * 2);
+                    ctx2.stroke();
+                  }
                   // Title overlay
                   if (!hl.started) {
                     ctx2.fillStyle = 'rgba(200, 200, 220, 0.85)';
@@ -13845,19 +13866,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   }
                 }
                 draw();
-                // Bind click only once
+                // Bind listeners only once; they read canvasEl._hlState for
+                // the current render's values instead of their own closure.
                 if (!canvasEl._hlBound) {
                   canvasEl._hlBound = true;
-                  canvasEl.addEventListener('click', function(e) {
-                    if (!hl.started) return;
-                    var rect = canvasEl.getBoundingClientRect();
-                    var cx = (e.clientX - rect.left) / rect.width;
-                    var cy = (e.clientY - rect.top) / rect.height;
-                    var dx = cx - hl.mouseX, dy = cy - hl.mouseY;
+                  var strikeAt = function(cx, cy) {
+                    var st = canvasEl._hlState;
+                    if (!st || !st.hl.started) return;
+                    var dx = cx - st.hl.mouseX, dy = cy - st.hl.mouseY;
                     var dist = Math.sqrt(dx * dx + dy * dy);
-                    var hit = dist <= errRadius;
-                    var newBest = hl.bestErr === null ? dist : Math.min(hl.bestErr, dist);
-                    setHL(function(cur) {
+                    var hit = dist <= st.errRadius;
+                    var newBest = st.hl.bestErr === null ? dist : Math.min(st.hl.bestErr, dist);
+                    st.setHL(function(cur) {
                       return {
                         attempts: cur.attempts + 1,
                         hits: cur.hits + (hit ? 1 : 0),
@@ -13868,10 +13888,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     });
                     if (hit) {
                       rhAnnounce('Strike! Within detection radius.');
-                      if (ctx.awardXP) ctx.awardXP(3, 'Owl Hearing Lab: strike');
+                      if (st.awardXP) st.awardXP(3, 'Owl Hearing Lab: strike');
                     } else {
                       rhAnnounce('Miss. Distance from mouse: ' + (dist * 100).toFixed(0) + ' percent of canvas.');
                     }
+                  };
+                  canvasEl.addEventListener('click', function(e) {
+                    var rect = canvasEl.getBoundingClientRect();
+                    strikeAt((e.clientX - rect.left) / rect.width, (e.clientY - rect.top) / rect.height);
+                  });
+                  // Keyboard path: arrows steer a crosshair, Enter/Space strikes.
+                  canvasEl.addEventListener('keydown', function(e) {
+                    var st = canvasEl._hlState;
+                    if (!st || !st.hl.started) return;
+                    var step = e.shiftKey ? 0.02 : 0.05;
+                    var cx = st.hl.crossX == null ? 0.5 : st.hl.crossX;
+                    var cy = st.hl.crossY == null ? 0.5 : st.hl.crossY;
+                    if (e.key === 'ArrowLeft') { e.preventDefault(); st.setHL({ crossX: Math.max(0, cx - step), crossY: cy }); }
+                    else if (e.key === 'ArrowRight') { e.preventDefault(); st.setHL({ crossX: Math.min(1, cx + step), crossY: cy }); }
+                    else if (e.key === 'ArrowUp') { e.preventDefault(); st.setHL({ crossX: cx, crossY: Math.max(0, cy - step) }); }
+                    else if (e.key === 'ArrowDown') { e.preventDefault(); st.setHL({ crossX: cx, crossY: Math.min(1, cy + step) }); }
+                    else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); strikeAt(cx, cy); }
                   });
                 }
               }
@@ -15805,27 +15842,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         // Calculate derived values
         var wingLoading = pr.mass / pr.wingArea; // kg/m²
         var aspectRatio = (pr.wingspan * pr.wingspan) / pr.wingArea;
-        // Classify hunt style based on loading × AR
-        var huntStyle, styleDesc, styleColor, styleEmoji;
-        if (wingLoading > 7 && aspectRatio > 8) {
-          huntStyle = 'Falcon — Stoop Specialist'; styleEmoji = '🚀'; styleColor = 'red';
-          styleDesc = 'High wing loading + high aspect ratio = fast/heavy + efficient glide. This bird hunts by stooping from altitude. Terminal velocity is high; turning radius is large. Comparable to: peregrine, prairie falcon, lanner.';
-        } else if (wingLoading < 5 && aspectRatio > 7) {
-          huntStyle = 'Eagle / Vulture — Soaring Specialist'; styleEmoji = '🪶'; styleColor = 'amber';
-          styleDesc = 'Low wing loading + high aspect ratio = efficient thermal soaring with slow level flight. Long-distance scanning predator. Comparable to: bald eagle, golden eagle, turkey vulture, condor.';
-        } else if (wingLoading < 4 && aspectRatio < 6) {
-          huntStyle = 'Buteo — Perch + Pounce'; styleEmoji = '🌲'; styleColor = 'emerald';
-          styleDesc = 'Low wing loading + low aspect ratio = slow, maneuverable, can kite into headwinds. Hunts from perches over open country. Comparable to: red-tailed hawk, red-shouldered hawk, rough-legged hawk, harrier.';
-        } else if (wingLoading > 4 && aspectRatio < 6) {
-          huntStyle = 'Accipiter — Forest Chaser'; styleEmoji = '🌳'; styleColor = 'cyan';
-          styleDesc = 'Medium loading + low aspect ratio (short broad wings, long tail) = high agility, terrible glide efficiency. Threads through dense canopy after small birds. Comparable to: Cooper\'s hawk, sharp-shinned hawk, northern goshawk.';
-        } else if (wingLoading < 5 && aspectRatio < 7 && aspectRatio > 4) {
-          huntStyle = 'Owl — Silent Glide'; styleEmoji = '🦉'; styleColor = 'violet';
-          styleDesc = 'Low loading + moderate aspect ratio (wide broad wings with comb-edged primaries) = silent stalk + drop attack from perch. Comparable to: great horned owl, barred owl, barn owl.';
-        } else {
-          huntStyle = 'Generalist / Intermediate'; styleEmoji = '🦅'; styleColor = 'slate';
-          styleDesc = 'These dimensions fall between specialized hunt-style niches. The bird could hunt opportunistically across several modes — moderate stoop, moderate soaring, moderate perch-pounce. Few real raptors are this generalist; most have committed to one strategy.';
-        }
         // Find closest real species (Euclidean in loading + AR space, normalized)
         function distance(loading, ar) {
           return Math.sqrt(Math.pow((wingLoading - loading) / 18, 2) + Math.pow((aspectRatio - ar) / 12, 2));
@@ -15834,6 +15850,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           return { s: s, d: distance(s.wingLoading, s.aspectRatio) };
         }).sort(function(a, b) { return a.d - b.d; });
         var closest = sortedSpecies.slice(0, 3);
+        // Classify by nearest real species, not a loading×AR threshold tree.
+        // The old cutoffs misfiled most of this tool's own roster: condor and
+        // both big eagles fell to "Generalist" while the soaring blurb listed
+        // them as examples, Cooper's hawk and osprey landed in "Owl — Silent
+        // Glide", and every light-loaded owl read as a Buteo. Loading/AR
+        // morphospace genuinely overlaps between groups (a turkey vulture and
+        // a red-tail share nearly identical numbers), so the honest classifier
+        // is nearest-neighbor against the roster with a hand-labeled archetype
+        // per species — which also keeps the headline class consistent with
+        // the "closest real species" list rendered below it.
+        var ARCHETYPE = {
+          peregrine: 'falcon', gyrfalcon: 'falcon', merlin: 'falcon', kestrel: 'falcon',
+          baldEagle: 'soaring', goldenEagle: 'soaring', condor: 'soaring', turkeyVulture: 'soaring', missKite: 'soaring',
+          redTail: 'buteo', roughLeg: 'buteo', swainsons: 'buteo',
+          northernGoshawk: 'accipiter', coopersHawk: 'accipiter', sharpShin: 'accipiter', harpyEagle: 'accipiter',
+          greatHorned: 'owl', snowyOwl: 'owl', barred: 'owl',
+          osprey: 'fisher'
+        };
+        var STYLE_BY_ARCHETYPE = {
+          falcon: { huntStyle: 'Falcon — Stoop Specialist', styleEmoji: '🚀', styleColor: 'red',
+            styleDesc: 'High wing loading + high aspect ratio = fast/heavy + efficient glide. This bird hunts by stooping from altitude (or, in the smaller falcons, hover-hunting and tail-chasing). Terminal velocity is high; turning radius is large. Comparable to: peregrine, gyrfalcon, merlin, kestrel.' },
+          soaring: { huntStyle: 'Eagle / Vulture — Soaring Specialist', styleEmoji: '🪶', styleColor: 'amber',
+            styleDesc: 'Big wings with slotted, wide-spread primaries built to turn rising air into effortless range — thermal soaring with slow, efficient level flight. Long-distance scanning predator (or scavenger). Comparable to: bald eagle, golden eagle, turkey vulture, condor.' },
+          buteo: { huntStyle: 'Buteo — Perch + Pounce', styleEmoji: '🌲', styleColor: 'emerald',
+            styleDesc: 'Low wing loading + low aspect ratio = slow, maneuverable, can kite into headwinds. Hunts from perches over open country. Comparable to: red-tailed hawk, rough-legged hawk, Swainson\'s hawk.' },
+          accipiter: { huntStyle: 'Accipiter — Forest Chaser', styleEmoji: '🌳', styleColor: 'cyan',
+            styleDesc: 'Short broad wings + long tail = high agility, poor glide efficiency. Threads through dense canopy after agile prey. Comparable to: Cooper\'s hawk, sharp-shinned hawk, northern goshawk — and, scaled way up, the harpy eagle.' },
+          owl: { huntStyle: 'Owl — Silent Glide', styleEmoji: '🦉', styleColor: 'violet',
+            styleDesc: 'Low loading + broad wings with comb-edged primaries = silent stalk + drop attack from a perch. Comparable to: great horned owl, barred owl, snowy owl.' },
+          fisher: { huntStyle: 'Osprey — Hover-Dive Fisher', styleEmoji: '🐟', styleColor: 'sky',
+            styleDesc: 'Long, crooked wings with moderate loading — built to hover over water, then plunge feet-first. A one-species niche: reversible outer toes and barbed footpads for gripping fish. Comparable to: osprey (Pandionidae has exactly one living member).' },
+          generalist: { huntStyle: 'Generalist / Intermediate', styleEmoji: '🦅', styleColor: 'slate',
+            styleDesc: 'These dimensions fall outside every specialist niche in the roster. The bird could hunt opportunistically across several modes — moderate stoop, moderate soaring, moderate perch-pounce. Few real raptors are this generalist; most have committed to one strategy.' }
+        };
+        // Distance-weighted vote over the 3 nearest species; a design far from
+        // every real raptor is a Generalist no matter what it is vaguely near.
+        var archVotes = {};
+        closest.forEach(function(c, ci) {
+          var a = ARCHETYPE[c.s.id] || 'generalist';
+          archVotes[a] = (archVotes[a] || 0) + (3 - ci);
+        });
+        var bestArch = Object.keys(archVotes).sort(function(a, b) { return archVotes[b] - archVotes[a]; })[0];
+        if (closest[0].d > 0.28) bestArch = 'generalist';
+        var chosenStyle = STYLE_BY_ARCHETYPE[bestArch];
+        var huntStyle = chosenStyle.huntStyle, styleDesc = chosenStyle.styleDesc,
+            styleColor = chosenStyle.styleColor, styleEmoji = chosenStyle.styleEmoji;
 
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-cyan-900/40 to-sky-900/40 border border-cyan-700/40 rounded-xl p-4' },
@@ -15959,7 +16021,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', { className: 'text-3xl' }, styleEmoji),
               h('div', null,
                 h('div', { className: 'text-[10px] uppercase tracking-wider text-' + styleColor + '-300' }, __alloT('stem.raptorhunt.predicted_hunt_style', 'Predicted hunt style')),
-                h('div', { className: 'text-lg font-bold text- tracking-tight' + styleColor + '-200' }, huntStyle)
+                h('div', { className: 'text-lg font-bold tracking-tight text-' + styleColor + '-200' },huntStyle)
               )
             ),
             h('div', { className: 'text-sm text-' + styleColor + '-100/90 leading-relaxed' }, styleDesc)
