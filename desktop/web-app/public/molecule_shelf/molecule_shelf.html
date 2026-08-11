@@ -204,7 +204,28 @@
       wonder: 'Why might a Y-shape with two identical arms be handy for grabbing invaders?' },
     { pdb: '6VXX', emoji: '👑', name: 'SARS-CoV-2 Spike', meta: 'the “crown” protein of the COVID virus (closed state)',
       notice: 'This is one spike from the virus surface. It has three similar lobes — can you find the 3-fold symmetry?',
-      wonder: 'Why might a virus put a three-part spike on its surface, and why is it a target for vaccines?' }
+      wonder: 'Why might a virus put a three-part spike on its surface, and why is it a target for vaccines?' },
+    // 2026-08 additions. Every PDB code below was checked against the live RCSB
+    // entry (data.rcsb.org) before being added, and each `meta` names the actual
+    // organism in the deposited structure rather than implying it is human.
+    { pdb: '1MBN', emoji: '🐋', name: 'Myoglobin', meta: 'stores oxygen inside muscle · the first protein structure ever solved (sperm whale)',
+      notice: 'Myoglobin is mostly one kind of shape. How many coiled ribbons (helices) can you count, and where does the flat heme group sit among them?',
+      wonder: 'Hemoglobin carries oxygen in your blood and myoglobin holds it in muscle. Why might a body need both a carrier and a store?' },
+    { pdb: '4INS', emoji: '🍬', name: 'Insulin', meta: 'the hormone that lets cells take in sugar · this crystal is pig insulin, nearly identical to ours',
+      notice: 'Insulin is tiny compared with the other molecules here. Can you find its two separate chains, and see where they are pinned together?',
+      wonder: 'Insulin from a pig works in a human body. What does that suggest about how far back this molecule goes?' },
+    { pdb: '1EMA', emoji: '💚', name: 'Green Fluorescent Protein', meta: 'the jellyfish protein that glows green · now used to light up living cells',
+      notice: 'Look at the outside shape, then find the very middle. What surrounds the small group of atoms at the centre?',
+      wonder: 'The part that glows sits inside a barrel of protein. Why might a glowing centre need to be shielded from its surroundings?' },
+    { pdb: '1EHZ', emoji: '📜', name: 'Transfer RNA', meta: 'the adapter that reads the genetic code · yeast tRNA for phenylalanine',
+      notice: 'This is RNA, not protein. Rotate it — what letter of the alphabet does the overall fold resemble?',
+      wonder: 'One end of a tRNA reads three letters of code and the other end carries a building block. Why is an adapter with two different ends useful?' },
+    { pdb: '1AOI', emoji: '🧵', name: 'Nucleosome', meta: 'DNA wound around a spool of proteins · how two metres of DNA fits in one cell',
+      notice: 'Find the DNA and follow it. How many times does it wrap around the protein core in the middle?',
+      wonder: 'If DNA has to be wound up this tightly to fit, what has to happen before the cell can read the part it needs?' },
+    { pdb: '1BL8', emoji: '🚪', name: 'Potassium Channel', meta: 'a gate in the cell membrane that lets potassium through · from a soil bacterium',
+      notice: 'This protein sits in a membrane. Look down the middle from the top — can you see the pore running through it, and how many matching parts surround it?',
+      wonder: 'This channel lets potassium through but blocks sodium, which is smaller. How might a gate be picky about a smaller particle?' }
   ];
 
   var params = new URLSearchParams(window.location.search);
