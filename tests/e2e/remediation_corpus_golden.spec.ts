@@ -109,8 +109,10 @@ test.describe('remediation corpus — real bytes, scripted model, structural tru
     await page.evaluate(() => {
       const w = window as any;
       w.__calls = [];
-      const auditPdfJson = JSON.stringify({ score: 55, summary: 'scripted audit', confidence: 'high', documentLanguage: 'en', critical: [], serious: [{ issue: 'Images without alternative text', wcag: '1.1.1', location: 'page 1' }], moderate: [], minor: [], passes: ['document has a title'] });
-      const auditHtmlJson = JSON.stringify({ score: 88, summary: 'scripted html audit', issues: [], passes: ['lang present'] });
+      // _parseStrictInitialAudit (2026-08) requires full metadata (pageCount, has* booleans)
+      // and canonical issue records (ruleId + claimKind + count) — mirror the real contract.
+      const auditPdfJson = JSON.stringify({ score: 55, summary: 'scripted audit', confidence: 'high', documentLanguage: 'en', pageCount: 2, hasSearchableText: true, hasImages: true, hasTables: false, hasForms: false, critical: [], serious: [{ issue: 'Images without alternative text', wcag: '1.1.1', location: 'page 1', ruleId: 'image-alt', claimKind: 'absence', count: 1 }], moderate: [], minor: [], passes: ['document has a title', 'searchable text present', 'reading order is linear', 'language is declared'] });
+      const auditHtmlJson = JSON.stringify({ score: 88, summary: 'scripted html audit', issues: [], passes: ['lang present', 'headings are hierarchical', 'landmarks present', 'link text is descriptive', 'contrast passes AA'] });
       const dispatch = (prompt: string, payload?: string) => {
         if (/accessibility auditor for educational documents/i.test(prompt) || /SLICE CONTEXT/i.test(prompt)) return auditPdfJson;
         if (/accessibility auditor\. Audit this HTML/i.test(prompt)) return auditHtmlJson;
@@ -250,6 +252,8 @@ test.describe('remediation corpus — real bytes, scripted model, structural tru
       const w = window as any;
       const audit = await w.__pipeline.runPdfAccessibilityAudit(textB64, { skipUiUpdates: true, skipCache: true, fileName: 'text-fixture.pdf' });
       const result = await w.__pipeline.fixAndVerifyPdf({
+        // Production callers always stamp the run's ownership epoch (2026-08-03 fail-closed guard).
+        documentEpoch: 1,
         base64: textB64,
         fileName: 'text-fixture.pdf',
         auditResult: audit,
@@ -355,6 +359,7 @@ test.describe('remediation corpus — real bytes, scripted model, structural tru
       try {
         const audit = await w.__pipeline.runPdfAccessibilityAudit(textB64, { skipUiUpdates: true, skipCache: true, fileName: 'text-fixture-refusal.pdf' });
         const result = await w.__pipeline.fixAndVerifyPdf({
+          documentEpoch: 1,
           base64: textB64,
           fileName: 'text-fixture-refusal.pdf',
           auditResult: audit,

@@ -1092,7 +1092,7 @@ function UdlWalkthroughPanel(props) {
           <div role="tablist" aria-label={tt('udlwalk.tabs_aria', 'Walkthrough sections')} className="flex gap-1 mt-2">
             {tabs.map((tb, tbIdx) => (
               <button key={tb.id} type="button" role="tab" id={'udlwalk-tab-' + tb.id} aria-selected={tab === tb.id}
-                aria-controls="udlwalk-tabpanel" tabIndex={tab === tb.id ? 0 : -1} data-help-key={'udlwalk_tab_' + tb.id}
+                aria-controls="udlwalk-tabpanel" tabIndex={tab === tb.id ? 0 : -1} data-help-key="udlwalk_tab"
                 onClick={() => { setTab(tb.id); if (tb.id !== 'sessions') setViewSessionId(null); }}
                 onKeyDown={(e) => {
                   // Full ARIA tabs contract: role="tab" without arrow keys is

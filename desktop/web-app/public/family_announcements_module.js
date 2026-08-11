@@ -297,7 +297,7 @@ function FamilyAnnouncementsPanel(props) {
       "aria-selected": tab === tb.id,
       "aria-controls": "famann-tabpanel",
       tabIndex: tab === tb.id ? 0 : -1,
-      "data-help-key": "famann_tab_" + tb.id,
+      "data-help-key": "famann_tab",
       onClick: () => {
         setTab(tb.id);
         if (tb.id !== "saved") setViewId(null);

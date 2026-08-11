@@ -506,8 +506,10 @@ describe('Canvas workspace recovery integration contracts', () => {
     // data-attribute + top z-band, and LaunchPadView precedes OnboardingCoach.
     const recoveryGate = anti.indexOf("{isAppReady && canvasRecoveryDialogMode && (isCanvas || canvasRecoveryDialogMode === 'manage') && (");
     const recoveryGateHeader = anti.slice(recoveryGate, anti.indexOf('role="dialog"', recoveryGate));
-    const launchPadGate = anti.indexOf('{isAppReady && !hasSelectedMode && window.AlloModules && window.AlloModules.LaunchPadView', recoveryGate);
-    const coachGate = anti.indexOf('{isAppReady && !hasSelectedMode && window.AlloModules && window.AlloModules.OnboardingCoach', launchPadGate + 1);
+    // 2026-08: both landing gates additionally wait for the recovery DECISION —
+    // the same invariant this test guards, now explicit in the predicate.
+    const launchPadGate = anti.indexOf('{isAppReady && canvasRecoveryDecisionMade && !hasSelectedMode && window.AlloModules && window.AlloModules.LaunchPadView', recoveryGate);
+    const coachGate = anti.indexOf('{isAppReady && canvasRecoveryDecisionMade && !hasSelectedMode && window.AlloModules && window.AlloModules.OnboardingCoach', launchPadGate + 1);
 
     expect(recoveryGate).toBeGreaterThan(-1);
     expect(launchPadGate).toBeGreaterThan(recoveryGate);

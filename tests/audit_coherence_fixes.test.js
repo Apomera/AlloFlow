@@ -22,9 +22,9 @@ describe('audit coherence — no-text-layer story is enforced by the math', () =
     // The old merge let ONE hallucinated "true" out of N auditor passes disarm the
     // whole no-text honesty layer.
     expect(dp).not.toMatch(/hasSearchableText: parsedAudits\.some\(a => a\.hasSearchableText !== undefined\) \? parsedAudits\.some\(a => a\.hasSearchableText\)/);
-    expect(dp).toMatch(/hasSearchableText: \(\(\) => \{ const _v = parsedAudits\.filter\(a => a\.hasSearchableText !== undefined\); if \(!_v\.length\) return undefined; const _t = _v\.filter\(a => a\.hasSearchableText\)\.length; return _t > _v\.length - _t; \}\)\(\),/);
+    expect(dp).toMatch(/hasSearchableText: _imageInputMime \? false : \(\(\) => \{ const _v = parsedAudits\.filter\(a => a\.hasSearchableText !== undefined\); if \(!_v\.length\) return undefined; const _t = _v\.filter\(a => a\.hasSearchableText\)\.length; return _t > _v\.length - _t; \}\)\(\),/);
     // Behavior check on the extracted voter:
-    const m = dp.match(/hasSearchableText: (\(\(\) => \{ const _v = parsedAudits[\s\S]*?\}\)\(\)),/);
+    const m = dp.match(/hasSearchableText: _imageInputMime \? false : (\(\(\) => \{ const _v = parsedAudits[\s\S]*?\}\)\(\)),/);
     expect(m).toBeTruthy();
     const vote = new Function('parsedAudits', 'return ' + m[1]);
     expect(vote([{ hasSearchableText: false }, { hasSearchableText: false }, { hasSearchableText: true }])).toBe(false); // 1 hallucination no longer wins
@@ -53,7 +53,7 @@ describe('audit coherence — expert-edit re-score cannot inflate past Equal Acc
     // third argument and silently dropped, so a superseded run kept burning the
     // Gemini quota to completion. The window is wider because the fix carries a
     // long explanatory comment inside the array.
-    expect(vw).toMatch(/const \[_wv, _wa, _wea\] = await Promise\.all\(\[[\s\S]{0,1400}_safeAudit\(\(\) => auditOutputAccessibility\(newHtml, \{ signal: _reauditSignal \}\)\)[\s\S]{0,220}_safeAudit\(\(\) => runAxeAudit\(newHtml, \{ signal: _reauditSignal \}\)\)/);
+    expect(vw).toMatch(/const \[_wv, _wa, _wea\] = await Promise\.all\(\[[\s\S]{0,1400}_safeAudit\(\(\) => auditOutputAccessibility\(newHtml, \{ signal: _reauditSignal[^}]*\}\)\)[\s\S]{0,220}_safeAudit\(\(\) => runAxeAudit\(newHtml, \{ signal: _reauditSignal \}\)\)/);
     expect(vw).toMatch(/const _wdet = _waOk \? \(_weaOk \? Math\.min\(_wa\.score, _wea\.score\) : _wa\.score\) : \(_weaOk \? _wea\.score : null\);/);
     // and the displayed EA audit stays in sync with the score that used it
     expect(vw).toMatch(/secondEngineAudit: _weaOk \? _wea : null,/);
@@ -294,7 +294,7 @@ describe('assessment mode + answer-key toggle + auto-recovery (Aaron decisions 2
     expect(epNow).toMatch(/exportConfig\.assessmentMode !== true && \(exportConfig\.includeAnswerKey === true \|\| exportConfig\.includeTeacherKey === true\)/);
   });
   it('C29: tagged-PDF export auto-runs deterministic restoration (capped, adopt-only-if-not-worse, revertable)', () => {
-    expect(vpNow2).toMatch(/let _result = await createTaggedPdf\(bytes, pdfFixResult/);
+    expect(vpNow2).toMatch(/let _result = await createTaggedPdf\(bytes, _exportResult/);
     expect(vpNow2).toMatch(/_res0 > 0 && _res0 <= 200/);
     expect(vpNow2).toMatch(/_res2 != null && _res2 <= _res0/);
     expect(vpNow2).toMatch(/setPdfFixResult\(prev => prev \? _viewEnforceVerificationHtmlBinding\(\{ \.\.\.prev, accessibleHtml: _h,[^\n]*_preCmdHtml: _pre \}, 'content-modified-pending-reverification', _docPipeline\) : prev\);/);

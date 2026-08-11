@@ -114,7 +114,10 @@ describe('finding 15 — success telemetry requires KNOWN-clean verifiers', () =
     // branch below, which requires residual === 0 exactly.
     expect(dp).toContain('var axeCompleted = _alloUsableAxeAudit(r.axeAudit);');
     expect(dp).toContain('var residual = axeCompleted ? Math.max(0, r.axeAudit.totalViolations) : null;');
-    expect(dp).toContain("var state = reachedTarget && residual === 0 && aiCompleted ? 'success' : 'incomplete';");
+    // 2026-08: the success predicate got STRONGER — axe must have completed and no
+    // confirmed residual failures may remain (exactly this test's "NULL axe can't
+    // enter the numerator" concern, now enforced in the expression itself).
+    expect(dp).toContain("var state = reachedTarget && axeCompleted && residual === 0 && aiCompleted && !confirmedResidualFailures ? 'success' : 'incomplete';");
     expect(anti).toContain("_docPipeline.remediationOutcome(cur, { targetScore: pdfTargetScore })");
     expect(anti).toContain('outcome: _remediationOutcome.state,');
     expect(anti).not.toContain('(_resid === 0 || _resid == null)');

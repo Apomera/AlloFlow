@@ -350,7 +350,7 @@ function SpedTimelinesPanel(props) {
       "aria-selected": tab === tb.id,
       "aria-controls": "spedtl-tabpanel",
       tabIndex: tab === tb.id ? 0 : -1,
-      "data-help-key": "spedtl_tab_" + tb.id,
+      "data-help-key": "spedtl_tab",
       onClick: () => setTab(tb.id),
       onKeyDown: (e) => {
         let next = null;

@@ -11,6 +11,13 @@
 # (build scripts write LF).
 * text=auto eol=lf
 
+# EPPP migration-source archive: an immutable, manifest-hashed byte-exact snapshot
+# (migration_sources/eppp/v1/manifest.json records sha256 + byte length per file, and
+# tests/evidence pin its payloadSha256). Several historical files legitimately contain
+# CRLF; EOL normalization must never rewrite them or the hashes break. Store and check
+# out these bytes verbatim.
+migration_sources/** -text
+
 # Binaries: never apply text/EOL conversion (explicit, in addition to git's auto-detect).
 *.png  binary
 *.jpg  binary

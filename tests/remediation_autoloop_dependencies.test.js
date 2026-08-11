@@ -110,10 +110,28 @@ describe('extracted auto-remediation dependency contract', () => {
       warnLog: vi.fn(),
     });
 
-    expect(aiFixChunked).toHaveBeenCalledWith(initialHtml, expect.stringContaining('contrast'), 'auto-continue-ai-round-1');
+    // M20: the loop threads its own ownership identity into the chunked fixer so heartbeats
+    // carry a runId — the watchdog is inert without it. Pin the full 5-arg contract.
+    expect(aiFixChunked).toHaveBeenCalledWith(
+      initialHtml,
+      expect.stringContaining('contrast'),
+      'auto-continue-ai-round-1',
+      null,
+      expect.objectContaining({
+        signal: expect.any(AbortSignal),
+        shouldAbort: expect.any(Function),
+        owner: expect.objectContaining({ runId: expect.stringContaining('autocontinue') }),
+      })
+    );
     expect(sanitizeStyleForWCAG).toHaveBeenCalledWith(aiFixedHtml);
     expect(runAxeAudit).toHaveBeenCalledWith(sanitizedHtml);
-    expect(auditOutputAccessibility).toHaveBeenCalledWith(sanitizedHtml);
+    // The AI re-verify audit carries the loop's ownership context (M20) so its heartbeats
+    // are attributable and abortable; the deterministic engines run unadorned.
+    expect(auditOutputAccessibility).toHaveBeenCalledWith(sanitizedHtml, expect.objectContaining({
+      signal: expect.any(AbortSignal),
+      owner: expect.objectContaining({ runId: expect.stringContaining('autocontinue') }),
+      trigger: expect.stringContaining('reverify'),
+    }));
     expect(runEqualAccessAudit).toHaveBeenCalledWith(sanitizedHtml);
     expect(finalizeRemediationRound).toHaveBeenCalledWith(initial, expect.objectContaining({
       html: sanitizedHtml,

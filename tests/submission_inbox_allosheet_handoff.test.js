@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { createRequire } from 'node:module';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
 
@@ -1048,10 +1048,11 @@ describe('Submission Inbox -> AlloSheet packaging and host wiring', () => {
     resolve(process.cwd(), 'desktop/web-app/public/view_submission_inbox_module.js'),
     'utf8',
   );
-  const desktopModule = readFileSync(
-    resolve(process.cwd(), 'desktop/app-build/view_submission_inbox_module.js'),
-    'utf8',
-  );
+  // desktop/app-build/ is gitignored build output — sync_allosheet_assets.cjs writes it at
+  // build time, so a fresh checkout (and CI) legitimately lacks it. Absence is not drift;
+  // a PRESENT-but-stale mirror is.
+  const desktopModulePath = resolve(process.cwd(), 'desktop/app-build/view_submission_inbox_module.js');
+  const desktopModule = existsSync(desktopModulePath) ? readFileSync(desktopModulePath, 'utf8') : null;
   const syncSource = readFileSync(
     resolve(process.cwd(), 'dev-tools/sync_allosheet_assets.cjs'),
     'utf8',
@@ -1063,7 +1064,7 @@ describe('Submission Inbox -> AlloSheet packaging and host wiring', () => {
     expect(rootModule).toContain('allosheetMinimumScoreGroup');
     expect(syncSource).toContain("'view_submission_inbox_module.js'");
     expect(webModule).toBe(rootModule);
-    expect(desktopModule).toBe(rootModule);
+    if (desktopModule !== null) expect(desktopModule).toBe(rootModule);
   });
 
   it('threads a receipt-aware callback through the Submission Inbox host mount', () => {
