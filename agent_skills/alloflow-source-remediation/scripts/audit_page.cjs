@@ -141,6 +141,42 @@ async function main() {
         unlabeledControls: Array.from(document.querySelectorAll('input:not([type=hidden]),select,textarea'))
           .filter(visible)
           .filter((el) => !controlHasName(el)).length,
+        unlabeledControlTargets: Array.from(document.querySelectorAll('input:not([type=hidden]),select,textarea'))
+          .filter(visible)
+          .filter((el) => !controlHasName(el))
+          .slice(0, 20)
+          .map((el) => el.tagName.toLowerCase()
+            + (el.type ? '[' + el.type + ']' : '')
+            + (el.name ? '[name=' + el.name + ']' : '')
+            + (el.id ? '#' + el.id : '')),
+        // Form evidence (BAD survey run): radio/checkbox GROUPS need a
+        // fieldset+legend to give each control its group context, and a form
+        // without a real submit control is keyboard-hostile.
+        forms: (() => {
+          const groups = {};
+          document.querySelectorAll('input[type=radio],input[type=checkbox]').forEach((el) => {
+            const key = (el.type || 'radio') + ':' + (el.getAttribute('name') || '(unnamed)');
+            (groups[key] = groups[key] || []).push(el);
+          });
+          const grouped = (el) => {
+            const fs = el.closest('fieldset');
+            if (fs && fs.querySelector('legend')) return true;
+            // ARIA grouping is the legitimate surgical form when the controls
+            // live inside a layout table a fieldset cannot wrap.
+            const g = el.closest('[role=group],[role=radiogroup]');
+            return !!(g && (g.getAttribute('aria-label') || g.getAttribute('aria-labelledby')));
+          };
+          const ungroupedGroups = Object.entries(groups)
+            .filter(([, els]) => els.length >= 2)
+            .filter(([, els]) => !els.every(grouped))
+            .map(([key, els]) => ({ group: key, controls: els.length }));
+          const forms = Array.from(document.querySelectorAll('form')).map((f) => ({
+            action: f.getAttribute('action') || '',
+            controls: f.querySelectorAll('input:not([type=hidden]),select,textarea').length,
+            hasSubmit: !!f.querySelector('input[type=submit],input[type=image],button[type=submit],button:not([type])'),
+          }));
+          return { count: forms.length, forms, ungroupedGroups };
+        })(),
       };
     });
 
@@ -183,11 +219,21 @@ async function main() {
         if (!reached.has(mark)) sequence.push(mark);
         reached.add(mark);
       }
+      // Radio-group awareness (E-SRC-4, BAD survey run): Tab reaches ONE
+      // member of a same-name radio group by design; the others are arrow-key
+      // targets. Counting them unreachable is a false positive, so a group
+      // counts as reached when any member is.
+      const radios = await page.evaluate(() =>
+        Array.from(document.querySelectorAll('input[type=radio][data-allo-kb]'))
+          .map((el) => ({ mark: el.getAttribute('data-allo-kb'), name: el.getAttribute('name') || '' })));
+      const reachedRadioNames = new Set(radios.filter((r) => reached.has(r.mark)).map((r) => r.name));
+      radios.forEach((r) => { if (reachedRadioNames.has(r.name)) reached.add(r.mark); });
       const unreachable = interactive.filter((el) => !reached.has(el.index)).map((el) => el.brief);
       return {
         interactiveElements: interactive.length,
         reached: reached.size,
         unreachable,
+        radioGroupAware: true,
         // A trap = the walk burned its whole budget without covering the set
         // or cycling out; distinct from simply-unreachable elements.
         suspectedTrap: reached.size < interactive.length && sequence.length >= cap - 1,

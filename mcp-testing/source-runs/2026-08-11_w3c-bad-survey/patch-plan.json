@@ -1,0 +1,433 @@
+{
+ "schema_version": "0.1",
+ "target": {
+  "description": "W3C WAI Before/After Demonstration, inaccessible CityLights survey page (before/survey.html). Surgical accessibility patches with a forms focus; layout and visual design intentionally unchanged.",
+  "files": [
+   {
+    "path": "before/survey.html",
+    "sha256": "473d7ab9803d84c47391c02ed56ff8b9e9fca953a905a93c479b8111d0a552ff"
+   }
+  ]
+ },
+ "patches": [
+  {
+   "file": "before/survey.html",
+   "find": "<HTML>",
+   "replace": "<HTML lang=\"en\">",
+   "rationale": "The document declares no language; assistive technology cannot pick a voice or braille table (axe html-has-lang).",
+   "wcag": [
+    "3.1.1"
+   ]
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<SELECT ONCHANGE=\"location.href = this.value;\">",
+   "replace": "<SELECT aria-label=\"Quick menu: city services\" ONCHANGE=\"location.href = this.value;\">",
+   "rationale": "The quick-menu select has no accessible name (axe select-name). Its navigate-on-change behavior is a 3.2.2 concern recorded in review_notes.",
+   "wcag": [
+    "4.1.2"
+   ]
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<A HREF=\"javascript:location.href='home.html';\" onFocus=\"blur();\"><img name=\"nav_home\" src=./img/nav_home.gif width=88 height=27 hspace=\"15\" border=0px></a>",
+   "replace": "<A HREF=\"home.html\"><img name=\"nav_home\" src=./img/nav_home.gif width=88 height=27 hspace=\"15\" border=0px alt=\"Home\"></a>",
+   "rationale": "Home nav link: javascript: href defeats non-JS navigation, onFocus=blur() throws keyboard focus away, and the image link has no name. Real href, no blur, alt names the link.",
+   "wcag": [
+    "2.1.1",
+    "4.1.2",
+    "1.1.1"
+   ]
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<A HREF=\"javascript:location.href='news.html';\" ONFOCUS=\"blur();\"><IMG SRC=./img/nav_news.gif name=\"nav_news\" WIDTH=90 HEIGHT=21 hspace=\"12\" BORDER=0px></A>",
+   "replace": "<A HREF=\"news.html\"><IMG SRC=./img/nav_news.gif name=\"nav_news\" WIDTH=90 HEIGHT=21 hspace=\"12\" BORDER=0px ALT=\"News\"></A>",
+   "rationale": "News nav link: javascript: href defeats non-JS navigation, onFocus=blur() throws keyboard focus away, and the image link has no name. Real href, no blur, alt names the link.",
+   "wcag": [
+    "2.1.1",
+    "4.1.2",
+    "1.1.1"
+   ]
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<A HREF=\"javascript:location.href='tickets.html';\" ONFOCUS=\"blur();\"><IMG name=\"nav_facts\" SRC=./img/nav_facts.gif WIDTH=105 HEIGHT=23 hspace=\"9\" BORDER=0px></A>",
+   "replace": "<A HREF=\"tickets.html\"><IMG name=\"nav_facts\" SRC=./img/nav_facts.gif WIDTH=105 HEIGHT=23 hspace=\"9\" BORDER=0px ALT=\"Tickets\"></A>",
+   "rationale": "Tickets nav link: javascript: href defeats non-JS navigation, onFocus=blur() throws keyboard focus away, and the image link has no name. Real href, no blur, alt names the link.",
+   "wcag": [
+    "2.1.1",
+    "4.1.2",
+    "1.1.1"
+   ]
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<A HREF=\"javascript:location.href='survey.html';\" ONFOCUS=\"blur();\"><IMG SRC=./img/nav_survey.gif name=\"nav_survey\" WIDTH=107 HEIGHT=32 hspace=\"8\" BORDER=0px></A>",
+   "replace": "<A HREF=\"survey.html\"><IMG SRC=./img/nav_survey.gif name=\"nav_survey\" WIDTH=107 HEIGHT=32 hspace=\"8\" BORDER=0px ALT=\"Survey\"></A>",
+   "rationale": "Survey nav link: javascript: href defeats non-JS navigation, onFocus=blur() throws keyboard focus away, and the image link has no name. Real href, no blur, alt names the link.",
+   "wcag": [
+    "2.1.1",
+    "4.1.2",
+    "1.1.1"
+   ]
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<p class=\"headline\">Citylights Survey</p>",
+   "replace": "<h2 class=\"headline\">Citylights Survey</h2>",
+   "rationale": "The visual page title was a styled paragraph; a real h2 (under the demo chrome's h1) restores structural navigation.",
+   "wcag": [
+    "1.3.1"
+   ]
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<p class=\"headline\"><font size=\"4\">This Week's Survey: More city parks - a pain or a gain?</font></p>",
+   "replace": "<h3 class=\"headline\"><font size=\"4\">This Week's Survey: More city parks - a pain or a gain?</font></h3>",
+   "rationale": "The survey subtitle was a styled paragraph; a real h3 keeps the hierarchy in sequence.",
+   "wcag": [
+    "1.3.1"
+   ]
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<TD WIDTH=625px HEIGHT=\"600px\" VALIGN=TOP id=\"main\">",
+   "replace": "<TD WIDTH=625px HEIGHT=\"600px\" VALIGN=TOP id=\"main\" role=\"main\">",
+   "rationale": "The page has no main landmark; the central content cell takes role=main. Full landmark coverage of the table chrome is out of surgical scope (review_notes).",
+   "wcag": [
+    "1.3.1"
+   ]
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<table width=\"500\" border=\"0\" cellspacing=\"2\" cellpadding=\"0\">",
+   "replace": "<table width=\"500\" border=\"0\" cellspacing=\"2\" cellpadding=\"0\" role=\"group\" aria-label=\"Which is your favorite city park?\">",
+   "rationale": "The six park radios have no group context (no fieldset is possible inside this layout table); role=group with the question as its label carries the grouping to assistive tech.",
+   "wcag": [
+    "1.3.1",
+    "3.3.2"
+   ]
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<input class=\"align\" type=\"radio\" name=\"res\" value=\"1\">",
+   "replace": "<input class=\"align\" type=\"radio\" name=\"res\" value=\"1\" aria-label=\"None\">",
+   "rationale": "Park radio 1: its visible option text ('None') sits in a different layout-table cell, so the control had no accessible name (axe label, critical).",
+   "wcag": [
+    "1.1.1",
+    "3.3.2",
+    "4.1.2"
+   ]
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<input class=\"align\" type=\"radio\" name=\"res\" value=\"2\">",
+   "replace": "<input class=\"align\" type=\"radio\" name=\"res\" value=\"2\" aria-label=\"Central Park\">",
+   "rationale": "Park radio 2: its visible option text ('Central Park') sits in a different layout-table cell, so the control had no accessible name (axe label, critical).",
+   "wcag": [
+    "1.1.1",
+    "3.3.2",
+    "4.1.2"
+   ]
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<input class=\"align\" type=\"radio\" name=\"res\" value=\"3\">",
+   "replace": "<input class=\"align\" type=\"radio\" name=\"res\" value=\"3\" aria-label=\"Grand Park\">",
+   "rationale": "Park radio 3: its visible option text ('Grand Park') sits in a different layout-table cell, so the control had no accessible name (axe label, critical).",
+   "wcag": [
+    "1.1.1",
+    "3.3.2",
+    "4.1.2"
+   ]
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<input class=\"align\" type=\"radio\" name=\"res\" value=\"4\">",
+   "replace": "<input class=\"align\" type=\"radio\" name=\"res\" value=\"4\" aria-label=\"Jurassic Park\">",
+   "rationale": "Park radio 4: its visible option text ('Jurassic Park') sits in a different layout-table cell, so the control had no accessible name (axe label, critical).",
+   "wcag": [
+    "1.1.1",
+    "3.3.2",
+    "4.1.2"
+   ]
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<input class=\"align\" type=\"radio\" name=\"res\" value=\"5\">",
+   "replace": "<input class=\"align\" type=\"radio\" name=\"res\" value=\"5\" aria-label=\"South Park\">",
+   "rationale": "Park radio 5: its visible option text ('South Park') sits in a different layout-table cell, so the control had no accessible name (axe label, critical).",
+   "wcag": [
+    "1.1.1",
+    "3.3.2",
+    "4.1.2"
+   ]
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<input class=\"align\" type=\"radio\" name=\"res\" value=\"6\">",
+   "replace": "<input class=\"align\" type=\"radio\" name=\"res\" value=\"6\" aria-label=\"Other\">",
+   "rationale": "Park radio 6: its visible option text ('Other') sits in a different layout-table cell, so the control had no accessible name (axe label, critical).",
+   "wcag": [
+    "1.1.1",
+    "3.3.2",
+    "4.1.2"
+   ]
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<select name=\"cc\">",
+   "replace": "<select name=\"cc\" aria-label=\"Which city do you find is the greenest?\">",
+   "rationale": "The city select has no accessible name (axe select-name, critical); the question text sits in a separate table header cell.",
+   "wcag": [
+    "3.3.2",
+    "4.1.2"
+   ]
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<input type=\"radio\" name=\"t\" value=\"mr\"> Mr.",
+   "replace": "<input type=\"radio\" name=\"t\" value=\"mr\" aria-label=\"Title: Mr.\"> Mr.",
+   "rationale": "Title radio: the adjacent text 'Mr.' is not programmatically associated (axe label).",
+   "wcag": [
+    "3.3.2",
+    "4.1.2"
+   ]
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<input type=\"radio\" name=\"t\" value=\"mrs\"> Mrs.",
+   "replace": "<input type=\"radio\" name=\"t\" value=\"mrs\" aria-label=\"Title: Mrs.\"> Mrs.",
+   "rationale": "Title radio: the adjacent text 'Mrs.' is not programmatically associated (axe label).",
+   "wcag": [
+    "3.3.2",
+    "4.1.2"
+   ]
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<input type=\"text\" name=\"em\" id=\"em\" size=\"20\" />",
+   "replace": "<input type=\"text\" name=\"em\" id=\"em\" size=\"20\" aria-label=\"eMail Address\" />",
+   "rationale": "Text field em: its visible label 'eMail Address' sits in a cell one row below (axe label). The name/id ('em') and column position confirm the pairing.",
+   "wcag": [
+    "3.3.2",
+    "4.1.2"
+   ]
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<input type=\"text\" name=\"n\" id=\"n\" size=\"30\" />",
+   "replace": "<input type=\"text\" name=\"n\" id=\"n\" size=\"30\" aria-label=\"Name\" />",
+   "rationale": "Text field n: the visible 'Name:' text precedes the title radios in a different cell and is never associated (axe label). The name/id ('n') confirms the pairing.",
+   "wcag": [
+    "3.3.2",
+    "4.1.2"
+   ]
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<input type=\"text\" name=\"ev\" id=\"ev\" size=\"20\" />",
+   "replace": "<input type=\"text\" name=\"ev\" id=\"ev\" size=\"20\" aria-label=\"Retype eMail\" />",
+   "rationale": "Text field ev: its visible label 'Retype eMail' sits in a cell one row below (axe label). The name/id ('ev' = email verify) and column position confirm the pairing.",
+   "wcag": [
+    "3.3.2",
+    "4.1.2"
+   ]
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<IMG SRC=./img/top_weather.gif WIDTH=128px HEIGHT=86px>",
+   "replace": "<IMG SRC=./img/top_weather.gif WIDTH=128px HEIGHT=86px ALT=\"Weather symbol: partly cloudy\">",
+   "rationale": "The weather pictogram (sun behind clouds, viewed on the home-page run; same asset) had no text alternative.",
+   "wcag": [
+    "1.1.1"
+   ]
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<IMG SRC=./img/top_logo_next_end.gif WIDTH=24px HEIGHT=86px>",
+   "replace": "<IMG SRC=./img/top_logo_next_end.gif WIDTH=24px HEIGHT=86px ALT=\"\">",
+   "rationale": "Decorative layout image; empty alt removes it from the reading order.",
+   "wcag": [
+    "1.1.1"
+   ]
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<IMG SRC=./img/top_logo_next_start.gif WIDTH=22px HEIGHT=86px>",
+   "replace": "<IMG SRC=./img/top_logo_next_start.gif WIDTH=22px HEIGHT=86px ALT=\"\">",
+   "rationale": "Decorative layout image; empty alt removes it from the reading order.",
+   "wcag": [
+    "1.1.1"
+   ]
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<IMG SRC=./img/mark.gif WIDTH=158px HEIGHT=7px>",
+   "replace": "<IMG SRC=./img/mark.gif WIDTH=158px HEIGHT=7px ALT=\"\">",
+   "rationale": "Decorative layout image; empty alt removes it from the reading order.",
+   "wcag": [
+    "1.1.1"
+   ]
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<IMG SRC=./img/marker2_w.gif WIDTH=78px HEIGHT=1px>",
+   "replace": "<IMG SRC=./img/marker2_w.gif WIDTH=78px HEIGHT=1px ALT=\"\">",
+   "rationale": "Decorative layout image; empty alt removes it from the reading order. (occurrence 1 of 5)",
+   "wcag": [
+    "1.1.1"
+   ],
+   "occurrence": 1
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<IMG SRC=./img/marker2_w.gif WIDTH=78px HEIGHT=1px>",
+   "replace": "<IMG SRC=./img/marker2_w.gif WIDTH=78px HEIGHT=1px ALT=\"\">",
+   "rationale": "Decorative layout image; empty alt removes it from the reading order. (occurrence 2 of 5)",
+   "wcag": [
+    "1.1.1"
+   ],
+   "occurrence": 2
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<IMG SRC=./img/marker2_w.gif WIDTH=78px HEIGHT=1px>",
+   "replace": "<IMG SRC=./img/marker2_w.gif WIDTH=78px HEIGHT=1px ALT=\"\">",
+   "rationale": "Decorative layout image; empty alt removes it from the reading order. (occurrence 3 of 5)",
+   "wcag": [
+    "1.1.1"
+   ],
+   "occurrence": 3
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<IMG SRC=./img/marker2_w.gif WIDTH=78px HEIGHT=1px>",
+   "replace": "<IMG SRC=./img/marker2_w.gif WIDTH=78px HEIGHT=1px ALT=\"\">",
+   "rationale": "Decorative layout image; empty alt removes it from the reading order. (occurrence 4 of 5)",
+   "wcag": [
+    "1.1.1"
+   ],
+   "occurrence": 4
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<IMG SRC=./img/marker2_w.gif WIDTH=78px HEIGHT=1px>",
+   "replace": "<IMG SRC=./img/marker2_w.gif WIDTH=78px HEIGHT=1px ALT=\"\">",
+   "rationale": "Decorative layout image; empty alt removes it from the reading order. (occurrence 5 of 5)",
+   "wcag": [
+    "1.1.1"
+   ],
+   "occurrence": 5
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<IMG SRC=.img/marker2_w.gif WIDTH=78px HEIGHT=1px>",
+   "replace": "<IMG SRC=.img/marker2_w.gif WIDTH=78px HEIGHT=1px ALT=\"\">",
+   "rationale": "Decorative layout image; empty alt removes it from the reading order.",
+   "wcag": [
+    "1.1.1"
+   ]
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<IMG SRC=./img/marker2_t.gif WIDTH=1 HEIGHT=30px>",
+   "replace": "<IMG SRC=./img/marker2_t.gif WIDTH=1 HEIGHT=30px ALT=\"\">",
+   "rationale": "Decorative layout image; empty alt removes it from the reading order.",
+   "wcag": [
+    "1.1.1"
+   ]
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<IMG SRC=./img/blank_5x5.gif WIDTH=20px HEIGHT=5px>",
+   "replace": "<IMG SRC=./img/blank_5x5.gif WIDTH=20px HEIGHT=5px ALT=\"\">",
+   "rationale": "Decorative layout image; empty alt removes it from the reading order.",
+   "wcag": [
+    "1.1.1"
+   ]
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<IMG SRC=./img/border_left_top.gif WIDTH=10px HEIGHT=10px>",
+   "replace": "<IMG SRC=./img/border_left_top.gif WIDTH=10px HEIGHT=10px ALT=\"\">",
+   "rationale": "Decorative layout image; empty alt removes it from the reading order.",
+   "wcag": [
+    "1.1.1"
+   ]
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<IMG SRC=./img/border_top.gif HEIGHT=10px>",
+   "replace": "<IMG SRC=./img/border_top.gif HEIGHT=10px ALT=\"\">",
+   "rationale": "Decorative layout image; empty alt removes it from the reading order.",
+   "wcag": [
+    "1.1.1"
+   ]
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<IMG SRC=./img/border_right_top.gif WIDTH=10px HEIGHT=10px>",
+   "replace": "<IMG SRC=./img/border_right_top.gif WIDTH=10px HEIGHT=10px ALT=\"\">",
+   "rationale": "Decorative layout image; empty alt removes it from the reading order.",
+   "wcag": [
+    "1.1.1"
+   ]
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<IMG SRC=./img/border_left.gif WIDTH=10px>",
+   "replace": "<IMG SRC=./img/border_left.gif WIDTH=10px ALT=\"\">",
+   "rationale": "Decorative layout image; empty alt removes it from the reading order.",
+   "wcag": [
+    "1.1.1"
+   ]
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<IMG SRC=./img/border_right.gif WIDTH=10px>",
+   "replace": "<IMG SRC=./img/border_right.gif WIDTH=10px ALT=\"\">",
+   "rationale": "Decorative layout image; empty alt removes it from the reading order.",
+   "wcag": [
+    "1.1.1"
+   ]
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<IMG SRC=./img/border_bottom_left.gif WIDTH=10px HEIGHT=10px>",
+   "replace": "<IMG SRC=./img/border_bottom_left.gif WIDTH=10px HEIGHT=10px ALT=\"\">",
+   "rationale": "Decorative layout image; empty alt removes it from the reading order.",
+   "wcag": [
+    "1.1.1"
+   ]
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<IMG SRC=./img/border_bottom.gif HEIGHT=10px>",
+   "replace": "<IMG SRC=./img/border_bottom.gif HEIGHT=10px ALT=\"\">",
+   "rationale": "Decorative layout image; empty alt removes it from the reading order.",
+   "wcag": [
+    "1.1.1"
+   ]
+  },
+  {
+   "file": "before/survey.html",
+   "find": "<IMG SRC=./img/border_bottom_right.gif WIDTH=10px HEIGHT=10px>",
+   "replace": "<IMG SRC=./img/border_bottom_right.gif WIDTH=10px HEIGHT=10px ALT=\"\">",
+   "rationale": "Decorative layout image; empty alt removes it from the reading order.",
+   "wcag": [
+    "1.1.1"
+   ]
+  }
+ ],
+ "review_notes": [
+  "Accepted remainder: the two title radios (name=t) still count as an ungrouped pair in the auditor's fieldset/role-group check. Each control's aria-label carries the group lexically ('Title: Mr.' / 'Title: Mrs.'), and the only surgical wrapper available (the enclosing nobr, which also contains the unrelated visible text 'Name:') would produce a semantically muddy group; the honest structural fix belongs to a page rebuild.",
+  "Form-association strategy: the survey lays controls and their visible labels out in SEPARATE layout-table cells, so label/for pairing and fieldsets are structurally impossible without rebuilding the tables. aria-label per control (bound from column position corroborated by the control's own name/id) plus role=group with the question text on the enclosing layout table is the surgical equivalent; a structural rebuild like W3C's own after-page remains the better long-term fix and belongs to the page owner.",
+  "The eMail/Name/Retype-eMail pairings were derived from column positions and the controls' name/id attributes (em, n, ev); if the backend maps them differently the labels must follow the backend, not this inference - flagged for the page owner.",
+  "The QUICKMENU select still navigates on change (WCAG 3.2.2); converting it to a go-button changes behavior and belongs to the page owner.",
+  "axe 'region' violations only partially improve: role=main covers the content cell; the table-based chrome outside landmarks would need structural rework beyond surgical scope.",
+  "The 25 gif.gif spacers already carry alt='' in the source and were left untouched.",
+  "The submit button is a real input[type=submit] and was left untouched."
+ ]
+}

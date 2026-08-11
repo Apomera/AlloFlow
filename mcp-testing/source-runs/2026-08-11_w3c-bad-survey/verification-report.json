@@ -1,0 +1,25 @@
+{
+ "schemaVersion": "0.1",
+ "createdAt": "2026-08-11T18:03:59Z",
+ "binding": {
+  "plan_sha256": "0b2386cbb0d7c9998f60077224513d4042eda753e6a23f5e3cb51540c534e751",
+  "before_audit_sha256": "68ce9fc2d967ba79b2c0b86cdd6dc68e2b586ed7bfe9c9fa8751bb69525731d0",
+  "after_audit_sha256": "0cd41abdfa69254b3515e568b146c72a479c303e0aeacfa1ba365b5a1fb1da6d"
+ },
+ "counts": {
+  "items": 46,
+  "verified": 46,
+  "discrepancies": 0,
+  "unreadable": 0
+ },
+ "discrepancies": [],
+ "unreadable": [],
+ "verifier": {
+  "model": "claude-fable-5",
+  "context_isolation": "fresh-context",
+  "statement": "I read the full original (mcp-testing/source-corpus/w3c-bad/before/survey.html) and patched (C:/tmp/bad-survey-patched/before/survey.html) files directly, diffed them hunk-by-hunk against the 42-patch plan (every hunk mapped, none undeclared), verified the worksheet binding sha256 hashes of plan and both audits, viewed top_weather.gif, traced every radio and text-field aria-label to its layout-table cell row by row, and independently re-ran audit_page.cjs on the patched file (59/59 keyboard reachable, no traps, only the declared 'region' violation remaining, rendered-text sha identical before/after)."
+ },
+ "result": "verified",
+ "meaning": "'verified' means an independent reader attested every item against the patched sources and audits. It does not upgrade any compliance claim, and the script cannot prove the reader's independence - it records the attestation.",
+ "ok": true
+}

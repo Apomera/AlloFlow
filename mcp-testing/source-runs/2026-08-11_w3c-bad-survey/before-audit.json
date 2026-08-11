@@ -1,0 +1,227 @@
+{
+  "ok": true,
+  "page": "survey.html",
+  "audit": {
+    "axe": {
+      "available": true,
+      "violations": [
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/html-has-lang?application=axeAPI",
+          "wcag": [
+            "wcag311"
+          ],
+          "nodes": 1,
+          "targets": [
+            "html"
+          ]
+        },
+        {
+          "id": "image-alt",
+          "impact": "critical",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/image-alt?application=axeAPI",
+          "wcag": [
+            "wcag111"
+          ],
+          "nodes": 24,
+          "targets": [
+            "img[src$=\"border_left_top.gif\"]",
+            "img[src$=\"border_top.gif\"]",
+            "img[src$=\"border_right_top.gif\"]",
+            "img[src$=\"border_left.gif\"]",
+            "img[src$=\"top_logo_next_end.gif\"]",
+            "img[src$=\"top_weather.gif\"]",
+            "img[src$=\"top_logo_next_start.gif\"]",
+            "img[src$=\"mark.gif\"]"
+          ]
+        },
+        {
+          "id": "label",
+          "impact": "critical",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/label?application=axeAPI",
+          "wcag": [
+            "wcag412"
+          ],
+          "nodes": 11,
+          "targets": [
+            "input[value=\"1\"]",
+            "input[value=\"2\"]",
+            "input[value=\"3\"]",
+            "input[value=\"4\"]",
+            "input[value=\"5\"]",
+            "input[value=\"6\"]",
+            "input[value=\"mr\"]",
+            "input[value=\"mrs\"]"
+          ]
+        },
+        {
+          "id": "landmark-one-main",
+          "impact": "moderate",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/landmark-one-main?application=axeAPI",
+          "wcag": [],
+          "nodes": 1,
+          "targets": [
+            "html"
+          ]
+        },
+        {
+          "id": "link-name",
+          "impact": "serious",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/link-name?application=axeAPI",
+          "wcag": [
+            "wcag244",
+            "wcag412"
+          ],
+          "nodes": 4,
+          "targets": [
+            "#home > a[onfocus=\"blur();\"]",
+            "#news > a[onfocus=\"blur();\"]",
+            "#tickets > a[onfocus=\"blur();\"]",
+            "#survey > a[onfocus=\"blur();\"]"
+          ]
+        },
+        {
+          "id": "region",
+          "impact": "moderate",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/region?application=axeAPI",
+          "wcag": [],
+          "nodes": 20,
+          "targets": [
+            "#logos",
+            "h1",
+            ".subline",
+            "#mnav",
+            "#startcontent",
+            "tr[height=\"10px\"]:nth-child(1)",
+            "td[background=\"./img/border_left.gif\"]",
+            "table[height=\"144px\"]"
+          ]
+        },
+        {
+          "id": "select-name",
+          "impact": "critical",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/select-name?application=axeAPI",
+          "wcag": [
+            "wcag412"
+          ],
+          "nodes": 2,
+          "targets": [
+            "select[onchange=\"location.href = this.value;\"]",
+            "select[name=\"cc\"]"
+          ]
+        }
+      ],
+      "incomplete": 1
+    },
+    "keyboard": {
+      "interactiveElements": 59,
+      "reached": 14,
+      "unreachable": [
+        "A ",
+        "A ",
+        "A ",
+        "A ",
+        "INPUT res",
+        "INPUT res",
+        "INPUT res",
+        "INPUT res",
+        "INPUT res",
+        "INPUT res",
+        "SELECT select a city ----->\n                                ",
+        "INPUT t",
+        "INPUT t",
+        "INPUT em",
+        "INPUT n",
+        "INPUT ev",
+        "INPUT submit",
+        "A Copyright",
+        "A W3C",
+        "A MIT",
+        "A ERCIM",
+        "A Keio",
+        "A changelog",
+        "A Shadi Abou-Zahra",
+        "A Education and Outreach Working Group (EOWG)",
+        "A WAI-TIES",
+        "A WAI-AGE",
+        "A Acknowledgements",
+        "A WAI Site Map",
+        "A Help with WAI Website",
+        "A Search",
+        "A Contacting WAI",
+        "A wai-eo-editors@w3.org",
+        "A wai@w3.org",
+        "A Copyright",
+        "A W3C",
+        "A MIT",
+        "A ERCIM",
+        "A Keio",
+        "A liability",
+        "A trademark",
+        "A document use",
+        "A software licensing",
+        "A public",
+        "A Member"
+      ],
+      "radioGroupAware": true,
+      "suspectedTrap": false
+    },
+    "outline": {
+      "title": "Welcome to CityLights! [Inaccessible Survey Page]",
+      "lang": "",
+      "headings": [
+        {
+          "level": 1,
+          "text": "Inaccessible Survey Page - Before and After Demonstration"
+        }
+      ],
+      "landmarks": [],
+      "imagesWithoutAlt": 24,
+      "unlabeledControls": 13,
+      "unlabeledControlTargets": [
+        "select[select-one]",
+        "input[radio][name=res]",
+        "input[radio][name=res]",
+        "input[radio][name=res]",
+        "input[radio][name=res]",
+        "input[radio][name=res]",
+        "input[radio][name=res]",
+        "select[select-one][name=cc]",
+        "input[radio][name=t]",
+        "input[radio][name=t]",
+        "input[text][name=em]#em",
+        "input[text][name=n]#n",
+        "input[text][name=ev]#ev"
+      ],
+      "forms": {
+        "count": 1,
+        "forms": [
+          {
+            "action": "survey.php",
+            "controls": 13,
+            "hasSubmit": true
+          }
+        ],
+        "ungroupedGroups": [
+          {
+            "group": "radio:res",
+            "controls": 6
+          },
+          {
+            "group": "radio:t",
+            "controls": 2
+          }
+        ]
+      }
+    },
+    "text": {
+      "sha256": "f1581257a7ac0b816ec4eca4ea8895a1db46615a675f8cb6020dff07bd254190",
+      "chars": 5767
+    }
+  },
+  "blockedNetworkRequests": 0,
+  "networkPolicy": "deny",
+  "note": "axe automates only part of WCAG; keyboard reachability is evidence, not usability judgement. A person must still operate the page.",
+  "createdAt": "2026-08-11T17:57:09Z"
+}

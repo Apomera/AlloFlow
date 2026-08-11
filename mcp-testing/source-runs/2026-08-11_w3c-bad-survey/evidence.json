@@ -1,0 +1,45 @@
+{
+  "ok": true,
+  "verdict": "improved",
+  "problems": [],
+  "axe": {
+    "before": 7,
+    "after": 1,
+    "fixed": [
+      "html-has-lang",
+      "image-alt",
+      "label",
+      "landmark-one-main",
+      "link-name",
+      "select-name"
+    ],
+    "introduced": [],
+    "remaining": [
+      "region"
+    ]
+  },
+  "keyboard": {
+    "unreachableBefore": 45,
+    "unreachableAfter": 0,
+    "suspectedTrapBefore": false,
+    "suspectedTrapAfter": false
+  },
+  "outline": {
+    "imagesWithoutAlt": [
+      24,
+      0
+    ],
+    "unlabeledControls": [
+      13,
+      0
+    ],
+    "langBefore": "",
+    "langAfter": "en"
+  },
+  "behavior": {
+    "renderedTextChanged": false,
+    "declaredByPlan": false
+  },
+  "note": "An axe pass is necessary, not sufficient; this comparison is evidence for a human reviewer and the project's own test suite, never a compliance determination.",
+  "createdAt": "2026-08-11T17:58:03Z"
+}
