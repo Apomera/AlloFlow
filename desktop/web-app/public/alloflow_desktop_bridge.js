@@ -108,7 +108,20 @@
   function saveConfig(key, value) {
     if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
     var clone = JSON.parse(JSON.stringify(value));
-    if (key === 'alloflow_ai_config') clone.apiKey = '';
+    if (key === 'alloflow_ai_config') {
+      // The shell's config push never carries a credential (its payload sends
+      // apiKey '') — blanking unconditionally erased any key the user pasted
+      // into the in-app AI settings on EVERY sync, silently locking out cloud
+      // providers (empty generations, keyless 403 vision calls, "my key won't
+      // save"). Preserve the stored key when the incoming one is empty; a
+      // non-empty incoming key (future secure-storage delivery) still wins.
+      var incomingKey = typeof clone.apiKey === 'string' ? clone.apiKey.trim() : '';
+      if (!incomingKey) {
+        var existingKey = '';
+        try { existingKey = String((JSON.parse(localStorage.getItem(key) || 'null') || {}).apiKey || ''); } catch (_) {}
+        clone.apiKey = existingKey;
+      }
+    }
     var serialized = JSON.stringify(clone);
     if (serialized.length > MAX_CONFIG_BYTES) throw new Error('Desktop configuration message is too large.');
     localStorage.setItem(key, serialized);
