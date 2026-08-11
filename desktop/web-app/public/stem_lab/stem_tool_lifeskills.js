@@ -1690,7 +1690,23 @@ window.StemLab = window.StemLab || {
         setTimeout(function() { upd('badgeToast', null); }, 3000);
       }
       function stemBeep(correct) { if (typeof window.stemBeep === 'function') { window.stemBeep(correct); return; } if (correct) { lifeskTone(660, 0.09, 'sine', 0.05); setTimeout(function() { lifeskTone(880, 0.12, 'sine', 0.05); }, 90); } else { lifeskTone(196, 0.2, 'triangle', 0.05); } }
-      function announceToSR(msg) { upd('srMsg', msg); }
+      function announceToSR(msg) {
+        upd('srMsg', msg);
+        // ...and actually say it. This file builds a polite live region
+        // (#allo-live-lifeskills) at load and then never wrote to it: announceToSR only
+        // parked a string in toolData under `srMsg`, which nothing renders. All 67
+        // announcements in the tool — tab switches, 3D scene changes, budget results,
+        // interview feedback, capstone progress — were silent. Same bug epidemic
+        // carried and the same fix, so the two now behave identically.
+        try {
+          var lr = document.getElementById('allo-live-lifeskills');
+          if (!lr) return;
+          // Clear first: a screen reader will not re-announce identical text, so two
+          // of the same message in a row would otherwise be spoken once.
+          lr.textContent = '';
+          setTimeout(function () { lr.textContent = String(msg == null ? '' : msg); }, 30);
+        } catch (e) { /* no DOM (SSR smoke) — the state write above still happens */ }
+      }
       function lifeSkills3dLabId(source) {
         return String(source || '').replace(/^alloflow-life-/, '').replace(/-3d$/, '');
       }
