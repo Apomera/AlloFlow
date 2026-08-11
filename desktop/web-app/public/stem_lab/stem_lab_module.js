@@ -6952,6 +6952,8 @@
             // Aug 2026: Tree Life Lab — whole-organism photosynthesis, 3D growth clock,
             // and the reproduction-strategy game.
             treeLab: true,
+            // Aug 2026: Machine Lab — simple machines, forces and mechanical advantage.
+            machineLab: true,
             // Engineering & CS
             archStudio: true, bridgeLab: true, circuit: true, codingPlayground: true,
             cyberDefense: true, magnetism: true, semiconductor: true,
