@@ -353,6 +353,20 @@
     { q: 'Why do antibiotics that target the bacterial cell wall (like penicillin) NOT work against viruses?', choices: ['The antibiotics are too big to fit in the virus', 'Viruses do not have cell walls - they have no equivalent target', 'Viruses move too fast', 'The dose has to be much higher'], answer: 1, explain: 'Viruses have no cell wall, no ribosomes, no DNA replication machinery of their own - they hijack the host\'s. They have NO equivalent target for any antibiotic. This is why prescribing antibiotics "just in case" for a viral cold or flu is useless (and accelerates resistance for the bacteria that ARE in your body).' }
   ];
 
+  // The authored bank put 12 of 15 correct answers at index 1 (and none at
+  // index 0), so "always pick B" scored 80%. Deterministic per-question
+  // rotation — stable across renders, remapping the graded answer index —
+  // spreads the correct answers across all four slots.
+  (function () {
+    QUIZ_QUESTIONS.forEach(function (q, i) {
+      var len = q.choices.length;
+      var shift = (i * 7 + 3) % len;
+      if (!shift) return;
+      q.choices = q.choices.slice(shift).concat(q.choices.slice(0, shift));
+      q.answer = (q.answer - shift + len) % len;
+    });
+  })();
+
   // ──────────────────────────────────────────────────────────────────
   // INTERACTIVE WIDGETS (module scope)
   // Three React components hoisted out of render(ctx) so their useState

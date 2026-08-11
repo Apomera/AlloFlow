@@ -3505,7 +3505,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         var sequenceRef = useRef([]);
         // On first 'play' click, randomize a sequence of ROUND_COUNT scenarios
         var startGame = function() {
-          var pool = SCENARIOS.slice().sort(function() { return Math.random() - 0.5; });
+          // Fisher-Yates: the Math.random()-0.5 comparator sampled the round
+          // sequence non-uniformly (early scenarios were over-served).
+          var pool = SCENARIOS.slice();
+          for (var fy = pool.length - 1; fy > 0; fy--) {
+            var fj = Math.floor(Math.random() * (fy + 1));
+            var ft = pool[fy]; pool[fy] = pool[fj]; pool[fj] = ft;
+          }
           sequenceRef.current = pool.slice(0, ROUND_COUNT);
           setRoundIdx(0);
           setResults([]);
