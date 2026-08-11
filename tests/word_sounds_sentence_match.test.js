@@ -149,6 +149,13 @@ describe('the player treats the sentence as print', () => {
     expect(MODULE).toMatch(/board\.tiles = fisherYatesShuffle\(\[\.\.\.board\.sequence, \.\.\.board\.extras\]\)/);
   });
 
+  it('a one-word pack says why it cannot play, instead of "Preparing..." forever', () => {
+    expect(MODULE).toMatch(/sentenceMatchBoard === null && \(preloadedWords \|\| \[\]\)\.length < 2/);
+    expect(MODULE).toMatch(/needs at least two words in this pack/);
+    expect(read('ui_strings.js')).toMatch(/"sentence_match_needs_words":/);
+    expect(read('allo_data_source.jsx')).toMatch(/'word_sounds\.sentence_match_needs_words':/);
+  });
+
   it('startActivity clears the board and the slots', () => {
     expect(MODULE).toMatch(/setSentenceMatchBoard\(null\);/);
     expect(MODULE).toMatch(/setSentenceMatchSlots\(\[\]\);/);

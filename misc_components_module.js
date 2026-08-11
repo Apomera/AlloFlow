@@ -76,6 +76,15 @@ const AnimatedNumber = ({ value, duration = 1e3, disableAnimations = false }) =>
   }, [value, duration, disableAnimations, prefersReducedMotion]);
   return /* @__PURE__ */ React.createElement(React.Fragment, null, displayValue);
 };
+const wsHighlightTarget = (text, target) => {
+  const tw = String(target || "").trim();
+  const s = String(text || "");
+  if (!tw) return s;
+  const esc = tw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return s.split(new RegExp(`\\b(${esc})\\b`, "gi")).map(
+    (p, i) => p.toLowerCase() === tw.toLowerCase() ? /* @__PURE__ */ React.createElement("strong", { key: i, className: "text-sky-800 font-black" }, p) : p
+  );
+};
 const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved, acceptedAnswers, displayWord }) => {
   const { t } = useContext(LanguageContext);
   const _solved = displayWord || targetWord;
@@ -1274,7 +1283,39 @@ const WordSoundsReviewPanel = ({
         className: "px-3 py-1.5 bg-violet-100 text-violet-600 rounded-lg border-2 border-dashed border-violet-300 hover:bg-violet-200 text-sm font-bold"
       },
       t("word_sounds.add_distractor") || "+ Add"
-    ))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-amber-600 uppercase tracking-wider block" }, t("word_sounds.sound_swap_label") || "Sound Swap (Manipulation Activity)"), word.manipulationTask?.type && /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-300" }, word.manipulationTask.type)), word.manipulationTask ? /* @__PURE__ */ React.createElement("div", { className: "space-y-2 p-3 bg-amber-50 border-2 border-amber-200 rounded-lg" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "text-[10px] font-bold text-amber-700 uppercase tracking-wider block mb-1" }, t("word_sounds.instruction_label") || "Instruction (spoken to student)"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(
+    ))), (() => {
+      {
+      }
+      const _ct = word.activityItems || {};
+      const _ctWord = word.targetWord || word.word || word.term;
+      const _ctLines = [
+        _ct.read_sentence && _ct.read_sentence.sentence && { key: "sent", icon: "\u{1F4AC}", label: t("word_sounds.activity_read_sentence") || "Finish the Sentence", text: _ct.read_sentence.sentence },
+        _ct.read_passage && _ct.read_passage.story && { key: "story", icon: "\u{1F4DA}", label: t("word_sounds.activity_read_passage") || "Read the Story", text: _ct.read_passage.story },
+        _ct.sentence_match && _ct.sentence_match.sentence && { key: "pair", icon: "\u{1F5BC}\uFE0F", label: t("word_sounds.activity_sentence_match") || "Picture the Sentence", text: _ct.sentence_match.sentence }
+      ].filter(Boolean);
+      if (!_ctLines.length) return null;
+      return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-sky-600 uppercase tracking-wider mb-2 block" }, t("word_sounds.connected_text_label") || "Connected Text (sentence activities)"), /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5 p-3 bg-sky-50 border-2 border-sky-200 rounded-lg" }, _ctLines.map((line) => /* @__PURE__ */ React.createElement("div", { key: line.key, className: "flex items-center gap-2 text-sm text-slate-700" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, line.icon), /* @__PURE__ */ React.createElement("span", { className: "sr-only" }, line.label, ":"), /* @__PURE__ */ React.createElement("span", { className: "flex-1" }, wsHighlightTarget(line.text, _ctWord)), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          "aria-label": (t("common.play_tts") || "Play") + " \u2014 " + line.label,
+          onClick: async (e) => {
+            e.stopPropagation();
+            const key = `${idx}-ct-${line.key}`;
+            if (playingAudioKey) return;
+            setPlayingAudioKey(key);
+            try {
+              await onPlayAudio(line.text);
+            } finally {
+              setPlayingAudioKey(null);
+            }
+          },
+          className: "p-2 rounded-lg bg-white hover:bg-sky-100 text-slate-600 hover:text-sky-700 transition-colors motion-reduce:transition-none min-w-[32px] flex justify-center",
+          title: t("common.play_tts") || "Play"
+        },
+        playingAudioKey === `${idx}-ct-${line.key}` ? /* @__PURE__ */ React.createElement("div", { className: "animate-spin motion-reduce:animate-none h-4 w-4 border-2 border-current border-t-transparent rounded-full" }) : "\u{1F50A}"
+      )))));
+    })(), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-amber-600 uppercase tracking-wider block" }, t("word_sounds.sound_swap_label") || "Sound Swap (Manipulation Activity)"), word.manipulationTask?.type && /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-300" }, word.manipulationTask.type)), word.manipulationTask ? /* @__PURE__ */ React.createElement("div", { className: "space-y-2 p-3 bg-amber-50 border-2 border-amber-200 rounded-lg" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "text-[10px] font-bold text-amber-700 uppercase tracking-wider block mb-1" }, t("word_sounds.instruction_label") || "Instruction (spoken to student)"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(
       "input",
       {
         "aria-label": t("word_sounds.sound_swap_instruction_aria") || "Sound Swap instruction",

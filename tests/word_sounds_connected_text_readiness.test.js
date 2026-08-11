@@ -70,6 +70,28 @@ describe('the readiness panel sees the connected-text boards', () => {
   });
 });
 
+describe('the teacher can read and hear the sentences at prep time', () => {
+  it('the review panel shows each word\'s sentence, story, and pair sentence', () => {
+    const idx = MISC.indexOf("t('word_sounds.connected_text_label')");
+    expect(idx).toBeGreaterThan(0);
+    const block = MISC.slice(idx - 1200, idx + 2600);
+    expect(block).toMatch(/read_sentence\.sentence/);
+    expect(block).toMatch(/read_passage\.story/);
+    expect(block).toMatch(/sentence_match\.sentence/);
+    // The target word is bolded, and each line has a play button.
+    expect(block).toMatch(/wsHighlightTarget\(line\.text, _ctWord\)/);
+    expect(block).toMatch(/onPlayAudio\(line\.text\)/);
+  });
+
+  it('the highlighter bolds every occurrence, case-insensitively, on word boundaries', () => {
+    const idx = MISC.indexOf('const wsHighlightTarget =');
+    expect(idx).toBeGreaterThan(0);
+    const helper = MISC.slice(idx, idx + 700);
+    expect(helper).toMatch(/gi/);
+    expect(helper).toMatch(/\\\\b/);
+  });
+});
+
 describe('the built modules carry it', () => {
   it('misc module and mirrors', () => {
     expect(read('misc_components_module.js')).toMatch(/sentence_audio/);

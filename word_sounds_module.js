@@ -16463,7 +16463,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             return /*#__PURE__*/ React.createElement("div", { className: "flex flex-col items-center gap-5 p-4" },
               /*#__PURE__*/ React.createElement("p", { className: "text-xs font-semibold text-violet-600 uppercase tracking-wide" }, ts("word_sounds.sentence_match_prompt") || "Read the sentence. Match the pictures to it."),
               !smReady
-                ? /*#__PURE__*/ React.createElement("p", { className: "text-slate-500 text-sm font-semibold italic" }, ts("word_sounds.read_sentence_preparing") || "Preparing your sentence...")
+                // A one-word pack can never build a two-picture board; say so
+                // instead of showing "Preparing..." forever (the terminal-
+                // banner dead-end class).
+                ? /*#__PURE__*/ React.createElement("p", { className: "text-slate-500 text-sm font-semibold italic" },
+                    (sentenceMatchBoard === null && (preloadedWords || []).length < 2)
+                      ? (ts("word_sounds.sentence_match_needs_words") || "Picture the Sentence needs at least two words in this pack.")
+                      : (ts("word_sounds.read_sentence_preparing") || "Preparing your sentence..."))
                 : /*#__PURE__*/ React.createElement(React.Fragment, null,
                     /*#__PURE__*/ React.createElement("p", { className: "max-w-xl text-center text-3xl font-black text-slate-800 bg-gradient-to-br from-slate-50 to-violet-50 rounded-2xl border border-violet-100 px-6 py-4" }, smBoard.sentence),
                     smBoard.sequence.length > 1 && /*#__PURE__*/ React.createElement("p", { className: "text-xs text-slate-500 font-semibold" }, ts("word_sounds.sentence_match_order_hint") || "Place the pictures in the order they appear"),

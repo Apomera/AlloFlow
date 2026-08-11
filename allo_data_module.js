@@ -122,6 +122,8 @@ const WORD_SOUNDS_STRINGS = {
     'word_sounds.sentence_match_order_hint': 'Place the pictures in the order they appear',
     'word_sounds.sentence_match_slot_filled': 'Slot {{n}}: {{word}} — activate to remove',
     'word_sounds.sentence_match_slot_empty': 'Slot {{n}}, empty',
+    'word_sounds.sentence_match_needs_words': 'Picture the Sentence needs at least two words in this pack.',
+    'word_sounds.connected_text_label': 'Connected Text (sentence activities)',
     'word_sounds.sr_phoneme': 'Phoneme ',
     'word_sounds.sr_phoneme_keys': '. Press Space to hear, Enter to remove.',
     'word_sounds.sr_number': 'Number ',

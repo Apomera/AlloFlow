@@ -68,6 +68,21 @@ const AnimatedNumber = ({ value, duration = 1000, disableAnimations = false }) =
   return <>{displayValue}</>;
 };
 
+// Bold every occurrence of the target word inside a sentence/story preview —
+// the teacher's eye should land on the word the item is about. English-only
+// content (the sentence activities are language-gated), so \b is safe here.
+const wsHighlightTarget = (text, target) => {
+  const tw = String(target || '').trim();
+  const s = String(text || '');
+  if (!tw) return s;
+  const esc = tw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return s.split(new RegExp(`\\b(${esc})\\b`, 'gi')).map((p, i) =>
+    p.toLowerCase() === tw.toLowerCase()
+      ? <strong key={i} className="text-sky-800 font-black">{p}</strong>
+      : p
+  );
+};
+
 const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved, acceptedAnswers, displayWord }) => {
   const { t } = useContext(LanguageContext);
   const _solved = displayWord || targetWord;
@@ -1387,6 +1402,48 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                     >{t('word_sounds.add_distractor') || '+ Add'}</button>
                                                 </div>
                                             </div>
+                                        {(() => {
+                                            {/* Connected text: the sentences the AI wrote for this word,
+                                                surfaced where the teacher preps — taste lives here, not in
+                                                the player. Read-only (edit = regenerate the word); each line
+                                                has a play button so the teacher hears what students will. */}
+                                            const _ct = word.activityItems || {};
+                                            const _ctWord = word.targetWord || word.word || word.term;
+                                            const _ctLines = [
+                                                _ct.read_sentence && _ct.read_sentence.sentence && { key: 'sent', icon: '💬', label: t('word_sounds.activity_read_sentence') || 'Finish the Sentence', text: _ct.read_sentence.sentence },
+                                                _ct.read_passage && _ct.read_passage.story && { key: 'story', icon: '📚', label: t('word_sounds.activity_read_passage') || 'Read the Story', text: _ct.read_passage.story },
+                                                _ct.sentence_match && _ct.sentence_match.sentence && { key: 'pair', icon: '🖼️', label: t('word_sounds.activity_sentence_match') || 'Picture the Sentence', text: _ct.sentence_match.sentence },
+                                            ].filter(Boolean);
+                                            if (!_ctLines.length) return null;
+                                            return (
+                                                <div>
+                                                    <label className="text-xs font-bold text-sky-600 uppercase tracking-wider mb-2 block">{t('word_sounds.connected_text_label') || 'Connected Text (sentence activities)'}</label>
+                                                    <div className="space-y-1.5 p-3 bg-sky-50 border-2 border-sky-200 rounded-lg">
+                                                        {_ctLines.map((line) => (
+                                                            <div key={line.key} className="flex items-center gap-2 text-sm text-slate-700">
+                                                                <span aria-hidden="true">{line.icon}</span>
+                                                                <span className="sr-only">{line.label}:</span>
+                                                                <span className="flex-1">{wsHighlightTarget(line.text, _ctWord)}</span>
+                                                                <button type="button"
+                                                                    aria-label={(t('common.play_tts') || 'Play') + ' — ' + line.label}
+                                                                    onClick={async (e) => {
+                                                                        e.stopPropagation();
+                                                                        const key = `${idx}-ct-${line.key}`;
+                                                                        if (playingAudioKey) return;
+                                                                        setPlayingAudioKey(key);
+                                                                        try { await onPlayAudio(line.text); } finally { setPlayingAudioKey(null); }
+                                                                    }}
+                                                                    className="p-2 rounded-lg bg-white hover:bg-sky-100 text-slate-600 hover:text-sky-700 transition-colors motion-reduce:transition-none min-w-[32px] flex justify-center"
+                                                                    title={t('common.play_tts') || 'Play'}
+                                                                >
+                                                                    {playingAudioKey === `${idx}-ct-${line.key}` ? <div className="animate-spin motion-reduce:animate-none h-4 w-4 border-2 border-current border-t-transparent rounded-full" /> : '🔊'}
+                                                                </button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })()}
                                         <div>
                                             <div className="flex items-center justify-between mb-2">
                                                 <label className="text-xs font-bold text-amber-600 uppercase tracking-wider block">{t('word_sounds.sound_swap_label') || 'Sound Swap (Manipulation Activity)'}</label>
