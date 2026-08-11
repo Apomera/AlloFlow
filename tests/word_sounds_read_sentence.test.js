@@ -172,8 +172,11 @@ describe('the player treats the target as print, not sound', () => {
   });
 
   it('never auto-speaks the word with instructions off', () => {
-    // read_passage joined the print-target family; the guard names all three.
-    expect(MODULE).toMatch(/wordSoundsActivity === "decoding" \|\| wordSoundsActivity === "read_sentence" \|\| wordSoundsActivity === "read_passage"\) return;/);
+    // Growth-proof: the skip line must name this activity, however many
+    // siblings later join the print-target family.
+    const m = MODULE.match(/if \(wordSoundsActivity === "decoding"[^\n]*\) return;/);
+    expect(m).toBeTruthy();
+    expect(m[0]).toContain('wordSoundsActivity === "read_sentence"');
   });
 
   it('every mid-item re-speak of the answer excludes it (all five sites)', () => {
@@ -184,9 +187,11 @@ describe('the player treats the target as print, not sound', () => {
   });
 
   it('reads the completed sentence back on a correct answer, never mid-probe', () => {
-    const idx = MODULE.indexOf('(wordSoundsActivity === "read_sentence" || wordSoundsActivity === "read_passage") && !isProbeMode');
+    const idx = MODULE.indexOf('const _rbText =');
     expect(idx).toBeGreaterThan(0);
-    expect(MODULE.slice(idx, idx + 700)).toMatch(/handleAudio\(_rsText\)/);
+    const block = MODULE.slice(idx, idx + 900);
+    expect(block).toMatch(/readSentenceBoardRef\.current\?\.sentence/);
+    expect(block).toMatch(/_rbText && !isProbeMode/);
   });
 
   it('word-level judgment: no per-phoneme mastery attribution', () => {

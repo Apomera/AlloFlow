@@ -123,9 +123,11 @@ describe('the player treats the story as print', () => {
   });
 
   it('reads the whole story back on correct, never mid-probe', () => {
-    const idx = MODULE.indexOf('(wordSoundsActivity === "read_sentence" || wordSoundsActivity === "read_passage") && !isProbeMode');
+    const idx = MODULE.indexOf('const _rbText =');
     expect(idx).toBeGreaterThan(0);
-    expect(MODULE.slice(idx, idx + 300)).toMatch(/readPassageBoardRef\.current\?\.story/);
+    const block = MODULE.slice(idx, idx + 900);
+    expect(block).toMatch(/readPassageBoardRef\.current\?\.story/);
+    expect(block).toMatch(/_rbText && !isProbeMode/);
   });
 
   it('every blank is a drop target and every chip a tappable button', () => {

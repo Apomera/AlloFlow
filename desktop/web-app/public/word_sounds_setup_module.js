@@ -1087,6 +1087,13 @@ const splitPackSentence = (sentence, word) => {
   const start = m.index + m[1].length;
   return { before: s.slice(0, start).trim(), after: s.slice(start + w.length).trim() };
 };
+const SENTENCE_MATCH_FRAMES = [
+  { before: "The", mid: "can see the", after: "." },
+  { before: "I see the", mid: "and the", after: "." },
+  { before: "Look at the", mid: "and the", after: "!" },
+  { before: "The", mid: "is with the", after: "." }
+];
+const joinPackPairSentence = (frame, a, b) => `${frame.before} ${a} ${frame.mid} ${b}${frame.after}`;
 const packStoryIsUsable = (story, word, sessionWords) => {
   if (!Array.isArray(story) || story.length !== 3) return false;
   const w = String(word || "").trim().toLowerCase();
@@ -1226,7 +1233,8 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
     missing_letter: { enabled: false, count: 5 },
     decoding: { enabled: false, count: 5 },
     read_sentence: { enabled: false, count: 5 },
-    read_passage: { enabled: false, count: 5 }
+    read_passage: { enabled: false, count: 5 },
+    sentence_match: { enabled: false, count: 5 }
   });
   const [lessonPlanOrder, setLessonPlanOrder] = React.useState([
     "isolation",
@@ -1247,7 +1255,8 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
     "missing_letter",
     "decoding",
     "read_sentence",
-    "read_passage"
+    "read_passage",
+    "sentence_match"
   ]);
   const [draggedActivity, setDraggedActivity] = React.useState(null);
   const [lessonPlanReorderStatus, setLessonPlanReorderStatus] = React.useState("");
@@ -1602,6 +1611,37 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
           readPassage = { story: rpStoryText, parts: rpParts, options: rpOptions };
         }
       }
+      let sentenceMatch = null;
+      if (packIsEnglish) {
+        const smOthers = itemWords.filter((v) => v !== word);
+        if (smOthers.length >= 1) {
+          if (seed % 2 === 0) {
+            const partner = smOthers[seed % smOthers.length];
+            const f = SENTENCE_MATCH_FRAMES[seed % SENTENCE_MATCH_FRAMES.length];
+            const first = seed % 3 === 0 ? partner : word;
+            const second = first === word ? partner : word;
+            const smSentence = joinPackPairSentence(f, first, second);
+            sentenceMatch = {
+              sentence: smSentence,
+              sequence: [first, second],
+              extras: shuffleForPack(smOthers.filter((v) => v !== partner)).slice(0, 2)
+            };
+          } else {
+            const smText = packSentenceIsUsable(item.sentence, word, rsSessionWords) ? String(item.sentence).trim() : joinPackSentence(
+              READ_SENTENCE_FRAMES[seed % READ_SENTENCE_FRAMES.length].before,
+              word,
+              READ_SENTENCE_FRAMES[seed % READ_SENTENCE_FRAMES.length].after
+            );
+            const smUsed = new Set(packSentenceWords(smText));
+            sentenceMatch = {
+              sentence: smText,
+              sequence: [word],
+              extras: shuffleForPack(smOthers.filter((v) => !smUsed.has(v))).slice(0, 3)
+            };
+          }
+          if (sentenceMatch.sequence.length + sentenceMatch.extras.length < 2) sentenceMatch = null;
+        }
+      }
       item.activityItems = {
         counting: { options: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "11+"], answer: item.phonemeCount || phonemes.length },
         isolation: { position, correctSound, options: isolationOptions },
@@ -1621,7 +1661,8 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
         word_families: { rime, options: familyOptions, distractors: familyDistractors },
         decoding: { choices: decodingChoices },
         ...readSentence ? { read_sentence: readSentence } : {},
-        ...readPassage ? { read_passage: readPassage } : {}
+        ...readPassage ? { read_passage: readPassage } : {},
+        ...sentenceMatch ? { sentence_match: sentenceMatch } : {}
       };
     });
     return items;
@@ -1868,7 +1909,11 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
         delete item._aacAssets;
       });
       if (typeof callImagen === "function") {
-        const decodingWords = [...new Set(processed.flatMap((item) => item.activityItems?.decoding?.choices || []))];
+        const decodingWords = [...new Set(processed.flatMap((item) => [
+          ...item.activityItems?.decoding?.choices || [],
+          ...item.activityItems?.sentence_match?.sequence || [],
+          ...item.activityItems?.sentence_match?.extras || []
+        ]))];
         for (const word of decodingWords) {
           if (decodingAssets[word]) continue;
           try {
@@ -1983,6 +2028,11 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
         if (boards.read_passage?.story) {
           tasks.add(boards.read_passage.story);
           tasks.add("Read the story. Which word finishes it?");
+        }
+        if (boards.sentence_match?.sentence) {
+          tasks.add(boards.sentence_match.sentence);
+          tasks.add("Read the sentence. Match the pictures to it.");
+          [...boards.sentence_match.sequence || [], ...boards.sentence_match.extras || []].forEach((value) => value && tasks.add(String(value)));
         }
         tasks.add("Which word did you hear?");
         tasks.add("Which word rhymes with");
@@ -2436,7 +2486,8 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       missing_letter: { id: "missing_letter", label: "Missing Letter", icon: Type },
       decoding: { id: "decoding", label: "Read & Match", icon: BookOpen },
       read_sentence: { id: "read_sentence", label: "Finish the Sentence", icon: BookOpen },
-      read_passage: { id: "read_passage", label: "Read the Story", icon: BookOpen }
+      read_passage: { id: "read_passage", label: "Read the Story", icon: BookOpen },
+      sentence_match: { id: "sentence_match", label: "Picture the Sentence", icon: BookOpen }
     };
     const activity = activityDefs[actId];
     return /* @__PURE__ */ React.createElement(

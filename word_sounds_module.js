@@ -3515,6 +3515,14 @@
       }, [readPassageBoard]);
       const [readPassageDragOver, setReadPassageDragOver] = React.useState(false);
       const lastWordForReadPassage = React.useRef(null);
+      // Picture the Sentence (sentence_match): board + placed-picture slots.
+      const [sentenceMatchBoard, setSentenceMatchBoard] = React.useState(null);
+      const sentenceMatchBoardRef = React.useRef(null);
+      React.useEffect(() => {
+        sentenceMatchBoardRef.current = sentenceMatchBoard;
+      }, [sentenceMatchBoard]);
+      const [sentenceMatchSlots, setSentenceMatchSlots] = React.useState([]);
+      const lastWordForSentenceMatch = React.useRef(null);
       const [isPrefetching, setIsPrefetching] = React.useState(false);
       const internalAudioCache = React.useRef(new Map());
       const audioInstances = React.useRef(new Map());
@@ -6168,6 +6176,13 @@
           description: ts("word_sounds.read_passage_desc") || "Read a tiny story and pick its missing word",
           tier: "orthographic",
         },
+        {
+          id: "sentence_match",
+          label: ts("word_sounds.activity_sentence_match") || "Picture the Sentence",
+          icon: "\uD83D\uDDBC\uFE0F",
+          description: ts("word_sounds.sentence_match_desc") || "Read a sentence and place its pictures in order",
+          tier: "orthographic",
+        },
       ];
       // ── Language capability model (multilingual stage 2, 2026-07-12) ──
       // English sessions take the FIRST branch everywhere below and behave
@@ -6210,6 +6225,7 @@
             case "letter_tracing": // LETTER_SVG_PATHS covers a–z only
             case "read_sentence": // sight-word frames + the K-2 sentence gate are English
             case "read_passage": // same frames, same gate, three sentences
+            case "sentence_match": // English pair-frames + the same K-2 gate
               return false;
             // Letter-tile / scramble activities need an alphabetic script:
             case "orthography":
@@ -6244,7 +6260,7 @@
         counting: "pa_phoneme", segmentation: "pa_phoneme", isolation: "pa_phoneme", blending: "pa_phoneme", sound_sort: "pa_phoneme", manipulation: "pa_phoneme",
         mapping: "phonics", orthography: "phonics",
         spelling_bee: "spelling", word_scramble: "spelling", missing_letter: "spelling",
-        letter_tracing: "handwriting", decoding: "phonics", read_sentence: "text", read_passage: "text",
+        letter_tracing: "handwriting", decoding: "phonics", read_sentence: "text", read_passage: "text", sentence_match: "text",
       };
       const ACTIVITY_GROUP_ORDER = ["pa_large", "pa_phoneme", "phonics", "text", "spelling", "handwriting"];
       const ACTIVITY_GROUP_LABELS = { pa_large: "Syllables & Rhyme", pa_phoneme: "Phonemes", phonics: "Phonics", text: "Sentences", spelling: "Spelling", handwriting: "Writing" };
@@ -8167,6 +8183,100 @@
       }, [wordSoundsActivity, currentWordSoundsWord, wordSoundsPhonemes,
         // Same clear-then-rebuild contract as the boards above.
         readPassageBoard]);
+      // Picture the Sentence (sentence_match): the child answers with the
+      // PICTURES Read & Match already packed — a sequence of 2 means "place
+      // both in sentence order" (proves left-to-right reading), a sequence
+      // of 1 is the classic sentence→picture match. Prefers the pack board;
+      // falls back to a pair-frame built from the preloaded words. Any tile
+      // without a packed image is backfilled via Imagen on teacher devices,
+      // exactly like Read & Match.
+      const SENTENCE_MATCH_FRAMES = [
+        { before: "The", mid: "can see the", after: "." },
+        { before: "I see the", mid: "and the", after: "." },
+        { before: "Look at the", mid: "and the", after: "!" },
+        { before: "The", mid: "is with the", after: "." },
+      ];
+      const sentenceMatchPreparedForRef = React.useRef(null);
+      React.useEffect(() => {
+        if (wordSoundsActivity !== "sentence_match") return;
+        const target = (currentWordSoundsWord || "").toLowerCase();
+        if (!target) return;
+        const prepared =
+          String(wordSoundsPhonemes?.word || "").trim().toLowerCase() === target
+            ? wordSoundsPhonemes?.activityItems?.sentence_match
+            : null;
+        const preparedUsable =
+          prepared &&
+          typeof prepared.sentence === "string" &&
+          prepared.sentence.trim() &&
+          Array.isArray(prepared.sequence) &&
+          prepared.sequence.length >= 1 &&
+          (prepared.sequence.length + (Array.isArray(prepared.extras) ? prepared.extras.length : 0)) >= 2;
+        if (
+          lastWordForSentenceMatch.current === target &&
+          (!preparedUsable || sentenceMatchPreparedForRef.current === target)
+        )
+          return;
+        lastWordForSentenceMatch.current = target;
+        sentenceMatchPreparedForRef.current = preparedUsable ? target : null;
+        let board = null;
+        if (preparedUsable) {
+          board = {
+            sentence: prepared.sentence,
+            sequence: prepared.sequence.map((w) => String(w || "").toLowerCase()),
+            extras: (prepared.extras || []).map((w) => String(w || "").toLowerCase()),
+          };
+        } else {
+          const packMates = [...new Set((preloadedWords || [])
+            .map((p) => String(p.targetWord || p.word || p.term || "").toLowerCase())
+            .filter((w) => w && w !== target))];
+          if (packMates.length >= 1) {
+            const seed = target.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+            const frame = SENTENCE_MATCH_FRAMES[seed % SENTENCE_MATCH_FRAMES.length];
+            const partner = packMates[seed % packMates.length];
+            const first = seed % 3 === 0 ? partner : target;
+            const second = first === target ? partner : target;
+            board = {
+              sentence: `${frame.before} ${first} ${frame.mid} ${second}${frame.after}`,
+              sequence: [first, second],
+              extras: fisherYatesShuffle(packMates.filter((w) => w !== partner)).slice(0, 2),
+            };
+          }
+        }
+        // Tile order is shuffled ONCE per board — shuffling at render time
+        // would reshuffle the tray on every state change mid-item.
+        if (board) board.tiles = fisherYatesShuffle([...board.sequence, ...board.extras]);
+        setSentenceMatchBoard(board);
+        setSentenceMatchSlots(board ? board.sequence.map(() => null) : []);
+        if (!board) return;
+        // Backfill any tile without a packed picture (teacher devices only —
+        // the student boundary nulls callImagen).
+        const tiles = [...board.sequence, ...board.extras];
+        const uncovered = [];
+        tiles.forEach((w) => {
+          const lc = (w || "").toLowerCase();
+          if (!lc || optionImagesCache.current.has(w) || optionImagesCache.current.has(lc)) return;
+          const packedImg = preparedImageLibrary[lc];
+          if (packedImg) {
+            optionImagesCache.current.set(lc, packedImg);
+            setOptionImages((prev) => ({ ...prev, [lc]: packedImg }));
+            return;
+          }
+          const pe = (wordPool || []).find((p) => p.word === lc);
+          if (pe && pe.image) return;
+          uncovered.push(w);
+        });
+        if (typeof callImagen === "function") {
+          uncovered.forEach((w) => {
+            const lc = (w || "").toLowerCase();
+            callImagen(`Simple flat vector icon of "${w}", minimal educational illustration, white background, no text or labels`)
+              .then((img) => { if (img) { optionImagesCache.current.set(lc, img); setOptionImages((prev) => ({ ...prev, [lc]: img })); } })
+              .catch(() => {});
+          });
+        }
+      }, [wordSoundsActivity, currentWordSoundsWord, wordSoundsPhonemes, preloadedWords, wordPool, callImagen, preparedImageLibrary,
+        // Same clear-then-rebuild contract as the boards above.
+        sentenceMatchBoard]);
       const generateOrthographyDistractors = (word) => {
         if (!word || word.length < 2)
           return [`${word}s`, `${word}ed`, `un${word}`];
@@ -10644,10 +10754,11 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             try {
               if (!isMountedRef.current) return;
               lastPlayedWord.current = playKey;
-              // Read & Match, Finish the Sentence, and Read the Story decode
-              // PRINTED text that must never be spoken, so do not auto-play
-              // the word even when instructions are toggled off.
-              if (wordSoundsActivity === "decoding" || wordSoundsActivity === "read_sentence" || wordSoundsActivity === "read_passage") return;
+              // Read & Match, Finish the Sentence, Read the Story, and
+              // Picture the Sentence decode PRINTED text that must never be
+              // spoken, so do not auto-play the word even when instructions
+              // are toggled off.
+              if (wordSoundsActivity === "decoding" || wordSoundsActivity === "read_sentence" || wordSoundsActivity === "read_passage" || wordSoundsActivity === "sentence_match") return;
               if (wordSoundsActivity === "blending") {
                 await playBlending();
               } else {
@@ -10872,6 +10983,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           setReadPassageDragOver(false);
           lastWordForReadPassage.current = null;
           readPassagePreparedForRef.current = null;
+          setSentenceMatchBoard(null);
+          setSentenceMatchSlots([]);
+          lastWordForSentenceMatch.current = null;
+          sentenceMatchPreparedForRef.current = null;
           // Sight & Spell: the rebuild effect is gated on option COUNT, not
           // word — without this reset, re-entering orthography served the
           // previous word's misspellings with the new word patched at index 0.
@@ -11988,7 +12103,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     tryAgainAudio.onended = () => {
                       // Read & Match decodes a PRINTED word that is never spoken;
                       // skip the re-speak so the modality stays read-only.
-                      if (isMountedRef.current && currentWordSoundsWord && wordSoundsActivity !== "decoding" && wordSoundsActivity !== "read_sentence" && wordSoundsActivity !== "read_passage" && audioRunIdRef.current === _fbRun) {
+                      if (isMountedRef.current && currentWordSoundsWord && wordSoundsActivity !== "decoding" && wordSoundsActivity !== "read_sentence" && wordSoundsActivity !== "read_passage" && wordSoundsActivity !== "sentence_match" && audioRunIdRef.current === _fbRun) {
                         setTimeout(
                           () => {
                             if (audioRunIdRef.current !== _fbRun) return;
@@ -12001,7 +12116,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   } else {
                     const _fbRun2 = audioRunIdRef.current;
                     setTimeout(() => {
-                      if (isMountedRef.current && currentWordSoundsWord && wordSoundsActivity !== "decoding" && wordSoundsActivity !== "read_sentence" && wordSoundsActivity !== "read_passage" && audioRunIdRef.current === _fbRun2)
+                      if (isMountedRef.current && currentWordSoundsWord && wordSoundsActivity !== "decoding" && wordSoundsActivity !== "read_sentence" && wordSoundsActivity !== "read_passage" && wordSoundsActivity !== "sentence_match" && audioRunIdRef.current === _fbRun2)
                         wordSoundsActivity === "blending" ? playBlending() : handleAudio(currentWordSoundsWord);
                     }, 800);
                   }
@@ -12049,7 +12164,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     // clip above): never re-speak a stale item or a sentinel.
                     const _almRun = audioRunIdRef.current;
                     almostAudio.onended = () => {
-                      if (isMountedRef.current && wordSoundsActivity !== "decoding" && wordSoundsActivity !== "read_sentence" && wordSoundsActivity !== "read_passage" && !_expIsSentinel && audioRunIdRef.current === _almRun) {
+                      if (isMountedRef.current && wordSoundsActivity !== "decoding" && wordSoundsActivity !== "read_sentence" && wordSoundsActivity !== "read_passage" && wordSoundsActivity !== "sentence_match" && !_expIsSentinel && audioRunIdRef.current === _almRun) {
                         setTimeout(() => {
                           if (audioRunIdRef.current === _almRun) handleAudio(expectedAnswer);
                         }, 300);
@@ -12058,7 +12173,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   } else {
                     const _almRun2 = audioRunIdRef.current;
                     setTimeout(() => {
-                      if (isMountedRef.current && wordSoundsActivity !== "decoding" && wordSoundsActivity !== "read_sentence" && wordSoundsActivity !== "read_passage" && !_expIsSentinel && audioRunIdRef.current === _almRun2) handleAudio(expectedAnswer);
+                      if (isMountedRef.current && wordSoundsActivity !== "decoding" && wordSoundsActivity !== "read_sentence" && wordSoundsActivity !== "read_passage" && wordSoundsActivity !== "sentence_match" && !_expIsSentinel && audioRunIdRef.current === _almRun2) handleAudio(expectedAnswer);
                     }, 800);
                   }
                 } catch (e) {
@@ -12099,18 +12214,23 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               }
               setShowWordText(true);
               if (setShowImageForCurrentWord) setShowImageForCurrentWord(true);
-              // Finish the Sentence / Read the Story: the payoff is hearing
-              // the completed text read back as connected text (never
-              // mid-probe — a timed CBM should not spend seconds on it).
-              if ((wordSoundsActivity === "read_sentence" || wordSoundsActivity === "read_passage") && !isProbeMode) {
-                const _rsText = wordSoundsActivity === "read_passage"
-                  ? readPassageBoardRef.current?.story
-                  : readSentenceBoardRef.current?.sentence;
-                if (_rsText) {
+              // Connected-text activities: the payoff is hearing the
+              // completed text read back (never mid-probe — a timed CBM
+              // should not spend seconds on it).
+              {
+                const _rbText =
+                  wordSoundsActivity === "read_sentence"
+                    ? readSentenceBoardRef.current?.sentence
+                    : wordSoundsActivity === "read_passage"
+                      ? readPassageBoardRef.current?.story
+                      : wordSoundsActivity === "sentence_match"
+                        ? sentenceMatchBoardRef.current?.sentence
+                        : null;
+                if (_rbText && !isProbeMode) {
                   const _rsRun = audioRunIdRef.current;
                   setTimeout(() => {
                     if (isMountedRef.current && audioRunIdRef.current === _rsRun)
-                      handleAudio(_rsText);
+                      handleAudio(_rbText);
                   }, 350);
                 }
               }
@@ -12450,6 +12570,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 "letter_tracing",
                 "read_sentence",
                 "read_passage",
+                "sentence_match",
               ];
               if (wordSoundsActivity === "isolation") {
                 const _isoSound =
@@ -12592,7 +12713,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               !_expIsSentinel &&
               wordSoundsActivity !== "decoding" &&
               wordSoundsActivity !== "read_sentence" &&
-              wordSoundsActivity !== "read_passage"
+              wordSoundsActivity !== "read_passage" &&
+              wordSoundsActivity !== "sentence_match"
             ) {
               setTimeout(() => {
                 if (isMountedRef.current) handleAudio(expectedAnswer);
@@ -16185,6 +16307,110 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                         w,
                       )),
                     ),
+                  ),
+            );
+          }
+          case "sentence_match": {
+            const smBoard = sentenceMatchBoard;
+            const smReady =
+              smBoard &&
+              typeof smBoard.sentence === "string" &&
+              Array.isArray(smBoard.tiles) &&
+              smBoard.tiles.length >= 2;
+            const smImgFor = (w) => {
+              const lc = (w || "").toLowerCase();
+              const pe = (wordPool || []).find((p) => p.word === lc);
+              return optionImages[w] || optionImages[lc] || preparedImageLibrary[lc] || (pe && pe.image) || null;
+            };
+            const smSrc = (img) => (typeof img === "string" && (img.startsWith("data:") || img.startsWith("http"))) ? img : ("data:image/png;base64," + img);
+            // Reveal only when EVERY tile has its picture — a half-loaded
+            // tray lets a child pick "the one that loaded" without reading.
+            const smAllReady = smReady && smBoard.tiles.every((w) => smImgFor(w));
+            const smGrade = (slotsNext) => {
+              if (!slotsNext.every(Boolean)) return;
+              const ok = slotsNext.every((w, i) => w === smBoard.sequence[i]);
+              checkAnswer(ok ? "correct" : "incorrect", "correct");
+              if (!ok) {
+                setTimeout(() => {
+                  if (isMountedRef.current) setSentenceMatchSlots(smBoard.sequence.map(() => null));
+                }, 900);
+              }
+            };
+            const smPlace = (w, slotIdx) => {
+              if (!smAllReady || sentenceMatchSlots.includes(w)) return;
+              const next = [...sentenceMatchSlots];
+              const at = typeof slotIdx === "number" ? slotIdx : next.indexOf(null);
+              if (at < 0 || at >= next.length) return;
+              next[at] = w;
+              setSentenceMatchSlots(next);
+              smGrade(next);
+            };
+            const smClear = (i) => {
+              if (!sentenceMatchSlots[i]) return;
+              const next = [...sentenceMatchSlots];
+              next[i] = null;
+              setSentenceMatchSlots(next);
+            };
+            const smTileName = (w) => ts("word_sounds.decoding_choice_of", { word: w }) || ("Picture of " + (w || ""));
+            return /*#__PURE__*/ React.createElement("div", { className: "flex flex-col items-center gap-5 p-4" },
+              /*#__PURE__*/ React.createElement("p", { className: "text-xs font-semibold text-violet-600 uppercase tracking-wide" }, ts("word_sounds.sentence_match_prompt") || "Read the sentence. Match the pictures to it."),
+              !smReady
+                ? /*#__PURE__*/ React.createElement("p", { className: "text-slate-500 text-sm font-semibold italic" }, ts("word_sounds.read_sentence_preparing") || "Preparing your sentence...")
+                : /*#__PURE__*/ React.createElement(React.Fragment, null,
+                    /*#__PURE__*/ React.createElement("p", { className: "max-w-xl text-center text-3xl font-black text-slate-800 bg-gradient-to-br from-slate-50 to-violet-50 rounded-2xl border border-violet-100 px-6 py-4" }, smBoard.sentence),
+                    smBoard.sequence.length > 1 && /*#__PURE__*/ React.createElement("p", { className: "text-xs text-slate-500 font-semibold" }, ts("word_sounds.sentence_match_order_hint") || "Place the pictures in the order they appear"),
+                    /*#__PURE__*/ React.createElement(
+                      "div",
+                      { className: "flex justify-center gap-4" },
+                      ...smBoard.sequence.map((_, i) => {
+                        const placed = sentenceMatchSlots[i];
+                        const img = placed ? smImgFor(placed) : null;
+                        return /*#__PURE__*/ React.createElement(
+                          "button",
+                          {
+                            key: "sm-slot-" + i,
+                            onClick: () => smClear(i),
+                            onDragOver: (e) => e.preventDefault(),
+                            onDrop: (e) => { e.preventDefault(); const _dw = e.dataTransfer.getData("text/plain"); if (_dw && !sentenceMatchSlots.includes(_dw)) { const next = [...sentenceMatchSlots]; next[i] = _dw; setSentenceMatchSlots(next); smGrade(next); } },
+                            "aria-label": placed
+                              ? (ts("word_sounds.sentence_match_slot_filled", { n: i + 1, word: placed }) || ("Slot " + (i + 1) + ": " + placed + " — activate to remove"))
+                              : (ts("word_sounds.sentence_match_slot_empty", { n: i + 1 }) || ("Slot " + (i + 1) + ", empty")),
+                            className: "relative w-24 h-24 rounded-2xl border-2 border-dashed flex items-center justify-center transition-colors " + (placed ? "border-violet-400 bg-white shadow-md" : "border-slate-400 bg-slate-50"),
+                          },
+                          /*#__PURE__*/ React.createElement("span", { className: "absolute -top-2 -left-2 w-6 h-6 rounded-full bg-violet-600 text-white text-xs font-bold flex items-center justify-center" }, i + 1),
+                          img
+                            ? /*#__PURE__*/ React.createElement("img", { src: smSrc(img), alt: smTileName(placed), draggable: false, className: "w-full h-full object-contain rounded-xl p-1 pointer-events-none" })
+                            : /*#__PURE__*/ React.createElement("span", { className: "text-2xl text-slate-400" }, "?"),
+                        );
+                      }),
+                    ),
+                    !smAllReady
+                      ? (typeof callImagen !== "function"
+                        ? /*#__PURE__*/ React.createElement("p", { className: "text-amber-700 text-sm font-semibold" }, ts("word_sounds.decoding_needs_image") || "Picture matching needs image generation (open in Canvas).")
+                        : /*#__PURE__*/ React.createElement("p", { className: "text-slate-500 text-sm font-semibold italic" }, ts("word_sounds.decoding_preparing") || "Preparing pictures..."))
+                      : /*#__PURE__*/ React.createElement(
+                          "div",
+                          { className: "flex flex-wrap justify-center gap-3 max-w-md w-full" },
+                          // WCAG 2.5.7: dragging optional — tap places into the
+                          // next empty slot; tapping a slot returns its tile.
+                          ...smBoard.tiles.map((w, i) => {
+                            const used = sentenceMatchSlots.includes(w);
+                            const img = smImgFor(w);
+                            return /*#__PURE__*/ React.createElement(
+                              "button",
+                              {
+                                key: "sm-tile-" + i + "-" + w,
+                                draggable: !used,
+                                onDragStart: (e) => { e.dataTransfer.setData("text/plain", w); e.dataTransfer.effectAllowed = "move"; },
+                                onClick: () => smPlace(w),
+                                disabled: used,
+                                "aria-label": smTileName(w),
+                                className: "w-24 h-24 bg-white border-2 rounded-2xl shadow-md flex items-center justify-center p-2 transition-all " + (used ? "border-slate-100 opacity-30 cursor-default" : "border-slate-200 hover:border-violet-400 hover:scale-105 cursor-grab active:cursor-grabbing"),
+                              },
+                              /*#__PURE__*/ React.createElement("img", { src: smSrc(img), alt: smTileName(w), draggable: false, className: "w-full h-full object-contain rounded-xl pointer-events-none" }),
+                            );
+                          }),
+                        ),
                   ),
             );
           }

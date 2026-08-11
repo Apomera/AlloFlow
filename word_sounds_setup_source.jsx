@@ -978,6 +978,19 @@
         return { before: s.slice(0, start).trim(), after: s.slice(start + w.length).trim() };
     };
 
+    // Two-word frames for Picture the Sentence: a sentence naming TWO pack
+    // words in a fixed order, so placing their pictures in that order proves
+    // the sentence was read left-to-right, not word-spotted. Glue is sight
+    // words only, so the frames are decodable by construction.
+    const SENTENCE_MATCH_FRAMES = [
+        { before: 'The', mid: 'can see the', after: '.' },
+        { before: 'I see the', mid: 'and the', after: '.' },
+        { before: 'Look at the', mid: 'and the', after: '!' },
+        { before: 'The', mid: 'is with the', after: '.' },
+    ];
+    const joinPackPairSentence = (frame, a, b) =>
+        `${frame.before} ${a} ${frame.mid} ${b}${frame.after}`;
+
     // A micro-story is three sentences about ONE word — the referent carries
     // across sentences, which is what makes it connected text rather than
     // three unrelated lines. Each sentence passes the same decodability gate
@@ -1166,11 +1179,12 @@
             decoding: { enabled: false, count: 5 },
             read_sentence: { enabled: false, count: 5 },
             read_passage: { enabled: false, count: 5 },
+            sentence_match: { enabled: false, count: 5 },
         });
         const [lessonPlanOrder, setLessonPlanOrder] = React.useState([
             'isolation', 'blending', 'segmentation', 'orthography', 'rhyming',
             'letter_tracing', 'counting', 'mapping', 'sound_sort', 'word_families', 'word_scramble', 'manipulation',
-            'syllable_counting', 'syllable_blending', 'spelling_bee', 'missing_letter', 'decoding', 'read_sentence', 'read_passage'
+            'syllable_counting', 'syllable_blending', 'spelling_bee', 'missing_letter', 'decoding', 'read_sentence', 'read_passage', 'sentence_match'
         ]);
         const [draggedActivity, setDraggedActivity] = React.useState(null);
         const [lessonPlanReorderStatus, setLessonPlanReorderStatus] = React.useState('');
@@ -1594,6 +1608,49 @@
                         readPassage = { story: rpStoryText, parts: rpParts, options: rpOptions };
                     }
                 }
+                // Picture the Sentence: answer with PICTURES. One board
+                // shape, two tiers — sequence of 2 means place both pictures
+                // in sentence order (forces left-to-right reading); sequence
+                // of 1 is the classic sentence→picture match. Tiles are pack
+                // words only, so they reuse the exact images Read & Match
+                // already packs — no new generation. A distractor picture
+                // whose word appears in the sentence would be a second right
+                // answer, so extras are filtered against the sentence text.
+                let sentenceMatch = null;
+                if (packIsEnglish) {
+                    const smOthers = itemWords.filter((v) => v !== word);
+                    if (smOthers.length >= 1) {
+                        if (seed % 2 === 0) {
+                            const partner = smOthers[seed % smOthers.length];
+                            const f = SENTENCE_MATCH_FRAMES[seed % SENTENCE_MATCH_FRAMES.length];
+                            const first = seed % 3 === 0 ? partner : word;
+                            const second = first === word ? partner : word;
+                            const smSentence = joinPackPairSentence(f, first, second);
+                            sentenceMatch = {
+                                sentence: smSentence,
+                                sequence: [first, second],
+                                extras: shuffleForPack(smOthers.filter((v) => v !== partner)).slice(0, 2),
+                            };
+                        } else {
+                            const smText = packSentenceIsUsable(item.sentence, word, rsSessionWords)
+                                ? String(item.sentence).trim()
+                                : joinPackSentence(
+                                    READ_SENTENCE_FRAMES[seed % READ_SENTENCE_FRAMES.length].before,
+                                    word,
+                                    READ_SENTENCE_FRAMES[seed % READ_SENTENCE_FRAMES.length].after,
+                                );
+                            const smUsed = new Set(packSentenceWords(smText));
+                            sentenceMatch = {
+                                sentence: smText,
+                                sequence: [word],
+                                extras: shuffleForPack(smOthers.filter((v) => !smUsed.has(v))).slice(0, 3),
+                            };
+                        }
+                        // A one-tile board is unwinnable-proof but also
+                        // unmeasurable — never ship fewer than two pictures.
+                        if (sentenceMatch.sequence.length + sentenceMatch.extras.length < 2) sentenceMatch = null;
+                    }
+                }
                 item.activityItems = {
                     counting: { options: [1,2,3,4,5,6,7,8,9,10,'11+'], answer: item.phonemeCount || phonemes.length },
                     isolation: { position, correctSound, options: isolationOptions },
@@ -1614,6 +1671,7 @@
                     decoding: { choices: decodingChoices },
                     ...(readSentence ? { read_sentence: readSentence } : {}),
                     ...(readPassage ? { read_passage: readPassage } : {}),
+                    ...(sentenceMatch ? { sentence_match: sentenceMatch } : {}),
                 };
             });
             return items;
@@ -1920,7 +1978,14 @@
                  delete item._aacAssets;
              });
              if (typeof callImagen === 'function') {
-                 const decodingWords = [...new Set(processed.flatMap((item) => item.activityItems?.decoding?.choices || []))];
+                 // Picture the Sentence tiles ride the same manifest — its
+                 // sequence/extras are pack words, so most already have
+                 // images; this backfills any that do not.
+                 const decodingWords = [...new Set(processed.flatMap((item) => [
+                     ...(item.activityItems?.decoding?.choices || []),
+                     ...(item.activityItems?.sentence_match?.sequence || []),
+                     ...(item.activityItems?.sentence_match?.extras || []),
+                 ]))];
                  for (const word of decodingWords) {
                      if (decodingAssets[word]) continue;
                      try {
@@ -2024,6 +2089,13 @@
                      // string must byte-match word_sounds.read_passage_prompt.
                      tasks.add(boards.read_passage.story);
                      tasks.add('Read the story. Which word finishes it?');
+                 }
+                 if (boards.sentence_match?.sentence) {
+                     // Byte-match contract with word_sounds.sentence_match_prompt.
+                     tasks.add(boards.sentence_match.sentence);
+                     tasks.add('Read the sentence. Match the pictures to it.');
+                     [...(boards.sentence_match.sequence || []), ...(boards.sentence_match.extras || [])]
+                         .forEach((value) => value && tasks.add(String(value)));
                  }
                  tasks.add('Which word did you hear?');
                  tasks.add('Which word rhymes with');
@@ -2671,6 +2743,7 @@
                                                     decoding: { id: 'decoding', label: 'Read & Match', icon: BookOpen },
                                                     read_sentence: { id: 'read_sentence', label: 'Finish the Sentence', icon: BookOpen },
                                                     read_passage: { id: 'read_passage', label: 'Read the Story', icon: BookOpen },
+                                                    sentence_match: { id: 'sentence_match', label: 'Picture the Sentence', icon: BookOpen },
                                                 };
                                                 const activity = activityDefs[actId];
                                                 return (
