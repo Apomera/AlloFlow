@@ -359,6 +359,8 @@ window.StemLab = window.StemLab || {
           window.removeEventListener('keydown', window._areaModelKbHandler);
         }
         window._areaModelKbHandler = function(e) {
+          // Window-level handler with no unmount cleanup: refuse to act once the tool left the DOM.
+          if (!document.querySelector('[data-areamodel-root]')) return;
           if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
           if (e.key === 'b' || e.key === 'B') { sfxClick(); upd({ viewMode: 'basic' }); }
           else if (e.key === 'd' || e.key === 'D') { sfxClick(); upd({ viewMode: 'distributive' }); }
@@ -831,7 +833,7 @@ window.StemLab = window.StemLab || {
       };
 
       // ══════════ RENDER ══════════
-      return h('div', { className: 'space-y-4 w-full px-2 sm:px-4 max-w-7xl mx-auto animate-in fade-in duration-200' },
+      return h('div', { className: 'space-y-4 w-full px-2 sm:px-4 max-w-7xl mx-auto animate-in fade-in duration-200', 'data-areamodel-root': 'true' },
         // Header
         h('div', { className: 'flex items-center gap-3 mb-2' },
           h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': t('stem.areamodel.back', 'Back') },

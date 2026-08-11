@@ -1873,6 +1873,8 @@ window.StemLab = window.StemLab || {
         window.removeEventListener('keydown', window._volumeKeyHandler);
       }
       window._volumeKeyHandler = function(e) {
+        // Window-level handler with no unmount cleanup: refuse to act once the tool left the DOM.
+        if (!document.querySelector('[data-volume-root]')) return;
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
         var key = e.key.toLowerCase();
         if (key === 's' && mode !== 'slider') { e.preventDefault(); upd({ mode: 'slider', builderChallenge: null, builderFeedback: null, wpFeedback: null }); }
@@ -2907,7 +2909,7 @@ window.StemLab = window.StemLab || {
           nextTab.click();
         }
       };
-      return h('div', { className: 'space-y-4 max-w-5xl mx-auto animate-in fade-in duration-200 ' + bgClass },
+      return h('div', { className: 'space-y-4 max-w-5xl mx-auto animate-in fade-in duration-200 ' + bgClass, 'data-volume-root': 'true' },
         // Header
         h('section', { 'data-volume-command': 'true', className: 'overflow-hidden rounded-2xl border border-emerald-300/40 bg-gradient-to-br from-slate-950 via-emerald-950 to-teal-950 text-white shadow-xl' },
           h('div', { className: 'p-4 sm:p-5' },

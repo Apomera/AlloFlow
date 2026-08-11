@@ -1452,6 +1452,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
           // ── Keyboard Shortcuts ──
           if (!window._colonyKeyHandler) {
             window._colonyKeyHandler = function (e) {
+              // _colonyKeyActive keeps its last value after unmount (true if the user
+              // left mid-play) — also require the tool to actually be in the DOM.
+              if (!document.querySelector('[data-spacecolony-root]')) return;
               if (!window._colonyKeyActive) return;
               // Don't capture if typing in an input
               if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
@@ -1708,7 +1711,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
             rule: { title: 'Closed-loop observation cycle', condition: 'always', benefitResource: 'science', benefitAmount: 2, costResource: 'water', costAmount: 1, duration: 4 },
             explanation: 'A transparent seed sphere and sensor ring turn the colony commitment to ecological observation into a visible structure. It produces science while consuming water, so the model remains a strategic tradeoff.'
           });
-          return React.createElement('div', { className: 'bg-gradient-to-b from-slate-900 to-indigo-950 rounded-2xl p-4 md:p-6 border border-slate-700 overflow-hidden' },
+          return React.createElement('div', { className: 'bg-gradient-to-b from-slate-900 to-indigo-950 rounded-2xl p-4 md:p-6 border border-slate-700 overflow-hidden', 'data-spacecolony-root': 'true' },
             React.createElement('div', { className: 'flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-5' },
               React.createElement('div', { className: 'flex items-center gap-3 min-w-0' },
                 React.createElement('button', { type: 'button', onClick: function () { upd('selectedTool', null); }, 'aria-label': t('stem.spacecolony.back_to_colony_overview', 'Back to colony overview'), title: t('stem.spacecolony.back', 'Back'), className: 'transition-colors grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-slate-600 bg-slate-800 text-slate-200 hover:border-indigo-400 hover:text-white text-lg' }, '\u2190'),

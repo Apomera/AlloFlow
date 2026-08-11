@@ -2782,6 +2782,9 @@ window.StemLab = window.StemLab || {
     // ═══ KEYBOARD SHORTCUTS (managed without useEffect) ═══
     if (window._fracKbHandler) window.removeEventListener('keydown', window._fracKbHandler);
     window._fracKbHandler = function(e) {
+      // Window-level handler; the Back button removes it, but hub navigation that
+      // bypasses Back does not — refuse to act once the tool left the DOM.
+      if (!document.querySelector('[data-fractions-root]')) return;
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
       var key = e.key;
       if (key === '1') { upd({ tab: 'practice' }); trackTab('practice'); }
@@ -11158,7 +11161,7 @@ window.StemLab = window.StemLab || {
       tab = visibleTabs[0].id;
     }
 
-    return h('div', { className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200' },
+    return h('div', { className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200', 'data-fractions-root': 'true' },
       // Header
       h('div', { className: 'flex items-center gap-3 mb-2' },
         h('button', { onClick: function() { if (window._fracKbHandler) { window.removeEventListener('keydown', window._fracKbHandler); window._fracKbHandler = null; } setStemLabTool(null); }, className: 'transition-colors p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': __alloT('stem.fractions.back', 'Back') },

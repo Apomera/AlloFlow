@@ -534,6 +534,8 @@ window.StemLab = window.StemLab || {
         window.removeEventListener('keydown', window._coordGridKeyHandler);
       }
       window._coordGridKeyHandler = function(e) {
+        // Window-level handler with no unmount cleanup: refuse to act once the tool left the DOM.
+        if (!document.querySelector('[data-coordinate-theme]')) return;
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
         if (e.key === 'c' || e.key === 'C') {
           sfxClick();

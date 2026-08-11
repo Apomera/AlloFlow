@@ -685,6 +685,9 @@
           }
           if (cyberTab === 'warroom' && !(warRoomA11y && warRoomA11y.noShortcuts)) {
             window._cyberWarRoomKeydown = function(e) {
+              // Tab-switch removes this listener, but unmount while on the War Room
+              // tab does not — refuse to act once the tool left the DOM.
+              if (!document.getElementById('cyber-defense-region')) return;
               // Ignore if user is typing in a form field or modifier keys are held
               var tag = (e.target && e.target.tagName) || '';
               if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.ctrlKey || e.metaKey || e.altKey) return;
