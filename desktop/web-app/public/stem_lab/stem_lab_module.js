@@ -6949,6 +6949,9 @@
             epidemicSim: true, fireEcology: true, microbiology: true, molecule: true, opticsLab: true, punnett: true,
             rocks: true, rockCycle: true, geologyExplorer: true, science: true, solarSystem: true,
             titrationLab: true, universe: true, unitConvert: true, waterCycle: true, weatherSystems: true,
+            // Aug 2026: Tree Life Lab — whole-organism photosynthesis, 3D growth clock,
+            // and the reproduction-strategy game.
+            treeLab: true,
             // Engineering & CS
             archStudio: true, bridgeLab: true, circuit: true, codingPlayground: true,
             cyberDefense: true, magnetism: true, semiconductor: true,

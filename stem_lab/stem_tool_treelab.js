@@ -1763,7 +1763,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
               __alloT('stem.treelab.bill_body', 'Converting sapwood to heartwood is how a tree keeps getting bigger without its maintenance cost rising forever. Dead wood still holds the tree up and costs nothing to keep.')),
             h('div', { key: 'ho', style: { marginTop: 10, paddingTop: 10, borderTop: '1px dashed ' + T.border } }, [
               h('div', { key: 't', style: { fontSize: 12, color: T.dim, marginBottom: 6, lineHeight: 1.5 } },
-                __alloT('stem.treelab.handoff_intro', 'Two other labs own the neighbouring scales of this same reaction, and both go deeper than this one does:')),
+                __alloT('stem.treelab.handoff_intro', 'Two other labs own the neighbouring scales of this same reaction, and both go deeper than this one does. Chemical Balance has the equation and its energy cost; Cell Explorer opens on the organelles, where the chloroplast is:')),
               btn('hc', __alloT('stem.treelab.open_chembalance', 'Balance the equation in Chemical Balance →'),
                 function () { handoff('chemBalance', 'Chemical Balance'); }, { small: true }),
               btn('hcell', __alloT('stem.treelab.open_cell', 'See the chloroplast in Cell Explorer →'),
@@ -1785,17 +1785,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       // Cross-tool handoff. Follows the Cell Atlas pattern: seed the target tool's own
       // slice of shared toolData, tag the source so the target can tell it arrived on a
       // journey, then navigate. This is why the deep chemistry is NOT duplicated here.
+      // Seed ONLY keys the destination actually reads. The first version invented
+      // requestedEquation / requestedOrganelle / requestedType — plausible names that
+      // appear nowhere in either target, so the handoff navigated and then dropped the
+      // student on the tool's default screen while the button implied otherwise. A
+      // test now pins each key below against the destination's source.
+      //
+      //   chemBalance: subtool defaults to 'balance' and tierFilter to 'all', which is
+      //     already where the photosynthesis equation is reachable, so there is nothing
+      //     useful to seed. Navigate and leave it alone rather than invent a key.
+      //   cell: mode defaults to 'observe'; the organelles live in 'interior'.
       function handoff(toolId, labelTxt) {
         ctx.setToolData(function (prev) {
           var next = Object.assign({}, prev || {});
-          if (toolId === 'chemBalance') {
-            next.chemBalance = Object.assign({}, next.chemBalance || {}, {
-              requestedEquation: 'Photosynthesis', _journeySource: 'treeLab'
-            });
-          } else if (toolId === 'cell') {
-            next.cell = Object.assign({}, next.cell || {}, {
-              requestedOrganelle: 'chloroplast', requestedType: 'plant', _journeySource: 'treeLab'
-            });
+          if (toolId === 'cell') {
+            next.cell = Object.assign({}, next.cell || {}, { mode: 'interior' });
           }
           return next;
         });

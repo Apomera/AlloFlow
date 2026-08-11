@@ -549,6 +549,113 @@ describe('Tree Life Lab — banks and mirrors', () => {
     expect(maxShare).toBeLessThanOrEqual(0.5);
   });
 
+  it('only seeds handoff keys the destination tool actually reads', () => {
+    // The first handoff invented requestedEquation / requestedOrganelle /
+    // requestedType. All three are plausible names that appear nowhere in either
+    // destination, so the button navigated and then dropped the student on the
+    // default screen while implying it had taken them somewhere. Nothing failed;
+    // it just quietly did not work.
+    const src = readFileSync(resolve(process.cwd(), SOURCE), 'utf8');
+    const start = src.indexOf('function handoff(');
+    expect(start, 'handoff() not found').toBeGreaterThan(0);
+    const body = src.slice(start, src.indexOf('\n      }', start));
+
+    const TARGETS = {
+      cell: 'stem_lab/stem_tool_cell.js',
+      chemBalance: 'stem_lab/stem_tool_chembalance.js',
+    };
+    for (const [tool, file] of Object.entries(TARGETS)) {
+      const assign = new RegExp('next\\.' + tool + '\\s*=\\s*Object\\.assign\\([^;]*?\\{([^}]*)\\}', 's');
+      const m = body.match(assign);
+      if (!m) continue;                       // seeding nothing is a valid choice
+      const target = readFileSync(resolve(process.cwd(), file), 'utf8');
+      const keys = [...m[1].matchAll(/([a-zA-Z_][\w]*)\s*:/g)].map((k) => k[1]);
+      for (const key of keys) {
+        if (key.startsWith('_')) continue;    // breadcrumbs are not read by contract
+        expect(target.includes(key), `${tool} never reads "${key}" — the handoff is cosmetic`).toBe(true);
+      }
+    }
+    // The invented names must not come back. Strip comments first: the code above is
+    // documented by naming them, and this assertion is about executable code.
+    const code = src
+      .replace(/\/\*[\s\S]*?\*\//g, ' ')
+      .replace(/(^|[^:])\/\/[^\n]*/g, '$1');
+    for (const dead of ['requestedEquation', 'requestedOrganelle', 'requestedType']) {
+      expect(code.includes(dead), `${dead} is read by no tool`).toBe(false);
+    }
+  });
+
+  it('has quest hooks that read the slice the host actually hands them', () => {
+    // The host resolves quest state as toolData[toolId], so a hook reading d.treeLab
+    // would silently never fire. Nothing would report that: an award that never
+    // arrives looks exactly like an award not yet earned.
+    resetStemLab();
+    const cfg = loadTool(SOURCE, 'treeLab');
+    const E = window.__alloTreeLabEngine;
+    expect(Array.isArray(cfg.questHooks)).toBe(true);
+    expect(cfg.questHooks.length).toBeGreaterThan(0);
+
+    let tree = E.newTree('oak');
+    for (let i = 0; i < 60; i += 1) tree = E.simulateYear(tree, E.speciesById('oak'), GOOD_ENV, ALLOC);
+
+    // Exactly what the host passes: toolData[toolId], not the whole toolData.
+    const earned = {
+      tree,
+      limitsSeen: { light: true, co2: true, water: true, temperature: true },
+      spreadRounds: 2,
+      bestDiverse: 3,
+      bestClonal: 4,
+    };
+    for (const hook of cfg.questHooks) {
+      expect(typeof hook.check, `${hook.id}.check`).toBe('function');
+      expect(hook.check(earned), `${hook.id} never fires on a fully-played state`).toBe(true);
+      expect(hook.check({}), `${hook.id} fires on an empty state`).toBeFalsy();
+      // progress() must survive an empty slice: it renders before anything is earned.
+      expect(() => hook.progress({}), `${hook.id}.progress({}) threw`).not.toThrow();
+      expect(typeof hook.progress(earned)).toBe('string');
+    }
+  });
+
+  it('keeps its state JSON-serialisable', () => {
+    // Persisted toolData round-trips through JSON. A function stored in state is
+    // silently dropped, which has bitten several tools in this repo (grading fns and
+    // label fns vanishing between sessions).
+    const E = engine();
+    let tree = E.newTree('oak');
+    for (let i = 0; i < 25; i += 1) tree = E.simulateYear(tree, E.speciesById('oak'), GOOD_ENV, ALLOC);
+    const state = {
+      tree,
+      lastSpread: { event: 'fire', res: E.resolveSpread({ seed_wind: 8 }, { id: 'fire', name: 'Ground fire' }, E.lcg(3)) },
+      alloc: E.normaliseAlloc({}),
+      spend: { seed_wind: 2 },
+      droughtYears: [4, 5],
+    };
+    const round = JSON.parse(JSON.stringify(state));
+    expect(round).toEqual(state);
+    // And the round-tripped tree must still simulate.
+    const next = E.simulateYear(round.tree, E.speciesById('oak'), GOOD_ENV, ALLOC);
+    expect(Number.isFinite(next.heightM)).toBe(true);
+    expect(next.rings.length).toBe(round.tree.rings.length + 1);
+  });
+
+  it('is listed in the hub gate that lets a pure plugin render at all', () => {
+    // The hub has exactly ONE StemLab.renderTool() call site and it sits behind
+    //   if (!_pluginOnlyTools[stemLabTool]) return null;
+    // A tool can be registered, catalogued, in PLUGIN_FILES, in the ANTI loader array,
+    // mirrored, indexed and DEPLOYED and still render nothing without an entry there.
+    // treeLab shipped in exactly that state: every gate in the repo was green because
+    // they all call renderTool() directly and never go through the hub path.
+    const HOST = 'stem_lab/stem_lab_module.js';
+    const MIRROR_HOST = 'desktop/web-app/public/stem_lab/stem_lab_module.js';
+    for (const file of [HOST, MIRROR_HOST]) {
+      const src = readFileSync(resolve(process.cwd(), file), 'utf8');
+      const start = src.indexOf('_pluginOnlyTools = {');
+      expect(start, `${file}: _pluginOnlyTools not found`).toBeGreaterThan(0);
+      const map = src.slice(start, src.indexOf('};', start));
+      expect(/\btreeLab\s*:\s*true\b/.test(map), `${file}: treeLab is not in _pluginOnlyTools, so it renders null`).toBe(true);
+    }
+  });
+
   it('keeps the CDN and desktop copies byte-identical', () => {
     // Two live copies: stem_lab/ is served by the CDN, desktop/web-app/public/stem_lab/
     // is the desktop app. An edit to one only is the classic silent divergence here.
