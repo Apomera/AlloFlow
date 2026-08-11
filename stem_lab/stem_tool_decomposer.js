@@ -951,7 +951,13 @@
           });
           q.wrongFeedback = wf;
 
-          q.opts = opts.sort(function() { return Math.random() - 0.5; });
+          // Fisher-Yates: the biased comparator left the correct answer (always
+          // inserted first) clustered near the top of the options.
+          for (var fy = opts.length - 1; fy > 0; fy--) {
+            var fj = Math.floor(Math.random() * (fy + 1));
+            var ft = opts[fy]; opts[fy] = opts[fj]; opts[fj] = ft;
+          }
+          q.opts = opts;
           q.answered = false;
           return q;
         }

@@ -281,6 +281,18 @@
     }
   ];
 
+  // Every authored scenario listed its correct diagnosis FIRST and the panel
+  // renders authored order — "always pick the first option" won the whole
+  // game. Grading uses the `correct` flag, so a deterministic rotation
+  // (stable across renders) is safe with no index remapping.
+  (function () {
+    DIAGNOSIS_SCENARIOS.forEach(function (scenario, i) {
+      var len = scenario.options.length;
+      var shift = (i * 7 + 3) % len;
+      if (shift) scenario.options = scenario.options.slice(shift).concat(scenario.options.slice(0, shift));
+    });
+  })();
+
   // ═══════════════════════════════════════════
   // SCIENCE DATA
   // ═══════════════════════════════════════════
