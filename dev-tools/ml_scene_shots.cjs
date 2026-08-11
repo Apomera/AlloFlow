@@ -135,6 +135,9 @@ const SHOTS = [
   // warning has its own colours in all three palettes, so it needs its own shot.
   ['07b-build-odd-stone', S({ view: 'build', projMass: 1, projDiameter: 0.8 }), {}, 2600],
   ['08-range-fresh', S({ view: 'range' }), {}, 500],
+  // The warning is placed above the fire card, where a student reads before
+  // predicting rather than after being scored.
+  ['08b-range-odd-stone', S({ view: 'range', projMass: 1, projDiameter: 0.8 }), {}, 500],
   ['09-siege-fresh', S({ view: 'siege', wallPreset: 'curtain' }), {}, 2600],
   ['10-siege-gatehouse', S({ view: 'siege', wallPreset: 'gatehouse' }), {}, 2600],
   ['11-siege-motte', S({ view: 'siege', wallPreset: 'motte' }), {}, 2600],

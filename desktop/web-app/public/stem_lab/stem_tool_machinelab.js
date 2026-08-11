@@ -3016,6 +3016,29 @@ window.StemLab = window.StemLab || {
         ]);
       }
 
+      // The two stone sliders live in Build, but every other view spends their
+      // numbers: the Test Range scores a prediction against them and the Target
+      // Wall works out damage from them. A warning that only appears where the
+      // value is set is a warning you can walk away from, so the views that
+      // consume an impossible stone say so too, briefly, and point back.
+      function oddStoneNote(key) {
+        var rho = _machineMath.density(d.projMass, d.projDiameter);
+        if (rho === null) return null;
+        if (rho >= 1400 && rho <= 4200) return null;
+        return h('div', {
+          key: key,
+          role: 'status',
+          style: {
+            marginBottom: 10, padding: '8px 10px', borderRadius: 8,
+            background: T.bg, border: '1px solid ' + T.warn,
+            fontSize: 12, color: T.warn, lineHeight: 1.5
+          }
+        }, __alloT('stem.machinelab.stone_odd_short', 'Your stone is ') + fmt(d.projMass, 1) +
+           __alloT('stem.machinelab.stone_odd_short2', ' kg and ') + fmt(d.projDiameter, 2) +
+           __alloT('stem.machinelab.stone_odd_short3', ' m across, which works out at ') + fmt(rho, 0) +
+           __alloT('stem.machinelab.stone_odd_short4', ' kg per cubic metre. No rock is that, so treat these numbers as a story about an object that could not exist. The two sliders are in Build.'));
+      }
+
       // ── Saving a design ──
       //
       // The host already renders a Tool Snapshots panel and a Load button for
@@ -3321,6 +3344,7 @@ window.StemLab = window.StemLab || {
           style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 12 }
         }, [
           h('div', { key: 'l' }, [
+            oddStoneNote('rangeodd'),
             card([
               h('h4', { key: 'h', style: { margin: '0 0 8px', fontSize: 14, color: T.text } },
                 __alloT('stem.machinelab.predict_fire', 'Predict, then fire')),
@@ -3775,6 +3799,7 @@ window.StemLab = window.StemLab || {
             style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 12 }
           }, [
             h('div', { key: 'l' }, [
+              oddStoneNote('siegeodd'),
               card([
                 h('div', {
                   key: 'gl',
@@ -4357,13 +4382,24 @@ window.StemLab = window.StemLab || {
                 }))
               ])),
             h('p', { key: 'note', style: { margin: '10px 0 0', fontSize: 12, color: T.dim, lineHeight: 1.5 } },
-              __alloT('stem.machinelab.cmp_note', 'The highlighted cells are the best in their column. The machine that throws furthest is often not the one that wastes least, because stored energy and efficiency are two different things.'))
+              __alloT('stem.machinelab.cmp_note', 'The highlighted cells are the best in their column. The machine that throws furthest is often not the one that wastes least, because stored energy and efficiency are two different things.')),
+            // Without this the two tables on this screen tell opposite stories
+            // and nothing joins them: up here the trebuchet wins by five times,
+            // and below the onager reaches twice as far as the trebuchet does.
+            // The difference is entirely the stone, and a fair test that holds
+            // the wrong thing constant is worth naming as a lesson.
+            h('p', { key: 'note2', style: { margin: '8px 0 0', fontSize: 12, color: T.dim, lineHeight: 1.5 } },
+              __alloT('stem.machinelab.cmp_note2', 'One thing to be careful about: holding the stone the same is what makes this a fair test, but it is a stone of one particular size, and it suits one of these machines far better than the other two. The panel below asks a different question, which is what each machine would rather be throwing.'))
           ], 'cmptable'),
           card([
             h('h4', { key: 'h', style: { margin: '0 0 6px', fontSize: 14, color: T.text } },
               __alloT('stem.machinelab.cmp_try', 'Things worth trying')),
             h('ul', { key: 'l', style: { margin: 0, paddingLeft: 20, fontSize: 13, color: T.muted, lineHeight: 1.7 } }, [
-              h('li', { key: '1' }, __alloT('stem.machinelab.cmp_try1', 'Drop the stone mass to a fraction of a kilogram. Which machine copes best, and why?')),
+              // This used to say "drop the stone mass to a fraction of a
+              // kilogram", which at a fixed 0.26 m diameter builds a stone
+              // lighter than balsa: the exact trap the density note warns
+              // about. Shrink both together, or press the button that does.
+              h('li', { key: '1' }, __alloT('stem.machinelab.cmp_try1', 'Make the stone lighter, and shrink its diameter to match so it stays a real rock. Which machine copes best, and why? The button below does this for you.')),
               h('li', { key: '2' }, __alloT('stem.machinelab.cmp_try2', 'Make the onager arm heavier. Watch what happens to the share of energy that reaches the stone.')),
               h('li', { key: '3' }, __alloT('stem.machinelab.cmp_try3', 'Lengthen the onager sling. It costs nothing and changes the efficiency. Why?')),
               h('li', { key: '4' }, __alloT('stem.machinelab.cmp_try4', 'Wind more turns into the bundles. Does range grow as fast as stored energy does?'))
@@ -4456,6 +4492,9 @@ window.StemLab = window.StemLab || {
               __alloT('stem.machinelab.manual_x_treb', 'The trebuchet is modelled with one degree of freedom. A real one is a double pendulum, and the moment the sling releases is a genuinely hard problem this model does not solve.'),
               __alloT('stem.machinelab.manual_x_tors', 'Torsion springs are modelled as linear. Real twisted sinew is strongly nonlinear, loses energy internally on every shot, and behaves differently in damp weather.'),
               __alloT('stem.machinelab.manual_x_drag', 'Drag uses a single constant coefficient for a smooth sphere. Real projectiles tumble, and their drag changes as they do.'),
+              // The tool now prints the implied density, so it has to be honest
+              // about the fact that it will happily simulate an impossible one.
+              __alloT('stem.machinelab.manual_x_dens', 'Stone mass and stone size are separate controls, so the tool will let you build an object with a density no material has, and will then simulate it perfectly happily. It tells you when you have done that, but it does not stop you. Real materials come with a density attached, and it is worth remembering that choosing a size chooses a mass too.'),
               __alloT('stem.machinelab.manual_x_fric', 'One efficiency figure stands in for all the friction in the winch. A real crew would feel it vary through the pull.')
             ], 'ul'),
             para(__alloT('stem.machinelab.manual_x2', 'What the model does get right is the shape of the trade-offs: mechanical advantage buys force by spending distance, a heavy arm steals energy from the payload, and drag is what creates a best projectile mass. Those conclusions are robust. The specific numbers are not predictions about any real machine.'), 'p2')

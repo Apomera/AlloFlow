@@ -384,6 +384,21 @@ function check(name, cond, detail) {
   check('the shipped stone is not called out', sensibleTxt.indexOf('No rock is that') === -1);
   check('the shipped stone is named as stone', sensibleTxt.indexOf('about stone') !== -1);
 
+  // An impossible stone set in Build is spent in Range and Siege. A warning
+  // that only appears where the value is set is one you can walk away from.
+  for (const v of ['range', 'siege']) {
+    await pg.evaluate((s) => window.__mount(s, {}), S({ view: v, projMass: 1, projDiameter: 0.8 }));
+    await pg.waitForTimeout(v === 'siege' ? 2200 : 400);
+    const t = await pg.evaluate(() => document.body.innerText);
+    check('an impossible stone is still called out in ' + v, t.indexOf('No rock is that') !== -1);
+    check('the ' + v + ' warning points back to where the sliders are',
+          t.indexOf('The two sliders are in Build') !== -1);
+    await pg.evaluate((s) => window.__mount(s, {}), S({ view: v }));
+    await pg.waitForTimeout(v === 'siege' ? 2200 : 400);
+    const ok = await pg.evaluate(() => document.body.innerText);
+    check('a real rock draws no warning in ' + v, ok.indexOf('No rock is that') === -1);
+  }
+
   check('no page errors during any interaction', errors.length === 0, errors.slice(0, 3).join(' | '));
 
   await b.close();

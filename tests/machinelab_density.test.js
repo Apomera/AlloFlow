@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
@@ -240,5 +241,75 @@ describe('Machine Lab: the panel does not sell a pebble as the answer', () => {
   it('leaves the footnote off when the peak is genuine', () => {
     const html = renderTool('machineLab', cmp(saved({ atBound: false })));
     expect(html).not.toContain('where the search stopped rather than a real best');
+  });
+});
+
+describe('Machine Lab: an impossible stone follows you out of Build', () => {
+  const view = (v, o = {}) => ({ machineLab: Object.assign({ view: v }, o) });
+  const SILLY = { projMass: 1, projDiameter: 0.8 };
+
+  // The two sliders live in Build, but the Test Range scores a prediction
+  // against them and the Target Wall computes damage from them. A warning only
+  // where the value is set is a warning you can walk away from.
+  it('warns in the Test Range, which scores a prediction against it', () => {
+    const html = renderTool('machineLab', view('range', SILLY));
+    expect(html).toContain('No rock is that');
+    expect(html).toContain('The two sliders are in Build');
+  });
+
+  it('warns on the Target Wall, which computes damage from it', () => {
+    const html = renderTool('machineLab', view('siege', SILLY));
+    expect(html).toContain('No rock is that');
+  });
+
+  it('names the actual numbers rather than just complaining', () => {
+    // fmt strips trailing zeros, so this is "1 kg", not "1.0 kg".
+    const html = renderTool('machineLab', view('range', SILLY));
+    expect(html).toContain('Your stone is 1 kg and 0.8 m across');
+    expect(html).toContain('4 kg per cubic metre');
+  });
+
+  it('stays quiet on a real rock in every view that reads it', () => {
+    ['range', 'siege', 'build', 'compare'].forEach((v) => {
+      const html = renderTool('machineLab', view(v));
+      expect(html).not.toContain('No rock is that');
+    });
+  });
+
+  it('does not tell a student to build the thing it warns about', () => {
+    // "Drop the stone mass to a fraction of a kilogram" at a fixed 0.26 m
+    // diameter is a stone lighter than balsa.
+    const html = renderTool('machineLab', view('compare'));
+    expect(html).not.toContain('Drop the stone mass to a fraction of a kilogram');
+    expect(html).toContain('shrink its diameter to match so it stays a real rock');
+  });
+});
+
+describe('Machine Lab: the Field Manual owns the limitation', () => {
+  it('lists independent mass and size among what the model is not', () => {
+    // The tool prints the implied density, so it has to say plainly that it
+    // will still simulate an impossible one rather than refusing.
+    const html = renderTool('machineLab', { machineLab: { view: 'learn', manualTopic: 'model' } });
+    expect(html).toContain('Stone mass and stone size are separate controls');
+    expect(html).toContain('It tells you when you have done that, but it does not stop you');
+  });
+
+  it('reaches the read-aloud, because it goes through bullets() not a hand-written li', () => {
+    // The manual collects spoken text AS it renders: bullets() pushes each
+    // string into `spoken` on its way to the page. A hand-written <li> renders
+    // identically and is silently missing from the audio, which is exactly the
+    // kind of drift that cannot be seen in the markup. So check the source.
+    const src = readFileSync('stem_lab/stem_tool_machinelab.js', 'utf8');
+    const at = src.indexOf('manual_x_dens');
+    expect(at).toBeGreaterThan(-1);
+    // Walk back to the nearest enclosing call and confirm it is bullets(), not
+    // a hand-written list item. A regex spanning both bullets() blocks would
+    // pass even if this string had escaped into the wrong one.
+    const opener = src.lastIndexOf('bullets([', at);
+    const closer = src.indexOf("], 'ul')", at);
+    expect(opener).toBeGreaterThan(-1);
+    expect(closer).toBeGreaterThan(opener);
+    expect(src.slice(opener, closer)).toContain('manual_x_dens');
+    expect(src.slice(opener, at)).not.toContain("h('li'");
   });
 });

@@ -334,6 +334,35 @@ for work that takes 120 ms in Chrome, because the sandbox does not JIT the integ
 way a browser does. It nearly bought a redesign for a problem that did not exist. Time
 main-thread work in the environment the student is in.
 
+### The follow-up sweep: a half-wired warning is worse than none
+
+Defects 18 and 19 fixed the physics but left the fix itself only partly wired, which the
+next pass over the tool caught. Three things:
+
+**The two stone sliders live in Build, but every other view spends their numbers.** The
+Test Range scores a prediction against them and the Target Wall computes damage from them,
+and neither said a word about an impossible stone. A warning that appears only where the
+value is set is a warning you can walk away from, so `oddStoneNote()` now appears in both,
+briefly, naming the actual numbers and pointing back to Build. It is `null` on a real rock,
+so a well-built stone costs nothing.
+
+**"Things worth trying" was telling students to build the very thing the warning warns
+about.** The first prompt read "drop the stone mass to a fraction of a kilogram," which at
+a fixed 0.26 m diameter is a stone lighter than balsa. It now says to shrink the diameter
+to match, and points at the button that does it properly.
+
+**The two tables in Compare told opposite stories with nothing joining them.** The top one
+has the trebuchet winning by five times on a shared 25 kg stone; the new one below has the
+onager reaching twice as far as the trebuchet does. The entire difference is the stone. A
+second note now names that: holding the stone constant is what makes the comparison fair,
+and it is also a stone that suits exactly one of the three machines.
+
+The Field Manual's "What this model is not" gained the matching entry, because the tool now
+prints the implied density and therefore has to say plainly that it will still simulate an
+impossible one rather than refusing. Its test checks the SOURCE, not the markup: the manual
+collects spoken text as it renders, so a hand-written `<li>` renders identically to a
+`bullets()` entry and is silently absent from the read-aloud.
+
 ## The reachability audit
 
 The crosswind find prompted a sweep of every field in `defaultState()` against whether a
