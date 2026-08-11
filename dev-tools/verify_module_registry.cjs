@@ -80,6 +80,13 @@ const moduleFiles = [
   ...listFiles(ROOT, f => /^quiz_[a-z_]+\.js$/.test(f)),
   ...listFiles(path.join(ROOT, 'stem_lab'), f => f.endsWith('.js') && !f.startsWith('_')),
   ...listFiles(path.join(ROOT, 'sel_hub'), f => f.endsWith('.js') && !f.startsWith('_')),
+  // standards_snapshots/*.js are CDN modules too: each one registers
+  // AlloModules.LocalStandardsSnapshot (plus a StandardsSnapshot<Name> alias).
+  // They were outside the scan set, so the loader's registration probe — which
+  // accepts the shared registry as proof a snapshot module loaded — looked like
+  // a consumer with no producer anywhere and blocked the deploy. The producer
+  // was real, tracked and shipping the whole time; only this walk missed it.
+  ...listFiles(path.join(ROOT, 'standards_snapshots'), f => f.endsWith('.js') && !f.startsWith('_')),
 ];
 
 function lineOf(src, idx) {
