@@ -1357,6 +1357,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                     style: { cursor: canGo ? 'pointer' : 'default' },
                     onClick: canGo ? function() { moveToRoom(rm.id); } : null,
                     role: canGo ? 'button' : null,
+                    // This declared role="button" and an aria-label and then supplied
+                    // neither tabIndex nor a key handler, so a screen reader announced a
+                    // travel control that could not be focused or pressed. Travel between
+                    // rooms is the only navigation in this world, so it was not awkward
+                    // by keyboard, it was impossible.
+                    tabIndex: canGo ? 0 : null,
+                    'data-wb-room': canGo ? rm.id : null,
+                    onKeyDown: canGo ? function(id) { return function(ev) {
+                      if (ev.key !== 'Enter' && ev.key !== ' ' && ev.key !== 'Spacebar') return;
+                      ev.preventDefault();
+                      moveToRoom(id);
+                    }; }(rm.id) : null,
                     'aria-label': canGo ? ('Travel to ' + rm.name) : (rm.name + (isCur ? ' — you are here' : '')) },
                     isCur ? h('circle', { cx: p.x, cy: p.y, r: 19, fill: 'none', stroke: '#7c3aed', strokeWidth: 1, opacity: 0.5 }) : null,
                     h('circle', { cx: p.x, cy: p.y, r: 15, fill: fill, stroke: stroke, strokeWidth: isCur ? 3 : 1.8, opacity: bright ? 1 : 0.5 }),
