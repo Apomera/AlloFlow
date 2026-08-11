@@ -327,7 +327,8 @@ function scanFile(file) {
 
 const argv = process.argv.slice(2);
 const showInfo = argv.includes('--info');
-const fileArgs = argv.filter((a) => a !== '--info');
+const quiet = argv.includes('--quiet');
+const fileArgs = argv.filter((a) => a !== '--info' && a !== '--quiet');
 const files = fileArgs.length ? fileArgs
   : fs.readdirSync(path.join(ROOT, 'stem_lab'))
       .filter((f) => /^stem_tool_.*\.js$/.test(f))
@@ -348,7 +349,9 @@ for (const rel of files) {
     for (const f of r.infos) console.log('   ~ ' + f.fn + ' [' + f.lines + '] — ' + f.why);
   }
 }
-console.log('---');
-console.log('scan_hook_order_branches: ' + files.length + ' file(s), ' + failFiles + ' FAIL, '
-  + infoCount + ' info (' + (showInfo ? 'shown' : 'run with --info to list') + '), ' + parseErrors + ' parse failure(s).');
+if (!quiet || failFiles || parseErrors) {
+  console.log('---');
+  console.log('scan_hook_order_branches: ' + files.length + ' file(s), ' + failFiles + ' FAIL, '
+    + infoCount + ' info (' + (showInfo ? 'shown' : 'run with --info to list') + '), ' + parseErrors + ' parse failure(s).');
+}
 process.exit(failFiles || parseErrors ? 1 : 0);

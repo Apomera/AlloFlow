@@ -71,6 +71,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('solarSystem'))
   };
 
 
+  // ── Stable view identities (module scope) ──
+  // Components defined inside render() get a new function identity every host
+  // re-render, so React unmounts/remounts them on ANY toolData write — wiping
+  // local useState (see dev-tools/scan_render_scoped_components.cjs).
+  // stableType() hands React a stable wrapper type and swaps the fresh closure
+  // in each render. Gate: tests/stem_view_identity_stability.test.js.
+  var _stableViewTypes = {};
+  function stableType(name, impl) {
+    var slot = _stableViewTypes[name];
+    if (!slot) {
+      slot = _stableViewTypes[name] = { impl: null, Type: null };
+      slot.Type = function StableView(props) { return slot.impl(props); };
+    }
+    slot.impl = impl;
+    return slot.Type;
+  }
   window.StemLab.registerTool('solarSystem', {
     icon: "🪐",
     label: "Solar System Explorer",
@@ -3747,7 +3763,7 @@ const d = labToolData.solarSystem || {};
       if (nextBody.type === "dwarf") patch.orr_showDwarfs = true;
       updMulti(patch);
     };
-    var cvPanel = h(CanvasPanel, {
+    var cvPanel = h(stableType('CanvasPanel', CanvasPanel), {
       key: "orrery-cv",
       width: W,
       height: H,
@@ -5803,7 +5819,7 @@ const d = labToolData.solarSystem || {};
     // Hook hoisted — use k1AnimRef
     var animRef = k1AnimRef;
 
-    var cvPanel = h(CanvasPanel, {
+    var cvPanel = h(stableType('CanvasPanel', CanvasPanel), {
       key: "k1-cv",
       width: W,
       height: H,
@@ -6000,7 +6016,7 @@ const d = labToolData.solarSystem || {};
       "#00b894", "#6c5ce7"
     ];
 
-    var cvPanel = h(CanvasPanel, {
+    var cvPanel = h(stableType('CanvasPanel', CanvasPanel), {
       key: "k2-cv",
       width: W,
       height: H,
@@ -6280,7 +6296,7 @@ const d = labToolData.solarSystem || {};
       ? "Selected " + k3HoverBody.name + ": a = " + fmt(k3HoverBody.a, 3) + " AU; T = " + fmt(k3HoverBody.T, 2) + " yr; T²/a³ = " + fmt(k3HoverRatio, 4)
       : "Select a plotted world to inspect its Kepler III evidence.";
 
-    var cvPanel = h(CanvasPanel, {
+    var cvPanel = h(stableType('CanvasPanel', CanvasPanel), {
       key: "k3-cv",
       width: W,
       height: H,
@@ -6590,7 +6606,7 @@ const d = labToolData.solarSystem || {};
 
       // ── Orbit Preview Canvas ──
       h("div", { key: "ws-canvases", style: { display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "10px" } },
-        h(CanvasPanel, {
+        h(stableType('CanvasPanel', CanvasPanel), {
           key: "ws-orbit-cv",
           width: 350,
           height: 350,
@@ -6648,7 +6664,7 @@ const d = labToolData.solarSystem || {};
         }),
 
         // ── Energy Diagram ──
-        h(CanvasPanel, {
+        h(stableType('CanvasPanel', CanvasPanel), {
           key: "ws-energy-cv",
           width: 350,
           height: 350,
@@ -6812,7 +6828,7 @@ const d = labToolData.solarSystem || {};
 
     // ── Hohmann transfer orbit visualization canvas ──
     var TW = 500, TH = 500;
-    var transferCanvas = h(CanvasPanel, {
+    var transferCanvas = h(stableType('CanvasPanel', CanvasPanel), {
       key: "transfer-cv",
       width: TW,
       height: TH,

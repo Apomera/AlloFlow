@@ -9149,6 +9149,109 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
       var viewState = useState(d.view || 'menu');
       var view = viewState[0], setView = viewState[1];
+      // ── Stable view identities ──
+      // Components defined inside render() get a new function identity every
+      // host re-render, so React unmounts/remounts the open view on ANY
+      // toolData write — wiping its local useState (see
+      // dev-tools/scan_render_scoped_components.cjs). stableType() hands React
+      // a per-mount stable wrapper type and swaps the fresh closure in each
+      // render, so views reconcile in place instead of remounting.
+      // Gate: tests/stem_view_identity_stability.test.js.
+      var _stableViewTypesRef = useRef({});
+      function stableType(name, impl) {
+        var slot = _stableViewTypesRef.current[name];
+        if (!slot) {
+          slot = _stableViewTypesRef.current[name] = { impl: null, Type: null };
+          slot.Type = function StableView(props) { return slot.impl(props); };
+        }
+        slot.impl = impl;
+        return slot.Type;
+      }
+      // Stabilize stateless chrome/view identities too (declarations hoist,
+      // so re-binding them here covers every later use). Without this the
+      // shared chrome (back bars, stat cards, sliders) still remounts inside
+      // otherwise-stable views on every host re-render, tearing DOM and
+      // dropping keyboard focus.
+      BackBar = stableType('BackBar', BackBar);
+      TeacherNotes = stableType('TeacherNotes', TeacherNotes);
+      LifeListView = stableType('LifeListView', LifeListView);
+      FlightPatternsView = stableType('FlightPatternsView', FlightPatternsView);
+      OpticsView = stableType('OpticsView', OpticsView);
+      EthicsView = stableType('EthicsView', EthicsView);
+      WeatherView = stableType('WeatherView', WeatherView);
+      FaqView = stableType('FaqView', FaqView);
+      WingTypesView = stableType('WingTypesView', WingTypesView);
+      FootTypesView = stableType('FootTypesView', FootTypesView);
+      PhysiologyView = stableType('PhysiologyView', PhysiologyView);
+      EvolutionView = stableType('EvolutionView', EvolutionView);
+      ScientistsView = stableType('ScientistsView', ScientistsView);
+      IrruptionsView = stableType('IrruptionsView', IrruptionsView);
+      EndangeredView = stableType('EndangeredView', EndangeredView);
+      DuckIdView = stableType('DuckIdView', DuckIdView);
+      VocalDeepView = stableType('VocalDeepView', VocalDeepView);
+      ClimateBirdsView = stableType('ClimateBirdsView', ClimateBirdsView);
+      FeederView = stableType('FeederView', FeederView);
+      DietsView = stableType('DietsView', DietsView);
+      PhotoView = stableType('PhotoView', PhotoView);
+      ResourcesView = stableType('ResourcesView', ResourcesView);
+      AgeSexIdView = stableType('AgeSexIdView', AgeSexIdView);
+      ShapeDiffView = stableType('ShapeDiffView', ShapeDiffView);
+      ExtinctView = stableType('ExtinctView', ExtinctView);
+      ConfusingPairsView = stableType('ConfusingPairsView', ConfusingPairsView);
+      FamiliesView = stableType('FamiliesView', FamiliesView);
+      KidsBirdingView = stableType('KidsBirdingView', KidsBirdingView);
+      AccessibilityView = stableType('AccessibilityView', AccessibilityView);
+      TeachingView = stableType('TeachingView', TeachingView);
+      WabanakiView = stableType('WabanakiView', WabanakiView);
+      LiteratureView = stableType('LiteratureView', LiteratureView);
+      AchievementsLifeView = stableType('AchievementsLifeView', AchievementsLifeView);
+      HawkwatchView = stableType('HawkwatchView', HawkwatchView);
+      CbcView = stableType('CbcView', CbcView);
+      SuperstitionsView = stableType('SuperstitionsView', SuperstitionsView);
+      EtiquetteDeepView = stableType('EtiquetteDeepView', EtiquetteDeepView);
+      HawkwatchDataView = stableType('HawkwatchDataView', HawkwatchDataView);
+      UrbanView = stableType('UrbanView', UrbanView);
+      LogTemplateView = stableType('LogTemplateView', LogTemplateView);
+      IntelligenceView = stableType('IntelligenceView', IntelligenceView);
+      EcoServicesView = stableType('EcoServicesView', EcoServicesView);
+      RecoveryView = stableType('RecoveryView', RecoveryView);
+      WindEnergyView = stableType('WindEnergyView', WindEnergyView);
+      ResearchTechView = stableType('ResearchTechView', ResearchTechView);
+      FestivalsView = stableType('FestivalsView', FestivalsView);
+      Backyard30View = stableType('Backyard30View', Backyard30View);
+      NamingView = stableType('NamingView', NamingView);
+      DrawingView = stableType('DrawingView', DrawingView);
+      EconomyView = stableType('EconomyView', EconomyView);
+      BeginnerTipsView = stableType('BeginnerTipsView', BeginnerTipsView);
+      MentalHealthView = stableType('MentalHealthView', MentalHealthView);
+      DailyRoutineView = stableType('DailyRoutineView', DailyRoutineView);
+      ThermoView = stableType('ThermoView', ThermoView);
+      DawnChorusView = stableType('DawnChorusView', DawnChorusView);
+      BirdsByColorView = stableType('BirdsByColorView', BirdsByColorView);
+      BehaviorGlossView = stableType('BehaviorGlossView', BehaviorGlossView);
+      BirdsToolsView = stableType('BirdsToolsView', BirdsToolsView);
+      BirdFriendlyView = stableType('BirdFriendlyView', BirdFriendlyView);
+      SpringArrivalsView = stableType('SpringArrivalsView', SpringArrivalsView);
+      FallMigrationView = stableType('FallMigrationView', FallMigrationView);
+      NightBirdingView = stableType('NightBirdingView', NightBirdingView);
+      InternationalView = stableType('InternationalView', InternationalView);
+      BirdingGamesView = stableType('BirdingGamesView', BirdingGamesView);
+      BirdSoundView = stableType('BirdSoundView', BirdSoundView);
+      DiseasesView = stableType('DiseasesView', DiseasesView);
+      DisabilityBirdingView = stableType('DisabilityBirdingView', DisabilityBirdingView);
+      StoriesView = stableType('StoriesView', StoriesView);
+      TrailsView = stableType('TrailsView', TrailsView);
+      SafetyEthicsView = stableType('SafetyEthicsView', SafetyEthicsView);
+      AtlasView = stableType('AtlasView', AtlasView);
+      MaineChangesView = stableType('MaineChangesView', MaineChangesView);
+      VoiceTypesView = stableType('VoiceTypesView', VoiceTypesView);
+      DetailedCalendarView = stableType('DetailedCalendarView', DetailedCalendarView);
+      ArtView = stableType('ArtView', ArtView);
+      PhilosophyView = stableType('PhilosophyView', PhilosophyView);
+      MaineStatsView = stableType('MaineStatsView', MaineStatsView);
+      FaqEssentialsView = stableType('FaqEssentialsView', FaqEssentialsView);
+      MilestonesView = stableType('MilestonesView', MilestonesView);
+      QuotesView = stableType('QuotesView', QuotesView);
 
       // Lifer celebration state — fires the moment a brand-new species is
       // identified. One-shot per identification; cleared after the toast
@@ -21764,46 +21867,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
       // VIEW DISPATCH
       // ─────────────────────────────────────────────────────
-      if (view === 'ispy') return h(ISpyHabitat);
-      if (view === 'fieldMarks') return h(FieldMarksTrainer);
-      if (view === 'beakFeet') return h(BeakFeetLab);
-      if (view === 'calls') return h(BirdCallTrainer);
-      if (view === 'habitatMatch') return h(HabitatMatchLab);
-      if (view === 'maineBirds') return h(MaineBirdsSpotlight);
-      if (view === 'migration') return h(MigrationPatternsLab);
-      if (view === 'citizenScience') return h(CitizenScienceBridge);
-      if (view === 'fieldObs') return h(FieldObservation);
-      if (view === 'conservation') return h(ConservationCareers);
-      if (view === 'photoId') return h(BirdPhotoID);
-      if (view === 'compare') return h(CompareLab);
+      if (view === 'ispy') return h(stableType('ISpyHabitat', ISpyHabitat));
+      if (view === 'fieldMarks') return h(stableType('FieldMarksTrainer', FieldMarksTrainer));
+      if (view === 'beakFeet') return h(stableType('BeakFeetLab', BeakFeetLab));
+      if (view === 'calls') return h(stableType('BirdCallTrainer', BirdCallTrainer));
+      if (view === 'habitatMatch') return h(stableType('HabitatMatchLab', HabitatMatchLab));
+      if (view === 'maineBirds') return h(stableType('MaineBirdsSpotlight', MaineBirdsSpotlight));
+      if (view === 'migration') return h(stableType('MigrationPatternsLab', MigrationPatternsLab));
+      if (view === 'citizenScience') return h(stableType('CitizenScienceBridge', CitizenScienceBridge));
+      if (view === 'fieldObs') return h(stableType('FieldObservation', FieldObservation));
+      if (view === 'conservation') return h(stableType('ConservationCareers', ConservationCareers));
+      if (view === 'photoId') return h(stableType('BirdPhotoID', BirdPhotoID));
+      if (view === 'compare') return h(stableType('CompareLab', CompareLab));
       if (view === 'lifeList') return h(LifeListView);
-      if (view === 'nestGallery') return h(NestGallery);
-      if (view === 'eggGallery') return h(EggGallery);
-      if (view === 'featherAnatomy') return h(FeatherAnatomyLab);
-      if (view === 'silhouetteQuiz') return h(SilhouetteQuiz);
-      if (view === 'plumage') return h(PlumageView);
-      if (view === 'tracksSign') return h(TracksSignView);
+      if (view === 'nestGallery') return h(stableType('NestGallery', NestGallery));
+      if (view === 'eggGallery') return h(stableType('EggGallery', EggGallery));
+      if (view === 'featherAnatomy') return h(stableType('FeatherAnatomyLab', FeatherAnatomyLab));
+      if (view === 'silhouetteQuiz') return h(stableType('SilhouetteQuiz', SilhouetteQuiz));
+      if (view === 'plumage') return h(stableType('PlumageView', PlumageView));
+      if (view === 'tracksSign') return h(stableType('TracksSignView', TracksSignView));
       if (view === 'flightPatterns') return h(FlightPatternsView);
-      if (view === 'owls') return h(OwlDeepView);
-      if (view === 'raptors') return h(RaptorDeepView);
-      if (view === 'warblers') return h(WarblerDeepView);
+      if (view === 'owls') return h(stableType('OwlDeepView', OwlDeepView));
+      if (view === 'raptors') return h(stableType('RaptorDeepView', RaptorDeepView));
+      if (view === 'warblers') return h(stableType('WarblerDeepView', WarblerDeepView));
       if (view === 'optics') return h(OpticsView);
       if (view === 'ethics') return h(EthicsView);
       if (view === 'weather') return h(WeatherView);
       if (view === 'faq') return h(FaqView);
-      if (view === 'waterfowl') return h(WaterfowlView);
-      if (view === 'shorebirds') return h(ShorebirdsView);
-      if (view === 'seabirds') return h(SeabirdsView);
+      if (view === 'waterfowl') return h(stableType('WaterfowlView', WaterfowlView));
+      if (view === 'shorebirds') return h(stableType('ShorebirdsView', ShorebirdsView));
+      if (view === 'seabirds') return h(stableType('SeabirdsView', SeabirdsView));
       if (view === 'wingTypes') return h(WingTypesView);
       if (view === 'footTypes') return h(FootTypesView);
-      if (view === 'behaviors') return h(BehaviorsView);
+      if (view === 'behaviors') return h(stableType('BehaviorsView', BehaviorsView));
       if (view === 'physiology') return h(PhysiologyView);
       if (view === 'evolution') return h(EvolutionView);
       if (view === 'scientists') return h(ScientistsView);
-      if (view === 'gullId') return h(GullIdView);
+      if (view === 'gullId') return h(stableType('GullIdView', GullIdView));
       if (view === 'irruptions') return h(IrruptionsView);
       if (view === 'endangered') return h(EndangeredView);
-      if (view === 'hotspotsDeep') return h(HotspotsDeepView);
+      if (view === 'hotspotsDeep') return h(stableType('HotspotsDeepView', HotspotsDeepView));
       if (view === 'duckId') return h(DuckIdView);
       if (view === 'vocalDeep') return h(VocalDeepView);
       var goToMenu = function() { setView('menu'); upd('view', 'menu'); };
@@ -22078,14 +22181,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           filtered.length === 0 && h('div', { className: 'text-center text-slate-500 italic p-8' }, 'No matches for "' + q + '"'));
       }
 
-      if (view === 'topology') return h(TopologyView);
-      if (view === 'habitatsDeep') return h(HabitatsDeepView);
+      if (view === 'topology') return h(stableType('TopologyView', TopologyView));
+      if (view === 'habitatsDeep') return h(stableType('HabitatsDeepView', HabitatsDeepView));
       if (view === 'climateBirds') return h(ClimateBirdsView);
       if (view === 'feeder') return h(FeederView);
-      if (view === 'nestbox') return h(NestboxView);
+      if (view === 'nestbox') return h(stableType('NestboxView', NestboxView));
       if (view === 'diets') return h(DietsView);
-      if (view === 'migrationDeep') return h(MigrationDeepView);
-      if (view === 'glossaryDeep') return h(GlossaryDeepView);
+      if (view === 'migrationDeep') return h(stableType('MigrationDeepView', MigrationDeepView));
+      if (view === 'glossaryDeep') return h(stableType('GlossaryDeepView', GlossaryDeepView));
 
       // ═══════════════════════════════════════════════════════════
       // PHASE 6 VIEWS
@@ -22249,13 +22352,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               h('div', { className: 'p-3 bg-rose-50 rounded' }, h('b', null, __alloT('stem.birdlab.conservation_5', '🛡️ Conservation: ')), cur.conservation))));
       }
 
-      if (view === 'dichotomous') return h(DichotomousKeyView);
-      if (view === 'seasonal') return h(SeasonalGuideView);
+      if (view === 'dichotomous') return h(stableType('DichotomousKeyView', DichotomousKeyView));
+      if (view === 'seasonal') return h(stableType('SeasonalGuideView', SeasonalGuideView));
       if (view === 'photo') return h(PhotoView);
       if (view === 'resources') return h(ResourcesView);
       if (view === 'agesex') return h(AgeSexIdView);
       if (view === 'shapediff') return h(ShapeDiffView);
-      if (view === 'iconic') return h(IconicMaineView);
+      if (view === 'iconic') return h(stableType('IconicMaineView', IconicMaineView));
 
       // ═══════════════════════════════════════════════════════════
       // PHASE 7 VIEWS
@@ -22411,7 +22514,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             })));
       }
 
-      if (view === 'facts') return h(FactsView);
+      if (view === 'facts') return h(stableType('FactsView', FactsView));
       if (view === 'extinct') return h(ExtinctView);
       if (view === 'confusing') return h(ConfusingPairsView);
       if (view === 'families') return h(FamiliesView);
@@ -22907,7 +23010,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       }
 
       if (view === 'backyard30') return h(Backyard30View);
-      if (view === 'monthly') return h(MonthlyView);
+      if (view === 'monthly') return h(stableType('MonthlyView', MonthlyView));
       if (view === 'naming') return h(NamingView);
       if (view === 'drawing') return h(DrawingView);
       if (view === 'economy') return h(EconomyView);
@@ -23069,7 +23172,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             })));
       }
 
-      if (view === 'quizBank') return h(QuizBankView);
+      if (view === 'quizBank') return h(stableType('QuizBankView', QuizBankView));
       if (view === 'dailyRoutine') return h(DailyRoutineView);
       if (view === 'thermo') return h(ThermoView);
       if (view === 'dawnChorus') return h(DawnChorusView);
@@ -23558,7 +23661,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           )
         );
       });
-      return h(MainMenu);
+      return h(stableType('MainMenu', MainMenu));
     }
   });
 

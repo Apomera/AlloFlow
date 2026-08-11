@@ -1255,6 +1255,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
   // Register the tool
   // ─────────────────────────────────────────────────────────
 
+  // ── Stable view identities (module scope) ──
+  // Components defined inside render() get a new function identity every host
+  // re-render, so React unmounts/remounts them on ANY toolData write — wiping
+  // local useState (see dev-tools/scan_render_scoped_components.cjs).
+  // stableType() hands React a stable wrapper type and swaps the fresh closure
+  // in each render. Gate: tests/stem_view_identity_stability.test.js.
+  var _stableViewTypes = {};
+  function stableType(name, impl) {
+    var slot = _stableViewTypes[name];
+    if (!slot) {
+      slot = _stableViewTypes[name] = { impl: null, Type: null };
+      slot.Type = function StableView(props) { return slot.impl(props); };
+    }
+    slot.impl = impl;
+    return slot.Type;
+  }
   window.StemLab.registerTool('llmLiteracy', {
     name: 'AI Literacy Lab',
     title: 'AI Literacy Lab',
@@ -1317,6 +1333,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
       var gradeLevel = ctx.gradeLevel || '7th Grade';
 
       var d = (ctx.toolData && ctx.toolData.llmLiteracy) || {};
+      // Stabilize view/chrome identities (declarations hoist, so re-binding
+      // here covers every later use — views reconcile instead of remounting).
+      ReflectionEditor = stableType('ReflectionEditor', ReflectionEditor);
+      HowLLMsWork = stableType('HowLLMsWork', HowLLMsWork);
+      WhyLLMsFail = stableType('WhyLLMsFail', WhyLLMsFail);
+      PromptCraft = stableType('PromptCraft', PromptCraft);
+      HallucinationSpotter = stableType('HallucinationSpotter', HallucinationSpotter);
+      UDLRubric = stableType('UDLRubric', UDLRubric);
+      MicButton = stableType('MicButton', MicButton);
+      PromptAnatomy = stableType('PromptAnatomy', PromptAnatomy);
+      QuickReference = stableType('QuickReference', QuickReference);
+      TrustCalibrationInquiry = stableType('TrustCalibrationInquiry', TrustCalibrationInquiry);
       var upd = function(key, val) {
         if (!ctx.setToolData) return;
         ctx.setToolData(function(prev) {

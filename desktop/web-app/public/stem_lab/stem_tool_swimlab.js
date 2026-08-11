@@ -114,6 +114,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
     if (document.head) document.head.appendChild(swimReadinessStyle);
   }
 
+  // ── Stable view identities (module scope) ──
+  // Components defined inside render() get a new function identity every host
+  // re-render, so React unmounts/remounts them on ANY toolData write, tearing
+  // DOM and dropping keyboard focus (see dev-tools/scan_render_scoped_components.cjs).
+  // stableType() hands React a stable wrapper type and swaps the fresh closure
+  // in each render. Gate: tests/stem_component_identity_gates.test.js.
+  var _stableViewTypes = {};
+  function stableType(name, impl) {
+    var slot = _stableViewTypes[name];
+    if (!slot) {
+      slot = _stableViewTypes[name] = { impl: null, Type: null };
+      slot.Type = function StableView(props) { return slot.impl(props); };
+    }
+    slot.impl = impl;
+    return slot.Type;
+  }
   window.StemLab.registerTool('swimLab', {
     name: 'SwimLab',
     icon: '🏊',
@@ -1276,7 +1292,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
             { label: __alloT('stem.swimlab.counsilman_counsilman_the_science_of_s', 'Counsilman & Counsilman, "The Science of Swimming" (classic reference for stroke biomechanics)') },
             { label: __alloT('stem.swimlab.maglischo_swimming_fastest_modern_stro', 'Maglischo, "Swimming Fastest" (modern stroke physics)') }
           ]),
-          h(TeacherNotes, TEACHER_NOTES.howSwimming),
+          h(stableType('TeacherNotes', TeacherNotes), TEACHER_NOTES.howSwimming),
           disclaimerFooter()
         );
       }
@@ -1378,7 +1394,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
             { label: __alloT('stem.swimlab.mario_vittone_if_a_child_is_drowning', 'Mario Vittone — "If a child is drowning"'), url: 'https://mariovittone.com' },
             { label: __alloT('stem.swimlab.aap_policy_statement_prevention_of_dro', 'AAP Policy Statement: Prevention of Drowning (2019, reaffirmed)'), url: 'https://publications.aap.org/pediatrics/article/143/5/e20190850/76998' }
           ]),
-          h(TeacherNotes, TEACHER_NOTES.coldShock),
+          h(stableType('TeacherNotes', TeacherNotes), TEACHER_NOTES.coldShock),
           disclaimerFooter()
         );
       }
@@ -1480,7 +1496,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
             { label: __alloT('stem.swimlab.nws_gray_maine_forecast_office_beach_h', 'NWS Gray (Maine forecast office) — Beach Hazards'), url: 'https://www.weather.gov/gyx/' },
             { label: __alloT('stem.swimlab.cdc_drowning_prevention_2', 'CDC: Drowning prevention'), url: 'https://www.cdc.gov/drowning' }
           ]),
-          h(TeacherNotes, TEACHER_NOTES.ripCurrents),
+          h(stableType('TeacherNotes', TeacherNotes), TEACHER_NOTES.ripCurrents),
           disclaimerFooter()
         );
       }
@@ -1613,7 +1629,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
             { label: __alloT('stem.swimlab.dan_divers_alert_network_in_water_resc', 'DAN (Divers Alert Network) — In-water Rescue Principles'), url: 'https://dan.org' },
             { label: __alloT('stem.swimlab.us_lifesaving_association_usla', 'US Lifesaving Association (USLA)'), url: 'https://www.usla.org' }
           ]),
-          h(TeacherNotes, TEACHER_NOTES.reachThrow),
+          h(stableType('TeacherNotes', TeacherNotes), TEACHER_NOTES.reachThrow),
           disclaimerFooter()
         );
       }
@@ -1723,7 +1739,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
             { label: __alloT('stem.swimlab.uscg_33_cfr_part_175_equipment_require', 'USCG 33 CFR Part 175 — Equipment requirements'), url: 'https://www.ecfr.gov/current/title-33/chapter-I/subchapter-S/part-175' },
             { label: __alloT('stem.swimlab.safe_kids_worldwide_life_jacket_safety', 'Safe Kids Worldwide — Life Jacket Safety'), url: 'https://www.safekids.org/safetytips/field_risks/water-safety' }
           ]),
-          h(TeacherNotes, TEACHER_NOTES.pfd),
+          h(stableType('TeacherNotes', TeacherNotes), TEACHER_NOTES.pfd),
           disclaimerFooter()
         );
       }
@@ -1852,7 +1868,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
             { label: __alloT('stem.swimlab.vermont_fish_wildlife_ice_safety_guide', 'Vermont Fish & Wildlife — Ice Safety Guidelines'), url: 'https://vtfishandwildlife.com' },
             { label: __alloT('stem.swimlab.cold_water_boot_camp_mario_vittone_2', 'Cold Water Boot Camp (Mario Vittone)'), url: 'https://coldwaterbootcamp.com' }
           ]),
-          h(TeacherNotes, TEACHER_NOTES.iceSafety),
+          h(stableType('TeacherNotes', TeacherNotes), TEACHER_NOTES.iceSafety),
           disclaimerFooter()
         );
       }
@@ -1944,7 +1960,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
             { label: __alloT('stem.swimlab.aha_cold_emergencies', 'AHA — Cold Emergencies'), url: 'https://cpr.heart.org' },
             { label: __alloT('stem.swimlab.cold_water_boot_camp', 'Cold Water Boot Camp'), url: 'https://coldwaterbootcamp.com' }
           ]),
-          h(TeacherNotes, TEACHER_NOTES.hypothermia),
+          h(stableType('TeacherNotes', TeacherNotes), TEACHER_NOTES.hypothermia),
           disclaimerFooter()
         );
       }
@@ -2037,7 +2053,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
             { label: __alloT('stem.swimlab.cpsc_virginia_graeme_baker_pool_and_sp', 'CPSC — Virginia Graeme Baker Pool and Spa Safety Act'), url: 'https://www.cpsc.gov/Regulations-Laws--Standards/Statutes/The-Virginia-Graeme-Baker-Pool-and-Spa-Safety-Act' },
             { label: __alloT('stem.swimlab.cdc_drowning_prevention_3', 'CDC — Drowning Prevention'), url: 'https://www.cdc.gov/drowning' }
           ]),
-          h(TeacherNotes, TEACHER_NOTES.drainEntrap),
+          h(stableType('TeacherNotes', TeacherNotes), TEACHER_NOTES.drainEntrap),
           disclaimerFooter()
         );
       }
@@ -2148,7 +2164,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
             { label: __alloT('stem.swimlab.alive_solutions_swimsuit_color_visibil', 'Alive Solutions — Swimsuit Color Visibility Tests'), url: 'https://alivesolutions.com' },
             { label: __alloT('stem.swimlab.usa_swimming_foundation_make_a_splash_', 'USA Swimming Foundation — Make a Splash (scholarships)'), url: 'https://www.usaswimming.org/foundation/make-a-splash' }
           ]),
-          h(TeacherNotes, TEACHER_NOTES.autismWater),
+          h(stableType('TeacherNotes', TeacherNotes), TEACHER_NOTES.autismWater),
           disclaimerFooter()
         );
       }

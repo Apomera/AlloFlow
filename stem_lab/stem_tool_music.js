@@ -171,6 +171,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
     };
   }
 
+  // ── Stable view identities (module scope) ──
+  // Components defined inside render() get a new function identity every host
+  // re-render, so React unmounts/remounts them on ANY toolData write, tearing
+  // DOM and dropping keyboard focus (see dev-tools/scan_render_scoped_components.cjs).
+  // stableType() hands React a stable wrapper type and swaps the fresh closure
+  // in each render. Gate: tests/stem_component_identity_gates.test.js.
+  var _stableViewTypes = {};
+  function stableType(name, impl) {
+    var slot = _stableViewTypes[name];
+    if (!slot) {
+      slot = _stableViewTypes[name] = { impl: null, Type: null };
+      slot.Type = function StableView(props) { return slot.impl(props); };
+    }
+    slot.impl = impl;
+    return slot.Type;
+  }
   window.StemLab.registerTool('musicSynth', {
     icon: '🎹',
     label: 'Music Synthesizer',
@@ -2658,7 +2674,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               (d.synthEngine === 'fm') && React.createElement("div", { className: "mb-3 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-3" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                   React.createElement("span", { className: "text-xs font-bold text-amber-800" }, __alloT('stem.music.fm_synthesis_controls', "\uD83C\uDF1F FM Synthesis Controls")),
-                  React.createElement(Tip, { id: 'fm', title: __alloT('stem.music.fm_synthesis_2', 'FM Synthesis'), text: __alloT('stem.music.frequency_modulation_fm_synthesis_uses', 'Frequency Modulation (FM) synthesis uses one oscillator (modulator) to rapidly change the frequency of another (carrier). The modulator:carrier ratio determines the harmonic content. Simple ratios (1:1, 2:1, 3:1) produce harmonic tones. Complex ratios produce metallic, bell-like, or inharmonic sounds. FM was popularized by the Yamaha DX7 in 1983.') })
+                  React.createElement(stableType('Tip', Tip), { id: 'fm', title: __alloT('stem.music.fm_synthesis_2', 'FM Synthesis'), text: __alloT('stem.music.frequency_modulation_fm_synthesis_uses', 'Frequency Modulation (FM) synthesis uses one oscillator (modulator) to rapidly change the frequency of another (carrier). The modulator:carrier ratio determines the harmonic content. Simple ratios (1:1, 2:1, 3:1) produce harmonic tones. Complex ratios produce metallic, bell-like, or inharmonic sounds. FM was popularized by the Yamaha DX7 in 1983.') })
                 ),
                 React.createElement("div", { className: "grid grid-cols-2 gap-3" },
                   React.createElement("div", null,
@@ -2676,7 +2692,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               (d.synthEngine === 'supersaw') && React.createElement("div", { className: "mb-3 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl border border-indigo-200 p-3" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                   React.createElement("span", { className: "text-xs font-bold text-indigo-800" }, __alloT('stem.music.supersaw_controls', "\u26A1 SuperSaw Controls")),
-                  React.createElement(Tip, { id: 'supersaw', title: __alloT('stem.music.supersaw_unison', 'SuperSaw / Unison'), text: __alloT('stem.music.supersaw_stacks_multiple_sawtooth_osci', 'SuperSaw stacks multiple sawtooth oscillators slightly detuned from each other. This creates a huge, wide, shimmering sound — the signature of EDM, trance, and modern pop. More voices = thicker sound but uses more CPU. Detuning controls how far apart the voices are tuned — more detune = wider/more chorus-like, less = tighter/more focused.') })
+                  React.createElement(stableType('Tip', Tip), { id: 'supersaw', title: __alloT('stem.music.supersaw_unison', 'SuperSaw / Unison'), text: __alloT('stem.music.supersaw_stacks_multiple_sawtooth_osci', 'SuperSaw stacks multiple sawtooth oscillators slightly detuned from each other. This creates a huge, wide, shimmering sound — the signature of EDM, trance, and modern pop. More voices = thicker sound but uses more CPU. Detuning controls how far apart the voices are tuned — more detune = wider/more chorus-like, less = tighter/more focused.') })
                 ),
                 React.createElement("div", { className: "grid grid-cols-2 gap-3" },
                   React.createElement("div", null,
@@ -3209,7 +3225,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                 React.createElement("span", { className: "text-xs font-bold text-indigo-300" }, __alloT('stem.music.xy_performance_pad', "\uD83C\uDFAF XY Performance Pad")),
                 React.createElement("span", { className: "text-[11px] text-indigo-400" }, __alloT('stem.music.touch_drag_x_pitch_y_filter_effect', "Touch & drag \u2014 X = pitch, Y = filter/effect")),
-                React.createElement(Tip, { id: 'xypad', title: __alloT('stem.music.xy_pad_performance', 'XY Pad Performance'), text: __alloT('stem.music.the_xy_pad_maps_your_finger_mouse_posi', 'The XY pad maps your finger/mouse position to musical parameters in real-time. The X axis controls pitch (left = low, right = high). The Y axis controls the filter cutoff frequency (top = bright, bottom = dark). This is similar to instruments like the Korg Kaoss Pad, which revolutionized live electronic music performance by turning 2D gestures into sound.') })
+                React.createElement(stableType('Tip', Tip), { id: 'xypad', title: __alloT('stem.music.xy_pad_performance', 'XY Pad Performance'), text: __alloT('stem.music.the_xy_pad_maps_your_finger_mouse_posi', 'The XY pad maps your finger/mouse position to musical parameters in real-time. The X axis controls pitch (left = low, right = high). The Y axis controls the filter cutoff frequency (top = bright, bottom = dark). This is similar to instruments like the Korg Kaoss Pad, which revolutionized live electronic music performance by turning 2D gestures into sound.') })
               ),
               React.createElement("div", {
                 style: { position: 'relative', width: '100%', height: '180px', borderRadius: '12px', overflow: 'hidden', cursor: 'crosshair', touchAction: 'none' },

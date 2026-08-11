@@ -137,6 +137,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       // Top-level view selector. 'menu' is the hub; each module has its own view.
       var viewState = useState(d.view || 'menu');
       var view = viewState[0], setView = viewState[1];
+      // ── Stable view identities ──
+      // Components defined inside render() get a new function identity every
+      // host re-render, so React unmounts/remounts the open view on ANY
+      // toolData write — wiping its local useState (see
+      // dev-tools/scan_render_scoped_components.cjs). stableType() hands React
+      // a per-mount stable wrapper type and swaps the fresh closure in each
+      // render, so views reconcile in place instead of remounting.
+      // Gate: tests/stem_view_identity_stability.test.js.
+      var _stableViewTypesRef = useRef({});
+      function stableType(name, impl) {
+        var slot = _stableViewTypesRef.current[name];
+        if (!slot) {
+          slot = _stableViewTypesRef.current[name] = { impl: null, Type: null };
+          slot.Type = function StableView(props) { return slot.impl(props); };
+        }
+        slot.impl = impl;
+        return slot.Type;
+      }
+      // Stabilize stateless chrome/view identities too (declarations hoist,
+      // so re-binding them here covers every later use). Without this the
+      // shared chrome (back bars, stat cards, sliders) still remounts inside
+      // otherwise-stable views on every host re-render, tearing DOM and
+      // dropping keyboard focus.
+      BackBar = stableType('BackBar', BackBar);
+      StatCard = stableType('StatCard', StatCard);
+      LabeledSlider = stableType('LabeledSlider', LabeledSlider);
+      TeacherNotes = stableType('TeacherNotes', TeacherNotes);
+      MainMenu = stableType('MainMenu', MainMenu);
+      SelectionSleuth = stableType('SelectionSleuth', SelectionSleuth);
+      HomologySleuth = stableType('HomologySleuth', HomologySleuth);
+      ModuleMap = stableType('ModuleMap', ModuleMap);
+      StandardsCrosswalk = stableType('StandardsCrosswalk', StandardsCrosswalk);
+      CurriculumGuide = stableType('CurriculumGuide', CurriculumGuide);
 
       // Badge tracking — visiting each module marks it explored. Drives the
       // progress banner on MainMenu and the per-card ✓ checkmark.
@@ -7089,23 +7122,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       // ─────────────────────────────────────────────────────
       // MAIN VIEW DISPATCH
       // ─────────────────────────────────────────────────────
-      if (view === 'predatorVision') return h(PredatorVisionLab);
-      if (view === 'mateChoice') return h(MateChoiceLab);
-      if (view === 'climatePressure') return h(ClimatePressureLab);
-      if (view === 'selectionSandbox') return h(SelectionSandbox);
-      if (view === 'beakLab') return h(BeakLab);
-      if (view === 'speciation') return h(SpeciationSimulator);
-      if (view === 'coevolution') return h(CoevolutionLab);
-      if (view === 'phyloBuilder') return h(PhyloBuilder);
-      if (view === 'hardyWeinberg') return h(HardyWeinberg);
-      if (view === 'geneticDrift') return h(GeneticDrift);
-      if (view === 'commonAncestry') return h(CommonAncestry);
-      if (view === 'antibioticLab') return h(AntibioticLab);
-      if (view === 'discoveryTimeline') return h(DiscoveryTimeline);
-      if (view === 'misconceptions') return h(MisconceptionsQuiz);
+      if (view === 'predatorVision') return h(stableType('PredatorVisionLab', PredatorVisionLab));
+      if (view === 'mateChoice') return h(stableType('MateChoiceLab', MateChoiceLab));
+      if (view === 'climatePressure') return h(stableType('ClimatePressureLab', ClimatePressureLab));
+      if (view === 'selectionSandbox') return h(stableType('SelectionSandbox', SelectionSandbox));
+      if (view === 'beakLab') return h(stableType('BeakLab', BeakLab));
+      if (view === 'speciation') return h(stableType('SpeciationSimulator', SpeciationSimulator));
+      if (view === 'coevolution') return h(stableType('CoevolutionLab', CoevolutionLab));
+      if (view === 'phyloBuilder') return h(stableType('PhyloBuilder', PhyloBuilder));
+      if (view === 'hardyWeinberg') return h(stableType('HardyWeinberg', HardyWeinberg));
+      if (view === 'geneticDrift') return h(stableType('GeneticDrift', GeneticDrift));
+      if (view === 'commonAncestry') return h(stableType('CommonAncestry', CommonAncestry));
+      if (view === 'antibioticLab') return h(stableType('AntibioticLab', AntibioticLab));
+      if (view === 'discoveryTimeline') return h(stableType('DiscoveryTimeline', DiscoveryTimeline));
+      if (view === 'misconceptions') return h(stableType('MisconceptionsQuiz', MisconceptionsQuiz));
       if (view === 'selectionSleuth') return h(SelectionSleuth);
       if (view === 'homologySleuth') return h(HomologySleuth);
-      if (view === 'capstone') return h(CapstoneProject);
+      if (view === 'capstone') return h(stableType('CapstoneProject', CapstoneProject));
       if (view === 'curriculumGuide') return h(CurriculumGuide);
       if (view === 'moduleMap') return h(ModuleMap);
       if (view === 'standardsCrosswalk') return h(StandardsCrosswalk);

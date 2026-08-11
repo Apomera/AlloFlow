@@ -1446,6 +1446,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
   // ═══════════════════════════════════════════════════════════════
   // Register tool
   // ═══════════════════════════════════════════════════════════════
+  // ── Stable view identities (module scope) ──
+  // Components defined inside render() get a new function identity every host
+  // re-render, so React unmounts/remounts them on ANY toolData write, tearing
+  // DOM and dropping keyboard focus (see dev-tools/scan_render_scoped_components.cjs).
+  // stableType() hands React a stable wrapper type and swaps the fresh closure
+  // in each render. Gate: tests/stem_component_identity_gates.test.js.
+  var _stableViewTypes = {};
+  function stableType(name, impl) {
+    var slot = _stableViewTypes[name];
+    if (!slot) {
+      slot = _stableViewTypes[name] = { impl: null, Type: null };
+      slot.Type = function StableView(props) { return slot.impl(props); };
+    }
+    slot.impl = impl;
+    return slot.Type;
+  }
   window.StemLab.registerTool('alloBotSage', {
     icon: '\uD83E\uDDD9\u200D\u2642\uFE0F',
     label: 'AlloBot: Starbound Sage',
@@ -3577,7 +3593,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               wandTier: unlockedSpells.length >= 10 ? 3 : unlockedSpells.length >= 4 ? 2 : unlockedSpells.length >= 1 ? 1 : 0,
               robeTier: unlockedSpells.length >= 15 ? 2 : unlockedSpells.length >= 5 ? 1 : 0
             }),
-            h(VictoryConfettiBurst, null)
+            h(stableType('VictoryConfettiBurst', VictoryConfettiBurst), null)
           ),
           h('div', {
             className: 'rounded-2xl p-6 mb-4',

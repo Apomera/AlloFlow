@@ -357,6 +357,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
       // Top-level view selector. 'menu' | 'sandbox' | 'gearing' | 'repair'
       var viewState = useState(d.view || 'menu');
       var view = viewState[0], setView = viewState[1];
+      // ── Stable view identities ──
+      // Components defined inside render() get a new function identity every
+      // host re-render, so React unmounts/remounts the open view on ANY
+      // toolData write — wiping its local useState (see
+      // dev-tools/scan_render_scoped_components.cjs). stableType() hands React
+      // a per-mount stable wrapper type and swaps the fresh closure in each
+      // render, so views reconcile in place instead of remounting.
+      // Gate: tests/stem_view_identity_stability.test.js.
+      var _stableViewTypesRef = useRef({});
+      function stableType(name, impl) {
+        var slot = _stableViewTypesRef.current[name];
+        if (!slot) {
+          slot = _stableViewTypesRef.current[name] = { impl: null, Type: null };
+          slot.Type = function StableView(props) { return slot.impl(props); };
+        }
+        slot.impl = impl;
+        return slot.Type;
+      }
+      // Stabilize stateless chrome/view identities too (declarations hoist,
+      // so re-binding them here covers every later use). Without this the
+      // shared chrome (back bars, stat cards, sliders) still remounts inside
+      // otherwise-stable views on every host re-render, tearing DOM and
+      // dropping keyboard focus.
+      MainMenu = stableType('MainMenu', MainMenu);
       // Badge ids match module view ids — when a user visits a module, mark it
       // explored. This drives the progress banner on MainMenu and the per-card
       // checkmark indicator. Persisted via ctx.update so progress survives reload.
@@ -3628,17 +3652,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
       // ─────────────────────────────────────────────────────
       // MAIN VIEW DISPATCH
       // ─────────────────────────────────────────────────────
-      if (view === 'sandbox') return h(PhysicsSandbox);
-      if (view === 'gearing') return h(GearingLab);
-      if (view === 'repair') return h(RepairSim);
-      if (view === 'fit') return h(BikeFit);
-      if (view === 'braking') return h(BrakingPhysics);
-      if (view === 'safety') return h(SafetyQuiz);
-      if (view === 'ride') return h(NeighborhoodRide);
-      if (view === 'parts') return h(PartsInspector);
-      if (view === 'helmetFit') return h(HelmetFit);
-      if (view === 'winterBike') return h(WinterBike);
-      if (view === 'signalDrill') return h(SignalDrill);
+      if (view === 'sandbox') return h(stableType('PhysicsSandbox', PhysicsSandbox));
+      if (view === 'gearing') return h(stableType('GearingLab', GearingLab));
+      if (view === 'repair') return h(stableType('RepairSim', RepairSim));
+      if (view === 'fit') return h(stableType('BikeFit', BikeFit));
+      if (view === 'braking') return h(stableType('BrakingPhysics', BrakingPhysics));
+      if (view === 'safety') return h(stableType('SafetyQuiz', SafetyQuiz));
+      if (view === 'ride') return h(stableType('NeighborhoodRide', NeighborhoodRide));
+      if (view === 'parts') return h(stableType('PartsInspector', PartsInspector));
+      if (view === 'helmetFit') return h(stableType('HelmetFit', HelmetFit));
+      if (view === 'winterBike') return h(stableType('WinterBike', WinterBike));
+      if (view === 'signalDrill') return h(stableType('SignalDrill', SignalDrill));
       if (view === 'cadenceHunt') return h(function() {
         // Use the tool's own ctx-bound d/upd. This view previously declared a local `d` from bare
         // `toolData` and wrote via bare `setToolData` — both undefined here — so it threw on render.

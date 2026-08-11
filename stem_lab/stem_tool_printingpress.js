@@ -158,6 +158,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
   // hook order.
   function _ViewWrapper(props) { return props._render(); }
 
+  // ── Stable view identities (module scope) ──
+  // Components defined inside render() get a new function identity every host
+  // re-render, so React unmounts/remounts them on ANY toolData write, tearing
+  // DOM and dropping keyboard focus (see dev-tools/scan_render_scoped_components.cjs).
+  // stableType() hands React a stable wrapper type and swaps the fresh closure
+  // in each render. Gate: tests/stem_component_identity_gates.test.js.
+  var _stableViewTypes = {};
+  function stableType(name, impl) {
+    var slot = _stableViewTypes[name];
+    if (!slot) {
+      slot = _stableViewTypes[name] = { impl: null, Type: null };
+      slot.Type = function StableView(props) { return slot.impl(props); };
+    }
+    slot.impl = impl;
+    return slot.Type;
+  }
   window.StemLab.registerTool('printingPress', {
     name: 'PrintingPress',
     icon: '📜',
@@ -2550,7 +2566,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.smithsonian_graphic_arts_collection', 'Smithsonian — Graphic Arts Collection'), url: 'https://www.si.edu/spotlight/printing' },
             { label: __alloT('stem.printingpress.adrian_johns_the_nature_of_the_book_pr', 'Adrian Johns, "The Nature of the Book: Print and Knowledge in the Making" (1998)') }
           ]),
-          h(TeacherNotes, TEACHER_NOTES.pressMechanism),
+          h(stableType('TeacherNotes', TeacherNotes), TEACHER_NOTES.pressMechanism),
           crossLinkFooter('pressMechanism'),
           disclaimerFooter()
         );
@@ -3694,7 +3710,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.robert_bringhurst_the_elements_of_typo', 'Robert Bringhurst, "The Elements of Typographic Style" (4th ed., 2013)') },
             { label: __alloT('stem.printingpress.briar_press_letterpress_community_glos', 'Briar Press — Letterpress community + glossary'), url: 'https://www.briarpress.org/' }
           ]),
-          h(TeacherNotes, TEACHER_NOTES.setType),
+          h(stableType('TeacherNotes', TeacherNotes), TEACHER_NOTES.setType),
           crossLinkFooter('setType'),
           disclaimerFooter()
         );
@@ -4442,7 +4458,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.theodore_low_de_vinne_the_practice_of_', 'Theodore Low De Vinne, "The Practice of Typography" (1900)') },
             { label: __alloT('stem.printingpress.cheongju_early_printing_museum_korea_j', 'Cheongju Early Printing Museum (Korea) — Jikji history'), url: 'https://www.cjcityart.or.kr/' }
           ]),
-          h(TeacherNotes, TEACHER_NOTES.castingType),
+          h(stableType('TeacherNotes', TeacherNotes), TEACHER_NOTES.castingType),
           crossLinkFooter('castingType'),
           disclaimerFooter()
         );
@@ -4781,7 +4797,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.library_of_congress_economic_history_o', 'Library of Congress — Economic history of printing'), url: 'https://www.loc.gov/' },
             { label: __alloT('stem.printingpress.elizabeth_eisenstein_the_printing_pres', 'Elizabeth Eisenstein, "The Printing Press as an Agent of Change" (1980)') }
           ]),
-          h(TeacherNotes, TEACHER_NOTES.economics),
+          h(stableType('TeacherNotes', TeacherNotes), TEACHER_NOTES.economics),
           crossLinkFooter('economics'),
           disclaimerFooter()
         );
@@ -5853,7 +5869,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.eltjo_buringh_jan_luiten_van_zanden_bo', 'Eltjo Buringh & Jan Luiten van Zanden — book production data'), url: 'https://www.jstor.org/stable/40208712' },
             { label: __alloT('stem.printingpress.british_library_the_gutenberg_bible', 'British Library — The Gutenberg Bible'), url: 'https://www.bl.uk/treasures/gutenberg/homepage.html' }
           ]),
-          h(TeacherNotes, TEACHER_NOTES.beforeAfter),
+          h(stableType('TeacherNotes', TeacherNotes), TEACHER_NOTES.beforeAfter),
           crossLinkFooter('beforeAfter'),
           disclaimerFooter()
         );
@@ -6466,7 +6482,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.jost_hochuli_detail_in_typography', 'Jost Hochuli, "Detail in Typography"') },
             { label: __alloT('stem.printingpress.type_cooper_typography_history_resourc', 'Type@Cooper — Typography history resources'), url: 'https://typecooper.com/' }
           ]),
-          h(TeacherNotes, TEACHER_NOTES.typographyToday),
+          h(stableType('TeacherNotes', TeacherNotes), TEACHER_NOTES.typographyToday),
           crossLinkFooter('typographyToday'),
           disclaimerFooter()
         );
@@ -7244,7 +7260,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.charlotte_guillard_biography_biblioth_', 'Charlotte Guillard biography — Bibliothèque nationale de France'), url: 'https://www.bnf.fr/' },
             { label: __alloT('stem.printingpress.british_library_early_printers_exhibit', 'British Library — Early printers exhibition'), url: 'https://www.bl.uk/' }
           ]),
-          h(TeacherNotes, TEACHER_NOTES.people),
+          h(stableType('TeacherNotes', TeacherNotes), TEACHER_NOTES.people),
           crossLinkFooter('people'),
           disclaimerFooter()
         );
@@ -7958,7 +7974,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.british_library_bodleian_broadside_bal', 'British Library — Bodleian Broadside Ballads'), url: 'https://ballads.bodleian.ox.ac.uk/' },
             { label: __alloT('stem.printingpress.eric_foner_tom_paine_and_revolutionary', 'Eric Foner, "Tom Paine and Revolutionary America" (1976)') }
           ]),
-          h(TeacherNotes, TEACHER_NOTES.broadside),
+          h(stableType('TeacherNotes', TeacherNotes), TEACHER_NOTES.broadside),
           crossLinkFooter('broadside'),
           disclaimerFooter()
         );
@@ -8125,7 +8141,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.naomi_baron_words_onscreen_2015', 'Naomi Baron, "Words Onscreen" (2015)'), note: __alloT('stem.printingpress.modern_reading_vs_attention_debates_wi', 'Modern reading-vs-attention debates with historical context.') },
             { label: __alloT('stem.printingpress.plato_phaedrus_370_bce', 'Plato, "Phaedrus" (~370 BCE)'), note: __alloT('stem.printingpress.the_original_writing_will_atrophy_memo', 'The original "writing will atrophy memory" argument that print critics inherited.') }
           ]),
-          h(TeacherNotes, TEACHER_NOTES.sameFears),
+          h(stableType('TeacherNotes', TeacherNotes), TEACHER_NOTES.sameFears),
           crossLinkFooter('sameFears'),
           disclaimerFooter()
         );
@@ -8813,7 +8829,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             )
           ),
 
-          h(TeacherNotes, TEACHER_NOTES.dayInShop),
+          h(stableType('TeacherNotes', TeacherNotes), TEACHER_NOTES.dayInShop),
           crossLinkFooter('dayInShop'),
           disclaimerFooter()
         );
@@ -10005,7 +10021,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.ge_ez_script_scholarship_via_beta_ma_f', 'Ge\'ez script scholarship via Beta Maṣāḥǝft project, Universität Hamburg') }
           ]),
 
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['NCSS D2.His.2.6-8 (historical context)', 'C3 D2.His.5.6-8 (perspectives)', 'CCSS RH.6-8.6 (point of view)'],
             discussion: [
               'Why do you think Gutenberg gets named in textbooks but Bi Sheng usually does not? What does this say about how history is written?',
@@ -10379,7 +10395,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.briquet_les_filigranes_standard_waterm', 'Briquet, Les Filigranes — standard watermark catalog (1907, still in use)') },
             { label: __alloT('stem.printingpress.robert_l_mott_hand_papermaking_magazin', 'Robert L. Mott, Hand Papermaking Magazine archives'), url: 'https://www.handpapermaking.org/' }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['NGSS HS-ETS1-3 (technology systems)', 'CCSS RH.6-8.7 (integrate visual + text)', 'NCSS D2.Eco.1.6-8 (economic concepts)'],
             discussion: [
               'Why does paper get less attention than the press in most histories of the print revolution?',
@@ -10796,7 +10812,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.american_academy_of_bookbinding_worksh', 'American Academy of Bookbinding workshops'), url: 'https://bookbindingacademy.org/' },
             { label: __alloT('stem.printingpress.library_of_congress_conservation_divis', 'Library of Congress Conservation Division — bookbinding resources'), url: 'https://www.loc.gov/preservation/' }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['NGSS HS-ETS1-3 (technology systems)', 'CCSS RH.6-8.7 (integrate visual + text)', 'NCAS Visual Arts (craft tradition)'],
             discussion: [
               'Why was bookbinding a separate craft from printing? What did that mean for who profited from book production?',
@@ -11249,7 +11265,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.pen_america_banned_books_list', 'PEN America Banned Books List'), url: 'https://pen.org/banned-books-list/' },
             { label: __alloT('stem.printingpress.index_on_censorship_uk_quarterly_found', 'Index on Censorship (UK quarterly, founded 1972)'), url: 'https://www.indexoncensorship.org/' }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['NCSS D2.His.2.6-8 (historical context)', 'C3 D2.Civ.5.6-8 (civic principles)', 'CCSS RH.6-8.6 (point of view)'],
             discussion: [
               'Why do most bans actually backfire over time? Walk through 2-3 examples of banned books that became more famous because of the ban.',
@@ -11628,7 +11644,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.penelope_muse_abernathy_the_expanding_', 'Penelope Muse Abernathy, The Expanding News Desert (UNC Hussman, 2018-)'), url: 'https://www.usnewsdeserts.com/' },
             { label: __alloT('stem.printingpress.pew_research_center_news_industry_data', 'Pew Research Center News Industry data'), url: 'https://www.pewresearch.org/journalism/' }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['NCSS D2.His.4.6-8 (causation)', 'CCSS RH.6-8.6 (point of view)', 'C3 D4.6.6-8 (research)'],
             discussion: [
               'Why did newspapers take 150 years to appear after the printing press?',
@@ -12099,7 +12115,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.brian_richardson_printing_writers_and_', "Brian Richardson, Printing, Writers and Readers in Renaissance Italy (1999)") },
             { label: __alloT('stem.printingpress.sheila_edmunds_the_apprentice_in_16th_', 'Sheila Edmunds, "The Apprentice in 16th-Century Cologne" — Renaissance Quarterly') }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['NCSS D2.His.16.6-8 (perspectives)', 'CCSS RH.6-8.7 (integrate visual + text)', 'C3 D4.5.6-8 (decisions)'],
             discussion: [
               'Compare your career trajectory with a classmate\'s — same starting age, same era, very different outcomes. Why?',
@@ -12658,7 +12674,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.i_love_typography_online_type_design_p', 'I Love Typography (online type design publication)'), url: 'https://ilovetypography.com/' },
             { label: __alloT('stem.printingpress.type_cooper_at_the_cooper_union_type_d', 'Type@Cooper at the Cooper Union — type-design education'), url: 'https://typeatcooper.org/' }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['NCAS Visual Arts (design literacy)', 'CCSS RH.6-8.7 (integrate visual + text)', 'NGSS HS-ETS1-3 (technology systems)'],
             discussion: [
               'Look at the typefaces on your phone right now. Can you name any of them? What does the choice say about the brand?',
@@ -12898,7 +12914,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.bangor_daily_news_history_pages', 'Bangor Daily News history pages'), url: 'https://www.bangordailynews.com/' },
             { label: __alloT('stem.printingpress.maine_trust_for_local_news', 'Maine Trust for Local News'), url: 'https://www.mainetrust.org/' }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['Maine SS 2019 (state history)', 'NCSS D2.His.4.6-8 (causation)', 'CCSS RH.6-8.9 (compare sources)'],
             discussion: [
               'Why was Maine\'s first newspaper founded in Falmouth specifically? What did that town need + provide?',
@@ -13031,7 +13047,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.imslp_petrucci_music_library', 'IMSLP / Petrucci Music Library'), url: 'https://imslp.org/' },
             { label: __alloT('stem.printingpress.library_of_congress_music_division_res', 'Library of Congress Music Division resources'), url: 'https://www.loc.gov/research-centers/performing-arts/' }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['NCAS Music (notation literacy)', 'NCSS D2.His.16.6-8 (perspectives)'],
             discussion: [
               'Why was music printing so much harder than text printing?',
@@ -13156,7 +13172,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.openstreetmap_project', 'OpenStreetMap project'), url: 'https://www.openstreetmap.org/' },
             { label: __alloT('stem.printingpress.usgs_national_map', 'USGS National Map'), url: 'https://www.usgs.gov/programs/national-geospatial-program' }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['NCSS D2.Geo.1.6-8 (geographic representations)', 'NCAS Visual Arts (visual literacy)'],
             discussion: [
               'Open Google Maps + zoom out to the world view. What projection are you looking at? What\'s distorted?',
@@ -13301,7 +13317,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.american_library_association_newbery_c', 'American Library Association — Newbery + Caldecott'), url: 'https://www.ala.org/awardsgrants' },
             { label: __alloT('stem.printingpress.maine_reads_maine_state_library_childr', 'Maine Reads / Maine State Library children\'s lit collection'), url: 'https://www.maine.gov/msl/' }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['NCSS D2.His.2.6-8 (context)', 'NCAS Visual Arts (illustration analysis)', 'CCSS RL.5.7 (text + visual)'],
             discussion: [
               'How is a 1700 chapbook similar to a modern picture book? How is it different?',
@@ -13437,7 +13453,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.plos_public_library_of_science', 'PLOS (Public Library of Science)'), url: 'https://plos.org/' },
             { label: __alloT('stem.printingpress.retraction_watch', 'Retraction Watch'), url: 'https://retractionwatch.com/' }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['NGSS HS-LS4-1 (scientific evidence)', 'CCSS RST.11-12.7 (integrate quantitative + textual info)'],
             discussion: [
               'Why does dated, attributed, peer-validated communication matter for science?',
@@ -13571,7 +13587,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.haystack_mountain_school_of_crafts', 'Haystack Mountain School of Crafts'), url: 'https://www.haystack-mtn.org/' },
             { label: __alloT('stem.printingpress.penland_school_of_craft', 'Penland School of Craft'), url: 'https://penland.org/' }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['NCAS Visual Arts (craft + design)', 'Common career exploration (CTE adjacent)'],
             discussion: [
               'Why might handcraft survive after machines replace it commercially?',
@@ -13739,7 +13755,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.james_moran_printing_presses_history_a', 'James Moran, Printing Presses: History and Development from the Fifteenth Century to Modern Times (1973)') },
             { label: __alloT('stem.printingpress.the_international_printing_museum_cars', 'The International Printing Museum (Carson, CA)'), url: 'https://www.printmuseum.org/' }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['NGSS HS-ETS1-3 (technology systems)', 'NCSS D2.His.5.6-8 (cause + effect)'],
             discussion: [
               'Compare the speed gain Gutenberg→Stanhope→Koenig→Hoe→digital. Each is roughly 4× the previous. What enables each jump?',
@@ -13882,7 +13898,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.diarmaid_macculloch_the_reformation_a_', 'Diarmaid MacCulloch, The Reformation: A History (2003)') },
             { label: __alloT('stem.printingpress.robert_scribner_for_the_sake_of_simple', 'Robert Scribner, For the Sake of Simple Folk: Popular Propaganda for the German Reformation (1981)') }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['NCSS D2.His.4.6-8 (causation)', 'NCSS D2.His.5.6-8 (contextualization)'],
             discussion: [
               'Compare the speed of Luther + the Catholic response. Why was Luther so much faster?',
@@ -14016,7 +14032,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.international_color_consortium_icc_sta', 'International Color Consortium (ICC) standards'), url: 'https://www.color.org/' },
             { label: __alloT('stem.printingpress.pantone_color_systems', 'Pantone color systems'), url: 'https://www.pantone.com/' }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['NGSS HS-PS4 (waves + color)', 'NCAS Visual Arts (color theory)'],
             discussion: [
               'Why was hand-coloring so much more expensive than chromolithography for the same image?',
@@ -14120,7 +14136,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.library_of_congress_books_that_shaped_', 'Library of Congress, Books That Shaped America'), url: 'https://www.loc.gov/exhibits/books-that-shaped-america/' },
             { label: __alloT('stem.printingpress.modern_library_100_best_lists', 'Modern Library 100 Best Lists'), url: 'https://www.modernlibrary.com/top-100/' }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['CCSS RH.6-8.9 (compare sources)', 'NCSS D2.His.2.6-8 (context)'],
             discussion: [
               'Pick one book from the list. Research what was happening politically + socially when it appeared. What made it land at that moment?',
@@ -14265,7 +14281,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.joad_raymond_ed_the_cambridge_companio', 'Joad Raymond, ed., The Cambridge Companion to British Civil War Print (2015)') },
             { label: __alloT('stem.printingpress.george_thomason_collection_british_lib', 'George Thomason collection — British Library'), url: 'https://www.bl.uk/collection-guides/thomason-tracts' }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['NCSS D2.His.5.6-8 (cause + effect)', 'NCSS D2.Civ.5.6-8 (civic principles)'],
             discussion: [
               'Could the American Revolution have happened without colonial newspapers + Paine\'s Common Sense? What would have been different?',
@@ -14416,7 +14432,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.antiquarian_booksellers_association_of', 'Antiquarian Booksellers Association of America (ABAA)'), url: 'https://www.abaa.org/' },
             { label: __alloT('stem.printingpress.boston_antiquarian_book_fair', 'Boston Antiquarian Book Fair'), url: 'https://bostonbookfair.com/' }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['NCSS D2.His.10.6-8 (analyze sources)', 'CCSS RH.6-8.1 (cite evidence)'],
             discussion: [
               'Visit a rare-book library (or your school library special collection). Hold a 100-year-old book + a new one. What differences do you notice?',
@@ -14549,7 +14565,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.adam_smyth_ed_a_history_of_the_book_in', 'Adam Smyth, ed., A History of the Book in 100 Books (2014)') },
             { label: __alloT('stem.printingpress.library_of_congress_conservation_notes', 'Library of Congress conservation notes on Gutenberg Bible ink'), url: 'https://www.loc.gov/preservation/' }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['NGSS HS-PS1-1 (atoms + molecules)', 'NGSS HS-PS1-3 (properties of matter)'],
             discussion: [
               'Why did paper-printing need a different ink than parchment-writing?',
@@ -14690,7 +14706,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.wycliffe_bible_translators', 'Wycliffe Bible Translators'), url: 'https://www.wycliffe.org/' },
             { label: __alloT('stem.printingpress.american_translators_association', 'American Translators Association'), url: 'https://www.atanet.org/' }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['CCSS RL.6-12.4 (figurative + connotative meaning)', 'NCSS D2.His.16.6-8 (perspectives)'],
             discussion: [
               'Why was Tyndale\'s English Bible illegal? What did the authorities fear?',
@@ -14827,7 +14843,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.emory_douglas_black_panther_the_revolu', 'Emory Douglas, Black Panther: The Revolutionary Art of Emory Douglas (2007)') },
             { label: __alloT('stem.printingpress.stanford_internet_observatory_research', 'Stanford Internet Observatory research'), url: 'https://cyber.fsi.stanford.edu/io' }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['NCSS D2.His.4.6-8 (causation)', 'NCSS D4.6.6-8 (taking informed action)'],
             discussion: [
               'Compare a WWI poster + a modern political meme. What\'s similar? What\'s different?',
@@ -14965,7 +14981,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.hillary_chute_why_comics_2017', 'Hillary Chute, Why Comics? (2017)') },
             { label: __alloT('stem.printingpress.comic_book_legal_defense_fund', 'Comic Book Legal Defense Fund'), url: 'https://cbldf.org/' }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['CCSS RL.5.7 (integrate text + visual)', 'NCAS Visual Arts (sequential art)'],
             discussion: [
               'How does sequential art (panels) tell a story differently than prose alone?',
@@ -15104,7 +15120,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.e_ink_corporation', 'E Ink Corporation'), url: 'https://www.eink.com/' },
             { label: __alloT('stem.printingpress.authors_guild_on_ai_publishing', 'Authors Guild on AI + publishing'), url: 'https://authorsguild.org/' }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['NGSS HS-ETS1-3 (technology systems)', 'C3 D2.6.6-8 (taking action)'],
             discussion: [
               'Will print physical books still exist in 50 years? In what form?',
@@ -15270,7 +15286,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.museo_bodoniano_parma', 'Museo Bodoniano, Parma'), url: 'https://www.museobodoniano.it/' },
             { label: __alloT('stem.printingpress.officina_bodoni_verona_study_center', 'Officina Bodoni (Verona) study center') }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['NCSS D2.His.2.6-8 (context)', 'NCSS D2.His.4.6-8 (causation)'],
             discussion: [
               'Why have some print shops (Plantin-Moretus, Imprimerie Nationale) survived for centuries while others lasted only decades?',
@@ -15419,7 +15435,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.religious_news_service_publishing_cove', 'Religious News Service publishing coverage'), url: 'https://religionnews.com/' },
             { label: __alloT('stem.printingpress.ecpa_evangelical_christian_publishers_', 'ECPA (Evangelical Christian Publishers Association) statistics'), url: 'https://www.ecpa.org/' }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['NCSS D2.His.2.6-8 (context)', 'CCSS RH.6-8.6 (point of view)'],
             discussion: [
               'Why has religious publishing been so resilient compared to other publishing segments?',
@@ -15552,7 +15568,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: 'OpenStax', url: 'https://openstax.org/' },
             { label: __alloT('stem.printingpress.association_of_university_presses', 'Association of University Presses'), url: 'https://aupresses.org/' }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['NCSS D2.His.2.6-8 (context)', 'C3 D2.6.6-8 (taking informed action)'],
             discussion: [
               'Why is the textbook market so consolidated? What does this mean for educational diversity?',
@@ -15677,7 +15693,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.us_bureau_of_engraving_and_printing', 'US Bureau of Engraving and Printing'), url: 'https://www.bep.gov/' },
             { label: __alloT('stem.printingpress.bank_of_england_banknote_history', 'Bank of England banknote history'), url: 'https://www.bankofengland.co.uk/banknotes' }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['NCSS D2.Eco.6.6-8 (economic decisions)', 'NGSS HS-ETS1-3 (technology systems)'],
             discussion: [
               'A currency that anyone can copy is worthless. How do anti-counterfeit features balance the goals of trust + accessibility?',
@@ -15827,7 +15843,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.project_gutenberg', 'Project Gutenberg'), url: 'https://www.gutenberg.org/' },
             { label: __alloT('stem.printingpress.maine_infonet_maine_libraries_digital_', 'Maine InfoNet (Maine libraries digital consortium)'), url: 'https://www.maineinfonet.org/' }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['NCSS D2.His.2.6-8 (context)', 'C3 D2.6.6-8 (taking informed action)'],
             discussion: [
               'Visit your local public library. Find out: how long has it been there? Was it built with Carnegie funds? Look around — what services do you see?',
@@ -15980,7 +15996,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.david_reed_the_popular_magazine_in_bri', 'David Reed, The Popular Magazine in Britain and the United States 1880-1960 (1997)') },
             { label: __alloT('stem.printingpress.magazine_publishers_of_america_mpa', 'Magazine Publishers of America (MPA)'), url: 'https://www.magazine.org/' }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['NCSS D2.His.5.6-8 (cause + effect)', 'NCAS Visual Arts (design analysis)'],
             discussion: [
               'Pick a magazine you (or family) read. Look at one issue closely. Front cover, masthead, departments. What conventions do you see?',
@@ -16113,7 +16129,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.stanford_encyclopedia_of_philosophy', 'Stanford Encyclopedia of Philosophy'), url: 'https://plato.stanford.edu/' },
             { label: __alloT('stem.printingpress.wikipedia_statistics', 'Wikipedia statistics'), url: 'https://stats.wikimedia.org/' }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['CCSS RH.6-8.9 (compare sources)', 'NCSS D4.6.6-8 (taking informed action)'],
             discussion: [
               'Compare Wikipedia + Britannica on a topic you know well. Which is better? Why?',
@@ -16234,7 +16250,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.oed_online_subscription_required_for_f', 'OED Online (subscription required for full)'), url: 'https://www.oed.com/' },
             { label: __alloT('stem.printingpress.merriam_webster_online_free', 'Merriam-Webster Online (free)'), url: 'https://www.merriam-webster.com/' }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['CCSS L.6-12.4 (vocabulary acquisition)', 'CCSS L.6-12.6 (vocabulary use)'],
             discussion: [
               'Pick a common word + look it up in 3 different dictionaries. Compare the definitions. What\'s different?',
@@ -16368,7 +16384,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.bob_spitz_dearie_the_remarkable_life_o', 'Bob Spitz, Dearie: The Remarkable Life of Julia Child (2012)') },
             { label: __alloT('stem.printingpress.smith_college_source_cookbooks_collect', 'Smith College Source Cookbooks Collection'), url: 'https://libraries.smith.edu/' }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['NCSS D2.His.5.6-8 (cause + effect)', 'NCAS Visual Arts (photography analysis)'],
             discussion: [
               'Why has the cookbook category survived (even thrived) as so many other publishing categories have contracted?',
@@ -16485,7 +16501,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.old_farmer_s_almanac', 'Old Farmer\'s Almanac'), url: 'https://www.almanac.com/' },
             { label: __alloT('stem.printingpress.library_of_america_benjamin_franklin_w', 'Library of America, Benjamin Franklin: Writings (1987)') }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['CCSS RI.6-8.2 (central idea)', 'CCSS L.6-12.4 (vocabulary)'],
             discussion: [
               'Why do self-help books keep selling generation after generation?',
@@ -16600,7 +16616,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.forest_stewardship_council', 'Forest Stewardship Council'), url: 'https://www.fsc.org/' },
             { label: __alloT('stem.printingpress.maine_pulp_and_paper_association', 'Maine Pulp and Paper Association'), url: 'https://www.mainepaper.org/' }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['NGSS HS-ESS3-4 (human impact on environment)', 'NCSS D2.Eco.13.6-8 (interdependence)'],
             discussion: [
               'Is digital reading more environmentally friendly than print? Walk through the considerations.',
@@ -16744,7 +16760,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: 'GoComics', url: 'https://www.gocomics.com/' },
             { label: __alloT('stem.printingpress.king_features_syndicate', 'King Features Syndicate'), url: 'https://www.kingfeatures.com/' }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['NCAS Visual Arts (sequential art)', 'CCSS RL.5.7 (text + visual)'],
             discussion: [
               'Why did Bill Watterson refuse merchandising for Calvin and Hobbes? Was he right?',
@@ -16859,7 +16875,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.committee_to_protect_journalists', 'Committee to Protect Journalists'), url: 'https://cpj.org/' },
             { label: __alloT('stem.printingpress.bellingcat', 'Bellingcat'), url: 'https://www.bellingcat.com/' }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['NCSS D2.His.4.6-8 (causation)', 'NCSS D4.6.6-8 (taking informed action)'],
             discussion: [
               'Compare embedded reporting + independent reporting. What does each give up + gain?',
@@ -16959,7 +16975,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.designer_bookbinders', 'Designer Bookbinders'), url: 'https://designerbookbinders.org.uk/' },
             { label: __alloT('stem.printingpress.guild_of_book_workers', 'Guild of Book Workers'), url: 'https://guildofbookworkers.org/' }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['NCAS Visual Arts (craft tradition)', 'NCSS D2.His.4.6-8 (causation)'],
             discussion: [
               'Why would someone spend thousands of dollars on a binding for a book whose text is freely available?',
@@ -17047,7 +17063,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.maine_historical_society_author_collec', 'Maine Historical Society — author collections'), url: 'https://www.mainehistory.org/' },
             { label: __alloT('stem.printingpress.harriet_beecher_stowe_house_brunswick', 'Harriet Beecher Stowe House (Brunswick)') }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['Maine SS 2019 (state literature)', 'CCSS RL.5.9 (compare authors)'],
             discussion: [
               'What is it about Maine that has produced + attracted so many major writers?',
@@ -17147,7 +17163,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.edmund_swinglehurst_the_romantic_journ', 'Edmund Swinglehurst, The Romantic Journey: The Story of Thomas Cook + Victorian Travel (1974)') },
             { label: __alloT('stem.printingpress.frank_staff_the_picture_postcard_and_i', 'Frank Staff, The Picture Postcard and Its Origins (1966)') }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['NCSS D2.Geo.4.6-8 (places + regions)', 'NCSS D2.His.4.6-8 (causation)'],
             discussion: [
               'Has TripAdvisor + Google Maps replaced guidebooks? When do you still want a guidebook?',
@@ -17264,7 +17280,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.medlineplus_us_national_library_of_med', 'MedlinePlus (US National Library of Medicine)'), url: 'https://medlineplus.gov/' },
             { label: __alloT('stem.printingpress.uptodate_subscription', 'UpToDate (subscription)'), url: 'https://www.uptodate.com/' }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['NGSS HS-LS1-3 (homeostasis + medicine)', 'CCSS RST.11-12.7 (integrate quantitative + text)'],
             discussion: [
               'Why is medical publishing more regulated than other publishing?',
@@ -17370,7 +17386,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.stephen_coles_the_anatomy_of_type_2012_2', 'Stephen Coles, The Anatomy of Type (2012)') },
             { label: __alloT('stem.printingpress.whatthefont_font_identification_tool', 'WhatTheFont (font identification tool)'), url: 'https://www.myfonts.com/pages/whatthefont' }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['NCAS Visual Arts (visual literacy)', 'CCSS RH.6-8.7 (integrate visual + text)'],
             discussion: [
               'After taking the quiz, look at any printed material around you. Can you identify the typeface?'
@@ -17484,7 +17500,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: __alloT('stem.printingpress.us_postal_service_annual_reports', 'US Postal Service annual reports'), url: 'https://about.usps.com/' },
             { label: __alloT('stem.printingpress.smithsonian_national_postal_museum', 'Smithsonian National Postal Museum'), url: 'https://postalmuseum.si.edu/' }
           ]),
-          h(TeacherNotes, {
+          h(stableType('TeacherNotes', TeacherNotes), {
             standards: ['NCSS D2.His.5.6-8 (cause + effect)', 'NCSS D2.Eco.6.6-8 (economic decisions)'],
             discussion: [
               'Should USPS continue to provide universal mail service to rural areas given declining volume + revenue?',

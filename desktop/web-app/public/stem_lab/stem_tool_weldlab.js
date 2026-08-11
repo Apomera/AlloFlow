@@ -364,6 +364,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
 
       var viewState = useState(d.view || 'menu');
       var view = viewState[0], setView = viewState[1];
+      // ── Stable view identities ──
+      // Components defined inside render() get a new function identity every
+      // host re-render, so React unmounts/remounts the open view on ANY
+      // toolData write — wiping its local useState (see
+      // dev-tools/scan_render_scoped_components.cjs). stableType() hands React
+      // a per-mount stable wrapper type and swaps the fresh closure in each
+      // render, so views reconcile in place instead of remounting.
+      // Gate: tests/stem_view_identity_stability.test.js.
+      var _stableViewTypesRef = useRef({});
+      function stableType(name, impl) {
+        var slot = _stableViewTypesRef.current[name];
+        if (!slot) {
+          slot = _stableViewTypesRef.current[name] = { impl: null, Type: null };
+          slot.Type = function StableView(props) { return slot.impl(props); };
+        }
+        slot.impl = impl;
+        return slot.Type;
+      }
+      // Stabilize stateless chrome/view identities too (declarations hoist,
+      // so re-binding them here covers every later use). Without this the
+      // shared chrome (back bars, stat cards, sliders) still remounts inside
+      // otherwise-stable views on every host re-render, tearing DOM and
+      // dropping keyboard focus.
+      BackBar = stableType('BackBar', BackBar);
+      StatCard = stableType('StatCard', StatCard);
+      LabeledSlider = stableType('LabeledSlider', LabeledSlider);
+      TeacherNotes = stableType('TeacherNotes', TeacherNotes);
+      MainMenu = stableType('MainMenu', MainMenu);
+      HeatInputCalculator = stableType('HeatInputCalculator', HeatInputCalculator);
+      CareerPathways = stableType('CareerPathways', CareerPathways);
+      UnderwaterLab = stableType('UnderwaterLab', UnderwaterLab);
+      ProcessSleuth = stableType('ProcessSleuth', ProcessSleuth);
+      DefectDiagnose = stableType('DefectDiagnose', DefectDiagnose);
+      DefectCatalogView = stableType('DefectCatalogView', DefectCatalogView);
+      MetallurgyDeepDive = stableType('MetallurgyDeepDive', MetallurgyDeepDive);
+      CodesAndStandards = stableType('CodesAndStandards', CodesAndStandards);
+      WelderQualPrep = stableType('WelderQualPrep', WelderQualPrep);
+      PipeWeldingDeepDive = stableType('PipeWeldingDeepDive', PipeWeldingDeepDive);
+      RoboticAutomated = stableType('RoboticAutomated', RoboticAutomated);
+      InspectionCWIPrep = stableType('InspectionCWIPrep', InspectionCWIPrep);
+      ConsumablesDeepDive = stableType('ConsumablesDeepDive', ConsumablesDeepDive);
+      MaineEcosystem = stableType('MaineEcosystem', MaineEcosystem);
+      SafetyHealthDeepDive = stableType('SafetyHealthDeepDive', SafetyHealthDeepDive);
+      MathBlueprintLab = stableType('MathBlueprintLab', MathBlueprintLab);
+      CareerStories = stableType('CareerStories', CareerStories);
 
       // First-find celebration state — fires the moment a brand-new defect
       // type is correctly identified. Auto-clears after 3.2s.
@@ -1549,7 +1594,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             // 3D scene — new immersive view, Three.js lazy-loaded on first
             // open. Same liveRef so it sees the same V/A/TS/material/process
             // state without duplicating the physics layer.
-            beadView === '3d' && h(WeldBeadLab3D, {
+            beadView === '3d' && h(stableType('WeldBeadLab3D', WeldBeadLab3D), {
               liveRef: liveRef,
               P: P,
               M: M,
@@ -1570,7 +1615,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             // goes dark when the lens darkens to ~Shade 11; the arc is a
             // bright bloom; the plate is a faint glow around it. Most
             // students don't know visibility is this limited.
-            beadView === 'helmet' && h(WeldBeadLabHelmet, {
+            beadView === 'helmet' && h(stableType('WeldBeadLabHelmet', WeldBeadLabHelmet), {
               liveRef: liveRef,
               P: P,
               ariaLabel: canvasAriaLabel
@@ -9800,15 +9845,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       // ─────────────────────────────────────────────────────
       var viewBody;
       if (view === 'heatInput') viewBody = h(HeatInputCalculator);
-      else if (view === 'beadLab') viewBody = h(WeldBeadLab);
-      else if (view === 'defectHunt') viewBody = h(DefectHuntLab);
-      else if (view === 'processCompare') viewBody = h(ProcessComparison);
-      else if (view === 'jointCatalog') viewBody = h(JointCatalog);
-      else if (view === 'symbolsReader') viewBody = h(SymbolsReader);
-      else if (view === 'ppeSafety') viewBody = h(PPESafetyLab);
+      else if (view === 'beadLab') viewBody = h(stableType('WeldBeadLab', WeldBeadLab));
+      else if (view === 'defectHunt') viewBody = h(stableType('DefectHuntLab', DefectHuntLab));
+      else if (view === 'processCompare') viewBody = h(stableType('ProcessComparison', ProcessComparison));
+      else if (view === 'jointCatalog') viewBody = h(stableType('JointCatalog', JointCatalog));
+      else if (view === 'symbolsReader') viewBody = h(stableType('SymbolsReader', SymbolsReader));
+      else if (view === 'ppeSafety') viewBody = h(stableType('PPESafetyLab', PPESafetyLab));
       else if (view === 'careerPaths') viewBody = h(CareerPathways);
       else if (view === 'underwater') viewBody = h(UnderwaterLab);
-      else if (view === 'speedChallenge') viewBody = h(SpeedChallenge);
+      else if (view === 'speedChallenge') viewBody = h(stableType('SpeedChallenge', SpeedChallenge));
       else if (view === 'processSleuth') viewBody = h(ProcessSleuth);
       else if (view === 'defectDiagnose') viewBody = h(DefectDiagnose);
       else if (view === 'defectCatalog') viewBody = h(DefectCatalogView);

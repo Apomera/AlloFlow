@@ -131,6 +131,10 @@ function scanFile(file) {
   for (const [node, meta] of fnMeta) {
     if (!meta.insideRender || !meta.name) continue;
     if (renderSet.has(node)) continue;
+    // The stableType() fix idiom: `Name = stableType('Name', Name);` re-binds
+    // the hoisted declaration to a per-mount stable wrapper type, so every
+    // later h(Name) use reconciles instead of remounting. Recognize it.
+    if (src.includes(meta.name + " = stableType('" + meta.name + "', " + meta.name + ')')) continue;
     const uses = elementArgNames.get(meta.name);
     if (!uses) continue;
     const stateful = hookBearers.has(node);
@@ -147,7 +151,8 @@ function scanFile(file) {
 
 const argv = process.argv.slice(2);
 const showInfo = argv.includes('--info');
-const fileArgs = argv.filter((a) => a !== '--info');
+const quiet = argv.includes('--quiet');
+const fileArgs = argv.filter((a) => a !== '--info' && a !== '--quiet');
 const files = fileArgs.length ? fileArgs
   : fs.readdirSync(path.join(ROOT, 'stem_lab'))
       .filter((f) => /^stem_tool_.*\.js$/.test(f))
@@ -168,8 +173,10 @@ for (const rel of files) {
     for (const f of r.infos) console.log('   ~ ' + f.fn + ' @' + f.line + ' — ' + f.why);
   }
 }
-console.log('---');
-console.log('scan_render_scoped_components: ' + files.length + ' file(s), ' + failCount + ' stateful flag(s) in '
-  + failFiles + ' file(s), ' + infoCount + ' stateless (' + (showInfo ? 'shown' : '--info to list') + '), '
-  + parseErrors + ' parse failure(s).');
+if (!quiet || failFiles || parseErrors) {
+  console.log('---');
+  console.log('scan_render_scoped_components: ' + files.length + ' file(s), ' + failCount + ' stateful flag(s) in '
+    + failFiles + ' file(s), ' + infoCount + ' stateless (' + (showInfo ? 'shown' : '--info to list') + '), '
+    + parseErrors + ' parse failure(s).');
+}
 process.exit(failFiles || parseErrors ? 1 : 0);

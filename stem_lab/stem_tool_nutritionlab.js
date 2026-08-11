@@ -15753,6 +15753,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     return nlH('div', null, backBar, nlH(Comp, p));
   }
 
+  // ── Stable view identities (module scope) ──
+  // Components defined inside render() get a new function identity every host
+  // re-render, so React unmounts/remounts them on ANY toolData write — wiping
+  // local useState (see dev-tools/scan_render_scoped_components.cjs).
+  // stableType() hands React a stable wrapper type and swaps the fresh closure
+  // in each render. Gate: tests/stem_view_identity_stability.test.js.
+  var _stableViewTypes = {};
+  function stableType(name, impl) {
+    var slot = _stableViewTypes[name];
+    if (!slot) {
+      slot = _stableViewTypes[name] = { impl: null, Type: null };
+      slot.Type = function StableView(props) { return slot.impl(props); };
+    }
+    slot.impl = impl;
+    return slot.Type;
+  }
   window.StemLab.registerTool('nutritionLab', {
     name: 'NutritionLab — Nutrition Science',
     icon: '🥗',
@@ -15768,6 +15784,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       var useRef = React.useRef;
 
       var d = (ctx.toolData && ctx.toolData['nutritionLab']) || {};
+      // Stabilize view/chrome identities (declarations hoist, so re-binding
+      // here covers every later use — views reconcile instead of remounting).
+      MicronutrientAtlas = stableType('MicronutrientAtlas', MicronutrientAtlas);
+      BackBar = stableType('BackBar', BackBar);
+      StatCard = stableType('StatCard', StatCard);
+      TeacherNotes = stableType('TeacherNotes', TeacherNotes);
+      MainMenu = stableType('MainMenu', MainMenu);
+      MacroDonut = stableType('MacroDonut', MacroDonut);
+      DailyIntakeBars = stableType('DailyIntakeBars', DailyIntakeBars);
+      FoodComparePanel = stableType('FoodComparePanel', FoodComparePanel);
+      MacronutrientLab = stableType('MacronutrientLab', MacronutrientLab);
+      NutritionFactsPanel = stableType('NutritionFactsPanel', NutritionFactsPanel);
+      FoodLabelReader = stableType('FoodLabelReader', FoodLabelReader);
+      EnergyMetabolismLab = stableType('EnergyMetabolismLab', EnergyMetabolismLab);
+      DigestionWalkthrough = stableType('DigestionWalkthrough', DigestionWalkthrough);
+      NutritionMythsLab = stableType('NutritionMythsLab', NutritionMythsLab);
+      FoodMoodLab = stableType('FoodMoodLab', FoodMoodLab);
+      EDAwareness = stableType('EDAwareness', EDAwareness);
+      MaineFoodReality = stableType('MaineFoodReality', MaineFoodReality);
+      CareerPathwaysNutrition = stableType('CareerPathwaysNutrition', CareerPathwaysNutrition);
+      MaineDayBuilder = stableType('MaineDayBuilder', MaineDayBuilder);
+      DeficiencyDetective = stableType('DeficiencyDetective', DeficiencyDetective);
+      MacroInquiryWidget = stableType('MacroInquiryWidget', MacroInquiryWidget);
+      HydrationLab = stableType('HydrationLab', HydrationLab);
       var upd = function(key, val) { ctx.update('nutritionLab', key, val); };
       var addToast = ctx.addToast || function(msg) { console.log('[NutritionLab]', msg); };
 
@@ -20161,7 +20201,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 ),
 
                 // Result
-                h(FillBar, { ml: dailyTargetMl, max: 4500 },
+                h(stableType('FillBar', FillBar), { ml: dailyTargetMl, max: 4500 },
                   h('div', { className: 'space-y-2' },
                     h('div', { className: 'text-2xl font-black text-sky-900' }, dailyTargetMl + ' mL'),
                     h('div', { className: 'text-sm text-slate-800' }, 'About ' + dailyTargetCups + ' cups (8 oz each) of fluid today.'),
