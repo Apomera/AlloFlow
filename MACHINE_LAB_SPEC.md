@@ -51,6 +51,35 @@ Note on the harness: `dark` and `contrast` are pushed as SEPARATE flags. A viewe
 infers one from the other cannot render high contrast correctly, which is exactly how
 defect 7 arose.
 
+## Defect 17: the camera was frozen and unreachable
+
+`makeOrbitViewer` takes `rotY`/`rotX`/`zoom` from **every** push and assigns them
+unconditionally (`stem_lab_module.js`: `S.rotY = next.rotY`). A push that omits them sets
+the camera to `undefined`, which reads as 0. So the `rot: { y: 22, x: 12 }` this tool
+configured was applied once at build and **thrown away by the first frame**, and every 3D
+scene rendered dead-on from then on. The screenshots had been showing that all along and it
+read as a styling choice.
+
+Worse, `rotY` is written in exactly three places in the whole host — build, push, and the
+camera read. There is **no drag handler**. So `makeOrbitViewer` scenes are not rotatable by
+mouse either: the view was frozen and adjustable by nobody.
+
+The contract is that the caller owns the camera, and `stem_tool_titration.js` and
+`stem_tool_bridgelab.js` already honour it. This tool did not. Now it keeps the camera in
+its own state per bay, sends it on every push, and offers labelled **turn / tilt / zoom /
+reset** buttons, so the view is steerable by everyone rather than by no one. Yaw wraps at
+360, tilt clamps to -70..78 so the scene can never go fully under or over, and zoom clamps
+to 0.5..2.6. `fitSlack` compensates for corners swinging outside the head-on fit box once
+the camera is turned.
+
+`stem_tool_fireecology.js` passes no camera fields either, so it is likely to have the same
+frozen view. Not fixed here, but worth someone looking.
+
+**A thing I nearly shipped and removed instead:** arrow-key steering bound to the bay itself.
+It needs `tabIndex` on a `role="img"` element, which creates a focus stop that announces as
+an image and offers no obvious action. The labelled button strip is clearer, and dead code
+left behind is exactly the `showWorkPanel` mistake.
+
 ## Host-edit safety check
 
 Two edits were made to the shared `stem_lab_module.js` for this tool (the OrbitControls

@@ -1300,6 +1300,9 @@ window.StemLab = window.StemLab || {
   // shot at once, and the machine is what this tool is actually about.
   // ═══════════════════════════════════════════════════════════════════
 
+  var MACHINE_HOME = { rotY: 22, rotX: 12, zoom: 1 };
+  var WALL_HOME = { rotY: 14, rotX: 16, zoom: 1 };
+
   var COCKED_DEG = -52;   // long arm down, ready to fire
 
   // How long the AI tutor may hang before the Explain button is handed back.
@@ -1623,6 +1626,7 @@ window.StemLab = window.StemLab || {
         attr: 'data-machinelab-treb-gl',
         clearColor: 0x0b1220,
         fov: 44,
+        fitSlack: 1.22,
         rot: { y: 22, x: 12 },
         failMessage: '3D view unavailable. The energy ledger and the trajectory graph below carry the same numbers.',
         lights: function (THREE, scene) {
@@ -1751,6 +1755,7 @@ window.StemLab = window.StemLab || {
         attr: 'data-machinelab-wall-gl',
         clearColor: 0x0b1220,
         fov: 46,
+        fitSlack: 1.25,
         rot: { y: 14, x: 16 },
         failMessage: 'The 3D wall is unavailable. The wall diagram and the course table below carry the same information.',
         lights: function (THREE, scene) {
@@ -1805,6 +1810,11 @@ window.StemLab = window.StemLab || {
       releaseAngle: 45, launchElevation: 2,
       winchHandleR: 0.45, winchDrumR: 0.08, winchPulleys: 2,
       gravity: 9.81, drag: true, windZ: 0,
+
+      // Camera, one per 3D bay. See MACHINE_LAB_SPEC.md: omitting these from a
+      // push resets the view to dead-on and throws cfg.rot away.
+      machineRotY: 22, machineRotX: 12, machineZoom: 1,
+      wallRotY: 14, wallRotX: 16, wallZoom: 1,
 
       // Torsion machines. Turns, arm and draw are the same idea on both, so
       // they are shared; the sling and the string belong to one machine each.
@@ -2789,6 +2799,64 @@ window.StemLab = window.StemLab || {
         }
       };
 
+      // ── Camera controls ──
+      //
+      // Every 3D bay here was frozen dead-on and adjustable by nobody: the
+      // viewer takes rotY/rotX/zoom from each push, this tool never sent them,
+      // so the configured 3/4 angle was discarded on the first frame and there
+      // was no way for a user to look around at all. These are real buttons and
+      // real arrow keys, so the camera is reachable without a mouse.
+      function camFor(which) {
+        var home = (which === 'wall') ? WALL_HOME : MACHINE_HOME;
+        var k = (which === 'wall')
+          ? { y: 'wallRotY', x: 'wallRotX', z: 'wallZoom' }
+          : { y: 'machineRotY', x: 'machineRotX', z: 'machineZoom' };
+        var yaw = finite(d[k.y]) ? d[k.y] : home.rotY;
+        var pitch = finite(d[k.x]) ? d[k.x] : home.rotX;
+        var zoom = pos(d[k.z]) ? d[k.z] : home.zoom;
+        function set(ny, nx, nz) {
+          var patch = {};
+          patch[k.y] = ((ny % 360) + 360) % 360;
+          patch[k.x] = Math.max(-70, Math.min(78, nx));   // never fully under or over
+          patch[k.z] = Math.max(0.5, Math.min(2.6, nz));
+          updMulti(patch);
+        }
+        return {
+          rotY: yaw, rotX: pitch, zoom: zoom,
+          nudge: function (dy, dx) { set(yaw + dy, pitch + dx, zoom); },
+          zoomBy: function (f) { set(yaw, pitch, zoom * f); },
+          reset: function () { set(home.rotY, home.rotX, home.zoom); }
+        };
+      }
+
+      function camControls(cam, label) {
+        function btn(key, glyph, aria, fn) {
+          return h('button', {
+            key: key, onClick: fn, 'aria-label': aria, title: aria,
+            style: {
+              padding: '3px 8px', borderRadius: 7, cursor: 'pointer',
+              border: '1px solid ' + T.border, background: T.card, color: T.text,
+              fontSize: 12, fontWeight: 700, lineHeight: 1.4
+            }
+          }, glyph);
+        }
+        return h('div', {
+          key: 'cam', role: 'group',
+          'aria-label': __alloT('stem.machinelab.cam_group', 'Camera for the ') + label,
+          style: { display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }
+        }, [
+          h('span', { key: 'l', style: { fontSize: 11, color: T.dim, marginRight: 2 } },
+            __alloT('stem.machinelab.cam_view', 'View:')),
+          btn('yl', '◀', __alloT('stem.machinelab.cam_left', 'Turn left'), function () { cam.nudge(-15, 0); }),
+          btn('yr', '▶', __alloT('stem.machinelab.cam_right', 'Turn right'), function () { cam.nudge(15, 0); }),
+          btn('xu', '▲', __alloT('stem.machinelab.cam_up', 'Tilt up'), function () { cam.nudge(0, -10); }),
+          btn('xd', '▼', __alloT('stem.machinelab.cam_down', 'Tilt down'), function () { cam.nudge(0, 10); }),
+          btn('zi', '+', __alloT('stem.machinelab.cam_in', 'Zoom in'), function () { cam.zoomBy(1.25); }),
+          btn('zo', '−', __alloT('stem.machinelab.cam_out', 'Zoom out'), function () { cam.zoomBy(0.8); }),
+          btn('rs', '⟲', __alloT('stem.machinelab.cam_reset', 'Reset the view'), function () { cam.reset(); })
+        ]);
+      }
+
       // ── Read aloud ──
       //
       // This tool is mostly prose: six bench explanations, three machine
@@ -2989,6 +3057,7 @@ window.StemLab = window.StemLab || {
           { key: 'winchPulleys', label: __alloT('stem.machinelab.winch_pulleys', 'Pulleys in the tackle'), min: 1, max: 6, step: 1, unit: '' }
         ];
 
+        var mCam = camFor('machine');
         var glStatus = TREB_GL.status();
         TREB_GL.onStatusChange(function () { upd('glTick', (d.glTick || 0) + 1); });
         // sig drives the scene REBUILD, so it carries geometry and theme only.
@@ -2998,6 +3067,7 @@ window.StemLab = window.StemLab || {
                 d.torsionArmLength, d.torsionDraw, d.onagerSling,
                 d.projDiameter, isDark, isContrast].join('|'),
           kind: machineId,
+          rotY: mCam.rotY, rotX: mCam.rotX, zoom: mCam.zoom,
           static: !d.animating,
           shotId: d.animating ? d.shotId : 0,
           releaseAngle: d.releaseAngle,
@@ -3028,7 +3098,8 @@ window.StemLab = window.StemLab || {
                 role: 'img',
                 'aria-label': __alloT('stem.machinelab.aria_machine3d', 'Three-dimensional view of the ') + machineLabel(machineId) + __alloT('stem.machinelab.aria_machine3d2', '. The energy ledger beside it carries the same information as numbers.'),
                 style: { width: '100%', height: 260, borderRadius: 10, background: T.bg, border: '1px solid ' + T.border }
-              }),
+              }, null),
+              camControls(mCam, machineLabel(machineId)),
               // The machine's swing was animated but unreachable: the only Fire
               // control lived in the Test Range, which has no 3D view, so a
               // student could never be looking at the machine while it moved.
@@ -3506,11 +3577,13 @@ window.StemLab = window.StemLab || {
         // those ride in on the same push and are applied by the tick without a
         // teardown. static:true means that tick runs once per push, never at
         // 60 fps on an idle wall.
+        var wCam = camFor('wall');
         var siegeGlStatus = SIEGE_GL.status();
         SIEGE_GL.onStatusChange(function () { upd('glTick', (d.glTick || 0) + 1); });
         SIEGE_GL.push({
           sig: [d.wallPreset || 'curtain', blocks.length, ext ? ext.cols : 0, ext ? ext.rows : 0, isDark, isContrast].join('|'),
           static: true,
+          rotY: wCam.rotY, rotX: wCam.rotX, zoom: wCam.zoom,
           blocks: blocks,
           dark: isDark, contrast: isContrast
         });
@@ -3572,7 +3645,8 @@ window.StemLab = window.StemLab || {
                   role: 'img',
                   'aria-label': __alloT('stem.machinelab.aria_wall3d', 'Three-dimensional view of the target wall. The diagram and course table below carry the same information.'),
                   style: { width: '100%', height: 220, borderRadius: 10, background: T.bg, border: '1px solid ' + T.border }
-                }),
+                }, null),
+                camControls(wCam, presetMeta ? presetMeta.label : 'wall'),
                 siegeGlStatus !== 'ready' ? h('p', {
                   key: 'st', style: { margin: '8px 0 0', fontSize: 12, color: T.dim }
                 }, siegeGlStatus === 'failed'
