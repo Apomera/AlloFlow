@@ -2761,6 +2761,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           }
         ];
 
+        // The authored bank put 9 of 12 correct choices at 'b' (none at 'a').
+        // Deterministic per-question rotation — identical on every render, so
+        // React state keyed by choice id stays valid — spreads them; grading
+        // uses the `correct` flag, so no remapping is needed.
+        QUESTIONS.forEach(function (question, qi) {
+          var len = question.choices.length;
+          var shift = (qi * 7 + 3) % len;
+          if (shift) question.choices = question.choices.slice(shift).concat(question.choices.slice(0, shift));
+        });
+
         var ROUND_COUNT = QUESTIONS.length;
         var idxState = useState(0), idx = idxState[0], setIdx = idxState[1];
         var answersState = useState({}), answers = answersState[0], setAnswers = answersState[1];

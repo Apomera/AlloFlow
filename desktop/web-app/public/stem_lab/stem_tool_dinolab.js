@@ -4998,6 +4998,20 @@ window.StemLab = window.StemLab || {
     { id: 'q34', q: 'Which dinosaur had a sail and likely ate fish?', options: ['Spinosaurus', 'Triceratops', 'Ankylosaurus', 'Stegosaurus'], answer: 0, explain: 'Spinosaurus had a tall sail and a crocodile-like snout suited to a fish-heavy life.' }
   ];
 
+  // The authored bank put 25 of 34 correct answers at index 1 (none at 3), so
+  // "always pick B" scored 74%. Deterministic per-question rotation — stable
+  // across renders and shared by the on-screen quiz AND the printed
+  // worksheet/answer key — remaps the graded index.
+  (function () {
+    QUIZ.forEach(function (q, i) {
+      var len = q.options.length;
+      var shift = (i * 7 + 3) % len;
+      if (!shift) return;
+      q.options = q.options.slice(shift).concat(q.options.slice(0, shift));
+      q.answer = (q.answer - shift + len) % len;
+    });
+  })();
+
   // ── Paleontology glossary ──
   var GLOSSARY = [
     { term: 'Paleontology', def: 'The science that studies ancient life through fossils.' },
