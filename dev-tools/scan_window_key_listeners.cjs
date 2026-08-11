@@ -87,6 +87,12 @@ function scanFile(file, src) {
     // addEventListener(...)` — which de-duplicates the handler but never takes
     // it down on unmount. Every tool in the 549801ccf sweep looked exactly like
     // that, so accepting a same-scope removal passes the whole known-bad set.
+    // Source text of the handler being registered, so a removal only counts
+    // when it takes THAT handler back off. Without this, one unrelated nested
+    // removal anywhere in a large enclosing function clears every listener in
+    // it — which silently dropped pre-sweep fractions, a genuine leaker.
+    const addedHandlerSrc = node.arguments[1] ? src.slice(node.arguments[1].start, node.arguments[1].end) : null;
+
     let cleaned = false;
     for (let i = ancestors.length - 1; i >= 0; i--) {
       const a = ancestors[i];
@@ -96,7 +102,25 @@ function scanFile(file, src) {
         const c2 = n2.callee;
         if (!(c2.type === 'MemberExpression' && c2.property && c2.property.name === 'removeEventListener')) return;
         if (!(n2.arguments[0] && n2.arguments[0].type === 'Literal' && KEY_EVENTS.has(n2.arguments[0].value))) return;
-        // Is this removal inside a function that is returned?
+        const removedSrc = n2.arguments[1] ? src.slice(n2.arguments[1].start, n2.arguments[1].end) : null;
+        if (!addedHandlerSrc || removedSrc !== addedHandlerSrc) return;
+        // ONLY a RETURNED closure counts as teardown.
+        //
+        // "Nested inside some function" is tempting and wrong. Pre-sweep
+        // fractions removed this very handler inside its Back BUTTON's onClick
+        // — real code, genuinely nested, and it fires on exactly one exit path.
+        // Leave by any other route and the listener survives, which is why the
+        // sweep still had to add a DOM guard there. Accepting nested removals
+        // silently dropped fractions from the known-bad set.
+        // A straight-line removal before the add is the SWAP idiom: it drops
+        // the PREVIOUS handler so only one is registered, and never runs again
+        // once the tool leaves the screen.
+        // Modal focus traps (cyberdefense, SEL civicaction/execfunction) remove
+        // theirs from finish(), which IS reliable because the modal owns every
+        // exit — but that is not distinguishable from the Back-button shape
+        // statically, so those are handled by the baseline, where a human
+        // decision is recorded. A gate may carry reviewed false positives; it
+        // may not miss real leaks.
         for (let j = anc2.length - 1; j >= 0; j--) {
           const f = anc2[j];
           if (!FN_TYPES.has(f.type)) continue;
@@ -140,11 +164,24 @@ let baseline = {};
 try { baseline = JSON.parse(fs.readFileSync(BASELINE_FILE, 'utf8')).accepted || {}; } catch (e) {}
 const writeBaseline = args.includes('--update-baseline');
 
-const files = fs.readdirSync(DIR).filter((f) => /^stem_tool_.*\.js$/.test(f));
+// SEL Hub tools are the same shape (React tools rendered inline by a host) and
+// were never scanned by any of these gates — 71 files with no coverage until
+// 2026-08-11. Scan both trees unless the caller pins one directory.
+const roots = args.some((a) => !a.startsWith('--'))
+  ? [DIR]
+  : [path.join(ROOT, 'stem_lab'), path.join(ROOT, 'sel_hub')].filter((d) => fs.existsSync(d));
+const files = [];
+for (const root of roots) {
+  for (const f of fs.readdirSync(root).filter((n) => /^(stem|sel)_tool_.*\.js$/.test(n))) {
+    files.push(path.join(root, f));
+  }
+}
+
 let bad = 0, total = 0, parseErrors = 0, accepted = 0;
 const found = {};
-for (const f of files) {
-  const src = fs.readFileSync(path.join(DIR, f), 'utf8');
+for (const full of files) {
+  const f = path.basename(full);
+  const src = fs.readFileSync(full, 'utf8');
   const r = scanFile(f, src);
   if (r.parseError) { parseErrors++; console.log('PARSE FAIL ' + f + ': ' + r.parseError); continue; }
   if (!r.hits.length) continue;

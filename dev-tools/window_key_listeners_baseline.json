@@ -1,5 +1,5 @@
 {
-  "note": "Sites the 2026-08-11 all-38 sweep judged safe in shapes this scanner cannot verify statically (modal focus traps, bind-once trampolines, engine dispose paths). Regenerate with --update-baseline only after re-reading the sites.",
+  "note": "Sites judged safe in shapes this scanner cannot verify statically. (a) Modal focus traps whose removal lives in a sibling finish(): cyberdefense, sel_tool_civicaction, sel_tool_execfunction — reliable because the modal owns every exit path, but indistinguishable from a Back-button onClick removal, which fires on ONE exit only (pre-sweep fractions did exactly that and still leaked). (b) Bind-once trampolines indirecting through a nullable window._xHandler (dissection). (c) Engine dispose paths. The 2026-08-11 sweep read all 38 stem registration sites by hand; sel_hub was added to coverage the same day (71 tools, 2 sites, both modals). Regenerate with --update-baseline only after re-reading each site.",
   "accepted": {
     "stem_tool_aquaculture.js": [
       "keydown:handler onKeyDown",
@@ -27,6 +27,12 @@
       "keydown:handler _autoplayResumeOnce"
     ],
     "stem_tool_typingpractice.js": [
+      "keydown:handler onKeyDown"
+    ],
+    "sel_tool_civicaction.js": [
+      "keydown:handler onKeyDown"
+    ],
+    "sel_tool_execfunction.js": [
       "keydown:handler onKeyDown"
     ]
   }
