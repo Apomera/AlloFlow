@@ -319,7 +319,7 @@ function FamilyAnnouncementsPanel(props) {
           <div role="tablist" aria-label={tt('famann.tabs_aria', 'Announcement sections')} className="flex gap-1 mt-2">
             {tabs.map((tb, tbIdx) => (
               <button key={tb.id} type="button" role="tab" id={'famann-tab-' + tb.id} aria-selected={tab === tb.id}
-                aria-controls="famann-tabpanel" tabIndex={tab === tb.id ? 0 : -1} data-help-key={'famann_tab_' + tb.id}
+                aria-controls="famann-tabpanel" tabIndex={tab === tb.id ? 0 : -1} data-help-key="famann_tab"
                 onClick={() => { setTab(tb.id); if (tb.id !== 'saved') setViewId(null); }}
                 onKeyDown={(e) => {
                   let next = null;

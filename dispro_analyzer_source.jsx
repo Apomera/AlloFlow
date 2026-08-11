@@ -608,7 +608,7 @@ function DisproAnalyzerPanel(props) {
           <div role="tablist" aria-label={tt('dispro.tabs_aria', 'Analyzer sections')} className="flex gap-1 mt-2">
             {tabs.map((tb, tbIdx) => (
               <button key={tb.id} type="button" role="tab" id={'dispro-tab-' + tb.id} aria-selected={tab === tb.id}
-                aria-controls="dispro-tabpanel" tabIndex={tab === tb.id ? 0 : -1} data-help-key={'dispro_tab_' + tb.id}
+                aria-controls="dispro-tabpanel" tabIndex={tab === tb.id ? 0 : -1} data-help-key="dispro_tab"
                 onClick={() => { setTab(tb.id); if (tb.id !== 'saved') setViewId(null); }}
                 onKeyDown={(e) => {
                   // Full ARIA tabs contract (arrow keys + roving tabindex).

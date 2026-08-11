@@ -52,18 +52,29 @@ function resourceLayouts() {
     ];
   }
   if (platform === 'mac' || platform === 'macos' || platform === 'darwin') {
-    return [
-      {
-        arch: 'x64',
-        resources: path.join(distDir, 'mac', 'AlloFlow Desktop.app', 'Contents', 'Resources'),
-        launcher: path.join(distDir, 'mac', 'AlloFlow Desktop.app', 'Contents', 'MacOS', 'AlloFlow Desktop'),
-      },
-      {
-        arch: 'arm64',
-        resources: path.join(distDir, 'mac-arm64', 'AlloFlow Desktop.app', 'Contents', 'Resources'),
-        launcher: path.join(distDir, 'mac-arm64', 'AlloFlow Desktop.app', 'Contents', 'MacOS', 'AlloFlow Desktop'),
-      },
-    ];
+    // The mac launcher is a small stub (tens of KB on Electron 39) — the real
+    // payload is the Electron Framework binary, asserted separately. Flavored
+    // builds ship differently-named bundles (AlloFlow Desktop.app, AlloFlow
+    // Remediation.app…), so discover the .app per arch dir rather than
+    // hardcoding the desktop name (point the drill at a flavored output with
+    // ALLOFLOW_DESKTOP_DIST_DIR, e.g. dist/remediation).
+    const macLayout = (dirName, arch) => {
+      const root = path.join(distDir, dirName);
+      let appName = 'AlloFlow Desktop.app';
+      try {
+        const apps = fs.readdirSync(root).filter((entry) => entry.endsWith('.app'));
+        if (apps.length === 1) appName = apps[0];
+      } catch (_) {}
+      const contents = path.join(root, appName, 'Contents');
+      return {
+        arch,
+        resources: path.join(contents, 'Resources'),
+        launcher: path.join(contents, 'MacOS', appName.replace(/\.app$/, '')),
+        launcherMinBytes: 8 * 1024,
+        electronFramework: path.join(contents, 'Frameworks', 'Electron Framework.framework', 'Versions', 'A', 'Electron Framework'),
+      };
+    };
+    return [macLayout('mac', 'x64'), macLayout('mac-arm64', 'arm64')];
   }
   throw new Error('Use --platform win or --platform mac on this host.');
 }
@@ -72,7 +83,10 @@ function verifyLayout(layout) {
   const appAsar = path.join(layout.resources, 'app.asar');
   const appBuild = path.join(layout.resources, 'app-build');
   const schoolBox = path.join(layout.resources, 'schoolbox');
-  assertFile(layout.launcher, 1024 * 1024, layout.arch + ' native launcher');
+  assertFile(layout.launcher, layout.launcherMinBytes || 1024 * 1024, layout.arch + ' native launcher');
+  if (layout.electronFramework) {
+    assertFile(layout.electronFramework, 50 * 1024 * 1024, layout.arch + ' Electron Framework binary');
+  }
   assertFile(appAsar, 1024 * 1024, layout.arch + ' app.asar');
   assertFile(path.join(appBuild, 'index.html'), 1024, layout.arch + ' bundled app index');
   assertFile(path.join(appBuild, 'alloflow_desktop_bridge.js'), 1024, layout.arch + ' desktop app bridge');
@@ -139,7 +153,15 @@ console.log('dist: ' + distDir);
 console.log('platform: ' + (platform || 'unknown'));
 
 try {
-  for (const layout of resourceLayouts()) verifyLayout(layout);
+  // Single-arch builds (e.g. the mac-arm64 target) only produce one unpacked
+  // dir — verify every arch that was actually built, require at least one.
+  const layouts = resourceLayouts();
+  const present = layouts.filter((layout) => fs.existsSync(path.dirname(layout.resources)));
+  assert(present.length > 0, 'no packaged app found for any architecture under ' + distDir);
+  for (const layout of layouts.filter((l) => !present.includes(l))) {
+    console.log('skip: ' + layout.arch + ' (not built)');
+  }
+  for (const layout of present) verifyLayout(layout);
   console.log('[AlloFlow Desktop] Packaged layout drill passed');
 } catch (error) {
   console.error('[AlloFlow Desktop] Packaged layout drill failed:', error && error.message ? error.message : error);

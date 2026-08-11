@@ -146,7 +146,7 @@ function AdminHubPanel(props) {
     {
       key: tool.id,
       type: "button",
-      "data-help-key": "adminhub_" + tool.id + "_card",
+      "data-help-key": "adminhub_tool_card",
       onClick: () => openTool(tool.id),
       className: "flex items-start gap-3 p-4 bg-gradient-to-br border rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left " + tool.accent
     },

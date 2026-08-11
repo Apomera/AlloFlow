@@ -6775,7 +6775,19 @@ function PdfAuditView(props) {
               safeCloseAudit();
             }
           }}
-          ref={(el) => { pdfModalRef.current = el; if (el && !el.contains(document.activeElement)) { try { el.focus({ preventScroll: true }); } catch(_){ el.focus(); } } }}
+          ref={(el) => {
+            pdfModalRef.current = el;
+            // Focus ONCE per mount (a11y: move focus into the dialog when it
+            // opens). Inline ref callbacks re-run on EVERY re-render, and the
+            // unguarded version re-stole focus each time — with the AI Backend
+            // Settings modal open above this dialog, every keystroke in its
+            // API-key field triggered a re-render here that yanked focus away,
+            // making the field impossible to type or paste into (0.3.2 bug).
+            if (el && !el.dataset.alloAutoFocused) {
+              el.dataset.alloAutoFocused = '1';
+              if (!el.contains(document.activeElement)) { try { el.focus({ preventScroll: true }); } catch(_){ el.focus(); } }
+            }
+          }}
         >
           {/* Floating diagnostics log — fixed bottom-right, above the modal; lets the teacher see +
               copy the pipeline's warnLog/debugLog output from inside Canvas (no browser console). */}

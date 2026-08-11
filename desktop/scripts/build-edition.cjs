@@ -55,12 +55,27 @@ const EDITIONS = {
     artifactPrefix: 'AlloFlow-Admin-Server',
     outputDir: 'dist/admin',
   },
+  // Remediation-ONLY flavor: same bundle, but electron/main.cjs reads the
+  // baked alloEdition and boots the app frame into ?mode=remediation with the
+  // full app never reachable (KNOWN_EDITIONS already includes it). On Windows
+  // the desktop installer's experience choice covers this; macOS has no
+  // installer step, so this baked flavor IS the mac remediation edition.
+  remediation: {
+    appId: 'com.alloflow.remediation',
+    productName: 'AlloFlow Remediation',
+    packageName: 'alloflow-remediation',
+    artifactPrefix: 'AlloFlow-Remediation',
+    outputDir: 'dist/remediation',
+  },
 };
 
 const TARGETS = {
   'win-x64': '--win nsis --x64',
   'win': '--win nsis --x64 --arm64',
   'mac': '--mac dmg zip --x64 --arm64',
+  // Apple-silicon-only build — Tyler's local test loop (2026-08-06): no Intel
+  // Macs in play right now, and skipping x64 halves build time and artifact bulk.
+  'mac-arm64': '--mac dmg zip --arm64',
 };
 
 const edition = String(process.argv[2] || '').toLowerCase();

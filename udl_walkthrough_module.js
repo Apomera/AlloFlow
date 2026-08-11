@@ -1068,7 +1068,7 @@ function UdlWalkthroughPanel(props) {
       "aria-selected": tab === tb.id,
       "aria-controls": "udlwalk-tabpanel",
       tabIndex: tab === tb.id ? 0 : -1,
-      "data-help-key": "udlwalk_tab_" + tb.id,
+      "data-help-key": "udlwalk_tab",
       onClick: () => {
         setTab(tb.id);
         if (tb.id !== "sessions") setViewSessionId(null);

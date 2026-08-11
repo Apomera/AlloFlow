@@ -5005,6 +5005,14 @@ const __alloPushLog = (level, args) => {
 };
 const debugLog = (...args) => { __alloPushLog('debug', args); if (DEBUG_LOG) console.log(...args); };
 const warnLog = (...args) => { __alloPushLog('warn', args); console.warn(...args); };
+// Activating a STEM tool is not the same as loading it: the plugin lives on the CDN
+// and only __alloEnsureStemPluginLoaded requests it. Every entry point that sets the
+// active tool routes through here, so a tool opened from the command palette, a hub
+// button or a generated-content handoff loads exactly like an Explore tile click.
+// Top level on purpose: it closes over nothing but window.
+const _alloRequestStemPlugin = (id) => {
+  try { if (id && typeof window.__alloEnsureStemPluginLoaded === 'function') window.__alloEnsureStemPluginLoaded(String(id)); } catch (_) {}
+};
 // Uncaught errors and rejections never reached the ring buffer, so in Canvas — where
 // the console is unreachable — an exception that leaves click handlers unattached was
 // invisible. Record every one, and keep the FIRST separately: when an error is thrown
@@ -14678,6 +14686,17 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         return !!(window.AlloModules && window.AlloModules[name]);
       });
     };
+    // Post-load registration probe. Most modules register
+    // window.AlloModules[<name>] directly; standards snapshot modules
+    // (StandardsSnapshot*) instead feed the shared LocalStandardsSnapshot
+    // registry — current CDN files also write the per-module alias, but older
+    // cached copies may not, so accept the registry as proof for them.
+    // NOT used by the loadModule dedup check: that must stay strict on the
+    // per-module key or the second/third snapshot would be skipped once the
+    // first one populates the shared registry.
+    const __alloModuleRegistered = (name) =>
+      !!(window.AlloModules && (window.AlloModules[name]
+        || (name.indexOf('StandardsSnapshot') === 0 && window.AlloModules.LocalStandardsSnapshot)));
     const loadModule = (name, url) => {
       // Dedup: already registered (module executed) or already in flight.
       if (window.AlloModules && window.AlloModules[name]) {
@@ -14769,7 +14788,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           if (entry.loadGeneration !== loadGeneration) { try { s2.remove(); } catch (_) {} return; }
           clearModuleLoadWatchdog();
           cleanupModuleListener();
-          var f2 = window.AlloModules && window.AlloModules[name];
+          var f2 = __alloModuleRegistered(name);
           console.log('[CDN-FALLBACK] ' + name + ': ' + (f2 ? 'SUCCESS' : 'FAILED'));
           __alloSetModuleStatus(name, f2 ? 'loaded' : 'failed');
         };
@@ -14784,7 +14803,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       s.onload = () => {
         if (entry.loadGeneration !== loadGeneration) return;
-        const found = window.AlloModules && window.AlloModules[name];
+        const found = __alloModuleRegistered(name);
         console.log('[CDN] ' + name + ' script executed. Registration: ' + (found ? 'SUCCESS' : 'FAILED'));
         if (!found) {
           console.error('[CDN] ' + name + ' loaded but NOT registered, trying GitHub raw fallback');
@@ -15880,6 +15899,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       if (gen && Array.isArray(gen.branches)) {
         setLabToolData(prev => ({ ...prev, _ffImport: { main: gen.main, branches: gen.branches, structureType: gen.structureType || null } }));
       }
+      _alloRequestStemPlugin('freeForms');
       setStemLabTool('freeForms');
       setShowStemLab(true);
     };
@@ -18977,6 +18997,43 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       });
       return () => { cancelled = true; };
   }, [hasSelectedRole]);
+
+  // ── Session resume (2026-08-11) ──────────────────────────────────────────
+  // Reloading mid-session (an update, crash recovery, a stuck view) used to
+  // walk the teacher back through the launch pad + role wizard every time. A
+  // RECENT role choice on this device now resumes automatically. Strictly
+  // weaker than student-entry params and the family deep link (both return
+  // early here), time-boxed so a shared device cannot be trapped in a stale
+  // role, and the teacher password gate is honored exactly as a manual card
+  // click would honor it. The window refreshes on a use heartbeat below, so
+  // "recent" means recent USE, not recent role-picking.
+  const ALLO_SESSION_RESUME_MS = 6 * 60 * 60 * 1000;
+  const _alloSessionResumeHandledRef = useRef(false);
+  useEffect(() => {
+      if (_alloSessionResumeHandledRef.current || hasSelectedRole || hasSelectedMode) return;
+      if (_alloHasAnyStudentEntry()) return;
+      try { if (new URLSearchParams(window.location.search || '').has('allo_family')) return; } catch (_) {}
+      let saved = null;
+      try { saved = JSON.parse(localStorage.getItem('alloflow_session_resume') || 'null'); } catch (_) {}
+      if (!saved || !saved.role || saved.role === 'student') return;
+      if (!Number.isFinite(saved.at) || (Date.now() - saved.at) > ALLO_SESSION_RESUME_MS) return;
+      _alloSessionResumeHandledRef.current = true;
+      setHasSelectedMode(true);
+      if (APP_CONFIG._cfg_validation_key) {
+          setPendingRole(saved.role);
+          setIsGateOpen(true);
+      } else {
+          executeRoleSelect(saved.role);
+      }
+  }, [hasSelectedRole, hasSelectedMode]);
+  useEffect(() => {
+      if (!hasSelectedRole || (!isTeacherMode && !isParentMode && !isIndependentMode)) return undefined;
+      const role = isParentMode ? 'parent' : (isIndependentMode ? 'independent' : 'teacher');
+      const stamp = () => { try { localStorage.setItem('alloflow_session_resume', JSON.stringify({ role, at: Date.now() })); } catch (_) {} };
+      stamp();
+      const heartbeat = setInterval(stamp, 120000);
+      return () => clearInterval(heartbeat);
+  }, [hasSelectedRole, isTeacherMode, isParentMode, isIndependentMode]);
   const handleStudentEntryConfirm = (name, mode) => {
       setStudentNickname(name);
       setStudentProjectSettings(prev => ({
@@ -31001,6 +31058,18 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
           keyErr.isConfigState = true;
           throw keyErr;
         }
+        if (response.status === 404) {
+          // Google closed the imagen-4.0 predict family to new users
+          // (2026-08 field report: every image burned 3 retries on a
+          // permanent 404). Remember for the whole session and let the
+          // caller fall back to the Gemini image model instead.
+          window.__alloImagenGone = true;
+          console.warn('[Imagen] Model retired for this key (' + errBody.substring(0, 120) + ') — switching to the Gemini image model for this session.');
+          const goneErr = new Error('HTTP Error: 404 (Imagen unavailable on this key)');
+          goneErr.isConfigState = true;
+          goneErr.isImagenGone = true;
+          throw goneErr;
+        }
         console.error("[Imagen] HTTP Error:", response.status, errBody.substring(0, 200));
         throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
       }
@@ -31059,7 +31128,31 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
         console.error("[Imagen] All retries exhausted:", err.message);
         throw err;
       }
-    };    const runWithLocalFallback = async (runner) => {
+    };    const runWithGeminiImageFallback = async (runner) => {
+      // Imagen already known-gone this session: skip the doomed predict call
+      // entirely (and its retries) and draw with the Gemini image model.
+      const geminiDraw = async () => {
+        if (typeof window.callGeminiImageEdit !== 'function') return null;
+        const drawn = await window.callGeminiImageEdit(prompt, null, width, qual, null, _signal ? { signal: _signal } : null);
+        if (drawn) console.log('[Imagen] ✅ Generated via ' + ((typeof GEMINI_MODELS !== 'undefined' && GEMINI_MODELS.image) || 'the Gemini image model') + ' (Imagen unavailable on this key).');
+        return drawn;
+      };
+      if (window.__alloImagenGone) {
+        const drawn = await geminiDraw();
+        if (drawn) return drawn;
+      }
+      try {
+        return await runner();
+      } catch (err) {
+        if ((err && err.name === 'AbortError') || (_signal && _signal.aborted)) throw err;
+        if (err && err.isImagenGone) {
+          const drawn = await geminiDraw();
+          if (drawn) return drawn;
+        }
+        throw err;
+      }
+    };
+    const runWithLocalFallback = async (runner) => {
       try {
         return await runner();
       } catch (err) {
@@ -31077,12 +31170,12 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     if (imagenRateLimitedRef.current) {
       // imagenQueueRef.current never rejects (it is always assigned with a
       // trailing .catch(() => {})), so a single fulfillment handler suffices.
-      const queuedRequest = imagenQueueRef.current.then(() => { _throwIfImageAborted(); return runWithLocalFallback(executeWithRetry); });
+      const queuedRequest = imagenQueueRef.current.then(() => { _throwIfImageAborted(); return runWithGeminiImageFallback(() => runWithLocalFallback(executeWithRetry)); });
       imagenQueueRef.current = queuedRequest.catch(() => {});
       return queuedRequest;
     } else {
       _throwIfImageAborted();
-      return runWithLocalFallback(executeWithRetry);
+      return runWithGeminiImageFallback(() => runWithLocalFallback(executeWithRetry));
     }
   };
   // Browsers render animated GIFs natively in <img> tags, so panels that
@@ -37292,6 +37385,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           setLabToolData(prev => Object.assign({}, prev, {
               [presetKey]: Object.assign({}, (prev && prev[presetKey]) || {}, incomingPreset)
           }));
+          _alloRequestStemPlugin(item.toolId);
           setStemLabTool(item.toolId);
           setShowStemLab(true);
           setGeneratedContent({ ...item, type: item.type, data: item.data, id: item.id });
@@ -40209,13 +40303,13 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       openMindMap: () => { setThroughlineSeedUnitId(null); setShowMindMap(true); },
       openPoetTree: () => setShowPoetTree(true),
       openAccessibilityLab: () => setIsAccessibilityLabOpen(true),
-      openLumen: () => { setStemLabTool('lumen'); setShowStemLab(true); },
-      openFreeForms: () => { setStemLabTool('freeForms'); setShowStemLab(true); },
+      openLumen: () => { _alloRequestStemPlugin('lumen'); setStemLabTool('lumen'); setShowStemLab(true); },
+      openFreeForms: () => { _alloRequestStemPlugin('freeForms'); setStemLabTool('freeForms'); setShowStemLab(true); },
       // Generic launcher behind the open_stem_tool command. The id is resolved
       // from the capability index up in the command layer, so the host just
       // honours it. Setting the tab matters: the lab renders the active tool
       // only while the Explore tab is showing.
-      openStemTool: (id) => { if (!id) return false; setStemLabTool(String(id)); setStemLabTab('explore'); setShowStemLab(true); return true; },
+      openStemTool: (id) => { if (!id) return false; _alloRequestStemPlugin(id); setStemLabTool(String(id)); setStemLabTab('explore'); setShowStemLab(true); return true; },
       openCommunityCatalog: () => setIsCommunityCatalogOpen(true),
       readingLibraryIndex: readingLibraryIndexForBot,
       openReadingBook: (slug) => {

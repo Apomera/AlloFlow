@@ -329,8 +329,9 @@ function MtssTriagePanel(props) {
   const board = active ? mtssBoard(active) : null;
   const context = mtssSiblingCounts(typeof localStorage !== "undefined" ? localStorage : { getItem: () => null });
   const saveDataset = () => {
-    const cutpoints = { higherBetter: !!form.higherBetter, tier2Cut: Number(form.tier2Cut), tier3Cut: Number(form.tier3Cut) };
-    const cutError = mtssValidateCuts(cutpoints);
+    const rawCuts = { higherBetter: !!form.higherBetter, tier2Cut: form.tier2Cut, tier3Cut: form.tier3Cut };
+    const cutError = mtssValidateCuts(rawCuts);
+    const cutpoints = { higherBetter: rawCuts.higherBetter, tier2Cut: Number(form.tier2Cut), tier3Cut: Number(form.tier3Cut) };
     if (!form.label.trim()) {
       addToast(tt("mtss.need_label", "Name the measure (e.g. ORF grade 3)."), "warning");
       return;
@@ -403,7 +404,7 @@ function MtssTriagePanel(props) {
       "aria-selected": tab === tb.id,
       "aria-controls": "mtss-tabpanel",
       tabIndex: tab === tb.id ? 0 : -1,
-      "data-help-key": "mtss_tab_" + tb.id,
+      "data-help-key": "mtss_tab",
       onClick: () => setTab(tb.id),
       onKeyDown: (e) => {
         let next = null;

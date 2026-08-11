@@ -7,7 +7,24 @@
 // for rate-limit tracking (imagenRateLimitedRef, imagenQueueRef) — not a
 // self-contained fit for this extraction.
 const createGeminiAPI = (deps) => {
-    const { apiKey, _isCanvasEnv, GEMINI_MODELS, fetchWithExponentialBackoff, optimizeImage, warnLog, debugLog, getAbortSignal } = deps;
+    const { apiKey: _bootApiKey, _isCanvasEnv, GEMINI_MODELS, fetchWithExponentialBackoff, optimizeImage, warnLog, debugLog, getAbortSignal } = deps;
+    // Live key resolution (2026-08-10). The factory used to capture the key
+    // once at creation, which runs at BOOT — a key saved in AI Backend
+    // Settings mid-session was invisible until a manual page reload, so a
+    // teacher who had just verified their key still hit "No AI API key is
+    // configured" on the very next audit. Resolve at call time instead:
+    // boot-injected key first (Canvas injection, tests), then the live
+    // stored config. Exposed as a getter-shaped local so every existing
+    // `apiKey` read in this factory picks up the live value.
+    const _liveStoredGeminiKey = () => {
+        try {
+            if (typeof localStorage === 'undefined') return '';
+            const cfg = JSON.parse(localStorage.getItem('alloflow_ai_config') || 'null') || {};
+            if (String(cfg.backend || 'gemini') !== 'gemini') return '';
+            return String(cfg.apiKey || '');
+        } catch (_) { return ''; }
+    };
+    const _resolveApiKey = () => _bootApiKey || _liveStoredGeminiKey();
 
     // Gemini accepts API keys through x-goog-api-key. Keeping credentials out
     // of URLs prevents them from leaking into browser history, proxy access
@@ -15,7 +32,8 @@ const createGeminiAPI = (deps) => {
     const _geminiHeaders = (includeJsonContentType) => {
       const headers = {};
       if (includeJsonContentType) headers['Content-Type'] = 'application/json';
-      if (apiKey) headers['x-goog-api-key'] = apiKey;
+      const _k = _resolveApiKey();
+      if (_k) headers['x-goog-api-key'] = _k;
       return headers;
     };
 
@@ -332,7 +350,7 @@ const createGeminiAPI = (deps) => {
     // deploy, that's whatever the user's billed key can see. The Model
     // Diagnostics UI calls this once to populate the per-slot dropdowns.
     const listAvailableModels = async () => {
-      if (!apiKey && !_isCanvasEnv) {
+      if (!_resolveApiKey() && !_isCanvasEnv) {
         return { error: 'No API key configured', models: [], reachable: false };
       }
       try {
@@ -460,7 +478,7 @@ const createGeminiAPI = (deps) => {
     // One attempt. The retrying wrapper `callGemini` is defined immediately below —
     // call THAT everywhere, not this.
     const _callGeminiAttempt = async (prompt, jsonMode = false, useSearch = false, temperature = null, searchQuery = null, signal = null, useCodeExecution = false) => {
-      if (!apiKey && !_isCanvasEnv) {
+      if (!_resolveApiKey() && !_isCanvasEnv) {
         console.warn('[callGemini] No API key available — skipping request.');
         if (jsonMode) return "{}";
         if (useSearch) return { text: "", textParts: [], groundingMetadata: null };
@@ -807,6 +825,16 @@ const createGeminiAPI = (deps) => {
         const abortError = new Error('Vision extraction cancelled.'); abortError.name = 'AbortError'; throw abortError;
       };
       _throwIfVisionAborted();
+      // Keyless vision calls reach Google and come back as an opaque 403
+      // ("unregistered callers") that classifies as 'unexpected' — the audit
+      // then burns its retries and reports "All audit attempts failed" with no
+      // hint. Fail fast with an actionable message instead (mirrors the
+      // callGemini no-key guard, but audits need a thrown error, not '').
+      if (!_resolveApiKey() && !_isCanvasEnv) {
+        const noKeyError = new Error('No AI API key is configured. Open AI Backend Settings and add your provider key, then run the audit again.');
+        noKeyError.code = 'allo/no-api-key';
+        throw noKeyError;
+      }
       const primaryModel = GEMINI_MODELS.vision || GEMINI_MODELS.flash || GEMINI_MODELS.default;
       const fallbackModel = GEMINI_MODELS.fallback;
       const _visionUrl = (m) => `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent`;
@@ -893,7 +921,7 @@ const createGeminiAPI = (deps) => {
     // boot). Returns a classification, not a throw.
     const probeModelHealth = async (modelName) => {
       const model = modelName || GEMINI_MODELS.default;
-      if (!apiKey && !_isCanvasEnv) return { kind: 'skipped', reason: 'no-api-key', model };
+      if (!_resolveApiKey() && !_isCanvasEnv) return { kind: 'skipped', reason: 'no-api-key', model };
       try {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
         const probePayload = {

@@ -297,6 +297,11 @@ for (const qaPath of postExpansionQaPaths) execFileSync(process.execPath,[qaPath
 execFileSync(process.execPath,[stampLearningLibraryIdentityPath],{cwd:root,stdio:'inherit'});
 execFileSync(process.execPath,[bindNonEpppNativeQaPath],{cwd:root,stdio:'inherit'});
 if (!skipEpppPreviewRebuild) {
+  // EPPP native content regenerates ONLY from the immutable, manifest-hashed
+  // migration-source archive — verify it first so a tampered/rotted archive can
+  // never silently feed a release (same contract as _build_test_prep_hub_module.js).
+  execFileSync(process.execPath, [path.join(root, 'dev-tools', 'build_eppp_migration_source_archive.cjs'), '--verify'], { cwd: root, stdio: 'inherit' });
+  execFileSync(process.execPath, [path.join(root, 'dev-tools', 'build_eppp_learning_library.cjs')], { cwd: root, stdio: 'inherit' });
   execFileSync(process.execPath, [eppp2027PreviewBuildPath], { cwd: root, stdio: 'inherit' });
   execFileSync(process.execPath, [eppp2027PreviewQaPath], { cwd: root, stdio: 'inherit' });
 }

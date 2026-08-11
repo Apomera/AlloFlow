@@ -30,6 +30,7 @@ function usage() {
         '  --include-structural          Include grouping nodes as records',
         '  --include-deprecated          Include records where isCurrent is false',
         '  --module-out <snapshot.js>    Emit a browser/CDN registration module',
+        '  --module-key <ModuleName>     AlloModules key the loader probes for (default: derived from --module-out filename)',
         '  --source-version <version>    Default: v1.11.0',
         '  --generated-at <ISO value>    Useful for reproducible builds',
         '  --max-standards <count>       Fail if the scope exceeds this count',
@@ -43,13 +44,13 @@ function usage() {
 function parseArgs(argv) {
     const options = { grades: [] };
     const valueFlags = new Set([
-        '--nodes', '--relationships', '--out', '--module-out', '--jurisdiction', '--subject',
+        '--nodes', '--relationships', '--out', '--module-out', '--module-key', '--jurisdiction', '--subject',
         '--grade', '--framework-id', '--source-version', '--generated-at', '--max-standards', '--source-manifest'
     ]);
     const booleanFlags = new Set(['--include-structural', '--include-deprecated', '--allow-all', '--verify-source', '--help']);
     const keys = {
         '--nodes': 'nodesPath', '--relationships': 'relationshipsPath', '--out': 'outPath',
-        '--module-out': 'moduleOutPath', '--jurisdiction': 'jurisdiction', '--subject': 'subject',
+        '--module-out': 'moduleOutPath', '--module-key': 'moduleKey', '--jurisdiction': 'jurisdiction', '--subject': 'subject',
         '--framework-id': 'frameworkId', '--source-version': 'sourceVersion', '--source-manifest': 'sourceManifestPath',
         '--generated-at': 'generatedAt', '--max-standards': 'maxStandards'
     };
@@ -392,9 +393,29 @@ async function buildSnapshot(options) {
     return snapshot;
 }
 
-function registrationModule(snapshot) {
+// The app's CDN loader verifies a load by probing window.AlloModules[<name>]
+// (names like StandardsSnapshotCcssMath at AlloFlowANTI loadModule call sites);
+// without this per-module alias every snapshot load is flagged FAILED and
+// re-fetched through the GitHub fallback on each boot.
+function deriveModuleKey(moduleOutPath) {
+    const base = path.basename(String(moduleOutPath || ''), '.js');
+    if (!base) return '';
+    const parts = base.split(/[^a-zA-Z0-9]+/).filter(Boolean);
+    const words = [];
+    for (let i = 0; i < parts.length; i += 1) {
+        if (parts[i].toLowerCase() === 'grade' && /^\d+$/.test(parts[i + 1] || '')) {
+            words.push('G' + parts[i + 1]);
+            i += 1;
+        } else {
+            words.push(parts[i].charAt(0).toUpperCase() + parts[i].slice(1).toLowerCase());
+        }
+    }
+    return 'StandardsSnapshot' + words.join('');
+}
+
+function registrationModule(snapshot, moduleKey) {
     const encoded = JSON.stringify(snapshot).replace(/[\u2028\u2029]/g, (character) => character === '\u2028' ? '\\u2028' : '\\u2029');
-    return `(function (root) {\n    'use strict';\n    var snapshot = ${encoded};\n    if (!root) return;\n    root.AlloModules = root.AlloModules || {};\n    var provider = root.AlloModules.StandardsProvider;\n    if (provider && typeof provider.registerLocalSnapshot === 'function') {\n        provider.registerLocalSnapshot(snapshot);\n    } else {\n        root.__ALLO_LOCAL_STANDARDS_SNAPSHOTS__ = root.__ALLO_LOCAL_STANDARDS_SNAPSHOTS__ || [];\n        root.__ALLO_LOCAL_STANDARDS_SNAPSHOTS__.push(snapshot);\n    }\n    root.AlloModules.LocalStandardsSnapshots = (root.AlloModules.LocalStandardsSnapshots || []).concat([{\n        manifest: snapshot.dataset,\n        standardCount: snapshot.standards.length,\n        relationshipCount: snapshot.relationships.length\n    }]);\n    root.AlloModules.LocalStandardsSnapshot = {\n        manifest: snapshot.dataset,\n        standardCount: snapshot.standards.length,\n        relationshipCount: snapshot.relationships.length\n    };\n})(typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : null));\n`;
+    return `(function (root) {\n    'use strict';\n    var snapshot = ${encoded};\n    if (!root) return;\n    root.AlloModules = root.AlloModules || {};\n    var provider = root.AlloModules.StandardsProvider;\n    if (provider && typeof provider.registerLocalSnapshot === 'function') {\n        provider.registerLocalSnapshot(snapshot);\n    } else {\n        root.__ALLO_LOCAL_STANDARDS_SNAPSHOTS__ = root.__ALLO_LOCAL_STANDARDS_SNAPSHOTS__ || [];\n        root.__ALLO_LOCAL_STANDARDS_SNAPSHOTS__.push(snapshot);\n    }\n    root.AlloModules.LocalStandardsSnapshots = (root.AlloModules.LocalStandardsSnapshots || []).concat([{\n        manifest: snapshot.dataset,\n        standardCount: snapshot.standards.length,\n        relationshipCount: snapshot.relationships.length\n    }]);\n    root.AlloModules.LocalStandardsSnapshot = {\n        manifest: snapshot.dataset,\n        standardCount: snapshot.standards.length,\n        relationshipCount: snapshot.relationships.length\n    };\n${moduleKey ? `    root.AlloModules.${moduleKey} = root.AlloModules.LocalStandardsSnapshot;\n` : ''}})(typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : null));\n`;
 }
 
 async function writeBuild(options) {
@@ -403,7 +424,7 @@ async function writeBuild(options) {
     fs.writeFileSync(options.outPath, `${JSON.stringify(snapshot, null, 2)}\n`, 'utf8');
     if (options.moduleOutPath) {
         fs.mkdirSync(path.dirname(path.resolve(options.moduleOutPath)), { recursive: true });
-        fs.writeFileSync(options.moduleOutPath, registrationModule(snapshot), 'utf8');
+        fs.writeFileSync(options.moduleOutPath, registrationModule(snapshot, options.moduleKey || deriveModuleKey(options.moduleOutPath)), 'utf8');
     }
     return snapshot;
 }

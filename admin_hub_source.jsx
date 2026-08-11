@@ -112,7 +112,7 @@ function AdminHubPanel(props) {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {TOOLS.map((tool) => (
-            <button key={tool.id} type="button" data-help-key={'adminhub_' + tool.id + '_card'}
+            <button key={tool.id} type="button" data-help-key="adminhub_tool_card"
               onClick={() => openTool(tool.id)}
               className={'flex items-start gap-3 p-4 bg-gradient-to-br border rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left ' + tool.accent}>
               <span className="text-3xl mt-1" aria-hidden="true">{tool.icon}</span>

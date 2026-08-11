@@ -370,7 +370,7 @@ describe('web and workbench integration guards', () => {
   it('runs standalone static-source audit through AI, axe-core, and Equal Access without zero fallback', () => {
     const webStart = source.indexOf('data-help-key="pdf_audit_view_web_audit_btn"');
     const webBlock = source.slice(source.lastIndexOf('<button', webStart), webStart + 1000);
-    expect(webBlock).toContain('auditOutputAccessibility(html)');
+    expect(webBlock).toContain("auditOutputAccessibility(html, { trigger: 'web-static-audit' })");
     expect(webBlock).toContain('runAxeAudit(html)');
     expect(webBlock).toContain('_docPipeline.runEqualAccessAudit(html)');
     expect(source).not.toContain('axeScore ?? aiScore ?? 0');

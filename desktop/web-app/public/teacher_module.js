@@ -3437,6 +3437,7 @@ const LearnerProgressView = React.memo(({
   setRosterKey,
   onShareWithTeacher
 }) => {
+  gameCompletions = Array.isArray(gameCompletions) ? gameCompletions : Object.values(gameCompletions || {}).flat().filter((g2) => g2 && typeof g2 === "object");
   const [showDiagnostics, setShowDiagnostics] = useState(() => isIndependentMode);
   const [selectedChild, setSelectedChild] = useState(null);
   const childProfiles = useMemo(() => {

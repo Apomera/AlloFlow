@@ -319,7 +319,7 @@ function SpedTimelinesPanel(props) {
           <div role="tablist" aria-label={tt('spedtl.tabs_aria', 'Timeline sections')} className="flex gap-1 mt-2">
             {tabs.map((tb, tbIdx) => (
               <button key={tb.id} type="button" role="tab" id={'spedtl-tab-' + tb.id} aria-selected={tab === tb.id}
-                aria-controls="spedtl-tabpanel" tabIndex={tab === tb.id ? 0 : -1} data-help-key={'spedtl_tab_' + tb.id}
+                aria-controls="spedtl-tabpanel" tabIndex={tab === tb.id ? 0 : -1} data-help-key="spedtl_tab"
                 onClick={() => setTab(tb.id)}
                 onKeyDown={(e) => {
                   let next = null;

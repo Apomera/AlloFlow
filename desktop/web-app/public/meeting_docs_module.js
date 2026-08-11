@@ -469,7 +469,7 @@ function MeetingDocsPanel(props) {
       "aria-selected": tab === tb.id,
       "aria-controls": "meetdocs-tabpanel",
       tabIndex: tab === tb.id ? 0 : -1,
-      "data-help-key": "meetdocs_tab_" + tb.id,
+      "data-help-key": "meetdocs_tab",
       onClick: () => {
         setTab(tb.id);
         if (tb.id !== "meetings") setViewId(null);

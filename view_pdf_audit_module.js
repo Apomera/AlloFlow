@@ -7215,11 +7215,14 @@ function PdfAuditView(props) {
       },
       ref: (el) => {
         pdfModalRef.current = el;
-        if (el && !el.contains(document.activeElement)) {
-          try {
-            el.focus({ preventScroll: true });
-          } catch (_) {
-            el.focus();
+        if (el && !el.dataset.alloAutoFocused) {
+          el.dataset.alloAutoFocused = "1";
+          if (!el.contains(document.activeElement)) {
+            try {
+              el.focus({ preventScroll: true });
+            } catch (_) {
+              el.focus();
+            }
           }
         }
       }

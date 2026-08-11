@@ -475,7 +475,7 @@ function MeetingDocsPanel(props) {
           <div role="tablist" aria-label={tt('meetdocs.tabs_aria', 'Meeting documentation sections')} className="flex gap-1 mt-2">
             {tabs.map((tb, tbIdx) => (
               <button key={tb.id} type="button" role="tab" id={'meetdocs-tab-' + tb.id} aria-selected={tab === tb.id}
-                aria-controls="meetdocs-tabpanel" tabIndex={tab === tb.id ? 0 : -1} data-help-key={'meetdocs_tab_' + tb.id}
+                aria-controls="meetdocs-tabpanel" tabIndex={tab === tb.id ? 0 : -1} data-help-key="meetdocs_tab"
                 onClick={() => { setTab(tb.id); if (tb.id !== 'meetings') setViewId(null); }}
                 onKeyDown={(e) => {
                   // Full ARIA tabs contract (arrow keys + roving tabindex).

@@ -2,28 +2,38 @@
   HELP MODE COVERAGE AUDIT
 ====================================================
 
-Files scanned: 990
-Defined help keys (help_strings.js): 948
-Referenced help keys (data-help-key attrs): 904
-  - With definition: 904
+Files scanned: 1068
+Defined help keys (help_strings.js): 984
+Referenced help keys (data-help-key attrs): 924
+  - With definition: 924
   - MISSING definition: 0
-Dead entries (defined but never referenced): 44
+Dead entries (defined but never referenced): 60
 
 --- MISSING help strings (referenced, no definition) ---
 
 --- DEAD entries (defined but never used) ---
+  adventure_custom_instructions
   alignment_generate_button
   alignment_grade_select
   alignment_standard_select
   anchor_chart_custom_instructions
+  brainstorm_custom_instructions
   brainstorm_simulation_detailed
   brainstorm_step_count_detailed
   bridge_mode_button
+  chat_auto_send
+  chat_save
+  chat_show_me
+  chat_voice_mode
   concept_sort_custom_instructions
+  concept_sort_image_style
   concept_sort_input
   dbq_custom_instructions
   educator_hub_bridge_card
   educator_hub_cinematic_studio_card
+  faq_custom_instructions
+  fluency_mode_open_allosheet_btn
+  glossary_custom_instructions
   header_actions
   header_settings
   header_support
@@ -31,18 +41,22 @@ Dead entries (defined but never referenced): 44
   header_utils
   header_view_student
   header_view_teacher
+  lesson_plan_custom_additions
   math_difficulty
   math_problem_count
   math_show_work
   note_taking_custom_instructions
+  outline_custom_instructions
+  persona_custom_instructions
   persona_custom_instructions_detailed
   persona_mode_toggle
+  quiz_custom_instructions
+  quiz_dok
   quiz_image_style_input
   quiz_question_count
   quiz_reflection_count
   research_hub_lane_
-  settings_adventure_xp
-  settings_base_xp
+  scaffolds_custom_instructions
   settings_free_response
   settings_lock_all
   settings_perm_custom
@@ -50,9 +64,11 @@ Dead entries (defined but never referenced): 44
   settings_perm_mode
   settings_perm_visuals
   settings_persona_free
-  settings_unlock_xp
+  simplified_custom_instructions
   timeline_count_detailed
+  timeline_image_style
   timeline_topic_detailed
+  visuals_custom_instructions
   visuals_low_quality
   wizard_close_btn
   wizard_url_source

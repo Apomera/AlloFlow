@@ -80,3 +80,183 @@ Pick the work. Pick it carefully. Do it well.
 *Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
 
 ---
+
+## [auto-draft] Session 0a11232f — 2026-08-03
+
+**Turns**: 390 user / 760 assistant
+
+**Session opened with**: Clear the entire local directory and replace it with this: https://github.com/Apomera/AlloFlow I have push access to this repository now and thats where all my work will go from now on
+
+**Last assistant turn closed with**: That monitor event is a repeat — PR #5 is unchanged at `3dd482ff8`, so my earlier diagnosis stands unchanged and there's nothing new to fix there. But checking it surfaced something that changes the plan: **`main` jumped 200+ commits** while we were working, and **Aaron already fixed the `allo_comm...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 70888b7f — 2026-08-03
+
+**Turns**: 164 user / 309 assistant
+
+**Session opened with**: I need to make sure the remdiation app is working and shippable. Then I would like to make a 3-minutevideo demoing the process
+
+**Last assistant turn closed with**: You've hit your session limit · resets 3:30pm (America/New_York)
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 70888b7f — 2026-08-03
+
+**Turns**: 164 user / 309 assistant
+
+**Session opened with**: I need to make sure the remdiation app is working and shippable. Then I would like to make a 3-minutevideo demoing the process
+
+**Last assistant turn closed with**: You've hit your session limit · resets 3:30pm (America/New_York)
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 0a11232f — 2026-08-04
+
+**Turns**: 390 user / 760 assistant
+
+**Session opened with**: Clear the entire local directory and replace it with this: https://github.com/Apomera/AlloFlow I have push access to this repository now and thats where all my work will go from now on
+
+**Last assistant turn closed with**: That monitor event is a repeat — PR #5 is unchanged at `3dd482ff8`, so my earlier diagnosis stands unchanged and there's nothing new to fix there. But checking it surfaced something that changes the plan: **`main` jumped 200+ commits** while we were working, and **Aaron already fixed the `allo_comm...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 70888b7f — 2026-08-04
+
+**Turns**: 994 user / 1756 assistant
+
+**Session opened with**: I need to make sure the remdiation app is working and shippable. Then I would like to make a 3-minutevideo demoing the process
+
+**Last assistant turn closed with**: That's just the mini-take monitor expiring after its job was done — nothing outstanding. The walkthrough video is delivered and all filming processes are stopped.
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 70888b7f — 2026-08-04
+
+**Turns**: 995 user / 1756 assistant
+
+**Session opened with**: I need to make sure the remdiation app is working and shippable. Then I would like to make a 3-minutevideo demoing the process
+
+**Last assistant turn closed with**: That's just the mini-take monitor expiring after its job was done — nothing outstanding. The walkthrough video is delivered and all filming processes are stopped.
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 70888b7f — 2026-08-05
+
+**Turns**: 995 user / 1756 assistant
+
+**Session opened with**: I need to make sure the remdiation app is working and shippable. Then I would like to make a 3-minutevideo demoing the process
+
+**Last assistant turn closed with**: That's just the mini-take monitor expiring after its job was done — nothing outstanding. The walkthrough video is delivered and all filming processes are stopped.
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 70888b7f — 2026-08-06
+
+**Turns**: 1129 user / 1967 assistant
+
+**Session opened with**: I need to make sure the remdiation app is working and shippable. Then I would like to make a 3-minutevideo demoing the process
+
+**Last assistant turn closed with**: That's just the packaging monitor expiring after the build already completed — nothing outstanding. The remediation dmg is ready at `desktop/dist/remediation/AlloFlow-Remediation-0.3.1-arm64.dmg`.
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 70888b7f — 2026-08-06
+
+**Turns**: 1193 user / 2098 assistant
+
+**Session opened with**: I need to make sure the remdiation app is working and shippable. Then I would like to make a 3-minutevideo demoing the process
+
+**Last assistant turn closed with**: Both 0.3.2 builds are done and verified — baked editions confirmed in the asar, and the remediation smoke test passes against the exact bundle that shipped into them. **Install these (arm64 for your Mac):** - `desktop/dist/AlloFlow-Desktop-0.3.2-arm64.dmg` — the full desktop app; use this one for l...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 70888b7f — 2026-08-06
+
+**Turns**: 1193 user / 2098 assistant
+
+**Session opened with**: I need to make sure the remdiation app is working and shippable. Then I would like to make a 3-minutevideo demoing the process
+
+**Last assistant turn closed with**: Both 0.3.2 builds are done and verified — baked editions confirmed in the asar, and the remediation smoke test passes against the exact bundle that shipped into them. **Install these (arm64 for your Mac):** - `desktop/dist/AlloFlow-Desktop-0.3.2-arm64.dmg` — the full desktop app; use this one for l...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 70888b7f — 2026-08-06
+
+**Turns**: 1193 user / 2098 assistant
+
+**Session opened with**: I need to make sure the remdiation app is working and shippable. Then I would like to make a 3-minutevideo demoing the process
+
+**Last assistant turn closed with**: Both 0.3.2 builds are done and verified — baked editions confirmed in the asar, and the remediation smoke test passes against the exact bundle that shipped into them. **Install these (arm64 for your Mac):** - `desktop/dist/AlloFlow-Desktop-0.3.2-arm64.dmg` — the full desktop app; use this one for l...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 70888b7f — 2026-08-10
+
+**Turns**: 1223 user / 2154 assistant
+
+**Session opened with**: I need to make sure the remdiation app is working and shippable. Then I would like to make a 3-minutevideo demoing the process
+
+**Last assistant turn closed with**: Done. `desktop/dist` now contains exactly one file: **`remediation/AlloFlow-Remediation-0.3.2-arm64.dmg`** (720 MB, down from ~4 GB of accumulated artifacts). The build is verified — `alloflow-remediation 0.3.2` with the remediation edition baked in, and the packaged-layout drill passes on it. Goin...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 70888b7f — 2026-08-10
+
+**Turns**: 1358 user / 2393 assistant
+
+**Session opened with**: I need to make sure the remdiation app is working and shippable. Then I would like to make a 3-minutevideo demoing the process
+
+**Last assistant turn closed with**: The guided setup is done end-to-end and shipped: **`desktop/dist/remediation/AlloFlow-Remediation-0.4.0-arm64.dmg`** (the only file in dist, per the standing rule). **What first-run looks like now:** the settings modal opens on three plain-language cards — ✨ Google Gemini (Recommended), 🔒 Private...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 70888b7f — 2026-08-11
+
+**Turns**: 1360 user / 2393 assistant
+
+**Session opened with**: I need to make sure the remdiation app is working and shippable. Then I would like to make a 3-minutevideo demoing the process
+
+**Last assistant turn closed with**: The guided setup is done end-to-end and shipped: **`desktop/dist/remediation/AlloFlow-Remediation-0.4.0-arm64.dmg`** (the only file in dist, per the standing rule). **What first-run looks like now:** the settings modal opens on three plain-language cards — ✨ Google Gemini (Recommended), 🔒 Private...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session e149f396 — 2026-08-11
+
+**Turns**: 447 user / 768 assistant
+
+**Session opened with**: This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation. Summary: 1. Primary Request and Intent: - **Session 1 (2026-08-03, completed):** "I need to make sure the remediation app is working and shippab...
+
+**Last assistant turn closed with**: Both 0.4.1 builds are verified and ready: - **`desktop/dist/AlloFlow-Desktop-0.4.1-arm64.dmg`** — the full app, for your whole-app testing. It boots straight into the complete AlloFlow with the same guided AI setup on first run. - **`desktop/dist/remediation/AlloFlow-Remediation-0.4.1-arm64.dmg`**...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---

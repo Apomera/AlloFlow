@@ -67,8 +67,10 @@ test.describe('remediation fault injection — scheduled model failures, honest 
       w.__runScenario = async (b64: string, mode: string) => {
         const calls: any[] = [];
         let blipped = false;
-        const auditPdfJson = JSON.stringify({ score: 55, summary: 'scripted audit', confidence: 'high', documentLanguage: 'en', critical: [], serious: [{ issue: 'Images without alternative text', wcag: '1.1.1', location: 'page 1' }], moderate: [], minor: [], passes: ['document has a title'] });
-        const auditHtmlJson = JSON.stringify({ score: 88, summary: 'scripted html audit', issues: [], passes: ['lang present'] });
+        // _parseStrictInitialAudit (2026-08) requires full metadata (pageCount, has* booleans)
+        // and canonical issue records (ruleId + claimKind + count) — mirror the real contract.
+        const auditPdfJson = JSON.stringify({ score: 55, summary: 'scripted audit', confidence: 'high', documentLanguage: 'en', pageCount: 1, hasSearchableText: true, hasImages: true, hasTables: false, hasForms: false, critical: [], serious: [{ issue: 'Images without alternative text', wcag: '1.1.1', location: 'page 1', ruleId: 'image-alt', claimKind: 'absence', count: 1 }], moderate: [], minor: [], passes: ['document has a title', 'searchable text present', 'reading order is linear', 'language is declared'] });
+        const auditHtmlJson = JSON.stringify({ score: 88, summary: 'scripted html audit', issues: [], passes: ['lang present', 'headings are hierarchical', 'landmarks present', 'link text is descriptive', 'contrast passes AA'] });
         const dispatch = (prompt: string) => {
           // PDF (Vision) audit — the pre-remediation baseline must succeed in every scenario so
           // fixAndVerifyPdf has an auditResult to start from.
@@ -104,7 +106,10 @@ test.describe('remediation fault injection — scheduled model failures, honest 
         const audit = await pipeline.runPdfAccessibilityAudit(b64, { skipUiUpdates: true, skipCache: true, fileName: 'fault-' + mode + '.pdf' });
         let result: any = null, runError: string | null = null;
         try {
+          // documentEpoch: production callers always stamp the run's ownership epoch
+          // (2026-08-03 fail-closed guard); the harness stamps one the same way.
           result = await pipeline.fixAndVerifyPdf({
+            documentEpoch: 1,
             base64: b64, fileName: 'fault-' + mode + '.pdf', auditResult: audit,
             targetScore: 80, autoFixPasses: 1, polishPasses: 0, onProgress: () => {},
           });
