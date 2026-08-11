@@ -638,6 +638,45 @@ describe('Tree Life Lab — banks and mirrors', () => {
     expect(next.rings.length).toBe(round.tree.rings.length + 1);
   });
 
+  it('is wired into every link of the registration chain', () => {
+    // Registering a tool takes SIX separate edits in this repo and nothing checks them
+    // together. Miss the last one and the tool is registered, catalogued, loadable,
+    // mirrored, indexed, deployed — and renders an empty panel, with every gate green.
+    // That is exactly how treeLab shipped.
+    const read = (f) => readFileSync(resolve(process.cwd(), f), 'utf8');
+
+    // 1. Cache-bust list: without it the CDN serves stale code forever after an edit.
+    expect(read('build.js'), 'missing from PLUGIN_FILES in build.js')
+      .toContain("'stem_lab/stem_tool_treelab.js'");
+
+    // 2. Runtime loader manifest. It lives in a .txt, so .js-only greps miss it.
+    const anti = read('AlloFlowANTI.txt');
+    expect(anti, 'missing from the stemToolModules loader array in AlloFlowANTI.txt')
+      .toContain("'stem_lab/stem_tool_treelab.js'");
+
+    // 3. The loader resolves a registration id to a file with its own normaliser, so
+    //    use the REAL rule rather than a copy of it that could drift.
+    const normSrc = anti.slice(anti.indexOf('function normalizedToolKey'));
+    const body = normSrc.slice(0, normSrc.indexOf('\n        }') + 10);
+    // eslint-disable-next-line no-new-func
+    const normalizedToolKey = new Function(body + '; return normalizedToolKey;')();
+    expect(normalizedToolKey('treeLab'), 'the id no longer normalises to the filename')
+      .toBe(normalizedToolKey('stem_lab/stem_tool_treelab.js'));
+
+    // 4. Hub catalogue tile, in both host copies.
+    for (const host of ['stem_lab/stem_lab_module.js', 'desktop/web-app/public/stem_lab/stem_lab_module.js']) {
+      expect(read(host), `${host}: no catalogue tile`).toContain("id: 'treeLab'");
+    }
+
+    // 5. tool_index.json feeds STEM search and the lesson-plan agent.
+    const index = JSON.parse(read('tool_index.json'));
+    const tools = Array.isArray(index) ? index : index.tools;
+    expect(tools.some((t) => t && t.id === 'treeLab'), 'missing from tool_index.json').toBe(true);
+
+    // 6. The desktop mirror has to exist at all, not merely match.
+    expect(() => read('desktop/web-app/public/stem_lab/stem_tool_treelab.js')).not.toThrow();
+  });
+
   it('is listed in the hub gate that lets a pure plugin render at all', () => {
     // The hub has exactly ONE StemLab.renderTool() call site and it sits behind
     //   if (!_pluginOnlyTools[stemLabTool]) return null;
