@@ -578,6 +578,18 @@ var d = (labToolData.probability) || {};
 
           var upd = function(key, val) { setLabToolData(function(prev) { return Object.assign({}, prev, { probability: Object.assign({}, prev.probability, (function() { var o = {}; o[key] = val; return o; })()) }); }); };
 
+          // Marble-bag replacement toggle. Shared by the switch's pointer and
+          // keyboard paths so the two cannot drift; flipping the mode
+          // invalidates the drawn results, so they reset together.
+          function mbToggleReplacement() {
+            upd('mbWithoutReplacement', !d.mbWithoutReplacement);
+            upd('results', []);
+            upd('trials', 0);
+            upd('convergenceHistory', []);
+            upd('lastResult', null);
+            upd('_mbRemaining', null);
+          }
+
 
 
           // â”€â”€ Sports Scenarios â”€â”€
@@ -1709,7 +1721,15 @@ var d = (labToolData.probability) || {};
                     "aria-checked": !!d.mbWithoutReplacement,
                     "aria-label": "With or without replacement (currently " + (d.mbWithoutReplacement ? "without" : "with") + " replacement)",
                     tabIndex: 0,
-                    onClick: function () { upd('mbWithoutReplacement', !d.mbWithoutReplacement); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); upd('lastResult', null); upd('_mbRemaining', null); },
+                    // This is announced as a switch and is focusable, so it must
+                    // answer the keys a switch answers. It had onClick only, so a
+                    // keyboard user could focus it, hear "switch, not checked",
+                    // press Space, and watch nothing happen. Both paths call the
+                    // same toggle so they cannot drift apart.
+                    onClick: function () { mbToggleReplacement(); },
+                    onKeyDown: function (e) {
+                      if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); mbToggleReplacement(); }
+                    },
                    
 
                     className: "relative w-10 h-5 rounded-full transition-colors cursor-pointer",

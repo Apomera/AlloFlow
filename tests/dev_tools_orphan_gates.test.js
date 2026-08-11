@@ -48,12 +48,20 @@ const GATES = [
     'tool state round-trips through JSON, so a function stored on it is silently dropped: Number Line then graded correct answers WRONG via its fallback (f31baa5c9) and Fractions threw on reload (68015ac8c)'],
   ['scan_window_key_listeners.cjs', 60_000,
     "a window key listener outlives the tool that added it — multtable's Q/S/? kept starting quizzes and AI calls from inside OTHER tools (e1950eb7c). Baselined: fails only on a NEW unguarded listener"],
+  ['scan_mouse_only_controls.cjs', 60_000,
+    'a non-native element with role="button"/"switch" + onClick and no key handler is announced as a control that Enter/Space cannot operate (Assessment Literacy 006c25805, Probability marble-bag switch). Baselined: canvases use described alternatives instead'],
 ];
 
+// Timeouts are deliberately generous. These scripts each re-read and re-parse
+// all ~141 tool files, and this is a SHARED tree: a concurrent session running
+// its own build or suite stretches a 50s pass to 260s. One such run tripped the
+// old 120s cap and reported a failure that every gate passed individually
+// moments later. A gate that goes red under load is a gate people learn to
+// ignore, which is exactly the failure mode this file exists to prevent.
 function run(script) {
   try {
     return { code: 0, out: execFileSync('node', [resolve(process.cwd(), 'dev-tools', script)], {
-      cwd: process.cwd(), encoding: 'utf8', timeout: 120_000,
+      cwd: process.cwd(), encoding: 'utf8', timeout: 280_000,
     }) };
   } catch (e) {
     return { code: e.status == null ? -1 : e.status, out: String(e.stdout || '') + String(e.stderr || '') };
@@ -66,5 +74,5 @@ describe('dev-tools gates that nothing else runs', () => {
     // Tail only: these print full reports, and the failing detail is at the end.
     const tail = r.out.split('\n').filter(Boolean).slice(-25).join('\n');
     expect(r.code, why + '\n\n' + tail).toBe(0);
-  }, 130_000);
+  }, 300_000);
 });

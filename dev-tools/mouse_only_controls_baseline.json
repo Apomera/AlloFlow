@@ -1,0 +1,23 @@
+{
+  "note": "Accepted: <canvas> surfaces (this repo covers those with described alternatives, not key handlers on the canvas) and sites owned by another session at the time of writing. Regenerate with --update-baseline only after re-reading each site.",
+  "accepted": {
+    "stem_tool_aquarium.js": [
+      "div:role=button:focusable"
+    ],
+    "stem_tool_brainatlas.js": [
+      "canvas:tabIndex:focusable"
+    ],
+    "stem_tool_coding.js": [
+      "canvas:tabIndex:focusable"
+    ],
+    "stem_tool_dissection.js": [
+      "canvas:tabIndex:focusable"
+    ],
+    "stem_tool_fisherlab.js": [
+      "canvas:tabIndex:focusable"
+    ],
+    "stem_tool_spacecolony.js": [
+      "canvas:tabIndex:focusable"
+    ]
+  }
+}
