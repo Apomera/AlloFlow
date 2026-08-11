@@ -24,7 +24,11 @@ were all engine gaps; the gaps were fixed, and round 2 verified clean.
 | URI links | 4 (2 mailto, http lep.gov, https justice.gov) | 4, schemes preserved |
 | Independent verification | — | v1: 11/5/0 → **v2: 19/19/0, `verified`** |
 
-BEFORE evidence: `before-verapdf.json` (validate-pdf on the untouched source).
+BEFORE evidence: `before-source.pdf` (byte-identical corpus copy) +
+`before-verapdf.json` (validate-pdf on it). AFTER documents:
+`alloflow-output-v2/source-alloflow-accessible.pdf` (tagged, UA-1-passing) and
+`alloflow-output-v2/source-accessible.html` (semantic rebuild with the
+rendered Remediation notes appendix and working footnote anchors).
 Note the source was already TAGGED with language+title — this letter is the
 *easy* end of the corpus, and it still failed UA-1 on 5 rules.
 
