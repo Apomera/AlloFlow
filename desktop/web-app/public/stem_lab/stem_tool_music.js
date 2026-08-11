@@ -4622,8 +4622,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                                 ref: function(canvas) {
                                   if (!canvas) return;
                                   var g = canvas.getContext('2d');
-                                  var W = canvas.width = canvas.offsetWidth * 2;
-                                  var H = canvas.height = 120;
+                                  var W = canvas.offsetWidth * 2, H = 120;
+                                  // Guarded: an INLINE ref re-runs on EVERY re-render, and assigning
+                                  // width/height REALLOCATES and clears the bitmap each time. The draw
+                                  // below clears explicitly, so only resize when the size really changed.
+                                  if (canvas.width !== W) canvas.width = W;
+                                  if (canvas.height !== H) canvas.height = H;
                                   g.clearRect(0, 0, W, H);
                                   // Draw waveform based on instrument's harmonic content
                                   var wType = inst.synth.type;
@@ -4814,8 +4818,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     ref: function(canvas) {
                       if (!canvas) return;
                       var g = canvas.getContext('2d');
-                      var W = canvas.width = canvas.offsetWidth * 2;
-                      var H = canvas.height = 160;
+                      var W = canvas.offsetWidth * 2, H = 160;
+                      // Guarded: an INLINE ref re-runs on EVERY re-render, and assigning
+                      // width/height REALLOCATES and clears the bitmap each time. The draw
+                      // below clears explicitly, so only resize when the size really changed.
+                      if (canvas.width !== W) canvas.width = W;
+                      if (canvas.height !== H) canvas.height = H;
                       g.clearRect(0, 0, W, H);
                       var harmonics = d.activeHarmonics || [1];
                       // Draw individual harmonics (faint)

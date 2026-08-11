@@ -2116,7 +2116,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 if (!cvEl) return;
                 var ctx = cvEl.getContext('2d');
                 var W = cvEl.offsetWidth || 400, H = cvEl.offsetHeight || 120;
-                cvEl.width = W * 2; cvEl.height = H * 2; ctx.scale(2, 2);
+                var _tw = W * 2, _th = H * 2;
+                if (cvEl.width !== _tw) cvEl.width = _tw;
+                if (cvEl.height !== _th) cvEl.height = _th;
+                // setTransform (absolute) not scale (relative): the realloc that used to
+                // reset the transform is conditional now, so scale() would COMPOUND.
+                ctx.setTransform(2, 0, 0, 2, 0, 0);
+                ctx.clearRect(0, 0, W, H);
                 // Static render (no animation loop needed — redraws on each React render)
                 ctx.fillStyle = '#020010'; ctx.fillRect(0, 0, W, H);
                 drawStarfield(ctx, W, H, turn * 100, 80);
@@ -2223,7 +2229,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                     if (!cvEl) return;
                     var cx2 = cvEl.getContext('2d');
                     var W2 = cvEl.offsetWidth || 360, H2 = cvEl.offsetHeight || 110;
-                    cvEl.width = W2 * 2; cvEl.height = H2 * 2; cx2.scale(2, 2);
+                    var _tw2 = W2 * 2, _th2 = H2 * 2;
+                    if (cvEl.width !== _tw2) cvEl.width = _tw2;
+                    if (cvEl.height !== _th2) cvEl.height = _th2;
+                    // setTransform (absolute) not scale (relative): the realloc that used to
+                    // reset the transform is conditional now, so scale() would COMPOUND.
+                    cx2.setTransform(2, 0, 0, 2, 0, 0);
+                    cx2.clearRect(0, 0, W2, H2);
                     drawSpectrum(cx2, W2, H2, minigamePending.bands || []);
                   }
                 })

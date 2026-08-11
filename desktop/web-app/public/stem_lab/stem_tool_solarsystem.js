@@ -9854,7 +9854,12 @@ const d = labToolData.solarSystem || {};
                       if (!ctx2) return;
                       var cw = canvasEl.parentElement.clientWidth || canvasEl.offsetWidth || 600;
                       var ch = 420;
-                      canvasEl.width = cw; canvasEl.height = ch;
+                      if (canvasEl.width !== cw) canvasEl.width = cw;
+                      if (canvasEl.height !== ch) canvasEl.height = ch;
+                      // An inline ref re-runs every re-render and the realloc used to clear
+                      // the bitmap each time. It is conditional now, so clear explicitly:
+                      // site 1 only fills much later, site 2 can return before drawing.
+                      ctx2.clearRect(0, 0, cw, ch);
                       var cx = cw / 2; var cy = ch / 2;
                       var maxR = Math.min(cw, ch) * 0.38;
 
@@ -10149,7 +10154,12 @@ const d = labToolData.solarSystem || {};
                       if (!ctx2) return;
                       var cw = canvasEl.parentElement.clientWidth || canvasEl.offsetWidth || 600;
                       var ch = 400;
-                      canvasEl.width = cw; canvasEl.height = ch;
+                      if (canvasEl.width !== cw) canvasEl.width = cw;
+                      if (canvasEl.height !== ch) canvasEl.height = ch;
+                      // An inline ref re-runs every re-render and the realloc used to clear
+                      // the bitmap each time. It is conditional now, so clear explicitly:
+                      // site 1 only fills much later, site 2 can return before drawing.
+                      ctx2.clearRect(0, 0, cw, ch);
                       var descentLayers = DESCENT_LAYERS[sel.key] || [];
                       if (descentLayers.length === 0) return;
 

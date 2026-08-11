@@ -2365,8 +2365,14 @@ window.StemLab = window.StemLab || {
                   var dpr = window.devicePixelRatio || 1;
                   var ow = canvas.offsetWidth || 400;
                   var oh = 120;
-                  canvas.width = ow * dpr; canvas.height = oh * dpr;
-                  canvas.style.height = oh + 'px'; oc.scale(dpr, dpr);
+                  var _tw = ow * dpr, _th = oh * dpr;
+                  if (canvas.width !== _tw) canvas.width = _tw;
+                  if (canvas.height !== _th) canvas.height = _th;
+                  canvas.style.height = oh + 'px';
+                  // setTransform (absolute) not scale (relative): the realloc that used to
+                  // reset the transform is conditional now, so scale() would COMPOUND.
+                  oc.setTransform(dpr, 0, 0, dpr, 0, 0);
+                  oc.clearRect(0, 0, ow, oh);
 
                   // Dark CRT background
                   oc.fillStyle = '#050a12'; oc.fillRect(0, 0, ow, oh);

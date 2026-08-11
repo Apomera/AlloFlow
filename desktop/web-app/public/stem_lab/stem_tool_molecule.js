@@ -4310,6 +4310,17 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 role: 'img', 'aria-label': 'Probability cloud of the ' + o.label + ' orbital — shape: ' + o.shape + '. ' + nodes.radial + ' radial nodes, ' + nodes.angular + ' angular nodes. The bar chart beside it gives the same data non-visually.',
                 ref: function (canvas) {
                   if (!canvas) return;
+                  // React calls an INLINE callback ref again on every re-render
+                  // (the ref function has a new identity each time). Without this
+                  // stamp the 120k-attempt Monte Carlo below re-ran and started an
+                  // ADDITIONAL rAF loop per render, so loops accumulated on one
+                  // canvas — each with its own rotation angle and its own point
+                  // cloud — spinning faster and burning CPU the longer the section
+                  // stayed open. Re-init only when the orbital actually changes.
+                  // Gate: dev-tools/scan_inline_canvas_refs.cjs.
+                  var _orbStamp = key + '|' + subColor;
+                  if (canvas._orbCloudStamp === _orbStamp) return;
+                  canvas._orbCloudStamp = _orbStamp;
                   var cx = canvas.getContext && canvas.getContext('2d'); if (!cx) return;
                   var W = canvas.width, Hh = canvas.height, box = o.box;
                   var maxD = 0, gi; for (gi = 0; gi < 1600; gi++) { var gx = (Math.random() * 2 - 1) * box, gy = (Math.random() * 2 - 1) * box, gz = (Math.random() * 2 - 1) * box; var dd = orbDensity(key, gx, gy, gz); if (dd > maxD) maxD = dd; }
@@ -4320,7 +4331,10 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   var reduced = false; try { reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
                   var ang = 0.6;
                   function frame() {
-                    if (!canvas.isConnected) return;
+                    // Stop when unmounted OR superseded: switching orbitals
+                    // re-stamps the node, so the previous loop retires itself
+                    // instead of drawing over the new one.
+                    if (!canvas.isConnected || canvas._orbCloudStamp !== _orbStamp) return;
                     if (!reduced) ang += 0.006;
                     cx.fillStyle = '#0b1220'; cx.fillRect(0, 0, W, Hh);
                     var ca = Math.cos(ang), sa = Math.sin(ang), ct = Math.cos(0.42), st = Math.sin(0.42), i2;

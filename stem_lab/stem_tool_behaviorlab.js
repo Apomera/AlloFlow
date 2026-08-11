@@ -5155,7 +5155,8 @@ dataRef.current = d;
                   ref: function(cvs) {
                     if (!cvs) return;
                     var w = cvs.parentElement.offsetWidth || 400;
-                    cvs.width = w; cvs.height = 200;
+                    if (cvs.width !== w) cvs.width = w;
+                    if (cvs.height !== 200) cvs.height = 200;
                     var ctx = cvs.getContext('2d');
                     // Background
                     ctx.fillStyle = '#0f172a';

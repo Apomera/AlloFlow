@@ -982,11 +982,15 @@ window.StemLab = window.StemLab || {
               if (!canvas) return;
               var W = canvas.offsetWidth || 600;
               var H = 280;
-              canvas.width = W * 2;
-              canvas.height = H * 2;
+              var _tw = W * 2, _th = H * 2;
+              if (canvas.width !== _tw) canvas.width = _tw;
+              if (canvas.height !== _th) canvas.height = _th;
               var c = canvas.getContext('2d');
               if (!c) return;
-              c.scale(2, 2);
+              // setTransform (absolute) not scale (relative): the realloc that
+              // used to reset the transform is conditional now, so a relative
+              // scale() would COMPOUND on every re-render.
+              c.setTransform(2, 0, 0, 2, 0, 0);
               c.clearRect(0, 0, W, H); // 2x backing store — the scene was rendering blurry at 1x
 
               // Power-outage backdrop — dark blue-gray with vignette

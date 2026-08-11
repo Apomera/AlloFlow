@@ -2138,9 +2138,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 if (!cv) return;
                 var dpr = window.devicePixelRatio || 1;
                 var w = cv.offsetWidth || 600, h = 260;
-                cv.width = w * dpr; cv.height = h * dpr;
+                var _tw = w * dpr, _th = h * dpr;
+                if (cv.width !== _tw) cv.width = _tw;
+                if (cv.height !== _th) cv.height = _th;
                 cv.style.height = h + 'px';
-                var c = cv.getContext('2d'); c.scale(dpr, dpr);
+                // setTransform (absolute) not scale (relative): the realloc that used to
+                // reset the transform is conditional now, so scale() would COMPOUND.
+                var c = cv.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0);
                 c.clearRect(0, 0, w, h);
                 // Axes
                 var padL = 50, padR = 20, padT = 20, padB = 40;

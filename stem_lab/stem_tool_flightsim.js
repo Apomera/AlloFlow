@@ -23614,8 +23614,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               ref: function(canvas) {
                 if (!canvas) return;
                 var g = canvas.getContext('2d');
-                var cW = canvas.width = canvas.offsetWidth;
-                var cH = canvas.height = 120;
+                var cW = canvas.offsetWidth, cH = 120;
+                // Guarded: an INLINE ref re-runs on EVERY re-render, and assigning
+                // width/height REALLOCATES and clears the bitmap each time. The draw
+                // below clears explicitly, so only resize when the size really changed.
+                if (canvas.width !== cW) canvas.width = cW;
+                if (canvas.height !== cH) canvas.height = cH;
+                // The realloc above used to clear the canvas unconditionally; it is
+                // conditional now, so clear explicitly before the early return can
+                // leave a stale trace on screen.
+                g.clearRect(0, 0, cW, cH);
                 var bb = blackBoxRef.current;
                 if (bb.length < 2) return;
 
@@ -23685,8 +23693,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               ref: function(canvas) {
                 if (!canvas) return;
                 var g = canvas.getContext('2d');
-                var cW = canvas.width = canvas.offsetWidth;
-                var cH = canvas.height = 80;
+                var cW = canvas.offsetWidth, cH = 80;
+                // Guarded: an INLINE ref re-runs on EVERY re-render, and assigning
+                // width/height REALLOCATES and clears the bitmap each time. The draw
+                // below clears explicitly, so only resize when the size really changed.
+                if (canvas.width !== cW) canvas.width = cW;
+                if (canvas.height !== cH) canvas.height = cH;
+                // The realloc above used to clear the canvas unconditionally; it is
+                // conditional now, so clear explicitly before the early return can
+                // leave a stale trace on screen.
+                g.clearRect(0, 0, cW, cH);
                 var bb = blackBoxRef.current;
                 if (bb.length < 3) return;
                 g.fillStyle = '#0a1628'; g.fillRect(0, 0, cW, cH);

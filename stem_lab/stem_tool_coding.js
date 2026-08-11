@@ -2918,7 +2918,13 @@
                       if (!cvEl) return;
                       var ctx = cvEl.getContext('2d');
                       var W = cvEl.offsetWidth || 500, H = cvEl.offsetHeight || 380;
-                      cvEl.width = W * 2; cvEl.height = H * 2; ctx.scale(2, 2);
+                      var _tw = W * 2, _th = H * 2;
+                      if (cvEl.width !== _tw) cvEl.width = _tw;
+                      if (cvEl.height !== _th) cvEl.height = _th;
+                      // setTransform (absolute) not scale (relative): the realloc that used to
+                      // reset the transform is conditional now, so scale() would COMPOUND.
+                      ctx.setTransform(2, 0, 0, 2, 0, 0);
+                      ctx.clearRect(0, 0, W, H);
                       var grid = robotGrid;
                       if (!grid || grid.length === 0) {
                         ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);

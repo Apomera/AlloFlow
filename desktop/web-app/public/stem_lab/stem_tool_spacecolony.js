@@ -2221,7 +2221,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     if (!miniCanvas || !mapData) return;
                     var mCtx = miniCanvas.getContext('2d');
                     var mW = 120, mH = 120;
-                    miniCanvas.width = mW; miniCanvas.height = mH;
+                    if (miniCanvas.width !== mW) miniCanvas.width = mW;
+                    if (miniCanvas.height !== mH) miniCanvas.height = mH;
                     mCtx.fillStyle = '#0f172a'; mCtx.fillRect(0, 0, mW, mH);
                     var mTile = mW / mapSize;
                     // Draw explored tiles

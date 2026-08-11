@@ -25755,8 +25755,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   ref: function(c) {
                     if (!c) return;
                     var g = c.getContext('2d');
-                    var W = c.width = c.offsetWidth || 600;
-                    var H = c.height = 140;
+                    var W = c.offsetWidth || 600, H = 140;
+                    // Guarded: an INLINE ref re-runs on EVERY re-render, and assigning
+                    // width/height REALLOCATES and clears the bitmap each time. The draw
+                    // below clears explicitly, so only resize when the size really changed.
+                    if (c.width !== W) c.width = W;
+                    if (c.height !== H) c.height = H;
                     var path = drivingStats.drivePath;
                     g.fillStyle = '#0a1628'; g.fillRect(0, 0, W, H);
                     // Find bounds
@@ -31704,8 +31708,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               ref: function(canvas) {
                 if (!canvas) return;
                 var g = canvas.getContext('2d');
-                var W = canvas.width = canvas.offsetWidth || 700;
-                var H = canvas.height = 240;
+                var W = canvas.offsetWidth || 700, H = 240;
+                // Guarded: an INLINE ref re-runs on EVERY re-render, and assigning
+                // width/height REALLOCATES and clears the bitmap each time. The draw
+                // below clears explicitly, so only resize when the size really changed.
+                if (canvas.width !== W) canvas.width = W;
+                if (canvas.height !== H) canvas.height = H;
                 var pad = 36;
                 g.fillStyle = '#020617'; g.fillRect(0, 0, W, H);
                 // Grid
@@ -31793,8 +31801,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               ref: function(c) {
                 if (!c) return;
                 var g = c.getContext('2d');
-                var W = c.width = c.offsetWidth || 600;
-                var H = c.height = 120;
+                var W = c.offsetWidth || 600, H = 120;
+                // Guarded: an INLINE ref re-runs on EVERY re-render, and assigning
+                // width/height REALLOCATES and clears the bitmap each time. The draw
+                // below clears explicitly, so only resize when the size really changed.
+                if (c.width !== W) c.width = W;
+                if (c.height !== H) c.height = H;
                 g.fillStyle = '#020617'; g.fillRect(0, 0, W, H);
                 var maxSpd = Math.max.apply(null, replay.map(function(r) { return Math.abs(r.speed) * MS_TO_MPH; })) || 1;
                 // Speed line
@@ -32427,8 +32439,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               ref: function(c) {
                 if (!c) return;
                 var g = c.getContext('2d');
-                var W = c.width = c.offsetWidth || 600;
-                var H = c.height = 200;
+                var W = c.offsetWidth || 600, H = 200;
+                // Guarded: an INLINE ref re-runs on EVERY re-render, and assigning
+                // width/height REALLOCATES and clears the bitmap each time. The draw
+                // below clears explicitly, so only resize when the size really changed.
+                if (c.width !== W) c.width = W;
+                if (c.height !== H) c.height = H;
                 g.fillStyle = '#020617'; g.fillRect(0, 0, W, H);
                 var carX = W * 0.45, carY = H * 0.5;
                 var scale = W * 0.35 / maxF;
@@ -32608,8 +32624,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               ref: function(c) {
                 if (!c) return;
                 var g = c.getContext('2d');
-                var W = c.width = c.offsetWidth || 600;
-                var H = c.height = 300;
+                var W = c.offsetWidth || 600, H = 300;
+                // Guarded: an INLINE ref re-runs on EVERY re-render, and assigning
+                // width/height REALLOCATES and clears the bitmap each time. The draw
+                // below clears explicitly, so only resize when the size really changed.
+                if (c.width !== W) c.width = W;
+                if (c.height !== H) c.height = H;
                 g.fillStyle = '#020617'; g.fillRect(0, 0, W, H);
                 var cx = W / 2, cy = H / 2;
                 // Road
