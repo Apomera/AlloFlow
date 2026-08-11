@@ -1649,6 +1649,18 @@
   function maybeShowApiKeySetup() {
     const modal = $('#api-key-setup');
     if (!modal) return;
+    // In-app AI setup is canonical on the desktop/remediation editions
+    // (2026-08): those editions boot full-bleed into the app frame, whose own
+    // guided AI Backend modal owns first-run — without this guard BOTH
+    // surfaces fired at once (this wizard overlaying the frame while the
+    // in-app modal opened inside it). The admin edition lives entirely in
+    // this console, so it keeps the wizard; an unknown/unreported edition
+    // falls through to the existing behavior.
+    const edition = String((state.health && state.health.edition) || '').toLowerCase();
+    if (edition === 'desktop' || edition === 'remediation') {
+      modal.classList.add('hidden');
+      return;
+    }
     if (sessionStorage.getItem(SETUP_SNOOZE_KEY) === '1') {
       modal.classList.add('hidden');
       return;

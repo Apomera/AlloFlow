@@ -367,7 +367,7 @@ function MtssTriagePanel(props) {
           <div role="tablist" aria-label={tt('mtss.tabs_aria', 'Triage sections')} className="flex gap-1 mt-2">
             {tabs.map((tb, tbIdx) => (
               <button key={tb.id} type="button" role="tab" id={'mtss-tab-' + tb.id} aria-selected={tab === tb.id}
-                aria-controls="mtss-tabpanel" tabIndex={tab === tb.id ? 0 : -1} data-help-key={'mtss_tab_' + tb.id}
+                aria-controls="mtss-tabpanel" tabIndex={tab === tb.id ? 0 : -1} data-help-key="mtss_tab"
                 onClick={() => setTab(tb.id)}
                 onKeyDown={(e) => {
                   let next = null;

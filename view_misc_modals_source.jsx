@@ -931,14 +931,38 @@ function ModelDiagnosticsSection(props) {
 }
 
 // ── AIBackendModal (AI Backend Modal) — gate: showAIBackendModal && !_isCanvasEnv ──
+// Outer gate stays hookless (the registered export and its early return are
+// the long-standing contract); the body below mounts only while the modal is
+// open, so hooks are legal there and hook order is stable for its lifetime.
 function AIBackendModal(props) {
+  if (!(props.showAIBackendModal && !props._isCanvasEnv)) return null;
+  return <AIBackendModalBody {...props} />;
+}
+function AIBackendModalBody(props) {
   const {
     _isCanvasEnv, ai,
     setShowAIBackendModal, showAIBackendModal, t,
     GEMINI_MODELS
   } = props;
-  if (!(showAIBackendModal && !_isCanvasEnv)) return null;
   const isStudentAiSetup = Boolean(typeof window !== 'undefined' && window.__alloStudentAiSetupAllowed && window.__alloQrStudentMode);
+  // ── Guided setup state ("hand-hold unless they ask for advanced", 2026-08) ──
+  // The guided default shows three choice cards and only the fields that
+  // choice needs; the full legacy surface lives behind the Advanced
+  // disclosure. Students always get the legacy (trimmed) layout — their flow
+  // is already minimal and carries its own consent copy.
+  const [guidedView, setGuidedView] = React.useState('choose');
+  const [advancedOpen, setAdvancedOpen] = React.useState(isStudentAiSetup);
+  const [guidedReady, setGuidedReady] = React.useState(false);
+  const guidedHeadingRef = React.useRef(null);
+  const prevGuidedViewRef = React.useRef('choose');
+  React.useEffect(() => {
+    // Focus the step heading only on real view TRANSITIONS — never on plain
+    // re-renders (that pattern caused the remediation focus war, fixed
+    // 2026-08-10; do not regress it).
+    if (prevGuidedViewRef.current === guidedView) return;
+    prevGuidedViewRef.current = guidedView;
+    try { if (guidedHeadingRef.current) guidedHeadingRef.current.focus(); } catch (_) {}
+  }, [guidedView]);
   const configStorage = isStudentAiSetup ? window.sessionStorage : window.localStorage;
   const configStorageKey = isStudentAiSetup ? 'alloflow_qr_student_ai_config' : 'alloflow_ai_config';
   const aiBackendDefaults = {
@@ -1195,6 +1219,187 @@ function AIBackendModal(props) {
       isCanvasEnv: false
     });
   };
+  // ─── Guided setup helpers ────────────────────────────────────────────────
+  // One backend-switch path shared by the guided cards AND the Advanced
+  // provider select (factored from the old select onChange so the two can
+  // never drift). Guided path suppresses the "Preset applied…" status line in
+  // favor of the step copy.
+  const applyBackendChoice = (backend, { showStatus = false } = {}) => {
+    const current = readAIBackendConfig();
+    const updated = { ...current, backend, baseUrl: aiBackendDefaults[backend] || '' };
+    if (backend !== current.backend) delete updated.models;
+    writeAIBackendConfig(updated);
+    const urlEl = document.getElementById('ai-backend-url');
+    if (urlEl) urlEl.value = updated.baseUrl || '';
+    populateModelSelect(document.getElementById('ai-backend-model-default'), 'Auto (server default)', [], '');
+    populateModelSelect(document.getElementById('ai-backend-model-fallback'), 'Same as default', [], '');
+    if (showStatus) {
+      const status = document.getElementById('ai-backend-status');
+      if (status) { status.textContent = 'Preset applied. Test connection to discover models, then reload to apply.'; status.className = 'text-xs font-bold mt-2 text-amber-800 bg-amber-50 p-2.5 rounded-xl border border-amber-100'; }
+    }
+    setTimeout(refreshEngineStrip, 0);
+  };
+  const GUIDED_BACKEND_LABELS = {
+    gemini: 'Google Gemini', 'alloflow-local': 'the built-in private AI',
+    lmstudio: 'LM Studio', ollama: 'Ollama', localai: 'LocalAI', custom: 'your custom endpoint'
+  };
+  const GUIDED_CONNECT_APPS = [
+    { id: 'lmstudio', title: 'LM Studio', body: 'Desktop app with a friendly model browser.', keyProps: { 'data-help-key': 'ai_backend_guided_connect_lmstudio' }, link: 'https://lmstudio.ai', steps: ['Install LM Studio from lmstudio.ai (free).', 'Use its search to download a model — "Qwen 2.5 7B Instruct" is a good start.', 'Open the Developer / Local Server tab and press Start.', 'Press Test Connection below.'] },
+    { id: 'ollama', title: 'Ollama', body: 'Lightweight command-line runner.', keyProps: { 'data-help-key': 'ai_backend_guided_connect_ollama' }, link: 'https://ollama.com', steps: ['Install Ollama from ollama.com (free).', 'In a terminal, run: ollama run llama3.2', 'Leave it running.', 'Press Test Connection below.'] },
+    { id: 'localai', title: 'LocalAI', body: 'Self-hosted server (advanced).', keyProps: { 'data-help-key': 'ai_backend_guided_connect_localai' }, link: 'https://localai.io', steps: ['Follow the LocalAI install guide at localai.io.', 'Start the server with at least one text model.', 'Press Test Connection below.'] },
+    { id: 'custom', title: 'Custom endpoint', body: 'Any OpenAI-compatible server.', keyProps: { 'data-help-key': 'ai_backend_guided_connect_custom' }, link: '', steps: ['Enter your server address below.', 'Add an API key only if your server requires one.', 'Press Test Connection below.'] },
+  ];
+  // Canonical fields, rendered by exactly one layout at a time (guided step or
+  // Advanced) — same ids, same help keys, same config writes, so external
+  // lookups and the help overlay keep working and values survive layout moves
+  // (every keystroke persists; defaultValue re-reads config on remount).
+  const renderUrlField = () => (
+    <div>
+        <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('ai_backend.server_url_label') || 'Server URL'}</label>
+        <input
+            data-help-key="ai_backend_custom_url_input"
+            id="ai-backend-url" aria-label={t('ai_backend.server_url_aria') || 'Custom AI backend URL'}
+            type="text"
+            placeholder="http://localhost:8080"
+            defaultValue={readAIBackendConfig().baseUrl || ''}
+            onChange={(e) => {
+                const current = readAIBackendConfig();
+                writeAIBackendConfig({ ...current, baseUrl: e.target.value });
+            }}
+            className="w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
+        />
+    </div>
+  );
+  const renderApiKeyField = (labelText, hintText) => (
+    <div>
+        <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{labelText || t('ai_backend.api_key_label') || 'API Key'} <span className="normal-case font-normal text-slate-600">{hintText || t('ai_backend.api_key_hint') || '(cloud providers only)'}</span></label>
+        <input
+            data-help-key="ai_backend_api_key_input"
+            id="ai-backend-apikey" aria-label={t('ai_backend.api_key_aria') || 'Custom AI backend API key'}
+            type="password"
+            autoComplete="off"
+            placeholder={t('ai_backend.api_key_placeholder') || 'Your API key...'}
+            defaultValue={readAIBackendConfig().apiKey || ''}
+            onChange={(e) => {
+                const current = readAIBackendConfig();
+                writeAIBackendConfig({ ...current, apiKey: e.target.value });
+            }}
+            className="w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
+        />
+    </div>
+  );
+  const renderEngineStrip = () => (
+    <div id="ai-backend-engine-strip" style={{ display: 'none' }} aria-live="polite" ref={(node) => { if (node && !node.dataset.engineInit) { node.dataset.engineInit = '1'; setTimeout(refreshEngineStrip, 0); } }}></div>
+  );
+  const guidedStepHeading = (text) => (
+    <p ref={guidedHeadingRef} tabIndex={-1} role="status" aria-live="polite" className="text-[11px] font-black text-violet-700 uppercase tracking-wider outline-none">{text}</p>
+  );
+  const guidedBackBtn = (target) => (
+    <button data-help-key="ai_backend_guided_back_btn" onClick={() => { setGuidedReady(false); setGuidedView(target); }} className="text-xs font-bold text-slate-600 hover:text-violet-700 transition-colors">◀ {t('ai_backend.guided_back') || 'Back'}</button>
+  );
+  const guidedCard = (keyProps, onClick, emoji, title, badge, body, req) => (
+    <button {...keyProps} type="button" onClick={onClick}
+        className="w-full text-left border-2 border-slate-200 rounded-2xl p-4 hover:border-violet-400 hover:bg-violet-50/40 transition-all active:scale-[0.99]">
+        <div className="flex items-center gap-2">
+            <span aria-hidden="true">{emoji}</span>
+            <span className="font-black text-sm text-slate-800">{title}</span>
+            {badge && <span className="ml-auto text-[10px] font-black uppercase tracking-wider bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full">{badge}</span>}
+        </div>
+        <p className="text-xs text-slate-600 mt-1 leading-relaxed">{body}</p>
+        {req && <p className="text-[11px] text-slate-500 mt-1">{req}</p>}
+    </button>
+  );
+  const renderGuidedStep = () => {
+    const cfg = readAIBackendConfig();
+    if (guidedView === 'gemini') return (
+      <div className="space-y-3">
+        {guidedStepHeading(t('ai_backend.guided_gemini_kicker') || 'Step 2 of 2 · Google Gemini')}
+        <ol className="list-decimal ml-5 space-y-1.5 text-xs text-slate-700 leading-relaxed">
+            <li><a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" className="font-bold text-violet-700 underline">{t('ai_backend.guided_gemini_step1') || 'Open Google AI Studio ↗'}</a></li>
+            <li>{t('ai_backend.guided_gemini_step2') || 'Sign in with any Google account (a free one is fine).'}</li>
+            <li>{t('ai_backend.guided_gemini_step3') || 'Press "Create API key" and copy it.'}</li>
+            <li>{t('ai_backend.guided_gemini_step4') || 'Paste the key below.'}</li>
+        </ol>
+        {renderApiKeyField(t('ai_backend.guided_gemini_key_label') || 'Your Gemini API key', ' ')}
+        <p className="text-[11px] text-slate-500">{t('ai_backend.guided_gemini_key_note') || 'Stored only on this device. The free tier covers everyday classroom use.'}</p>
+        {guidedBackBtn('choose')}
+      </div>
+    );
+    if (guidedView === 'private') return (
+      <div className="space-y-3">
+        {guidedStepHeading(t('ai_backend.guided_private_kicker') || 'Step 2 of 2 · Private AI on this computer')}
+        <ul className="space-y-1.5 text-xs text-slate-700 leading-relaxed">
+            <li>✅ <strong>{t('ai_backend.guided_private_b1a') || 'Private:'}</strong> {t('ai_backend.guided_private_b1b') || 'lessons and student text never leave this computer.'}</li>
+            <li>📥 <strong>{t('ai_backend.guided_private_b2a') || 'One-time download:'}</strong> {t('ai_backend.guided_private_b2b') || 'a starter AI model (about 2 GB). Keep the app open until it finishes.'}</li>
+            <li>🖥️ <strong>{t('ai_backend.guided_private_b3a') || 'Hardware:'}</strong> {t('ai_backend.guided_private_b3b') || 'works best with 8 GB+ memory and ~2.5 GB free disk.'}</li>
+            <li>⏱️ <strong>{t('ai_backend.guided_private_b4a') || 'Speed:'}</strong> {t('ai_backend.guided_private_b4b') || "answers take a bit longer than cloud AI — that's the privacy trade."}</li>
+        </ul>
+        {renderEngineStrip()}
+        {guidedBackBtn('choose')}
+      </div>
+    );
+    if (guidedView === 'connect') return (
+      <div className="space-y-3">
+        {guidedStepHeading(t('ai_backend.guided_connect_kicker') || 'Step 2 of 3 · Which app do you run?')}
+        <div className="grid grid-cols-2 gap-2">
+            {GUIDED_CONNECT_APPS.map((app) => (
+              <button key={app.id} {...app.keyProps} type="button"
+                  onClick={() => { applyBackendChoice(app.id); setGuidedReady(false); setGuidedView('connect-detail:' + app.id); }}
+                  className="text-left border-2 border-slate-200 rounded-xl p-3 hover:border-violet-400 hover:bg-violet-50/40 transition-all active:scale-[0.99]">
+                  <span className="font-black text-xs text-slate-800">{app.title}</span>
+                  <p className="text-[11px] text-slate-600 mt-0.5">{app.body}</p>
+              </button>
+            ))}
+        </div>
+        {guidedBackBtn('choose')}
+      </div>
+    );
+    if (guidedView.startsWith('connect-detail:')) {
+      const app = GUIDED_CONNECT_APPS.find((a) => a.id === guidedView.slice('connect-detail:'.length)) || GUIDED_CONNECT_APPS[3];
+      return (
+        <div className="space-y-3">
+          {guidedStepHeading((t('ai_backend.guided_connect_detail_kicker') || 'Step 3 of 3 · Connect') + ' ' + app.title)}
+          <ol className="list-decimal ml-5 space-y-1.5 text-xs text-slate-700 leading-relaxed">
+              {app.steps.map((step, i) => <li key={i}>{app.link && i === 0 ? <a href={app.link} target="_blank" rel="noopener noreferrer" className="font-bold text-violet-700 underline">{step} ↗</a> : step}</li>)}
+          </ol>
+          {renderUrlField()}
+          {renderApiKeyField(t('ai_backend.guided_connect_key_label') || 'API key', t('ai_backend.guided_connect_key_hint') || '(only if your server needs one)')}
+          {guidedBackBtn('connect')}
+        </div>
+      );
+    }
+    // default: 'choose'
+    const currentBackend = cfg.backend || 'gemini';
+    const connected = Boolean(cfg.validation && cfg.validation.ok);
+    const badgeFor = (backend) => (currentBackend === backend && cfg.backend ? (t('ai_backend.guided_current_badge') || 'Current') : '');
+    return (
+      <div className="space-y-3">
+        {guidedStepHeading(t('ai_backend.guided_choose_kicker') || 'First-time setup · Choose your AI')}
+        <p className="text-xs text-slate-600 leading-relaxed">{t('ai_backend.guided_intro') || "AlloFlow uses an AI engine to create lessons, read aloud, and answer questions. Pick how you'd like it to work — you can change this any time."}</p>
+        {connected && <p className="text-[11px] font-bold text-green-800 bg-green-50 border border-green-100 rounded-xl p-2">✅ {(t('ai_backend.guided_connected_chip') || 'Connected —') + ' ' + (GUIDED_BACKEND_LABELS[currentBackend] || currentBackend)}</p>}
+        {guidedCard({ 'data-help-key': 'ai_backend_guided_card_gemini' },
+          () => { applyBackendChoice('gemini'); setGuidedReady(false); setGuidedView('gemini'); },
+          '✨', t('ai_backend.guided_card_gemini_title') || 'Google Gemini',
+          badgeFor('gemini') || (t('ai_backend.guided_card_gemini_badge') || 'Recommended'),
+          t('ai_backend.guided_card_gemini_body') || "Best quality and speed. Runs in Google's cloud with a free key — we'll walk you through getting one (about 2 minutes).",
+          t('ai_backend.guided_card_gemini_req') || 'Works anywhere · needs internet')}
+        {guidedCard({ 'data-help-key': 'ai_backend_guided_card_private' },
+          () => { applyBackendChoice('alloflow-local'); setGuidedReady(false); setGuidedView('private'); },
+          '🔒', t('ai_backend.guided_card_private_title') || 'Private AI on this computer',
+          badgeFor('alloflow-local') || (t('ai_backend.guided_card_private_badge') || 'Most private'),
+          t('ai_backend.guided_card_private_body') || 'Everything stays on this computer — no account, no internet needed after setup. One click downloads a starter AI model.',
+          t('ai_backend.guided_card_private_req') || '8 GB+ memory recommended · ~2.5 GB one-time download')}
+        {guidedCard({ 'data-help-key': 'ai_backend_guided_card_connect' },
+          () => { setGuidedReady(false); setGuidedView('connect'); },
+          '🔌', t('ai_backend.guided_card_connect_title') || 'An AI app I already run',
+          badgeFor('lmstudio') || badgeFor('ollama') || badgeFor('localai') || badgeFor('custom'),
+          t('ai_backend.guided_card_connect_body') || 'Already use LM Studio, Ollama, or LocalAI on this computer? Connect it.',
+          '')}
+      </div>
+    );
+  };
+  const guidedTestVisible = advancedOpen
+    || guidedView === 'gemini' || guidedView === 'private' || guidedView.startsWith('connect-detail:');
   return (
         <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowAIBackendModal(false)}>
           <div data-help-key="ai_backend_modal_panel" data-student-ai-setup={isStudentAiSetup ? 'true' : 'false'} className="bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="ai-backend-title" tabIndex={-1} onKeyDown={(e) => { if (e.key === 'Escape') setShowAIBackendModal(false); }} onClick={e => e.stopPropagation()}>
@@ -1223,6 +1428,11 @@ function AIBackendModal(props) {
                     <p className='mt-1'>Your prompts and activity content are sent directly to the provider you choose and may create charges. Follow your school or district rules, do not include private student information, and use a restricted, low-budget key. Avoid shared devices.</p>
                   </div>
                 )}
+                {/* ─── Guided setup (default) — three cards, then only the fields
+                     that choice needs. The full surface lives behind Advanced;
+                     students always get the trimmed legacy layout instead. ─── */}
+                {!advancedOpen && !isStudentAiSetup && renderGuidedStep()}
+                {advancedOpen && (<>
                 <div>
                     <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('ai_backend.provider_label') || 'Provider'}</label>
                     <select
@@ -1230,20 +1440,7 @@ function AIBackendModal(props) {
                         aria-label={t('ai_backend.provider_aria') || 'AI Backend Provider'}
                         id="ai-backend-provider"
                         defaultValue={readAIBackendConfig().backend || 'gemini'}
-                        onChange={(e) => {
-                            const current = readAIBackendConfig();
-                            const backend = e.target.value;
-                            const updated = { ...current, backend, baseUrl: aiBackendDefaults[backend] || '' };
-                            if (backend !== current.backend) delete updated.models;
-                            writeAIBackendConfig(updated);
-                            const urlEl = document.getElementById('ai-backend-url');
-                            if (urlEl) urlEl.value = updated.baseUrl || '';
-                            populateModelSelect(document.getElementById('ai-backend-model-default'), 'Auto (server default)', [], '');
-                            populateModelSelect(document.getElementById('ai-backend-model-fallback'), 'Same as default', [], '');
-                            const status = document.getElementById('ai-backend-status');
-                            if (status) { status.textContent = 'Preset applied. Test connection to discover models, then reload to apply.'; status.className = 'text-xs font-bold mt-2 text-amber-800 bg-amber-50 p-2.5 rounded-xl border border-amber-100'; }
-                            setTimeout(refreshEngineStrip, 0);
-                        }}
+                        onChange={(e) => applyBackendChoice(e.target.value, { showStatus: true })}
                         className="w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-bold text-slate-700 bg-white cursor-pointer"
                     >
                         <option value="gemini">✨ Gemini (Google) — Default</option>
@@ -1261,39 +1458,10 @@ function AIBackendModal(props) {
                         <option value="custom">⚙️ Custom Endpoint</option>
                     </select>
                 </div>
-                <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('ai_backend.server_url_label') || 'Server URL'}</label>
-                    <input
-                        data-help-key="ai_backend_custom_url_input"
-                        id="ai-backend-url" aria-label={t('ai_backend.server_url_aria') || 'Custom AI backend URL'}
-                        type="text"
-                        placeholder="http://localhost:8080"
-                        defaultValue={readAIBackendConfig().baseUrl || ''}
-                        onChange={(e) => {
-                            const current = readAIBackendConfig();
-                            writeAIBackendConfig({ ...current, baseUrl: e.target.value });
-                        }}
-                        className="w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
-                    />
-                </div>
-                <div id="ai-backend-engine-strip" style={{ display: 'none' }} aria-live="polite" ref={(node) => { if (node && !node.dataset.engineInit) { node.dataset.engineInit = '1'; setTimeout(refreshEngineStrip, 0); } }}></div>
+                {renderUrlField()}
+                {renderEngineStrip()}
                 <div id="ai-backend-sdturbo-strip" style={{ display: 'none' }} aria-live="polite" ref={(node) => { if (node && !node.dataset.sdInit) { node.dataset.sdInit = '1'; setTimeout(refreshSdTurboStrip, 0); } }}></div>
-                <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('ai_backend.api_key_label') || 'API Key'} <span className="normal-case font-normal text-slate-600">{t('ai_backend.api_key_hint') || '(cloud providers only)'}</span></label>
-                    <input
-                        data-help-key="ai_backend_api_key_input"
-                        id="ai-backend-apikey" aria-label={t('ai_backend.api_key_aria') || 'Custom AI backend API key'}
-                        type="password"
-                        autoComplete="off"
-                        placeholder={t('ai_backend.api_key_placeholder') || 'Your API key...'}
-                        defaultValue={readAIBackendConfig().apiKey || ''}
-                        onChange={(e) => {
-                            const current = readAIBackendConfig();
-                            writeAIBackendConfig({ ...current, apiKey: e.target.value });
-                        }}
-                        className="w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
-                    />
-                </div>
+                {renderApiKeyField()}
                 <div>
                     <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('ai_backend.wolfram_label') || 'Wolfram Alpha App ID'} <span className="normal-case font-normal text-slate-600">{t('ai_backend.wolfram_hint') || '(optional — enhances math)'}</span></label>
                     <input
@@ -1310,6 +1478,16 @@ function AIBackendModal(props) {
                     />
                     <p className="text-[11px] text-slate-600 mt-1">{t('ai_backend.wolfram_free_note') || 'Free: 2,000 queries/month • Adds exact math solving & step-by-step verification'}</p>
                 </div>
+                </>)}
+                {/* ─── Ready banner (guided path, after a successful test) ─── */}
+                {!advancedOpen && guidedReady && (
+                  <div className="rounded-xl border border-green-200 bg-green-50 p-3">
+                    <p className="text-xs font-black text-green-900">✅ {(t('ai_backend.guided_ready') || "You're ready — AlloFlow is using") + ' ' + (GUIDED_BACKEND_LABELS[readAIBackendConfig().backend || 'gemini'] || readAIBackendConfig().backend) + '.'}</p>
+                    <p className="text-[11px] text-green-800 mt-1">{t('ai_backend.guided_ready_note') || 'Your choice is active now — close this window and start working.'}</p>
+                    <button data-help-key="ai_backend_guided_done_btn" onClick={() => setShowAIBackendModal(false)} className="mt-2 bg-green-600 text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-green-700 transition-all active:scale-95">{t('ai_backend.guided_done') || 'Done'}</button>
+                  </div>
+                )}
+                {guidedTestVisible && (<>
                 <div className="flex gap-2 pt-1">
                     <button
                         data-help-key="ai_backend_test_connection_btn"
@@ -1364,6 +1542,12 @@ function AIBackendModal(props) {
                                         }
                                     }, { preserveValidation: true });
                                     if (isStudentAiSetup && typeof window.__alloSyncQrStudentAiAccess === 'function') window.__alloSyncQrStudentAiAccess();
+                                    // Activate the verified settings NOW — the Gemini factory
+                                    // captures its config at boot, so without this a freshly
+                                    // verified key stayed invisible until a manual reload and
+                                    // the next audit failed with "No AI API key is configured".
+                                    try { if (!isStudentAiSetup && typeof window._upgradeGeminiAPI === 'function') window._upgradeGeminiAPI(); } catch (_) {}
+                                    setGuidedReady(true);
                                     if (status) { status.textContent = 'Connected! ' + result.modelCount + ' model(s) available' + (firstModel && cfg.models?.default !== firstModel ? '. Verified model selected.' : ''); status.className = 'text-xs font-bold mt-2 text-green-800 bg-green-50 p-2.5 rounded-xl border border-green-100'; }
                                     if (modelSelect && result.models?.length > 0) {
                                         populateModelSelect(modelSelect, 'Auto (server default)', result.models, refreshedCfg.models?.default || '');
@@ -1385,7 +1569,7 @@ function AIBackendModal(props) {
                     >
                         🔌 Test Connection
                     </button>
-                    <button
+                    {advancedOpen && <button
                         onClick={() => {
                             clearAIBackendConfig();
                             const p = document.getElementById('ai-backend-provider');
@@ -1410,10 +1594,12 @@ function AIBackendModal(props) {
                         className="bg-slate-200 text-slate-700 px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-slate-300 transition-all active:scale-95"
                     >
                         {isStudentAiSetup ? 'Disconnect & erase key' : '↩ Reset'}
-                    </button>
+                    </button>}
                 </div>
                 <div id="ai-backend-status"></div>
+                </>)}
 
+                {advancedOpen && (<>
                 {/* ─── Section 2: Model Selection ─── */}
                 <div className="pt-3 border-t-2 border-violet-50">
                     <div className="flex items-center gap-2 mb-3">
@@ -1574,6 +1760,22 @@ function AIBackendModal(props) {
                     {!isStudentAiSetup && <p className="text-[11px] text-slate-600 font-medium mt-1">⚡ Reload page after changing backend to apply.</p>}
                     {isStudentAiSetup && <p className="text-[11px] text-slate-600 font-medium mt-1">Verified connections enable text AI only for this browser tab. Media generation stays off unless separately verified.</p>}
                 </div>
+                </>)}
+
+                {/* ─── Advanced settings disclosure (teachers only; students keep
+                     their fixed trimmed layout) ─── */}
+                {!isStudentAiSetup && (
+                  <button
+                      data-help-key="ai_backend_advanced_toggle"
+                      type="button"
+                      aria-expanded={advancedOpen}
+                      onClick={() => { setGuidedReady(false); setAdvancedOpen((v) => !v); }}
+                      className="w-full flex items-center justify-center gap-1.5 text-xs font-bold text-slate-600 hover:text-violet-700 border-t border-slate-100 pt-3 transition-colors"
+                  >
+                      <span aria-hidden="true" className={'inline-block transition-transform ' + (advancedOpen ? 'rotate-180' : '')}>▼</span>
+                      {advancedOpen ? (t('ai_backend.advanced_toggle_close') || 'Back to guided setup') : (t('ai_backend.advanced_toggle') || 'Advanced settings')}
+                  </button>
+                )}
             </div>
           </div>
         </div>
