@@ -212,11 +212,32 @@ Two things worth knowing about the page:
   pure helpers on `window.AlloModules.VideoStudio` when React is absent, which is how the
   tests reach them. The page uses that same door, so there is no third copy of the guardrail
   to rot. If the clamp fails to load the page disables the coach rather than running without it.
-- **No bridge transport yet.** Section 3.1 proposed preferring the opener bridge so a user
-  launched from AlloFlow would not enter a key twice. That is not built: the module's AI bridge
-  validates its sender through a handshake the standalone page does not perform, and widening
-  that trust check is not a change to make casually. The page is local-transport only for now,
-  which is a smaller and more honest v1.
+- **Bridge transport: built** (landed in `006c25805`, see the note below). The page speaks the
+  Studio popup's protocol exactly, with nothing added to it: `?allo_bridge=` token,
+  `?allo_origin=`, every message stamped with the token, reply type derived by swapping
+  `-request` for `-response`. The module's existing `vsAiBridgeReceiver` already routed
+  `allostudio-coach-request`, so no new message type and no new receiver were needed.
+  `vsOpenCoachWindow` mints the token through the existing take store; the sender check widened
+  from "the studio window" to "any window we opened" while the token and origin checks above it
+  stayed as they were.
+
+  **Why the bridge rather than reading the key.** There is no single key to inherit. In Gemini
+  Canvas there is no key at all: `_isCanvasEnv` is host-detected and the environment authorises
+  the call, which a top-level window on the CDN can never inherit. And `_readAlloAiUserConfig`
+  (ANTI ~4524) reads a *session-scoped* config for a QR-joined student instead of the device's
+  stored one. A page that read `localStorage` itself would reimplement that branching and get
+  the student case wrong on a shared device, handing a learner the teacher's key. Letting the
+  app make the call is both less code and the only correct answer.
+
+  Known gap: `window.open` must stay inside the user gesture, so a command fired before the lazy
+  `VideoStudio` module has loaded cannot wait for it. It starts the load and opens unbridged that
+  once, and the page falls back to its own settings. A token handoff after load would close this.
+
+- **Commit hygiene note.** The bridge work is committed and correct, but it landed inside
+  `006c25805` ("Assessment Literacy: career nodes announced as buttons no keyboard could press")
+  rather than under its own message. A concurrent session committed while these files were staged
+  in the shared index and swept them in. Nothing was lost or altered; the log attribution for
+  those ten files is simply wrong, and history was left alone rather than rewritten.
 
 Tests: `tests/it_coach.test.js` (9) plus the coach cases in `tests/video_studio.test.js` (209
 green, including the ambiguous-reply and educator-unrestricted paths).
