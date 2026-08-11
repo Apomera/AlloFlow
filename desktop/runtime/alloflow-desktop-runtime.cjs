@@ -538,16 +538,25 @@ const MAX_LAN_DOCS = 4000;
 // manages, so classrooms get local text AI without installing Ollama or
 // LM Studio. It speaks the OpenAI-compatible API on 127.0.0.1:{port} — the
 // app's AIProvider preset for alloflow-local already points there.
-const ENGINE_BINARY_URLS = {
-  arm64: 'https://github.com/ggml-org/llama.cpp/releases/download/b9878/llama-b9878-bin-win-cpu-arm64.zip',
-  x64: 'https://github.com/ggml-org/llama.cpp/releases/download/b9878/llama-b9878-bin-win-cpu-x64.zip',
-};
+const ENGINE_BINARY_URLS = process.platform === 'darwin'
+  ? {
+    arm64: 'https://github.com/ggml-org/llama.cpp/releases/download/b9878/llama-b9878-bin-macos-arm64.tar.gz',
+    x64: 'https://github.com/ggml-org/llama.cpp/releases/download/b9878/llama-b9878-bin-macos-x64.tar.gz',
+  }
+  : {
+    arm64: 'https://github.com/ggml-org/llama.cpp/releases/download/b9878/llama-b9878-bin-win-cpu-arm64.zip',
+    x64: 'https://github.com/ggml-org/llama.cpp/releases/download/b9878/llama-b9878-bin-win-cpu-x64.zip',
+  };
 const PINNED_QWEN_MODEL_URL = 'https://huggingface.co/Qwen/Qwen2.5-3B-Instruct-GGUF/resolve/7dabda4d13d513e3e842b20f0d435c732f172cbe/qwen2.5-3b-instruct-q4_k_m.gguf';
 const PINNED_WHISPER_MODEL_URL = 'https://huggingface.co/ggerganov/whisper.cpp/resolve/5359861c739e955e79d9a303bcbc70fb988958b1/ggml-base.bin';
 const PINNED_WHISPER_BINARY_URL = 'https://github.com/ggml-org/whisper.cpp/releases/download/v1.9.1/whisper-bin-x64.zip';
 const FIRST_PARTY_DOWNLOAD_SHA256 = new Map([
-  [ENGINE_BINARY_URLS.arm64, 'a7f3307a62b2fdf367d62302217fdcd0a2f2723ed0fd55052f8a880b33e14fe5'],
-  [ENGINE_BINARY_URLS.x64, '66e0e038c73aedefeed54c92ebfc3e7b8531fbf0b49ad6c21e50d93afd7e224e'],
+  // Pin every first-party engine URL explicitly (not via ENGINE_BINARY_URLS.*,
+  // which is platform-dependent) so each platform's archive verifies correctly.
+  ['https://github.com/ggml-org/llama.cpp/releases/download/b9878/llama-b9878-bin-win-cpu-arm64.zip', 'a7f3307a62b2fdf367d62302217fdcd0a2f2723ed0fd55052f8a880b33e14fe5'],
+  ['https://github.com/ggml-org/llama.cpp/releases/download/b9878/llama-b9878-bin-win-cpu-x64.zip', '66e0e038c73aedefeed54c92ebfc3e7b8531fbf0b49ad6c21e50d93afd7e224e'],
+  ['https://github.com/ggml-org/llama.cpp/releases/download/b9878/llama-b9878-bin-macos-arm64.tar.gz', '3c18b48c3d4e4fb6e66c8188c6ac06849d9da6919511c061e310e18682432b57'],
+  ['https://github.com/ggml-org/llama.cpp/releases/download/b9878/llama-b9878-bin-macos-x64.tar.gz', '4b62fc570e58984517bb91f12143b348ffdca6810b1fbbce781a50ec53cae081'],
   [PINNED_QWEN_MODEL_URL, '626b4a6678b86442240e33df819e00132d3ba7dddfe1cdc4fbb18e0a9615c62d'],
   [PINNED_WHISPER_BINARY_URL, '7d8be46ecd31828e1eb7a2ecdd0d6b314feafd82163038ab6092594b0a063539'],
   [PINNED_WHISPER_MODEL_URL, '60ed5bc3dd14eea856493d334349b405782ddcaf0028d4b5df4088345fba2efe'],
@@ -3103,11 +3112,17 @@ async function downloadEngineFile(url, destination, label, expectedSha256) {
 async function expandEngineZip(zipPath, destDir) {
   fs.mkdirSync(destDir, { recursive: true });
   await new Promise((resolveDone, rejectDone) => {
-    const child = process.platform === 'win32'
-      ? spawn('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command',
-          "Expand-Archive -LiteralPath '" + zipPath.replace(/'/g, "''") + "' -DestinationPath '" + destDir.replace(/'/g, "''") + "' -Force"],
-          { windowsHide: true })
-      : spawn('unzip', ['-o', zipPath, '-d', destDir]);
+    // llama.cpp publishes .zip for Windows and .tar.gz for macOS — pick the
+    // extractor by archive extension, not platform, so a custom binaryUrl of
+    // either kind works everywhere tar/unzip exist.
+    const isTarball = /\.(tar\.gz|tgz)$/i.test(zipPath);
+    const child = isTarball
+      ? spawn('tar', ['-xzf', zipPath, '-C', destDir])
+      : (process.platform === 'win32'
+        ? spawn('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command',
+            "Expand-Archive -LiteralPath '" + zipPath.replace(/'/g, "''") + "' -DestinationPath '" + destDir.replace(/'/g, "''") + "' -Force"],
+            { windowsHide: true })
+        : spawn('unzip', ['-o', zipPath, '-d', destDir]));
     child.on('exit', (code) => (code === 0 ? resolveDone() : rejectDone(new Error('Engine archive extraction failed (exit ' + code + ').'))));
     child.on('error', rejectDone);
   });
@@ -3155,7 +3170,10 @@ async function ensureEngineBinary(config, arch) {
     throwIfEngineStopRequested();
     managedEngine.phase = 'downloading-binary';
     appendEngineLog('Downloading engine binary (' + arch + '): ' + url);
-    const zipPath = path.join(archDir, 'llama-server-download.zip');
+    // Keep the source archive's extension — expandEngineZip picks tar vs unzip from it
+    // (llama.cpp ships .zip on Windows and .tar.gz on macOS).
+    const archiveExt = /\.(tar\.gz|tgz)$/i.test(url) ? '.tar.gz' : '.zip';
+    const zipPath = path.join(archDir, 'llama-server-download' + archiveExt);
     await downloadEngineFile(url, zipPath, 'engine program', engine.binarySha256);
     throwIfEngineStopRequested();
     await expandEngineZip(zipPath, archDir);
@@ -3164,6 +3182,8 @@ async function ensureEngineBinary(config, arch) {
     managedEngine.binaryCheckCache = null;
     binary = findFileRecursive(archDir, binaryName);
     if (!binary) throw new Error('llama-server was not found inside the downloaded engine archive.');
+    // tar preserves modes, but belt-and-braces: the server must be executable.
+    if (process.platform !== 'win32') { try { fs.chmodSync(binary, 0o755); } catch (_) {} }
   }
   return binary;
 }
