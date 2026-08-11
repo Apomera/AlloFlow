@@ -2594,13 +2594,57 @@ window.StemLab = window.StemLab || {
         var GB_SPACING = 40;
         var GB_OFFSET = 24;
         var pegs = [];
+        var gbFocus = (_m.geoboardFocus && typeof _m.geoboardFocus.x === 'number')
+          ? _m.geoboardFocus : { x: 0, y: 0 };
+        // Enter and Space run the SAME branch a click runs, so the mouse path and the
+        // keyboard path cannot drift apart. Arrows move the roving focus; anything else
+        // falls through untouched so Tab still leaves the board.
+        function gbPegActivate(x, y) {
+          if (!geoboardSelected) { upd({ geoboardSelected: { x: x, y: y } }); sfxClick(); return; }
+          if (geoboardSelected.x === x && geoboardSelected.y === y) { upd({ geoboardSelected: null }); return; }
+          upd({
+            geoboardSegments: geoboardSegments.concat([{ x1: geoboardSelected.x, y1: geoboardSelected.y, x2: x, y2: y }]),
+            geoboardSelected: null
+          });
+          sfxClick();
+        }
+        function gbKey(ev, x, y) {
+          var k = ev.key, nx = x, ny = y;
+          if (k === 'Enter' || k === ' ' || k === 'Spacebar') { ev.preventDefault(); gbPegActivate(x, y); return; }
+          if (k === 'Escape') { if (geoboardSelected) { ev.preventDefault(); upd({ geoboardSelected: null }); } return; }
+          if (k === 'ArrowLeft') nx = Math.max(0, x - 1);
+          else if (k === 'ArrowRight') nx = Math.min(GB_SIZE - 1, x + 1);
+          else if (k === 'ArrowUp') ny = Math.max(0, y - 1);
+          else if (k === 'ArrowDown') ny = Math.min(GB_SIZE - 1, y + 1);
+          else return;
+          ev.preventDefault();
+          upd({ geoboardFocus: { x: nx, y: ny } });
+          try {
+            var el = document.querySelector('[data-gb-peg="' + nx + ',' + ny + '"]');
+            if (el && el.focus) setTimeout(function () { el.focus(); }, 0);
+          } catch (e) {}
+        }
         for (var py = 0; py < GB_SIZE; py++) {
           for (var px = 0; px < GB_SIZE; px++) {
+            var isFocusPeg = gbFocus.x === px && gbFocus.y === py;
+            var isSelPeg = !!geoboardSelected && geoboardSelected.x === px && geoboardSelected.y === py;
             pegs.push(h('circle', {
               key: 'peg-' + px + '-' + py,
               cx: GB_OFFSET + px * GB_SPACING, cy: GB_OFFSET + py * GB_SPACING, r: 4,
-              fill: '#1f2937', stroke: '#fff', strokeWidth: 1,
+              fill: '#1f2937', stroke: isFocusPeg ? '#f59e0b' : '#fff', strokeWidth: isFocusPeg ? 3 : 1,
               style: { cursor: 'pointer' },
+              // The whole geoboard was mouse-only: without a pointer there was no way to
+              // select a peg, so the activity could not be started at all. One tab stop
+              // reaches the board, arrows move between pegs, Enter connects.
+              role: 'button',
+              tabIndex: isFocusPeg ? 0 : -1,
+              'data-gb-peg': px + ',' + py,
+              'aria-label': 'Peg column ' + (px + 1) + ', row ' + (py + 1)
+                + (isSelPeg ? ', selected' : (geoboardSelected ? ', press Enter to join to the selected peg' : ', press Enter to select')),
+              onKeyDown: function(x, y) { return function(ev) { gbKey(ev, x, y); }; }(px, py),
+              onFocus: function(x, y) { return function() {
+                if (gbFocus.x !== x || gbFocus.y !== y) upd({ geoboardFocus: { x: x, y: y } });
+              }; }(px, py),
               onClick: function(x, y) { return function() {
                 if (!geoboardSelected) {
                   upd({ geoboardSelected: { x: x, y: y } });
