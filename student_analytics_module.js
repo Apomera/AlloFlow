@@ -4422,6 +4422,10 @@ try {
       const sentences = (packWords || []).map((it) => {
         const w = String((it && (it.targetWord || it.word || it.term)) || '').trim().toLowerCase();
         if (!w) return '';
+        // Prefer the pack's three-sentence story (richer, less repetition in
+        // the assembled passage), then the single sentence, then a frame.
+        const packedStory = it.activityItems && it.activityItems.read_passage && it.activityItems.read_passage.story;
+        if (typeof packedStory === 'string' && packedStory.trim()) return packedStory.trim();
         const packed = it.activityItems && it.activityItems.read_sentence && it.activityItems.read_sentence.sentence;
         if (typeof packed === 'string' && packed.trim()) return packed.trim();
         const seed = w.split('').reduce((s, c) => s + c.charCodeAt(0), 0);

@@ -978,6 +978,37 @@
         return { before: s.slice(0, start).trim(), after: s.slice(start + w.length).trim() };
     };
 
+    // A micro-story is three sentences about ONE word — the referent carries
+    // across sentences, which is what makes it connected text rather than
+    // three unrelated lines. Each sentence passes the same decodability gate
+    // as a single sentence; a sentence may omit the target (that is normal
+    // prose) but at least two of the three must contain it, or the "story"
+    // is not actually about the word the child is practicing.
+    const packStoryIsUsable = (story, word, sessionWords) => {
+        if (!Array.isArray(story) || story.length !== 3) return false;
+        const w = String(word || '').trim().toLowerCase();
+        if (!w) return false;
+        let withTarget = 0;
+        for (const raw of story) {
+            const s = String(raw || '').trim();
+            if (!s) return false;
+            const words = packSentenceWords(s);
+            const count = words.filter((v) => v === w).length;
+            if (count > 1) return false;
+            if (count === 1) {
+                if (!packSentenceIsUsable(s, w, sessionWords)) return false;
+                withTarget++;
+            } else {
+                // Target-less sentence: same vocabulary and shape rules, just
+                // without the exactly-once requirement.
+                if (/[^a-zA-Z\s.,!?]/.test(s)) return false;
+                if (words.length < 3 || words.length > 8) return false;
+                if (!words.every((v) => v === 'a' || v === 'i' || !isUnverifiedK2Word(v, sessionWords))) return false;
+            }
+        }
+        return withTarget >= 2;
+    };
+
     // ── eSpeak G2P: the middle rung of the phoneme fallback ladder ──────────
     // When Gemini returns no phonemes for a word, the pack used to drop
     // straight to estimatePackPhonemes — a spelling heuristic, which is where
@@ -1134,11 +1165,12 @@
             missing_letter: { enabled: false, count: 5 },
             decoding: { enabled: false, count: 5 },
             read_sentence: { enabled: false, count: 5 },
+            read_passage: { enabled: false, count: 5 },
         });
         const [lessonPlanOrder, setLessonPlanOrder] = React.useState([
             'isolation', 'blending', 'segmentation', 'orthography', 'rhyming',
             'letter_tracing', 'counting', 'mapping', 'sound_sort', 'word_families', 'word_scramble', 'manipulation',
-            'syllable_counting', 'syllable_blending', 'spelling_bee', 'missing_letter', 'decoding', 'read_sentence'
+            'syllable_counting', 'syllable_blending', 'spelling_bee', 'missing_letter', 'decoding', 'read_sentence', 'read_passage'
         ]);
         const [draggedActivity, setDraggedActivity] = React.useState(null);
         const [lessonPlanReorderStatus, setLessonPlanReorderStatus] = React.useState('');
@@ -1531,6 +1563,37 @@
                         readSentence = { sentence: rsText, before: rsSplit.before, after: rsSplit.after, options: rsOptions };
                     }
                 }
+                // Read the Story: a three-sentence micro-passage about this
+                // word, every occurrence of the word blanked — one choice
+                // fills them all. AI story when it survives the gate; three
+                // rotated sight-word frames otherwise, so the referent still
+                // repeats across sentences.
+                let readPassage = null;
+                if (packIsEnglish) {
+                    const rpSentences = packStoryIsUsable(item.story, word, rsSessionWords)
+                        ? item.story.map((s) => String(s).trim())
+                        : [0, 1, 2].map((offset) => {
+                            const f = READ_SENTENCE_FRAMES[(seed + offset) % READ_SENTENCE_FRAMES.length];
+                            return joinPackSentence(f.before, word, f.after);
+                        });
+                    const rpParts = rpSentences.map((s) => {
+                        const split = splitPackSentence(s, word);
+                        return split ? { before: split.before, after: split.after } : { text: s };
+                    });
+                    // A story where no sentence could be split has no blank to
+                    // fill and cannot be scored — skip the board entirely.
+                    if (rpParts.some((p) => !p.text)) {
+                        const rpStoryText = rpSentences.join(' ');
+                        const rpUsed = new Set(rpSentences.flatMap((s) => packSentenceWords(s)));
+                        const rpOptions = boardWithAnswer(word, [
+                            ...(item.sentenceDistractors || []),
+                            ...familySource,
+                            ...(item.blendingDistractors || []),
+                            ...otherWords,
+                        ].map(normalizePackKey).filter((v) => v && v !== word && !rpUsed.has(v) && !isUnusableAsPhonicsWord(v)), 3);
+                        readPassage = { story: rpStoryText, parts: rpParts, options: rpOptions };
+                    }
+                }
                 item.activityItems = {
                     counting: { options: [1,2,3,4,5,6,7,8,9,10,'11+'], answer: item.phonemeCount || phonemes.length },
                     isolation: { position, correctSound, options: isolationOptions },
@@ -1550,6 +1613,7 @@
                     word_families: { rime, options: familyOptions, distractors: familyDistractors },
                     decoding: { choices: decodingChoices },
                     ...(readSentence ? { read_sentence: readSentence } : {}),
+                    ...(readPassage ? { read_passage: readPassage } : {}),
                 };
             });
             return items;
@@ -1664,6 +1728,7 @@
                          ORTHOGRAPHY DISTRACTORS: Also return 3 plausible misspellings of the target word — letter substitutions or omissions a K-2 student might reasonably make (e.g. for "corn": ["korn", "cron", "cor"]). These are used for a spelling-choice activity so they should look visually similar to the correct word.
                          MANIPULATION TASK (Sound Swap activity): Return a phoneme deletion OR substitution task. Pick whichever yields a common English answer word. Include a child-friendly instruction line, the target phoneme in plain text (no slashes), the resulting answer word, and 3 distractor words that are also real common English words similar in length to the answer but NOT correct.
                          DECODABLE SENTENCE (Finish the Sentence activity): Return a short, sensible, concrete sentence of 3 to 7 words that uses "${rawWord}" exactly once and otherwise uses ONLY very common K-2 sight words (the, a, I, can, see, is, in, on, my, we, like, look, here, has, and). No contractions, no proper nouns, no commas. Also return "sentenceDistractors": 3 real words that LOOK similar to "${rawWord}" (same word family, or one letter different) but do NOT make sense in that sentence.
+                         DECODABLE STORY (Read the Story activity): Return "story": an array of EXACTLY 3 short connected sentences (3 to 7 words each) that form a tiny story about "${rawWord}". At least 2 of the 3 sentences use "${rawWord}" (never twice in one sentence). Same vocabulary rule: only "${rawWord}" plus very common K-2 sight words. No contractions, no proper nouns, no commas.
                          Return ONLY JSON:
                          {
                              "word": "${rawWord}",
@@ -1678,6 +1743,7 @@
                              "orthographyDistractors": ["korn", "cron", "cor"],
                              "sentence": "I can see the corn.",
                              "sentenceDistractors": ["core", "cord", "torn"],
+                             "story": ["Look at the corn.", "The corn is hot.", "We like the corn."],
                              "wordFamily": "-orn",
                              "familyEnding": "-orn",
                              "familyMembers": ["horn", "born", "worn", "torn", "morn"],
@@ -1775,6 +1841,7 @@
                          // decodability gate before anything trusts it.
                          sentence: typeof data.sentence === 'string' ? data.sentence.trim() : '',
                          sentenceDistractors: (data.sentenceDistractors || []).filter((w) => !isUnusableAsPhonicsWord(w)),
+                         story: Array.isArray(data.story) ? data.story : [],
                          familyEnding: data.familyEnding || '',
                          familyMembers: (data.familyMembers || []).filter((w) => !isUnusableAsPhonicsWord(w)),
                          firstSound: data.firstSound || validatedPhonemes[0] || '',
@@ -1940,6 +2007,7 @@
                      ...(boards.word_families?.options || []),
                      ...(boards.word_families?.distractors || []),
                      ...(boards.read_sentence?.options || []),
+                     ...(boards.read_passage?.options || []),
                  ].forEach((value) => value && tasks.add(String(value)));
                  addInstructionParts(tasks, boards.manipulation?.task?.instruction);
                  if (boards.read_sentence?.sentence) {
@@ -1950,6 +2018,12 @@
                      // clip will never be looked up.
                      tasks.add(boards.read_sentence.sentence);
                      tasks.add('Read the sentence. Which word finishes it?');
+                 }
+                 if (boards.read_passage?.story) {
+                     // Same contract as the sentence clip: the instruction
+                     // string must byte-match word_sounds.read_passage_prompt.
+                     tasks.add(boards.read_passage.story);
+                     tasks.add('Read the story. Which word finishes it?');
                  }
                  tasks.add('Which word did you hear?');
                  tasks.add('Which word rhymes with');
@@ -2596,6 +2670,7 @@
                                                     missing_letter: { id: 'missing_letter', label: 'Missing Letter', icon: Type },
                                                     decoding: { id: 'decoding', label: 'Read & Match', icon: BookOpen },
                                                     read_sentence: { id: 'read_sentence', label: 'Finish the Sentence', icon: BookOpen },
+                                                    read_passage: { id: 'read_passage', label: 'Read the Story', icon: BookOpen },
                                                 };
                                                 const activity = activityDefs[actId];
                                                 return (

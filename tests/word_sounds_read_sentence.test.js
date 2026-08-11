@@ -172,7 +172,8 @@ describe('the player treats the target as print, not sound', () => {
   });
 
   it('never auto-speaks the word with instructions off', () => {
-    expect(MODULE).toMatch(/wordSoundsActivity === "decoding" \|\| wordSoundsActivity === "read_sentence"\) return;/);
+    // read_passage joined the print-target family; the guard names all three.
+    expect(MODULE).toMatch(/wordSoundsActivity === "decoding" \|\| wordSoundsActivity === "read_sentence" \|\| wordSoundsActivity === "read_passage"\) return;/);
   });
 
   it('every mid-item re-speak of the answer excludes it (all five sites)', () => {
@@ -183,9 +184,9 @@ describe('the player treats the target as print, not sound', () => {
   });
 
   it('reads the completed sentence back on a correct answer, never mid-probe', () => {
-    const idx = MODULE.indexOf('wordSoundsActivity === "read_sentence" && !isProbeMode');
+    const idx = MODULE.indexOf('(wordSoundsActivity === "read_sentence" || wordSoundsActivity === "read_passage") && !isProbeMode');
     expect(idx).toBeGreaterThan(0);
-    expect(MODULE.slice(idx, idx + 500)).toMatch(/handleAudio\(_rsText\)/);
+    expect(MODULE.slice(idx, idx + 700)).toMatch(/handleAudio\(_rsText\)/);
   });
 
   it('word-level judgment: no per-phoneme mastery attribution', () => {

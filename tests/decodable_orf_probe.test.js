@@ -50,6 +50,17 @@ describe('the passage is built from the pack', () => {
     expect(passage).toContain('The cat can run.');
   });
 
+  it('prefers the three-sentence story over the single sentence', () => {
+    const passage = buildDecodablePassage([
+      { targetWord: 'cat', activityItems: {
+        read_sentence: { sentence: 'The cat can run.' },
+        read_passage: { story: 'Look at the cat! Here is the cat. We like the cat.' },
+      } },
+    ]);
+    expect(passage).toContain('Look at the cat! Here is the cat. We like the cat.');
+    expect(passage).not.toContain('The cat can run.');
+  });
+
   it('falls back to a sight-word frame for words without a packed sentence', () => {
     const passage = buildDecodablePassage([{ targetWord: 'bun' }]);
     expect(passage).toMatch(/bun/);

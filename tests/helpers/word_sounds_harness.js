@@ -47,7 +47,7 @@ const ICONS = ['AlertCircle', 'AlertTriangle', 'BarChart2', 'BarChart3', 'Calcul
 
 // The 14 distinct wordSoundsActivity values (from `wordSoundsActivity === "..."`
 // comparisons in the module).
-export const ACTIVITIES = ['rhyming', 'blending', 'segmentation', 'isolation', 'manipulation', 'syllable_blending', 'syllable_counting', 'sound_sort', 'word_families', 'orthography', 'letter_tracing', 'spelling_bee', 'mapping', 'counting', 'decoding', 'read_sentence'];
+export const ACTIVITIES = ['rhyming', 'blending', 'segmentation', 'isolation', 'manipulation', 'syllable_blending', 'syllable_counting', 'sound_sort', 'word_families', 'orthography', 'letter_tracing', 'spelling_bee', 'mapping', 'counting', 'decoding', 'read_sentence', 'read_passage'];
 
 const FROZEN_EPOCH = 1700000000000;
 
