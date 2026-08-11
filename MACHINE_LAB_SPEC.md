@@ -51,6 +51,34 @@ Note on the harness: `dark` and `contrast` are pushed as SEPARATE flags. A viewe
 infers one from the other cannot render high contrast correctly, which is exactly how
 defect 7 arose.
 
+## Render cost
+
+`dev-tools/ml_render_cost.cjs`, 8 checks. Sliders re-render on every drag, and some views do
+real work per render, so a render that misses a frame makes dragging feel like mud. Nothing
+else in this repo's tooling measures that.
+
+Measured medians against a 12 ms budget (one 60 Hz frame is 16.7 ms, and layout and paint
+still have to fit): machines 6.3, build 5.5, siege 4.2, range 1.9, compare 1.9, learn 0.9.
+
+Two results worth recording because they contradict the obvious guess:
+
+- **Compare is among the cheapest at 1.9 ms**, despite running four full flight
+  integrations per render. Velocity Verlet over a few thousand steps is simple arithmetic
+  and costs almost nothing. The instinct to memoise it would have been wasted work.
+- **The slowest view is the Machine Shop**, because `buildBenches()` reconstructs all six
+  benches' copy (roughly 180 translator calls) on *every* render of *every* view — the
+  selected bench feeds the screen-reader summary, so it is never skipped. Still inside
+  budget, so it is left alone; the check is what would catch it if that changed.
+
+## Two i18n non-issues, verified
+
+Worth writing down so nobody re-investigates: no stem tool's keys are in `ui_strings.js`, and
+none are in the 63 language packs either — not `stem.physics.*`, not `stem.titration.*`, not
+this tool's. Stem tools carry their English inline as `__alloT(key, fallback)` and rely on
+the runtime path. This tool matches that exactly, so its ~350 keys are in the same position
+as every other stem tool's, not a gap it introduced. `check_translation_keys.cjs` reports 4
+missing keys repo-wide, all pre-existing in `AlloFlowANTI.txt`, none from here.
+
 ## Defect 17: the camera was frozen and unreachable
 
 `makeOrbitViewer` takes `rotY`/`rotX`/`zoom` from **every** push and assigns them
