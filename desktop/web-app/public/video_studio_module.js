@@ -2993,7 +2993,48 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     };
   }
 
-  var VS_HELPERS = { vsBuildStudioTakeRecord: vsBuildStudioTakeRecord, vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference, vsMediaLicenseProfile: vsMediaLicenseProfile, vsNormalizeMediaCredit: vsNormalizeMediaCredit, vsSanitizeMediaCredits: vsSanitizeMediaCredits, vsBuildMediaCredits: vsBuildMediaCredits, vsBuildMediaCreditsCard: vsBuildMediaCreditsCard, vsMediaSearchTargets: vsMediaSearchTargets, vsBuildPermissionAudit: vsBuildPermissionAudit, vsCrc32: vsCrc32, vsBuildZip: vsBuildZip, vsReadZip: vsReadZip, vsZoomState: vsZoomState, vsNormalizeMuteSpans: vsNormalizeMuteSpans, vsGainAt: vsGainAt, vsSanitizeMusicBed: vsSanitizeMusicBed, vsMusicGainAt: vsMusicGainAt, vsAudioPolishPreset: vsAudioPolishPreset, vsApplyAudioPolishPreset: vsApplyAudioPolishPreset, vsBuildAudioEditManifest: vsBuildAudioEditManifest, vsBuildProjectBundleReadme: vsBuildProjectBundleReadme, vsBuildProjectImportSummary: vsBuildProjectImportSummary, vsOverlayFrameState: vsOverlayFrameState, vsBuildResourceCues: vsBuildResourceCues, vsDetectFillerSpans: vsDetectFillerSpans, vsTranscriptWordAutoSelect: vsTranscriptWordAutoSelect, vsBuildTranscriptCleanupQueue: vsBuildTranscriptCleanupQueue, vsTranscriptSelectionRange: vsTranscriptSelectionRange, vsBuildTranscriptEditDecision: vsBuildTranscriptEditDecision, vsSanitizeTranscriptEdits: vsSanitizeTranscriptEdits, vsBuildTranscriptEditText: vsBuildTranscriptEditText, vsTranscriptWordsFromCues: vsTranscriptWordsFromCues, vsSanitizeTranscriptWords: vsSanitizeTranscriptWords, vsTranscriptWordsForTake: vsTranscriptWordsForTake, vsCaptionCuesFromTranscriptWords: vsCaptionCuesFromTranscriptWords, vsTranscriptWordSelectionRanges: vsTranscriptWordSelectionRanges, vsBuildRippleKeepSegments: vsBuildRippleKeepSegments, vsSanitizeAiSuggestions: vsSanitizeAiSuggestions, vsComputePeaks: vsComputePeaks, vsSanitizeNarrationCues: vsSanitizeNarrationCues, vsParsePronunciationGlossary: vsParsePronunciationGlossary, vsApplyPronunciationGlossary: vsApplyPronunciationGlossary, vsScriptTextToNarrationCues: vsScriptTextToNarrationCues, vsSanitizeVisualDescriptions: vsSanitizeVisualDescriptions, vsSanitizeLessonPlan: vsSanitizeLessonPlan, vsSanitizeLocalizedDraft: vsSanitizeLocalizedDraft, vsAnalyzeLocalizationDraft: vsAnalyzeLocalizationDraft, vsAnalyzeCaptionQuality: vsAnalyzeCaptionQuality, vsBuildFinishChecklist: vsBuildFinishChecklist, vsBuildExportReadinessSummary: vsBuildExportReadinessSummary, vsPickNextFinishItem: vsPickNextFinishItem, vsBuildTranscriptResource: vsBuildTranscriptResource, vsBuildStudentFamilyShareNote: vsBuildStudentFamilyShareNote, vsCleanCaptionText: vsCleanCaptionText, vsPolishCaptions: vsPolishCaptions, vsCaptionStylePreset: vsCaptionStylePreset, vsCaptionDisplayOptions: vsCaptionDisplayOptions, vsResolveCaptionStyle: vsResolveCaptionStyle, vsTitleCardPreset: vsTitleCardPreset, vsPipFramePreset: vsPipFramePreset, vsInsertCardLayout: vsInsertCardLayout, vsCaptionPreviewLines: vsCaptionPreviewLines, vsBuildChapters: vsBuildChapters, vsSanitizeTeachingInserts: vsSanitizeTeachingInserts, vsPcmToWav: vsPcmToWav, vsMuxWebm: vsMuxWebm, vsValidateDemoCapture: vsValidateDemoCapture, vsBuildDemoPreflight: vsBuildDemoPreflight, vsDemoContinuationPlan: vsDemoContinuationPlan, vsAnalyzeDemoTakeQuality: vsAnalyzeDemoTakeQuality, vsScheduleDemoNarrationClip: vsScheduleDemoNarrationClip, vsBuildDemoCaptionCues: vsBuildDemoCaptionCues, vsSanitizeDemoAudit: vsSanitizeDemoAudit, vsSanitizeCoachAdvice: vsSanitizeCoachAdvice };
+  // ── Standalone Screen Coach window ─────────────────────────────────────────
+  // The coach page (it_coach/it_coach.html) sits on the SAME origin as the
+  // Studio popup and speaks the SAME bridge protocol, so it needs no transport
+  // of its own: mint a token, hand it over in the URL, and the existing
+  // vsAiBridgeReceiver answers its allostudio-coach-request like any other.
+  //
+  // Routing the call through the app is not merely convenient, it is the only
+  // thing that is correct. The app is where the key actually resolves, and that
+  // resolution is not a single value: in Gemini Canvas there is no key at all
+  // and the environment authorizes the request (a top-level window on the CDN
+  // is not a Canvas host, so it could never inherit that), while a QR-joined
+  // student reads a session-scoped config rather than the device's stored one.
+  // A page that read localStorage itself would reimplement that branching and
+  // get the student case wrong on a shared device, handing a learner the
+  // teacher's key.
+  var IT_COACH_URL = 'https://alloflow-cdn.pages.dev/it_coach/it_coach.html';
+  function coachUrlWithBridge(token, posture) {
+    try {
+      var u = new URL(IT_COACH_URL, window.location.href);
+      if (window.location && window.location.origin && window.location.origin !== 'null') {
+        u.searchParams.set('allo_origin', window.location.origin);
+      }
+      if (token) u.searchParams.set('allo_bridge', token);
+      u.searchParams.set('posture', posture === 'educator' ? 'educator' : 'learner');
+      return u.href;
+    } catch (_) { return IT_COACH_URL + '?posture=' + (posture === 'educator' ? 'educator' : 'learner'); }
+  }
+  function vsOpenCoachWindow(posture) {
+    var store = (typeof vsTakeStore !== 'undefined' && vsTakeStore) ? vsTakeStore : null;
+    var existing = store && store.coachWin;
+    if (existing && !existing.closed) { try { existing.focus(); } catch (_) {} return existing; }
+    // No store means no receiver either, so open unbridged rather than handing
+    // out a token nothing will honour: the page falls back to its own settings.
+    var token = store ? (store.token || randomBridgeToken()) : '';
+    if (store) store.setToken(token);
+    var w = null;
+    try { w = window.open(coachUrlWithBridge(token, posture), 'alloflow-it-coach', 'width=1100,height=820'); } catch (_) { w = null; }
+    if (store) store.coachWin = w || null;
+    return w;
+  }
+
+  var VS_HELPERS = { vsBuildStudioTakeRecord: vsBuildStudioTakeRecord, vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference, vsMediaLicenseProfile: vsMediaLicenseProfile, vsNormalizeMediaCredit: vsNormalizeMediaCredit, vsSanitizeMediaCredits: vsSanitizeMediaCredits, vsBuildMediaCredits: vsBuildMediaCredits, vsBuildMediaCreditsCard: vsBuildMediaCreditsCard, vsMediaSearchTargets: vsMediaSearchTargets, vsBuildPermissionAudit: vsBuildPermissionAudit, vsCrc32: vsCrc32, vsBuildZip: vsBuildZip, vsReadZip: vsReadZip, vsZoomState: vsZoomState, vsNormalizeMuteSpans: vsNormalizeMuteSpans, vsGainAt: vsGainAt, vsSanitizeMusicBed: vsSanitizeMusicBed, vsMusicGainAt: vsMusicGainAt, vsAudioPolishPreset: vsAudioPolishPreset, vsApplyAudioPolishPreset: vsApplyAudioPolishPreset, vsBuildAudioEditManifest: vsBuildAudioEditManifest, vsBuildProjectBundleReadme: vsBuildProjectBundleReadme, vsBuildProjectImportSummary: vsBuildProjectImportSummary, vsOverlayFrameState: vsOverlayFrameState, vsBuildResourceCues: vsBuildResourceCues, vsDetectFillerSpans: vsDetectFillerSpans, vsTranscriptWordAutoSelect: vsTranscriptWordAutoSelect, vsBuildTranscriptCleanupQueue: vsBuildTranscriptCleanupQueue, vsTranscriptSelectionRange: vsTranscriptSelectionRange, vsBuildTranscriptEditDecision: vsBuildTranscriptEditDecision, vsSanitizeTranscriptEdits: vsSanitizeTranscriptEdits, vsBuildTranscriptEditText: vsBuildTranscriptEditText, vsTranscriptWordsFromCues: vsTranscriptWordsFromCues, vsSanitizeTranscriptWords: vsSanitizeTranscriptWords, vsTranscriptWordsForTake: vsTranscriptWordsForTake, vsCaptionCuesFromTranscriptWords: vsCaptionCuesFromTranscriptWords, vsTranscriptWordSelectionRanges: vsTranscriptWordSelectionRanges, vsBuildRippleKeepSegments: vsBuildRippleKeepSegments, vsSanitizeAiSuggestions: vsSanitizeAiSuggestions, vsComputePeaks: vsComputePeaks, vsSanitizeNarrationCues: vsSanitizeNarrationCues, vsParsePronunciationGlossary: vsParsePronunciationGlossary, vsApplyPronunciationGlossary: vsApplyPronunciationGlossary, vsScriptTextToNarrationCues: vsScriptTextToNarrationCues, vsSanitizeVisualDescriptions: vsSanitizeVisualDescriptions, vsSanitizeLessonPlan: vsSanitizeLessonPlan, vsSanitizeLocalizedDraft: vsSanitizeLocalizedDraft, vsAnalyzeLocalizationDraft: vsAnalyzeLocalizationDraft, vsAnalyzeCaptionQuality: vsAnalyzeCaptionQuality, vsBuildFinishChecklist: vsBuildFinishChecklist, vsBuildExportReadinessSummary: vsBuildExportReadinessSummary, vsPickNextFinishItem: vsPickNextFinishItem, vsBuildTranscriptResource: vsBuildTranscriptResource, vsBuildStudentFamilyShareNote: vsBuildStudentFamilyShareNote, vsCleanCaptionText: vsCleanCaptionText, vsPolishCaptions: vsPolishCaptions, vsCaptionStylePreset: vsCaptionStylePreset, vsCaptionDisplayOptions: vsCaptionDisplayOptions, vsResolveCaptionStyle: vsResolveCaptionStyle, vsTitleCardPreset: vsTitleCardPreset, vsPipFramePreset: vsPipFramePreset, vsInsertCardLayout: vsInsertCardLayout, vsCaptionPreviewLines: vsCaptionPreviewLines, vsBuildChapters: vsBuildChapters, vsSanitizeTeachingInserts: vsSanitizeTeachingInserts, vsPcmToWav: vsPcmToWav, vsMuxWebm: vsMuxWebm, vsValidateDemoCapture: vsValidateDemoCapture, vsBuildDemoPreflight: vsBuildDemoPreflight, vsDemoContinuationPlan: vsDemoContinuationPlan, vsAnalyzeDemoTakeQuality: vsAnalyzeDemoTakeQuality, vsScheduleDemoNarrationClip: vsScheduleDemoNarrationClip, vsBuildDemoCaptionCues: vsBuildDemoCaptionCues, vsSanitizeDemoAudit: vsSanitizeDemoAudit, vsSanitizeCoachAdvice: vsSanitizeCoachAdvice, openCoachWindow: vsOpenCoachWindow, coachUrlWithBridge: coachUrlWithBridge, vsIsKnownBridgeWindow: vsIsKnownBridgeWindow };
   if (typeof module !== 'undefined' && module.exports) module.exports = VS_HELPERS;
   if (typeof window === 'undefined') return;
   if (typeof React === 'undefined' || !React.createElement) {
@@ -3068,6 +3109,10 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   var vsTakeStore = {
     takes: [],
     studioWin: null,
+    // The coach page is a second window we opened ourselves, on the same origin
+    // and holding the same token. Tracked separately so the sender check below
+    // can recognise it without the two windows fighting over one handle.
+    coachWin: null,
     token: (function () { try { return sessionStorage.getItem(VS_TOKEN_KEY) || null; } catch (_) { return null; } })(),
     listeners: [],
     subscribe: function (fn) {
@@ -3630,13 +3675,29 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     if (key) vsAiAbortControllers.delete(key);
   }
 
+  // A sender is ours if it is one of the windows WE opened and still hold a
+  // handle to. Widened from "the studio window" to "any window we opened"
+  // because the coach page is a second one; the token and origin checks above
+  // are untouched, so this recognises a handle rather than trusting a claim.
+  // With no live handle at all (the app reloaded) the token stays the proof,
+  // exactly as it did before.
+  function vsIsKnownBridgeWindow(source) {
+    // Reachable from the no-React helper surface, where the take store below
+    // never gets built. No store means no handles, which is the same answer.
+    var store = (typeof vsTakeStore !== 'undefined' && vsTakeStore) ? vsTakeStore : null;
+    if (!store) return true;
+    var known = [store.studioWin, store.coachWin].filter(function (w) { return w && !w.closed; });
+    if (!known.length) return true;
+    return known.indexOf(source) >= 0;
+  }
+
   function vsAiBridgeReceiver(ev) {
     try {
       if (!ev || !ev.data || typeof ev.data.type !== 'string') return;
       if (VS_AI_BRIDGE_TYPES.indexOf(ev.data.type) < 0) return;
       if (!vsTakeStore.token || ev.data.bridge !== vsTakeStore.token) return;
       if (ev.origin && ev.origin !== STUDIO_ORIGIN) return;
-      if (vsTakeStore.studioWin && !vsTakeStore.studioWin.closed && ev.source !== vsTakeStore.studioWin) return;
+      if (!vsIsKnownBridgeWindow(ev.source)) return;
       // Aliases so the handler bodies below read as they did in the component.
       var propsRef = vsDemoHost;
       var postToStudio = vsPostToStudio;

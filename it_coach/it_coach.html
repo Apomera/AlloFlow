@@ -163,6 +163,52 @@
     $('coachWatchBtn').disabled = true;
   }
 
+  // ── Bridge to AlloFlow ───────────────────────────────────────────────────
+  // The SAME protocol the Video Studio popup speaks, deliberately: token in
+  // ?allo_bridge=, opener origin in ?allo_origin=, every message stamped with
+  // the token, reply type derived by swapping -request for -response. The app's
+  // vsAiBridgeReceiver already answers 'allostudio-coach-request', so opening
+  // this page from AlloFlow needs no new message type and no new receiver.
+  //
+  // Preferring it is not just about saving a second key entry. The app is where
+  // a key actually resolves, and that is not one value: in Gemini Canvas there
+  // is no key at all and the environment authorises the call, which a top-level
+  // window on this origin can never inherit; and a QR-joined student reads a
+  // session-scoped config rather than the device's stored one. Reading storage
+  // from here would duplicate that branching and hand a learner the teacher's
+  // key on a shared device.
+  var opener = window.opener || null;
+  var bridgeToken = params.get('allo_bridge') || '';
+  function originFromUrl(url) {
+    try { var o = new URL(url).origin; return o && o !== 'null' ? o : ''; } catch (_) { return ''; }
+  }
+  var openerOrigin = originFromUrl(params.get('allo_origin') || '') || originFromUrl(document.referrer || '');
+  var bridgeAvailable = !!(opener && !opener.closed && bridgeToken && openerOrigin);
+  function withBridge(msg) {
+    var payload = Object.assign({}, msg || {});
+    if (bridgeToken) payload.bridge = bridgeToken;
+    return payload;
+  }
+  function bridgeRequest(type, payload, timeoutMs) {
+    return new Promise(function (resolve) {
+      if (!opener || opener.closed || !openerOrigin) { resolve({ error: 'needs the AlloFlow window' }); return; }
+      var id = 'ic' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+      var responseType = type.replace('-request', '-response');
+      var timer = null, settled = false;
+      function finish(v) { if (settled) return; settled = true; if (timer) clearTimeout(timer); window.removeEventListener('message', onMsg); resolve(v); }
+      function onMsg(ev) {
+        if (ev.source !== opener || !ev.data || ev.data.type !== responseType || ev.data.id !== id) return;
+        if (openerOrigin && ev.origin && ev.origin !== openerOrigin) return;
+        if (bridgeToken && ev.data.bridge !== bridgeToken) return;
+        finish(ev.data);
+      }
+      window.addEventListener('message', onMsg);
+      timer = setTimeout(function () { finish({ error: 'timed out' }); }, timeoutMs || 45000);
+      try { opener.postMessage(withBridge(Object.assign({ type: type, id: id }, payload)), openerOrigin); }
+      catch (_) { finish({ error: 'could not reach the AlloFlow window' }); }
+    });
+  }
+
   // ── Backend settings ─────────────────────────────────────────────────────
   var BE_KEY = 'allo_it_coach_backend_v1';
   var CLOUD_BACKENDS = ['gemini', 'openai', 'claude'];
@@ -179,6 +225,14 @@
   }
   var backendCfg = loadBackendCfg();
   function paintBackendForm() {
+    // Opened from AlloFlow: the app owns the AI settings and makes the call, so
+    // this panel is informational only. Nothing to configure, nothing to leak.
+    if (bridgeAvailable) {
+      $('setupPanel').open = false;
+      setStatus($('beStatus'), 'Using AlloFlow’s AI settings. Suggestions are made by the AlloFlow window that opened this page, so there is no second key to enter here.', 'ok');
+      $('beKeyWarning').hidden = true;
+      return;
+    }
     $('beBackend').value = backendCfg.backend;
     $('beApiKey').value = backendCfg.apiKey;
     $('beBaseUrl').value = backendCfg.baseUrl;
@@ -416,8 +470,8 @@
       stopAuto();
       return;
     }
-    var p = getProvider();
-    if (!p) { setStatus($('coachStatus'), 'No AI backend is configured. Open “AI backend” above and pick one.', 'warn'); stopAuto(); $('setupPanel').open = true; return; }
+    var p = bridgeAvailable ? null : getProvider();
+    if (!bridgeAvailable && !p) { setStatus($('coachStatus'), 'No AI backend is configured. Open “AI backend” above and pick one.', 'warn'); stopAuto(); $('setupPanel').open = true; return; }
     var frame = grabFrame();
     if (!frame) { setStatus($('coachStatus'), 'Could not read a picture from the share.', 'warn'); return; }
 
@@ -426,9 +480,25 @@
     setStatus($('coachStatus'), 'Asking the coach…');
     var resp;
     try {
-      var raw = await p.analyzeImage(buildPrompt(String($('coachGoal').value || '').slice(0, 300), history.slice(-3).join('\n')), frame, { mimeType: 'image/jpeg' });
-      var parsed = parseReply(raw);
+      var parsed;
+      if (bridgeAvailable) {
+        var replied = await bridgeRequest('allostudio-coach-request', {
+          goal: String($('coachGoal').value || '').slice(0, 300),
+          imageBase64: frame,
+          mimeType: 'image/jpeg',
+          history: history.slice(-3).join('\n'),
+          posture: posture
+        });
+        if (replied && replied.error) throw new Error(String(replied.error));
+        parsed = replied;
+      } else {
+        parsed = parseReply(await p.analyzeImage(buildPrompt(String($('coachGoal').value || '').slice(0, 300), history.slice(-3).join('\n')), frame, { mimeType: 'image/jpeg' }));
+      }
       if (!parsed || typeof parsed !== 'object') throw new Error('the reply was not readable');
+      // Clamp regardless of which way the answer came. Over the bridge the app
+      // has already sanitized it, and re-clamping is idempotent, but the page's
+      // guarantee should not depend on the opener having kept its half of the
+      // bargain. The learner guardrail is enforced where it is displayed.
       resp = sanitizeAdvice(parsed, { posture: posture });
     } catch (e) {
       busy = false;

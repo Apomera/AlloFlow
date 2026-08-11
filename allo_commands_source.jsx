@@ -779,7 +779,18 @@ function buildAlloCommands(ctx, opts = {}) {
     // open when a website is fighting you.
     { id: 'open_it_coach', icon: '🧭', roles: 'all', when: () => typeof window !== 'undefined' && typeof window.open === 'function', label: t('cmd.open_it_coach', 'Coach me through another website'), aliases: ['it coach', 'help me use this website', 'help me use another website', 'guide me through a website', 'walk me through this site', 'how do i use this site', 'stuck on a website'], hint: t('cmd.open_it_coach_hint', 'Opens a coach that watches a site you share and suggests the next step — it advises, you do the clicking'), run: (c) => {
       const posture = (c && c.isTeacherMode && !c.isParentMode) ? 'educator' : 'learner';
-      const win = window.open('https://alloflow-cdn.pages.dev/it_coach/it_coach.html?posture=' + posture, 'alloflow-it-coach');
+      // Prefer the Video Studio module's opener: it mints a bridge token and
+      // registers the window, so the coach reuses the app's AI settings through
+      // the bridge that already exists instead of asking for a second key.
+      // window.open has to stay inside this user gesture or the browser blocks
+      // it, so we cannot wait for a lazy module load; if VideoStudio is not
+      // loaded yet we start it (for next time) and open unbridged, which the
+      // page handles by falling back to its own settings.
+      const VS = (window.AlloModules && window.AlloModules.VideoStudio) || null;
+      if (!VS || typeof VS.openCoachWindow !== 'function') { try { if (window.__alloLazyVideoStudio) window.__alloLazyVideoStudio(); } catch (_) {} }
+      const win = (VS && typeof VS.openCoachWindow === 'function')
+        ? VS.openCoachWindow(posture)
+        : window.open('https://alloflow-cdn.pages.dev/it_coach/it_coach.html?posture=' + posture, 'alloflow-it-coach');
       if (!win) return t('cmd.open_it_coach_blocked', 'The browser blocked the coach window. Allow pop-ups for AlloFlow and try again.');
       return posture === 'learner'
         ? t('cmd.open_it_coach_done_learner', 'Screen Coach opened in a new window. Share the website you are stuck on and it will suggest the next step. It helps you use the site; it will not answer schoolwork.')

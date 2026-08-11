@@ -397,7 +397,7 @@ function LearningHubModal(props) {
                   way a student reaches the unrestricted coach. It opens in its
                   own window because the site it coaches is not AlloFlow. */}
               <div className="relative group" data-hub-id="screen-coach" data-hub-label="Screen Coach" data-hub-section="practice">
-                <button type="button" data-hub-launch="true" onClick={() => { setShowLearningHub(false); try { window.open('https://alloflow-cdn.pages.dev/it_coach/it_coach.html?posture=learner', 'alloflow-it-coach'); } catch (_) {} }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-sky-50 to-cyan-50 border border-sky-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center">
+                <button type="button" data-hub-launch="true" onClick={() => { setShowLearningHub(false); try { const VS = (window.AlloModules && window.AlloModules.VideoStudio) || null; if (VS && typeof VS.openCoachWindow === 'function') { VS.openCoachWindow('learner'); } else { try { if (window.__alloLazyVideoStudio) window.__alloLazyVideoStudio(); } catch (_) {} window.open('https://alloflow-cdn.pages.dev/it_coach/it_coach.html?posture=learner', 'alloflow-it-coach'); } } catch (_) {} }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-sky-50 to-cyan-50 border border-sky-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center">
                 <span className="text-4xl" aria-hidden="true">{'🧭'}</span>
                 <div>
                   <h3 className="font-bold text-sky-900">{t('learning_hub.screen_coach_title') || 'Screen Coach'}</h3>

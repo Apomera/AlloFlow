@@ -195,3 +195,73 @@ describe('Learning Hub card', () => {
     expect(readFileSync(resolve(process.cwd(), 'desktop/web-app/public/view_learning_hub_modal_module.js'), 'utf-8')).toBe(built);
   });
 });
+
+// ─── Bridge transport ───────────────────────────────────────────────────────
+// The page reuses the Video Studio bridge rather than inventing a transport:
+// same token parameter, same origin parameter, same message type, and the
+// module's existing vsAiBridgeReceiver answers it. Nothing new was added to the
+// protocol, so these pins are mostly "did we actually reuse it".
+describe('bridge transport', () => {
+  it('speaks the popup protocol, parameter for parameter', () => {
+    const popup = readFileSync(resolve(process.cwd(), 'video_studio/video_studio.html'), 'utf-8');
+    expect(html).toContain("params.get('allo_bridge')");
+    expect(html).toContain("type.replace('-request', '-response')");
+    // The popup uses the same two URL parameters; if it ever renames them the
+    // page has to follow, so pin that both still read the same names.
+    expect(popup).toContain("bridgeParams.get('allo_bridge')");
+    expect(popup).toContain("bridgeParams.get('allo_origin')");
+    expect(html).toContain("params.get('allo_origin')");
+    // Same message type the module already routes.
+    expect(html).toContain("bridgeRequest('allostudio-coach-request'");
+    expect(moduleText).toContain("'allostudio-coach-request',"); // still in VS_AI_BRIDGE_TYPES
+  });
+
+  it('prefers the bridge and only falls back to its own backend without one', () => {
+    expect(html).toContain('var bridgeAvailable = !!(opener && !opener.closed && bridgeToken && openerOrigin);');
+    expect(html).toContain('var p = bridgeAvailable ? null : getProvider();');
+    // With a bridge there is nothing to configure, so the panel says so rather
+    // than asking for a second key.
+    expect(html).toContain('there is no second key to enter here');
+  });
+
+  // The page must not trust the opener to have kept the learner contract.
+  it('re-clamps the bridge reply on arrival', () => {
+    const suggest = html.slice(html.indexOf('async function suggest(fromAuto)'), html.indexOf("$('coachSuggestBtn').addEventListener"));
+    expect(suggest.indexOf('sanitizeAdvice(parsed, { posture: posture })')).toBeGreaterThan(suggest.indexOf('bridgeRequest('));
+    // Token and origin are both checked on the way in.
+    expect(html).toContain('if (bridgeToken && ev.data.bridge !== bridgeToken) return;');
+    expect(html).toContain('if (openerOrigin && ev.origin && ev.origin !== openerOrigin) return;');
+  });
+
+  it('mints the token through the existing take store, not a new one', () => {
+    expect(moduleText).toContain('function vsOpenCoachWindow(posture)');
+    expect(moduleText).toContain('if (store) store.setToken(token);');
+    expect(moduleText).toContain('u.searchParams.set(\'allo_bridge\', token)');
+    // Sender check widened to "a window we opened", with token and origin
+    // checks untouched above it.
+    expect(moduleText).toContain('function vsIsKnownBridgeWindow(source)');
+    expect(moduleText).toContain('if (!vsIsKnownBridgeWindow(ev.source)) return;');
+    expect(moduleText).toContain("if (!vsTakeStore.token || ev.data.bridge !== vsTakeStore.token) return;");
+    expect(moduleText).toContain('if (ev.origin && ev.origin !== STUDIO_ORIGIN) return;');
+  });
+
+  describe('sender check', () => {
+    let VS;
+    beforeAll(() => { loadAlloModule('video_studio_module.js'); VS = window.AlloModules.VideoStudio; });
+    it('is exported and falls back to the token when no handle is live', () => {
+      expect(typeof VS.vsIsKnownBridgeWindow).toBe('function');
+      // No live handles (the app reloaded): the token stays the only proof,
+      // which is exactly the behaviour this check had before it was widened.
+      expect(VS.vsIsKnownBridgeWindow({})).toBe(true);
+    });
+    it('builds a coach URL carrying the token, origin, and posture', () => {
+      const url = VS.coachUrlWithBridge('tok123', 'learner');
+      expect(url).toContain('it_coach/it_coach.html');
+      expect(url).toContain('allo_bridge=tok123');
+      expect(url).toContain('posture=learner');
+      // Anything that is not exactly 'educator' restricts, same as the page.
+      expect(VS.coachUrlWithBridge('t', 'nonsense')).toContain('posture=learner');
+      expect(VS.coachUrlWithBridge('t', 'educator')).toContain('posture=educator');
+    });
+  });
+});

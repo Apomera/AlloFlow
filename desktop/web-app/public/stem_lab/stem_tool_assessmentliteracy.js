@@ -11496,15 +11496,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               var p = positions[pid];
               var pcl = CAREER_CLUSTERS[p.node.cluster] || { color: '#666', icon: '?' };
               var r = p.ring === 0 ? 38 : p.ring === 1 ? 26 : 18;
+              // One activation path so pointer and keyboard cannot drift apart.
+              function activateNode() {
+                if (p.ring === 0) { upd({ sub: 'detail', careerId: pid }); }
+                else { upd({ networkRootId: pid }); }
+              }
               return h('g', {
                 key: 'n' + pid,
                 style: { cursor: 'pointer' },
-                onClick: function() {
-                  if (p.ring === 0) { upd({ sub: 'detail', careerId: pid }); }
-                  else { upd({ networkRootId: pid }); }
-                },
+                onClick: function() { activateNode(); },
+                // role="button" without tabIndex announced these nodes as
+                // buttons that no keyboard could reach, and the label said
+                // "click" — so a screen-reader user was told to do the one
+                // thing they could not do. tabIndex makes the node focusable
+                // and onKeyDown gives Enter/Space the same effect as a click.
                 role: 'button',
-                'aria-label': p.node.title + (p.ring === 0 ? ' (root, click for detail)' : ' (click to re-root)')
+                tabIndex: 0,
+                onKeyDown: function(e) {
+                  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activateNode(); }
+                },
+                'aria-label': p.node.title + (p.ring === 0 ? ' (root — open detail)' : ' (select to re-root the network here)')
               },
                 h('circle', {
                   cx: p.x, cy: p.y, r: r,

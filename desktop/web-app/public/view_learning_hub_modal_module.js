@@ -343,7 +343,16 @@ function LearningHubModal(props) {
   }, className: "absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-600 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("sel-hub") ? "\u2605" : "\u2606")), /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "screen-coach", "data-hub-label": "Screen Coach", "data-hub-section": "practice" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", onClick: () => {
     setShowLearningHub(false);
     try {
-      window.open("https://alloflow-cdn.pages.dev/it_coach/it_coach.html?posture=learner", "alloflow-it-coach");
+      const VS = window.AlloModules && window.AlloModules.VideoStudio || null;
+      if (VS && typeof VS.openCoachWindow === "function") {
+        VS.openCoachWindow("learner");
+      } else {
+        try {
+          if (window.__alloLazyVideoStudio) window.__alloLazyVideoStudio();
+        } catch (_) {
+        }
+        window.open("https://alloflow-cdn.pages.dev/it_coach/it_coach.html?posture=learner", "alloflow-it-coach");
+      }
     } catch (_) {
     }
   }, className: "flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-sky-50 to-cyan-50 border border-sky-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-4xl", "aria-hidden": "true" }, "\u{1F9ED}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-sky-900" }, t("learning_hub.screen_coach_title") || "Screen Coach"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-sky-800 mt-1" }, t("learning_hub.screen_coach_desc") || "Stuck on a website? Share it and get the next step. It helps you use the site, not answer your work."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "aria-pressed": hubFavoriteIds.includes("screen-coach"), "aria-label": hubFavoriteIds.includes("screen-coach") ? tr("hub.remove_favorite", "Remove from favorites") + ": Screen Coach" : tr("hub.add_favorite", "Add to favorites") + ": Screen Coach", title: hubFavoriteIds.includes("screen-coach") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
