@@ -4133,6 +4133,32 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var segment = el([0x18, 0x53, 0x80, 0x67], cat([info, tracks].concat(clusters)));
     return cat([ebmlHeader, segment]);
   }
+
+  // Clamp a Screen Coach reply. Advisory by contract: guidance is a short
+  // instruction for the HUMAN, the target box is normalized 0-1 or null.
+  // A malformed box becomes null (no annotation) rather than a wrong arrow.
+  // SHARED because any coach surface that calls a vision model directly has to
+  // clamp its own reply. A standalone coach page has no module in front of it,
+  // so an un-shared copy would silently lose the null-when-unsure rule, which
+  // is the entire reason this function exists.
+  function vsSanitizeCoachAdvice(raw) {
+    raw = raw && typeof raw === 'object' ? raw : {};
+    var target = null;
+    var tb = raw.target;
+    if (tb && typeof tb === 'object') {
+      var x = Number(tb.x), y = Number(tb.y), w = Number(tb.w), h = Number(tb.h);
+      if (isFinite(x) && isFinite(y) && isFinite(w) && isFinite(h)) {
+        x = Math.max(0, Math.min(1, x)); y = Math.max(0, Math.min(1, y));
+        w = Math.max(0, Math.min(1 - x, w)); h = Math.max(0, Math.min(1 - y, h));
+        if (w >= 0.005 && h >= 0.005) target = { x: x, y: y, w: w, h: h };
+      }
+    }
+    return {
+      guidance: String(raw.guidance || '').trim().slice(0, 400),
+      target: target,
+      done: raw.done === true
+    };
+  }
   // [VS_SHARED_END]
 
 /* ─── Studio app ────────────────────────────────────────────────────────────*/

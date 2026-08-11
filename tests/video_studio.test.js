@@ -3396,4 +3396,25 @@ describe('screen coach', () => {
     expect(cmd).toMatch(/open_screen_coach: \{\s*demoSafe: false/);
     expect(readFileSync(resolve(process.cwd(), 'desktop/web-app/public/allo_commands_module.js'), 'utf-8')).toBe(cmd);
   });
+
+  // A coach surface that talks to a vision model directly has to clamp its own
+  // reply. Keeping the sanitizer inside [VS_SHARED] means the sync gate above
+  // guards every copy of it; pulling it back out would let a standalone page
+  // ship without the null-when-unsure rule and draw a box at a guessed spot.
+  it('v3: the advice sanitizer lives in the shared block, in both copies', () => {
+    const sharedOf = (text) => {
+      const t = text.replace(/\r\n/g, '\n');
+      const begin = t.indexOf('[VS_SHARED_BEGIN]');
+      const end = t.indexOf('[VS_SHARED_END]');
+      expect(end).toBeGreaterThan(begin);
+      return t.slice(begin, end);
+    };
+    expect(sharedOf(coachMod)).toContain('function vsSanitizeCoachAdvice(raw)');
+    expect(sharedOf(coachHtml)).toContain('function vsSanitizeCoachAdvice(raw)');
+    // Exactly one definition per file: the move must not have left a duplicate.
+    expect(coachMod.match(/function vsSanitizeCoachAdvice\(/g)).toHaveLength(1);
+    expect(coachHtml.match(/function vsSanitizeCoachAdvice\(/g)).toHaveLength(1);
+    // Still exported, so the module bridge keeps sanitizing its own replies.
+    expect(coachMod).toContain('vsSanitizeCoachAdvice: vsSanitizeCoachAdvice');
+  });
 });
