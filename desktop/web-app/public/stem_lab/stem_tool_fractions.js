@@ -1875,6 +1875,16 @@ window.StemLab = window.StemLab || {
     var dpool = difficulty === 'easy' ? [2, 3, 4] : difficulty === 'hard' ? [3, 4, 5, 6, 8, 10, 12, 15, 16, 20] : [2, 3, 4, 5, 6, 8, 10, 12];
     var pick = function(arr) { return arr[Math.floor(Math.random() * arr.length)]; };
     var randInt = function(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; };
+    // Unbiased in-place Fisher-Yates. The .sort(Math.random()-0.5) comparator it
+    // replaces is not uniform: it left correct answers clustered near their
+    // insertion position in the vocab quiz, exam, and estimation choices.
+    var fyShuffle = function(arr) {
+      for (var fyi = arr.length - 1; fyi > 0; fyi--) {
+        var fyj = Math.floor(Math.random() * (fyi + 1));
+        var fyt = arr[fyi]; arr[fyi] = arr[fyj]; arr[fyj] = fyt;
+      }
+      return arr;
+    };
 
     // ═══ BADGE SYSTEM ═══
     var BADGES = [
@@ -2651,7 +2661,7 @@ window.StemLab = window.StemLab || {
           _oTries++;
         } while (_oTries < 60 && (Math.abs(fracs[0].val - fracs[1].val) < 0.001 || Math.abs(fracs[0].val - fracs[2].val) < 0.001 || Math.abs(fracs[1].val - fracs[2].val) < 0.001 || fracs[0].n === fracs[1].n || fracs[0].n === fracs[2].n || fracs[1].n === fracs[2].n));
         fracs.sort(function(a, b) { return a.val - b.val; });
-        var shuffled = fracs.slice().sort(function() { return Math.random() - 0.5; });
+        var shuffled = fyShuffle(fracs.slice());
         var smallest = fracs[0];
         ch = {
           type: type,
@@ -4480,7 +4490,7 @@ window.StemLab = window.StemLab || {
           pairs.push({ id: 'b-' + pairId, pairId: pairId, n: equivN, d: equivD });
           used[k] = true;
         }
-        return pairs.sort(function() { return Math.random() - 0.5; });
+        return fyShuffle(pairs);
       };
 
       var startEMGame = function() {
@@ -4584,7 +4594,7 @@ window.StemLab = window.StemLab || {
         }
         var allFish = [{ n: targetN, d: targetD, isTarget: true }].concat(decoys.map(function(d) { return Object.assign({}, d, { isTarget: false }); }));
         // Shuffle
-        allFish.sort(function() { return Math.random() - 0.5; });
+        fyShuffle(allFish);
         return { target: { n: targetN, d: targetD }, fish: allFish };
       };
       var startFishGame = function() {
@@ -8231,7 +8241,7 @@ window.StemLab = window.StemLab || {
           if (!distractors.find(function(dx) { return dx.term === d.term; })) distractors.push(d);
         }
         var choices = [v.term].concat(distractors.map(function(d) { return d.term; }));
-        choices.sort(function() { return Math.random() - 0.5; });
+        fyShuffle(choices);
         return { term: v.term, def: v.def, choices: choices };
       };
       var startVq = function() {
@@ -8833,7 +8843,7 @@ window.StemLab = window.StemLab || {
           if (item) {
             item.choices = item.choices.slice(0, 4);
             // Shuffle
-            item.choices.sort(function() { return Math.random() - 0.5; });
+            fyShuffle(item.choices);
             items.push(item);
           }
         }
@@ -9802,35 +9812,43 @@ window.StemLab = window.StemLab || {
     // ── ESTIMATION TRAINER ──
     // Pick the closest benchmark to a randomly-generated fraction.
     // Same as Benchmark Trainer but with explicit "is it closer to A or B" framing.
+    var estLabelOf = function(v) {
+      if (v === 0) return '0';
+      if (v === 0.25) return '1/4';
+      if (v === 0.5) return '1/2';
+      if (v === 0.75) return '3/4';
+      if (v === 1) return '1';
+      if (v === 1.25) return '1 1/4';
+      if (v === 1.5) return '1 1/2';
+      if (v === 1.75) return '1 3/4';
+      if (v === 2) return '2';
+      return v.toString();
+    };
     var renderEstimationTab = function() {
       var estRound = _f.estRound || null;
       var estFeedback = _f.estFeedback || null;
       var estScore = _f.estScore || { correct: 0, total: 0 };
       var newEst = function() {
-        // Generate a fraction with a non-benchmark denominator
-        var d = pick([3, 5, 6, 7, 8, 9, 11, 12, 13, 15]);
-        var n = randInt(1, d);
-        var val = n / d;
-        // Pick two benchmark options that bracket the value (or near-bracket)
+        // Generate a fraction with a non-benchmark denominator. Regenerate when the
+        // value is EQUIDISTANT from the two nearest benchmarks (1/8 sits exactly
+        // between 0 and 1/4): grading a coin-flip tie as right/wrong is unfair.
+        var d, n, val, sorted;
         var benchmarks = [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
-        var labelOf = function(v) {
-          if (v === 0) return '0';
-          if (v === 0.25) return '1/4';
-          if (v === 0.5) return '1/2';
-          if (v === 0.75) return '3/4';
-          if (v === 1) return '1';
-          if (v === 1.25) return '1 1/4';
-          if (v === 1.5) return '1 1/2';
-          if (v === 1.75) return '1 3/4';
-          if (v === 2) return '2';
-          return v.toString();
-        };
-        var sorted = benchmarks.slice().sort(function(a, b) { return Math.abs(a - val) - Math.abs(b - val); });
+        var _eTries = 0;
+        do {
+          d = pick([3, 5, 6, 7, 8, 9, 11, 12, 13, 15]);
+          n = randInt(1, d);
+          val = n / d;
+          sorted = benchmarks.slice().sort(function(a, b) { return Math.abs(a - val) - Math.abs(b - val); });
+          _eTries++;
+        } while (_eTries < 40 && Math.abs(Math.abs(sorted[0] - val) - Math.abs(sorted[1] - val)) < 0.000001);
         var closest = sorted[0];
         // Build choices: closest + two distractors
         var choices = [closest, sorted[1], sorted[2]];
-        choices.sort(function() { return Math.random() - 0.5; });
-        return { n: n, d: d, val: val, choices: choices, answer: closest, labelOf: labelOf };
+        fyShuffle(choices);
+        // Data only — no functions in state (a rehydrated round would lose them
+        // and the renderer's labelOf calls would crash the tab).
+        return { n: n, d: d, val: val, choices: choices, answer: closest };
       };
       var startEst = function() {
         upd({ estRound: newEst(), estFeedback: null, estScore: { correct: 0, total: 0 } });
@@ -9843,13 +9861,13 @@ window.StemLab = window.StemLab || {
           upd({
             estRound: newEst(),
             estScore: { correct: estScore.correct + 1, total: estScore.total + 1 },
-            estFeedback: { correct: true, msg: '✅ Correct! ' + estRound.n + '/' + estRound.d + ' = ' + estRound.val.toFixed(3) + ' ≈ ' + estRound.labelOf(estRound.answer) }
+            estFeedback: { correct: true, msg: '✅ Correct! ' + estRound.n + '/' + estRound.d + ' = ' + estRound.val.toFixed(3) + ' ≈ ' + estLabelOf(estRound.answer) }
           });
         } else {
           sfxWrong();
           upd({
             estScore: { correct: estScore.correct, total: estScore.total + 1 },
-            estFeedback: { correct: false, msg: '❌ Closer to ' + estRound.labelOf(estRound.answer) + '. ' + estRound.n + '/' + estRound.d + ' = ' + estRound.val.toFixed(3) }
+            estFeedback: { correct: false, msg: '❌ Closer to ' + estLabelOf(estRound.answer) + '. ' + estRound.n + '/' + estRound.d + ' = ' + estRound.val.toFixed(3) }
           });
         }
       };
@@ -9883,7 +9901,7 @@ window.StemLab = window.StemLab || {
                 key: 'ec-' + i,
                 onClick: function() { checkEst(c); },
                 className: 'transition-colors px-3 py-3 rounded-lg text-base font-bold bg-emerald-100 text-emerald-800 hover:bg-emerald-300 border-2 border-emerald-300 font-mono'
-              }, er.labelOf(c));
+              }, estLabelOf(c));
             })
           ),
           estFeedback && h('p', { className: 'text-center text-sm font-bold ' + (estFeedback.correct ? 'text-green-700' : 'text-red-700') }, estFeedback.msg),
