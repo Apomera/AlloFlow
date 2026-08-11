@@ -595,6 +595,11 @@ window.StemLab = window.StemLab || {
       // ── Keyboard shortcuts (managed without useEffect) ──
       if (window._multTableKbHandler) window.removeEventListener('keydown', window._multTableKbHandler);
       window._multTableKbHandler = function(e) {
+        // The handler lives on window and render-scope code cannot remove it on
+        // unmount — so it must check the tool is actually on screen. Without
+        // this, Q/S/? kept firing quizzes, speed runs, and AI calls from OTHER
+        // STEM tools after leaving the table.
+        if (!document.querySelector('[data-multtable-command]')) return;
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
         var key = e.key.toLowerCase();
         if (key === 'q') { e.preventDefault(); nextProblem(); }
@@ -1328,7 +1333,16 @@ window.StemLab = window.StemLab || {
             ),
             h('div', { className: 'px-4 pb-4' },
               h('button', { 'aria-label': t('stem.multtable.try_again', 'Try Again'),
-                onClick: function() { _mtUpd({ score: 0, total: 0, timeLeft: 120, missed: [], streak: 0 }); },
+                onClick: function() {
+                  // "Try again" must actually START a run \u2014 it previously only cleared
+                  // the scoreboard, leaving the learner to hunt for the Speed Run button.
+                  nextProblem();
+                  _mtUpd({ active: true, paused: false, endTime: Date.now() + 120000, score: 0, total: 0, timeLeft: 120, streak: 0, missed: [], adaptiveHistory: [] });
+                  if (labToolData._multTimerInterval) clearInterval(labToolData._multTimerInterval);
+                  labToolData._multTimerInterval = null;
+                  playSound('speedStart');
+                  addToast('\u23F1\uFE0F Speed Run started! 2 minutes on the clock!', 'success');
+                },
                 className: 'px-4 py-1.5 bg-emerald-700 text-white font-bold rounded-lg text-xs hover:bg-emerald-800 transition-all'
               }, t('stem.multtable.try_again_2', '\uD83D\uDD04 Try again'))
             )
