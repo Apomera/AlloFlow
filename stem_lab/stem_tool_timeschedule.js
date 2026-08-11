@@ -676,7 +676,9 @@
                   var x = direction > 0 ? 55 + progress * 610 : 665 - progress * 610;
                   var priorX = direction > 0 ? 55 + priorProgress * 610 : 665 - priorProgress * 610;
                   return h('g', { key: i },
-                    i > 0 && h('path', { d: t('stem.timeschedule.m', "M ") + priorX + t('stem.timeschedule.n_91_q', " 91 Q ") +
+                    // SVG path data is NOT translatable text: a lang pack "translating"
+                    // these fragments would corrupt the d attribute and hide the arcs.
+                    i > 0 && h('path', { d: 'M ' + priorX + ' 91 Q ' +
                       ((priorX + x) / 2) + ' 35 ' + x + ' 91', fill: 'none',
                       stroke: i % 2 ? '#0284c7' : '#7c3aed', strokeWidth: 4 }),
                     i > 0 && h('text', { x: (priorX + x) / 2, y: 32,
