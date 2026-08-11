@@ -322,6 +322,9 @@ try {
   };
   var SA_ALLOSHEET_MEASURES = {
     orf: { code: 'orf', probeType: 'orf', unit: 'wcpm', scores: ['wcpm', 'itemsPerMin', 'correct'] },
+    // Decodable-passage WCPM: probeType null on purpose — controlled text
+    // has no published norms, so it must never be clinically interpreted.
+    orf_decodable: { code: 'orf_decodable', probeType: null, unit: 'wcpm_decodable_text', scores: ['wcpm', 'itemsPerMin', 'correct'] },
     nwf: { code: 'nwf_cls', probeType: 'nwf_cls', unit: 'correct_letter_sounds', scores: ['cls', 'itemsPerMin', 'correct'] },
     nwf_cls: { code: 'nwf_cls', probeType: 'nwf_cls', unit: 'correct_letter_sounds', scores: ['cls', 'itemsPerMin', 'correct'] },
     lnf: { code: 'lnf', probeType: 'lnf', unit: 'letters_correct', scores: ['itemsPerMin', 'correct'] },
@@ -1213,6 +1216,9 @@ try {
     probeTargetStudent,
     setProbeTargetStudent,
     saveProbeResult,
+    // The loaded Word Sounds pack — the vocabulary the decodable ORF
+    // passage is built from. Value, not just the setter.
+    wsPreloadedWords,
     setWsPreloadedWords,
     setWordSoundsActivity,
     setIsWordSoundsMode,
@@ -1448,6 +1454,11 @@ try {
     const [orfProbeTimer, setOrfProbeTimer] = React.useState(60);
     const [orfProbeGrade, setOrfProbeGrade] = React.useState('1');
     const [orfProbeLastWord, setOrfProbeLastWord] = React.useState(-1);
+    // Decodable-passage ORF: same tap-to-mark surface, different MEASURE.
+    // Controlled text has no published norms, so this flag keeps the result
+    // out of every grade-level interpretation path (benchmarks, clinical
+    // print, comprehension questions from the screening passages).
+    const [orfProbeDecodable, setOrfProbeDecodable] = React.useState(false);
     const orfProbeTimerRef = React.useRef(null);
     React.useEffect(() => {
       if (orfProbeActive && orfProbeTimer === 0 && orfProbeTimerRef.current === null && orfProbeWords.length > 0 && !orfProbeResults) {
@@ -1462,11 +1473,12 @@ try {
           totalWords: orfProbeWords.length,
           type: 'orf',
           grade: orfProbeGrade,
-          title: orfProbeTitle
+          title: orfProbeTitle,
+          decodable: orfProbeDecodable
         });
         setOrfProbeActive(false);
       }
-    }, [orfProbeTimer, orfProbeActive, orfProbeWords, orfProbeResults, orfProbeLastWord]);
+    }, [orfProbeTimer, orfProbeActive, orfProbeWords, orfProbeResults, orfProbeLastWord, orfProbeDecodable]);
     // Cleanup all probe timers on unmount to prevent memory leaks
     React.useEffect(() => {
       return () => {
@@ -4378,6 +4390,7 @@ try {
       setOrfProbeResults(null);
       setOrfProbeTimer(60);
       setOrfProbeGrade(g);
+      setOrfProbeDecodable(false);
       setOrfProbeActive(true);
       if (orfProbeTimerRef.current) clearInterval(orfProbeTimerRef.current);
       orfProbeTimerRef.current = setInterval(() => {
@@ -4391,6 +4404,78 @@ try {
         });
       }, 1000);
       addToast(t('toasts.orf_probe') + passage.title + ' — 60 seconds', 'info');
+    };
+    // ── Decodable ORF: a passage built from the loaded Word Sounds pack ──
+    // The passage is assembled from the pack's own Finish-the-Sentence
+    // sentences — text the teacher reviewed at setup, made of words the
+    // child has been taught — so the child is timed on text they can decode
+    // BY CONSTRUCTION. Sentence order is shuffled per launch (alternate
+    // forms from the same word set) and the cycle repeats so a fast reader
+    // cannot run out of text inside the minute.
+    const DECODABLE_ORF_FRAMES = [
+      { before: 'I can see the', after: '.' },
+      { before: 'Look at the', after: '!' },
+      { before: 'Here is the', after: '.' },
+      { before: 'We like the', after: '.' }
+    ];
+    const buildDecodablePassage = (packWords) => {
+      const sentences = (packWords || []).map((it) => {
+        const w = String((it && (it.targetWord || it.word || it.term)) || '').trim().toLowerCase();
+        if (!w) return '';
+        const packed = it.activityItems && it.activityItems.read_sentence && it.activityItems.read_sentence.sentence;
+        if (typeof packed === 'string' && packed.trim()) return packed.trim();
+        const seed = w.split('').reduce((s, c) => s + c.charCodeAt(0), 0);
+        const f = DECODABLE_ORF_FRAMES[seed % DECODABLE_ORF_FRAMES.length];
+        return (f.before + ' ' + w + (/^[.,!?]/.test(f.after) ? '' : ' ') + f.after).trim();
+      }).filter(Boolean);
+      if (!sentences.length) return null;
+      const shuffled = [...sentences];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      const out = [];
+      let wordCount = 0;
+      let k = 0;
+      while (wordCount < 120 && out.length < 40) {
+        const s = shuffled[k % shuffled.length];
+        out.push(s);
+        wordCount += s.split(/\s+/).length;
+        k++;
+      }
+      return out.join(' ');
+    };
+    const handleLaunchDecodableORF = () => {
+      const packItems = (wsPreloadedWords || []).filter((it) => it && (it.targetWord || it.word || it.term));
+      const passage = buildDecodablePassage(packItems);
+      if (!passage) {
+        addToast(t('toasts.decodable_orf_needs_pack'), 'warning');
+        return;
+      }
+      const words = passage.split(/\s+/).map((w, i) => ({
+        word: w,
+        index: i,
+        error: false
+      }));
+      setOrfProbeWords(words);
+      setOrfProbeTitle('Decodable Passage — ' + packItems.length + ' taught words');
+      setOrfProbeLastWord(-1);
+      setOrfProbeResults(null);
+      setOrfProbeTimer(60);
+      setOrfProbeDecodable(true);
+      setOrfProbeActive(true);
+      if (orfProbeTimerRef.current) clearInterval(orfProbeTimerRef.current);
+      orfProbeTimerRef.current = setInterval(() => {
+        setOrfProbeTimer(prev => {
+          if (prev <= 1) {
+            clearInterval(orfProbeTimerRef.current);
+            orfProbeTimerRef.current = null;
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      addToast(t('toasts.decodable_orf_started'), 'info');
     };
     const launchBenchmarkProbe = (grade, activity, form = 'A') => {
       const gradeBank = BENCHMARK_PROBE_BANKS && BENCHMARK_PROBE_BANKS[grade];
@@ -6526,8 +6611,8 @@ try {
       className: "text-[11px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
     }, "CBM-style")), /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-slate-600 mb-3"
-    }, "Nonsense Word Fluency (NWF), Letter Naming Fluency (LNF), and Rapid Automatized Naming (RAN) assessments."), /*#__PURE__*/React.createElement("div", {
-      className: "grid grid-cols-1 sm:grid-cols-3 gap-2"
+    }, "Nonsense Word Fluency (NWF), Letter Naming Fluency (LNF), Rapid Automatized Naming (RAN), and Decodable ORF (a timed passage built from your Word Sounds pack)."), /*#__PURE__*/React.createElement("div", {
+      className: "grid grid-cols-1 sm:grid-cols-2 gap-2"
     }, /*#__PURE__*/React.createElement("button", {
       onClick: () => {
         const grade = nwfGrade || 'K';
@@ -6625,7 +6710,18 @@ try {
       className: "font-bold"
     }, "RAN"), /*#__PURE__*/React.createElement("div", {
       className: "text-[11px] text-slate-600 font-normal"
-    }, t('probes.ran')))))), nwfProbeActive && /*#__PURE__*/React.createElement("div", {
+    }, t('probes.ran')))), /*#__PURE__*/React.createElement("button", {
+      onClick: handleLaunchDecodableORF,
+      className: "flex items-center gap-2 px-3 py-2.5 bg-white border-2 border-emerald-600 text-slate-700 rounded-lg font-bold text-xs hover:bg-emerald-50 hover:border-emerald-400 transition-all"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-base"
+    }, "📖"), /*#__PURE__*/React.createElement("div", {
+      className: "text-left"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "font-bold"
+    }, "Decodable ORF"), /*#__PURE__*/React.createElement("div", {
+      className: "text-[11px] text-slate-600 font-normal"
+    }, t('probes.decodable_orf')))))), nwfProbeActive && /*#__PURE__*/React.createElement("div", {
       className: "mt-4 bg-white rounded-xl border-2 border-emerald-300 p-6 shadow-lg animate-in fade-in slide-in-from-top-4"
     }, /*#__PURE__*/React.createElement("div", {
       className: "flex items-center justify-between mb-4"
@@ -7186,7 +7282,7 @@ try {
       className: "flex items-center gap-3"
     }, /*#__PURE__*/React.createElement("span", {
       className: "bg-rose-100 text-rose-700 px-3 py-1 rounded-full text-xs font-bold"
-    }, "\uD83D\uDCD6 ORF PROBE"), /*#__PURE__*/React.createElement("span", {
+    }, orfProbeDecodable ? "\uD83D\uDCD6 DECODABLE ORF" : "\uD83D\uDCD6 ORF PROBE"), /*#__PURE__*/React.createElement("span", {
       className: "text-sm font-medium text-slate-600"
     }, orfProbeTitle)), /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-3"
@@ -7261,7 +7357,8 @@ try {
           totalWords: orfProbeWords.length,
           type: 'orf',
           grade: orfProbeGrade,
-          title: orfProbeTitle
+          title: orfProbeTitle,
+          decodable: orfProbeDecodable
         });
         setOrfProbeActive(false);
       },
@@ -7295,6 +7392,28 @@ try {
       className: "text-xs text-slate-600"
     }, "Accuracy"))), mathProbeStudent && /*#__PURE__*/React.createElement("button", {
       onClick: () => {
+        if (orfProbeResults.decodable) {
+          // Progress monitoring on CONTROLLED text: banks to probeHistory
+          // under its own activity id so nothing ever pools it with
+          // grade-passage ORF (different measure, no published norms).
+          if (typeof saveProbeResult === 'function') {
+            saveProbeResult(mathProbeStudent, {
+              activity: 'orf_decodable',
+              student: mathProbeStudent,
+              wcpm: orfProbeResults.wcpm,
+              itemsPerMin: orfProbeResults.wcpm,
+              correct: orfProbeResults.wcpm,
+              total: orfProbeResults.wordsAttempted,
+              errors: orfProbeResults.errors,
+              accuracy: orfProbeResults.wordsAttempted > 0 ? Math.round((orfProbeResults.wordsAttempted - orfProbeResults.errors) / orfProbeResults.wordsAttempted * 100) : 0,
+              title: orfProbeResults.title,
+              timestamp: Date.now(),
+              date: new Date().toISOString()
+            });
+          }
+          addToast(t('toasts.orf_results_saved') + mathProbeStudent, 'success');
+          return;
+        }
         setLatestProbeResult({
           student: mathProbeStudent,
           type: 'orf',
@@ -7311,6 +7430,9 @@ try {
       },
       className: "w-full mt-2 px-4 py-2 bg-rose-700 text-white rounded-lg font-bold text-sm hover:bg-rose-600 transition-colors"
     }, "\uD83D\uDCBE Save to Student Record"), (() => {
+      // The comprehension questions belong to the static screening passage
+      // for the selected grade/form \u2014 never to a decodable pack passage.
+      if (orfProbeResults.decodable) return null;
       const g = orfProbeGrade || '1';
       const fm = mathProbeForm || 'A';
       const passages = window.ORF_SCREENING_PASSAGES && window.ORF_SCREENING_PASSAGES[g] && window.ORF_SCREENING_PASSAGES[g][fm];
@@ -7334,8 +7456,10 @@ try {
         className: "text-[11px] text-slate-600 mt-2 italic"
       }, "Ask each question orally. Correct answers highlighted."));
     })(),
-    renderProbeInterpretation('orf', orfProbeResults.wcpm, orfProbeGrade),
-    /*#__PURE__*/React.createElement("button", {
+    orfProbeResults.decodable ? /*#__PURE__*/React.createElement("p", {
+      className: "mt-2 text-xs text-slate-600 bg-amber-50 border border-amber-200 rounded-lg p-2"
+    }, "\uD83D\uDCCF This score tracks progress on the taught patterns in this pack. Decodable-text WCPM is not comparable to grade-level ORF benchmarks \u2014 do not use it for screening or tier decisions.") : renderProbeInterpretation('orf', orfProbeResults.wcpm, orfProbeGrade),
+    !orfProbeResults.decodable && /*#__PURE__*/React.createElement("button", {
       onClick: () => printClinicalProbeReport('orf', orfProbeResults, orfProbeGrade, mathProbeForm, mathProbeStudent),
       className: "w-full mt-1 px-4 py-1.5 bg-slate-50 text-slate-600 rounded-lg font-bold text-xs hover:bg-slate-100 transition-colors"
     }, "\uD83D\uDDA8\uFE0F Print Clinical Report"), /*#__PURE__*/React.createElement("button", {

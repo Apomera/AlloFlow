@@ -51935,6 +51935,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                   return true;
               }}
               onLaunchORF={handleLaunchORF}
+              wsPreloadedWords={wsPreloadedWords}
               probeHistory={probeHistory}
               interventionLogs={interventionLogs}
               rtiGoals={rtiGoals}
