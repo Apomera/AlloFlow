@@ -7,7 +7,7 @@
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -6402,7 +6402,7 @@
                 __alloT('stem.chembalance.now_you_have_the_tools_to_understand_t', 'Now you have the tools to understand the world you\'re made of.')
               )
             ),
-            h('div', { className: 'text-center mt-6 text-xs text-slate-500 italic' }, __alloT('stem.chembalance.chembalance_v3_x_alloflow_stem_lab', 'ChemBalance v3.x · AlloFlow STEM Lab'))
+            h('div', { className: 'text-center mt-6 text-xs text-slate-500 italic' }, __alloT('stem.chembalance.chembalance_v3_x_alloflow_stem_lab', 'ChemBalance v3.x · AlloFlow STEAM Lab'))
           ),
 
           // === Inquiry widget: logarithmic pH discovery ===

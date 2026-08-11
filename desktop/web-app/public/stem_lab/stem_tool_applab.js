@@ -16,7 +16,7 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -18157,7 +18157,7 @@ test('no a11y violations', async () => {
         { method: 'Accept header: application/vnd.api.v1+json', notes: 'Most "correct" REST' },
         { method: 'Query param: ?version=1', notes: 'Discouraged, mixes API contract with filters' },
       ],
-      principle: 'Version when breaking changes. Don\'t version every release.',
+      rule: 'Version when breaking changes. Don\'t version every release.',
     },
     {
       principle: 'Pagination',
@@ -18236,7 +18236,7 @@ test('no a11y violations', async () => {
         'Postman — interactive API explorer',
         'Hoppscotch — open-source Postman alternative',
       ],
-      principle: 'Docs must show examples. Reading specs without examples is painful.',
+      rule: 'Docs must show examples. Reading specs without examples is painful.',
     },
     {
       principle: 'Common mistakes',
@@ -20256,7 +20256,7 @@ test('no a11y violations', async () => {
 
         // ── Header / Back ──
         h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 } },
-          h('button', { onClick: function() { ctx.setStemLabTool(null); }, 'aria-label': __alloT('stem.applab.back_to_stem_lab', 'Back to STEM Lab'), style: btn('#f1f5f9', '#374151', false) }, h(ArrowLeft, { size: 14 })),
+          h('button', { onClick: function() { ctx.setStemLabTool(null); }, 'aria-label': __alloT('stem.applab.back_to_stem_lab', 'Back to STEAM Lab'), style: btn('#f1f5f9', '#374151', false) }, h(ArrowLeft, { size: 14 })),
           h('h2', { style: { fontSize: '18px', fontWeight: 900, color: '#1e293b', margin: 0 } }, __alloT('stem.applab.applab', '\uD83D\uDCA1 AppLab')),
           h('span', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.applab.ai_mini_app_generator_coding_curriculu', 'AI Mini-App Generator + Coding Curriculum')),
           activeTab === 'build' && html && h('div', { style: { marginLeft: 'auto', display: 'flex', gap: '4px' } },

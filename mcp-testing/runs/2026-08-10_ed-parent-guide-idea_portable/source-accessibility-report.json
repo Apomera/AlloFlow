@@ -1,0 +1,112 @@
+{
+  "alloflowPortableVersion": "0.2.5",
+  "artifacts": {
+    "accessibilityReport": "source-accessibility-report.json",
+    "accessibleHtml": "source-accessible.html",
+    "privacyReceipt": "source-privacy-receipt.json",
+    "taggedPdf": "source-alloflow-accessible.pdf"
+  },
+  "checks": {
+    "humanSourceComparison": {
+      "status": "required"
+    },
+    "independentVerification": {
+      "how": "Run verify-init to derive a worksheet, have a fresh-context reader fill it, then verify-check to stamp the verification report.",
+      "status": "not_run"
+    },
+    "outputTextRecall": {
+      "planTokens": 959,
+      "recall": 1.0,
+      "status": "completed"
+    },
+    "pdfUaValidation": {
+      "compliant": true,
+      "failedRuleCount": 0,
+      "failedRules": [],
+      "identifierWithheld": false,
+      "processExitCode": 0,
+      "standard": "PDF/UA-1",
+      "status": "completed",
+      "validator": "veraPDF"
+    },
+    "repairPlan": {
+      "metrics": {
+        "block_count": 22,
+        "embedded_image_characters": 23615,
+        "image_blocks": 1,
+        "plan_internal_token_recall": 1.0,
+        "text_characters": 6210,
+        "unresolved_images": 0
+      },
+      "sourceBinding": {
+        "algorithm": "sha256",
+        "matched": true
+      },
+      "status": "completed",
+      "warnings": []
+    },
+    "semanticHtml": {
+      "status": "completed"
+    },
+    "sourceTextRecall": {
+      "missingTokens": 0,
+      "recall": 1.0,
+      "sourceTokens": 863,
+      "status": "completed",
+      "topMissingTokens": []
+    },
+    "staticHtmlAudit": {
+      "counts": {
+        "headings": 2,
+        "images": 1,
+        "links": 5,
+        "tables": 0
+      },
+      "errors": [],
+      "ok": true,
+      "status": "completed",
+      "warnings": []
+    },
+    "taggedPdfGeneration": {
+      "blockedNetworkRequests": 0,
+      "bytes": 115975,
+      "pdfUaFinalization": {
+        "linkContentsAdded": 4,
+        "metadataAdded": true,
+        "pdfuaIdentifierClaimed": true,
+        "wrappedContentStreams": 4
+      },
+      "pdfUaIdentifierClaimed": true,
+      "status": "completed",
+      "structuralMarkers": {
+        "language": true,
+        "markInfo": true,
+        "marked": true,
+        "structTreeRoot": true,
+        "title": true,
+        "xmpMetadata": true
+      }
+    }
+  },
+  "complianceClaim": false,
+  "createdAt": "2026-08-11T01:28:39Z",
+  "manualReview": [
+    "The letter has no visible headline, so the level-1 heading was taken verbatim from the PDF’s embedded document Title metadata with only the trailing “ (PDF)” removed. Note the metadata title itself abbreviates the case as “R. v. The School District Philadelphia” (with a doubled space) while the body text gives “T.R. v. The School District of Philadelphia”; the metadata wording was preserved unaltered rather than corrected.",
+    "Footnote markers appear in the source text layer as bracketed superscripts [1], [2], [3]; they are carried inline at their source positions, and the three footnotes (printed at the foot of page 1) are collected under a synthesized “Notes” heading at the end of the rebuild.",
+    "The paragraph beginning “Whether a document is ‘vital written material’…” continues across the page 1→2 break in the source. It is kept as a single paragraph assigned to page 1, and the page-2 break marker is placed after it, so the sentence is never split.",
+    "The letterhead is a raster banner; its alt text carries every label embedded in the raster (the Department of Education seal text, “OSEP”, and “Office of Special Education Programs”). A second image object in the PDF is a blank white rectangle (background/mask artifact) and was omitted as decorative.",
+    "The closing appears in the text layer as “Best” on its own line followed by “Ruth” (a typed signature line), then “Ruth E. Ryder / Acting Director / Office of Special Education Programs”; all lines are preserved verbatim. Any punctuation rendered only in the signature graphic (e.g., a comma after “Best”) could not be confirmed without page rendering and was not invented.",
+    "Italic (emphasis) runs were confirmed against the source’s font usage (Times New Roman Italic): the case name “T.R. v. The School District of Philadelphia” and the phrase “available at” in footnote 3. Footnote 1’s “available at” is set in roman type in the source and is deliberately left unstyled.",
+    "Hyperlink destinations were added only where the source writes out the target: two written-out URLs in the footnotes and two written-out @ed.gov email addresses in the closing paragraph (as mailto links). No other destinations were invented.",
+    "The source PDF is born-digital and already tagged with a declared language and title; this rebuild was requested as a corpus evidence run of the portable pathway rather than a rescue of an untagged scan.",
+    "Compare every page of the rebuild with the source; automated checks cannot verify meaning."
+  ],
+  "schemaVersion": "1.0",
+  "source": {
+    "basename": "source.pdf",
+    "bytes": 64871,
+    "kind": "pdf",
+    "sha256": "31910c54e4b52fea0b8c79d08a9a707ab43f413261b3ae15335d82c1fd0753a5"
+  },
+  "verdict": "pdf_generated_validation_passed_review_required"
+}

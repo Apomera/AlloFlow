@@ -1,0 +1,354 @@
+import { describe, it, expect, afterEach, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+
+const SOURCE = 'stem_lab/stem_tool_treelab.js';
+const MIRROR = 'desktop/web-app/public/stem_lab/stem_tool_treelab.js';
+
+function render(toolData, overrides) {
+  resetStemLab();
+  loadTool(SOURCE, 'treeLab');
+  return renderTool('treeLab', toolData || {}, overrides);
+}
+
+// The engine is deliberately exposed as pure functions with no DOM, ctx or React, so
+// the biology can be tested directly instead of being inferred from rendered markup.
+function engine() {
+  resetStemLab();
+  loadTool(SOURCE, 'treeLab');
+  return window.__alloTreeLabEngine;
+}
+
+const GOOD_ENV = { tempC: 22, light: 0.85, co2ppm: 420, soilWater: 0.75 };
+const ALLOC = { leaf: 0.3, root: 0.2, wood: 0.35, repro: 0.05, store: 0.1 };
+
+afterEach(() => vi.restoreAllMocks());
+
+describe('Tree Life Lab — limiting factor is computed, not narrated', () => {
+  it('names the factor that is actually smallest', () => {
+    const E = engine();
+    const oak = E.speciesById('oak');
+    const cases = [
+      [{ tempC: 22, light: 0.02, co2ppm: 420, soilWater: 0.8 }, 1, 'light'],
+      [{ tempC: -3, light: 0.9, co2ppm: 420, soilWater: 0.8 }, 1, 'temperature'],
+      [{ tempC: 24, light: 0.95, co2ppm: 150, soilWater: 1 }, 1, 'co2'],
+    ];
+    for (const [env, ap, expected] of cases) {
+      expect(E.grossPhotosynthesis(oak, env, 50, ap).limiting.id).toBe(expected);
+    }
+  });
+
+  it('blames WATER, not CO2, when drought has shut the stomata', () => {
+    // In a drought the CO2 term is the smallest number, but only because water stress
+    // closed the pores that admit CO2. Naming CO2 would send a student off to add CO2,
+    // which this same tool teaches is useless to a tree that cannot open its stomata.
+    const E = engine();
+    const oak = E.speciesById('oak');
+    const env = { tempC: 24, light: 0.9, co2ppm: 420, soilWater: 0.08 };
+    const ap = E.stomatalAperture(env.soilWater, oak.droughtTol, false);
+    const result = E.grossPhotosynthesis(oak, env, 50, ap);
+    expect(result.factors.co2).toBeLessThan(result.factors.water);   // CO2 IS the minimum
+    expect(result.limiting.id).toBe('water');                        // ...but water is the cause
+    expect(result.limiting.viaStomata).toBe(true);
+  });
+});
+
+describe('Tree Life Lab — the trade with no free side', () => {
+  it('opens stomata fully only when there is water to spend', () => {
+    const E = engine();
+    expect(E.stomatalAperture(0.9, 0.5, false)).toBe(1);
+    expect(E.stomatalAperture(0.05, 0.5, false)).toBeLessThan(0.3);
+    expect(E.stomatalAperture(0.02, 0.5, true)).toBeLessThanOrEqual(0.02);
+  });
+
+  it('lets a drought-tolerant species hold out longer at the same soil water', () => {
+    const E = engine();
+    expect(E.stomatalAperture(0.3, 0.75, false)).toBeGreaterThan(E.stomatalAperture(0.3, 0.15, false));
+  });
+
+  it('makes extra CO2 nearly worthless in ABSOLUTE terms under drought', () => {
+    // The ratio between two CO2 levels is fixed by the saturation curve and is
+    // identical at every water status. What collapses under drought is the rate that
+    // ratio applies to, so absolute gain is the only measure that carries the claim.
+    const E = engine();
+    const oak = E.speciesById('oak');
+    const gain = (soilWater) => {
+      const env = { tempC: 24, light: 0.9, co2ppm: 420, soilWater };
+      const ap = E.stomatalAperture(soilWater, oak.droughtTol, false);
+      const lo = E.grossPhotosynthesis(oak, env, 200, ap).gross;
+      const hi = E.grossPhotosynthesis(oak, { ...env, co2ppm: 900 }, 200, ap).gross;
+      return { abs: hi - lo, rel: (hi - lo) / Math.max(lo, 1e-12) };
+    };
+    const wet = gain(0.95);
+    const dry = gain(0.06);
+    expect(wet.abs).toBeGreaterThan(5);
+    expect(dry.abs).toBeLessThan(0.2);
+    expect(wet.abs / dry.abs).toBeGreaterThan(50);
+    expect(Math.abs(wet.rel - dry.rel)).toBeLessThan(1e-6);
+  });
+});
+
+describe('Tree Life Lab — respiration and self-shading are the two brakes', () => {
+  it('charges for living tissue only, so heartwood is free to carry', () => {
+    const E = engine();
+    const oak = E.speciesById('oak');
+    const live = { leafMass: 5, rootMass: 5, sapwoodMass: 10, heartwoodMass: 0 };
+    const withHeart = { ...live, heartwoodMass: 500 };
+    expect(E.maintenanceRespiration(oak, withHeart)).toBe(E.maintenanceRespiration(oak, live));
+    expect(E.maintenanceRespiration(oak, { ...live, sapwoodMass: 40 }))
+      .toBeGreaterThan(E.maintenanceRespiration(oak, live));
+  });
+
+  it('gives sublinear carbon returns on leaf area', () => {
+    // Without a self-shading term the model runs away: more leaf produces more wood,
+    // more wood raises the pipe-model cap, and the cap admits more leaf, forever.
+    const E = engine();
+    const oak = E.speciesById('oak');
+    const env = { tempC: 24, light: 0.9, co2ppm: 420, soilWater: 0.9 };
+    const small = E.grossPhotosynthesis(oak, env, 100, 1).gross;
+    const big = E.grossPhotosynthesis(oak, env, 400, 1).gross;
+    expect(big).toBeGreaterThan(small);
+    expect(big / small).toBeLessThan(2.8);
+  });
+});
+
+describe('Tree Life Lab — growth over centuries', () => {
+  it('grows a 60-year oak to a plausible size', () => {
+    const E = engine();
+    const oak = E.speciesById('oak');
+    let t = E.newTree('oak');
+    for (let i = 0; i < 60; i++) t = E.simulateYear(t, oak, GOOD_ENV, ALLOC);
+    expect(t.alive).toBe(true);
+    expect(t.heightM).toBeGreaterThan(12);
+    expect(t.heightM).toBeLessThan(22);
+    expect(t.dbhCm).toBeGreaterThan(35);
+    expect(t.dbhCm).toBeLessThan(65);
+    expect(t.rings).toHaveLength(60);
+    expect(t.heartwoodMass).toBeGreaterThan(0);
+  });
+
+  it('narrows rings with age even while the tree stays healthy', () => {
+    // The misreading this exists to correct: narrow outer rings are usually geometry,
+    // not decline. The same volume of wood spreads thinner around a longer circumference.
+    const E = engine();
+    const oak = E.speciesById('oak');
+    let t = E.newTree('oak');
+    for (let i = 0; i < 120; i++) t = E.simulateYear(t, oak, GOOD_ENV, ALLOC);
+    const mean = (rs) => rs.reduce((a, r) => a + r.widthMm, 0) / rs.length;
+    expect(mean(t.rings.slice(-10))).toBeLessThan(mean(t.rings.slice(20, 30)));
+    expect(t.alive).toBe(true);                       // narrower, but not dying
+    expect(t.rings.slice(-10).every((r) => !r.stress)).toBe(true);
+  });
+
+  it('kills a tree held in deep shade rather than letting it idle forever', () => {
+    // A starving tree sheds canopy, which drops its respiration bill with it, so a
+    // pure reserves test lets it survive indefinitely as a twig. Deficit YEARS is the
+    // honest test.
+    const E = engine();
+    const oak = E.speciesById('oak');
+    let t = E.newTree('oak');
+    const dark = { tempC: 22, light: 0.005, co2ppm: 420, soilWater: 0.7 };
+    for (let i = 0; i < 100 && t.alive; i++) t = E.simulateYear(t, oak, dark, ALLOC);
+    expect(t.alive).toBe(false);
+    expect(t.causeOfDeath).toBe('carbon_starvation');
+  });
+
+  it('keeps every species within a believable height-to-diameter ratio', () => {
+    const E = engine();
+    for (const sp of E.SPECIES) {
+      let t = E.newTree(sp.id);
+      for (let i = 0; i < 60 && t.alive; i++) t = E.simulateYear(t, sp, GOOD_ENV, ALLOC);
+      const hd = (t.heightM * 100) / t.dbhCm;
+      expect(hd, sp.name + ' H/D').toBeGreaterThan(12);
+      expect(hd, sp.name + ' H/D').toBeLessThan(130);
+      expect(Number.isFinite(t.heightM)).toBe(true);
+      expect(t.rings.every((r) => Number.isFinite(r.widthMm))).toBe(true);
+    }
+  });
+
+  it('gives every species every trait the engine and the scene read', () => {
+    // This exact defect landed TWICE, both times from a scripted edit appending a
+    // field onto a line that ended in a trailing comment, so the new trait was
+    // commented out on one species only. The first time it silently NaN-ed every
+    // height and ring; the second it silently fell back to a default crown shape.
+    // A missing trait is now a hard failure rather than a plausible-looking picture.
+    const E = engine();
+    const REQUIRED = ['amax', 'respRate', 'maxHeight', 'maxAgeYears', 'woodDensity',
+      'slenderness', 'crownWidth', 'tiers', 'droughtTol', 'barkThick', 'shadeTol'];
+    for (const sp of E.SPECIES) {
+      for (const key of REQUIRED) {
+        expect(typeof sp[key], `${sp.id}.${key}`).toBe('number');
+        expect(Number.isFinite(sp[key]), `${sp.id}.${key}`).toBe(true);
+      }
+      expect(Array.isArray(sp.modes) && sp.modes.length > 0, `${sp.id}.modes`).toBe(true);
+      expect(typeof sp.leafType).toBe('string');
+    }
+  });
+
+  it('degrades instead of emitting NaN when a species trait is missing', () => {
+    // NaN propagates silently through clamp(), because Math.min/max return NaN. A
+    // single undefined trait once turned every height and ring into NaN while the
+    // carbon figures still looked healthy, which is exactly the defect that ships.
+    const E = engine();
+    const broken = { ...E.speciesById('oak') };
+    delete broken.slenderness;
+    let t = E.newTree('oak');
+    for (let i = 0; i < 20; i++) t = E.simulateYear(t, broken, GOOD_ENV, ALLOC);
+    expect(Number.isFinite(t.heightM)).toBe(true);
+    expect(Number.isFinite(t.dbhCm)).toBe(true);
+  });
+
+  it('normalises any allocation, including an all-zero one', () => {
+    const E = engine();
+    const sum = (a) => a.leaf + a.root + a.wood + a.repro + a.store;
+    expect(sum(E.normaliseAlloc({ leaf: 5, root: 5, wood: 5, repro: 5, store: 5 }))).toBeCloseTo(1, 9);
+    expect(sum(E.normaliseAlloc({ leaf: 0, root: 0, wood: 0, repro: 0, store: 0 }))).toBeCloseTo(1, 9);
+    expect(sum(E.normaliseAlloc(undefined))).toBeCloseTo(1, 9);
+  });
+});
+
+describe('Tree Life Lab — reproduction is a real tradeoff', () => {
+  it('lets one pathogen take an entire clonal cohort through the shared root system', () => {
+    const E = engine();
+    const res = E.resolveSpread({ root_sucker: 20 }, { id: 'pathogen', name: 'Root pathogen' }, E.lcg(42));
+    const row = res.results.find((r) => r.id === 'root_sucker');
+    expect(row.attempts).toBeGreaterThan(0);
+    expect(row.wiped === true || row.took < row.attempts).toBe(true);
+  });
+
+  it('never wipes a seed cohort as a block', () => {
+    const E = engine();
+    const res = E.resolveSpread({ seed_wind: 20 }, { id: 'pathogen', name: 'Root pathogen' }, E.lcg(7));
+    expect(res.results.some((r) => r.wiped)).toBe(false);
+  });
+
+  it('produces identical outcomes from the same seed so two runs can be compared', () => {
+    // A class comparing two strategies has to face the same decade, or the comparison
+    // means nothing. Math.random() here would make every run incomparable.
+    const E = engine();
+    const spend = { seed_wind: 15, root_sucker: 10 };
+    const ev = { id: 'calm', name: 'A quiet decade' };
+    expect(JSON.stringify(E.resolveSpread(spend, ev, E.lcg(2024))))
+      .toBe(JSON.stringify(E.resolveSpread(spend, ev, E.lcg(2024))));
+  });
+
+  it('trades establishment rate against genetic diversity', () => {
+    const E = engine();
+    const res = E.resolveSpread({ seed_wind: 12, root_sucker: 12 }, { id: 'calm', name: 'calm' }, E.lcg(9));
+    expect(res.clonalCount).toBeGreaterThan(res.diverseCount);
+    expect(res.diversityIndex).toBeGreaterThanOrEqual(0);
+    expect(res.diversityIndex).toBeLessThanOrEqual(1);
+  });
+
+  it('only offers strategies the species actually uses', () => {
+    const E = engine();
+    for (const sp of E.SPECIES) {
+      for (const mode of sp.modes) expect(E.strategyById(mode), sp.id + ' -> ' + mode).toBeTruthy();
+    }
+    // A pine has no clonal route at all; seed is its only way forward.
+    expect(E.speciesById('pine').modes.every((m) => E.strategyById(m).diversity === 1)).toBe(true);
+    expect(E.speciesById('aspen').modes.some((m) => E.strategyById(m).diversity === 0)).toBe(true);
+  });
+});
+
+describe('Tree Life Lab — grade bands span K-12', () => {
+  it('honours the host band and lets a teacher override it', () => {
+    const E = engine();
+    expect(E.resolveBand({ gradeBand: 'k2' }, {})).toBe('k2');
+    expect(E.resolveBand({ gradeBand: 'k2' }, { bandOverride: 'g912' })).toBe('g912');
+    expect(E.resolveBand({}, {})).toBe('g68');
+    // watercycle spells its bands 'K-2'; the host spells them 'k2'. A stale spelling
+    // must fall through to the host value rather than silently selecting nothing.
+    expect(E.resolveBand({ gradeBand: 'g35' }, { bandOverride: 'K-2' })).toBe('g35');
+  });
+
+  it('renders at every band without throwing', () => {
+    for (const b of ['k2', 'g35', 'g68', 'g912']) {
+      const html = render({ treeLab: { bandOverride: b } });
+      expect(html, 'band ' + b).toBeTruthy();
+      expect(html).toContain('Tree Life Lab');
+    }
+  });
+
+  it('withholds the equation-level chemistry from the youngest band', () => {
+    const k2 = render({ treeLab: { bandOverride: 'k2', view: 'chem' } });
+    expect(k2).toContain('How a tree feeds itself');
+    expect(k2).not.toContain('Calvin');
+    expect(k2).not.toContain('respiration bill');
+
+    const hs = render({ treeLab: { bandOverride: 'g912', view: 'chem' } });
+    expect(hs).toContain('respiration bill');
+    expect(hs).toContain('Heartwood');
+  });
+
+  it('offers the hand-off to chemBalance and cell only where those tools go deeper', () => {
+    // The deep equation work is NOT duplicated here: chemBalance owns stoichiometry
+    // and cell owns the organelle. The hand-off exists so this tool does not fork them.
+    const hs = render({ treeLab: { bandOverride: 'g912', view: 'chem' } });
+    expect(hs).toContain('Chemical Balance');
+    expect(hs).toContain('Cell Explorer');
+    const k2 = render({ treeLab: { bandOverride: 'k2', view: 'chem' } });
+    expect(k2).not.toContain('Chemical Balance');
+  });
+});
+
+describe('Tree Life Lab — renders every view', () => {
+  it('renders each tab for a mid-life tree', () => {
+    const E = engine();
+    const oak = E.speciesById('oak');
+    let tree = E.newTree('oak');
+    for (let i = 0; i < 40; i++) tree = E.simulateYear(tree, oak, GOOD_ENV, ALLOC);
+
+    for (const view of ['grow', 'chem', 'transport', 'spread', 'quiz']) {
+      const html = render({ treeLab: { view, tree, bandOverride: 'g68' } });
+      expect(html, view).toBeTruthy();
+      expect(html.length, view).toBeGreaterThan(500);
+    }
+  });
+
+  it('states plainly that the numbers are a teaching model, not measurements', () => {
+    const html = render({ treeLab: { view: 'grow' } });
+    expect(html).toContain('teaching model');
+  });
+
+  it('survives a dead tree and a tree with no reproduction budget', () => {
+    const E = engine();
+    const dead = { ...E.newTree('oak'), alive: false, causeOfDeath: 'senescence', age: 400 };
+    expect(render({ treeLab: { view: 'grow', tree: dead } })).toBeTruthy();
+    expect(render({ treeLab: { view: 'spread', tree: E.newTree('pine'), speciesId: 'pine' } })).toBeTruthy();
+  });
+});
+
+describe('Tree Life Lab — banks and mirrors', () => {
+  it('does not let a student score the quiz by answer position', () => {
+    const E = engine();
+    const counts = {};
+    for (const q of E.QUIZ) {
+      expect(q.correct).toBeGreaterThanOrEqual(0);
+      expect(q.correct).toBeLessThan(q.a.length);
+      counts[q.correct] = (counts[q.correct] || 0) + 1;
+    }
+    const maxShare = Math.max(...Object.values(counts)) / E.QUIZ.length;
+    expect(Object.keys(counts).length).toBeGreaterThanOrEqual(3);
+    expect(maxShare).toBeLessThanOrEqual(0.5);
+  });
+
+  it('keeps the CDN and desktop copies byte-identical', () => {
+    // Two live copies: stem_lab/ is served by the CDN, desktop/web-app/public/stem_lab/
+    // is the desktop app. An edit to one only is the classic silent divergence here.
+    const cdn = readFileSync(resolve(process.cwd(), SOURCE), 'utf8');
+    const mirror = readFileSync(resolve(process.cwd(), MIRROR), 'utf8');
+    expect(mirror).toBe(cdn);
+  });
+
+  it('avoids var() in canvas and THREE colour paths', () => {
+    // ctx.fillStyle = 'var(--x)' is SILENTLY IGNORED (the previous fill persists), and
+    // an SVG presentation attribute cannot resolve a token either. Both must be hex.
+    const src = readFileSync(resolve(process.cwd(), SOURCE), 'utf8');
+    expect(/fillStyle\s*=\s*['"]var\(/.test(src)).toBe(false);
+    expect(/strokeStyle\s*=\s*['"]var\(/.test(src)).toBe(false);
+    expect(/\bfill:\s*['"]var\(/.test(src)).toBe(false);
+    expect(/new THREE\.Color\(['"]var\(/.test(src)).toBe(false);
+  });
+});

@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════
-// AlloFlow STEM Lab — Coaster Lab (3-D roller coaster physics & simulation inspection)
+// AlloFlow STEAM Lab — Coaster Lab (3-D roller coaster physics & simulation inspection)
 //
 // Design a coaster in full 3-D (drag nodes, bank turns, heartline rolls,
 // chain lift or LSM launch), then test it in an educational simulation:

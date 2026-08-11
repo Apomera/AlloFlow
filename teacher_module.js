@@ -3047,7 +3047,7 @@ const _BUILTIN_METRIC_REGISTRY = [
   { id: "anchor-chart", label: "Anchor Charts", icon: "\u{1F4CB}", color: "orange", count: (s2) => (s2.history || []).filter((h) => h && h.type === "anchor-chart").length },
   { id: "dbq", label: "DBQs", icon: "\u2696\uFE0F", color: "rose", count: (s2) => (s2.history || []).filter((h) => h && h.type === "dbq").length },
   { id: "persona", label: "Personas", icon: "\u{1F3AD}", color: "fuchsia", count: (s2) => (s2.history || []).filter((h) => h && h.type === "persona").length },
-  { id: "math", label: "STEM Lab", icon: "\u{1F9EA}", color: "emerald", count: (s2) => (s2.history || []).filter((h) => h && h.type === "math").length },
+  { id: "math", label: "STEAM Lab", icon: "\u{1F9EA}", color: "emerald", count: (s2) => (s2.history || []).filter((h) => h && h.type === "math").length },
   { id: "faq", label: "FAQs", icon: "\u2753", color: "slate", count: (s2) => (s2.history || []).filter((h) => h && h.type === "faq").length },
   { id: "image", label: "Generated Images", icon: "\u{1F5BC}\uFE0F", color: "pink", count: (s2) => (s2.history || []).filter((h) => h && h.type === "image").length },
   { id: "brainstorm", label: "Brainstorms", icon: "\u{1F4A1}", color: "amber", count: (s2) => (s2.history || []).filter((h) => h && h.type === "brainstorm").length },

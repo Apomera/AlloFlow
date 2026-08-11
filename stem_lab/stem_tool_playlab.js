@@ -49,7 +49,7 @@ window.StemLab = window.StemLab || {
 (function() {
   'use strict';
 
-  // ── Reduced-motion CSS (WCAG 2.3.3) — shared across STEM Lab tools ──
+  // ── Reduced-motion CSS (WCAG 2.3.3) — shared across STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -2157,7 +2157,7 @@ window.StemLab = window.StemLab || {
           });
           sheetHtml += '</ol></div>';
         });
-        sheetHtml += '<footer>PlayLab — STEM Lab tool for tactical play design · AlloFlow</footer>'
+        sheetHtml += '<footer>PlayLab — STEAM Lab tool for tactical play design · AlloFlow</footer>'
           + '</body></html>';
         try {
           var win = window.open('', '_blank');
@@ -3784,7 +3784,7 @@ window.StemLab = window.StemLab || {
         h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           ArrowLeft && h('button', {
             onClick: function() { setStemLabTool && setStemLabTool(null); },
-            'data-pl-focusable': 'true', 'aria-label': __alloT('stem.playlab.back_to_stem_lab', 'Back to STEM Lab'),
+            'data-pl-focusable': 'true', 'aria-label': __alloT('stem.playlab.back_to_stem_lab', 'Back to STEAM Lab'),
             style: playLabSecondaryButtonStyle({ padding: '6px 10px' })
           }, __alloT('stem.playlab.back', '← Back')),
           h('h2', { style: { margin: 0, fontSize: 20 } },

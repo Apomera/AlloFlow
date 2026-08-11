@@ -5109,7 +5109,7 @@ const _alloStudentSafeResources = (items) => {
 // NO GATING lives here by design — the checklist informs and celebrates.
 // ── ONE definition of "engaged" (2026-07-27) ──────────────────────────────────
 // Hoisted from inside the focus heartbeat so the heartbeat, the directions
-// `time` goal, and STEM Lab's `timeSpent` quest all measure a minute the same
+// `time` goal, and STEAM Lab's `timeSpent` quest all measure a minute the same
 // way. They did not: STEM accumulated WALL CLOCK (Date.now() minus mount, taken
 // on unmount), so an abandoned open tab satisfied "spend 5 minutes" there while
 // failing it here — the same phrase meaning two things in one app.
@@ -7681,7 +7681,7 @@ const getDifferentiationGrades = (targetGrade, range, customGrades) => {
 let _TRANSLATION_GLOSSARY = null;
 const _MIN_DNT_FALLBACK = [
   'AlloFlow', 'AlloBot', 'AlloHaven', 'StoryForge', 'LitLab', 'PoetTree',
-  'SEL Hub', 'STEM Lab', 'UDL', 'SEL', 'RTI', 'IEP', 'FERPA',
+  'SEL Hub', 'STEAM Lab', 'UDL', 'SEL', 'RTI', 'IEP', 'FERPA',
   'Tier 1', 'Tier 2', 'Tier 3', 'Common Core'
 ];
 const _DNT_REGEX_PATTERNS = [
@@ -12974,7 +12974,7 @@ const AlloFlowContent = () => {
     { id: 'timeline', phase: 'participate', label: 'Sequence Builder', action: 'Build a sequence so students can order events or steps.', success: 'Sequence ready.' },
     { id: 'concept-sort', phase: 'participate', label: 'Concept Sort', action: 'Create a Concept Sort to surface how students group ideas.', success: 'Concept Sort ready.' },
     { id: 'dbq', phase: 'assess', label: 'Document-Based Question', action: 'Generate a Document-Based Question to push analysis with evidence.', success: 'DBQ ready.' },
-    { id: 'math', phase: 'participate', label: 'STEM Lab', action: 'Open the STEM Lab to explore a hands-on math or science tool.', success: 'STEM Lab explored. Choose the tool that best fits your lesson.' },
+    { id: 'math', phase: 'participate', label: 'STEAM Lab', action: 'Open the STEAM Lab to explore a hands-on math or science tool.', success: 'STEAM Lab explored. Choose the tool that best fits your lesson.' },
     { id: 'adventure', phase: 'participate', label: 'Adventure Mode', action: 'Turn the lesson into an Adventure students can play through.', success: 'Adventure ready.' },
     { id: 'quiz', phase: 'assess', label: 'Assess', action: 'Create an assessment to check what stuck.', success: 'Assessment ready. Use it to plan tomorrow.' },
     { id: 'alignment', phase: 'assess', label: 'Standards & UDL Alignment', action: 'Check Standards and UDL alignment so the lesson maps to your goals.', success: 'Alignment checked.' },
@@ -14149,10 +14149,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const cubeDragRef = React.useRef(null);
   const cubeClickSuppressed = useRef(false);
   const [showStemLab, _setShowStemLabRaw] = useState(false);
-  // Lazy-load STEM Lab plugin batch on first open (May 11 2026). Wrapping the
+  // Lazy-load STEAM Lab plugin batch on first open (May 11 2026). Wrapping the
   // setter (instead of patching each call site) catches every entry point —
   // direct buttons, LearningHubModal, HistoryPanel cross-link, lesson plan
-  // "Open in STEM Lab" jumps, etc. The ensure-loader itself is idempotent.
+  // "Open in STEAM Lab" jumps, etc. The ensure-loader itself is idempotent.
   const setShowStemLab = React.useCallback((v) => {
     var trigger = function() {
       if (typeof window.__alloEnsureStemPluginsLoaded === 'function') {
@@ -14840,7 +14840,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=4bd84e375');
     loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=4bd84e375');
     loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=4bd84e375');
-    // Shared quest/goal vocabulary for directions goals, STEM Lab and SEL Hub
+    // Shared quest/goal vocabulary for directions goals, STEAM Lab and SEL Hub
     // quests. Tiny and dependency-free; every consumer degrades gracefully if it
     // has not landed yet, so load order is not load-bearing.
     loadModule('AlloQuestContract', 'https://alloflow-cdn.pages.dev/allo_quest_contract_module.js?v=355fa3d9a');
@@ -15053,7 +15053,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // actually DOES, ~110 KB for 139 tools. The lesson-plan prompt ranks and
     // caps against this instead of dumping every tool name, and unlike
     // STEM_TOOL_REGISTRY it does not depend on the STEM plugins having been
-    // loaded — a teacher who never opened the STEM Lab previously got NO tool
+    // loaded — a teacher who never opened the STEAM Lab previously got NO tool
     // recommendations at all. Failure is silent and non-fatal: prompts_library
     // falls back to the registry.
     (function () {
@@ -15159,7 +15159,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       s.onerror = function() { console.warn('[MathJS] Failed to load — graphCalc analysis unavailable'); };
       document.head.appendChild(s);
     })();
-    // -- STEM Lab / SEL Hub / AlloHaven plugin lazy-loading (May 11 2026) --
+    // -- STEAM Lab / SEL Hub / AlloHaven plugin lazy-loading (May 11 2026) --
     // Previously these ~115 plugin scripts loaded unconditionally 600ms after
     // app boot, costing every cold-load user ~115 HTTP requests on the critical
     // path even if they never opened the hubs. They now load on first hub-open
@@ -15630,7 +15630,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       // ── Local SpeechRecognition shim (2026-07-06): Electron ships NO native
       // SpeechRecognition (needs Google's speech service), so EVERY module
-      // that feature-detects it (SEL tools, STEM labs, Story Forge, AlloHaven,
+      // that feature-detects it (SEL tools, STEAM labs, Story Forge, AlloHaven,
       // commands — ~12 surfaces) was silently voiceless on desktop. This shim
       // fills window.SpeechRecognition with a standards-shaped class backed by
       // the managed whisper server via the same-origin proxy: record while
@@ -17144,7 +17144,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.addEventListener('scroll', trackInteraction);
     window.addEventListener('mousemove', trackInteraction);
     // Publish the engagement probe for CDN modules that measure their own
-    // "time spent" (STEM Lab quests, SEL Hub). They cannot see this ref, and
+    // "time spent" (STEAM Lab quests, SEL Hub). They cannot see this ref, and
     // without it they fall back to wall clock — which is how STEM ended up
     // crediting an abandoned open tab. Read-only and defensive: a module that
     // loads standalone (no host) must degrade, never throw.
@@ -37222,7 +37222,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           if (!options.suppressLiveFollow) _alloFollowResourceLive(item);
           return;
       }
-      // Phase 2 — DA-generated math manipulative resource. Open the STEM Lab to
+      // Phase 2 — DA-generated math manipulative resource. Open the STEAM Lab to
       // the right tool with the preset slotted into labToolData. We ALSO set
       // generatedContent so the floating "Return to Dynamic Assessment" pill
       // (which checks generatedContent.fromDA) keeps working from inside StemLab.
@@ -40954,7 +40954,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         - dbq — Document-Based Question activity.
         - note-taking — Scaffolded note templates (Cornell / Lab Report / Reading Response).
         - anchor-chart — classroom visual reference poster.
-        - math — Opens STEM Lab.
+        - math — Opens STEAM Lab.
         - lesson-plan — Teacher synthesis. ALWAYS place LAST.
         - gemini-bridge — Interactive sim/app generator.
         - alignment-report — Post-hoc audit (only if explicit standards + audit requested).`;
@@ -45998,7 +45998,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             animation: indeterminate-slide 1.5s infinite linear;
             background: linear-gradient(90deg, transparent, #4f46e5, transparent);
         }
-        /* ── STEM Lab theme variables ──
+        /* ── STEAM Lab theme variables ──
          * Inline React styles in STEM tools can't be overridden by
          * the .theme-dark .bg-X CSS rules (those only touch Tailwind
          * utility classes). These custom properties give inline styles
@@ -46052,7 +46052,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             --allo-stem-button-border:#00ff00;
         }
         /* ──────────────────────────────────────────────────────────────
-         * High-contrast override for STEM Lab tools (Piece B).
+         * High-contrast override for STEAM Lab tools (Piece B).
          *
          * STEM tools were authored with inline styles using hardcoded
          * dark hex/rgba values (~180 hex + ~1300 rgba instances across
@@ -46160,7 +46160,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
          * prefers-reduced-motion block above; noted for completeness. */
 
         /* ──────────────────────────────────────────────────────────────
-         * Light-theme override for STEM Lab dark-designed tools (Piece C).
+         * Light-theme override for STEAM Lab dark-designed tools (Piece C).
          *
          * Of 104 stem tools (audit 2026-05-27, see project memory
          * stem-contrast-audit), 29 use pastels (#fbbf24, #86efac, #5eead4,
@@ -47529,7 +47529,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     type="button"
                     onClick={() => { setShowStemLab(true); setStemLabTab('explore'); }}
                     className="group flex items-center gap-1 px-2 py-0.5 me-3 text-[11px] font-bold text-indigo-700 bg-indigo-50/80 hover:bg-indigo-100 border border-indigo-200/50 rounded-full transition-all hover:shadow-sm"
-                    aria-label={t('sidebar.open_stem_lab_explore_aria') || 'Open STEM Lab Explore'}
+                    aria-label={t('sidebar.open_stem_lab_explore_aria') || 'Open STEAM Lab Explore'}
                   >
                     🧪 <span className="group-hover:tracking-wide transition-all">{t('sidebar.stem_lab_explore') || 'Explore'}</span>
                   </button>
@@ -48177,7 +48177,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                         <span role="button" tabIndex={0}
                             onClick={() => { setShowStemLab(true); setStemLabTab('explore'); }}
                             className="group flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold text-indigo-600 bg-indigo-50/80 hover:bg-indigo-100 border border-indigo-200/50 rounded-full transition-all hover:shadow-sm cursor-pointer ms-1"
-                            aria-label={t('sidebar.open_stem_lab_explore_aria') || 'Open STEM Lab Explore'}>
+                            aria-label={t('sidebar.open_stem_lab_explore_aria') || 'Open STEAM Lab Explore'}>
                             🧪 <span className="group-hover:tracking-wide transition-all">{t('sidebar.stem_lab_explore') || 'Explore'}</span>
                         </span>
                     )}
@@ -48690,7 +48690,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     const _goalRefIdx = (o) => (o.resourceRef ? _mapItems.findIndex(it => it.id === o.resourceRef) : -1);
                     // Per-type station identity + the recommended next step (both pure, both
                     // module-scope). Travel: clicking a station opens that resource through the
-                    // SAME handleRestoreView every other lane uses, so special types (STEM Lab,
+                    // SAME handleRestoreView every other lane uses, so special types (STEAM Lab,
                     // reading library, word-sounds…) still route correctly.
                     const _stationLabel = (it) => (t('directions.station_' + String(it.type).replace(/-/g, '_')) || _alloStationStyle(it.type).label);
                     const _rec = _alloRecommendNextStations(_mapItems, _visitedMap, _dir.objectives, _evald);
@@ -52134,7 +52134,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           // as an EDITABLE deck (build-direct, no .pptx round trip).
           openInAlloStudio: () => { setShowExportPreviewWrapped(false); setAlloStudioInitialAction('deck-from-resources'); setIsAlloStudioOpen(true); }
         })}
-        <CDNModuleGate moduleKey="StemLab" isOpen={showStemLab} onClose={() => setShowStemLab(false)} icon="🔬" displayName="STEM Lab" t={t}>
+        <CDNModuleGate moduleKey="StemLab" isOpen={showStemLab} onClose={() => setShowStemLab(false)} icon="🔬" displayName="STEAM Lab" t={t}>
             {(StemLab) => React.createElement(StemLab, {
                 ArrowLeft, Calculator, GripVertical, Sparkles, X, addToast,
                   angleChallenge, angleFeedback, angleValue, areaModelDims, areaModelHighlight,
@@ -53112,7 +53112,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                             },
                             // Phase 2 — Math manipulative host callback. Mints a
                             // type:'manipulative-resource' history entry pointing at
-                            // a STEM Lab tool (numberline / fractions / areamodel)
+                            // a STEAM Lab tool (numberline / fractions / areamodel)
                             // with preset state Gemini specified. Opening the entry
                             // (via the inline link chip) routes through handleRestoreView
                             // which slots the preset into labToolData + opens StemLab.

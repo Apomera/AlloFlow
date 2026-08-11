@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════
-// stem_tool_artstudio.js — STEM Lab Art Studio Tools
+// stem_tool_artstudio.js — STEAM Lab Art Studio Tools
 // Renamed from stem_tool_creative.js (stem_tool_art.js was the obsolete duplicate)
 // 2 registered tools: artStudio, gameStudio
 // ═══════════════════════════════════════════
@@ -32,7 +32,7 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');

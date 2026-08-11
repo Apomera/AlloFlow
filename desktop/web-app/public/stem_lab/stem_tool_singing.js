@@ -33,7 +33,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -60,54 +60,128 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
   // Module-scoped audio processing functions
   // ═══════════════════════════════════════════
 
+  // Search bounds for a sung fundamental. Restricting the lag range is most of
+  // the speed win: the old detector correlated every lag across the whole
+  // 4096-sample buffer (~8.4M multiply-adds) once per animation frame.
+  var PITCH_MIN_HZ = 55;   // ~A1, below any sung fundamental
+  var PITCH_MAX_HZ = 1600; // ~G6, above soprano high C
+  var CLARITY_MIN = 0.55;  // below this the frame is breath/consonant, not a pitch
+  var PITCH_DECIMATION = 4;
+
   /**
-   * Autocorrelation pitch detection — from Rachel's tools.
-   * Returns detected frequency in Hz, or -1 if no pitch detected.
+   * Normalized square difference (McLeod pitch method) over [minLag, maxLag].
+   *
+   * Picks the FIRST key maximum within 90% of the global best rather than the
+   * global best itself. That choice is what stops a rich voice from locking onto
+   * its own subharmonic and reading an octave low — the old detector took the
+   * global max and had no defence against it.
+   *
+   * Returns { lag, clarity } with lag parabolically interpolated, or lag -1.
    */
-  function autoCorrelate(buf, sampleRate) {
-    var SIZE = buf.length;
-    var rms = 0;
-    for (var i = 0; i < SIZE; i++) rms += buf[i] * buf[i];
-    rms = Math.sqrt(rms / SIZE);
-    if (rms < 0.01) return -1;
+  function findBestLag(sig, minLag, maxLag) {
+    var n = sig.length;
+    var win = Math.floor(n / 2);
+    if (minLag < 1) minLag = 1;
+    if (maxLag > win - 2) maxLag = win - 2;
+    if (maxLag <= minLag) return { lag: -1, clarity: 0 };
 
-    var r1 = 0, r2 = SIZE - 1;
-    var thres = 0.2;
-    for (var i = 0; i < SIZE / 2; i++) {
-      if (Math.abs(buf[i]) < thres) { r1 = i; break; }
-    }
-    for (var i = 1; i < SIZE / 2; i++) {
-      if (Math.abs(buf[SIZE - i]) < thres) { r2 = SIZE - i; break; }
-    }
-
-    buf = buf.slice(r1, r2);
-    SIZE = buf.length;
-
-    var c = new Array(SIZE).fill(0);
-    for (var i = 0; i < SIZE; i++) {
-      for (var j = 0; j < SIZE - i; j++) {
-        c[i] += buf[j] * buf[j + i];
+    var nsdf = new Float32Array(maxLag + 2);
+    for (var lag = minLag; lag <= maxLag; lag++) {
+      var corr = 0, energy = 0;
+      for (var j = 0; j < win; j++) {
+        var a = sig[j], b = sig[j + lag];
+        corr += a * b;
+        energy += a * a + b * b;
       }
+      nsdf[lag] = energy > 0 ? (2 * corr) / energy : 0;
     }
 
-    var d = 0;
-    while (c[d] > c[d + 1]) d++;
-    var maxval = -1, maxpos = -1;
-    for (var i = d; i < SIZE; i++) {
-      if (c[i] > maxval) { maxval = c[i]; maxpos = i; }
-    }
+    var peak = 0;
+    for (var p = minLag; p <= maxLag; p++) { if (nsdf[p] > peak) peak = nsdf[p]; }
+    if (peak <= 0) return { lag: -1, clarity: 0 };
 
-    var T0 = maxpos;
-    if (T0 > 0 && T0 < SIZE - 1) {
-      var x1 = c[T0 - 1], x2 = c[T0], x3 = c[T0 + 1];
-      var a = (x1 + x3 - 2 * x2) / 2;
-      var b = (x3 - x1) / 2;
-      if (a) T0 -= b / (2 * a);
+    var threshold = peak * 0.9;
+    var chosen = -1;
+    for (var q = minLag + 1; q < maxLag; q++) {
+      if (nsdf[q] > threshold && nsdf[q] >= nsdf[q - 1] && nsdf[q] >= nsdf[q + 1]) { chosen = q; break; }
     }
+    if (chosen < 0) return { lag: -1, clarity: 0 };
 
-    if (!isFinite(T0) || T0 <= 0) return -1;
-    return sampleRate / T0;
+    // Parabolic interpolation around the peak for sub-sample period resolution.
+    var y1 = nsdf[chosen - 1], y2 = nsdf[chosen], y3 = nsdf[chosen + 1];
+    var denom = 2 * (2 * y2 - y1 - y3);
+    var lagOut = denom !== 0 ? chosen + (y3 - y1) / denom : chosen;
+    if (!isFinite(lagOut) || lagOut <= 0) return { lag: -1, clarity: 0 };
+    return { lag: lagOut, clarity: Math.min(1, Math.max(0, y2)) };
   }
+
+  /**
+   * Pitch detection: coarse pass on a 4x-decimated copy, then refine at full
+   * rate around that estimate. ~0.5M multiply-adds instead of ~8.4M.
+   *
+   * Returns { freq, clarity }; freq is -1 when no pitch is present. Callers
+   * should reject low-clarity frames rather than trusting every reading —
+   * a bad frame written into rangeLow/rangeHigh corrupts a stored vocal range.
+   */
+  function detectPitch(buf, sampleRate) {
+    if (calculateRMS(buf) < 0.01) return { freq: -1, clarity: 0 };
+
+    var dsRate = sampleRate / PITCH_DECIMATION;
+    var dsLen = Math.floor(buf.length / PITCH_DECIMATION);
+    var ds = new Float32Array(dsLen);
+    for (var i = 0; i < dsLen; i++) {
+      var acc = 0;
+      for (var k = 0; k < PITCH_DECIMATION; k++) acc += buf[i * PITCH_DECIMATION + k];
+      ds[i] = acc / PITCH_DECIMATION;
+    }
+
+    var coarse = findBestLag(ds, Math.floor(dsRate / PITCH_MAX_HZ), Math.ceil(dsRate / PITCH_MIN_HZ));
+    if (coarse.lag <= 0) return { freq: -1, clarity: 0 };
+
+    var centre = Math.round(coarse.lag * PITCH_DECIMATION);
+    var span = PITCH_DECIMATION * 2;
+    var fine = findBestLag(buf, centre - span, centre + span);
+    if (fine.lag <= 0 || fine.clarity < CLARITY_MIN) return { freq: -1, clarity: 0 };
+
+    var freq = sampleRate / fine.lag;
+    if (!isFinite(freq) || freq < PITCH_MIN_HZ || freq > PITCH_MAX_HZ) return { freq: -1, clarity: 0 };
+    return { freq: freq, clarity: fine.clarity };
+  }
+
+  /** Legacy shim for callers that only want the frequency (or -1). */
+  function autoCorrelate(buf, sampleRate) {
+    return detectPitch(buf, sampleRate).freq;
+  }
+
+  // ── Rate-independent "held the note" accumulator ──
+  // Thresholds in milliseconds, not update counts. See HOLD_* constants below.
+  var HOLD_MATCH_MS = 1000;     // pitch match: hold the target for a second
+  var HOLD_RANGE_MS = 1000;     // vocal range: steady for a second before capturing
+  var HOLD_SIGHTREAD_MS = 1000; // sight reading: settle on each note
+  var HOLD_INTERVAL_MS = 800;   // interval singing, per the original intent
+  var HOLD_MAX_STEP_MS = 250;   // a backgrounded tab must not credit a whole second
+
+  /**
+   * Accrue (or bleed off) held time on a hold ref.
+   *
+   * ref.current is { ms, last }. multiplier is 1 while the target is held, or
+   * negative to give progress back when it is lost — which preserves the original
+   * forgiveness behaviour (a brief wobble cost you progress instead of resetting).
+   * Returns the accumulated milliseconds.
+   */
+  function accrueHold(ref, nowMs, multiplier) {
+    var st = ref.current;
+    if (!st || typeof st !== 'object') { st = { ms: 0, last: nowMs }; ref.current = st; }
+    var dt = nowMs - st.last;
+    st.last = nowMs;
+    if (!(dt > 0) || dt > HOLD_MAX_STEP_MS) dt = 0;
+    st.ms += dt * multiplier;
+    if (st.ms < 0) st.ms = 0;
+    return st.ms;
+  }
+
+  /** Clear a hold ref without crediting the gap since its last update. */
+  function resetHold(ref) { ref.current = { ms: 0, last: Date.now() }; }
 
   /** RMS volume calculation */
   function calculateRMS(buf) {
@@ -464,7 +538,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       c.fillStyle = isDark ? '#94a3b8' : '#475569';
       c.textAlign = 'center';
       c.font = '13px sans-serif';
-      c.fillText('Start singing to see your pitch', W / 2, H / 2);
+      c.fillText((opts && opts.emptyLabel) || 'Start singing to see your pitch', W / 2, H / 2);
       return;
     }
 
@@ -1983,6 +2057,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      // Message templates with named placeholders. ctx.t takes no interpolation
+      // arguments, so anything carrying a value is substituted here rather than
+      // glued together with + — fragments cannot be reordered by a translator.
+      /**
+       * Language directive for AI prompts. The host keeps window.__alloTextLanguage
+       * in step with the UI language, but callGemini does not consult it, so an
+       * explanation came back in English for a student reading Spanish.
+       */
+      function aiLanguageSuffix() {
+        var lang = (typeof window !== 'undefined' && window.__alloTextLanguage) || 'English';
+        return (lang && lang !== 'English') ? ' Write the entire response in ' + lang + '.' : '';
+      }
+      var __alloFmt = function (k, fb, vars) {
+        var out = __alloT(k, fb);
+        if (!vars) return out;
+        return String(out).replace(/\{(\w+)\}/g, function (whole, name) {
+          return Object.prototype.hasOwnProperty.call(vars, name) ? String(vars[name]) : whole;
+        });
+      };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -2246,6 +2339,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         var srLockedRef = React.useRef(0);
         var srAttemptsRef = React.useRef(0);
         var srCentsAccRef = React.useRef(0);
+        var srCentsSamplesRef = React.useRef(0);
         var srPreviewTimerRef = React.useRef(null);
         var srAiLoadingState = React.useState(false);
         var srAiLoading = srAiLoadingState[0];
@@ -2255,17 +2349,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
         // ════════════════════════════════════════
         // Audio Engine: Start / Stop
-        // ══���═════════════════════════════════════
+        // ══════════════════════════════════════════
 
         var startMic = React.useCallback(function() {
           if (isRecording) return;
           setMicError(null);
 
-          navigator.mediaDevices.getUserMedia({ audio: true })
+          // A non-secure origin (file:// in the desktop shell) leaves mediaDevices
+          // undefined; calling through it threw past the .catch below and left a
+          // dead button with no message.
+          if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== 'function') {
+            var noMicMsg = __alloT('stem.singing.mic_unavailable', 'Microphone capture is not available here. Open the web version over https to use the pitch tools.');
+            setMicError(noMicMsg);
+            if (announceToSR) announceToSR(noMicMsg);
+            return;
+          }
+
+          // Browser voice processing is on by default and it fights this analysis:
+          // auto gain control flattens the loudness Vocal Range measures, and
+          // noise suppression smears the amplitude Vibrato Lab reads.
+          navigator.mediaDevices.getUserMedia({
+            audio: {
+              echoCancellation: false,
+              noiseSuppression: false,
+              autoGainControl: false
+            }
+          })
             .then(function(stream) {
               streamRef.current = stream;
               var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
               audioCtxRef.current = audioCtx;
+              if (audioCtx.state === 'suspended') audioCtx.resume();
               var source = audioCtx.createMediaStreamSource(stream);
               sourceRef.current = source;
               var analyser = audioCtx.createAnalyser();
@@ -2275,51 +2389,99 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
               setIsRecording(true);
 
-              if (announceToSR) announceToSR('Microphone active. Sing or hum to see your pitch visualized.');
+              if (announceToSR) announceToSR(__alloT('stem.singing.sr_mic_active', 'Microphone active. Sing or hum to see your pitch visualized.'));
 
               var bufLen = analyser.fftSize;
               var buf = new Float32Array(bufLen);
               var sampleRate = audioCtx.sampleRate;
 
-              function analyzeLoop() {
-                if (!analyserRef.current) return;
-                analyser.getFloatTimeDomainData(buf);
-                var rms = calculateRMS(buf);
-                var pitch = autoCorrelate(buf, sampleRate);
+              // Analysis runs on its own clock rather than once per repaint. 25 Hz is
+              // far more than the eye reads off a cents meter, and it keeps the
+              // detector — plus the React state writes it drives — off 35 of every
+              // 60 frames. History is trimmed by timestamp so the pitch roll spans a
+              // fixed number of seconds instead of silently varying with frame rate.
+              var ANALYSIS_MS = 40;
+              var ROLL_WINDOW_MS = 6000;
+              var VIBRATO_WINDOW_MS = 3000;
+              var lastAnalysis = -Infinity;
+              var recentHz = [];
+              var lastEmitted = null;
 
-                if (pitch > 0 && pitch > 50 && pitch < 2000) {
+              function analyzeLoop(frameTime) {
+                if (!analyserRef.current) return;
+                animFrameRef.current = requestAnimationFrame(analyzeLoop);
+
+                var stamp = typeof frameTime === 'number' ? frameTime : 0;
+                if (stamp - lastAnalysis < ANALYSIS_MS) return;
+                lastAnalysis = stamp;
+
+                analyser.getFloatTimeDomainData(buf);
+                var detected = detectPitch(buf, sampleRate);
+
+                if (detected.freq > 0) {
+                  // Median of the last 3 readings: one bad frame can no longer
+                  // throw the needle (or a stored vocal range) an octave.
+                  recentHz.push(detected.freq);
+                  if (recentHz.length > 3) recentHz.shift();
+                  var ordered = recentHz.slice().sort(function(a, b) { return a - b; });
+                  var pitch = ordered[Math.floor(ordered.length / 2)];
+
                   var noteInfo = frequencyToNote(pitch);
                   noteInfo.noteStr = noteInfo.note + noteInfo.octave;
                   noteInfo.time = Date.now();
+                  noteInfo.clarity = detected.clarity;
                   // Fractional MIDI for smooth vibrato tracking
                   noteInfo.midi = 69 + 12 * Math.log2(pitch / 440);
 
-                  setCurrentNote(noteInfo);
+                  // Only re-render when the reading actually moved. A held note used
+                  // to repaint this whole tool 60 times a second for nothing.
+                  if (!lastEmitted || lastEmitted.noteStr !== noteInfo.noteStr ||
+                      Math.abs((lastEmitted.cents || 0) - (noteInfo.cents || 0)) >= 2) {
+                    lastEmitted = noteInfo;
+                    setCurrentNote(noteInfo);
+                  }
+
                   setPitchHistory(function(prev) {
                     var next = prev.concat([noteInfo]);
+                    var cutoff = noteInfo.time - ROLL_WINDOW_MS;
+                    while (next.length > 2 && next[0].time < cutoff) next = next.slice(1);
                     if (next.length > 300) next = next.slice(-300);
                     return next;
                   });
 
-                  // Feed vibrato history (last ~3 seconds at ~30fps = ~90 samples)
                   setVibratoHistory(function(prev) {
                     var next = prev.concat([{ midi: noteInfo.midi, time: noteInfo.time }]);
-                    if (next.length > 120) next = next.slice(-120);
+                    var vCutoff = noteInfo.time - VIBRATO_WINDOW_MS;
+                    while (next.length > 2 && next[0].time < vCutoff) next = next.slice(1);
+                    if (next.length > 150) next = next.slice(-150);
                     return next;
                   });
                 } else {
-                  setCurrentNote({ note: '--', octave: 0, cents: 0, midi: 0, freq: 0, time: Date.now() });
+                  recentHz.length = 0;
+                  if (!lastEmitted || lastEmitted.note !== '--') {
+                    lastEmitted = { note: '--', octave: 0, cents: 0, midi: 0, freq: 0, noteStr: '--' };
+                    setCurrentNote({ note: '--', octave: 0, cents: 0, midi: 0, freq: 0, time: Date.now() });
+                  }
                 }
-
-                animFrameRef.current = requestAnimationFrame(analyzeLoop);
               }
 
-              analyzeLoop();
+              animFrameRef.current = requestAnimationFrame(analyzeLoop);
             })
             .catch(function(err) {
               console.warn('[Singing] Mic error:', err);
-              setMicError('Could not access microphone. Please allow microphone permissions and try again.');
-              if (announceToSR) announceToSR('Microphone access denied. Please allow microphone permissions.');
+              var name = (err && err.name) || '';
+              var msg;
+              if (name === 'NotAllowedError' || name === 'SecurityError') {
+                msg = __alloT('stem.singing.mic_denied', 'Microphone permission was blocked. Allow microphone access for this page, then try again.');
+              } else if (name === 'NotFoundError' || name === 'OverconstrainedError') {
+                msg = __alloT('stem.singing.mic_missing', 'No microphone was found. Plug one in or pick one in your system sound settings, then try again.');
+              } else if (name === 'NotReadableError') {
+                msg = __alloT('stem.singing.mic_busy', 'The microphone is in use by another app. Close it and try again.');
+              } else {
+                msg = __alloT('stem.singing.mic_failed', 'Could not access the microphone. Please allow microphone permissions and try again.');
+              }
+              setMicError(msg);
+              if (announceToSR) announceToSR(msg);
             });
         }, [isRecording]);
 
@@ -2367,7 +2529,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
         // Pitch roll canvas
         React.useEffect(function() {
-          drawPitchRoll(pitchRollCanvasRef.current, pitchHistory, { isDark: isDark });
+          drawPitchRoll(pitchRollCanvasRef.current, pitchHistory, { isDark: isDark, emptyLabel: __alloT('stem.singing.roll_empty', 'Start singing to see your pitch') });
         }, [pitchHistory, isDark]);
 
         // Cents meter canvas
@@ -2386,7 +2548,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             // Check for healthy vibrato achievement
             if (!achievedHealthyVibrato && result.rate >= 5 && result.rate <= 7 && result.depth >= 30 && result.depth <= 80) {
               upd('achievedHealthyVibrato', true);
-              if (addToast) addToast('Healthy vibrato achieved!', 'success');
+              if (addToast) addToast(__alloT('stem.singing.healthy_vibrato_achieved', 'Healthy vibrato achieved!'), 'success');
               if (stemCelebrate) stemCelebrate();
               if (awardStemXP) awardStemXP('singing_vibrato', 15, 'Singing: healthy vibrato');
             }
@@ -2499,7 +2661,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         React.useEffect(function() {
           if (srMode !== 'singing' || !srNotes || srCurrentIdx < 0 || srCurrentIdx >= srNotes.length) return;
           if (currentNote.midi <= 0) {
-            srLockedRef.current = Math.max(0, srLockedRef.current - 1);
+            accrueHold(srLockedRef, Date.now(), -1);
             return;
           }
 
@@ -2509,12 +2671,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
           if (centsOff <= 25) {
             // Within tolerance
-            srLockedRef.current++;
+            var srHeldMs = accrueHold(srLockedRef, Date.now(), 1);
             srCentsAccRef.current += centsOff;
+            srCentsSamplesRef.current++;
 
-            if (srLockedRef.current >= 30) {
-              // Note matched — advance
-              var avgCents = Math.round(srCentsAccRef.current / 30);
+            if (srHeldMs >= HOLD_SIGHTREAD_MS) {
+              // Note matched — advance. Average over the samples actually taken
+              // rather than an assumed 30, which skewed the reported accuracy.
+              var avgCents = Math.round(srCentsAccRef.current / Math.max(1, srCentsSamplesRef.current));
               var isCorrect = srAttemptsRef.current === 0;
               var result = { correct: isCorrect, cents: avgCents, attempts: srAttemptsRef.current };
 
@@ -2531,17 +2695,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 if (awardStemXP) awardStemXP('singing_sightread', 15, 'Singing: sight reading complete');
               } else {
                 setSrCurrentIdx(nextIdx);
-                srLockedRef.current = 0;
+                resetHold(srLockedRef);
                 srAttemptsRef.current = 0;
                 srCentsAccRef.current = 0;
+                srCentsSamplesRef.current = 0;
                 if (stemBeep) { stemBeep(988, 0.06, 0.10); setTimeout(function() { stemBeep(1319, 0.16, 0.10); }, 70); }
               }
             }
           } else {
             // Outside tolerance — count as missed frame
-            if (srLockedRef.current > 0) {
-              srLockedRef.current = Math.max(0, srLockedRef.current - 2);
-            }
+            accrueHold(srLockedRef, Date.now(), -2);
             if (centsOff > 50) {
               srAttemptsRef.current++;
             }
@@ -2555,26 +2718,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         React.useEffect(function() {
           if (pitchMatchMode !== 'playing' || !pitchMatchTarget) return;
           if (currentNote.midi <= 0) {
-            pitchMatchLockedRef.current = 0;
+            resetHold(pitchMatchLockedRef);
             return;
           }
           var diff = Math.abs(currentNote.midi - pitchMatchTarget);
           if (diff * 100 <= 10) { // within 10 cents
-            pitchMatchLockedRef.current++;
-            // Need ~30 frames of lock (about 1 second)
-            if (pitchMatchLockedRef.current >= 30) {
+            if (accrueHold(pitchMatchLockedRef, Date.now(), 1) >= HOLD_MATCH_MS) {
               var elapsed = (Date.now() - pitchMatchStartRef.current) / 1000;
               var score = Math.max(0, Math.round(100 - elapsed * 10));
               setPitchMatchScore(score);
               setPitchMatchMode('matched');
               stopRefTone();
-              if (addToast) addToast('Pitch matched! Score: ' + score, 'success');
+              if (addToast) addToast(__alloFmt('stem.singing.toast_pitch_matched', 'Pitch matched! Score: {score}', { score: score }), 'success');
               if (stemCelebrate) stemCelebrate();
               if (awardStemXP) awardStemXP('singing_pitch_match', 5, 'Singing: pitch match');
               if (stemBeep) { stemBeep(988, 0.06, 0.10); setTimeout(function() { stemBeep(1319, 0.16, 0.10); }, 70); }
             }
           } else {
-            pitchMatchLockedRef.current = Math.max(0, pitchMatchLockedRef.current - 2);
+            accrueHold(pitchMatchLockedRef, Date.now(), -2);
           }
         }, [currentNote, pitchMatchMode, pitchMatchTarget]);
 
@@ -2585,31 +2746,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         React.useEffect(function() {
           if (rangeStep === 0 || rangeStep === 3) return;
           if (currentNote.midi <= 0) {
-            rangeStableCountRef.current = 0;
+            resetHold(rangeStableCountRef);
             return;
           }
 
           var roundedMidi = Math.round(currentNote.midi);
+          var rangeHeldMs = 0;
           if (Math.abs(roundedMidi - rangeLastMidiRef.current) <= 1) {
-            rangeStableCountRef.current++;
+            rangeHeldMs = accrueHold(rangeStableCountRef, Date.now(), 1);
           } else {
-            rangeStableCountRef.current = 0;
+            resetHold(rangeStableCountRef);
             rangeLastMidiRef.current = roundedMidi;
           }
 
-          // Stable for ~30 frames (~1 second)
-          if (rangeStableCountRef.current >= 30) {
+          if (rangeHeldMs >= HOLD_RANGE_MS) {
             if (rangeStep === 1) {
               setRangeLowTemp(roundedMidi);
               setRangeStep(2);
-              rangeStableCountRef.current = 0;
+              resetHold(rangeStableCountRef);
               rangeLastMidiRef.current = 0;
-              if (addToast) addToast('Lowest note captured: ' + midiToNoteName(roundedMidi).str, 'success');
+              if (addToast) addToast(__alloFmt('stem.singing.toast_lowest_note', 'Lowest note captured: {note}', { note: midiToNoteName(roundedMidi).str }), 'success');
               if (stemBeep) { stemBeep(988, 0.06, 0.10); setTimeout(function() { stemBeep(1319, 0.16, 0.10); }, 70); }
             } else if (rangeStep === 2) {
               setRangeHighTemp(roundedMidi);
               setRangeStep(3);
-              rangeStableCountRef.current = 0;
+              resetHold(rangeStableCountRef);
 
               // Save to persistent state
               var low = rangeLowTemp || roundedMidi;
@@ -2625,7 +2786,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                   span: high - low
                 }])
               });
-              if (addToast) addToast('Vocal range found! ' + midiToNoteName(low).str + ' to ' + midiToNoteName(high).str, 'success');
+              if (addToast) addToast(__alloFmt('stem.singing.toast_range_found', 'Vocal range found! {low} to {high}', { low: midiToNoteName(low).str, high: midiToNoteName(high).str }), 'success');
               if (stemCelebrate) stemCelebrate();
               if (awardStemXP) awardStemXP('singing_range', 20, 'Singing: vocal range discovered');
             }
@@ -2639,14 +2800,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         React.useEffect(function() {
           if (!intervalActive || intervalResult) return;
           if (currentNote.midi <= 0) {
-            intervalLockedRef.current = 0;
+            resetHold(intervalLockedRef);
             return;
           }
 
           var diff = Math.abs(currentNote.midi - intervalActive.targetMidi);
           if (diff * 100 <= 15) { // within 15 cents = correct
-            intervalLockedRef.current++;
-            if (intervalLockedRef.current >= 25) { // ~0.8 sec locked
+            if (accrueHold(intervalLockedRef, Date.now(), 1) >= HOLD_INTERVAL_MS) {
               var elapsed = (Date.now() - intervalStartRef.current) / 1000;
               var centsOff = Math.round(diff * 100);
               var score = Math.max(0, Math.round(100 - centsOff - elapsed * 5));
@@ -2670,14 +2830,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
               if (stemBeep) { stemBeep(988, 0.06, 0.10); setTimeout(function() { stemBeep(1319, 0.16, 0.10); }, 70); }
               if (newCorrect >= 5 && newCorrect - 1 < 5) {
                 if (stemCelebrate) stemCelebrate();
-                if (addToast) addToast('Quest complete: 5 intervals!', 'success');
+                if (addToast) addToast(__alloT('stem.singing.quest_complete_5_intervals', 'Quest complete: 5 intervals!'), 'success');
                 if (awardStemXP) awardStemXP('singing_intervals', 25, 'Singing: 5 intervals correct');
               } else {
                 if (awardStemXP) awardStemXP('singing_intervals', 5, 'Singing: correct interval');
               }
             }
           } else {
-            intervalLockedRef.current = Math.max(0, intervalLockedRef.current - 2);
+            accrueHold(intervalLockedRef, Date.now(), -2);
           }
         }, [currentNote, intervalActive, intervalResult]);
 
@@ -2754,7 +2914,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 style: { color: noteColor },
                 role: 'status',
                 'aria-live': 'polite',
-                'aria-label': 'Current note: ' + (currentNote.note || '--') + (currentNote.octave || '')
+                'aria-label': __alloFmt('stem.singing.aria_current_note', 'Current note: {note}', { note: (currentNote.note || '--') + (currentNote.octave || '') })
               }, currentNote.note !== '--' ? currentNote.note + currentNote.octave : '--'),
               h('div', {
                 className: 'text-sm font-semibold mb-2',
@@ -2776,7 +2936,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 height: 40,
                 className: 'w-full rounded',
                 role: 'img',
-                'aria-label': 'Cents deviation meter showing ' + (currentNote.cents || 0) + ' cents'
+                'aria-label': __alloFmt('stem.singing.aria_cents_meter', 'Cents deviation meter showing {cents} cents', { cents: currentNote.cents || 0 })
               })
             ),
 
@@ -2820,7 +2980,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                         setRefTonePlaying(rn.midi);
                       }
                     },
-                    'aria-label': 'Play reference tone ' + rn.label
+                    'aria-label': __alloFmt('stem.singing.aria_play_ref_tone', 'Play reference tone {note}', { note: rn.label })
                   }, rn.label);
                 })
               ),
@@ -2844,7 +3004,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 className: btnPrimary,
                 onClick: function() {
                   if (!isRecording) {
-                    if (addToast) addToast('Start your microphone first!', 'warning');
+                    if (addToast) addToast(__alloT('stem.singing.start_your_microphone_first', 'Start your microphone first!'), 'warning');
                     return;
                   }
                   // Pick a random note in comfortable range
@@ -2852,11 +3012,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                   setPitchMatchTarget(targetMidi);
                   setPitchMatchMode('playing');
                   setPitchMatchScore(null);
-                  pitchMatchLockedRef.current = 0;
+                  resetHold(pitchMatchLockedRef);
                   pitchMatchStartRef.current = Date.now();
                   playMidiNote(targetMidi, 0, 0.12);
                   setRefTonePlaying(targetMidi);
-                  if (announceToSR) announceToSR('Match this note: ' + midiToNoteName(targetMidi).str);
+                  if (announceToSR) announceToSR(__alloFmt('stem.singing.sr_match_this_note', 'Match this note: {note}', { note: midiToNoteName(targetMidi).str }));
                 }
               }, t('stem.singing.play_round', '\uD83C\uDFB2 Play Round')),
 
@@ -2922,15 +3082,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                   className: btnPrimary,
                   onClick: function() {
                     if (!isRecording) {
-                      if (addToast) addToast('Start your microphone first!', 'warning');
+                      if (addToast) addToast(__alloT('stem.singing.start_your_microphone_first_2', 'Start your microphone first!'), 'warning');
                       return;
                     }
                     setRangeStep(1);
                     setRangeLowTemp(null);
                     setRangeHighTemp(null);
-                    rangeStableCountRef.current = 0;
+                    resetHold(rangeStableCountRef);
                     rangeLastMidiRef.current = 0;
-                    if (announceToSR) announceToSR('Step 1: Sing your lowest comfortable note and hold it.');
+                    if (announceToSR) announceToSR(__alloT('stem.singing.step_1_sing_your_lowest_comfortable_no', 'Step 1: Sing your lowest comfortable note and hold it.'));
                   }
                 }, t('stem.singing.start_range_test', '\uD83C\uDFAF Start Range Test'))
               ),
@@ -3185,7 +3345,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                   var isActive = vibratoExercise === ex.id;
                   return h('button', {
                     key: ex.id,
-                    'aria-label': 'Vibrato exercise: ' + ex.label + ' — ' + ex.desc,
+                    'aria-label': __alloFmt('stem.singing.aria_vibrato_exercise', 'Vibrato exercise: {name} — {desc}', { name: ex.label, desc: ex.desc }),
                     className: 'text-left p-3 rounded-lg border transition-colors ' +
                       (isActive
                         ? (isDark ? 'border-rose-500 bg-rose-900/30' : 'border-rose-400 bg-rose-50')
@@ -3217,7 +3377,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
           function startNewInterval() {
             if (!isRecording) {
-              if (addToast) addToast('Start your microphone first!', 'warning');
+              if (addToast) addToast(__alloT('stem.singing.start_your_microphone_first_3', 'Start your microphone first!'), 'warning');
               return;
             }
             // Pick random interval from available
@@ -3239,7 +3399,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
               direction: intervalDirection
             });
             setIntervalResult(null);
-            intervalLockedRef.current = 0;
+            resetHold(intervalLockedRef);
             intervalStartRef.current = Date.now();
 
             // Play the reference note
@@ -3248,7 +3408,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             setTimeout(function() { setRefTonePlaying(null); }, 2100);
 
             if (announceToSR) {
-              announceToSR('Sing a ' + interval.name + ' ' + intervalDirection + ' from ' + midiToNoteName(refMidi).str);
+              announceToSR(__alloFmt('stem.singing.sr_sing_interval', 'Sing a {interval} {direction} from {note}', { interval: interval.name, direction: intervalDirection, note: midiToNoteName(refMidi).str }));
             }
           }
 
@@ -3270,7 +3430,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                             ? (isDark ? 'bg-rose-600 text-white' : 'bg-rose-700 text-white')
                             : (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-100 text-slate-600')),
                         onClick: function() { setIntervalLevel(lvl); },
-                        'aria-label': 'Set level to ' + lvl
+                        'aria-label': __alloFmt('stem.singing.aria_set_level', 'Set level to {level}', { level: lvl })
                       }, lvl.toString());
                     })
                   )
@@ -3479,7 +3639,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             setWarmupActive(null);
             setWarmupTimer(0);
 
-            if (addToast) addToast('Warm-up complete!', 'success');
+            if (addToast) addToast(__alloT('stem.singing.warm_up_complete', 'Warm-up complete!'), 'success');
             if (stemBeep) { stemBeep(988, 0.06, 0.10); setTimeout(function() { stemBeep(1319, 0.16, 0.10); }, 70); }
             if (awardStemXP) awardStemXP('singing_warmup', 5, 'Singing: warm-up completed');
           }
@@ -3502,6 +3662,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
               (gradeLevel || 5) + ' student learning to sing. ' +
               'Cover: hydration, vocal rest, warning signs of strain, posture, breathing, and warm-up importance. ' +
               'Use simple, encouraging language. Format as a numbered list. Keep each tip to 1-2 sentences.';
+            prompt += aiLanguageSuffix();
             callGemini(prompt).then(function(response) {
               setHealthTips(response);
               setHealthLoading(false);
@@ -3729,7 +3890,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                   h('h4', { className: headingClass + ' text-xs mb-2 flex items-center gap-2' },
                     '\uD83D\uDEE1\uFE0F', t('stem.singing.top_prevention_tips', 'Top Prevention Tips')),
                   h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
-                    PREVENTION_TIPS.map(function(tip) {
+                    PREVENTION_TIPS.map(function(tip, tipIdx) {
                       var priorityColor = tip.priority === 'critical'
                         ? (isDark ? 'border-red-500 bg-red-900/20' : 'border-red-300 bg-red-50')
                         : tip.priority === 'essential'
@@ -3741,12 +3902,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                       },
                         h('div', { className: 'flex items-center gap-2 mb-1' },
                           h('span', { className: 'text-lg' }, tip.icon),
-                          h('span', { className: 'font-bold text-xs ' + (isDark ? 'text-white' : 'text-slate-800') }, tip.title),
+                          h('span', { className: 'font-bold text-xs ' + (isDark ? 'text-white' : 'text-slate-800') }, __alloT('stem.singing.prevention_' + tipIdx + '_title', tip.title)),
                           tip.priority === 'critical' && h('span', {
                             className: 'text-[11px] font-bold uppercase px-1.5 py-0.5 rounded ' +
                               (isDark ? 'bg-red-600 text-white' : 'bg-red-100 text-red-700')
                           }, t('stem.singing.critical', 'Critical'))),
-                        h('p', { className: 'text-[11px] leading-relaxed ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, tip.tip));
+                        h('p', { className: 'text-[11px] leading-relaxed ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.singing.prevention_' + tipIdx + '_tip', tip.tip)));
                     }))),
                 // Common injuries reference
                 h('div', { className: 'mt-3' },
@@ -3980,9 +4141,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             setSrMode('idle');
             setSrCurrentIdx(-1);
             setSrResults([]);
-            srLockedRef.current = 0;
+            resetHold(srLockedRef);
             srAttemptsRef.current = 0;
             srCentsAccRef.current = 0;
+            srCentsSamplesRef.current = 0;
             setSrStartTime(null);
           }
 
@@ -3995,6 +4157,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
               'Use notes in C major (no sharps/flats for easy, some for medium/hard). ' +
               'Easy: 4-8 notes C4-C5. Medium: 6-12 notes B3-G5. Hard: 8-16 notes A3-A5. ' +
               'Prefer stepwise motion with occasional leaps. Return ONLY the JSON array, no other text.';
+            prompt += aiLanguageSuffix();
             callGemini(prompt).then(function(response) {
               try {
                 // Extract JSON from response
@@ -4007,13 +4170,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                   setSrMode('idle');
                   setSrCurrentIdx(-1);
                   setSrResults([]);
-                  if (addToast) addToast('AI exercise generated!', 'success');
+                  if (addToast) addToast(__alloT('stem.singing.ai_exercise_generated', 'AI exercise generated!'), 'success');
                 } else {
                   throw new Error('Invalid format');
                 }
               } catch(e) {
                 console.warn('[Singing] AI exercise parse error:', e);
-                if (addToast) addToast('Could not parse AI response. Using random exercise.', 'warning');
+                if (addToast) addToast(__alloT('stem.singing.could_not_parse_ai_response_using_rand', 'Could not parse AI response. Using random exercise.'), 'warning');
                 setSrNotes(generateSightReadExercise(srDifficulty));
                 setSrMode('idle');
                 setSrCurrentIdx(-1);
@@ -4022,7 +4185,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
               setSrAiLoading(false);
             }).catch(function(err) {
               console.warn('[Singing] AI exercise error:', err);
-              if (addToast) addToast('AI unavailable. Using random exercise.', 'warning');
+              if (addToast) addToast(__alloT('stem.singing.ai_unavailable_using_random_exercise', 'AI unavailable. Using random exercise.'), 'warning');
               setSrNotes(generateSightReadExercise(srDifficulty));
               setSrMode('idle');
               setSrCurrentIdx(-1);
@@ -4069,17 +4232,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           function startSinging() {
             if (!srNotes || srNotes.length === 0) return;
             if (!isRecording) {
-              if (addToast) addToast('Start your microphone first!', 'warning');
+              if (addToast) addToast(__alloT('stem.singing.start_your_microphone_first_4', 'Start your microphone first!'), 'warning');
               return;
             }
             setSrMode('singing');
             setSrCurrentIdx(0);
             setSrResults([]);
             setSrStartTime(Date.now());
-            srLockedRef.current = 0;
+            resetHold(srLockedRef);
             srAttemptsRef.current = 0;
             srCentsAccRef.current = 0;
-            if (announceToSR) announceToSR('Sight reading started. Sing each note shown on the staff.');
+            srCentsSamplesRef.current = 0;
+            if (announceToSR) announceToSR(__alloT('stem.singing.sight_reading_started_sing_each_note_s', 'Sight reading started. Sing each note shown on the staff.'));
           }
 
           function stopSinging() {
@@ -4227,7 +4391,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 height: 160,
                 className: 'w-full rounded border ' + (isDark ? 'border-slate-600' : 'border-slate-200'),
                 role: 'img',
-                'aria-label': 'Staff notation showing sight reading exercise with ' + srNotes.length + ' notes'
+                'aria-label': __alloFmt('stem.singing.aria_staff_notation', 'Staff notation showing sight reading exercise with {count} notes', { count: srNotes.length })
               }),
 
               // Current note display during singing
@@ -4448,7 +4612,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                   stopRefTone();
                   setStemLabTool(null);
                 },
-                'aria-label': t('stem.singing.go_back_to_stem_lab_tool_list', 'Go back to STEM Lab tool list')
+                'aria-label': t('stem.singing.go_back_to_stem_lab_tool_list', 'Go back to STEAM Lab tool list')
               },
                 ArrowLeft && h(ArrowLeft, { size: 14 }),
                 t('stem.singing.back', 'Back')),
@@ -4507,7 +4671,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
               range:     { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '🎹', title: t('stem.singing.vocal_range_your_tessitura', 'Vocal Range — your tessitura'), hint: t('stem.singing.most_untrained_voices_span_1_5_2_octav', 'Most untrained voices span 1.5–2 octaves; trained classical singers reach 3+. Range expansion is mostly about REGISTER blending, not just stretching higher and lower.') },
               vibrato:   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '🌊', title: t('stem.singing.vibrato_lab_2', 'Vibrato Lab'),                hint: t('stem.singing.healthy_vibrato_5_7_hz_oscillation_60_', 'Healthy vibrato: 5–7 Hz oscillation, ~60–100 cents wide. Slower = wobble; faster = tremor. Vibrato is a function of relaxed breath support, not a separate technique.') },
               intervals: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '🎵', title: t('stem.singing.interval_singer_ear_training', 'Interval Singer — ear training'), hint: t('stem.singing.major_3rd_vs_minor_3rd_is_the_single_m', 'Major 3rd vs minor 3rd is the single most-confused interval pair for beginners. Mnemonics: M3 = "Oh when the saints," m3 = "Greensleeves." Builds relative pitch.') },
-              warmups:   { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '❤️', title: 'Warm-ups',                  hint: t('stem.singing.lip_trills_sirens_before_any_sustained', 'Lip trills + sirens before any sustained singing. 5–10 minutes of low-intensity warm-up halves the risk of vocal-fold strain. Skipping warm-ups is the #1 cause of preventable vocal injury.') },
+              warmups:   { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '❤️', title: __alloT('stem.singing.warm_ups', 'Warm-ups'),                  hint: t('stem.singing.lip_trills_sirens_before_any_sustained', 'Lip trills + sirens before any sustained singing. 5–10 minutes of low-intensity warm-up halves the risk of vocal-fold strain. Skipping warm-ups is the #1 cause of preventable vocal injury.') },
               sightread: { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '🎼', title: t('stem.singing.sight_reading_2', 'Sight reading'),              hint: t('stem.singing.solf_ge_do_re_mi_letter_names_for_sigh', 'Solfège (do-re-mi) > letter names for sight-singing because the syllables encode interval relationships, not just pitch labels. Movable do beats fixed do for tonal music.') },
               resoHunt:  { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '🎙️', title: t('stem.singing.resonance_lab_discover_your_vocal_tone', 'Resonance Lab — discover your vocal tone'), hint: t('stem.singing.two_sliders_throat_openness_and_soft_p', 'Two sliders — throat openness and soft palate lift — combine into four tone qualities (rich, bright, warm, nasal). No score, no reveal: experiment, log, and explain what you find.') }
             };

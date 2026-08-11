@@ -237,6 +237,91 @@ async function testKeyboardNavigation(page) {
   return findings;
 }
 
+/**
+ * Press Enter and Space on every custom (non-native) control and see whether
+ * anything actually happens.
+ *
+ * This exists because the static audit provably cannot answer it. A checker can
+ * see role="button" + tabIndex + onKeyDown and confirm the SHAPE of the ARIA
+ * button pattern, but never that the handler responds to Enter or Space —
+ * handlers are routinely delegated to a named function it cannot follow. The
+ * failure mode that leaves behind is the worst one available: an element that
+ * takes focus and then does nothing, which is worse for a keyboard user than an
+ * element that was never focusable.
+ *
+ * Native <button>/<a>/<input> are skipped: the browser guarantees activation.
+ *
+ * A control that does not react is reported as NEEDS-REVIEW, not as a defect.
+ * Plenty of controls legitimately no-op in their current state (nothing
+ * selected yet, already-filled slot, disabled round). Distinguishing those
+ * needs a human, so this narrows the search rather than pretending to conclude.
+ */
+async function testKeyboardActivation(page) {
+  const results = await page.evaluate(async () => {
+    const out = { tested: 0, reacted: 0, inert: [] };
+
+    const candidates = Array.from(
+      document.querySelectorAll('[role="button"], [tabindex]:not([tabindex="-1"])')
+    ).filter(el => !['BUTTON', 'A', 'INPUT', 'SELECT', 'TEXTAREA'].includes(el.tagName));
+
+    const describe = el => {
+      const label = el.getAttribute('aria-label') || (el.textContent || '').trim().slice(0, 40);
+      return (el.tagName.toLowerCase() + (el.className && typeof el.className === 'string'
+        ? '.' + el.className.split(/\s+/)[0] : '') + ' — ' + (label || '(no name)'));
+    };
+
+    // Cap the sweep: these pages can hold hundreds of controls and each probe
+    // costs two dispatches plus a paint.
+    for (const el of candidates.slice(0, 60)) {
+      out.tested++;
+      const before = document.body.innerHTML.length + '|' + document.activeElement?.tagName;
+
+      let reacted = false;
+      for (const key of ['Enter', ' ']) {
+        for (const type of ['keydown', 'keyup']) {
+          el.dispatchEvent(new KeyboardEvent(type, {
+            key, code: key === ' ' ? 'Space' : 'Enter',
+            bubbles: true, cancelable: true,
+          }));
+        }
+        await new Promise(r => setTimeout(r, 30));
+        const after = document.body.innerHTML.length + '|' + document.activeElement?.tagName;
+        if (after !== before) { reacted = true; break; }
+      }
+
+      if (reacted) out.reacted++;
+      else out.inert.push(describe(el));
+    }
+    return out;
+  });
+
+  const findings = [{
+    id: 'keyboard-activation-info',
+    description: `${results.reacted}/${results.tested} custom controls responded to Enter or Space`,
+    wcag: '2.1.1 Keyboard',
+    severity: 'info',
+    selector: 'body',
+  }];
+
+  // Report the unresponsive ones as a single grouped finding: individually they
+  // are leads, not verdicts, and 40 separate entries would read as 40 defects.
+  if (results.inert.length) {
+    findings.push({
+      id: 'keyboard-activation-review',
+      description:
+        `${results.inert.length} custom control(s) took focus but did not react to Enter or Space. ` +
+        `Some legitimately no-op in their current state — confirm by hand: ` +
+        results.inert.slice(0, 12).join('; ') +
+        (results.inert.length > 12 ? ` (+${results.inert.length - 12} more)` : ''),
+      wcag: '2.1.1 Keyboard',
+      severity: 'major',
+      selector: '[role="button"], [tabindex]',
+    });
+  }
+
+  return findings;
+}
+
 // ── Main ───────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -285,6 +370,10 @@ async function main() {
     // 3. Run keyboard nav test
     console.log('Testing keyboard navigation...');
     const keyboardFindings = await testKeyboardNavigation(page);
+
+    // 3b. Actually press the keys — the gap static analysis cannot close.
+    console.log('Testing keyboard activation (Enter/Space)...');
+    keyboardFindings.push(...(await testKeyboardActivation(page)));
 
     // ── Generate Report ──────────────────────────────────────────────
 

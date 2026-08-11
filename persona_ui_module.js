@@ -392,7 +392,7 @@ const InteractiveBlueprintCard = React.memo(({
       label: t('sidebar.tool_anchor_chart') || 'Anchor Chart'
     }, {
       value: 'math',
-      label: t('sidebar.tool_math') || 'STEM Lab'
+      label: t('sidebar.tool_math') || 'STEAM Lab'
     }, {
       value: 'lesson-plan',
       label: t('sidebar.tool_lesson') || 'Lesson Plan'

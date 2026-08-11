@@ -203,7 +203,7 @@ window.StemLab = window.StemLab || {
     signedOperationChallengeCount: SIGNED_OPERATION_CHALLENGES.length,
     getSignedOperationChallenge: getSignedOperationChallenge
   });
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -2990,7 +2990,7 @@ window.StemLab = window.StemLab || {
         // Number line
         h('div', { className: 'bg-white rounded-xl border p-3' },
           h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, __alloT('stem.fractions.number_line_3', '\uD83D\uDCCF Number Line')),
-          h('svg', { viewBox: '0 0 400 50', className: 'w-full', style: { maxHeight: '60px' } },
+          h('svg', { role: 'img', 'aria-label': __alloT('stem.fractions.numberline_img_label', 'Number line showing the current fraction'), viewBox: '0 0 400 50', className: 'w-full', style: { maxHeight: '60px' } },
             h('line', { x1: 20, y1: 30, x2: 380, y2: 30, stroke: '#94a3b8', strokeWidth: 2 }),
             Array.from({ length: nlMax + 1 }, function(_, i) {
               var x = 20 + i * (360 / nlMax);
@@ -3196,7 +3196,7 @@ window.StemLab = window.StemLab || {
         }
         return h('div', { className: 'bg-white rounded-xl border p-3 text-center' },
           h('p', { className: 'text-[11px] font-bold text-green-600 uppercase tracking-wider mb-2' }, __alloT('stem.fractions.area_model', '\uD83D\uDFE9 Area Model')),
-          h('svg', { viewBox: '0 0 ' + totalW + ' ' + totalH, width: Math.min(totalW * 1.2, 300), height: Math.min(totalH * 1.2, 200) }, cells),
+          h('svg', { 'aria-hidden': 'true', viewBox: '0 0 ' + totalW + ' ' + totalH, width: Math.min(totalW * 1.2, 300), height: Math.min(totalH * 1.2, 200) }, cells),
           h('p', { className: 'text-xs text-slate-600 mt-1' },
             'Green = ' + num1 + '\u00D7' + num2 + ' = ' + (num1 * num2) + ' out of ' + (den1 * den2) + ' total cells'
           )
@@ -3621,7 +3621,7 @@ window.StemLab = window.StemLab || {
         ),
         // The wall
         h('div', { className: 'bg-white rounded-xl border-2 border-indigo-200 p-3 overflow-x-auto' },
-          h('svg', { viewBox: '0 0 ' + wallW + ' ' + (wallDenoms.length * (stripH + 2) + 10), width: '100%' },
+          h('svg', { role: 'img', 'aria-label': __alloT('stem.fractions.wall_img_label', 'Fraction wall comparing equivalent fractions'), viewBox: '0 0 ' + wallW + ' ' + (wallDenoms.length * (stripH + 2) + 10), width: '100%' },
             wallDenoms.map(function(den, rowIdx) {
               var pieces2 = [];
               var segW = (wallW - 40) / den;
@@ -10271,7 +10271,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'bg-white rounded-xl border-2 border-fuchsia-200 p-4' },
           h('h5', { className: 'text-xs font-bold text-fuchsia-700 mb-2' }, 'Color wheel (' + wheelN + '/' + wheelD + ' lit)'),
           h('div', { className: 'flex justify-center mb-2' },
-            h('svg', { viewBox: '0 0 200 200', width: 200, height: 200 }, wheelSlices)
+            h('svg', { 'aria-hidden': 'true', viewBox: '0 0 200 200', width: 200, height: 200 }, wheelSlices)
           ),
           h('div', { className: 'grid grid-cols-2 gap-2' },
             h('div', null,

@@ -6,7 +6,7 @@
  * Four engines grew their own progress vocabulary independently:
  *
  *   1. Directions goals   (AlloFlowANTI.txt)      allo_directions_progress_v1
- *   2. STEM Lab quests    (stem_lab_module.js)    alloflow_quest_progress
+ *   2. STEAM Lab quests    (stem_lab_module.js)    alloflow_quest_progress
  *   3. SEL Hub quests     (sel_hub_module.js)     alloflow_sel_station_progress
  *   4. AlloHaven tokens   (allohaven_module.js)   its own state key
  *
@@ -15,7 +15,7 @@
  * three counted a different thing —
  *
  *   directions  engaged minutes (visible tab + interaction inside the timeout)
- *   STEM Lab    wall clock since mount, banked on unmount
+ *   STEAM Lab    wall clock since mount, banked on unmount
  *   SEL Hub     a 30s interval with no visibility or engagement check at all
  *
  * ...so "spend 5 minutes" was satisfiable by an abandoned background tab in one

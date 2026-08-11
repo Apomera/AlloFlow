@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════
 // stem_tool_dna.js - DNA / Genetics Lab  v3.0
-// Enhanced STEM Lab tool - 11 sub-tools
+// Enhanced STEAM Lab tool - 11 sub-tools
 // Build · Replicate · Transcribe · Translate · Mutate
 // CRISPR · Protein · Forensics · Challenge · Battle · Learn
 // ═══════════════════════════════════════════════════════
@@ -31,7 +31,7 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) - shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) - shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');

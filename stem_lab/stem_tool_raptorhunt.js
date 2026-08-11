@@ -30,7 +30,7 @@
 // Category: Ecology & Migration (sister to BirdLab)
 // ═══════════════════════════════════════════════════════════════
 
-// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -19089,7 +19089,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             )
           ),
           h('div', { className: 'text-center text-xs text-slate-500 italic mt-6' },
-            __alloT('stem.raptorhunt.raptor_hunt_predator_physics_biology_a', 'Raptor Hunt: Predator Physics + Biology · AlloFlow STEM Lab · Built with rigor + care.')
+            __alloT('stem.raptorhunt.raptor_hunt_predator_physics_biology_a', 'Raptor Hunt: Predator Physics + Biology · AlloFlow STEAM Lab · Built with rigor + care.')
           )
         );
       }
@@ -20193,7 +20193,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             __alloT('stem.raptorhunt.raptor_hunt_predator_physics_biology_2', 'Raptor Hunt: Predator Physics + Biology')
           ),
           h('div', { className: 'text-center text-xs text-slate-500 italic' },
-            __alloT('stem.raptorhunt.alloflow_stem_lab', 'AlloFlow STEM Lab')
+            __alloT('stem.raptorhunt.alloflow_stem_lab', 'AlloFlow STEAM Lab')
           ),
           h('div', { className: 'text-center text-xs text-slate-500 italic' },
             __alloT('stem.raptorhunt.built_with_rigor_care_love_for_these_m', 'Built with rigor, care, + love for these magnificent birds.')
@@ -20435,7 +20435,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           ),
           h('div', { className: 'text-center mt-8 space-y-1' },
             h('div', { className: 'text-xs text-slate-500 italic' }, __alloT('stem.raptorhunt.raptor_hunt_predator_physics_biology_3', '🦅 Raptor Hunt: Predator Physics + Biology')),
-            h('div', { className: 'text-xs text-slate-500 italic' }, __alloT('stem.raptorhunt.alloflow_stem_lab_20k_lines_90_section', '🎓 AlloFlow STEM Lab · 20K+ Lines · 90+ Sections')),
+            h('div', { className: 'text-xs text-slate-500 italic' }, __alloT('stem.raptorhunt.alloflow_stem_lab_20k_lines_90_section', '🎓 AlloFlow STEAM Lab · 20K+ Lines · 90+ Sections')),
             h('div', { className: 'text-xs text-slate-500 italic' }, __alloT('stem.raptorhunt.built_with_rigor_care_reverence_for_th', '🌅 Built with rigor, care, + reverence for these magnificent birds.')),
             h('div', { className: 'text-xs text-slate-500 italic mt-3' }, __alloT('stem.raptorhunt.thank_you_for_completing_this_journey', 'Thank you for completing this journey.'))
           )

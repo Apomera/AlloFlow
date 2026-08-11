@@ -15,7 +15,7 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -3184,6 +3184,7 @@ window.StemLab = window.StemLab || {
                     )
                   )
                 )
+              )
               ),
 
               // ═══ WORD PROBLEMS TAB ═══
@@ -3237,7 +3238,7 @@ window.StemLab = window.StemLab || {
                         }, __alloT('stem.money.new_problem_2', "\u21BB New Problem"))
                       )
                   )
-              ),
+              ,
 
               // ═══ CURRENCY EXCHANGE TAB ═══
               tab === 'exchange' && React.createElement("div", { className: "bg-gradient-to-br from-sky-50 to-cyan-50 rounded-xl p-5 border border-sky-200" },
@@ -4316,7 +4317,7 @@ window.StemLab = window.StemLab || {
                       );
                     })
                   ),
-                  React.createElement("svg", { width: '100%', height: 160, viewBox: '0 0 320 160', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
+                  React.createElement("svg", { role: 'img', 'aria-label': __alloT('stem.money.chart_img', 'Chart of the current data'), width: '100%', height: 160, viewBox: '0 0 320 160', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
                     React.createElement("line", { x1: 30, y1: 130, x2: 310, y2: 130, stroke: '#1e293b' }),
                     React.createElement("line", { x1: 30, y1: 18, x2: 30, y2: 130, stroke: '#1e293b' }),
                     React.createElement("polyline", { points: contribPts.join(' '), fill: 'none', stroke: '#94a3b8', strokeWidth: 1.5, strokeDasharray: '4 3' }),

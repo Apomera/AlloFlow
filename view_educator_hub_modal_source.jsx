@@ -97,9 +97,9 @@ function EducatorHubModal(props) {
     // Dynamic Assessment Studio entry — added May 2026. Optional so legacy
     // hosts that haven't wired the setter still render the rest of the hub.
     setIsDynamicAssessmentOpen = (() => {}),
-    // Lumen launcher — opens the STEM Lab on the Lumen tool (Lumen is plugin-only,
+    // Lumen launcher — opens the STEAM Lab on the Lumen tool (Lumen is plugin-only,
     // so this card is its primary UI entry point). Optional defaults so a host that
-    // hasn't wired the STEM-Lab setters still renders the rest of the hub.
+    // hasn't wired the STEAM-Lab setters still renders the rest of the hub.
     setShowStemLab = (() => {}),
     setStemLabTool = (() => {}),
     setLabToolData = (() => {}),

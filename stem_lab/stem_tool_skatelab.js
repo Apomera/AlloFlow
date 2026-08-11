@@ -32,7 +32,7 @@ window.StemLab = window.StemLab || {
 (function() {
   'use strict';
 
-  // ── Reduced motion (WCAG 2.3.3) — shared across STEM Lab tools ──
+  // ── Reduced motion (WCAG 2.3.3) — shared across STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -2438,7 +2438,7 @@ window.StemLab = window.StemLab || {
               return '<li>' + escapeHtml(q) + '<span class="lines"></span></li>';
             }).join('') +
           '</ol>' +
-          '<div class="foot"><span>SkateLab · STEM Lab · AlloFlow</span><span>Generated ' + new Date().toLocaleDateString() + '</span></div>' +
+          '<div class="foot"><span>SkateLab · STEAM Lab · AlloFlow</span><span>Generated ' + new Date().toLocaleDateString() + '</span></div>' +
           '</body></html>';
         win.document.open();
         win.document.write(body);
@@ -2517,7 +2517,7 @@ window.StemLab = window.StemLab || {
               '<div>&nbsp;<small>Parent / guardian signature + date</small></div>' +
             '</div>' +
           '</div>' +
-          '<div class="foot"><span>SkateLab — STEM Lab · AlloFlow</span><span>Sources: CDC, AAP, AAPD, SafeKids</span></div>' +
+          '<div class="foot"><span>SkateLab — STEAM Lab · AlloFlow</span><span>Sources: CDC, AAP, AAPD, SafeKids</span></div>' +
           '</body></html>';
         win.document.write(body);
         win.document.close();
@@ -3445,7 +3445,7 @@ window.StemLab = window.StemLab || {
         h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           ArrowLeft && setStemLabTool ? h('button', {
             onClick: function() { setStemLabTool(null); },
-            'aria-label': __alloT('stem.skatelab.back_to_stem_lab', 'Back to STEM Lab'),
+            'aria-label': __alloT('stem.skatelab.back_to_stem_lab', 'Back to STEAM Lab'),
             'data-sk-focusable': 'true',
             style: { padding: 6, background: 'transparent', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 8, color: '#fef3c7', cursor: 'pointer' }
           }, h(ArrowLeft, { size: 16 })) : null,

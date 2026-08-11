@@ -1,13 +1,13 @@
 {
-  "timestamp": "2026-08-10T22:23:04.254Z",
+  "timestamp": "2026-08-11T02:01:02.919Z",
   "summary": {
-    "total": 514,
-    "actionable": 267,
+    "total": 389,
+    "actionable": 145,
     "coveredByGlobalBaseline": 148,
-    "notInAccessibilityTree": 99,
-    "critical": 22,
-    "major": 158,
-    "minor": 87,
+    "notInAccessibilityTree": 96,
+    "critical": 10,
+    "major": 49,
+    "minor": 86,
     "filesScanned": 473,
     "checksRun": 15
   },
@@ -17,10 +17,10 @@
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
       "severity": "critical",
-      "count": 74,
+      "count": 72,
       "actionable": 1,
       "coveredByGlobalBaseline": 0,
-      "notInAccessibilityTree": 73,
+      "notInAccessibilityTree": 71,
       "files": [
         "AlloFlowANTI.txt",
         "allohaven_module.js",
@@ -29,8 +29,6 @@
         "memory_palace_module.js",
         "studio_module.js",
         "view_pdf_audit_source.jsx",
-        "_codex_pdf_parse_probe.js",
-        "stem_lab\\blockly_runtime.bundle.js",
         "stem_lab\\stem_tool_beehive.js",
         "stem_lab\\stem_tool_coasterlab.js",
         "stem_lab\\stem_tool_dinolab.js",
@@ -49,10 +47,10 @@
       "name": "Input without programmatic label",
       "wcag": "3.3.2 Labels or Instructions",
       "severity": "major",
-      "count": 27,
+      "count": 26,
       "actionable": 1,
       "coveredByGlobalBaseline": 0,
-      "notInAccessibilityTree": 26,
+      "notInAccessibilityTree": 25,
       "files": [
         "AlloFlowANTI.txt",
         "allohaven_module.js",
@@ -62,7 +60,6 @@
         "student_analytics_module.js",
         "view_pdf_audit_source.jsx",
         "view_simplified_source.jsx",
-        "_codex_pdf_parse_probe.js",
         "stem_lab\\stem_tool_aquarium.js",
         "stem_lab\\stem_tool_cell.js",
         "stem_lab\\stem_tool_datastudio.js",
@@ -102,8 +99,8 @@
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
       "severity": "major",
-      "count": 124,
-      "actionable": 14,
+      "count": 110,
+      "actionable": 0,
       "coveredByGlobalBaseline": 110,
       "notInAccessibilityTree": 0,
       "files": [
@@ -116,7 +113,6 @@
         "view_history_panel_source.jsx",
         "view_misc_modals_source.jsx",
         "view_pdf_audit_source.jsx",
-        "_codex_pdf_parse_probe.js",
         "stem_lab\\stem_tool_a11yauditor.js",
         "stem_lab\\stem_tool_aquarium.js",
         "stem_lab\\stem_tool_birdlab.js",
@@ -155,8 +151,8 @@
       "name": "outline:none without visible focus replacement",
       "wcag": "2.4.7 Focus Visible",
       "severity": "critical",
-      "count": 50,
-      "actionable": 12,
+      "count": 38,
+      "actionable": 0,
       "coveredByGlobalBaseline": 38,
       "notInAccessibilityTree": 0,
       "files": [
@@ -170,8 +166,6 @@
         "view_info_modal_source.jsx",
         "view_pdf_audit_source.jsx",
         "view_video_library_source.jsx",
-        "_codex_pdf_parse_probe.js",
-        "stem_lab\\blockly_runtime.bundle.js",
         "stem_lab\\stem_tool_a11yauditor.js",
         "stem_lab\\stem_tool_applab.js",
         "stem_lab\\stem_tool_birdlab.js",
@@ -190,28 +184,16 @@
       "name": "SVG element without accessible name",
       "wcag": "1.1.1 Non-text Content",
       "severity": "major",
-      "count": 66,
-      "actionable": 66,
+      "count": 7,
+      "actionable": 7,
       "coveredByGlobalBaseline": 0,
       "notInAccessibilityTree": 0,
       "files": [
         "allohaven_module.js",
-        "stem_lab\\stem_tool_aquaculture.js",
         "stem_lab\\stem_tool_birdlab.js",
         "stem_lab\\stem_tool_coordgrid.js",
-        "stem_lab\\stem_tool_dataplot.js",
-        "stem_lab\\stem_tool_fractions.js",
-        "stem_lab\\stem_tool_gamestudio.js",
-        "stem_lab\\stem_tool_geo.js",
-        "stem_lab\\stem_tool_lifeskills.js",
-        "stem_lab\\stem_tool_logiclab.js",
         "stem_lab\\stem_tool_manipulatives.js",
-        "stem_lab\\stem_tool_money.js",
-        "stem_lab\\stem_tool_music.js",
-        "stem_lab\\stem_tool_raptorhunt.js",
-        "stem_lab\\stem_tool_statslab.js",
-        "stem_lab\\stem_tool_weldlab.js",
-        "stem_lab\\stem_tool_worldbuilder.js"
+        "stem_lab\\stem_tool_statslab.js"
       ]
     },
     {
@@ -219,22 +201,15 @@
       "name": "Drag-and-drop without keyboard alternative",
       "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
       "severity": "major",
-      "count": 41,
-      "actionable": 41,
+      "count": 5,
+      "actionable": 5,
       "coveredByGlobalBaseline": 0,
       "notInAccessibilityTree": 0,
       "files": [
         "allohaven_module.js",
-        "escape_room_module.js",
         "math_fluency_module.js",
         "word_sounds_module.js",
-        "_codex_pdf_parse_probe.js",
-        "stem_lab\\blockly_runtime.bundle.js",
-        "stem_lab\\stem_tool_bikelab.js",
-        "stem_lab\\stem_tool_coding.js",
-        "stem_lab\\stem_tool_geo.js",
-        "stem_lab\\stem_tool_logiclab.js",
-        "stem_lab\\stem_tool_manipulatives.js"
+        "stem_lab\\stem_tool_coding.js"
       ]
     },
     {
@@ -278,12 +253,11 @@
       "name": "Table header without scope attribute",
       "wcag": "1.3.1 Info and Relationships",
       "severity": "minor",
-      "count": 87,
-      "actionable": 87,
+      "count": 86,
+      "actionable": 86,
       "coveredByGlobalBaseline": 0,
       "notInAccessibilityTree": 0,
       "files": [
-        "_codex_pdf_parse_probe.js",
         "stem_lab\\stem_tool_aquaculture.js",
         "stem_lab\\stem_tool_birdlab.js",
         "stem_lab\\stem_tool_cell.js",
@@ -303,7 +277,7 @@
   "findings": [
     {
       "file": "AlloFlowANTI.txt",
-      "line": 31039,
+      "line": 31098,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -314,7 +288,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 18131,
+      "line": 18190,
       "checkId": "INPUT-001",
       "name": "Input without programmatic label",
       "wcag": "3.3.2 Labels or Instructions",
@@ -325,7 +299,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 19802,
+      "line": 19861,
       "checkId": "INPUT-001",
       "name": "Input without programmatic label",
       "wcag": "3.3.2 Labels or Instructions",
@@ -336,7 +310,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 26586,
+      "line": 26645,
       "checkId": "INPUT-001",
       "name": "Input without programmatic label",
       "wcag": "3.3.2 Labels or Instructions",
@@ -347,7 +321,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 19643,
+      "line": 19702,
       "checkId": "CONFIRM-001",
       "name": "window.confirm() for data operations",
       "wcag": "3.3.4 Error Prevention",
@@ -357,7 +331,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 36220,
+      "line": 36279,
       "checkId": "CONFIRM-001",
       "name": "window.confirm() for data operations",
       "wcag": "3.3.4 Error Prevention",
@@ -367,7 +341,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 54104,
+      "line": 54164,
       "checkId": "CONFIRM-001",
       "name": "window.confirm() for data operations",
       "wcag": "3.3.4 Error Prevention",
@@ -377,7 +351,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 7139,
+      "line": 7178,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -388,7 +362,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 7427,
+      "line": 7466,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -399,7 +373,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 7441,
+      "line": 7480,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -410,7 +384,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 11328,
+      "line": 11367,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -421,7 +395,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 11406,
+      "line": 11445,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -432,7 +406,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 43937,
+      "line": 43996,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -443,7 +417,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 45711,
+      "line": 45770,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -454,7 +428,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 46698,
+      "line": 46757,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -465,7 +439,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 46699,
+      "line": 46758,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -476,7 +450,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 46700,
+      "line": 46759,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -487,7 +461,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 46855,
+      "line": 46914,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -498,7 +472,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 46927,
+      "line": 46986,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -509,7 +483,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 47715,
+      "line": 47774,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -520,7 +494,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 47906,
+      "line": 47965,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -531,7 +505,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 47922,
+      "line": 47981,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -542,7 +516,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 48015,
+      "line": 48074,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -553,7 +527,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 48076,
+      "line": 48135,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -564,7 +538,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 48362,
+      "line": 48421,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -575,7 +549,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 48364,
+      "line": 48423,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -586,7 +560,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 48367,
+      "line": 48426,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -597,7 +571,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 48388,
+      "line": 48447,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -608,7 +582,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 48413,
+      "line": 48472,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -619,7 +593,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 49353,
+      "line": 49412,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -630,7 +604,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 49550,
+      "line": 49609,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -641,7 +615,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 52102,
+      "line": 52162,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -652,7 +626,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 7475,
+      "line": 7514,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
       "wcag": "4.1.2 Name/Role/Value, 2.4.3 Focus Order",
@@ -662,7 +636,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 8451,
+      "line": 8490,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
       "wcag": "4.1.2 Name/Role/Value, 2.4.3 Focus Order",
@@ -672,7 +646,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 11474,
+      "line": 11513,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
       "wcag": "4.1.2 Name/Role/Value, 2.4.3 Focus Order",
@@ -682,7 +656,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 11550,
+      "line": 11589,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
       "wcag": "4.1.2 Name/Role/Value, 2.4.3 Focus Order",
@@ -692,7 +666,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 11565,
+      "line": 11604,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
       "wcag": "4.1.2 Name/Role/Value, 2.4.3 Focus Order",
@@ -702,7 +676,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 11579,
+      "line": 11618,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
       "wcag": "4.1.2 Name/Role/Value, 2.4.3 Focus Order",
@@ -712,7 +686,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 11587,
+      "line": 11626,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
       "wcag": "4.1.2 Name/Role/Value, 2.4.3 Focus Order",
@@ -722,7 +696,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 11593,
+      "line": 11632,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
       "wcag": "4.1.2 Name/Role/Value, 2.4.3 Focus Order",
@@ -732,7 +706,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 48597,
+      "line": 48656,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
       "wcag": "4.1.2 Name/Role/Value, 2.4.3 Focus Order",
@@ -742,7 +716,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 49974,
+      "line": 50033,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
       "wcag": "4.1.2 Name/Role/Value, 2.4.3 Focus Order",
@@ -796,72 +770,12 @@
     },
     {
       "file": "allohaven_module.js",
-      "line": 4213,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "return h('svg', commonRoot,",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "allohaven_module.js",
-      "line": 4257,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "return h('svg', commonRoot,",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "allohaven_module.js",
-      "line": 4297,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "return h('svg', commonRoot,",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "allohaven_module.js",
-      "line": 4344,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "return h('svg', commonRoot,",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "allohaven_module.js",
-      "line": 4384,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "return h('svg', commonRoot,",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "allohaven_module.js",
       "line": 4438,
       "checkId": "SVG-001",
       "name": "SVG element without accessible name",
       "wcag": "1.1.1 Non-text Content",
       "severity": "major",
       "snippet": "return h('svg', commonRoot,",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "allohaven_module.js",
-      "line": 28485,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "h('svg', { viewBox: '0 0 ' + W + ' ' + (padT + maxBarH + padB), width: '100%', height: padT + maxBarH + padB },",
       "fix": "Add role=\"img\" and aria-label describing the visualization."
     },
     {
@@ -874,16 +788,6 @@
       "snippet": "var input = document.createElement('input');",
       "fix": "Add aria-label with descriptive text, or wrap in <label> with htmlFor/id association.",
       "notInAccessibilityTree": true
-    },
-    {
-      "file": "allohaven_module.js",
-      "line": 7507,
-      "checkId": "DRAGDROP-001",
-      "name": "Drag-and-drop without keyboard alternative",
-      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
-      "severity": "major",
-      "snippet": "onDragStart: function(e) {",
-      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
     },
     {
       "file": "allohaven_module.js",
@@ -1069,26 +973,6 @@
       "snippet": "h('div', { className: 'px-3 py-1.5 rounded-lg flex items-center gap-2 ' + (escapeTimeLeft <= 60 ? 'bg-red-900/50 animate",
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce).",
       "coveredByGlobalBaseline": true
-    },
-    {
-      "file": "escape_room_module.js",
-      "line": 1369,
-      "checkId": "DRAGDROP-001",
-      "name": "Drag-and-drop without keyboard alternative",
-      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
-      "severity": "major",
-      "snippet": "draggable: true,",
-      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
-    },
-    {
-      "file": "escape_room_module.js",
-      "line": 1370,
-      "checkId": "DRAGDROP-001",
-      "name": "Drag-and-drop without keyboard alternative",
-      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
-      "severity": "major",
-      "snippet": "onDragStart: function(e) { e.dataTransfer.setData('text/plain', displayIdx.toString()); },",
-      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
     },
     {
       "file": "immersive_reader_source.jsx",
@@ -1387,7 +1271,7 @@
     },
     {
       "file": "student_analytics_module.js",
-      "line": 3786,
+      "line": 3798,
       "checkId": "INPUT-001",
       "name": "Input without programmatic label",
       "wcag": "3.3.2 Labels or Instructions",
@@ -1398,7 +1282,7 @@
     },
     {
       "file": "student_analytics_module.js",
-      "line": 5890,
+      "line": 5975,
       "checkId": "INPUT-001",
       "name": "Input without programmatic label",
       "wcag": "3.3.2 Labels or Instructions",
@@ -1409,7 +1293,7 @@
     },
     {
       "file": "student_analytics_module.js",
-      "line": 6241,
+      "line": 6326,
       "checkId": "INPUT-001",
       "name": "Input without programmatic label",
       "wcag": "3.3.2 Labels or Instructions",
@@ -1420,7 +1304,7 @@
     },
     {
       "file": "student_analytics_module.js",
-      "line": 1085,
+      "line": 1088,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1431,7 +1315,7 @@
     },
     {
       "file": "student_analytics_module.js",
-      "line": 1128,
+      "line": 1131,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1442,7 +1326,7 @@
     },
     {
       "file": "student_analytics_module.js",
-      "line": 3723,
+      "line": 3735,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1453,7 +1337,7 @@
     },
     {
       "file": "student_analytics_module.js",
-      "line": 4062,
+      "line": 4074,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1464,7 +1348,7 @@
     },
     {
       "file": "student_analytics_module.js",
-      "line": 5955,
+      "line": 6040,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1475,7 +1359,7 @@
     },
     {
       "file": "student_analytics_module.js",
-      "line": 5980,
+      "line": 6065,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1486,7 +1370,7 @@
     },
     {
       "file": "student_analytics_module.js",
-      "line": 5982,
+      "line": 6067,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1497,7 +1381,7 @@
     },
     {
       "file": "student_analytics_module.js",
-      "line": 6641,
+      "line": 6737,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1508,7 +1392,7 @@
     },
     {
       "file": "student_analytics_module.js",
-      "line": 6824,
+      "line": 6920,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1519,7 +1403,7 @@
     },
     {
       "file": "student_analytics_module.js",
-      "line": 7198,
+      "line": 7294,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1530,7 +1414,7 @@
     },
     {
       "file": "student_analytics_module.js",
-      "line": 7442,
+      "line": 7566,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1541,7 +1425,7 @@
     },
     {
       "file": "student_analytics_module.js",
-      "line": 7686,
+      "line": 7810,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1747,7 +1631,7 @@
     },
     {
       "file": "view_misc_modals_source.jsx",
-      "line": 812,
+      "line": 866,
       "checkId": "CONFIRM-001",
       "name": "window.confirm() for data operations",
       "wcag": "3.3.4 Error Prevention",
@@ -1757,7 +1641,7 @@
     },
     {
       "file": "view_misc_modals_source.jsx",
-      "line": 822,
+      "line": 876,
       "checkId": "CONFIRM-001",
       "name": "window.confirm() for data operations",
       "wcag": "3.3.4 Error Prevention",
@@ -1767,7 +1651,7 @@
     },
     {
       "file": "view_misc_modals_source.jsx",
-      "line": 824,
+      "line": 878,
       "checkId": "CONFIRM-001",
       "name": "window.confirm() for data operations",
       "wcag": "3.3.4 Error Prevention",
@@ -2096,7 +1980,7 @@
     },
     {
       "file": "word_sounds_module.js",
-      "line": 2240,
+      "line": 16013,
       "checkId": "DRAGDROP-001",
       "name": "Drag-and-drop without keyboard alternative",
       "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
@@ -2106,465 +1990,12 @@
     },
     {
       "file": "word_sounds_module.js",
-      "line": 2244,
+      "line": 16014,
       "checkId": "DRAGDROP-001",
       "name": "Drag-and-drop without keyboard alternative",
       "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
       "severity": "major",
-      "snippet": "onDragStart: (e) => handleDragStart(e, letter),",
-      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
-    },
-    {
-      "file": "word_sounds_module.js",
-      "line": 14051,
-      "checkId": "DRAGDROP-001",
-      "name": "Drag-and-drop without keyboard alternative",
-      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
-      "severity": "major",
-      "snippet": "draggable: true,",
-      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
-    },
-    {
-      "file": "word_sounds_module.js",
-      "line": 14052,
-      "checkId": "DRAGDROP-001",
-      "name": "Drag-and-drop without keyboard alternative",
-      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
-      "severity": "major",
-      "snippet": "onDragStart: (e) =>",
-      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
-    },
-    {
-      "file": "word_sounds_module.js",
-      "line": 14138,
-      "checkId": "DRAGDROP-001",
-      "name": "Drag-and-drop without keyboard alternative",
-      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
-      "severity": "major",
-      "snippet": "draggable: true,",
-      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
-    },
-    {
-      "file": "word_sounds_module.js",
-      "line": 14139,
-      "checkId": "DRAGDROP-001",
-      "name": "Drag-and-drop without keyboard alternative",
-      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
-      "severity": "major",
-      "snippet": "onDragStart: (e) =>",
-      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
-    },
-    {
-      "file": "word_sounds_module.js",
-      "line": 15656,
-      "checkId": "DRAGDROP-001",
-      "name": "Drag-and-drop without keyboard alternative",
-      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
-      "severity": "major",
-      "snippet": "draggable: true,",
-      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
-    },
-    {
-      "file": "word_sounds_module.js",
-      "line": 15658,
-      "checkId": "DRAGDROP-001",
-      "name": "Drag-and-drop without keyboard alternative",
-      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
-      "severity": "major",
-      "snippet": "onDragStart: (e) => handleDragStart(e, num, \"number\"),",
-      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
-    },
-    {
-      "file": "word_sounds_module.js",
-      "line": 15672,
-      "checkId": "DRAGDROP-001",
-      "name": "Drag-and-drop without keyboard alternative",
-      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
-      "severity": "major",
-      "snippet": "draggable: true,",
-      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
-    },
-    {
-      "file": "word_sounds_module.js",
-      "line": 15674,
-      "checkId": "DRAGDROP-001",
-      "name": "Drag-and-drop without keyboard alternative",
-      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
-      "severity": "major",
-      "snippet": "onDragStart: (e) => handleDragStart(e, 11, \"number\"),",
-      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
-    },
-    {
-      "file": "_codex_pdf_parse_probe.js",
-      "line": 11723,
-      "checkId": "FOCUS-001",
-      "name": "outline:none without visible focus replacement",
-      "wcag": "2.4.7 Focus Visible",
-      "severity": "critical",
-      "snippet": "return /* @__PURE__ */ React.createElement(\"details\", { className: \"mt-1 mx-2 px-3 py-2 text-xs border border-emerald-10",
-      "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus."
-    },
-    {
-      "file": "_codex_pdf_parse_probe.js",
-      "line": 11754,
-      "checkId": "FOCUS-001",
-      "name": "outline:none without visible focus replacement",
-      "wcag": "2.4.7 Focus Visible",
-      "severity": "critical",
-      "snippet": "className: \"font-bold text-indigo-700 hover:underline disabled:opacity-60 outline-none\"",
-      "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus."
-    },
-    {
-      "file": "_codex_pdf_parse_probe.js",
-      "line": 11809,
-      "checkId": "FOCUS-001",
-      "name": "outline:none without visible focus replacement",
-      "wcag": "2.4.7 Focus Visible",
-      "severity": "critical",
-      "snippet": "className: \"mt-1.5 block font-bold text-emerald-700 hover:underline disabled:opacity-60 outline-none\"",
-      "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus."
-    },
-    {
-      "file": "_codex_pdf_parse_probe.js",
-      "line": 11165,
-      "checkId": "CANVAS-001",
-      "name": "Canvas element without text alternative",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "critical",
-      "snippet": "var out = document.createElement('canvas');",
-      "fix": "Add role=\"img\" and a descriptive aria-label, or aria-hidden=\"true\" when the canvas is only an internal/decorative buffer.",
-      "notInAccessibilityTree": true
-    },
-    {
-      "file": "_codex_pdf_parse_probe.js",
-      "line": 12814,
-      "checkId": "INPUT-001",
-      "name": "Input without programmatic label",
-      "wcag": "3.3.2 Labels or Instructions",
-      "severity": "major",
-      "snippet": "const ta = document.createElement(\"textarea\");",
-      "fix": "Add aria-label with descriptive text, or wrap in <label> with htmlFor/id association.",
-      "notInAccessibilityTree": true
-    },
-    {
-      "file": "_codex_pdf_parse_probe.js",
-      "line": 7628,
-      "checkId": "MOTION-001",
-      "name": "animate-pulse without reduced-motion check",
-      "wcag": "2.3.1 Three Flashes",
-      "severity": "major",
-      "snippet": "}, className: \"text-xs text-red-600 hover:text-red-600 font-bold\" }, t(\"pdf_audit.batch.clear_all\") || \"Clear All\")), /*",
-      "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
-    },
-    {
-      "file": "_codex_pdf_parse_probe.js",
-      "line": 7659,
-      "checkId": "MOTION-001",
-      "name": "animate-pulse without reduced-motion check",
-      "wcag": "2.3.1 Three Flashes",
-      "severity": "major",
-      "snippet": "), !pdfBatchProcessing && !batchIngesting && item.status === \"pending\" && /* @__PURE__ */ React.createElement(\"button\", ",
-      "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
-    },
-    {
-      "file": "_codex_pdf_parse_probe.js",
-      "line": 8814,
-      "checkId": "MOTION-001",
-      "name": "animate-pulse without reduced-motion check",
-      "wcag": "2.3.1 Three Flashes",
-      "severity": "major",
-      "snippet": "})()) : pdfAuditLoading ? /* @__PURE__ */ React.createElement(\"div\", { className: \"p-12 text-center\", role: \"status\", \"a",
-      "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
-    },
-    {
-      "file": "_codex_pdf_parse_probe.js",
-      "line": 9117,
-      "checkId": "MOTION-001",
-      "name": "animate-pulse without reduced-motion check",
-      "wcag": "2.3.1 Three Flashes",
-      "severity": "major",
-      "snippet": "}, disabled: pdfFixLoading, className: \"flex-1 px-5 py-3 bg-gradient-to-r from-indigo-600 to-violet-600 text-white round",
-      "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
-    },
-    {
-      "file": "_codex_pdf_parse_probe.js",
-      "line": 9354,
-      "checkId": "MOTION-001",
-      "name": "animate-pulse without reduced-motion check",
-      "wcag": "2.3.1 Three Flashes",
-      "severity": "major",
-      "snippet": "}, disabled: pdfFixLoading, className: \"flex-1 px-5 py-3 bg-gradient-to-r from-amber-800 to-orange-800 text-white rounde",
-      "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
-    },
-    {
-      "file": "_codex_pdf_parse_probe.js",
-      "line": 9368,
-      "checkId": "MOTION-001",
-      "name": "animate-pulse without reduced-motion check",
-      "wcag": "2.3.1 Three Flashes",
-      "severity": "major",
-      "snippet": "}, disabled: _remediationBusy || remediationReady === false, className: \"flex-1 px-5 py-3 bg-gradient-to-r from-green-70",
-      "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
-    },
-    {
-      "file": "_codex_pdf_parse_probe.js",
-      "line": 9430,
-      "checkId": "MOTION-001",
-      "name": "animate-pulse without reduced-motion check",
-      "wcag": "2.3.1 Three Flashes",
-      "severity": "major",
-      "snippet": "return /* @__PURE__ */ React.createElement(React.Fragment, { key: s.step }, i > 0 && /* @__PURE__ */ React.createElement",
-      "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
-    },
-    {
-      "file": "_codex_pdf_parse_probe.js",
-      "line": 9456,
-      "checkId": "MOTION-001",
-      "name": "animate-pulse without reduced-motion check",
-      "wcag": "2.3.1 Three Flashes",
-      "severity": "major",
-      "snippet": "return /* @__PURE__ */ React.createElement(\"div\", { key: ci, className: `flex items-center gap-x-2 gap-y-1 px-3 py-2 rou",
-      "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
-    },
-    {
-      "file": "_codex_pdf_parse_probe.js",
-      "line": 9467,
-      "checkId": "MOTION-001",
-      "name": "animate-pulse without reduced-motion check",
-      "wcag": "2.3.1 Three Flashes",
-      "severity": "major",
-      "snippet": "}))), /* @__PURE__ */ React.createElement(\"div\", { className: \"mt-4 bg-gradient-to-br from-sky-50 via-blue-50/40 to-indi",
-      "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
-    },
-    {
-      "file": "_codex_pdf_parse_probe.js",
-      "line": 9711,
-      "checkId": "MOTION-001",
-      "name": "animate-pulse without reduced-motion check",
-      "wcag": "2.3.1 Three Flashes",
-      "severity": "major",
-      "snippet": "return /* @__PURE__ */ React.createElement(\"div\", { className: \"mb-2 bg-sky-50 border border-sky-200 rounded-xl px-3 py-",
-      "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
-    },
-    {
-      "file": "_codex_pdf_parse_probe.js",
-      "line": 10130,
-      "checkId": "MOTION-001",
-      "name": "animate-pulse without reduced-motion check",
-      "wcag": "2.3.1 Three Flashes",
-      "severity": "major",
-      "snippet": "return /* @__PURE__ */ React.createElement(\"div\", { key: chunk.index, className: `border-2 rounded-xl transition-all dur",
-      "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
-    },
-    {
-      "file": "_codex_pdf_parse_probe.js",
-      "line": 10746,
-      "checkId": "MOTION-001",
-      "name": "animate-pulse without reduced-motion check",
-      "wcag": "2.3.1 Three Flashes",
-      "severity": "major",
-      "snippet": "}, className: \"text-[11px] bg-red-100 text-red-700 border border-red-300 px-2.5 py-1 rounded-full font-bold hover:bg-red",
-      "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
-    },
-    {
-      "file": "_codex_pdf_parse_probe.js",
-      "line": 12703,
-      "checkId": "MOTION-001",
-      "name": "animate-pulse without reduced-motion check",
-      "wcag": "2.3.1 Three Flashes",
-      "severity": "major",
-      "snippet": ")), /* @__PURE__ */ React.createElement(\"p\", { className: \"text-[10px] text-indigo-700 italic\" }, t(\"pdf_audit.region.su",
-      "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
-    },
-    {
-      "file": "_codex_pdf_parse_probe.js",
-      "line": 13905,
-      "checkId": "MOTION-001",
-      "name": "animate-pulse without reduced-motion check",
-      "wcag": "2.3.1 Three Flashes",
-      "severity": "major",
-      "snippet": "className: `px-2 py-1 rounded-md text-[11px] font-bold transition-colors ${isGeneratingStyle ? \"bg-indigo-100 text-indig",
-      "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
-    },
-    {
-      "file": "_codex_pdf_parse_probe.js",
-      "line": 16971,
-      "checkId": "DRAGDROP-001",
-      "name": "Drag-and-drop without keyboard alternative",
-      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
-      "severity": "major",
-      "snippet": "draggable: \"true\",",
-      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
-    },
-    {
-      "file": "_codex_pdf_parse_probe.js",
-      "line": 16972,
-      "checkId": "DRAGDROP-001",
-      "name": "Drag-and-drop without keyboard alternative",
-      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
-      "severity": "major",
-      "snippet": "onDragStart: (e) => {",
-      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
-    },
-    {
-      "file": "_codex_pdf_parse_probe.js",
-      "line": 4891,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "const th = doc.createElement(\"th\");",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\blockly_runtime.bundle.js",
-      "line": 25,
-      "checkId": "FOCUS-001",
-      "name": "outline:none without visible focus replacement",
-      "wcag": "2.4.7 Focus Visible",
-      "severity": "critical",
-      "snippet": "outline: none;",
-      "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus."
-    },
-    {
-      "file": "stem_lab\\blockly_runtime.bundle.js",
-      "line": 235,
-      "checkId": "FOCUS-001",
-      "name": "outline:none without visible focus replacement",
-      "wcag": "2.4.7 Focus Visible",
-      "severity": "critical",
-      "snippet": "outline: none;",
-      "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus."
-    },
-    {
-      "file": "stem_lab\\blockly_runtime.bundle.js",
-      "line": 281,
-      "checkId": "FOCUS-001",
-      "name": "outline:none without visible focus replacement",
-      "wcag": "2.4.7 Focus Visible",
-      "severity": "critical",
-      "snippet": "outline: none;",
-      "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus."
-    },
-    {
-      "file": "stem_lab\\blockly_runtime.bundle.js",
-      "line": 361,
-      "checkId": "FOCUS-001",
-      "name": "outline:none without visible focus replacement",
-      "wcag": "2.4.7 Focus Visible",
-      "severity": "critical",
-      "snippet": "outline: none;",
-      "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus."
-    },
-    {
-      "file": "stem_lab\\blockly_runtime.bundle.js",
-      "line": 381,
-      "checkId": "FOCUS-001",
-      "name": "outline:none without visible focus replacement",
-      "wcag": "2.4.7 Focus Visible",
-      "severity": "critical",
-      "snippet": "outline: none;",
-      "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus."
-    },
-    {
-      "file": "stem_lab\\blockly_runtime.bundle.js",
-      "line": 487,
-      "checkId": "FOCUS-001",
-      "name": "outline:none without visible focus replacement",
-      "wcag": "2.4.7 Focus Visible",
-      "severity": "critical",
-      "snippet": "outline: none;",
-      "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus."
-    },
-    {
-      "file": "stem_lab\\blockly_runtime.bundle.js",
-      "line": 573,
-      "checkId": "FOCUS-001",
-      "name": "outline:none without visible focus replacement",
-      "wcag": "2.4.7 Focus Visible",
-      "severity": "critical",
-      "snippet": "outline: none;",
-      "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus."
-    },
-    {
-      "file": "stem_lab\\blockly_runtime.bundle.js",
-      "line": 629,
-      "checkId": "FOCUS-001",
-      "name": "outline:none without visible focus replacement",
-      "wcag": "2.4.7 Focus Visible",
-      "severity": "critical",
-      "snippet": "outline: none;",
-      "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus."
-    },
-    {
-      "file": "stem_lab\\blockly_runtime.bundle.js",
-      "line": 1030,
-      "checkId": "FOCUS-001",
-      "name": "outline:none without visible focus replacement",
-      "wcag": "2.4.7 Focus Visible",
-      "severity": "critical",
-      "snippet": "outline: none;",
-      "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus."
-    },
-    {
-      "file": "stem_lab\\blockly_runtime.bundle.js",
-      "line": 6,
-      "checkId": "CANVAS-001",
-      "name": "Canvas element without text alternative",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "critical",
-      "snippet": "`+t.className.baseVal;var r;return ye&&(r=ye[t])||(Vs||(r=document.createElement(\"canvas\"),r.className=\"blocklyComputeCa",
-      "fix": "Add role=\"img\" and a descriptive aria-label, or aria-hidden=\"true\" when the canvas is only an internal/decorative buffer.",
-      "notInAccessibilityTree": true
-    },
-    {
-      "file": "stem_lab\\blockly_runtime.bundle.js",
-      "line": 700,
-      "checkId": "DRAGDROP-001",
-      "name": "Drag-and-drop without keyboard alternative",
-      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
-      "severity": "major",
-      "snippet": "children`),this.state=t}},Mg=class extends qo{constructor(t,e,i){super(`Cannot add an icon of type '${t}' to the block $",
-      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
-    },
-    {
-      "file": "stem_lab\\blockly_runtime.bundle.js",
-      "line": 814,
-      "checkId": "DRAGDROP-001",
-      "name": "Drag-and-drop without keyboard alternative",
-      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
-      "severity": "major",
-      "snippet": "the string literal 'separator'. Found: ${o}`))}if(e)throw TypeError(\"Found invalid FieldDropdown options.\")}getAriaTypeN",
-      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
-    },
-    {
-      "file": "stem_lab\\blockly_runtime.bundle.js",
-      "line": 856,
-      "checkId": "DRAGDROP-001",
-      "name": "Drag-and-drop without keyboard alternative",
-      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
-      "severity": "major",
-      "snippet": "`)}onClick(){super.onClick(),this.setBubbleVisible(!this.bubbleIsVisible())}isClickableInFlyout(){return!1}bubbleIsVisib",
-      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
-    },
-    {
-      "file": "stem_lab\\blockly_runtime.bundle.js",
-      "line": 859,
-      "checkId": "DRAGDROP-001",
-      "name": "Drag-and-drop without keyboard alternative",
-      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
-      "severity": "major",
-      "snippet": "`+this.inlinePath_),this.info_.RTL&&this.block_.pathObject.flipRTL(),this.recordSizeOnBlock_()}recordSizeOnBlock_(){this",
-      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
-    },
-    {
-      "file": "stem_lab\\blockly_runtime.bundle.js",
-      "line": 908,
-      "checkId": "DRAGDROP-001",
-      "name": "Drag-and-drop without keyboard alternative",
-      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
-      "severity": "major",
-      "snippet": "`)),e=e.trim().replace(this.FUNCTION_NAME_PLACEHOLDER_REGEXP_,i);let o;for(;o!==e;)o=e,e=e.replace(/^(( {2})*) {2}/gm,\"$",
+      "snippet": "onDragStart: (e) => { e.dataTransfer.setData(\"text/plain\", w); e.dataTransfer.effectAllowed = \"move\"; },",
       "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
     },
     {
@@ -2675,16 +2106,6 @@
     },
     {
       "file": "stem_lab\\stem_tool_aquaculture.js",
-      "line": 22270,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "return h('svg', { viewBox: '0 0 320 140', style: { width: '100%', height: 160, display: 'block' } },",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_aquaculture.js",
       "line": 10267,
       "checkId": "SCOPE-001",
       "name": "Table header without scope attribute",
@@ -2775,7 +2196,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_aquarium.js",
-      "line": 24437,
+      "line": 24573,
       "checkId": "INPUT-001",
       "name": "Input without programmatic label",
       "wcag": "3.3.2 Labels or Instructions",
@@ -2786,7 +2207,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_aquarium.js",
-      "line": 24463,
+      "line": 24599,
       "checkId": "INPUT-001",
       "name": "Input without programmatic label",
       "wcag": "3.3.2 Labels or Instructions",
@@ -2797,7 +2218,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_aquarium.js",
-      "line": 22032,
+      "line": 22168,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -2808,7 +2229,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_aquarium.js",
-      "line": 23620,
+      "line": 23756,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -2819,33 +2240,13 @@
     },
     {
       "file": "stem_lab\\stem_tool_beehive.js",
-      "line": 23466,
+      "line": 24509,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
       "severity": "critical",
       "snippet": "h('canvas', {",
       "fix": "Add role=\"img\" and a descriptive aria-label, or aria-hidden=\"true\" when the canvas is only an internal/decorative buffer."
-    },
-    {
-      "file": "stem_lab\\stem_tool_bikelab.js",
-      "line": 2009,
-      "checkId": "DRAGDROP-001",
-      "name": "Drag-and-drop without keyboard alternative",
-      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
-      "severity": "major",
-      "snippet": "draggable: true,",
-      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
-    },
-    {
-      "file": "stem_lab\\stem_tool_bikelab.js",
-      "line": 2013,
-      "checkId": "DRAGDROP-001",
-      "name": "Drag-and-drop without keyboard alternative",
-      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
-      "severity": "major",
-      "snippet": "onDragStart: function() { setDragged(t); },",
-      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
     },
     {
       "file": "stem_lab\\stem_tool_birdlab.js",
@@ -2881,82 +2282,12 @@
     },
     {
       "file": "stem_lab\\stem_tool_birdlab.js",
-      "line": 14549,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "h('svg', { viewBox: '0 0 35 20', style: { width: '60px', height: '32px' } }, b.svg(h))",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_birdlab.js",
-      "line": 16746,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "h('svg', { viewBox: '0 0 440 300', className: 'w-full h-auto', preserveAspectRatio: 'xMidYMid meet' },",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_birdlab.js",
-      "line": 18680,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "h('svg', {",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_birdlab.js",
-      "line": 20635,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "h('svg', { viewBox: '0 0 30 30', style: { width: 44, height: 44 } },",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_birdlab.js",
-      "line": 20783,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "return h('svg', { viewBox: '0 0 ' + w + ' ' + hgt, style: { width: '100%', maxHeight: 280, background: 'linear-gradient(",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_birdlab.js",
-      "line": 20859,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "return h('svg', { viewBox: '0 0 ' + (rx*2) + ' ' + (ry*2), style: { width: rx*2, height: ry*2 } },",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_birdlab.js",
       "line": 20915,
       "checkId": "SVG-001",
       "name": "SVG element without accessible name",
       "wcag": "1.1.1 Non-text Content",
       "severity": "major",
       "snippet": "h('svg', { viewBox: '0 0 400 420', style: { width: '100%', maxHeight: 500 } },",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_birdlab.js",
-      "line": 21021,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "h('svg', { viewBox: '0 0 300 200', style: { width: '100%', maxHeight: 280, background: 'linear-gradient(180deg, #fef3c7 ",
       "fix": "Add role=\"img\" and aria-label describing the visualization."
     },
     {
@@ -3387,76 +2718,6 @@
     },
     {
       "file": "stem_lab\\stem_tool_dataplot.js",
-      "line": 979,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "(chartType === 'scatter' || chartType === 'line' || chartType === 'bar') && h('svg', {",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_dataplot.js",
-      "line": 1041,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "h('svg', { viewBox: '0 0 ' + W + ' ' + rH, className: 'w-full bg-white rounded-lg border border-violet-200', style: { ma",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_dataplot.js",
-      "line": 1057,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "h('svg', { viewBox: '0 0 300 300', width: 260, height: 260, 'data-dataplot-svg': true },",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_dataplot.js",
-      "line": 1082,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "chartType === 'histogram' && n > 0 && h('svg', {",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_dataplot.js",
-      "line": 1127,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "chartType === 'boxplot' && n > 0 && h('svg', {",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_dataplot.js",
-      "line": 1157,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "return h('svg', { viewBox: '0 0 ' + W + ' ' + oH, className: 'w-full bg-white rounded-xl border border-teal-200', style:",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_dataplot.js",
-      "line": 1676,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "h('svg', { width: '100%', height: 200, viewBox: '0 0 320 200', style: { background: '#0a0a1a', borderRadius: 6, marginBo",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_dataplot.js",
       "line": 1595,
       "checkId": "SCOPE-001",
       "name": "Table header without scope attribute",
@@ -3642,7 +2903,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_flightsim.js",
-      "line": 23151,
+      "line": 23281,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
       "wcag": "2.4.7 Focus Visible",
@@ -3697,7 +2958,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_flightsim.js",
-      "line": 10705,
+      "line": 10807,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -3708,53 +2969,13 @@
     },
     {
       "file": "stem_lab\\stem_tool_flightsim.js",
-      "line": 24305,
+      "line": 24435,
       "checkId": "SCOPE-001",
       "name": "Table header without scope attribute",
       "wcag": "1.3.1 Info and Relationships",
       "severity": "minor",
       "snippet": "['airspeed kt', 'altitude ft', 'AoA°', 'state'].map(function(c, i) { return h('th', { key: 'h' + i, style: { padding: '4",
       "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_fractions.js",
-      "line": 2993,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "h('svg', { viewBox: '0 0 400 50', className: 'w-full', style: { maxHeight: '60px' } },",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_fractions.js",
-      "line": 3199,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "h('svg', { viewBox: '0 0 ' + totalW + ' ' + totalH, width: Math.min(totalW * 1.2, 300), height: Math.min(totalH * 1.2, 2",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_fractions.js",
-      "line": 3624,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "h('svg', { viewBox: '0 0 ' + wallW + ' ' + (wallDenoms.length * (stripH + 2) + 10), width: '100%' },",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_fractions.js",
-      "line": 10274,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "h('svg', { viewBox: '0 0 200 200', width: 200, height: 200 }, wheelSlices)",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
     },
     {
       "file": "stem_lab\\stem_tool_fractions.js",
@@ -3918,16 +3139,6 @@
     },
     {
       "file": "stem_lab\\stem_tool_gamestudio.js",
-      "line": 1822,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "h('svg', { viewBox: '0 0 360 150', className: 'w-full h-32' },",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_gamestudio.js",
       "line": 1667,
       "checkId": "INPUT-001",
       "name": "Input without programmatic label",
@@ -3949,7 +3160,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_geo.js",
-      "line": 3355,
+      "line": 3367,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
       "wcag": "2.4.7 Focus Visible",
@@ -3957,16 +3168,6 @@
       "snippet": "const renderCanvas = () => React.createElement('svg', { width:W, height:H, viewBox:`0 0 ${W} ${H}`, className:'cursor-cr",
       "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus.",
       "coveredByGlobalBaseline": true
-    },
-    {
-      "file": "stem_lab\\stem_tool_geo.js",
-      "line": 3182,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "React.createElement('svg',{width:50,height:40,viewBox:'0 0 50 40'},",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
     },
     {
       "file": "stem_lab\\stem_tool_geo.js",
@@ -3989,66 +3190,6 @@
       "snippet": "React.createElement('div', { className: 'text-4xl mb-3 animate-spin' }, '\\uD83C\\uDF10'),",
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce).",
       "coveredByGlobalBaseline": true
-    },
-    {
-      "file": "stem_lab\\stem_tool_geo.js",
-      "line": 3101,
-      "checkId": "DRAGDROP-001",
-      "name": "Drag-and-drop without keyboard alternative",
-      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
-      "severity": "major",
-      "snippet": "key:p.id, draggable:true,",
-      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
-    },
-    {
-      "file": "stem_lab\\stem_tool_geo.js",
-      "line": 3102,
-      "checkId": "DRAGDROP-001",
-      "name": "Drag-and-drop without keyboard alternative",
-      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
-      "severity": "major",
-      "snippet": "onDragStart:e=>{ _gpDrag.matchId=p.id; e.dataTransfer.effectAllowed='move'; try{e.dataTransfer.setData('text/plain',p.th",
-      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
-    },
-    {
-      "file": "stem_lab\\stem_tool_geo.js",
-      "line": 3174,
-      "checkId": "DRAGDROP-001",
-      "name": "Drag-and-drop without keyboard alternative",
-      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
-      "severity": "major",
-      "snippet": "draggable:true,",
-      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
-    },
-    {
-      "file": "stem_lab\\stem_tool_geo.js",
-      "line": 3175,
-      "checkId": "DRAGDROP-001",
-      "name": "Drag-and-drop without keyboard alternative",
-      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
-      "severity": "major",
-      "snippet": "onDragStart:e=>{ _gpDrag.angleIdx=a.id; e.dataTransfer.effectAllowed='move'; try{e.dataTransfer.setData('text/plain',Str",
-      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
-    },
-    {
-      "file": "stem_lab\\stem_tool_geo.js",
-      "line": 3427,
-      "checkId": "DRAGDROP-001",
-      "name": "Drag-and-drop without keyboard alternative",
-      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
-      "severity": "major",
-      "snippet": "draggable:true,",
-      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
-    },
-    {
-      "file": "stem_lab\\stem_tool_geo.js",
-      "line": 3428,
-      "checkId": "DRAGDROP-001",
-      "name": "Drag-and-drop without keyboard alternative",
-      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
-      "severity": "major",
-      "snippet": "onDragStart:e=>{ _gpDrag.reason=reason; e.dataTransfer.effectAllowed='move'; try{e.dataTransfer.setData('text/plain',rea",
-      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
     },
     {
       "file": "stem_lab\\stem_tool_geometryworld.js",
@@ -4216,16 +3357,6 @@
     },
     {
       "file": "stem_lab\\stem_tool_lifeskills.js",
-      "line": 6632,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "h('svg', { viewBox: '0 0 320 60', className: 'w-full h-16' },",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_lifeskills.js",
       "line": 3499,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -4248,17 +3379,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_logiclab.js",
-      "line": 2380,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "React.createElement(\"svg\", { width: \"120\", height: \"80\", viewBox: \"0 0 120 80\" },",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_logiclab.js",
-      "line": 2501,
+      "line": 2510,
       "checkId": "INPUT-001",
       "name": "Input without programmatic label",
       "wcag": "3.3.2 Labels or Instructions",
@@ -4269,7 +3390,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_logiclab.js",
-      "line": 1862,
+      "line": 1871,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -4279,86 +3400,6 @@
       "coveredByGlobalBaseline": true
     },
     {
-      "file": "stem_lab\\stem_tool_logiclab.js",
-      "line": 1082,
-      "checkId": "DRAGDROP-001",
-      "name": "Drag-and-drop without keyboard alternative",
-      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
-      "severity": "major",
-      "snippet": "key: v, draggable: true,",
-      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
-    },
-    {
-      "file": "stem_lab\\stem_tool_logiclab.js",
-      "line": 1083,
-      "checkId": "DRAGDROP-001",
-      "name": "Drag-and-drop without keyboard alternative",
-      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
-      "severity": "major",
-      "snippet": "onDragStart: function(e) { _drag.sym = v; e.dataTransfer.effectAllowed='copy'; },",
-      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
-    },
-    {
-      "file": "stem_lab\\stem_tool_logiclab.js",
-      "line": 1094,
-      "checkId": "DRAGDROP-001",
-      "name": "Drag-and-drop without keyboard alternative",
-      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
-      "severity": "major",
-      "snippet": "key: sym, draggable: true,",
-      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
-    },
-    {
-      "file": "stem_lab\\stem_tool_logiclab.js",
-      "line": 1095,
-      "checkId": "DRAGDROP-001",
-      "name": "Drag-and-drop without keyboard alternative",
-      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
-      "severity": "major",
-      "snippet": "onDragStart: function(e) { _drag.sym = ' '+sym+' '; e.dataTransfer.effectAllowed='copy'; },",
-      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
-    },
-    {
-      "file": "stem_lab\\stem_tool_logiclab.js",
-      "line": 1104,
-      "checkId": "DRAGDROP-001",
-      "name": "Drag-and-drop without keyboard alternative",
-      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
-      "severity": "major",
-      "snippet": "key: v, draggable: true,",
-      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
-    },
-    {
-      "file": "stem_lab\\stem_tool_logiclab.js",
-      "line": 1105,
-      "checkId": "DRAGDROP-001",
-      "name": "Drag-and-drop without keyboard alternative",
-      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
-      "severity": "major",
-      "snippet": "onDragStart: function(e) { _drag.sym = v; e.dataTransfer.effectAllowed='copy'; },",
-      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
-    },
-    {
-      "file": "stem_lab\\stem_tool_logiclab.js",
-      "line": 1546,
-      "checkId": "DRAGDROP-001",
-      "name": "Drag-and-drop without keyboard alternative",
-      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
-      "severity": "major",
-      "snippet": "key: pi, draggable: true,",
-      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
-    },
-    {
-      "file": "stem_lab\\stem_tool_logiclab.js",
-      "line": 1547,
-      "checkId": "DRAGDROP-001",
-      "name": "Drag-and-drop without keyboard alternative",
-      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
-      "severity": "major",
-      "snippet": "onDragStart: function(e) { _drag.proofKey = 'P'+pi; e.dataTransfer.effectAllowed='move'; },",
-      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
-    },
-    {
       "file": "stem_lab\\stem_tool_manipulatives.js",
       "line": 1605,
       "checkId": "SVG-001",
@@ -4366,56 +3407,6 @@
       "wcag": "1.1.1 Non-text Content",
       "severity": "major",
       "snippet": "h('svg', {",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_manipulatives.js",
-      "line": 2445,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "return h('svg', {",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_manipulatives.js",
-      "line": 2648,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "h('svg', { viewBox: '0 0 ' + svgW + ' ' + svgW, width: '100%', style: { maxWidth: svgW + 'px' } },",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_manipulatives.js",
-      "line": 3219,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "h('svg', { width: 560, height: 96, viewBox: '0 0 560 96', style: { maxWidth: '100%' } },",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_manipulatives.js",
-      "line": 3259,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "h('svg', { width: 560, height: 96, viewBox: '0 0 560 96', style: { maxWidth: '100%' } },",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_manipulatives.js",
-      "line": 3703,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "h('svg', { width: '100%', height: 80, viewBox: '0 0 320 80', style: { background: '#0a0a1a', borderRadius: 6, marginBott",
       "fix": "Add role=\"img\" and aria-label describing the visualization."
     },
     {
@@ -4441,26 +3432,6 @@
     },
     {
       "file": "stem_lab\\stem_tool_manipulatives.js",
-      "line": 1910,
-      "checkId": "DRAGDROP-001",
-      "name": "Drag-and-drop without keyboard alternative",
-      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
-      "severity": "major",
-      "snippet": "draggable: true,",
-      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
-    },
-    {
-      "file": "stem_lab\\stem_tool_manipulatives.js",
-      "line": 1911,
-      "checkId": "DRAGDROP-001",
-      "name": "Drag-and-drop without keyboard alternative",
-      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
-      "severity": "major",
-      "snippet": "onDragStart: function(k) { return function(e) { try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('tex",
-      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
-    },
-    {
-      "file": "stem_lab\\stem_tool_manipulatives.js",
       "line": 5108,
       "checkId": "SCOPE-001",
       "name": "Table header without scope attribute",
@@ -4478,16 +3449,6 @@
       "severity": "minor",
       "snippet": "return h('th', { key: g, className: 'text-center text-green-800 font-bold py-1 px-2 min-w-[44px]' }, g);",
       "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_money.js",
-      "line": 4319,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "React.createElement(\"svg\", { width: '100%', height: 160, viewBox: '0 0 320 160', style: { background: '#0a0a1a', borderR",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
     },
     {
       "file": "stem_lab\\stem_tool_money.js",
@@ -4524,7 +3485,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_music.js",
-      "line": 2479,
+      "line": 2580,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -4535,7 +3496,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_music.js",
-      "line": 4001,
+      "line": 4104,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -4546,7 +3507,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_music.js",
-      "line": 4192,
+      "line": 4295,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -4557,47 +3518,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_music.js",
-      "line": 2263,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "React.createElement(\"svg\", { viewBox: \"0 0 200 60\", className: \"w-full mb-2\", style: { maxHeight: '50px' } },",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_music.js",
-      "line": 2902,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "React.createElement(\"svg\", { viewBox: \"0 0 300 300\", className: \"w-full mx-auto\", style: { maxWidth: '300px', maxHeight:",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_music.js",
-      "line": 3457,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "React.createElement(\"svg\", { viewBox: \"0 0 30 40\", className: \"w-8 h-10 mx-auto mb-0.5\" },",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_music.js",
-      "line": 4293,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "React.createElement(\"svg\", { viewBox: \"0 0 300 100\", className: \"w-full bg-slate-50 rounded-lg mb-2\", style: { maxHeight",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_music.js",
-      "line": 2472,
+      "line": 2573,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -4608,7 +3529,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_music.js",
-      "line": 2969,
+      "line": 3072,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -4619,7 +3540,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_music.js",
-      "line": 2985,
+      "line": 3088,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -4630,7 +3551,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_music.js",
-      "line": 3048,
+      "line": 3151,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -4641,7 +3562,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_music.js",
-      "line": 3579,
+      "line": 3682,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -4652,7 +3573,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_music.js",
-      "line": 3621,
+      "line": 3724,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -4663,7 +3584,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_music.js",
-      "line": 4585,
+      "line": 4698,
       "checkId": "SCOPE-001",
       "name": "Table header without scope attribute",
       "wcag": "1.3.1 Info and Relationships",
@@ -4791,86 +3712,6 @@
       "snippet": "var shadowCanvas = document.createElement('canvas');",
       "fix": "Add role=\"img\" and a descriptive aria-label, or aria-hidden=\"true\" when the canvas is only an internal/decorative buffer.",
       "notInAccessibilityTree": true
-    },
-    {
-      "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 12830,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "return h('svg', common,",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 12842,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "return h('svg', common,",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 12863,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "return h('svg', common,",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 12874,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "return h('svg', common,",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 12888,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "return h('svg', common,",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 12899,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "return h('svg', common,",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 12910,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "return h('svg', common,",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 12920,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "return h('svg', common,",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
     },
     {
       "file": "stem_lab\\stem_tool_raptorhunt.js",
@@ -5177,16 +4018,6 @@
     },
     {
       "file": "stem_lab\\stem_tool_statslab.js",
-      "line": 2018,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "h('svg', { width: '100%', height: 160, viewBox: '0 0 320 160', style: { background: 'var(--sl-chart-bg)', borderRadius: ",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_statslab.js",
       "line": 4598,
       "checkId": "SVG-001",
       "name": "SVG element without accessible name",
@@ -5444,106 +4275,6 @@
     },
     {
       "file": "stem_lab\\stem_tool_weldlab.js",
-      "line": 3892,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "return h('svg', { viewBox: '0 0 200 100', className: 'w-full h-full' },",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_weldlab.js",
-      "line": 3910,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "return h('svg', { viewBox: '0 0 200 100', className: 'w-full h-full' },",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_weldlab.js",
-      "line": 3928,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "return h('svg', { viewBox: '0 0 200 100', className: 'w-full h-full' },",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_weldlab.js",
-      "line": 3947,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "return h('svg', { viewBox: '0 0 200 100', className: 'w-full h-full' },",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_weldlab.js",
-      "line": 3965,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "return h('svg', { viewBox: '0 0 200 100', className: 'w-full h-full' },",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_weldlab.js",
-      "line": 4346,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "return h('svg', { viewBox: '0 0 220 140', className: 'w-full', style: { maxWidth: '300px' } },",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_weldlab.js",
-      "line": 4365,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "return h('svg', { viewBox: '0 0 220 140', className: 'w-full', style: { maxWidth: '300px' } },",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_weldlab.js",
-      "line": 4386,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "return h('svg', { viewBox: '0 0 220 140', className: 'w-full', style: { maxWidth: '300px' } },",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_weldlab.js",
-      "line": 4409,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "return h('svg', { viewBox: '0 0 280 140', className: 'w-full', style: { maxWidth: '380px' } },",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_weldlab.js",
-      "line": 4522,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "h('svg', { viewBox: '0 0 90 80', style: { width: '70px', height: '70px' } },",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_weldlab.js",
       "line": 2815,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -5602,16 +4333,6 @@
       "severity": "minor",
       "snippet": "h('th', { className: 'p-2 text-xs font-bold uppercase tracking-wider text-blue-700' }, 'Oxy')",
       "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_worldbuilder.js",
-      "line": 1085,
-      "checkId": "SVG-001",
-      "name": "SVG element without accessible name",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "major",
-      "snippet": "h('svg', { width: 160, height: 160, viewBox: '0 0 160 160', style: { flex: '0 0 160px' } },",
-      "fix": "Add role=\"img\" and aria-label describing the visualization."
     },
     {
       "file": "stem_lab\\stem_tool_worldbuilder.js",

@@ -1,4 +1,4 @@
-// ── Reduced motion CSS (WCAG 2.3.3) - shared across all STEM Lab tools ──
+// ── Reduced motion CSS (WCAG 2.3.3) - shared across all STEAM Lab tools ──
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -1117,6 +1117,627 @@
     };
   })();
 
+  // ── 3D volcano vent (eruption anatomy) ──────────────────────────────────────
+  // The 2D sim draws a good side-on eruption, but a silhouette cannot show the
+  // plumbing that CAUSES it: how big the magma chamber is, that a conduit joins
+  // it to the vent, that dikes and sills branch off it, and that the summit
+  // drops into a caldera once the chamber has emptied. This view shows those.
+  //
+  // Its own module rather than a mode of TectGL: the two views live in different
+  // components (TectGL belongs to AlloTectonicsInteractive, the eruption to the
+  // main sim canvas), and a module that owns one canvas cannot serve both at
+  // once. What is reused is the lifecycle TectGL got right — ensureThree with a
+  // 2D fallback, a dirty-flag frame loop so an idle view costs no GPU work, a
+  // clipping plane for the cutaway, and canvas-texture sprites for labels.
+  var VentGL = (function () {
+    var DEG = Math.PI / 180;
+    var T = null;
+    var state = 'idle';                 // idle | loading | ready | failed
+    var canvasEl = null, renderer = null, scene = null, camera = null;
+    var clipPlane = null, resizeObs = null, rafId = 0;
+    var parts = {}, labelGroup = null, ashBatch = null, ashP = [];
+    var lavaBatch = null, lavaP = [];
+    // Deliberately NOT in `parts`: unmount disposes every parts entry's
+    // geometry, and r128 Sprites share a single plane geometry between them, so
+    // disposing this one would blank every other label in the scene.
+    var ventLabel = null;
+    var pending = { active: false, tick: 0, dark: true, labels: true, magma: 'andesite' };
+    var appliedMagma = null;
+    var cam = { rotX: -16, rotY: -34, scale: 1 };
+    // Sliced open by DEFAULT. Screenshotting the closed block showed why: the
+    // country rock is opaque, so the chamber, conduit, dikes and sill were all
+    // buried inside it and the five labels pointed at blank hillside. An anatomy
+    // view that opens showing no anatomy teaches nothing. The slider closes the
+    // block back up when the student wants the landform instead.
+    var cut = 0;                        // clip constant; null = nothing clipped
+    var appliedDark = null, appliedLabels = null, appliedCam = '';
+    var dirty = true, wasActive = false, prevTick = -1;
+    var shape = { fill: 0.85, summit: 1 };
+    var failCb = null, readyCb = null;
+
+    // Scene units. The chamber sits deep enough below the cone to read as a
+    // VOLUME rather than a dot — the whole point of the view.
+    var CHAMBER_Y = -19;
+
+    // ── Magma composition ──────────────────────────────────────────────────────
+    // The lever the rest of the model hangs off. Silica content sets viscosity
+    // and how much gas the melt can hold, and EVERY difference a student is meant
+    // to notice — the shape of the mountain, whether it erupts lava or ash, how
+    // far the summit collapses — is derived from that one choice here rather than
+    // asserted in a caption. Runny basalt cannot build a steep cone and cannot
+    // trap the gas needed to shatter itself, so it spreads as a broad shield and
+    // pours; stiff rhyolite does both, so it stands steep, blasts ash, and drops
+    // its roof into the void it empties.
+    //
+    // Numbers are shape parameters for a schematic, NOT measurements. Real edifice
+    // dimensions vary by more than an order of magnitude within every one of these
+    // compositions; the ratios are chosen so the three read as distinct landforms.
+    var MAGMA = [
+      { id: 'basalt', label: 'Basaltic', silica: 'Low silica (~50%)',
+        visc: 'Runny', gas: 'Little trapped gas', landform: 'Broad shield volcano',
+        coneR: 26, coneH: 8, chamber: 0.8,
+        ashRate: 1, ashVy: 0.30, lavaRate: 4, calderaDrop: 0.10,
+        example: 'Mauna Loa, Kilauea' },
+      { id: 'andesite', label: 'Andesitic', silica: 'Medium silica (~60%)',
+        visc: 'Sticky', gas: 'Some trapped gas', landform: 'Steep stratovolcano',
+        coneR: 15, coneH: 17, chamber: 1,
+        ashRate: 3, ashVy: 0.55, lavaRate: 1, calderaDrop: 0.38,
+        example: 'Mt Fuji, Mt St Helens' },
+      { id: 'rhyolite', label: 'Rhyolitic', silica: 'High silica (~72%)',
+        visc: 'Stiff', gas: 'Lots of trapped gas', landform: 'Caldera complex',
+        coneR: 12, coneH: 21, chamber: 1.3,
+        ashRate: 6, ashVy: 0.62, lavaRate: 0, calderaDrop: 0.62,
+        example: 'Yellowstone, Toba' }
+    ];
+    function magmaById(id) {
+      for (var i = 0; i < MAGMA.length; i++) { if (MAGMA[i].id === id) return MAGMA[i]; }
+      return MAGMA[1];
+    }
+    var mag = MAGMA[1];                 // current composition
+    var coneR = mag.coneR, coneH = mag.coneH;
+
+    // Plume budget: rhyolite spawns 6 grains a frame and each lives
+    // 1/0.012 ≈ 83 frames, so the column settles near 500. A cap below the steady
+    // state pins the batch full and starves the VENT of new grains — the plume
+    // detaches and hangs in the air mid-eruption.
+    var ASH_CAP = 520;
+    var LAVA_CAP = 160;
+    // Conduit reference geometry: bottom sits in the chamber roof, top reaches the
+    // un-collapsed summit. Recomputed whenever the composition changes the cone.
+    var CONDUIT_BOT = CHAMBER_Y + 4, CONDUIT_H0 = (17 - 1) - (CHAMBER_Y + 4);
+
+    function fail(reason) {
+      state = 'failed';
+      if (typeof failCb === 'function') { try { failCb(reason); } catch (e) {} }
+    }
+
+    // Text via canvas texture: r128 has no text geometry, and a sprite always
+    // faces the camera, which is what an anatomy label needs while the model turns.
+    function makeLabel(text, hex) {
+      var pad = 8, fs = 40;
+      var cv = document.createElement('canvas');
+      cv.setAttribute('aria-hidden', 'true');
+      var c2 = cv.getContext('2d');
+      c2.font = 'bold ' + fs + 'px sans-serif';
+      cv.width = Math.ceil(c2.measureText(text).width) + pad * 2;
+      cv.height = fs + pad * 2;
+      c2 = cv.getContext('2d');
+      c2.font = 'bold ' + fs + 'px sans-serif';
+      c2.fillStyle = 'rgba(15,23,42,0.74)';
+      c2.fillRect(0, 0, cv.width, cv.height);
+      c2.fillStyle = hex;
+      c2.textBaseline = 'middle';
+      c2.fillText(text, pad, cv.height / 2);
+      var tex = new T.CanvasTexture(cv);
+      tex.needsUpdate = true;
+      var sp = new T.Sprite(new T.SpriteMaterial({ map: tex, transparent: true, depthTest: false }));
+      var s = 4.2;
+      sp.scale.set(s * (cv.width / cv.height), s, 1);
+      return sp;
+    }
+
+    function rock(color, clip) {
+      return new T.MeshLambertMaterial({ color: color, clippingPlanes: clip, side: T.DoubleSide });
+    }
+
+    function magma(color, emissive, clip) {
+      return new T.MeshLambertMaterial({
+        color: color, emissive: emissive, clippingPlanes: clip, side: T.DoubleSide
+      });
+    }
+
+    // Rebuild the edifice for the current composition. The cone geometry is
+    // REPLACED rather than scaled: scaling y alone would keep the stratovolcano's
+    // narrow base and give a squashed steep cone, which is not what a basaltic
+    // shield looks like — the base has to spread as the summit drops.
+    function shapeCone() {
+      if (parts.cone.geometry) parts.cone.geometry.dispose();
+      parts.cone.geometry = new T.ConeGeometry(coneR, coneH, 40);
+
+      // Crater scales with the edifice, floored so a broad shield still has a
+      // readable summit vent rather than a pinprick.
+      if (parts.crater.geometry) parts.crater.geometry.dispose();
+      parts.crater.geometry = new T.ConeGeometry(Math.max(2.4, coneR * 0.2), 3.4, 24);
+
+      CONDUIT_H0 = (coneH - 1) - CONDUIT_BOT;
+      if (parts.conduit.geometry) parts.conduit.geometry.dispose();
+      parts.conduit.geometry = new T.CylinderGeometry(1.4, 2.6, CONDUIT_H0, 18);
+    }
+
+    function applyMagma(id) {
+      mag = magmaById(id);
+      coneR = mag.coneR;
+      coneH = mag.coneH;
+      shapeCone();
+      // A new composition is a DIFFERENT volcano, so it starts intact. Without
+      // this the edifice inherited the previous eruption's collapse and simply
+      // re-derived it against the new calderaDrop, so switching to basalt after a
+      // rhyolitic eruption showed a shield that had already caved in.
+      resetShape();
+      // Re-seat every position derived from the summit height. animate() is the
+      // single place that knows all of them.
+      animate(pending);
+    }
+
+    function build() {
+      scene = new T.Scene();
+      camera = new T.PerspectiveCamera(44, 1, 0.5, 2000);
+      scene.add(new T.HemisphereLight(0xcbd5e1, 0x1c1917, 0.95));
+      var dl = new T.DirectionalLight(0xffffff, 0.62);
+      dl.position.set(-60, 95, 85);
+      scene.add(dl);
+
+      var CLIP = [clipPlane];
+
+      // Crust the cone stands on. Clipped like everything else, so the cutaway
+      // reveals the plumbing instead of stopping at ground level. Sized for the
+      // WIDEST edifice: at 58 deep the basaltic shield's 26-unit radius reached
+      // the back edge and the volcano visibly overhung its own crust.
+      parts.crust = new T.Mesh(new T.BoxGeometry(96, 5, 72), rock(0x57534e, CLIP));
+      parts.crust.position.set(0, -2.5, 0);
+      scene.add(parts.crust);
+
+      // Layered country rock, so the sill below reads as an intrusion BETWEEN
+      // beds rather than a floating slab.
+      parts.beds = new T.Mesh(new T.BoxGeometry(96, 22, 72), rock(0x44403c, CLIP));
+      parts.beds.position.set(0, -16, 0);
+      scene.add(parts.beds);
+
+      // The cone, the crater sunk into its summit, and the tapered conduit that
+      // feeds it. All three are sized by the composition, so shapeCone() owns the
+      // geometry and build() owns only the meshes and materials.
+      parts.cone = new T.Mesh(new T.ConeGeometry(1, 1, 40), rock(0x3f3f46, CLIP));
+      scene.add(parts.cone);
+      parts.crater = new T.Mesh(new T.ConeGeometry(1, 1, 24), rock(0x1c1917, CLIP));
+      scene.add(parts.crater);
+      parts.conduit = new T.Mesh(new T.CylinderGeometry(1, 1, 1, 18), magma(0xb91c1c, 0x450a0a, CLIP));
+      scene.add(parts.conduit);
+      shapeCone();
+
+      // Magma chamber. An ellipsoid, not a sphere: chambers are wide and flat.
+      parts.chamber = new T.Mesh(new T.SphereGeometry(9, 28, 18), magma(0xdc2626, 0x7f1d1d, CLIP));
+      parts.chamber.scale.set(1.25, 0.6, 1.0);
+      parts.chamber.position.set(0, CHAMBER_Y, 0);
+      scene.add(parts.chamber);
+
+      // Dikes cut ACROSS the beds, a sill runs ALONG them. That contrast is the
+      // whole distinction, so they are drawn as one pair rather than separately.
+      parts.dikeL = new T.Mesh(new T.BoxGeometry(1.3, 20, 7), magma(0x991b1b, 0x450a0a, CLIP));
+      parts.dikeL.position.set(-9, CHAMBER_Y + 9, 0);
+      parts.dikeL.rotation.z = 17 * DEG;
+      scene.add(parts.dikeL);
+
+      parts.dikeR = new T.Mesh(new T.BoxGeometry(1.3, 16, 7), magma(0x991b1b, 0x450a0a, CLIP));
+      parts.dikeR.position.set(10, CHAMBER_Y + 7, 0);
+      parts.dikeR.rotation.z = -21 * DEG;
+      scene.add(parts.dikeR);
+
+      parts.sill = new T.Mesh(new T.BoxGeometry(19, 1.2, 11), magma(0x991b1b, 0x450a0a, CLIP));
+      parts.sill.position.set(19, CHAMBER_Y + 3, 0);
+      scene.add(parts.sill);
+
+      // Crater glow. Unlit and additive-ish: it is a light source in the scene's
+      // story, so scene lighting must not modulate it.
+      parts.glow = new T.Mesh(
+        new T.SphereGeometry(3.6, 20, 14),
+        new T.MeshBasicMaterial({ color: 0xf97316, transparent: true, opacity: 0, depthWrite: false })
+      );
+      parts.glow.position.set(0, coneH - 0.5, 0);
+      scene.add(parts.glow);
+
+      labelGroup = new T.Group();
+      // Positions checked against screenshots, not guessed. The vent label is
+      // pushed off-axis because the ash column rises straight through the centre
+      // and buried it; the chamber label sits to the LEFT because
+      // below-and-right pointed at blank rock and beside-right hit the sill.
+      [
+        ['vent', '#fed7aa', -15, coneH + 5, 0],
+        ['conduit', '#fca5a5', 9, 1, 0],
+        ['magma chamber', '#f87171', -25, CHAMBER_Y - 3, 0],
+        ['dike', '#fdba74', -17, CHAMBER_Y + 12, 0],
+        ['sill', '#fdba74', 33, CHAMBER_Y + 4, 0]
+      ].forEach(function (L) {
+        var sp = makeLabel(L[0], L[1]);
+        sp.position.set(L[2], L[3], L[4]);
+        // The vent label is the one that has to move: everything else is fixed
+        // in the rock, but the summit drops 38% during the collapse and left the
+        // label hanging in empty sky above a mountain that was no longer there.
+        if (L[0] === 'vent') ventLabel = sp;
+        labelGroup.add(sp);
+      });
+      scene.add(labelGroup);
+
+      ashBatch = window.StemLab.makeVoxelBatch(T, {
+        capacity: ASH_CAP,
+        geometry: new T.SphereGeometry(1, 8, 6),
+        material: new T.MeshBasicMaterial({ color: 0xffffff, clippingPlanes: CLIP }),
+        edges: false
+      });
+      ashBatch.addTo(scene);
+      ashBatch.commit(0);
+
+      lavaBatch = window.StemLab.makeVoxelBatch(T, {
+        capacity: LAVA_CAP,
+        geometry: new T.SphereGeometry(1, 8, 6),
+        material: new T.MeshBasicMaterial({ color: 0xffffff, clippingPlanes: CLIP }),
+        edges: false
+      });
+      lavaBatch.addTo(scene);
+      lavaBatch.commit(0);
+
+      // Settle the model into its repose pose, so a vent that has never erupted
+      // still shows a chamber sized to match `shape` rather than the build-time
+      // geometry. Without this the first eruption visibly jumps on frame one.
+      animate(pending);
+    }
+
+    function phaseOf(m) {
+      if (!m.active) return 'repose';
+      var t = m.tick;
+      if (t < 60) return 'pressure';
+      if (t < 180) return 'blast';
+      if (t < 380) return 'deflate';
+      return 'caldera';
+    }
+
+    function resetShape() {
+      shape.fill = 0.85;
+      shape.summit = 1;
+      ashP.length = 0;
+      lavaP.length = 0;
+    }
+
+    // Phase boundaries mirror the 2D loop's tick timeline exactly, so the two
+    // views can never disagree about what stage the eruption is in.
+    function animate(m) {
+      var ph = phaseOf(m), t = m.tick;
+      if (ph === 'pressure') {
+        shape.fill = 0.85 + 0.15 * Math.min(1, t / 60);
+      } else if (ph === 'blast') {
+        shape.fill = 1;
+      } else if (ph === 'deflate') {
+        shape.fill = 1 - 0.45 * Math.min(1, (t - 180) / 200);
+      } else if (ph === 'caldera') {
+        shape.fill = 0.55;
+        // The roof founders into the space the magma vacated. This is the one
+        // thing a 2D silhouette cannot distinguish from the cone just shrinking.
+        // Depth of collapse is the composition's, not a constant: a basaltic
+        // shield barely subsides, a rhyolitic roof drops most of its height into
+        // the void it emptied. That contrast is the point of the caldera phase.
+        shape.summit = 1 - mag.calderaDrop * Math.min(1, (t - 380) / 140);
+      }
+
+      var cs = shape.fill * mag.chamber;
+      parts.chamber.scale.set(1.25 * cs, 0.6 * cs, 1.0 * cs);
+      parts.cone.scale.y = shape.summit;
+      parts.cone.position.y = (coneH / 2) * shape.summit;
+
+      // The conduit has to follow the summit down. Left at its build height it
+      // stood proud of the collapsed cone as a red chimney sticking out of the
+      // mountain — the collapse read as the pipe growing, not the roof dropping.
+      var top = coneH * shape.summit - 1;
+      parts.conduit.scale.y = (top - CONDUIT_BOT) / CONDUIT_H0;
+      parts.conduit.position.y = (top + CONDUIT_BOT) / 2;
+
+      // Collapse widens the summit depression as it deepens it: a caldera is a
+      // broad basin, not a smaller version of the same neat crater.
+      // Guarded divide: a basaltic shield's calderaDrop is 0.10, and dividing by
+      // a composition-dependent constant that could reach 0 would put NaN into
+      // every scale below and blank the summit.
+      var collapse = mag.calderaDrop > 0 ? Math.min(1, (1 - shape.summit) / mag.calderaDrop) : 0;
+      parts.crater.scale.set(1 + collapse * 1.1, 1 + collapse * 0.6, 1 + collapse * 1.1);
+      parts.crater.position.y = coneH * shape.summit - 1.2 - collapse * 0.8;
+      parts.glow.position.y = coneH * shape.summit - 0.5;
+      if (ventLabel) ventLabel.position.y = coneH * shape.summit + 5;
+
+      var hot = ph === 'blast' ? 1 : ph === 'pressure' ? 0.35 + 0.3 * Math.sin(t * 0.09)
+              : ph === 'deflate' ? Math.max(0, 1 - (t - 180) / 200) : 0.12;
+      parts.glow.material.opacity = Math.max(0, Math.min(0.85, hot));
+      // Scaled to the edifice, not fixed: a glow sized for the 17-unit
+      // stratovolcano sat on the 8-unit shield like a beach ball and swallowed
+      // the summit it was meant to mark.
+      parts.glow.scale.setScalar((1 + hot * 0.55) * Math.min(1, coneH / 17));
+      parts.conduit.material.emissive.setHex(ph === 'blast' ? 0xdc2626 : ph === 'pressure' ? 0x7f1d1d : 0x450a0a);
+      parts.chamber.material.emissive.setHex(ph === 'pressure' || ph === 'blast' ? 0xb91c1c : 0x7f1d1d);
+    }
+
+    function stepAsh(m) {
+      var ph = phaseOf(m);
+      if (ph === 'blast' || ph === 'pressure') {
+        // Stiff, gas-rich melt shatters into far more ash than runny basalt does.
+        var want = ph === 'blast' ? mag.ashRate : Math.max(1, Math.round(mag.ashRate / 3));
+        var summitY = coneH * shape.summit;
+        for (var i = 0; i < want && ashP.length < ASH_CAP; i++) {
+          var a = Math.random() * Math.PI * 2, r = Math.random() * 1.7;
+          ashP.push({
+            x: Math.cos(a) * r, y: summitY + 1, z: Math.sin(a) * r,
+            vx: (Math.random() - 0.5) * (ph === 'blast' ? 0.5 : 0.16),
+            // Ballistics chosen to keep the column IN FRAME. Peak rise is
+            // vy²/2g, so the original 1.2 against g=0.013 threw grains ~55 units
+            // above the vent and the top two thirds of the plume were cropped
+            // off the canvas. 0.85 against g=0.016 tops out around 22.
+            vy: (ph === 'blast' ? mag.ashVy : mag.ashVy * 0.44) + Math.random() * 0.28,
+            vz: (Math.random() - 0.5) * (ph === 'blast' ? 0.5 : 0.16),
+            life: 1
+          });
+        }
+      }
+      for (var j = ashP.length - 1; j >= 0; j--) {
+        var p = ashP[j];
+        p.x += p.vx; p.y += p.vy; p.z += p.vz;
+        p.vy -= 0.016;               // gravity: the plume tops out and spreads
+        p.vx *= 1.007; p.vz *= 1.007;
+        p.life -= 0.012;
+        // Cull above the frustum too: a grain that has drifted off the top of
+        // the canvas still costs an instance and still holds a slot in the cap.
+        if (p.life <= 0 || p.y < 0 || p.y > 46) ashP.splice(j, 1);
+      }
+      if (!ashBatch) return;
+      for (var k = 0; k < ashP.length; k++) {
+        var q = ashP[k];
+        // Incandescent at the vent, cooling to ash grey as it rises — the colour
+        // IS the temperature, so it must not be modulated by scene lighting.
+        var up = Math.max(0, Math.min(1, (q.y - coneH * shape.summit) / 14));
+        var col = up < 0.25 ? 0xfb923c : up < 0.5 ? 0x78716c : 0x9ca3af;
+        ashBatch.set(k, q.x, q.y, q.z, 0.5 + q.life * 1.4, col);
+      }
+      ashBatch.commit(ashP.length);
+    }
+
+    // Flank lava. Runny basalt POURS and stiff rhyolite does not, so this is the
+    // half of the eruption the ash plume cannot express — a shield's whole
+    // landform is built by these flows, not by fallout.
+    //
+    // Particles ride the cone SURFACE rather than flying ballistically: at a
+    // parameter s from 0 at the summit to 1 at the base, the surface is at
+    // radius coneR*s and height coneH*(1-s). Free-fall would have them tunnel
+    // straight through the mountain.
+    function stepLava(m) {
+      var ph = phaseOf(m);
+      var summitScale = shape.summit;
+      if ((ph === 'blast' || ph === 'deflate') && mag.lavaRate > 0) {
+        var want = ph === 'blast' ? mag.lavaRate : Math.max(1, Math.round(mag.lavaRate / 2));
+        for (var i = 0; i < want && lavaP.length < LAVA_CAP; i++) {
+          lavaP.push({
+            th: Math.random() * Math.PI * 2,
+            s: 0.12 + Math.random() * 0.06,
+            // Runnier melt travels further per frame. Basalt reaches the base;
+            // andesite stalls partway down, which is why its flows are stubby.
+            v: (0.0016 + Math.random() * 0.0022) * mag.lavaRate,
+            life: 1
+          });
+        }
+      }
+      for (var j = lavaP.length - 1; j >= 0; j--) {
+        var p = lavaP[j];
+        p.s += p.v;
+        p.life -= 0.006;
+        if (p.life <= 0 || p.s >= 1) lavaP.splice(j, 1);
+      }
+      if (!lavaBatch) return;
+      for (var k = 0; k < lavaP.length; k++) {
+        var q = lavaP[k];
+        var rr = coneR * q.s;
+        // +0.4 lifts the blob clear of the surface it is riding; without it the
+        // sphere is half-buried in the cone and reads as a stain, not a flow.
+        var yy = coneH * summitScale * (1 - q.s) + 0.4;
+        // Cools as it travels: incandescent at the vent, crusted dark at the toe.
+        var col = q.s < 0.3 ? 0xfbbf24 : q.s < 0.55 ? 0xf97316 : q.s < 0.8 ? 0xdc2626 : 0x7f1d1d;
+        lavaBatch.set(k, Math.cos(q.th) * rr, yy, Math.sin(q.th) * rr, 0.85, col);
+      }
+      lavaBatch.commit(lavaP.length);
+    }
+
+    function applyTheme(dark) {
+      parts.crust.material.color.setHex(dark ? 0x44403c : 0x78716c);
+      parts.beds.material.color.setHex(dark ? 0x292524 : 0x57534e);
+      // The edifice has to separate from BOTH the sky above it and the crust it
+      // stands on, and it now has to do that at two very different shapes. At
+      // 0x494950 the basaltic shield was the same value as the crust and simply
+      // disappeared, while the rhyolitic spire read as a flat black triangle
+      // against the shell. A lighter, cooler grey clears both.
+      parts.cone.material.color.setHex(dark ? 0x6b7280 : 0x9ca3af);
+      parts.crater.material.color.setHex(dark ? 0x09090b : 0x1c1917);
+    }
+
+    function applyCam() {
+      var el = Math.max(-88, Math.min(88, -cam.rotX)) * DEG;
+      var az = -cam.rotY * DEG;
+      // Framed for the WORST case, not the default one. A rhyolitic column tops
+      // out near y=44; at the original dist 96 / target -4 the visible band ended
+      // about y=34 and the top third of the plume was cropped off the canvas.
+      var dist = 118 / Math.max(0.3, cam.scale);
+      var ty = 0;
+      camera.position.set(
+        dist * Math.cos(el) * Math.sin(az),
+        ty + dist * Math.sin(el),
+        dist * Math.cos(el) * Math.cos(az)
+      );
+      camera.lookAt(0, ty, 0);
+      camera.updateProjectionMatrix();
+    }
+
+    function resize() {
+      if (!renderer || !canvasEl) return;
+      var w = canvasEl.clientWidth || 1, hh = canvasEl.clientHeight || 1;
+      renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+      renderer.setSize(w, hh, false);
+      camera.aspect = w / hh;
+      camera.updateProjectionMatrix();
+      dirty = true;
+    }
+
+    function frame() {
+      rafId = requestAnimationFrame(frame);
+      if (state !== 'ready') return;
+      var m = pending;
+      try {
+        if (m.dark !== appliedDark) { applyTheme(m.dark); appliedDark = m.dark; dirty = true; }
+        if (m.labels !== appliedLabels) { labelGroup.visible = m.labels !== false; appliedLabels = m.labels; dirty = true; }
+        var cs = cam.rotX + ',' + cam.rotY + ',' + cam.scale + ',' + cut;
+        if (cs !== appliedCam) {
+          applyCam();
+          clipPlane.constant = cut == null ? 1e6 : cut;
+          appliedCam = cs;
+          dirty = true;
+        }
+        // The eruption is the ONE animated state here. It forces frames while it
+        // runs and releases the moment the ash clears, so a vent sitting idle in
+        // an offscreen bay costs no GPU work — the rest of this module is a
+        // dirty-flag renderer for exactly that reason.
+        if (m.active) {
+          if (!wasActive || m.tick < prevTick) resetShape();
+          wasActive = true; prevTick = m.tick;
+          animate(m);
+          dirty = true;
+        } else if (wasActive) {
+          // Hold the caldera the eruption left behind rather than snapping the
+          // cone back — the landform it produced IS the lesson.
+          wasActive = false;
+        }
+        if (m.magma !== appliedMagma) { applyMagma(m.magma); appliedMagma = m.magma; dirty = true; }
+        if (m.active || ashP.length) { stepAsh(m); dirty = true; }
+        if (m.active || lavaP.length) { stepLava(m); dirty = true; }
+        if (!dirty) return;
+        dirty = false;
+        renderer.render(scene, camera);
+      } catch (err) {
+        console.error('[tectonics] vent WebGL frame failed, falling back to the 2D eruption', err);
+        if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+        fail('frame');
+      }
+    }
+
+    return {
+      isReady: function () { return state === 'ready'; },
+      hasFailed: function () { return state === 'failed'; },
+      submit: function (m) { pending = m; },
+      onFail: function (fn) { failCb = fn; },
+      onReady: function (fn) { readyCb = fn; },
+      // Camera and cutaway live HERE, not in React state. The host is the whole
+      // 1.8 MB tool component, so routing a pointermove or a slider drag through
+      // upd() would re-render it on every frame of the gesture.
+      nudge: function (dx, dy) {
+        cam.rotY += dx;
+        cam.rotX = Math.max(-88, Math.min(88, cam.rotX + dy));
+      },
+      setCam: function (rotX, rotY) {
+        cam.rotX = Math.max(-88, Math.min(88, rotX));
+        cam.rotY = rotY;
+      },
+      zoom: function (dz) { cam.scale = Math.max(0.4, Math.min(2.4, cam.scale + dz)); },
+      setCut: function (v) { cut = v; },
+      magmaTypes: function () { return MAGMA; },
+      getCam: function () { return { rotX: cam.rotX, rotY: cam.rotY, scale: cam.scale, cut: cut }; },
+      debug: function () {
+        return {
+          state: state,
+          active: pending.active,
+          tick: Math.round(pending.tick),
+          phase: phaseOf(pending),
+          magma: mag.id,
+          coneR: coneR,
+          coneH: coneH,
+          ash: ashP.length,
+          lava: lavaP.length,
+          fill: shape.fill,
+          summit: shape.summit,
+          labels: labelGroup ? labelGroup.visible : null,
+          clipConstant: clipPlane ? clipPlane.constant : null,
+          contextLost: renderer && renderer.getContext ? renderer.getContext().isContextLost() : null
+        };
+      },
+      mount: function (el) {
+        if (canvasEl === el) return;
+        canvasEl = el;
+        if (state === 'ready' || state === 'loading') return;
+        state = 'loading';
+        var loader = (window.StemLab && window.StemLab.ensureThree)
+          ? window.StemLab.ensureThree({ failMessage: 'The 3D engine could not load. The 2D eruption still works.' })
+          : Promise.reject(new Error('no-loader'));
+        loader.then(function (three) {
+          if (!canvasEl) return;
+          T = three;
+          try {
+            renderer = new T.WebGLRenderer({ canvas: canvasEl, antialias: true, alpha: true });
+          } catch (e) { fail('no-webgl'); return; }
+          renderer.setClearColor(0x000000, 0);
+          renderer.localClippingEnabled = true;
+          clipPlane = new T.Plane(new T.Vector3(0, 0, -1), 1e6);
+          build();
+          resize();
+          if (typeof ResizeObserver === 'function') {
+            resizeObs = new ResizeObserver(resize);
+            resizeObs.observe(canvasEl);
+          } else { window.addEventListener('resize', resize); }
+          state = 'ready';
+          appliedDark = null; appliedLabels = null; appliedCam = ''; appliedMagma = null;
+          dirty = true;
+          if (!rafId) rafId = requestAnimationFrame(frame);
+          if (typeof readyCb === 'function') { try { readyCb(); } catch (e2) {} }
+        }).catch(function () { fail('cdn'); });
+      },
+      unmount: function () {
+        if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+        if (resizeObs) { try { resizeObs.disconnect(); } catch (e) {} resizeObs = null; }
+        else window.removeEventListener('resize', resize);
+        // Sprite labels own a CanvasTexture apiece: disposing only the material
+        // leaks the GPU texture every time the view is toggled off and on.
+        if (labelGroup) {
+          for (var i = labelGroup.children.length - 1; i >= 0; i--) {
+            var sp = labelGroup.children[i];
+            labelGroup.remove(sp);
+            if (sp.material) {
+              if (sp.material.map) sp.material.map.dispose();
+              sp.material.dispose();
+            }
+          }
+        }
+        Object.keys(parts).forEach(function (k) {
+          var mesh = parts[k];
+          if (!mesh) return;
+          if (scene) scene.remove(mesh);
+          if (mesh.geometry) mesh.geometry.dispose();
+          if (mesh.material) mesh.material.dispose();
+        });
+        parts = {};
+        if (ashBatch) { ashBatch.dispose(scene); ashBatch = null; }
+        if (lavaBatch) { lavaBatch.dispose(scene); lavaBatch = null; }
+        if (renderer) { try { renderer.dispose(); } catch (e) {} }
+        renderer = scene = camera = labelGroup = ventLabel = null;
+        canvasEl = null; ashP = []; lavaP = [];
+        resetShape();
+        wasActive = false; prevTick = -1;
+        if (state !== 'failed') state = 'idle';
+      }
+    };
+  })();
+  // Drag state for the vent canvas. Module-scope on purpose: the host component
+  // is the whole tool, so a per-move React state update would re-render it.
+  var ventDrag = null;
+  function ventGlRef(el) { if (el) VentGL.mount(el); else VentGL.unmount(); }
+  try { window.__alloVentGL = VentGL; } catch (e) {}
+
   function tectGlRef(el) { if (el) TectGL.mount(el); else TectGL.unmount(); }
   try { window.__alloTectGL = TectGL; } catch (e) {}
 
@@ -1923,6 +2544,39 @@ var d = labToolData.plateTectonics || {};
           var showLabels = d.showLabels !== false;
 
           var showConvection = d.showConvection !== false;
+
+          // 3D volcano cutaway. Defaults OFF: the 2D sim is the draggable-plate
+          // surface the rest of this tab teaches from, and the cutaway is an
+          // anatomy view of the eruption it produces, not a replacement for it.
+          var ptVent3D = !!d.ptVent3D;
+          var ptVentMagma = d.ptVentMagma || 'andesite';
+          // Published by the sim loop on the edges of an eruption. The tool's
+          // eruption handler ignores a click while one is already running, so
+          // without this the button stayed bright and simply did nothing.
+          var ptErupting = !!d.ptErupting;
+          // aria-disabled, NOT the disabled attribute: a disabled button drops
+          // out of the tab order and is skipped by a screen reader, so the user
+          // gets no explanation for why the control stopped responding.
+          function eruptBtnProps(baseClass) {
+            return {
+              'aria-disabled': ptErupting,
+              title: ptErupting
+                ? __alloT('stem.platetectonics.erupt_busy_title', 'An eruption is already running')
+                : __alloT('stem.platetectonics.erupt_title', 'Trigger volcanic eruption'),
+              className: baseClass + (ptErupting ? ' opacity-60 cursor-not-allowed' : '')
+            };
+          }
+          function eruptClick() {
+            if (ptErupting) {
+              if (typeof announceToSR === 'function') {
+                announceToSR(__alloT('stem.platetectonics.erupt_busy_sr', 'An eruption is already in progress. Wait for it to finish.'));
+              }
+              return;
+            }
+            if (canvasRef._last && canvasRef._last._ptInit) {
+              canvasRef._last.dispatchEvent(new CustomEvent('triggerEruption'));
+            }
+          }
 
           var selectedPlate = d.selectedPlate || null;
 
@@ -6177,14 +6831,10 @@ var d = labToolData.plateTectonics || {};
                     'aria-pressed': showConvection,
                     className: 'px-3 py-2 rounded-xl text-xs font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (showConvection ? 'bg-orange-700 text-white' : (isDark ? 'bg-slate-900 text-orange-300 border border-slate-700' : 'bg-white text-orange-700 border border-orange-200'))
                   }, showConvection ? 'Hide currents' : 'Show currents'),
-                  React.createElement('button', {
-                    onClick: function() {
-                      if (canvasRef._last && canvasRef._last._ptInit) {
-                        canvasRef._last.dispatchEvent(new CustomEvent('triggerEruption'));
-                      }
-                    },
-                    className: 'px-3 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-orange-700 to-red-600 text-white shadow-md focus:ring-2 focus:ring-yellow-500 focus:outline-none'
-                  }, 'Trigger eruption')
+                  React.createElement('button', Object.assign({
+                    onClick: eruptClick
+                  }, eruptBtnProps('px-3 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-orange-700 to-red-600 text-white shadow-md focus:ring-2 focus:ring-yellow-500 focus:outline-none')),
+                    ptErupting ? 'Erupting...' : 'Trigger eruption')
                 )
               ),
               React.createElement('div', { className: 'pt-mission-card ' + (isDark ? 'pt-dark-card' : '') },
@@ -6250,7 +6900,7 @@ var d = labToolData.plateTectonics || {};
 
             // Live-props channel: the ref re-fires on every render, so use it to hand the
             // running sim the CURRENT values instead of rebuilding with stale closures.
-            canvasEl._ptLive = { speed: speed, showLabels: showLabels, showConvection: showConvection, isDark: isDark, timelineEra: timelineEra, d: d, upd: upd, checkChallenges: checkChallenges, awardStemXP: awardStemXP };
+            canvasEl._ptLive = { speed: speed, showLabels: showLabels, showConvection: showConvection, isDark: isDark, timelineEra: timelineEra, d: d, upd: upd, checkChallenges: checkChallenges, awardStemXP: awardStemXP, ptVentMagma: ptVentMagma };
 
             if (canvasEl._ptInit) {
 
@@ -6318,6 +6968,21 @@ var d = labToolData.plateTectonics || {};
 
             // Eruption state (canvas-local)
             var eruptState = { active: false, phase: 0, tick: 0, coneX: cW * 0.5, coneBaseY: cH * 0.30, coneW: 60, coneH: 45, lavaFlows: [], ashParticles: [] };
+            // Published to tool state on TRANSITION only (twice per eruption), so
+            // the Erupt buttons can show that they are inert while one is running.
+            // null forces a publish on the first frame, which also self-heals a
+            // stale flag left in tool data by a previous mount.
+            var eruptPub = null;
+
+            // Edifice profile per magma composition, matching the 3D cutaway's
+            // MAGMA table. Without this the two views contradicted each other:
+            // picking basalt gave a broad shield in 3D and the same steep
+            // stratovolcano cone here.
+            var ERUPT_PROFILE = {
+              basalt:   { coneW: 104, coneH: 20 },
+              andesite: { coneW: 60,  coneH: 45 },
+              rhyolite: { coneW: 44,  coneH: 58 }
+            };
 
             // Helper: trigger eruption at x
             function triggerEruption(atX) {
@@ -6326,6 +6991,13 @@ var d = labToolData.plateTectonics || {};
               eruptState.tick = 0;
               eruptState.coneX = atX;
               eruptState.coneBaseY = cH * 0.30;
+              var prof = ERUPT_PROFILE[(canvasEl._ptLive || {}).ptVentMagma] || ERUPT_PROFILE.andesite;
+              eruptState.coneW = prof.coneW;
+              eruptState.coneH = prof.coneH;
+              // Inspection hook, same pattern as _ptLive / _ptEra above. The 2D
+              // cone is drawn straight to canvas, so this is the only way a test
+              // can tell a reshaped edifice from an unchanged one.
+              canvasEl._ptEruptProfile = { coneW: prof.coneW, coneH: prof.coneH };
               eruptState.lavaFlows = [];
               eruptState.ashParticles = [];
               // Spawn rumble quake particles
@@ -7006,6 +7678,26 @@ var d = labToolData.plateTectonics || {};
               // ══════════════════════════════════════
               // ██ VOLCANIC ERUPTION SYSTEM ██
               // ══════════════════════════════════════
+              // Feed the 3D vent view. eruptState is canvas-local, so React
+              // render cannot see its tick — this loop is the only thing that
+              // knows the eruption's real stage. The call just swaps a pending
+              // object; VentGL is idle unless it is actually mounted.
+              // Two upd() calls per eruption, on the edges only. Publishing every
+              // frame would re-render the whole tool at 60fps; publishing never is
+              // what left the Erupt button looking broken.
+              if (eruptPub !== eruptState.active) {
+                eruptPub = eruptState.active;
+                (live.upd || upd)({ ptErupting: eruptState.active });
+              }
+
+              VentGL.submit({
+                active: eruptState.active,
+                tick: eruptState.tick,
+                dark: isDark,
+                labels: showLabels,
+                magma: live.ptVentMagma || 'andesite'
+              });
+
               if (eruptState.active) {
                 eruptState.tick += speed;
                 var eT = eruptState.tick;
@@ -7552,17 +8244,180 @@ var d = labToolData.plateTectonics || {};
                   )
                 ),
 
-                React.createElement("canvas", {
+                // Both surfaces live in one relative box. The 2D canvas STAYS
+                // mounted and running underneath the 3D view — it owns eruptState,
+                // so it is the only thing that can advance the eruption. Hidden
+                // with visibility (not display) so its offsetWidth stays real and
+                // the sim does not re-measure to zero.
+                React.createElement("div", { className: "relative", style: { height: '400px' } },
 
-                  ref: canvasRef,
+                  React.createElement("canvas", {
 
-                  'aria-label': __alloT('stem.platetectonics.interactive_plate_tectonics_cross_sect', 'Interactive plate tectonics cross-section visualization. Drag crust plates left or right to create convergent, divergent, and transform boundary events.'), role: 'img', tabIndex: 0, title: __alloT('stem.platetectonics.interactive_plate_tectonics_cross_sect', 'Interactive plate tectonics cross-section visualization'), 'data-pt-main-canvas': 'true',
+                    ref: canvasRef,
 
-                  className: "pt-primary-canvas w-full cursor-grab active:cursor-grabbing",
+                    'aria-label': __alloT('stem.platetectonics.interactive_plate_tectonics_cross_sect', 'Interactive plate tectonics cross-section visualization. Drag crust plates left or right to create convergent, divergent, and transform boundary events.'), role: 'img', tabIndex: 0, title: __alloT('stem.platetectonics.interactive_plate_tectonics_cross_sect', 'Interactive plate tectonics cross-section visualization'), 'data-pt-main-canvas': 'true',
 
-                  style: { height: '400px', display: 'block', background: '#1a1a2e' }
+                    className: "pt-primary-canvas w-full cursor-grab active:cursor-grabbing",
 
-                })
+                    style: { height: '400px', display: 'block', background: '#1a1a2e', visibility: ptVent3D ? 'hidden' : 'visible' }
+
+                  }),
+
+                  ptVent3D && (function () {
+                    // If three.js cannot load, drop straight back to the 2D
+                    // eruption rather than leaving an empty black box.
+                    VentGL.onFail(function () {
+                      try { upd({ ptVent3D: false, ptVentFail: true }); } catch (e) {}
+                    });
+                    VentGL.onReady(function () {
+                      if (typeof announceToSR === 'function') announceToSR('3D volcano cutaway ready.');
+                    });
+                    return React.createElement("canvas", {
+                      key: 'pt-vent-gl',
+                      ref: ventGlRef,
+                      role: 'img',
+                      'data-pt-vent-gl': 'true',
+                      'data-a11y-static': 'true',
+                      'aria-label': __alloT('stem.platetectonics.vent_3d_label', 'Rotatable 3D cutaway of a volcano showing the magma chamber, conduit, dikes, sill and vent, shaped by the chosen magma composition.'),
+                      'aria-describedby': 'pt-vent-gl-desc',
+                      className: "w-full cursor-grab active:cursor-grabbing",
+                      style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'block', background: '#1a1a2e', touchAction: 'pan-y' },
+                      onPointerDown: function (e) {
+                        var c = VentGL.getCam();
+                        ventDrag = { x: e.clientX, y: e.clientY, rx: c.rotX, ry: c.rotY };
+                        try { e.currentTarget.setPointerCapture(e.pointerId); } catch (_) {}
+                      },
+                      onPointerMove: function (e) {
+                        if (!ventDrag) return;
+                        VentGL.setCam(
+                          ventDrag.rx + (e.clientY - ventDrag.y) * 0.4,
+                          ventDrag.ry + (e.clientX - ventDrag.x) * 0.4
+                        );
+                      },
+                      onPointerUp: function () { ventDrag = null; },
+                      onPointerCancel: function () { ventDrag = null; },
+                      onWheel: function (e) { VentGL.zoom(e.deltaY > 0 ? -0.1 : 0.1); }
+                    });
+                  })(),
+
+                  ptVent3D && React.createElement('p', { key: 'pt-vent-gl-desc', id: 'pt-vent-gl-desc', className: 'sr-only' },
+                    __alloT('stem.platetectonics.vent_3d_desc', 'A cutaway model of a volcano. Below the cone, a wide flat magma chamber feeds a tapering conduit up to the vent; dikes cut steeply ACROSS the rock layers while a sill spreads flat ALONG them. Press Erupt to run the sequence: the chamber swells as pressure builds, the conduit glows and an ash plume rises during the blast, the chamber then drains, and finally the summit founders into a caldera over the emptied chamber. The magma buttons change the composition, and the whole model responds: runny low-silica basalt holds little gas, so it builds a broad low shield, pours lava down the flanks, throws little ash, and barely subsides; stiff high-silica rhyolite traps gas, so it stands steep and narrow, produces almost no flowing lava, blasts a tall dense ash column, and drops most of its summit into the emptied chamber. Drag the model, or use the rotate buttons, to turn it. Use the cutaway slider to slice it open.')
+                  )
+
+                )
+
+              ),
+
+              // ── 3D vent controls ──
+              // Rotation and the cutaway are read straight off VentGL rather than
+              // held in tool state: this component is the entire 1.8 MB tool, so
+              // routing a drag or a slider through upd() would re-render all of it
+              // on every frame of the gesture.
+              React.createElement("div", { className: "flex flex-wrap items-center gap-2 mt-2", 'data-pt-vent-controls': 'true' },
+
+                React.createElement("div", { className: "flex gap-1", role: 'group', 'aria-label': __alloT('stem.platetectonics.vent_view_group', 'Choose the 2D simulation or the 3D volcano cutaway') },
+                  [['2d', __alloT('stem.platetectonics.vent_view_2d', '2D sim')], ['3d', __alloT('stem.platetectonics.vent_view_3d', '🌋 3D volcano')]].map(function (o) {
+                    var active = (o[0] === '3d') === !!ptVent3D;
+                    return React.createElement("button", {
+                      key: o[0],
+                      type: 'button',
+                      'data-pt-vent-view': o[0],
+                      'aria-pressed': active,
+                      onClick: function () {
+                        var want = o[0] === '3d';
+                        if (want === !!ptVent3D) return;
+                        // A module that already failed to get three.js stays
+                        // failed — mount() short-circuits, so onFail would never
+                        // fire again and the student would be left staring at an
+                        // empty black box.
+                        if (want && VentGL.hasFailed()) {
+                          upd({ ptVentFail: true });
+                          if (typeof announceToSR === 'function') announceToSR('The 3D engine is unavailable. Staying on the 2D simulation.');
+                          return;
+                        }
+                        upd({ ptVent3D: want, ptVentFail: false });
+                        if (typeof announceToSR === 'function') {
+                          announceToSR(want
+                            ? 'Switched to the 3D volcano cutaway. Drag to rotate, or use the rotate buttons.'
+                            : 'Switched to the 2D simulation.');
+                        }
+                      },
+                      className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (active ? "bg-red-600 text-white" : (isDark ? "bg-slate-900 text-red-400 border border-slate-700 hover:bg-slate-800" : "bg-white text-red-700 border border-red-200 hover:bg-red-50"))
+                    }, o[1]);
+                  })
+                ),
+
+                ptVent3D && React.createElement("div", { key: 'rot', className: "flex gap-1", role: 'group', 'aria-label': __alloT('stem.platetectonics.vent_rotate_group', 'Rotate the volcano model') },
+                  [['◀', -15, 0, 'Rotate left'], ['▶', 15, 0, 'Rotate right'], ['▲', 0, -12, 'Tilt up'], ['▼', 0, 12, 'Tilt down']].map(function (b) {
+                    return React.createElement("button", {
+                      key: b[3],
+                      type: 'button',
+                      'aria-label': b[3],
+                      onClick: function () { VentGL.nudge(b[1], b[2]); },
+                      className: "px-2 py-1.5 rounded-lg text-xs font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "bg-slate-900 text-orange-300 border border-slate-700" : "bg-white text-red-700 border border-red-200")
+                    }, b[0]);
+                  })
+                ),
+
+                ptVent3D && React.createElement("label", { key: 'cut', htmlFor: 'pt-vent-cut', className: "flex items-center gap-2 text-xs font-bold " + (isDark ? "text-red-400" : "text-red-700") },
+                  React.createElement("span", null, __alloT('stem.platetectonics.vent_cutaway', '✂ Cutaway')),
+                  React.createElement("input", {
+                    id: 'pt-vent-cut',
+                    type: 'range',
+                    min: '-30', max: '30', step: '1',
+                    // Seeded from the module, not hard-coded. cut survives an
+                    // unmount (so a view toggle keeps the student's slice and
+                    // rotation), and a hard-coded default made the slider claim
+                    // "sliced open" while the block was still sealed shut.
+                    defaultValue: String(VentGL.getCam().cut == null ? 30 : VentGL.getCam().cut),
+                    'aria-label': __alloT('stem.platetectonics.vent_cutaway_label', 'Slice the volcano open to see the magma chamber and conduit'),
+                    // Uncontrolled and wired straight to the module: a controlled
+                    // range here would re-render the whole tool on every step of
+                    // the drag.
+                    onChange: function (e) {
+                      var v = parseFloat(e.target.value);
+                      VentGL.setCut(v >= 30 ? null : v);
+                    },
+                    className: "accent-red-500 focus:ring-2 focus:ring-yellow-500 focus:outline-none"
+                  })
+                ),
+
+                ptVent3D && (function () {
+                  var types = VentGL.magmaTypes();
+                  var cur = types.filter(function (t2) { return t2.id === ptVentMagma; })[0] || types[1];
+                  return React.createElement("div", { key: 'magma', className: "w-full flex flex-wrap items-center gap-2" },
+                    React.createElement("span", { className: "text-xs font-bold " + (isDark ? "text-red-400" : "text-red-700") },
+                      __alloT('stem.platetectonics.vent_magma', '🌡 Magma')),
+                    React.createElement("div", { className: "flex gap-1", role: 'group', 'aria-label': __alloT('stem.platetectonics.vent_magma_group', 'Choose the magma composition feeding the volcano') },
+                      types.map(function (t2) {
+                        var on = t2.id === ptVentMagma;
+                        return React.createElement("button", {
+                          key: t2.id,
+                          type: 'button',
+                          'data-pt-vent-magma': t2.id,
+                          'aria-pressed': on,
+                          onClick: function () {
+                            if (on) return;
+                            upd({ ptVentMagma: t2.id });
+                            if (typeof announceToSR === 'function') {
+                              announceToSR(t2.label + ' magma. ' + t2.visc + ', ' + t2.gas.toLowerCase() + '. Builds a ' + t2.landform.toLowerCase() + '.');
+                            }
+                          },
+                          className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (on ? "bg-orange-700 text-white" : (isDark ? "bg-slate-900 text-orange-300 border border-slate-700 hover:bg-slate-800" : "bg-white text-orange-800 border border-orange-200 hover:bg-orange-50"))
+                        }, t2.label);
+                      })
+                    ),
+                    // The causal chain in words, next to the model that shows it.
+                    // Without this the student sees three different mountains and
+                    // has no reason to connect them to the composition.
+                    React.createElement("span", { className: "text-[11px] leading-snug " + (isDark ? "text-slate-300" : "text-slate-600") },
+                      cur.silica + ' → ' + cur.visc.toLowerCase() + ', ' + cur.gas.toLowerCase() +
+                      ' → ' + cur.landform.toLowerCase() + '. e.g. ' + cur.example + '.')
+                  );
+                })(),
+
+                d.ptVentFail && React.createElement("span", { key: 'fail', className: "text-xs font-bold " + (isDark ? "text-orange-300" : "text-orange-700") },
+                  __alloT('stem.platetectonics.vent_3d_unavailable', 'The 3D engine could not load, so the 2D eruption is showing instead.'))
 
               ),
 
@@ -7593,16 +8448,18 @@ var d = labToolData.plateTectonics || {};
                 }, __alloT('stem.platetectonics.currents_2', "\uD83C\uDF00 Currents")),
 
                 // 🌋 Erupt! button
-                React.createElement("button", { "aria-label": "Trigger a volcanic eruption in the plate tectonics simulation", title: "Trigger volcanic eruption",
-                  onClick: function() {
-                    if (canvasRef._last && canvasRef._last._ptInit) {
-                      // Dispatch eruption event
-                      canvasRef._last.dispatchEvent(new CustomEvent('triggerEruption'));
-                    }
-                  },
-                  className: "px-4 py-1.5 rounded-lg text-xs font-bold transition-all shadow-md focus:ring-2 focus:ring-yellow-500 focus:outline-none bg-gradient-to-r from-orange-700 to-red-600 text-white hover:from-orange-700 hover:to-red-700",
-                  style: { animation: 'pulse 2s infinite', boxShadow: '0 0 12px rgba(255,100,0,0.4)' }
-                }, __alloT('stem.platetectonics.erupt', "\uD83C\uDF0B Erupt!"))
+                React.createElement("button", Object.assign({
+                  "aria-label": "Trigger a volcanic eruption in the plate tectonics simulation",
+                  'data-pt-erupt': 'true',
+                  onClick: eruptClick,
+                  // The attention pulse actively misleads once the button is inert.
+                  style: ptErupting
+                    ? { boxShadow: '0 0 12px rgba(255,100,0,0.2)' }
+                    : { animation: 'pulse 2s infinite', boxShadow: '0 0 12px rgba(255,100,0,0.4)' }
+                }, eruptBtnProps("px-4 py-1.5 rounded-lg text-xs font-bold transition-all shadow-md focus:ring-2 focus:ring-yellow-500 focus:outline-none bg-gradient-to-r from-orange-700 to-red-600 text-white hover:from-orange-700 hover:to-red-700")),
+                  ptErupting
+                    ? __alloT('stem.platetectonics.erupting', 'Erupting...')
+                    : __alloT('stem.platetectonics.erupt', "\uD83C\uDF0B Erupt!"))
 
               ),
 
@@ -22523,7 +23380,7 @@ var d = labToolData.plateTectonics || {};
                     React.createElement('div', { className: 'font-bold text-green-800 text-sm mb-1' }, __alloT('stem.platetectonics.about_this_tool', "About this tool")),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-green-700' }, "Detail: "),
-                      __alloT('stem.platetectonics.20_000_line_plate_tectonics_study_tool', "20,000-line plate tectonics study tool, part of AlloFlow STEM Lab. Built May 2026.")
+                      __alloT('stem.platetectonics.20_000_line_plate_tectonics_study_tool', "20,000-line plate tectonics study tool, part of AlloFlow STEAM Lab. Built May 2026.")
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-green-700' }, "Context: "),

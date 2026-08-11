@@ -2265,7 +2265,7 @@
       desc: 'Study sources or analyze data in one evidence workspace where every claim stays connected to what supports it.',
       color: 'amber',
       category: 'data',
-      // LIVE + fully usable. ready:false keeps it OUT of the STEM Lab tile grid ON PURPOSE — Lumen is
+      // LIVE + fully usable. ready:false keeps it OUT of the STEAM Lab tile grid ON PURPOSE — Lumen is
       // plugin-only (_pluginOnlyTools.lumen), surfaced via the Educator Hub launcher card, not the grid.
       // (This is NOT "Phase 0 / not yet usable" — that old comment was stale.)
       ready: false,
@@ -3682,7 +3682,7 @@
             kids.push(h('div', {
               key: 'present', id: 'lumen-present-overlay', role: 'dialog', 'aria-modal': 'true', 'aria-label': __alloT('stem.lumen.lumen_present_mode', 'Lumen present mode'),
               onKeyDown: function (ev) {
-                if (ev.key === 'Escape') { ev.stopPropagation(); closePresent(); return; } // Esc closes; stopPropagation so the host STEM Lab modal does not also close
+                if (ev.key === 'Escape') { ev.stopPropagation(); closePresent(); return; } // Esc closes; stopPropagation so the host STEAM Lab modal does not also close
                 if (ev.key === 'Tab') {
                   try {
                     var first = document.getElementById('lumen-present-first');

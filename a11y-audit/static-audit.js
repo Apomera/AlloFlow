@@ -36,6 +36,12 @@ const SKIP_PATTERNS = [
   /\.min\.js$/,
   /games_module\.js$/,       // compiled output; audit games_source.jsx instead
   /stem_lab_module\.js$/,    // too large for line-by-line; audited separately
+  // Minified third-party bundle (724KB over 1032 lines). Not ours to edit, and
+  // any patch here is erased by the next vendor update; Blockly ships its own
+  // keyboard navigation upstream. Was contributing 5 unfixable DRAGDROP-001s.
+  /blockly_runtime\.bundle\.js$/,
+  // Dev probe artifact (1.4MB), never shipped as UI.
+  /_codex_pdf_parse_probe\.js$/,
 ];
 
 // ── Anti-Pattern Definitions ───────────────────────────────────────────────
@@ -168,11 +174,67 @@ const CHECKS = [
       // boundary, ordinary calls such as array.push('svg') are false positives.
       const isSvg = /(?:^|[^\w$])h\(\s*['"]svg['"]/.test(line) || /createElement\(\s*['"]svg['"]/.test(line);
       if (!isSvg) return false;
-      const context = lines.slice(lineNum - 1, lineNum + 4).join(' ');
+      // Read to the end of the props object, not a fixed 5 lines: a long props
+      // list pushes aria-label past a short window and reports a labelled SVG
+      // as bare (birdlab:18680 did exactly that). Capped so a runaway scan
+      // cannot swallow the rest of the file.
+      // Read exactly the props object by matching braces. A line-based scan
+      // cannot do this: stopping at the first line starting with "}" stops at a
+      // NESTED close (style: { ... }) and misses an aria-label declared after
+      // it, which is why birdlab:18680 read as bare when it is properly named.
+      let context = '';
+      {
+        const window = lines.slice(lineNum - 1, Math.min(lines.length, lineNum + 40)).join('\n');
+        // Props built by composition — h('svg', Object.assign({}, common, {...}))
+        // The first brace is Object.assign's empty seed, so brace-matching it
+        // reads "{}" and reports a labelled SVG as bare. Fall back to a plain
+        // window, which spans all the merged fragments.
+        if (/(?:h|createElement)\(\s*['"]svg['"]\s*,\s*Object\.assign\(/.test(line)) {
+          context = lines.slice(lineNum - 1, lineNum + 4).join(' ');
+          if (/aria-label|aria-hidden|role\s*[:=]\s*['"]img['"]/.test(context)) return false;
+          return true;
+        }
+        // Anchor at the <svg> tag, not the start of the line. When the SVG is
+        // nested — h('div', {...}, h('svg', {role:'img', ...})) — the first
+        // brace on the line belongs to the WRAPPER, so scanning from there
+        // reads the div's props and misses the SVG's own label entirely.
+        const tag = /(?:h|createElement)\(\s*['"]svg['"]/.exec(window);
+        const open = window.indexOf('{', tag ? tag.index : 0);
+        if (open === -1) context = window;
+        else {
+          let depth = 0, q = null, end = window.length;
+          for (let i = open; i < window.length; i++) {
+            const c = window[i], p = window[i - 1];
+            if (q) { if (c === q && p !== '\\') q = null; continue; }
+            if (c === '"' || c === "'" || c === '`') { q = c; continue; }
+            if (c === '{') depth++;
+            else if (c === '}') { depth--; if (depth === 0) { end = i + 1; break; } }
+          }
+          context = window.slice(open, end);
+        }
+      }
       if (/aria-label/.test(context)) return false;
       if (/role\s*[:=]\s*['"]img['"]/.test(context)) return false;
       // Decorative SVGs inside buttons with labels are okay
       if (/aria-hidden/.test(context)) return false;
+
+      // Props can be a shared variable rather than an inline object, e.g.
+      //   var common = { viewBox: ..., 'aria-hidden': 'true' };
+      //   return h('svg', common, ...)
+      // Reading only the call site sees a bare identifier and reports a false
+      // positive. Resolve the nearest preceding `var <name> = {...}` and check
+      // that instead. 14 already-correct SVGs were flagged before this.
+      const propsMatch = /(?:h|createElement)\(\s*['"]svg['"]\s*,\s*([A-Za-z_$][\w$]*)/.exec(line);
+      if (propsMatch) {
+        const varName = propsMatch[1];
+        const decl = new RegExp('var\\s+' + varName + '\\s*=\\s*\\{');
+        for (let i = lineNum - 1; i >= 0 && i > lineNum - 400; i--) {
+          if (!decl.test(lines[i])) continue;
+          const objText = lines.slice(i, i + 12).join(' ');
+          if (/aria-hidden|aria-label|role\s*:\s*['"]img['"]/.test(objText)) return false;
+          break;
+        }
+      }
       return true;
     },
     fix: 'Add role="img" and aria-label describing the visualization.',
@@ -353,7 +415,16 @@ const CHECKS = [
       // not create a draggable interaction and should not trigger this rule.
       if (/\[\s*draggable\s*=/.test(line) && !/onDragStart|onMouseDown.*drag/i.test(line)) return false;
       if (!/draggable\s*[:=]\s*['"]?true|onDragStart|onMouseDown.*drag/i.test(line)) return false;
-      const localContext = lines.slice(lineNum - 1, lineNum + 10).join(' ');
+      // Start a few lines ABOVE the match: the trigger is a `draggable: true`
+      // prop, but the element's tag sits on an earlier line, so a window
+      // anchored at the prop never sees whether it is already a <button>.
+      // logiclab:1555 was reported for exactly this reason.
+      // +10 was far too tight. A keyboard alternative is routinely declared
+      // later in the same element: Alt+Arrow handlers 23 lines down
+      // (allohaven:17236), Move up/down buttons 36 lines down (allohaven:7507),
+      // an onKeyDown 11 lines down (escape_room:1369). All three were reported
+      // as defects while being perfectly operable.
+      const localContext = lines.slice(Math.max(0, lineNum - 4), lineNum + 45).join(' ');
       const context = lines.slice(lineNum - 1, lineNum + 120).join(' ');
       // A draggable native button with an onClick handler already provides the
       // same result through keyboard activation and a single tap/click.
@@ -361,6 +432,21 @@ const CHECKS = [
         /(?:createElement\(\s*['"]button['"]|(?:^|[\s,(])(?:e|h)\(\s*['"]button['"])/.test(localContext) &&
         /onClick/.test(localContext);
       if (nativeButtonClickAlternative) return false;
+      // The ARIA button pattern is equivalent to a native <button>: focusable
+      // via tabIndex, exposed as a button, and activated by Enter/Space. All
+      // three are required together — role+tabIndex WITHOUT a key handler is a
+      // focusable dead control, which is worse than a plain draggable, so this
+      // must not credit two out of three.
+      // Note the deliberate absence of an /Enter/ test. Handlers are routinely
+      // delegated to a named function — onKeyDown: (e) => handleCountKeyDown(e, num)
+      // — so requiring the literal string only credits inline handlers and
+      // reports correct delegated ones as defects (word_sounds:15764 was).
+      // A static pass can confirm the SHAPE of the pattern, not what the
+      // handler does; verifying the key contract needs a runtime check.
+      const ariaButtonAlternative =
+        /tabIndex\s*[:=]/.test(localContext) &&
+        /onKeyDown/.test(localContext);
+      if (ariaButtonAlternative) return false;
       // Reorder controls are sometimes descendants of a draggable group rather
       // than properties on the draggable node. Recognize only an explicit,
       // documented arrow-key shortcut wired through a keyboard handler.

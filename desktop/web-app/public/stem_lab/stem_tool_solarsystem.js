@@ -32,7 +32,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('solarSystem'))
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -10343,7 +10343,7 @@ const d = labToolData.solarSystem || {};
 
                     role: "application",
 
-                    "aria-label": ((sel && (sel.terrainType === 'gasgiant' || sel.terrainType === 'icegiant')) ? 'Atmospheric probe' : (sel && sel.terrainType === 'earthlike') ? 'Deep-sea submersible' : 'Surface rover') + ' simulation on ' + (sel ? sel.name : 'the selected world') + '. Use W A S D or arrow keys to move. Use the action controls to scan, collect evidence, take photos, review the mission and journal, or start navigation.',
+                    "aria-label": ((sel && (sel.terrainType === 'gasgiant' || sel.terrainType === 'icegiant')) ? 'Atmospheric probe' : (sel && sel.terrainType === 'earthlike') ? 'Deep-sea submersible' : 'Surface rover') + ' simulation on ' + (sel ? sel.name : 'the selected world') + '. Use W A S D to move and the arrow keys to look around, including upward. Use the action controls to scan, collect evidence, take photos, review the mission and journal, or start navigation.',
 
                     "data-drone-canvas": "true",
 
@@ -10372,6 +10372,11 @@ const d = labToolData.solarSystem || {};
                         var isGas = sel.terrainType === 'gasgiant' || sel.terrainType === 'icegiant';
                         var isOcean = sel.terrainType === 'earthlike'; // Earth gets underwater drone
                         var isFluid = isGas || isOcean; // shared free-movement mechanics
+                        // Declared HERE, above the ocean branch that fills it, and not down
+                        // beside the other movement vars: a `var x = null` further down the
+                        // same function body hoists its declaration but runs its ASSIGNMENT
+                        // later, which would null the rig back out after it was built.
+                        var subLightRig = null;
 
                         var droneReduceMotion = false;
                         try { droneReduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
@@ -10394,6 +10399,96 @@ const d = labToolData.solarSystem || {};
                         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); renderer.setSize(W, H);
 
                         renderer.setClearColor(new THREE.Color(isOcean ? '#041830' : sel.skyColor || '#000000'));
+
+                        // ── Bloom post-processing for the surface vehicle ──
+                        // The orrery upstairs has had this since the FX program; the vehicle
+                        // scene never did, which is backwards — this is the scene that is
+                        // MADE of light sources. Bioluminescent coral and jellyfish, the
+                        // hydrothermal vent, the submersible's own headlights and strobe,
+                        // Venus's lava streams and crater glow, the sample orbs: every one
+                        // was authored as an emissive and every one rendered flat.
+                        //
+                        // Same guarantees as the orrery's copy: renders plain until the r128
+                        // addons load, every op try/caught with a fall back to the plain
+                        // render, honours window.AlloPostFXEnabled === false, and drops to
+                        // half-res with a gentler curve on reduced-motion or few cores.
+                        var droneComposer = null;
+                        var droneBloomPass = null;
+                        (function setupDroneBloom() {
+                          if (window.AlloPostFXEnabled === false) return;
+                          var ensure = function (cb) {
+                            if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
+                            var urls = [
+                              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js',
+                              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js',
+                              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js',
+                              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js',
+                              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js',
+                              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'
+                            ];
+                            var i = 0;
+                            (function nextScript() {
+                              if (i >= urls.length) { cb(); return; }
+                              var s = document.createElement('script');
+                              s.src = urls[i]; s.onload = function () { i++; nextScript(); }; s.onerror = function () { i++; nextScript(); };
+                              document.head.appendChild(s);
+                            })();
+                          };
+                          ensure(function () {
+                            try {
+                              var T = window.THREE;
+                              if (!T || !T.EffectComposer || !T.RenderPass || !T.UnrealBloomPass) return;
+                              if (!canvasEl.isConnected) return;
+                              var reduce = droneReduceMotion;
+                              var lowPower = reduce || (!!navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
+                              var res = lowPower ? 0.5 : 1;
+                              // Tuned per world, because one threshold cannot serve all five.
+                              // The window is set by what must NOT bloom: on the surface that
+                              // is sunlit regolith, and on a gas giant it is the cloud banding
+                              // itself — those bands are the science, and blowing them out
+                              // costs a student the very structure they came to read. In the
+                              // ocean nothing competes, so the threshold can drop far enough
+                              // for the bioluminescence to actually carry.
+                              var tune = isOcean
+                                ? { threshold: 0.55, strength: 1.05 }
+                                : isGas
+                                  ? { threshold: 0.86, strength: 0.55 }
+                                  : sel.terrainType === 'volcanic'
+                                    ? { threshold: 0.70, strength: 0.90 }
+                                    : sel.terrainType === 'iceworld'
+                                      ? { threshold: 0.90, strength: 0.45 }
+                                      // Rocky worlds are the tightest window and were set
+                                      // from a screenshot, not from taste: at 0.84/0.65 the
+                                      // geological sample orbs bloomed into featureless white
+                                      // discs, and their colour IS their rock type — the tool
+                                      // colour-codes basalt against regolith against sulfur.
+                                      // 0.88/0.42 keeps the halo and gives the colour back.
+                                      : { threshold: 0.88, strength: 0.42 };
+                              var c = new T.EffectComposer(renderer);
+                              c.addPass(new T.RenderPass(scene, camera));
+                              var bp = new T.UnrealBloomPass(
+                                new T.Vector2(Math.max(1, Math.round(W * res)), Math.max(1, Math.round(H * res))),
+                                lowPower ? tune.strength * 0.65 : tune.strength, 0.4, tune.threshold);
+                              c.addPass(bp);
+                              droneBloomPass = bp;
+                              droneComposer = c;
+                            } catch (e) { droneComposer = null; droneBloomPass = null; }
+                          });
+                        })();
+
+                        // Single render entry point. Three call sites needed it — the frame
+                        // loop, the descent intro, and the photo capture — and the photo one
+                        // matters most: it reads the canvas back with toDataURL immediately
+                        // afterwards, so if it rendered plain while the frame loop rendered
+                        // through the composer, every saved photo would look unlike the view
+                        // the student actually photographed.
+                        function droneRender() {
+                          if (droneComposer) {
+                            try { droneComposer.render(); return; }
+                            catch (e) { droneComposer = null; droneBloomPass = null; }
+                          }
+                          renderer.render(scene, camera);
+                        }
 
 
 
@@ -10703,8 +10798,16 @@ const d = labToolData.solarSystem || {};
                           ventLight.position.set(15, ventY + 3.5, -5);
                           scene.add(ventLight);
 
-                          // Underwater lighting: blue-green ambient, dim directional from above
-                          scene.add(new THREE.AmbientLight(0x1a4a6a, 0.8));
+                          // Underwater lighting: blue-green ambient, dim directional from above.
+                          // Held in a variable because it has to FALL with depth. The zone
+                          // table already carries lightLevel 1.0 / 0.3 / 0.0 / 0.0 / 0.0, and
+                          // the caustic and surface lights were already being attenuated by
+                          // it — but this ambient was a fixed 0.8, so it floored the whole
+                          // scene and the aphotic zones came out as bright as the surface.
+                          // The tool's own Science Focus asks "how do pressure and light
+                          // change as depth increases" and the answer was: they don't.
+                          var oceanAmbient = new THREE.AmbientLight(0x1a4a6a, 0.8);
+                          scene.add(oceanAmbient);
                           var waterLight = new THREE.DirectionalLight(0x88bbdd, 0.4);
                           waterLight.position.set(0, 50, 0);
                           scene.add(waterLight);
@@ -11105,6 +11208,16 @@ const d = labToolData.solarSystem || {};
                         } else {
                           // Gas giant: layered atmospheric cloud volumes with turbulent banding
                           var gasBaseColor = new THREE.Color(sel.terrainColor || '#cc9944');
+                          // var, so these hoist to the init function and the frame loop below
+                          // can see them; they stay undefined on rocky and ocean worlds, and
+                          // every read down there is guarded.
+                          var gasCloudDecks = [];
+                          var gasWind = null;
+                          var gasWindCount = 0;
+                          var gasLightning = null;
+                          var gasLightningNext = 90;
+                          var gasDiamonds = null;
+                          var gasDiamondFall = null;
                           for (var cl = 0; cl < 8; cl++) {
                             var clGeo = new THREE.PlaneGeometry(400, 400, 20, 20);
                             // Warp the cloud plane vertices for volumetric look
@@ -11132,13 +11245,40 @@ const d = labToolData.solarSystem || {};
                               }
                             }
                             var clTex = new THREE.CanvasTexture(clCv); clTex.wrapS = THREE.RepeatWrapping; clTex.repeat.set(4, 1);
-                            var clOp = cl < 2 ? 0.7 : (0.5 - cl * 0.04);
-                            var clMat = new THREE.MeshBasicMaterial({ map: clTex, transparent: true, opacity: clOp, side: THREE.DoubleSide, depthWrite: false });
+                            // The eight decks used to run from y=-3 down to y=-38 at even
+                            // 5-unit spacing, which put every one of them BELOW the probe and
+                            // none of them in the two zones the HUD names while you fly. The
+                            // student spawns at y=5 reading "Upper Atmosphere - ammonia ice
+                            // crystals form here, visible cloud tops" over an empty sky, then
+                            // reads "Cloud Deck" over an empty sky, while the banded layers
+                            // they should be flying through sat down in the metallic-hydrogen
+                            // depths where the science says there is no banding at all.
+                            //
+                            // These y values come straight off gasAtmo.zones below, so a deck
+                            // boundary now IS a zone boundary: two thin ammonia hazes up top,
+                            // the two bright banded decks across the 0-3 Cloud Deck band, two
+                            // warm water-cloud layers through the troposphere, and two dark
+                            // dense layers below. Descending on Q now costs you the sky one
+                            // layer at a time, which is the whole point of a descent probe.
+                            var deckPlan = [
+                              { y: 15, op: 0.16, tint: 0xdfe9ff },  // upper haze
+                              { y: 8, op: 0.24, tint: 0xd2e2ff },   // upper haze
+                              { y: 2.4, op: 0.62, tint: 0xffffff }, // cloud deck: the banded tops
+                              { y: 0.4, op: 0.70, tint: 0xf6e6cf }, // cloud deck
+                              { y: -3, op: 0.55, tint: 0xe6c79a },  // deep troposphere: water cloud
+                              { y: -6.5, op: 0.48, tint: 0xd9b184 },
+                              { y: -13, op: 0.42, tint: 0x9c6a3f }, // metallic hydrogen: dark, dense
+                              { y: -24, op: 0.38, tint: 0x6b3a20 }  // core approach
+                            ];
+                            var deck = deckPlan[cl] || { y: -3 - cl * 5, op: 0.4, tint: 0xffffff };
+                            var clMat = new THREE.MeshBasicMaterial({ map: clTex, color: deck.tint, transparent: true, opacity: deck.op, side: THREE.DoubleSide, depthWrite: false });
                             var clMesh = new THREE.Mesh(clGeo, clMat);
-                            clMesh.rotation.x = -Math.PI / 2; clMesh.position.y = -3 - cl * 5;
+                            clMesh.rotation.x = -Math.PI / 2; clMesh.position.y = deck.y;
                             clMesh._cloudSpeed = 0.008 + cl * 0.004;
                             clMesh._cloudDrift = cl * 0.3;
+                            clMesh._deckY = deck.y;
                             scene.add(clMesh);
+                            gasCloudDecks.push(clMesh);
                           }
                           // Add swirling storm vortex (Great Red Spot style) for Jupiter/Saturn
                           if (sel.name === 'Jupiter' || sel.name === 'Saturn') {
@@ -11155,7 +11295,85 @@ const d = labToolData.solarSystem || {};
                             var stormMesh = new THREE.Mesh(stormGeo, stormMat);
                             stormMesh.rotation.x = -Math.PI / 2; stormMesh.position.set(30, -4, -20);
                             stormMesh._cloudSpeed = 0.015; stormMesh._isStorm = true;
+                            stormMesh.position.y = 1.4; // ride with the re-spaced Cloud Deck
                             scene.add(stormMesh);
+                          }
+
+                          // ── Wind streaks ──
+                          // The HUD has always reported a wind speed per zone — 100 km/h at
+                          // the cloud tops, 500 in the troposphere — and nothing in the scene
+                          // moved with it, so the number was just a number. These are ammonia
+                          // and water-ice crystals carried in the flow; they stream past the
+                          // probe faster as it descends into the fast zones, which is the one
+                          // reading a passenger actually gets on a wind speed.
+                          // Drawn as SEGMENTS, not points. The first screenshot of this had
+                          // them as a Points cloud and they read as a static snowfall — worse
+                          // than nothing, because white specks over an orange sky look like
+                          // stars. A streak has a direction, so the flow is legible in a
+                          // single frame instead of only in motion, and its LENGTH can carry
+                          // the wind speed the same way its speed does.
+                          gasWindCount = droneReduceMotion ? 90 : 240;
+                          var gwGeo = new THREE.BufferGeometry();
+                          var gwPos = new Float32Array(gasWindCount * 6); // head + tail
+                          for (var gwi = 0; gwi < gasWindCount; gwi++) {
+                            var gwx = (Math.random() - 0.5) * 150;
+                            var gwy = 18 - Math.random() * 46;
+                            var gwz = (Math.random() - 0.5) * 150;
+                            gwPos[gwi * 6] = gwx; gwPos[gwi * 6 + 1] = gwy; gwPos[gwi * 6 + 2] = gwz;
+                            gwPos[gwi * 6 + 3] = gwx + 1.5; gwPos[gwi * 6 + 4] = gwy; gwPos[gwi * 6 + 5] = gwz;
+                          }
+                          gwGeo.setAttribute('position', new THREE.BufferAttribute(gwPos, 3));
+                          gasWind = new THREE.LineSegments(gwGeo, new THREE.LineBasicMaterial({
+                            color: 0xeef4ff, transparent: true, opacity: 0.45, depthWrite: false
+                          }));
+                          scene.add(gasWind);
+
+                          // ── Lightning ──
+                          // Not decoration: the Deep Troposphere zone's own science string
+                          // says "Lightning storms rage", and Juno confirmed lightning on
+                          // Jupiter powerful enough to be seen from orbit. It fires only in
+                          // the zones where the tool says water clouds exist, because that is
+                          // where the charge separation happens.
+                          //
+                          // Rate is deliberately slow — a strike every few seconds at most,
+                          // nowhere near the three-flashes-per-second photosensitivity
+                          // threshold — and reduced-motion turns it off outright.
+                          if (!droneReduceMotion) {
+                            gasLightning = new THREE.PointLight(0xdbeafe, 0, 120);
+                            gasLightning.position.set(0, -4, -30);
+                            scene.add(gasLightning);
+                          }
+
+                          // ── Ice giants: diamond rain ──
+                          // This tool tells students about diamond rain in FOUR places — the
+                          // atmosphere table, the interior cutaway, the planet's notable
+                          // features, and the FAQ — and then a probe descends into the exact
+                          // zone whose own science string says "carbon compressed into
+                          // diamonds that rain downward" and sees an empty brown fog. It is
+                          // the single most memorable thing about Uranus and Neptune and it
+                          // was the one thing the 3D never showed.
+                          //
+                          // They FALL rather than drift: the whole point is that diamond is
+                          // denser than the liquid hydrogen around it, so it sinks. Additive
+                          // so they read as facets catching light rather than as snow, and
+                          // bright enough to cross the bloom threshold.
+                          if (sel.terrainType === 'icegiant' && !droneReduceMotion) {
+                            var drCount = 260;
+                            var drGeo = new THREE.BufferGeometry();
+                            var drPos = new Float32Array(drCount * 3);
+                            gasDiamondFall = new Float32Array(drCount);
+                            for (var dri = 0; dri < drCount; dri++) {
+                              drPos[dri * 3] = (Math.random() - 0.5) * 90;
+                              drPos[dri * 3 + 1] = -6 - Math.random() * 34;
+                              drPos[dri * 3 + 2] = (Math.random() - 0.5) * 90;
+                              gasDiamondFall[dri] = 0.08 + Math.random() * 0.16;
+                            }
+                            drGeo.setAttribute('position', new THREE.BufferAttribute(drPos, 3));
+                            gasDiamonds = new THREE.Points(drGeo, new THREE.PointsMaterial({
+                              color: 0xe8f6ff, size: 0.42, transparent: true, opacity: 0,
+                              depthWrite: false, blending: THREE.AdditiveBlending
+                            }));
+                            scene.add(gasDiamonds);
                           }
                         }
 
@@ -11163,9 +11381,47 @@ const d = labToolData.solarSystem || {};
 
                         // â"€â"€ Lighting â"€â"€
 
-                        scene.add(new THREE.AmbientLight(0x444466, 0.6));
+                        // How hard a shadow is IS a fact about the air, and this tool already
+                        // records every world's atmosphere. One cold blue-purple ambient was
+                        // serving all of them, and it contradicted the data twice over: on
+                        // Venus it left slopes pitch black under a sky that physically cannot
+                        // cast a shadow — 96.5% CO2 at 90 atmospheres under a 20 km cloud
+                        // deck means the surface is lit ENTIRELY by scattered light, which is
+                        // why the Venera photographs show a shadowless orange landscape — and
+                        // on Mars it filled red-dust shadows with blue light under a sky the
+                        // tool's own text calls butterscotch.
+                        //
+                        // So the fill comes from the world's own skyColor and terrainColor,
+                        // and its strength from how much air there is to scatter in. Airless
+                        // worlds deliberately KEEP their harsh black shadows: that is the
+                        // real look on Mercury, and next to Venus it now reads as a contrast
+                        // a student can be asked about rather than an accident.
+                        var _skyFill = new THREE.Color(sel.skyColor || '#404058');
+                        var _groundFill = new THREE.Color(sel.terrainColor || '#4a4a52').multiplyScalar(0.55);
+                        var _sunTint = 0xffeedd, _sunPower = 1.0, _hemiPower = 0;
+                        if (isFluid) {
+                          // Ocean and gas giants light themselves above (caustics, water
+                          // light, cloud decks). Left exactly as it was.
+                          scene.add(new THREE.AmbientLight(0x444466, 0.6));
+                        } else if (sel.terrainType === 'volcanic') {
+                          // Venus: no direct beam reaches the ground at all.
+                          _hemiPower = 1.25; _sunPower = 0.2; _sunTint = 0xffd2a0;
+                        } else if (sel.terrainType === 'cratered') {
+                          // Mercury / airless: nothing to scatter, so shadows stay brutal.
+                          _hemiPower = 0.12; _sunPower = 1.15;
+                          scene.add(new THREE.AmbientLight(0x141420, 0.18));
+                        } else if (sel.terrainType === 'iceworld') {
+                          // Pluto: thin nitrogen, but bright snow bounces plenty.
+                          _hemiPower = 0.42; _sunPower = 0.3; _sunTint = 0xf2f6ff;
+                        } else if (sel.terrainType === 'desert') {
+                          // Mars: thin, but dusty enough to fill shadows with sky colour.
+                          _hemiPower = 0.55; _sunPower = 0.88; _sunTint = 0xffe8cc;
+                        } else {
+                          _hemiPower = 0.4; _sunPower = 0.95;
+                        }
+                        if (_hemiPower > 0) scene.add(new THREE.HemisphereLight(_skyFill, _groundFill, _hemiPower));
 
-                        var sunDir = new THREE.DirectionalLight(0xffeedd, sel.terrainType === 'iceworld' ? 0.3 : 1.0);
+                        var sunDir = new THREE.DirectionalLight(_sunTint, _sunPower);
 
                         sunDir.position.set(50, 30, 20); scene.add(sunDir);
 
@@ -11247,6 +11503,16 @@ const d = labToolData.solarSystem || {};
                           subHeadR.position.set(0.3, 0, -0.8);
                           subHeadR.target.position.set(0.3, -0.5, -6);
                           roverGroup.add(subHeadR); roverGroup.add(subHeadR.target);
+                          // ...except they cannot LIVE on roverGroup, because first person
+                          // hides it (`roverGroup.visible = thirdPerson`) and a hidden parent
+                          // takes its lights with it. So the submersible's headlights were off
+                          // in the one view where they are the whole point. Re-parent to a rig
+                          // that stays visible and copies the vehicle's transform each frame;
+                          // the local offsets and spot targets carry over unchanged.
+                          subLightRig = new THREE.Group();
+                          subLightRig.add(subHeadL); subLightRig.add(subHeadL.target);
+                          subLightRig.add(subHeadR); subLightRig.add(subHeadR.target);
+                          scene.add(subLightRig);
                           // Headlight lens glow
                           var subGlowGeo = new THREE.SphereGeometry(0.06, 8, 8);
                           var subGlowMat = new THREE.MeshBasicMaterial({ color: 0xccddff, transparent: true, opacity: 0.9 });
@@ -11548,7 +11814,7 @@ const d = labToolData.solarSystem || {};
                             { name: __alloT('stem.solarsystem.upper_atmosphere_6', 'Upper Atmosphere'), minY: 3, maxY: 999, pressure: '0.1 bar', temp: sel.name === 'Jupiter' ? '-110\u00B0C' : sel.name === 'Saturn' ? '-140\u00B0C' : sel.name === 'Uranus' ? '-195\u00B0C' : '-200\u00B0C', color: '#88bbff', gases: ['H\u2082', 'He', 'NH\u2083 ice'], windSpeed: 100, fogDensity: 0, hazard: null, science: 'Ammonia ice crystals form here. Visible cloud tops.' },
                             { name: __alloT('stem.solarsystem.cloud_deck_2', 'Cloud Deck'), minY: 0, maxY: 3, pressure: '1-5 bar', temp: sel.name === 'Jupiter' ? '-50\u00B0C' : sel.name === 'Saturn' ? '-80\u00B0C' : '-150\u00B0C', color: '#cc9955', gases: ['H\u2082', 'He', 'NH\u2084SH', 'H\u2082O'], windSpeed: 300, fogDensity: 0.15, hazard: 'wind_shear', science: 'Ammonium hydrosulfide clouds. Extreme wind shear between bands.' },
                             { name: __alloT('stem.solarsystem.deep_troposphere', 'Deep Troposphere'), minY: -8, maxY: 0, pressure: '10-100 bar', temp: sel.name === 'Jupiter' ? '100\u00B0C' : '50\u00B0C', color: '#885522', gases: ['H\u2082', 'He', 'H\u2082O vapor', 'CH\u2084'], windSpeed: 500, fogDensity: 0.35, hazard: 'pressure', science: 'Water clouds form here. Temperature rises from compression. Lightning storms rage.' },
-                            { name: __alloT('stem.solarsystem.metallic_hydrogen_layer', 'Metallic Hydrogen Layer'), minY: -20, maxY: -8, pressure: '200+ bar', temp: '2,000\u00B0C+', color: '#442211', gases: ['Metallic H', 'He rain', sel.terrainType === 'icegiant' ? 'Diamond rain' : 'Liquid H\u2082'], windSpeed: 50, fogDensity: 0.6, hazard: 'crush', science: sel.terrainType === 'icegiant' ? 'Carbon compressed into diamonds that rain downward. Extreme pressure.' : 'Hydrogen becomes a liquid metal conductor. Source of the magnetic field.' },
+                            { name: __alloT('stem.solarsystem.metallic_hydrogen_layer', 'Metallic Hydrogen Layer'), minY: -20, maxY: -8, pressure: '200+ bar', temp: '2,000\u00B0C+', color: '#442211', gases: ['Metallic H', 'He rain', sel.terrainType === 'icegiant' ? 'Diamond rain' : 'Liquid H\u2082'], windSpeed: 50, fogDensity: 0.6, hazard: 'crush', science: sel.terrainType === 'icegiant' ? 'Lab experiments squeezing carbon suggest it is crushed into diamonds that sink through these depths. Inferred, never observed directly.' : 'Hydrogen becomes a liquid metal conductor. Source of the magnetic field.' },
                             { name: __alloT('stem.solarsystem.inner_core_region', 'Inner Core Region'), minY: -999, maxY: -20, pressure: '1000+ bar', temp: '20,000\u00B0C+', color: '#ff4400', gases: ['Rock/ice core', 'Metallic H', 'Exotic matter'], windSpeed: 0, fogDensity: 0.85, hazard: 'lethal', science: 'Rocky/icy core 10-20x Earth mass. No probe has ever reached this depth.' }
                           ];
                           gasAtmo = {
@@ -11838,14 +12104,25 @@ const d = labToolData.solarSystem || {};
                             var rCv = document.createElement('canvas'); rCv.setAttribute('aria-hidden', 'true'); rCv.width = 256; rCv.height = 1;
                             var rCtx = rCv.getContext('2d');
                             for (var rpx = 0; rpx < 256; rpx++) {
-                              var alpha = 0.15 + Math.sin(rpx * 0.3 + sri) * 0.08 + Math.random() * 0.03;
-                              if (rpx % 17 < 2) alpha *= 0.2; // Cassini-like gaps
-                              rCtx.fillStyle = 'rgba(234,179,8,' + alpha + ')';
+                              // Saturn's rings were being drawn at a texture alpha of ~0.15
+                              // multiplied by a material opacity of ~0.25, so their EFFECTIVE
+                              // opacity was about 4% — against Saturn's own gold sky that is
+                              // not faint, it is invisible. The tool builds the planet's most
+                              // famous feature, arcs it overhead, animates its drift and even
+                              // models its shadow dimming the ground, and then nobody has ever
+                              // seen it. Raised to ~40% effective.
+                              //
+                              // Colour moved off the saturated amber too: ring particles are
+                              // mostly water ice, so they read as bright cream, and amber on
+                              // an amber sky has no contrast to spend even at full opacity.
+                              var alpha = 0.55 + Math.sin(rpx * 0.3 + sri) * 0.22 + Math.random() * 0.05;
+                              if (rpx % 17 < 2) alpha *= 0.18; // Cassini-like gaps
+                              rCtx.fillStyle = 'rgba(248,240,214,' + alpha + ')';
                               rCtx.fillRect(rpx, 0, 1, 1);
                             }
                             var rTex = new THREE.CanvasTexture(rCv);
                             var rMat = new THREE.MeshBasicMaterial({
-                              map: rTex, side: THREE.DoubleSide, transparent: true, opacity: 0.3 - sri * 0.03, depthWrite: false
+                              map: rTex, side: THREE.DoubleSide, transparent: true, opacity: 0.82 - sri * 0.06, depthWrite: false
                             });
                             var ringMesh2 = new THREE.Mesh(rGeo, rMat);
                             ringMesh2.rotation.x = Math.PI / 2 + 0.3; // tilted overhead
@@ -12213,6 +12490,12 @@ const d = labToolData.solarSystem || {};
                         // â"€â"€ Movement state â"€â"€
 
                         var moveState = { forward: false, back: false, left: false, right: false, up: false, down: false };
+                        // Looking around was mouse-only: yaw and pitch had exactly one writer,
+                        // the pointer-lock mousemove handler. A keyboard-only student could
+                        // therefore never turn — they drove in whatever direction the camera
+                        // happened to start in, forever — and every overhead feature was
+                        // unreachable, which on Saturn means its rings.
+                        var lookState = { up: false, down: false, left: false, right: false };
 
                         var yaw = 0, pitch = 0, playerPos = new THREE.Vector3(0, isFluid ? 5 : 1.6, 0);
 
@@ -12224,13 +12507,27 @@ const d = labToolData.solarSystem || {};
 
                           switch (e.key.toLowerCase()) {
 
-                            case 'w': case 'arrowup': moveState.forward = pressed; break;
+                            // Arrows now LOOK rather than duplicating WASD. Deliberate: WASD
+                            // already covers movement completely, so the arrows were pure
+                            // redundancy, and spending them on the one thing the keyboard
+                            // could not do buys turning, aiming at samples that are not dead
+                            // ahead, and looking up. The canvas aria-label and the on-screen
+                            // legend below are updated to match.
+                            case 'w': moveState.forward = pressed; break;
 
-                            case 's': case 'arrowdown': moveState.back = pressed; break;
+                            case 's': moveState.back = pressed; break;
 
-                            case 'a': case 'arrowleft': moveState.left = pressed; break;
+                            case 'a': moveState.left = pressed; break;
 
-                            case 'd': case 'arrowright': moveState.right = pressed; break;
+                            case 'd': moveState.right = pressed; break;
+
+                            case 'arrowup': lookState.up = pressed; break;
+
+                            case 'arrowdown': lookState.down = pressed; break;
+
+                            case 'arrowleft': lookState.left = pressed; break;
+
+                            case 'arrowright': lookState.right = pressed; break;
 
                             case 'q': case ' ': moveState.up = pressed; break;
 
@@ -12420,6 +12717,12 @@ const d = labToolData.solarSystem || {};
                           // updateStyle=false: CSS above owns the layout size; letting Three
                           // write inline px styles here re-triggers the ResizeObserver.
                           renderer.setSize(w, h2, false);
+                          // The composer holds its own render targets; without this they keep
+                          // the pre-fullscreen size and the scene arrives stretched and soft.
+                          if (droneComposer) {
+                            try { droneComposer.setSize(w, h2); } catch (e) {}
+                            try { if (droneBloomPass && droneBloomPass.setSize) droneBloomPass.setSize(w, h2); } catch (e) {}
+                          }
                         }
                         // Track on a separate doc map so cleanup can target the right node.
                         function onDroneFullscreenChange() { resizeDroneCanvas(true); }
@@ -12525,7 +12828,7 @@ const d = labToolData.solarSystem || {};
 
                           (featList ? '<div style="border-top:1px solid rgba(56,189,248,0.12);padding-top:3px;margin-bottom:3px"><span style="color:#7dd3fc;font-weight:bold;font-size:9px">\uD83D\uDD2D NOTABLE</span>' + featList + '</div>' : '') +
 
-                          '<div style="border-top:1px solid rgba(56,189,248,0.12);padding-top:3px;color:#94a3b8;font-size:9px">' + (isFluid ? 'WASD move \u2022 Q/E ' + (isOcean ? 'depth' : 'altitude') + ' \u2022 <span style="color:#fbbf24">F</span> ' + (isOcean ? 'collect' : 'sample') : 'WASD drive \u2022 <span style="color:#fbbf24">F</span> collect') + ' \u2022 <span style="color:#22d3ee">G</span> scan \u2022 <span style="color:#f472b6">C</span> photo \u2022 J journal \u2022 M mission \u2022 H hud \u2022 N nav \u2022 P plot</div>';
+                          '<div style="border-top:1px solid rgba(56,189,248,0.12);padding-top:3px;color:#94a3b8;font-size:9px">' + (isFluid ? 'WASD move \u2022 Q/E ' + (isOcean ? 'depth' : 'altitude') + ' \u2022 <span style="color:#fbbf24">F</span> ' + (isOcean ? 'collect' : 'sample') : 'WASD drive \u2022 <span style="color:#fbbf24">F</span> collect') + ' \u2022 <span style="color:#a5b4fc">\u2191\u2193\u2190\u2192</span> look \u2022 <span style="color:#22d3ee">G</span> scan \u2022 <span style="color:#f472b6">C</span> photo \u2022 J journal \u2022 M mission \u2022 H hud \u2022 N nav \u2022 P plot</div>';
 
                         hud.innerHTML = hudStaticHTML;
 
@@ -13799,7 +14102,7 @@ const d = labToolData.solarSystem || {};
                             // Capture the actual canvas as a thumbnail before flash
                             var thumbDataUrl = '';
                             try {
-                              renderer.render(scene, camera); // ensure fresh frame
+                              droneRender(); // ensure fresh frame
                               thumbDataUrl = canvasEl.toDataURL('image/jpeg', 0.7);
                             } catch(pe) { /* security restrictions on some browsers */ }
 
@@ -14448,12 +14751,8 @@ const d = labToolData.solarSystem || {};
                             playerPos.y = curY;
                             playerPos.x = Math.sin(_descentTick * 0.01) * 2 * (1 - eased); // gentle spiral
                             playerPos.z = Math.cos(_descentTick * 0.01) * 2 * (1 - eased);
-                            camera.position.copy(playerPos);
-                            camera.position.y += 2 * (1 - eased);
                             pitch = -0.3 * (1 - eased); // look down during descent
                             camera.rotation.order = 'YXZ';
-                            camera.rotation.y = _descentTick * 0.003;
-                            camera.rotation.x = pitch;
                             // Update altitude readout
                             var altEl2 = document.getElementById('descent-alt');
                             if (altEl2) {
@@ -14478,9 +14777,66 @@ const d = labToolData.solarSystem || {};
                             roverGroup.position.copy(playerPos);
                             roverGroup.position.y -= 0.5;
                             roverGroup.visible = true;
-                            renderer.render(scene, camera);
+
+                            // ── Arrival camera ──
+                            // The camera used to ride AT playerPos while the vehicle was
+                            // parked half a unit under it and forced visible, so the whole
+                            // arrival — the one genuinely cinematic beat this mode has — was
+                            // played from inside the rover's own bodywork. The mast, the navy
+                            // solar panel and a wheel each pass within 30 cm of the lens and
+                            // fill the frame; a probe screenshot of Mars was more solar panel
+                            // than Mars. Confirmed by naming the offending meshes, not by eye:
+                            // BoxGeometry 1 x 0.03 x 0.6 #1a1a5e at 0.4 units, CylinderGeometry
+                            // r 0.04 #888888 at 0.3 units.
+                            //
+                            // So fly the camera OUTSIDE and let the student watch their own
+                            // vehicle come down, then fold that shot into the first-person
+                            // pose over the last quarter of the descent so play begins with no
+                            // cut. At blend 1 the camera sits exactly at playerPos looking
+                            // along yaw, which is the pose the first-person branch below
+                            // writes — so the handover is invisible rather than a snap. (The
+                            // old code span the camera at 0.003 rad/frame and then jumped to
+                            // yaw anyway, so this removes a lurch that was already there.)
+                            var descHold = new THREE.Vector3(roverGroup.position.x, roverGroup.position.y, roverGroup.position.z);
+                            var descArc = _descentTick * 0.011;
+                            var descDist = 4.5 + 6.5 * (1 - eased);
+                            var descLift = 1.8 + 4.5 * (1 - eased);
+                            var descChase = new THREE.Vector3(
+                              descHold.x + Math.sin(descArc) * descDist,
+                              descHold.y + descLift,
+                              descHold.z + Math.cos(descArc) * descDist);
+                            // Venus has enough relief to swallow the orbit whole: the first
+                            // screenshot of this camera put the lens inside a hillside for
+                            // most of a revolution. Ride over whatever ground is under the
+                            // camera's own x/z, not the vehicle's.
+                            if (!isFluid && typeof _terrainHeightAt === 'function') {
+                              var descGround = _terrainHeightAt(descChase.x, descChase.z);
+                              if (isFinite(descGround)) descChase.y = Math.max(descChase.y, descGround + 1.6);
+                            }
+                            // Cross-fade starts at 72% so the vehicle is still on screen while
+                            // it settles, and the camera is already level by touchdown.
+                            var descBlend = Math.max(0, Math.min(1, (eased - 0.72) / 0.28));
+                            camera.position.lerpVectors(descChase, playerPos, descBlend);
+                            var descAhead = new THREE.Vector3(
+                              playerPos.x - Math.sin(yaw) * 14,
+                              playerPos.y,
+                              playerPos.z - Math.cos(yaw) * 14);
+                            camera.lookAt(new THREE.Vector3().lerpVectors(descHold, descAhead, descBlend));
+
+                            droneRender();
                             return; // skip normal movement during descent
                           }
+
+                          // Keyboard look. Same yaw/pitch the mouse writes, and the same
+                          // +/-1.2 rad pitch clamp the mouse handler uses, so the two input
+                          // routes cannot disagree about where the camera can point. Rate is
+                          // slower than a mouse flick on purpose: this is the only aiming
+                          // method some students have, and overshooting a sample you are
+                          // trying to line up is worse than turning a little slowly.
+                          if (lookState.left) yaw += 0.028;
+                          if (lookState.right) yaw -= 0.028;
+                          if (lookState.up) pitch = Math.min(1.2, pitch + 0.022);
+                          if (lookState.down) pitch = Math.max(-1.2, pitch - 0.022);
 
                           // Movement
 
@@ -14512,9 +14868,27 @@ const d = labToolData.solarSystem || {};
                             playerPos.x += Math.sin(tick3d * 0.002 + playerPos.z * 0.01) * 0.003;
                             playerPos.z += Math.cos(tick3d * 0.0015 + playerPos.x * 0.01) * 0.002;
                           } else if (isGas) {
-                            // Gas giant probe: free flight in atmosphere
+                            // Gas giant probe: free flight in atmosphere.
+                            //
+                            // The floor here used to be 1.0, which looks like the "don't sink
+                            // through the ground" clamp the rocky and ocean branches need —
+                            // applied to the one world type whose defining fact is that it has
+                            // NO SURFACE. The cost was severe and invisible: gasAtmo defines
+                            // five zones from y >= 3 down to y < -20, and a floor of 1.0 put
+                            // THREE OF THEM permanently out of reach. Deep Troposphere,
+                            // Metallic Hydrogen and Inner Core could never be entered, so the
+                            // shield-damage system written for them, all three of their
+                            // warning messages, and the "Zones n/5" and deepest-depth
+                            // progression were dead code — a descent probe that could not
+                            // descend. Found by holding descend for nine minutes and never
+                            // leaving the Cloud Deck.
+                            //
+                            // -30 sits inside the Inner Core Region so every zone is
+                            // reachable, and still bounds the world. Nothing punishes you for
+                            // being down there beyond the shield readout, which the existing
+                            // code regenerates as soon as you climb back to the calm layers.
                             if (moveState.up) playerPos.y += speed3d;
-                            if (moveState.down) playerPos.y = Math.max(1.0, playerPos.y - speed3d);
+                            if (moveState.down) playerPos.y = Math.max(-30, playerPos.y - speed3d);
                           } else {
                             // Rocky planet rover: ground-following, no vertical flight
                             var groundH = _terrainHeightAt(playerPos.x, playerPos.z);
@@ -14602,8 +14976,89 @@ const d = labToolData.solarSystem || {};
                               if (c._isStorm) {
                                 c.rotation.z += 0.008; // spin the storm vortex
                               }
+                              // Decks now sit at fixed zone altitudes, so the horizontal
+                              // drift above must not be allowed to carry the altitude away
+                              // with it — restore the planned y every frame.
+                              if (c._deckY != null) c.position.y = c._deckY;
                             }
                           });
+
+                          // ═══ Gas giant: wind streaks + troposphere lightning ═══
+                          if (isGas && gasWind) {
+                            var gwZone = gasAtmo && gasAtmo.getZone ? gasAtmo.getZone(playerPos.y) : null;
+                            // km/h straight off the zone table, scaled to something the eye
+                            // can follow. The ratio between zones is what carries the lesson:
+                            // the troposphere really does blow five times harder than the
+                            // cloud tops, and it now looks it.
+                            var gwWind = (gwZone && gwZone.windSpeed) || 100;
+                            var gwSpeed = gwWind / 100 * 0.55;
+                            // 100 km/h at the cloud tops draws a short tick; 500 in the
+                            // troposphere draws a long dash. Same ratio the HUD prints.
+                            var gwLen = 1.2 + gwWind / 100 * 1.9;
+                            var gwArr = gasWind.geometry.attributes.position.array;
+                            for (var gwj = 0; gwj < gwArr.length; gwj += 6) {
+                              gwArr[gwj] -= gwSpeed;
+                              if (gwArr[gwj] < playerPos.x - 75) gwArr[gwj] = playerPos.x + 75;
+                              else if (gwArr[gwj] > playerPos.x + 75) gwArr[gwj] = playerPos.x - 75;
+                              // Keep the field wrapped around the probe as it descends, so a
+                              // fixed 240 streaks cover any depth instead of being left behind.
+                              if (gwArr[gwj + 1] < playerPos.y - 26) gwArr[gwj + 1] += 46;
+                              else if (gwArr[gwj + 1] > playerPos.y + 20) gwArr[gwj + 1] -= 46;
+                              if (gwArr[gwj + 2] < playerPos.z - 75) gwArr[gwj + 2] += 150;
+                              else if (gwArr[gwj + 2] > playerPos.z + 75) gwArr[gwj + 2] -= 150;
+                              // Tail trails the head along the flow.
+                              gwArr[gwj + 3] = gwArr[gwj] + gwLen;
+                              gwArr[gwj + 4] = gwArr[gwj + 1];
+                              gwArr[gwj + 5] = gwArr[gwj + 2];
+                            }
+                            gasWind.geometry.attributes.position.needsUpdate = true;
+                            // Streaks fade out where the atmosphere is too thin to carry
+                            // crystals and again in the crushing dark below the water clouds.
+                            gasWind.material.opacity = playerPos.y > 12 ? 0.2 : playerPos.y < -12 ? 0.15 : 0.55;
+                          }
+                          if (isGas && gasDiamonds) {
+                            // Only where the tool's own zone table puts them: from the deep
+                            // troposphere down. Above that the sky stays clear, so descending
+                            // INTO the diamonds is the reveal.
+                            var drDepth = Math.max(0, Math.min(1, (-6 - playerPos.y) / 8));
+                            gasDiamonds.material.opacity = drDepth * 0.85;
+                            gasDiamonds.visible = drDepth > 0.02;
+                            if (gasDiamonds.visible) {
+                              var drArr = gasDiamonds.geometry.attributes.position.array;
+                              for (var drj = 0, drk = 0; drj < drArr.length; drj += 3, drk++) {
+                                drArr[drj + 1] -= gasDiamondFall[drk];
+                                // Recycle above the probe once they sink out of range, and
+                                // keep the column centred on it as it descends.
+                                if (drArr[drj + 1] < playerPos.y - 24) {
+                                  drArr[drj + 1] = playerPos.y + 16;
+                                  drArr[drj] = playerPos.x + (Math.random() - 0.5) * 90;
+                                  drArr[drj + 2] = playerPos.z + (Math.random() - 0.5) * 90;
+                                }
+                              }
+                              gasDiamonds.geometry.attributes.position.needsUpdate = true;
+                            }
+                          }
+                          if (isGas && gasLightning) {
+                            if (gasLightning.intensity > 0) {
+                              // Fast decay: a strike is a flash, not a lamp.
+                              gasLightning.intensity *= 0.72;
+                              if (gasLightning.intensity < 0.04) gasLightning.intensity = 0;
+                            } else if (--gasLightningNext <= 0) {
+                              // Only where the tool's own zone science puts water clouds and
+                              // storms. Above and below, the sky stays dark.
+                              var stormy = playerPos.y < 3 && playerPos.y > -12;
+                              // ~3.5s to ~9s apart at 60fps. Far below the 3 Hz
+                              // photosensitivity guideline even at the fastest end.
+                              gasLightningNext = 210 + Math.floor(Math.random() * 330);
+                              if (stormy) {
+                                gasLightning.position.set(
+                                  playerPos.x + (Math.random() - 0.5) * 90,
+                                  playerPos.y - 3 - Math.random() * 6,
+                                  playerPos.z + (Math.random() - 0.5) * 90);
+                                gasLightning.intensity = 2.6 + Math.random() * 2.2;
+                              }
+                            }
+                          }
 
 
 
@@ -14707,7 +15162,15 @@ const d = labToolData.solarSystem || {};
                           // Saturn rings shimmer + slow rotation + shadow bands
                           if (typeof saturnRingMeshes !== 'undefined' && saturnRingMeshes.length > 0) {
                             saturnRingMeshes.forEach(function(rm, ri2) {
-                              rm.material.opacity = 0.2 + Math.sin(tick3d * 0.005 + ri2 * 0.5) * 0.05;
+                              // This line is why raising the build-time opacity alone changed
+                              // nothing: it ASSIGNS rather than modulates, so whatever the
+                              // rings were built with was overwritten back to ~0.2 on the very
+                              // next frame. Shimmer around the per-ring base instead of
+                              // replacing it. (Stash the base on the mesh — the material is
+                              // per-ring already, but reading opacity back would compound the
+                              // shimmer into a drift.)
+                              if (rm._baseOpacity == null) rm._baseOpacity = rm.material.opacity;
+                              rm.material.opacity = rm._baseOpacity + Math.sin(tick3d * 0.005 + ri2 * 0.5) * 0.06;
                               // Slow orbital rotation — rings drift across the sky
                               rm.rotation.z += 0.0001 + ri2 * 0.00003;
                               // Subtle tilt oscillation (precession effect)
@@ -14971,6 +15434,15 @@ const d = labToolData.solarSystem || {};
                             }
                             if (waterLight) {
                               waterLight.intensity = Math.max(0.05, oZone.lightLevel * 0.5);
+                            }
+                            // The ambient falls with the zone too, so the aphotic depths
+                            // finally go dark and the submersible's own headlights become the
+                            // thing you see by — which is the actual experience the zone table
+                            // has been describing in text all along. The 0.16 floor is
+                            // deliberate and not physical: at a true zero a low-vision student
+                            // could not navigate, and the lesson survives a readable floor.
+                            if (oceanAmbient) {
+                              oceanAmbient.intensity = 0.16 + oZone.lightLevel * 0.64;
                             }
 
                             // Hull damage from pressure
@@ -15973,9 +16445,16 @@ const d = labToolData.solarSystem || {};
 
                           roverGroup.visible = thirdPerson;
 
+                          // The headlight rig is NOT part of that hide — it tracks the
+                          // vehicle's final transform so the beams survive first person.
+                          if (subLightRig) {
+                            subLightRig.position.copy(roverGroup.position);
+                            subLightRig.rotation.copy(roverGroup.rotation);
+                          }
 
 
-                          renderer.render(scene, camera);
+
+                          droneRender();
 
                         }
 
@@ -16022,6 +16501,15 @@ const d = labToolData.solarSystem || {};
 
                           if (document.pointerLockElement === canvasEl) document.exitPointerLock();
 
+                          // Composer passes own render targets, which renderer.dispose() does
+                          // not reach. Left alone they survive every planet change.
+                          if (droneComposer) {
+                            try { (droneComposer.passes || []).forEach(function (p) { if (p && p.dispose) p.dispose(); }); } catch (e) {}
+                            try { if (droneComposer.renderTarget1) droneComposer.renderTarget1.dispose(); } catch (e) {}
+                            try { if (droneComposer.renderTarget2) droneComposer.renderTarget2.dispose(); } catch (e) {}
+                            droneComposer = null; droneBloomPass = null;
+                          }
+
                           renderer.dispose();
 
                           if (hud.parentElement) hud.parentElement.removeChild(hud);
@@ -16059,6 +16547,18 @@ const d = labToolData.solarSystem || {};
                           plotterWPMeshes.forEach(function (m) { scene.remove(m); });
 
                           beaconMeshes.forEach(function (bm) { scene.remove(bm.group); });
+
+                          if (gasWind) {
+                            scene.remove(gasWind);
+                            try { gasWind.geometry.dispose(); gasWind.material.dispose(); } catch (e) {}
+                            gasWind = null;
+                          }
+                          if (gasLightning) { scene.remove(gasLightning); gasLightning = null; }
+                          if (gasDiamonds) {
+                            scene.remove(gasDiamonds);
+                            try { gasDiamonds.geometry.dispose(); gasDiamonds.material.dispose(); } catch (e) {}
+                            gasDiamonds = null; gasDiamondFall = null;
+                          }
 
                           // General cleanup
                           var sonarPanel = document.getElementById('hud-sonar');
@@ -22758,7 +23258,7 @@ const d = labToolData.solarSystem || {};
                                           )
                                         ),
                                         React.createElement('div', { className: 'mt-3 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          __alloT('stem.solarsystem.part_of_alloflow_stem_lab_built_in_mai', 'Part of AlloFlow STEM Lab. Built in Maine, USA. All data drawn from NASA, ESA, JAXA, USGS, IAU + public scientific sources. Educational use free.')
+                                          __alloT('stem.solarsystem.part_of_alloflow_stem_lab_built_in_mai', 'Part of AlloFlow STEAM Lab. Built in Maine, USA. All data drawn from NASA, ESA, JAXA, USGS, IAU + public scientific sources. Educational use free.')
                                         )
                                       );
                                     })()

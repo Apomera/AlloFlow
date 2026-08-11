@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════
 // stem_tool_lifeskills.js — Life Skills Lab  v5.23
-// Enhanced STEM Lab tool — 33 sub-tools
+// Enhanced STEAM Lab tool — 33 sub-tools
 // Start Here · Paycheck · Data Literacy · Decisions · Contracts
 // Records · Transportation · Job Readiness · Resume Builder · Proof Locker · Interview Studio · Communication · Time Management · Insurance · Applied Science · Car Care · Home Repair
 // Home Systems · Budget · Credit · Cooking · Laundry Lab
@@ -33,7 +33,7 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -6629,7 +6629,7 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'text-[10px] text-slate-600 font-mono mt-1' }, 'Total ' + total + '% allocated')
               ),
               h('div', { className: 'p-2 bg-slate-50 rounded border border-slate-200' },
-                h('svg', { viewBox: '0 0 320 60', className: 'w-full h-16' },
+                h('svg', { role: 'img', 'aria-label': __alloT('stem.lifeskills.bar_img', 'Budget proportion bar'), viewBox: '0 0 320 60', className: 'w-full h-16' },
                   h('rect', { x: 10, y: 20, width: 300, height: 25, fill: '#e2e8f0' }),
                   h('rect', { x: 10, y: 20, width: Math.min(300, iq.needsPct * 3), height: 25, fill: '#dc2626' }),
                   h('rect', { x: 10 + Math.min(300, iq.needsPct * 3), y: 20, width: Math.max(0, Math.min(300 - iq.needsPct * 3, iq.wantsPct * 3)), height: 25, fill: '#f59e0b' }),

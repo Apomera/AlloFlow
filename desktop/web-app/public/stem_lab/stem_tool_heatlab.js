@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════
-// AlloFlow STEM Lab — Heat & Thermodynamics Lab
+// AlloFlow STEAM Lab — Heat & Thermodynamics Lab
 //
 // Fills the largest remaining curriculum hole in the lab: NGSS MS-PS3 and
 // HS-PS3 had no home. Plate Tectonics teaches mantle convection and the

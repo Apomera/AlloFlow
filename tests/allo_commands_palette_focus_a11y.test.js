@@ -142,7 +142,7 @@ describe('AlloCommandPalette focus behavior', () => {
     const input = dialog.querySelector('[role="combobox"]');
     expect(input.value).toBe('stem lab');
     expect(document.activeElement).toBe(input);
-    expect(dialog.textContent).toContain('Open the STEM Lab');
+    expect(dialog.textContent).toContain('Open the STEAM Lab');
 
     act(() => document.dispatchEvent(new KeyboardEvent('keydown', {
       key: 'Escape', bubbles: true,

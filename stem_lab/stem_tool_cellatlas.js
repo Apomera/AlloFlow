@@ -1,4 +1,4 @@
-// AlloFlow STEM Lab - Cell Atlas Lab
+// AlloFlow STEAM Lab - Cell Atlas Lab
 // A classroom-scale bridge from tissue to cell type to gene to protein across organs.
 //
 // Scientific boundary:
@@ -2930,7 +2930,7 @@
 
       return h('main', { className: 'cal-shell', 'data-cell-atlas-tool': 'true' },
         h('header', { className: 'cal-top' },
-          h('button', { type: 'button', className: 'cal-back', onClick: function () { if (typeof setStemLabTool === 'function') setStemLabTool(null); announce('Returned to STEM Lab tools.'); }, 'aria-label': 'Back to STEM Lab tools' }, '\u2190'),
+          h('button', { type: 'button', className: 'cal-back', onClick: function () { if (typeof setStemLabTool === 'function') setStemLabTool(null); announce('Returned to STEAM Lab tools.'); }, 'aria-label': 'Back to STEAM Lab tools' }, '\u2190'),
           h('div', { className: 'cal-brand' },
             h('p', { className: 'cal-kicker' }, 'Tissue to cell to gene to protein'),
             h('h1', { className: 'cal-title' }, 'Cell Atlas Lab'),

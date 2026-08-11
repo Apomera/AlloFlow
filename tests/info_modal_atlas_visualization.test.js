@@ -86,7 +86,7 @@ describe('Info modal Atlas visualization', () => {
   });
 
   it('launches hubs through the shared command palette bridge', () => {
-    expect(source).toContain("launchLabel: 'Open STEM Lab', launchQuery: 'stem lab'");
+    expect(source).toContain("launchLabel: 'Open STEAM Lab', launchQuery: 'stem lab'");
     expect(source).toContain('function AtlasTab({ t, onRequestClose })');
     expect(source).toContain("window.CustomEvent('alloflow:open-command-palette'");
     expect(source).toContain("detail: { query: safeQuery, source: 'atlas' }");

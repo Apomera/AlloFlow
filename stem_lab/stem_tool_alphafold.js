@@ -1,4 +1,4 @@
-// AlloFlow STEM Lab - AlphaFold Explorer launcher + AI bridge
+// AlloFlow STEAM Lab - AlphaFold Explorer launcher + AI bridge
 //
 // The explorer itself is a companion window:
 //   alphafold_explorer/alphafold_explorer.html

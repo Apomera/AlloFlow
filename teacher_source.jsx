@@ -3835,7 +3835,7 @@ const _BUILTIN_METRIC_REGISTRY = [
   { id: 'anchor-chart',    label: 'Anchor Charts',      icon: '📋', color: 'orange',  count: (s) => (s.history || []).filter(h => h && h.type === 'anchor-chart').length },
   { id: 'dbq',             label: 'DBQs',               icon: '⚖️', color: 'rose',    count: (s) => (s.history || []).filter(h => h && h.type === 'dbq').length },
   { id: 'persona',         label: 'Personas',           icon: '🎭', color: 'fuchsia', count: (s) => (s.history || []).filter(h => h && h.type === 'persona').length },
-  { id: 'math',            label: 'STEM Lab',           icon: '🧪', color: 'emerald', count: (s) => (s.history || []).filter(h => h && h.type === 'math').length },
+  { id: 'math',            label: 'STEAM Lab',           icon: '🧪', color: 'emerald', count: (s) => (s.history || []).filter(h => h && h.type === 'math').length },
   { id: 'faq',             label: 'FAQs',               icon: '❓', color: 'slate',   count: (s) => (s.history || []).filter(h => h && h.type === 'faq').length },
   { id: 'image',           label: 'Generated Images',   icon: '🖼️', color: 'pink',    count: (s) => (s.history || []).filter(h => h && h.type === 'image').length },
   { id: 'brainstorm',      label: 'Brainstorms',        icon: '💡', color: 'amber',   count: (s) => (s.history || []).filter(h => h && h.type === 'brainstorm').length },

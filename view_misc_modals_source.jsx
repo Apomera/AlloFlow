@@ -679,7 +679,7 @@ function PlatformDiagnosticsSection(props) {
         add('Context', 'info', 'origin: ' + origin + ' · in iframe: ' + inFrame + ' · secure: ' + (typeof isSecureContext !== 'undefined' ? isSecureContext : '?'));
       } catch (e) { add('Context', 'info', 'unreadable: ' + e.message); }
 
-      // STEM Lab plugin loading. Inside Canvas the console is unreachable, so a tool
+      // STEAM Lab plugin loading. Inside Canvas the console is unreachable, so a tool
       // stuck on its skeleton loader is otherwise undiagnosable: the host shows that
       // skeleton whenever a plugin has not registered AND its load state is neither
       // 'loaded' nor 'error', and the "never requested" case has no state and no

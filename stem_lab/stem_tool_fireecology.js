@@ -19,7 +19,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -6274,7 +6274,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                   type: 'button',
                   className: 'fireecology-back',
                   onClick: function() { setStemLabTool(null); },
-                  'aria-label': t('stem.fireecology.back_to_stem_lab', 'Back to STEM Lab')
+                  'aria-label': t('stem.fireecology.back_to_stem_lab', 'Back to STEAM Lab')
                 }, h(ArrowLeft, { size: 20 })),
                 h('div', null,
                   h('p', { className: 'fireecology-eyebrow' }, t('stem.fireecology.land_stewardship_lab', 'Land stewardship lab')),

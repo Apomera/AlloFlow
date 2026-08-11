@@ -406,10 +406,10 @@ const ATLAS_HUBS = [
     ]
   },
   {
-    "hub": "STEM Lab",
+    "hub": "STEAM Lab",
     "icon": "\u{1F52C}",
     "sourceKind": "registry",
-    "sourceLabel": "Generated from the STEM Lab registry",
+    "sourceLabel": "Generated from the STEAM Lab registry",
     "total": 127,
     "categories": [
       {
@@ -800,7 +800,7 @@ const ATLAS_HUBS = [
           "Report Writer",
           "Research Hub",
           "SEL Hub",
-          "STEM Lab",
+          "STEAM Lab",
           "StoryForge",
           "Symbol Studio",
           "Test Prep Hub",
@@ -818,7 +818,7 @@ const ATLAS_HUBS = [
 ];
 const ATLAS_HUB_VISUALS = {
   "Documents & Literacy": { eyebrow: "Learning-resource flow", description: "Turn source material into clear, supported, accessible resources.", route: ["Source", "Adapt", "Support", "Share"], surface: "from-indigo-50 to-violet-50", border: "border-indigo-200", accent: "bg-indigo-600", text: "text-indigo-900", launchLabel: "Open Document Builder", launchQuery: "document builder" },
-  "STEM Lab": { eyebrow: "Exploration constellation", description: "Move among mathematical, scientific, engineering, and technology experiences.", route: ["Math", "Science", "Engineering", "Technology"], surface: "from-sky-50 to-cyan-50", border: "border-sky-200", accent: "bg-sky-600", text: "text-sky-900", launchLabel: "Open STEM Lab", launchQuery: "stem lab" },
+  "STEAM Lab": { eyebrow: "Exploration constellation", description: "Move among mathematical, scientific, engineering, and technology experiences.", route: ["Math", "Science", "Engineering", "Technology"], surface: "from-sky-50 to-cyan-50", border: "border-sky-200", accent: "bg-sky-600", text: "text-sky-900", launchLabel: "Open STEAM Lab", launchQuery: "stem lab" },
   "SEL Hub": { eyebrow: "Growth map", description: "Connect understanding yourself with caring for others and community.", route: ["Self", "Regulate", "Relate", "Contribute"], surface: "from-rose-50 to-orange-50", border: "border-rose-200", accent: "bg-rose-600", text: "text-rose-900", launchLabel: "Open SEL Hub", launchQuery: "sel hub" },
   "Research Hub": { eyebrow: "Inquiry cycle", description: "Follow an idea from a strong question to evidence-based communication.", route: ["Question", "Investigate", "Make sense", "Share"], surface: "from-amber-50 to-yellow-50", border: "border-amber-200", accent: "bg-amber-600", text: "text-amber-900", launchLabel: "Open Research Hub", launchQuery: "research hub" },
   "Studios & Surfaces": { eyebrow: "Creative toolkit", description: "Open flexible spaces for making, organizing, presenting, and reflecting.", route: ["Create", "Organize", "Present", "Reflect"], surface: "from-fuchsia-50 to-purple-50", border: "border-fuchsia-200", accent: "bg-fuchsia-600", text: "text-fuchsia-900", launchLabel: "Open Educator Hub", launchQuery: "educator hub" }
@@ -1017,7 +1017,7 @@ const ATLAS_JOURNEYS = [
   {
     title: "Investigate a phenomenon",
     description: "Frame the inquiry, explore a model or simulation, then communicate what you found.",
-    stops: ["Research Hub", "STEM Lab", "Studios & Surfaces"]
+    stops: ["Research Hub", "STEAM Lab", "Studios & Surfaces"]
   },
   {
     title: "Support the whole learner",
@@ -1451,7 +1451,7 @@ function InfoModal({
   };
   const featuresList = t("about.features_list", { returnObjects: true });
   const rawFeatureItems = Array.isArray(featuresList?.items) ? featuresList.items : [];
-  const stemCatalogCount = ATLAS_HUBS.find((hub) => hub.hub === "STEM Lab")?.total || 0;
+  const stemCatalogCount = ATLAS_HUBS.find((hub) => hub.hub === "STEAM Lab")?.total || 0;
   const selCatalogCount = ATLAS_HUBS.find((hub) => hub.hub === "SEL Hub")?.total || 0;
   const featureCatalogItems = rawFeatureItems.map((feature) => {
     if (feature?.icon === "Layers" && feature?.category === "platform") {
@@ -1930,12 +1930,12 @@ function getFeatureDetails(title) {
       customizations: ["Per-cell parent voice recording", "Up to 8 student profiles", "Partner-assisted scanning", "Wish-seed capture for unmet vocabulary"],
       proTip: "Word Garden's wish-seed button (\u{1F4AB}) captures the moment a student reaches for a word that isn't on their board \u2014 invaluable data for next-board planning."
     },
-    "STEM Lab": {
+    "STEAM Lab": {
       inputs: ["Tool selection from the live STEM catalog across 16 subject areas", "Optional grade + standards filters"],
       engine: ["Dynamically lazy-loaded per-tool module", "Per-tool state persistence where supported", "Theme-aware rendering shell"],
       outputs: ["Interactive math labs (Fraction Lab, Algebra Solver, Geometry Sandbox, Calculus Visualizer, Graphing Calculator)", "Life science (Cell Simulator, Human Anatomy, Brain Atlas, DNA Lab, Punnett Square, Dissection Lab, Ecosystem, Dino Lab)", "Earth/Space (Plate Tectonics, Solar System, Moon Mission, Universe Time-Lapse)", "Physics + Chemistry (Wave Simulator, Circuit Builder, Molecule Builder, Titration Lab)", "Open-source shelves (Data Lab, Sim Shelf, Circuit Shelf, Molecule Shelf, Zoom Gallery, Timeline Studio)", "CS, life-skills/CTE, creative design, and social-studies tools"],
       customizations: ["Tool-specific configurations", "Some tools support multi-student saved worlds", "Print/export where supported"],
-      proTip: "Open STEM Lab from the Educator Hub and search by keyword \u2014 the catalog filters to tools matching your current lesson topic in real time."
+      proTip: "Open STEAM Lab from the Educator Hub and search by keyword \u2014 the catalog filters to tools matching your current lesson topic in real time."
     },
     "DBQ Generator": {
       inputs: ["Primary or secondary source document (text, PDF, image)", "Target grade level", "Number of DBQs"],

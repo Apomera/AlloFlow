@@ -2,7 +2,7 @@
  * AlloFlow — Leadership Hub (admin tools container) — Aug 2026.
  *
  * One entry point for the school-leadership tool suite, mirroring the
- * STEM Lab / SEL Hub container pattern: the Educator Hub shows ONE
+ * STEAM Lab / SEL Hub container pattern: the Educator Hub shows ONE
  * "Leadership Hub" card, and this shell's grid lazy-opens the individual
  * admin tools (each stays its own CDN module with its own tests + pin).
  *

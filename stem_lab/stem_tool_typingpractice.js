@@ -1,4 +1,4 @@
-// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -2745,7 +2745,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   // ─────────────────────────────────────────────────────────
   // SECTION 3: STYLE HELPERS
   // ─────────────────────────────────────────────────────────
-  // Palette matches other STEM Lab tools (roadready-style dark UI).
+  // Palette matches other STEAM Lab tools (roadready-style dark UI).
 
   var PALETTE = {
     bg:        '#0f172a',

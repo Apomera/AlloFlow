@@ -1,4 +1,4 @@
-// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -11,7 +11,7 @@
 // ═══════════════════════════════════════════
 // stem_tool_allobotsage.js — AlloBot: Starbound Sage
 // A roguelite spell-crafter where AlloBot's spells unlock as students
-// master skills in other STEM Lab tools. Casting a spell requires a
+// master skills in other STEAM Lab tools. Casting a spell requires a
 // short retrieval-practice micro-challenge tied to the source tool.
 // Phase 1 MVP: single-player, 10 spells, single-encounter expeditions.
 // ═══════════════════════════════════════════
@@ -1449,7 +1449,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
   window.StemLab.registerTool('alloBotSage', {
     icon: '\uD83E\uDDD9\u200D\u2642\uFE0F',
     label: 'AlloBot: Starbound Sage',
-    desc: 'A cozy sci-fi roguelite where AlloBot\u2019s spells unlock as you master other STEM Lab tools. Cast by demonstrating what you learned.',
+    desc: 'A cozy sci-fi roguelite where AlloBot\u2019s spells unlock as you master other STEAM Lab tools. Cast by demonstrating what you learned.',
     color: 'violet',
     category: 'Games',
     questHooks: [
@@ -1985,7 +1985,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                     h('strong', { className: 'text-base text-amber-900' }, t('stem.allobotsage.welcome_future_sage', 'Welcome, future Sage!'))
                   ),
                   h('p', { className: 'mb-2 text-amber-900 leading-relaxed' },
-                    t('stem.allobotsage.sage_spells_unlock_when_you_make_progr', 'Sage spells unlock when you make progress in OTHER STEM Lab tools \u2014 Space Explorer, Math Lab, RoadReady, and more. Each spell is a retrieval-practice ability: you cast by answering a question from that tool\'s domain.')
+                    t('stem.allobotsage.sage_spells_unlock_when_you_make_progr', 'Sage spells unlock when you make progress in OTHER STEAM Lab tools \u2014 Space Explorer, Math Lab, RoadReady, and more. Each spell is a retrieval-practice ability: you cast by answering a question from that tool\'s domain.')
                   ),
                   h('p', { className: 'mb-2 text-amber-900 leading-relaxed' },
                     h('strong', null, t('stem.allobotsage.how_to_start', 'How to start: ')), t('stem.allobotsage.scroll_down_to_yet_to_discover_and_cli', 'scroll down to "Yet to discover" and click any spell\'s '),
@@ -2166,7 +2166,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                     spellCard(s, { unlocked: false }),
                     // Cross-tool jump button: makes the "play source tool to unlock"
                     // loop one-click. Closes the distance between Sage and the
-                    // STEM Lab tools that feed it.
+                    // STEAM Lab tools that feed it.
                     ctx.setStemLabTool && h('button', {
                       onClick: function() {
                         sfxClick();
@@ -3912,7 +3912,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           ),
           unlockedSpells2.length === 0
             ? h('div', { className: 'rounded-xl p-6 text-center bg-slate-50 border border-slate-400 text-sm text-slate-600' },
-                t('stem.allobotsage.no_spells_to_upgrade_yet_unlock_spells', 'No spells to upgrade yet. Unlock spells by playing other STEM Lab tools.')
+                t('stem.allobotsage.no_spells_to_upgrade_yet_unlock_spells', 'No spells to upgrade yet. Unlock spells by playing other STEAM Lab tools.')
               )
             : h('div', { className: 'space-y-2' },
                 unlockedSpells2.map(function(s) {
@@ -4063,7 +4063,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             ),
             unlockedForPractice.length === 0
               ? h('div', { className: 'rounded-xl p-6 text-center bg-slate-50 border border-slate-300 text-sm text-slate-600' },
-                  t('stem.allobotsage.no_spells_unlocked_yet_play_other_stem', 'No spells unlocked yet. Play other STEM Lab tools to unlock spells, then come back here to practice.')
+                  t('stem.allobotsage.no_spells_unlocked_yet_play_other_stem', 'No spells unlocked yet. Play other STEAM Lab tools to unlock spells, then come back here to practice.')
                 )
               : h('div', null,
                   h('h2', { className: 'text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-2' }, t('stem.allobotsage.choose_a_spell_to_practice', '🧪 Choose a spell to practice')),

@@ -1,4 +1,4 @@
-// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -4378,7 +4378,6 @@ return React.createElement("div", {
       var crossY = my + (eyeY - my) * ((scaleX - mx) / (eyeX - mx));
       return React.createElement("svg", {
         viewBox: '0 0 ' + W + ' ' + H, className: "w-full", style: { maxHeight: '160px' },
-        'aria-label': 'Meniscus parallax side-view diagram',
         // Every clause is a key. Splicing a raw 'above'/'below' into an otherwise
         // translated sentence is the half-translated failure this repo guards against
         // elsewhere, and a screen reader reads the result aloud verbatim.

@@ -847,7 +847,7 @@ If they want to navigate/go to a specific tool view (e.g., "take me to the gloss
   "intent": "NAVIGATE",
   "target": "string (one of: 'input', 'glossary', 'quiz', 'simplified', 'analysis', 'outline', 'image', 'faq', 'sentence-frames', 'brainstorm', 'persona', 'timeline', 'concept-sort', 'math', 'adventure', 'lesson-plan', 'dashboard', 'word-sounds', 'udl-advice', 'alignment-report')",
 }
-If they want to open a major module overlay (e.g., "open STEM lab", "show behavior lens", "launch educator tools", "open SEL hub"), return:
+If they want to open a major module overlay (e.g., "open STEAM lab", "show behavior lens", "launch educator tools", "open SEL hub"), return:
 {
   "intent": "OPEN_MODULE",
   "target": "string (one of: 'stem-lab', 'behavior-lens', 'report-writer', 'educator-hub', 'sel-hub', 'story-forge', 'export', 'hints', 'session', 'games', 'symbol-studio')",

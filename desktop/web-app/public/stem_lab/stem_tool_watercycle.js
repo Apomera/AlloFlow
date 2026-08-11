@@ -1,4 +1,4 @@
-// ── Reduced motion CSS (WCAG 2.3.3)  -  shared across all STEM Lab tools ──
+// ── Reduced motion CSS (WCAG 2.3.3)  -  shared across all STEAM Lab tools ──
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -451,7 +451,7 @@
       '.wc-precip-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px;margin-top:8px}.wc-precip-metric{min-width:0;padding:7px 8px;border:1px solid rgba(125,211,252,.34);border-radius:9px;background:rgba(255,255,255,.68)}.wc-precip-metric span,.wc-precip-metric strong{display:block}.wc-precip-metric span{font-size:9px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;color:#64748b}.wc-precip-metric strong{margin-top:2px;font-size:11px;line-height:1.25;color:#1e293b;overflow-wrap:anywhere}',
       '.wc-precip-path-strip{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr);align-items:stretch;gap:5px;margin-top:8px}.wc-precip-path-step{min-width:0;padding:7px 8px;border:1px solid rgba(14,165,233,.24);border-radius:9px;background:rgba(255,255,255,.72)}.wc-precip-path-step span,.wc-precip-path-step strong{display:block}.wc-precip-path-step span{font-size:9px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;color:#0369a1}.wc-precip-path-step strong{margin-top:2px;font-size:10px;line-height:1.3;color:#1e293b;overflow-wrap:anywhere}.wc-precip-path-arrow{align-self:center;color:#0284c7;font-size:16px;font-weight:900}.dark .wc-precip-path-step{background:rgba(15,23,42,.7);border-color:rgba(56,189,248,.24)}.dark .wc-precip-path-step span,.dark .wc-precip-path-arrow{color:#7dd3fc}.dark .wc-precip-path-step strong{color:#f8fafc}@media(max-width:560px){.wc-precip-path-strip{grid-template-columns:1fr}.wc-precip-path-arrow{display:none}}@media(forced-colors:active){.wc-precip-path-step{border-color:CanvasText;background:Canvas;color:CanvasText}.wc-precip-path-step span,.wc-precip-path-step strong,.wc-precip-path-arrow{color:CanvasText}}',
       '.wc-precip-controls{display:grid;gap:9px;min-width:0}.wc-precip-control-group{padding:10px;border:1px solid rgba(14,165,233,.2);border-radius:12px;background:rgba(255,255,255,.62)}.wc-precip-control-title{display:block;margin-bottom:7px;font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#0369a1}.wc-precip-field{display:block;margin-top:8px}.wc-precip-field:first-of-type{margin-top:0}.wc-precip-field-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;font-size:10px;font-weight:800;color:#334155}.wc-precip-field-head output{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;font-weight:900;color:#0369a1}.wc-precip-field input[type="range"]{width:100%;min-height:32px;margin-top:3px;accent-color:#0284c7}.wc-precip-select-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.wc-precip-select-grid label{display:block;font-size:9px;font-weight:900;color:#475569}.wc-precip-select-grid select,.wc-precip-preset{width:100%;min-height:38px;margin-top:3px;padding:5px 24px 5px 7px;border:1px solid #bae6fd;border-radius:8px;background:#fff;color:#0f172a;font-size:10px;font-weight:800}.wc-precip-switch{display:flex;align-items:center;gap:7px;margin-top:9px;font-size:10px;font-weight:800;color:#334155}.wc-precip-switch input{width:16px;height:16px;accent-color:#0284c7}',
-      '.wc-precip-profile-editor{margin:2px 0 8px;padding:7px;border:1px solid rgba(14,165,233,.2);border-radius:10px;background:rgba(224,242,254,.38)}.wc-precip-profile-chart{display:block;width:100%;height:auto;max-height:190px;overflow:visible}.wc-profile-cold-zone{fill:rgba(125,211,252,.2)}.wc-profile-warm-zone{fill:rgba(251,191,36,.14)}.wc-profile-grid-line,.wc-profile-level-line{stroke:rgba(100,116,139,.3);stroke-width:1}.wc-profile-level-line{stroke-dasharray:3 4}.wc-profile-freezing-line{stroke:#0284c7;stroke-width:2;stroke-dasharray:5 4}.wc-profile-temperature-line{fill:none;stroke:#7c3aed;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}.wc-profile-temperature-point{fill:#fff;stroke:#7c3aed;stroke-width:3}.wc-profile-crossing-point{fill:#facc15;stroke:#713f12;stroke-width:1.5}.wc-profile-tick-label,.wc-profile-level-label,.wc-profile-point-value,.wc-profile-zone-label,.wc-profile-crossing-label{font-family:system-ui,sans-serif;font-weight:800;fill:#334155}.wc-profile-tick-label{font-size:9px}.wc-profile-level-label,.wc-profile-zone-label{font-size:8px;letter-spacing:.05em}.wc-profile-point-value{font-size:9px}.wc-profile-crossing-label{font-size:7px;fill:#854d0e}.wc-precip-profile-hint{margin:4px 1px 0;font-size:9px;line-height:1.35;color:#475569}.dark .wc-precip-profile-editor{background:rgba(8,47,73,.46);border-color:rgba(56,189,248,.22)}.dark .wc-profile-grid-line,.dark .wc-profile-level-line{stroke:rgba(148,163,184,.34)}.dark .wc-profile-tick-label,.dark .wc-profile-level-label,.dark .wc-profile-point-value,.dark .wc-profile-zone-label{fill:#e2e8f0}.dark .wc-profile-crossing-label{fill:#fde68a}.dark .wc-profile-temperature-point{fill:#0f172a}.dark .wc-precip-profile-hint{color:#cbd5e1}@media(forced-colors:active){.wc-precip-profile-editor{border-color:CanvasText;background:Canvas}.wc-profile-cold-zone,.wc-profile-warm-zone{fill:Canvas}.wc-profile-grid-line,.wc-profile-level-line,.wc-profile-freezing-line,.wc-profile-temperature-line{stroke:CanvasText}.wc-profile-temperature-point,.wc-profile-crossing-point{fill:Highlight;stroke:CanvasText}.wc-profile-tick-label,.wc-profile-level-label,.wc-profile-point-value,.wc-profile-zone-label,.wc-profile-crossing-label{fill:CanvasText}.wc-precip-profile-hint{color:CanvasText}}',
+      '.wc-precip-profile-editor{margin:2px 0 8px;padding:7px;border:1px solid rgba(14,165,233,.2);border-radius:10px;background:rgba(224,242,254,.38)}.wc-precip-profile-chart{display:block;width:100%;height:auto;max-height:190px;overflow:visible}.wc-profile-cold-zone{fill:rgba(125,211,252,.2)}.wc-profile-warm-zone{fill:rgba(251,191,36,.14)}.wc-profile-grid-line,.wc-profile-level-line{stroke:rgba(100,116,139,.3);stroke-width:1}.wc-profile-level-line{stroke-dasharray:3 4}.wc-profile-freezing-line{stroke:#0284c7;stroke-width:2;stroke-dasharray:5 4}.wc-profile-temperature-line{fill:none;stroke:#7c3aed;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}.wc-profile-temperature-point{fill:#fff;stroke:#7c3aed;stroke-width:3}.wc-profile-crossing-point{fill:#facc15;stroke:#713f12;stroke-width:1.5}.wc-profile-tick-label,.wc-profile-level-label,.wc-profile-point-value,.wc-profile-zone-label,.wc-profile-crossing-label{font-family:system-ui,sans-serif;font-weight:800;fill:#334155}.wc-profile-tick-label{font-size:9px}.wc-profile-level-label,.wc-profile-zone-label{font-size:8px;letter-spacing:.05em}.wc-profile-point-value{font-size:9px}.wc-profile-crossing-label{font-size:7px;fill:#854d0e}.wc-profile-cold-layer-band{fill:rgba(56,189,248,.16);stroke:rgba(2,132,199,.45);stroke-width:1;stroke-dasharray:4 3}.wc-profile-cold-layer-band.is-deep{fill:rgba(14,116,144,.22);stroke:rgba(8,145,178,.75);stroke-dasharray:none}.wc-profile-cold-layer-label{font-family:system-ui,sans-serif;font-size:7px;font-weight:900;letter-spacing:.04em;fill:#075985}.wc-precip-profile-hint{margin:4px 1px 0;font-size:9px;line-height:1.35;color:#475569}.wc-precip-profile-verdict{margin:5px 1px 0;padding:5px 7px;border-left:3px solid #0891b2;border-radius:0 7px 7px 0;background:rgba(14,116,144,.09);font-size:9px;line-height:1.4;color:#164e63}.wc-precip-profile-verdict strong{font-weight:900}.wc-precip-profile-verdict[data-cold-layer-outcome="freezing-rain"]{border-left-color:#0284c7;background:rgba(2,132,199,.08)}.dark .wc-precip-profile-editor{background:rgba(8,47,73,.46);border-color:rgba(56,189,248,.22)}.dark .wc-profile-grid-line,.dark .wc-profile-level-line{stroke:rgba(148,163,184,.34)}.dark .wc-profile-tick-label,.dark .wc-profile-level-label,.dark .wc-profile-point-value,.dark .wc-profile-zone-label{fill:#e2e8f0}.dark .wc-profile-crossing-label{fill:#fde68a}.dark .wc-profile-cold-layer-band{fill:rgba(56,189,248,.2);stroke:rgba(125,211,252,.5)}.dark .wc-profile-cold-layer-band.is-deep{fill:rgba(34,211,238,.22);stroke:rgba(103,232,249,.8)}.dark .wc-profile-cold-layer-label{fill:#bae6fd}.dark .wc-profile-temperature-point{fill:#0f172a}.dark .wc-precip-profile-hint{color:#cbd5e1}.dark .wc-precip-profile-verdict{background:rgba(14,116,144,.24);border-left-color:#22d3ee;color:#cffafe}.dark .wc-precip-profile-verdict[data-cold-layer-outcome="freezing-rain"]{background:rgba(2,132,199,.24);border-left-color:#7dd3fc}@media(forced-colors:active){.wc-precip-profile-editor{border-color:CanvasText;background:Canvas}.wc-profile-cold-zone,.wc-profile-warm-zone{fill:Canvas}.wc-profile-grid-line,.wc-profile-level-line,.wc-profile-freezing-line,.wc-profile-temperature-line{stroke:CanvasText}.wc-profile-temperature-point,.wc-profile-crossing-point{fill:Highlight;stroke:CanvasText}.wc-profile-cold-layer-band{fill:Canvas;stroke:CanvasText}.wc-profile-cold-layer-label{fill:CanvasText}.wc-profile-tick-label,.wc-profile-level-label,.wc-profile-point-value,.wc-profile-zone-label,.wc-profile-crossing-label{fill:CanvasText}.wc-precip-profile-hint{color:CanvasText}.wc-precip-profile-verdict{border-color:CanvasText;background:Canvas;color:CanvasText}}',
       '.wc-thunder-lesson{margin-top:7px;padding:7px 8px;border-left:3px solid #facc15;border-radius:7px;background:rgba(254,249,195,.56);color:#713f12}.wc-thunder-lesson strong,.wc-thunder-lesson span{display:block}.wc-thunder-lesson strong{font-size:10px;font-weight:900}.wc-thunder-lesson span{margin-top:2px;font-size:10px;line-height:1.35}.dark .wc-thunder-lesson{background:rgba(113,63,18,.3);border-left-color:#facc15;color:#fde68a}@media(forced-colors:active){.wc-thunder-lesson{border-color:CanvasText;background:Canvas;color:CanvasText}}',
       '.wc-thunder-measure{margin-top:7px;padding:7px 8px;border:1px solid rgba(14,116,144,.28);border-radius:7px;background:rgba(224,242,254,.62);color:#164e63}.wc-thunder-measure strong,.wc-thunder-measure span{display:block}.wc-thunder-measure strong{font-size:10px;font-weight:900}.wc-thunder-measure span{margin-top:2px;font-size:10px;line-height:1.35}.wc-thunder-measure label{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:5px;font-size:10px;font-weight:800}.wc-thunder-measure input[type=range]{width:100%;accent-color:#0284c7}.wc-thunder-measure-result{margin:5px 0 0;padding:5px 6px;border-radius:5px;background:rgba(14,116,144,.1);font-size:10px;line-height:1.35;font-weight:700}.wc-thunder-measure[data-thunder-measurement=close]{border-color:#16a34a}.wc-thunder-measure[data-thunder-measurement=recheck]{border-color:#dc2626}.dark .wc-thunder-measure{background:rgba(8,47,73,.48);border-color:rgba(125,211,252,.5);color:#bae6fd}.dark .wc-thunder-measure-result{background:rgba(125,211,252,.1)}@media(forced-colors:active){.wc-thunder-measure{border-color:CanvasText;background:Canvas;color:CanvasText}.wc-thunder-measure-result{background:Canvas;color:CanvasText}}@media(max-width:640px){.wc-thunder-measure label{display:block}.wc-thunder-measure label span{margin-top:2px}}',
       '.wc-storm-lifecycle{margin-top:8px;padding:9px 10px;border:1px solid rgba(14,165,233,.24);border-radius:11px;background:rgba(255,255,255,.7)}.wc-storm-lifecycle-head,.wc-storm-time-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}.wc-storm-lifecycle-head strong{font-size:12px;color:#0f172a}.wc-storm-lifecycle-head span,.wc-storm-time-head{font-size:9px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#0369a1}.wc-storm-stage-segments,.wc-storm-playback{display:flex;gap:5px;flex-wrap:wrap}.wc-storm-stage-segments{margin-top:7px}.wc-storm-stage-segments .wc-precip-btn{flex:1;min-width:88px;min-height:34px}.wc-storm-stage-segments .wc-precip-btn[aria-pressed="true"]{background:#0369a1;color:#fff}.wc-storm-time-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end;margin-top:7px}.wc-storm-time-row input[type="range"]{width:100%;min-height:32px;accent-color:#0284c7}.wc-storm-playback .wc-precip-btn{min-height:34px}.wc-storm-stage-copy{margin:6px 0 0;font-size:10px;line-height:1.35;color:#475569}.wc-storm-accumulation{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;margin-top:8px}.wc-storm-accumulation-item{min-width:0}.wc-storm-accumulation-item span,.wc-storm-accumulation-item strong{display:block;font-size:9px}.wc-storm-accumulation-item span{font-weight:900;color:#475569}.wc-storm-accumulation-item strong{margin-top:1px;color:#0f172a}.wc-storm-accumulation-track{height:5px;margin-top:3px;overflow:hidden;border-radius:4px;background:rgba(148,163,184,.28)}.wc-storm-accumulation-track i{display:block;height:100%;background:#0284c7}.dark .wc-storm-lifecycle{background:rgba(15,23,42,.7);border-color:rgba(56,189,248,.24)}.dark .wc-storm-lifecycle-head strong,.dark .wc-storm-accumulation-item strong{color:#f8fafc}.dark .wc-storm-lifecycle-head span,.dark .wc-storm-time-head{color:#7dd3fc}.dark .wc-storm-stage-copy,.dark .wc-storm-accumulation-item span{color:#cbd5e1}.dark .wc-storm-stage-segments .wc-precip-btn[aria-pressed="true"]{background:#0ea5e9;color:#082f49}@media(max-width:560px){.wc-storm-time-row{grid-template-columns:1fr}.wc-storm-playback{justify-content:space-between}.wc-storm-playback .wc-precip-btn{flex:1}.wc-storm-accumulation{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(forced-colors:active){.wc-storm-lifecycle,.wc-storm-accumulation-track{border:1px solid CanvasText;background:Canvas;color:CanvasText}.wc-storm-accumulation-track i{background:Highlight}.wc-storm-stage-segments .wc-precip-btn[aria-pressed="true"]{background:Highlight;color:HighlightText}}',
@@ -1235,7 +1235,13 @@
           ? 'Falling particles evaporate in dry lower air'
           : crossings.length > 1
             ? (crossings[0].kind === 'melting'
-              ? 'Snow \u2192 melting layer \u2192 liquid drops \u2192 refreezing layer \u2192 contact ice'
+              // Two crossings with a warm layer in the middle is the classic
+              // winter-storm profile. Whether it ends as an ice pellet or as
+              // glaze depends on whether the drop refreezes in the air or on
+              // the ground, so the two outcomes need different paths.
+              ? (visualType === 'sleet'
+                ? 'Snow \u2192 melting layer \u2192 liquid drops \u2192 refreezing layer \u2192 ice pellets'
+                : 'Snow \u2192 melting layer \u2192 liquid drops \u2192 shallow cold layer \u2192 supercooled \u2192 contact ice')
               : 'Liquid drops \u2192 freezing layer \u2192 frozen particles \u2192 melting layer \u2192 rain')
             : transitionKind === 'melting'
               ? (visualType === 'mix' ? 'Snow \u2192 partial melt \u2192 wintry mix' : 'Snow \u2192 melting layer \u2192 rain')
@@ -1311,7 +1317,10 @@
     );
     var effectiveIntensity = Math.round(wcPrecipClamp(baseIntensity * activityFactor, 0, 100));
     var groundExposure = reachesGround ? cumulativeExposure * baseIntensity : 0;
+    // Ice pellets pile up as a granular layer rather than glazing a surface,
+    // so sleet accumulates on the snow track, not the glaze track.
     var snowIndex = visualType === 'snow' ? Math.round(groundExposure)
+      : visualType === 'sleet' ? Math.round(groundExposure * 0.62)
       : visualType === 'mix' ? Math.round(groundExposure * 0.45) : 0;
     var glazeIndex = visualType === 'freezing-rain' ? Math.round(groundExposure) : 0;
     var hailIndex = visualType === 'hail' ? Math.round(groundExposure * 0.82) : 0;
@@ -1443,11 +1452,42 @@
         profileLabel = 'Deep convective ice growth';
         description = 'A powerful updraft can recycle ice through the cloud, adding layers before gravity wins.';
       } else if (cfg.midLevelTempC > 0 && cfg.surfaceTempC <= 0) {
-        visualType = 'freezing-rain';
-        phaseLabel = 'Freezing rain';
-        description = cfg.tempC <= 0
-          ? 'Snow melts in a warm middle layer, then the liquid becomes supercooled near the surface and freezes on contact.'
-          : 'Liquid drops enter a subfreezing surface layer and freeze on contact.';
+        // Freezing rain and sleet share one profile — snow melts in a warm layer
+        // aloft, then falls into subfreezing air. What separates them is what the
+        // cold layer has time to do to the drop:
+        //   shallow / marginally cold -> the drop stays liquid but supercooled,
+        //     and freezes on CONTACT with the ground  -> freezing rain (glaze)
+        //   deep / firmly cold        -> the drop REFREEZES in mid-air and lands
+        //     as a bouncing ice pellet                -> sleet
+        // The lab exposes three temperature levels, not a depth profile, so
+        // surface temperature stands in for how deep the cold layer reaches.
+        // That is a teaching approximation: in the real atmosphere forecasters
+        // read the thickness of the cold layer, not just the surface reading.
+        // The deciding microphysics is whether the particle kept an ice nucleus.
+        // A strong warm nose melts the snow COMPLETELY, and a fully melted drop
+        // has nothing left to freeze around — it happily stays liquid below 0°C
+        // and only freezes when it hits something. That is why real freezing
+        // rain occurs at surface temperatures well below zero.
+        // A weak warm nose leaves part of the particle frozen, so it refreezes
+        // readily; failing that, it takes a deep AND cold lower layer.
+        // Partial melting can only happen to something that arrived frozen. If
+        // the cloud itself is above freezing the drops were liquid the whole way
+        // down, so there is no surviving ice to seed a refreeze.
+        var partialMeltRefreeze = cfg.tempC <= 0 && cfg.midLevelTempC <= 1.5 && cfg.surfaceTempC <= -1;
+        var deepColdRefreeze = cfg.surfaceTempC <= -6 && cfg.midLevelTempC <= 4;
+        if (partialMeltRefreeze || deepColdRefreeze) {
+          visualType = 'sleet';
+          phaseLabel = 'Sleet';
+          description = partialMeltRefreeze
+            ? 'A weak warm layer melts the snow only partly, so the particles still carry ice and refreeze into pellets that bounce on landing.'
+            : 'Snow melts in a warm middle layer, then the drops fall far enough through deep cold air to refreeze into ice pellets before they land.';
+        } else {
+          visualType = 'freezing-rain';
+          phaseLabel = 'Freezing rain';
+          description = cfg.tempC <= 0
+            ? 'Snow melts in a warm middle layer, then the liquid stays supercooled through a shallow cold layer and freezes the instant it touches a surface.'
+            : 'Liquid drops enter a shallow subfreezing surface layer and freeze on contact.';
+        }
       } else if (warmestProfileTemp <= 0) {
         visualType = 'snow';
         phaseLabel = 'Snow';
@@ -1546,9 +1586,12 @@
       if (!kind || kind === 'none' || !isFinite(crossingProgress)) continue;
       if (progress < crossingProgress - 0.055) break;
       if (progress <= crossingProgress + 0.055) {
-        return kind === 'melting' ? 'mix' : 'freezing-rain';
+        return kind === 'melting' ? 'mix' : (surfaceType === 'sleet' ? 'sleet' : 'freezing-rain');
       }
-      phase = kind === 'melting' ? 'rain' : 'freezing-rain';
+      // Below a freezing crossing the drop is either a refrozen pellet (sleet)
+      // or still liquid but supercooled (freezing rain). The surface outcome
+      // tells us which, because both start from the same melted drop.
+      phase = kind === 'melting' ? 'rain' : (surfaceType === 'sleet' ? 'sleet' : 'freezing-rain');
     }
     if (surfaceType === 'mix' && progress > firstProgress) return 'mix';
     if (progress >= 0.96) return surfaceType;
@@ -3550,6 +3593,16 @@ const d = labToolData.waterCycle || {};
                   ctx2.arc(x, y, Math.max(2, size * 0.75), 0, Math.PI * 2);
                   ctx2.fill();
                   ctx2.stroke();
+                } else if (type === 'sleet') {
+                  // Ice pellets: small, hard, opaque — deliberately smaller than
+                  // a hailstone and solid, unlike the freezing-rain streak.
+                  ctx2.fillStyle = '#e0f2fe';
+                  ctx2.strokeStyle = '#bae6fd';
+                  ctx2.lineWidth = 1;
+                  ctx2.beginPath();
+                  ctx2.arc(x, y, Math.max(1.4, size * 0.46), 0, Math.PI * 2);
+                  ctx2.fill();
+                  ctx2.stroke();
                 } else if (type === 'mix' && particle.z > 0.5) {
                   ctx2.fillStyle = '#e0f2fe';
                   ctx2.beginPath();
@@ -3834,6 +3887,7 @@ const d = labToolData.waterCycle || {};
                   : groundY - 2;
                 var fallSpeed = model.visualType === 'snow' ? 0.09
                   : model.visualType === 'hail' ? 0.36
+                  : model.visualType === 'sleet' ? 0.31
                   : model.visualType === 'mix' ? 0.18
                   : 0.28;
                 fallSpeed *= 0.72 + model.relativeIntensity / 180;
@@ -3862,12 +3916,20 @@ const d = labToolData.waterCycle || {};
                   var surfaceFootprintCenter = cloudCenter + stormDrift;
                   var footprintStart = Math.max(0, surfaceFootprintCenter - w * 0.29);
                   var footprintEnd = Math.min(w, surfaceFootprintCenter + w * 0.29);
-                  if (model.visualType === 'snow' || model.visualType === 'freezing-rain') {
+                  if (model.visualType === 'snow' || model.visualType === 'freezing-rain' || model.visualType === 'sleet') {
                     context.save();
-                    context.strokeStyle = model.visualType === 'snow' ? 'rgba(248,250,252,.9)' : 'rgba(165,243,252,.86)';
-                    var surfaceAccumulation = model.visualType === 'snow' ? model.lifecycle.accumulation.snow : model.lifecycle.accumulation.glaze;
-                    context.lineWidth = 2 + surfaceAccumulation / (model.visualType === 'snow' ? 11 : 18);
+                    // Sleet reads as a granular pellet layer (dotted), glaze as a
+                    // continuous dashed sheet, snow as a solid blanket.
+                    context.strokeStyle = model.visualType === 'snow' ? 'rgba(248,250,252,.9)'
+                      : model.visualType === 'sleet' ? 'rgba(224,242,254,.88)'
+                      : 'rgba(165,243,252,.86)';
+                    var surfaceAccumulation = (model.visualType === 'snow' || model.visualType === 'sleet')
+                      ? model.lifecycle.accumulation.snow
+                      : model.lifecycle.accumulation.glaze;
+                    context.lineWidth = 2 + surfaceAccumulation / (model.visualType === 'snow' ? 11
+                      : model.visualType === 'sleet' ? 14 : 18);
                     if (model.visualType === 'freezing-rain') context.setLineDash([5, 3]);
+                    if (model.visualType === 'sleet') context.setLineDash([2, 3]);
                     var previousSurfaceX = footprintStart;
                     var previousSurfaceY = terrainSurfaceYAt(previousSurfaceX, w, h, groundY) - 2;
                     for (var surfaceX = footprintStart + 6; surfaceX <= footprintEnd; surfaceX += 6) {
@@ -4152,16 +4214,64 @@ const d = labToolData.waterCycle || {};
                         x: pointX > 205 ? pointX - 8 : pointX + 8, y: pointY + 4,
                         textAnchor: pointX > 205 ? 'end' : 'start' }, point.temperatureC.toFixed(0) + '\u00B0C'));
                   }),
+                  // The subfreezing layer beneath the last freezing crossing is
+                  // the variable that decides sleet vs freezing rain, so draw it.
+                  // Deep enough and the drop refreezes in the air (pellets);
+                  // shallow and it stays liquid until it hits something (glaze).
+                  (function() {
+                    var freezeCrossing = null;
+                    precipModel.thermalLayers.crossings.forEach(function(crossing) {
+                      if (crossing.kind === 'freezing') freezeCrossing = crossing;
+                    });
+                    if (!freezeCrossing) return null;
+                    if (precipModel.visualType !== 'sleet' && precipModel.visualType !== 'freezing-rain') return null;
+                    var bandTop = precipProfileY(freezeCrossing.progress);
+                    var isPellets = precipModel.visualType === 'sleet';
+                    return h('g', { key: 'cold-layer-band' },
+                      h('rect', {
+                        className: 'wc-profile-cold-layer-band' + (isPellets ? ' is-deep' : ''),
+                        x: 26, y: bandTop, width: 206, height: Math.max(0, 154 - bandTop)
+                      }),
+                      // Right-aligned and short on purpose: the temperature line
+                      // sweeps through the middle-left of this band, so a long
+                      // label here would sit straight on top of it. The mechanism
+                      // is spelled out in the caption under the chart instead.
+                      h('text', {
+                        className: 'wc-profile-cold-layer-label', x: 228,
+                        y: Math.min(150, bandTop + 10), textAnchor: 'end'
+                      }, 'COLD LAYER'));
+                  })(),
                   precipModel.thermalLayers.crossings.map(function(crossing, crossingIndex) {
                     var crossingY = precipProfileY(crossing.progress);
+                    // A freezing crossing means "supercools" only when the drop
+                    // survives it as a liquid. In a sleet profile the very same
+                    // crossing is where it turns back into ice.
+                    var crossingLabel = crossing.kind === 'melting'
+                      ? 'MELTS'
+                      : (precipModel.visualType === 'sleet' ? 'REFREEZES' : 'SUPERCOOLS');
+                    // Sit these to the LEFT of the freezing line. The point
+                    // values (e.g. "3°C") are drawn to the RIGHT of their dots,
+                    // and a mid-level reading near zero lands on top of a
+                    // right-hung crossing label.
                     return h('g', { key: 'crossing-' + crossingIndex },
                       h('circle', { className: 'wc-profile-crossing-point', cx: precipProfileX(0), cy: crossingY, r: 4 }),
-                      h('text', { className: 'wc-profile-crossing-label', x: precipProfileX(0) + 7,
-                        y: crossingY - 5 }, crossing.kind === 'melting' ? 'MELTS' : 'SUPERCOOLS'));
+                      h('text', { className: 'wc-profile-crossing-label', x: precipProfileX(0) - 7,
+                        y: crossingY - 5, textAnchor: 'end' }, crossingLabel));
                   })
                 ),
                 h('p', { className: 'wc-precip-profile-hint' },
-                  'Adjust the three temperatures. Each 0\u00B0C crossing becomes a visible phase-change layer.')
+                  'Adjust the three temperatures. Each 0\u00B0C crossing becomes a visible phase-change layer, '
+                  + 'and the shaded band shows how far the drop falls through freezing air before it lands.'),
+                (precipModel.visualType === 'sleet' || precipModel.visualType === 'freezing-rain')
+                  ? h('p', { className: 'wc-precip-profile-verdict',
+                      'data-cold-layer-outcome': precipModel.visualType },
+                      h('strong', null, precipModel.visualType === 'sleet'
+                        ? 'Deep cold layer: '
+                        : 'Shallow cold layer: '),
+                      precipModel.visualType === 'sleet'
+                        ? 'the drop spends long enough below freezing to turn back into ice in mid-air, so it lands as a bouncing pellet.'
+                        : 'the drop stays liquid all the way down, supercooled, and only freezes at the instant it touches something.')
+                  : null
               );
             }
             var precipMotionReduced = false;
@@ -4199,7 +4309,9 @@ const d = labToolData.waterCycle || {};
                 ? 'Evaporates aloft - does not reach surface'
                 : precipModel.visualType === 'freezing-rain'
                   ? 'Glaze on contact'
-                  : precipModel.phaseLabel;
+                  : precipModel.visualType === 'sleet'
+                    ? 'Ice pellets bounce and collect'
+                    : precipModel.phaseLabel;
 
             var thunderMeasure = precipModel.lightningEligible
               ? h('div', { className: 'wc-thunder-measure', 'data-thunder-measurement': precipConfig.thunderEstimateChecked ? precipModel.thunderEstimate.band : 'unsubmitted' },

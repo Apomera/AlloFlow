@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
-// stem_tool_dataplot.js — STEM Lab Data Plotter (Enhanced v2)
+// stem_tool_dataplot.js — STEAM Lab Data Plotter (Enhanced v2)
 // Interactive data visualization with scatter, bar, line, pie,
 // histogram, box plot, ogive, confidence intervals, residual plot,
 // z-score calculator, stem-and-leaf, data transformations,
@@ -16,7 +16,7 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -976,7 +976,7 @@ window.StemLab = window.StemLab || {
           ),
 
           // ── SVG Chart (scatter / line / bar) ──
-          (chartType === 'scatter' || chartType === 'line' || chartType === 'bar') && h('svg', {
+          (chartType === 'scatter' || chartType === 'line' || chartType === 'bar') && h('svg', { role: 'img', 'aria-label': t('stem.dataplot.chart_img_label', 'Chart of the current data set'),
             viewBox: '0 0 ' + W + ' ' + H, className: 'w-full bg-white rounded-xl border border-teal-200 cursor-crosshair', style: { maxHeight: '340px' },
             'data-dataplot-svg': true, onClick: handleSvgClick
           },
@@ -1038,7 +1038,7 @@ window.StemLab = window.StemLab || {
             var rToSY = function(r) { return rH/2 + 10 - (r / maxR) * (rH/2 - 15); };
             return h('div', { className: 'space-y-1' },
               h('div', { className: 'text-[11px] font-bold text-violet-600 uppercase' }, t('stem.dataplot.residual_plot', '\uD83D\uDCC9 Residual Plot')),
-              h('svg', { viewBox: '0 0 ' + W + ' ' + rH, className: 'w-full bg-white rounded-lg border border-violet-200', style: { maxHeight: '140px' } },
+              h('svg', { role: 'img', 'aria-label': t('stem.dataplot.residual_img_label', 'Residual plot'), viewBox: '0 0 ' + W + ' ' + rH, className: 'w-full bg-white rounded-lg border border-violet-200', style: { maxHeight: '140px' } },
                 // Zero line
                 h('line', { x1: pad, y1: rH/2+10, x2: W-pad, y2: rH/2+10, stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '4 4' }),
                 h('text', { x: pad-5, y: rH/2+13, textAnchor: 'end', fill: '#94a3b8', style: { fontSize: '8px' } }, '0'),
@@ -1054,7 +1054,7 @@ window.StemLab = window.StemLab || {
 
           // ── Pie chart ──
           chartType === 'pie' && n > 0 && h('div', { className: 'bg-white rounded-xl border border-teal-200 p-4 flex justify-center' },
-            h('svg', { viewBox: '0 0 300 300', width: 260, height: 260, 'data-dataplot-svg': true },
+            h('svg', { role: 'img', 'aria-label': t('stem.dataplot.pie_img_label', 'Pie chart of the current data set'), viewBox: '0 0 300 300', width: 260, height: 260, 'data-dataplot-svg': true },
               (function() {
                 var total = allY.reduce(function(s,v) { return s + Math.abs(v); }, 0) || 1;
                 var cols = ['#0d9488','#3b82f6','#8b5cf6','#f43f5e','#f59e0b','#10b981','#6366f1','#ec4899','#14b8a6','#ef4444','#84cc16','#06b6d4'];
@@ -1079,7 +1079,7 @@ window.StemLab = window.StemLab || {
           ),
 
           // ── Histogram (with normal overlay + mean/median/mode lines) ──
-          chartType === 'histogram' && n > 0 && h('svg', {
+          chartType === 'histogram' && n > 0 && h('svg', { role: 'img', 'aria-label': t('stem.dataplot.histogram_img_label', 'Histogram of the current data set'),
             viewBox: '0 0 ' + W + ' ' + H, className: 'w-full bg-white rounded-xl border border-teal-200', style: { maxHeight: '340px' }, 'data-dataplot-svg': true
           },
             h('line', { x1: pad, y1: H-pad, x2: W-pad, y2: H-pad, stroke: '#94a3b8', strokeWidth: 1.5 }),
@@ -1124,7 +1124,7 @@ window.StemLab = window.StemLab || {
           ),
 
           // ── Box plot ──
-          chartType === 'boxplot' && n > 0 && h('svg', {
+          chartType === 'boxplot' && n > 0 && h('svg', { role: 'img', 'aria-label': t('stem.dataplot.boxplot_img_label', 'Box plot of the current data set'),
             viewBox: '0 0 ' + W + ' 160', className: 'w-full bg-white rounded-xl border border-teal-200', 'data-dataplot-svg': true
           },
             (function() {
@@ -1154,7 +1154,7 @@ window.StemLab = window.StemLab || {
             var oToX = function(v) { return pad + ((v - oMin) / oRange) * (W - 2*pad); };
             var oToY = function(v) { return (oH - pad) - (v / n) * (oH - 2*pad); };
             var pathD = cumulativeFreq.map(function(pt, i) { return (i === 0 ? 'M' : 'L') + oToX(pt.x).toFixed(1) + ',' + oToY(pt.y).toFixed(1); }).join(' ');
-            return h('svg', { viewBox: '0 0 ' + W + ' ' + oH, className: 'w-full bg-white rounded-xl border border-teal-200', style: { maxHeight: '300px' }, 'data-dataplot-svg': true },
+            return h('svg', { role: 'img', 'aria-label': t('stem.dataplot.ogive_img_label', 'Cumulative frequency graph'), viewBox: '0 0 ' + W + ' ' + oH, className: 'w-full bg-white rounded-xl border border-teal-200', style: { maxHeight: '300px' }, 'data-dataplot-svg': true },
               // Grid
               [0, 25, 50, 75, 100].map(function(pct) {
                 var gy = oToY(n * pct / 100);
@@ -1673,7 +1673,7 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-[10px] opacity-85 mb-2 leading-snug' }, t('stem.dataplot.set_true_population_r_sample_size_nois', 'Set true population r, sample size, noise, outliers. Predict how far observed r drifts. No score, no reveal.')),
             h('div', { className: 'inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2', style: { background: sm.color, color: '#000' } }, sm.label + ' \u00B7 true r=' + iq.trueR.toFixed(2) + ', observed r=' + observedR.toFixed(2)),
             h('p', { className: 'text-[10px] opacity-80 mb-2' }, sm.desc),
-            h('svg', { width: '100%', height: 200, viewBox: '0 0 320 200', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
+            h('svg', { role: 'img', 'aria-label': t('stem.dataplot.sampling_img_label', 'Sampling distribution chart'), width: '100%', height: 200, viewBox: '0 0 320 200', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
               h('line', { x1: 30, y1: 100, x2: 310, y2: 100, stroke: '#1e293b' }),
               h('line', { x1: 160, y1: 10, x2: 160, y2: 190, stroke: '#1e293b' }),
               xs.map(function(xv, k) {

@@ -40,7 +40,7 @@ window.StemLab = window.StemLab || {
 (function () {
   'use strict';
 
-  // ── Theme tokens (STEM Lab CSS custom properties, dark fallbacks) ──
+  // ── Theme tokens (STEAM Lab CSS custom properties, dark fallbacks) ──
   var T = {
     canvas: 'var(--allo-stem-canvas, #0f172a)',
     panel: 'var(--allo-stem-panel, #1e293b)',
@@ -6238,7 +6238,7 @@ window.StemLab = window.StemLab || {
           '<h3>Standout traits</h3><ul>' + dn.traits.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' +
           '<div class="box know"><b>🔎 How we know:</b> ' + esc(dn.howKnow) + '</div>' +
           '<div class="box unc"><b>⚖️ What we are not sure about:</b> ' + esc(dn.uncertain) + '</div>' +
-          '<div class="foot">Dino Lab · STEM Lab — lengths, weights, and speeds are widely-cited estimates, not exact measurements.</div>' +
+          '<div class="foot">Dino Lab · STEAM Lab — lengths, weights, and speeds are widely-cited estimates, not exact measurements.</div>' +
           '</div></body></html>';
         try {
           var w = window.open('', '_blank', 'width=620,height=900');

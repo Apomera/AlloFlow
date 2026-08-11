@@ -16,7 +16,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -1082,7 +1082,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
             h('div', { className: 'inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2', style: { background: sm.color, color: '#000' } }, biome.emoji + ' ' + biome.name + ' · ' + sm.label),
             h('p', { className: 'text-[10px] opacity-80 mb-2' }, sm.desc),
             h('div', { className: 'flex gap-3 items-center mb-2 flex-wrap' },
-              h('svg', { width: 160, height: 160, viewBox: '0 0 160 160', style: { flex: '0 0 160px' } },
+              h('svg', { role: 'img', 'aria-label': __alloT('stem.worldbuilder.orbit_img', 'Orbit diagram'), width: 160, height: 160, viewBox: '0 0 160 160', style: { flex: '0 0 160px' } },
                 [0.25, 0.5, 0.75, 1.0].map(function(s, i) {
                   var rr = s * radius;
                   var poly = '';

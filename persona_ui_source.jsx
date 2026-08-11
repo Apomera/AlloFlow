@@ -303,7 +303,7 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
       { value: 'dbq', label: 'DBQ' },
       { value: 'note-taking', label: t('sidebar.tool_note_taking') || 'Note Taking' },
       { value: 'anchor-chart', label: t('sidebar.tool_anchor_chart') || 'Anchor Chart' },
-      { value: 'math', label: t('sidebar.tool_math') || 'STEM Lab' },
+      { value: 'math', label: t('sidebar.tool_math') || 'STEAM Lab' },
       { value: 'lesson-plan', label: t('sidebar.tool_lesson') || 'Lesson Plan' },
       { value: 'gemini-bridge', label: t('sidebar.tool_bridge') || 'Interactive App' },
       { value: 'alignment-report', label: t('sidebar.tool_alignment') || 'Alignment Report' },

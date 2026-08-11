@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://alloflow.org/schemas/portable-remediation-plan-v1.json",
   "title": "AlloFlow portable remediation plan",
-  "$comment": "Runtime validation additionally enforces page-count bounds, unique source pages, safe link schemes, exactly one h1, no skipped heading levels, blocked document types, and aggregate image/text budgets.",
+  "$comment": "Runtime validation additionally enforces page-count bounds, unique source pages, safe link schemes, exactly one h1, no skipped heading levels, blocked document types, aggregate image/text budgets, and — for the optional block `id` — uniqueness, non-reserved names (not `main-content`, no `alloflow-` prefix), and that every `#target` href resolves to a declared id.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -113,6 +113,9 @@
               "type": {
                 "const": "heading"
               },
+              "id": {
+                "$ref": "#/$defs/block_id"
+              },
               "level": {
                 "type": "integer",
                 "minimum": 1,
@@ -141,6 +144,9 @@
               "type": {
                 "const": "paragraph"
               },
+              "id": {
+                "$ref": "#/$defs/block_id"
+              },
               "text": {
                 "type": "string",
                 "minLength": 1,
@@ -166,6 +172,9 @@
             "properties": {
               "type": {
                 "const": "blockquote"
+              },
+              "id": {
+                "$ref": "#/$defs/block_id"
               },
               "text": {
                 "type": "string",
@@ -197,6 +206,9 @@
             "properties": {
               "type": {
                 "const": "list"
+              },
+              "id": {
+                "$ref": "#/$defs/block_id"
               },
               "ordered": {
                 "type": "boolean"
@@ -238,6 +250,9 @@
             "properties": {
               "type": {
                 "const": "table"
+              },
+              "id": {
+                "$ref": "#/$defs/block_id"
               },
               "caption": {
                 "type": "string",
@@ -316,6 +331,9 @@
               "type": {
                 "const": "image"
               },
+              "id": {
+                "$ref": "#/$defs/block_id"
+              },
               "alt": {
                 "type": "string",
                 "maxLength": 4000
@@ -371,6 +389,9 @@
               "type": {
                 "const": "link"
               },
+              "id": {
+                "$ref": "#/$defs/block_id"
+              },
               "text": {
                 "type": "string",
                 "minLength": 1,
@@ -423,6 +444,11 @@
     }
   },
   "$defs": {
+    "block_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{0,63}$",
+      "description": "Optional stable anchor id for this block, so runs can carry working in-document '#id' links (e.g. footnote markers to footnotes). Must be unique across the plan; 'main-content' and the 'alloflow-' prefix are reserved. Runtime validation rejects any '#target' href with no matching declared id."
+    },
     "runs": {
       "type": "array",
       "minItems": 1,

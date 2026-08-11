@@ -426,6 +426,23 @@ const DEFAULT_CONFIG = {
     contextSize: 0,
     threads: 0,
     extraArgs: [],
+    // SHA-256 for a custom binaryUrl. MANDATORY when binaryUrl is set through
+    // the settings API: without it verifyDownloadIntegrity() no-ops, and we
+    // would be extracting and spawning an unverified executable.
+    binarySha256: '',
+    // ── Hardware knobs (0 / '' / false = the previous CPU-only behaviour) ──
+    // llama.cpp layers to offload to the GPU. The CPU binaries shipped by
+    // default ignore this; it becomes meaningful once binaryUrl points at a
+    // Vulkan or CUDA build. 999 means "offload everything that fits".
+    // Vulkan covers NVIDIA, AMD and Intel from one binary, which is why it is
+    // the practical classroom choice:
+    //   https://github.com/ggml-org/llama.cpp/releases  (llama-<build>-bin-win-vulkan-x64.zip)
+    gpuLayers: 0,
+    // '' = f16 (llama.cpp default). 'q8_0' roughly halves KV-cache memory,
+    // which is what buys back context room on a 8GB laptop.
+    kvCacheType: '',
+    flashAttention: false,
+    batchSize: 0,
     cloudFallbackEnabled: false,
   },
   localAsr: {
@@ -568,15 +585,94 @@ function resolvePinnedFirstPartyUrl(url) {
   return LEGACY_FIRST_PARTY_DOWNLOAD_URLS.get(value) || value;
 }
 
+// llama.cpp's supported KV-cache quantizations. q8_0 is the safe one to hand a
+// teacher: about half the memory of f16 for no perceptible quality loss on these
+// small models. The q4 variants are listed for completeness but degrade notably.
+const LOCAL_ENGINE_KV_CACHE_TYPES = ['f32', 'f16', 'bf16', 'q8_0', 'q5_1', 'q5_0', 'q4_1', 'q4_0'];
 const LOCAL_ENGINE_CONTEXT_FALLBACK = 4096;
+// Ceiling for the hardware-derived context size only; an explicit contextSize or
+// a size stated in the model name is never clamped by it.
+const LOCAL_ENGINE_AUTO_CONTEXT_CAP = 16384;
 const LOCAL_ENGINE_CONTEXT_MIN = 2048;
 const LOCAL_ENGINE_CONTEXT_MAX = 131072;
+// contextSize is the CONSERVATIVE floor that fits an 8GB classroom laptop.
+// maxContextSize is what the model architecture genuinely supports; the gap
+// between them is only spendable when the machine has the RAM for it, which is
+// what resolveAutoContextSize() below decides. Without that, a 32GB desktop and
+// an 8GB Chromebook-class laptop both got 4096 and long sources were truncated
+// on hardware that never needed to be.
 const LOCAL_ENGINE_MODEL_PROFILES = [
-  { id: 'alloflow-qwen2.5-3b', match: /qwen2?\.?5.*3b|qwen.*3b/i, contextSize: 4096, safeOutputTokens: 1400, safeJsonOutputTokens: 1100 },
-  { id: 'gemma-local', match: /gemma/i, contextSize: 8192, safeOutputTokens: 1800, safeJsonOutputTokens: 1400 },
-  { id: 'llama-local', match: /llama|mistral|mixtral/i, contextSize: 8192, safeOutputTokens: 1800, safeJsonOutputTokens: 1400 },
-  { id: 'qwen-local', match: /qwen/i, contextSize: 8192, safeOutputTokens: 1800, safeJsonOutputTokens: 1400 },
+  { id: 'alloflow-qwen2.5-3b', match: /qwen2?\.?5.*3b|qwen.*3b/i, contextSize: 4096, maxContextSize: 32768, kvBytesPerToken: 36864, safeOutputTokens: 1400, safeJsonOutputTokens: 1100 },
+  { id: 'gemma-local', match: /gemma/i, contextSize: 8192, maxContextSize: 8192, kvBytesPerToken: 51200, safeOutputTokens: 1800, safeJsonOutputTokens: 1400 },
+  { id: 'llama-local', match: /llama|mistral|mixtral/i, contextSize: 8192, maxContextSize: 32768, kvBytesPerToken: 65536, safeOutputTokens: 1800, safeJsonOutputTokens: 1400 },
+  { id: 'qwen-local', match: /qwen/i, contextSize: 8192, maxContextSize: 32768, kvBytesPerToken: 65536, safeOutputTokens: 1800, safeJsonOutputTokens: 1400 },
 ];
+
+// ─── Hardware-aware sizing ─────────────────────────────────────────────────
+// Nothing in this runtime used to look at the machine at all: no os.cpus(), no
+// os.totalmem(). Threads were left to llama.cpp and context came from a fixed
+// per-model-name table, so "use the resources you have" simply did not happen.
+function detectEngineHardware() {
+  let cores = 0;
+  try { cores = (os.cpus() || []).length; } catch (_) { cores = 0; }
+  let totalMemBytes = 0;
+  try { totalMemBytes = os.totalmem() || 0; } catch (_) { totalMemBytes = 0; }
+  let freeMemBytes = 0;
+  try { freeMemBytes = os.freemem() || 0; } catch (_) { freeMemBytes = 0; }
+  return {
+    cores: cores > 0 ? cores : 4,
+    totalMemBytes,
+    freeMemBytes,
+    totalMemGb: totalMemBytes ? totalMemBytes / (1024 * 1024 * 1024) : 0,
+  };
+}
+
+// Leave the machine enough to stay usable: a classroom laptop is also running
+// the Electron UI, a browser and whatever the teacher is projecting. llama.cpp's
+// own default takes every physical core, which makes the rest of the app stutter
+// mid-generation.
+function resolveAutoThreads(hardware = detectEngineHardware()) {
+  const cores = Math.max(1, Number(hardware.cores) || 1);
+  if (cores <= 2) return 1;
+  if (cores <= 4) return cores - 1;
+  return Math.max(2, Math.min(8, cores - 2));
+}
+
+// How much context can this box actually hold? Budget = the RAM we are willing
+// to give the KV cache, divided by this model's per-token cost. Always clamped
+// into [profile floor, model maximum], so a big machine can go UP but a small
+// one is never pushed past what the profile already considered safe.
+function resolveAutoContextSize(rule, hardware = detectEngineHardware(), kvCacheType = '') {
+  const floor = (rule && rule.contextSize) || LOCAL_ENGINE_CONTEXT_FALLBACK;
+  // The AUTO path stops at 16384 even when RAM and the model would allow more.
+  // The dispatcher's localExcerpt() caps source text at ~6000 chars (~1500
+  // tokens), so context past this buys this application nothing measurable while
+  // the KV-cache memory and the slower prompt processing are both real. A
+  // teacher who genuinely wants the model's full window still gets it by setting
+  // contextSize explicitly, which always wins over this.
+  const ceiling = Math.min(
+    LOCAL_ENGINE_AUTO_CONTEXT_CAP,
+    Math.max(floor, (rule && rule.maxContextSize) || floor)
+  );
+  if (ceiling <= floor) return floor;
+  const totalGb = Number(hardware.totalMemGb) || 0;
+  if (!totalGb) return floor;
+  // A quantized KV cache halves the per-token cost, so the same RAM buys twice
+  // the context. That is the whole point of offering it.
+  const perToken = Math.max(1024, (rule && rule.kvBytesPerToken) || 65536)
+    * (/^q8/i.test(String(kvCacheType)) ? 0.5 : 1);
+  // RAM we will spend on KV cache: nothing under 8GB (leave the floor alone),
+  // then a rising share as the machine gets roomier.
+  let kvBudgetGb = 0;
+  if (totalGb >= 32) kvBudgetGb = 3;
+  else if (totalGb >= 16) kvBudgetGb = 1.5;
+  else if (totalGb >= 12) kvBudgetGb = 0.75;
+  else return floor;
+  const affordable = Math.floor((kvBudgetGb * 1024 * 1024 * 1024) / perToken);
+  // Round down to a 1024 boundary so the logged number is legible.
+  const rounded = Math.floor(affordable / 1024) * 1024;
+  return Math.max(floor, Math.min(ceiling, rounded));
+}
 const managedEngine = {
   child: null,
   logs: [],
@@ -822,7 +918,16 @@ function sanitizeConfigPatch(input) {
     }
   }
   if (Object.prototype.hasOwnProperty.call(input, 'localEngine')) {
-    assertAllowedObject(input.localEngine, ['modelUrl', 'modelDirectory', 'contextSize', 'threads', 'cloudFallbackEnabled'], 'local engine');
+    // ★ extraArgs is deliberately NOT settable through this API. It is spawned
+    // verbatim into llama-server's argv, and llama.cpp lets a later flag beat an
+    // earlier one — so a single '--host 0.0.0.0' would move the engine off
+    // loopback and onto the school LAN, past the boundary this runtime promises.
+    // It stays a hand-edit-the-config-file knob. The named fields below are each
+    // range- or enum-checked instead, which covers the real hardware use cases
+    // without handing out arbitrary argv.
+    assertAllowedObject(input.localEngine, ['modelUrl', 'modelDirectory', 'contextSize', 'threads',
+      'binaryUrl', 'binarySha256', 'gpuLayers', 'kvCacheType', 'flashAttention', 'batchSize',
+      'cloudFallbackEnabled'], 'local engine');
     const clean = {};
     if (Object.prototype.hasOwnProperty.call(input.localEngine, 'modelUrl')) {
       clean.modelUrl = boundedConfigString(input.localEngine.modelUrl, 'Model URL or path', 4096);
@@ -830,11 +935,53 @@ function sanitizeConfigPatch(input) {
     if (Object.prototype.hasOwnProperty.call(input.localEngine, 'modelDirectory')) {
       clean.modelDirectory = boundedConfigString(input.localEngine.modelDirectory, 'Model directory', 4096);
     }
+    // A custom engine binary is an executable this runtime downloads, extracts
+    // and spawns. verifyDownloadIntegrity() silently no-ops when no SHA-256 is
+    // known, so an unpinned binaryUrl would mean running unverified code — the
+    // pin is mandatory here, not advisory. (First-party URLs carry their own pin
+    // in FIRST_PARTY_DOWNLOAD_SHA256 and are accepted without one.)
+    if (Object.prototype.hasOwnProperty.call(input.localEngine, 'binarySha256')) {
+      const sha = String(input.localEngine.binarySha256 || '').trim().toLowerCase();
+      if (sha && !/^[a-f0-9]{64}$/.test(sha)) {
+        throw new Error('The engine binary SHA-256 must contain exactly 64 hexadecimal characters.');
+      }
+      clean.binarySha256 = sha;
+    }
+    if (Object.prototype.hasOwnProperty.call(input.localEngine, 'binaryUrl')) {
+      const url = boundedConfigString(input.localEngine.binaryUrl, 'Engine binary URL', 4096);
+      if (url) {
+        assertSecureDownloadUrl(url, 'engine program');
+        const pinned = expectedDownloadSha256(url, clean.binarySha256 || '');
+        if (!pinned) {
+          throw new Error('A custom engine binary URL also needs its SHA-256 checksum, so the download can be verified before it is run.');
+        }
+      }
+      clean.binaryUrl = url;
+    }
     for (const field of ['contextSize', 'threads']) {
       if (!Object.prototype.hasOwnProperty.call(input.localEngine, field)) continue;
       const value = Number(input.localEngine[field]);
       if (!Number.isInteger(value) || value < 0 || value > 131072) throw new Error(field + ' is out of range.');
       clean[field] = value;
+    }
+    if (Object.prototype.hasOwnProperty.call(input.localEngine, 'gpuLayers')) {
+      const value = Number(input.localEngine.gpuLayers);
+      if (!Number.isInteger(value) || value < 0 || value > 999) throw new Error('gpuLayers is out of range.');
+      clean.gpuLayers = value;
+    }
+    if (Object.prototype.hasOwnProperty.call(input.localEngine, 'batchSize')) {
+      const value = Number(input.localEngine.batchSize);
+      if (!Number.isInteger(value) || value < 0 || value > 8192) throw new Error('batchSize is out of range.');
+      clean.batchSize = value;
+    }
+    if (Object.prototype.hasOwnProperty.call(input.localEngine, 'kvCacheType')) {
+      const value = String(input.localEngine.kvCacheType || '').trim().toLowerCase();
+      if (value && !LOCAL_ENGINE_KV_CACHE_TYPES.includes(value)) throw new Error('Unknown KV cache type.');
+      clean.kvCacheType = value;
+    }
+    if (Object.prototype.hasOwnProperty.call(input.localEngine, 'flashAttention')) {
+      if (typeof input.localEngine.flashAttention !== 'boolean') throw new Error('Flash attention must be true or false.');
+      clean.flashAttention = input.localEngine.flashAttention;
     }
     if (Object.prototype.hasOwnProperty.call(input.localEngine, 'cloudFallbackEnabled')) {
       if (typeof input.localEngine.cloudFallbackEnabled !== 'boolean') throw new Error('Cloud fallback must be true or false.');
@@ -2954,13 +3101,21 @@ function getEngineCapability(engine, modelFile = '') {
   const configuredContext = Number(engine.contextSize);
   const rule = LOCAL_ENGINE_MODEL_PROFILES.find((profile) => profile.match.test(modelId)) || null;
   const inferred = inferEngineContextFromModelId(modelId);
+  // An explicit contextSize always wins, and a size stated in the model NAME
+  // (…-32k…) is the model's own claim, so both outrank the hardware guess. The
+  // auto path only runs when we would otherwise fall back to the profile floor.
+  const autoContext = (configuredContext > 0 || inferred)
+    ? 0
+    : resolveAutoContextSize(rule, detectEngineHardware(), engine.kvCacheType);
   const contextSize = clampEngineNumber(
-    configuredContext > 0 ? configuredContext : (inferred || (rule && rule.contextSize)),
+    configuredContext > 0 ? configuredContext : (inferred || autoContext || (rule && rule.contextSize)),
     LOCAL_ENGINE_CONTEXT_MIN,
     LOCAL_ENGINE_CONTEXT_MAX,
     LOCAL_ENGINE_CONTEXT_FALLBACK
   );
-  const contextSource = configuredContext > 0 ? 'configured' : (inferred ? 'model-name' : (rule ? 'profile' : 'fallback'));
+  const contextSource = configuredContext > 0
+    ? 'configured'
+    : (inferred ? 'model-name' : (autoContext ? 'hardware' : (rule ? 'profile' : 'fallback')));
   const safeOutputTokens = clampEngineNumber(rule && rule.safeOutputTokens, 256, Math.min(8192, contextSize), Math.min(1600, Math.max(768, Math.floor(contextSize * 0.28))));
   const safeJsonOutputTokens = clampEngineNumber(rule && rule.safeJsonOutputTokens, 256, safeOutputTokens, Math.min(safeOutputTokens, 1200));
   return {
@@ -3468,11 +3623,27 @@ async function launchEngineProcess(config, arch) {
   managedEngine.phase = 'starting';
   managedEngine.arch = arch;
   const capability = getEngineCapability(engine, modelFile);
+  const hardware = detectEngineHardware();
   appendEngineLog('Starting llama-server (' + arch + ') on 127.0.0.1:' + engine.port + ' with ' + path.basename(modelFile) +
     ' (ctx ' + capability.contextSize + ', ' + capability.contextSource + ')');
+  appendEngineLog('Detected hardware: ' + hardware.cores + ' logical cores, ' +
+    (hardware.totalMemGb ? hardware.totalMemGb.toFixed(1) + ' GB RAM' : 'unknown RAM'));
   const args = ['-m', modelFile, '--host', '127.0.0.1', '--port', String(engine.port),
     '-c', String(capability.contextSize), '--no-webui'];
-  if (engine.threads) args.push('-t', String(engine.threads));
+  // Threads: llama.cpp's own default claims every physical core, which makes the
+  // Electron UI stutter mid-generation on the laptops this is aimed at.
+  const threads = Number(engine.threads) > 0 ? Number(engine.threads) : resolveAutoThreads();
+  args.push('-t', String(threads));
+  // GPU offload. This was the missing piece that made the documented
+  // "swap in a CUDA/Vulkan binaryUrl, zero code changes" path a no-op: without
+  // -ngl, llama.cpp offloads ZERO layers and a GPU build runs at CPU speed.
+  const gpuLayers = Number(engine.gpuLayers);
+  if (Number.isFinite(gpuLayers) && gpuLayers > 0) args.push('-ngl', String(Math.floor(gpuLayers)));
+  if (engine.flashAttention) args.push('--flash-attn', 'on');
+  const kvCacheType = String(engine.kvCacheType || '').trim();
+  if (kvCacheType) args.push('--cache-type-k', kvCacheType, '--cache-type-v', kvCacheType);
+  const batchSize = Number(engine.batchSize);
+  if (Number.isFinite(batchSize) && batchSize > 0) args.push('-b', String(Math.floor(batchSize)));
   sanitizeSpawnExtraArgs(engine.extraArgs).forEach((arg) => args.push(arg));
   let exitCode = null;
   const child = spawn(binary, args, { windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });

@@ -936,7 +936,7 @@ const handleLoadProject = (e, deps) => {
                 } catch (e) { warnLog && warnLog('PetsLab restore failed:', _projectDiagnosticErrorSummary(e)); }
             }
             // OpticsLab AP-quiz concept mastery. Mirrors the rest of the
-            // STEM Lab tool persistence chain.
+            // STEAM Lab tool persistence chain.
             if (rawData.opticsLab && typeof rawData.opticsLab === 'object') {
                 try {
                     window.__alloflowOpticsLab = rawData.opticsLab;

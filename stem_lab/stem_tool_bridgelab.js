@@ -4967,7 +4967,7 @@
             ),
 
             h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid #0f172a', fontSize: 10.5, color: 'var(--allo-stem-text-soft, #475569)', lineHeight: 1.5 } },
-              __alloT('stem.bridgelab.sources_ngss_lead_states_2013_hibbeler', 'Sources: NGSS Lead States (2013) · Hibbeler, R.C. (2017), Structural Analysis · AASHTO LRFD Bridge Design Specifications · Petroski, H. (1994), Design Paradigms (Tacoma Narrows + Tay Bridge + Hyatt). Printed from AlloFlow STEM Lab.')
+              __alloT('stem.bridgelab.sources_ngss_lead_states_2013_hibbeler', 'Sources: NGSS Lead States (2013) · Hibbeler, R.C. (2017), Structural Analysis · AASHTO LRFD Bridge Design Specifications · Petroski, H. (1994), Design Paradigms (Tacoma Narrows + Tay Bridge + Hyatt). Printed from AlloFlow STEAM Lab.')
             )
           )
         );

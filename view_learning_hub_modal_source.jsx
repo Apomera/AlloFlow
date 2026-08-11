@@ -1,7 +1,7 @@
 /**
  * AlloFlow — Learning Hub Modal Module
  *
- * Tool launcher modal: STEM Lab, Open Groove Studio, StoryForge, LitLab,
+ * Tool launcher modal: STEAM Lab, Open Groove Studio, StoryForge, LitLab,
  * PoetTree, SEL Hub, AlloHaven.
  * Each button closes this modal and opens the chosen tool.
  *
@@ -323,16 +323,16 @@ function LearningHubModal(props) {
                 <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('reading-library')} aria-label={hubFavoriteIds.includes('reading-library') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Reading Library' : tr('hub.add_favorite', 'Add to favorites') + ': Reading Library'} title={hubFavoriteIds.includes('reading-library') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('reading-library'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-600 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('reading-library') ? '★' : '☆'}</button>
                 </div>
               )}
-              <div className="relative group" data-hub-id="stem-lab" data-hub-label="STEM Lab" data-hub-section="core">
+              <div className="relative group" data-hub-id="stem-lab" data-hub-label="STEAM Lab" data-hub-section="core">
                 <button type="button" data-hub-launch="true" onClick={() => { setShowLearningHub(false); setShowStemLab(true); setStemLabTab('explore'); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-blue-50 to-indigo-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center">
                 <span className="text-4xl" aria-hidden="true">{'\uD83D\uDD2C'}</span>
                 <div>
-                  <h3 className="font-bold text-indigo-800">{t('learning_hub.stem_title') || 'STEM Lab'}</h3>
+                  <h3 className="font-bold text-indigo-800">{t('learning_hub.stem_title') || 'STEAM Lab'}</h3>
                   <p className="text-xs text-indigo-600 mt-1">{t('learning_hub.stem_desc') || '100+ interactive math & science explorations'}</p>
                 </div>
               </button>
 
-                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('stem-lab')} aria-label={hubFavoriteIds.includes('stem-lab') ? tr('hub.remove_favorite', 'Remove from favorites') + ': STEM Lab' : tr('hub.add_favorite', 'Add to favorites') + ': STEM Lab'} title={hubFavoriteIds.includes('stem-lab') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('stem-lab'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-600 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('stem-lab') ? '★' : '☆'}</button>
+                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('stem-lab')} aria-label={hubFavoriteIds.includes('stem-lab') ? tr('hub.remove_favorite', 'Remove from favorites') + ': STEAM Lab' : tr('hub.add_favorite', 'Add to favorites') + ': STEAM Lab'} title={hubFavoriteIds.includes('stem-lab') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('stem-lab'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-600 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('stem-lab') ? '★' : '☆'}</button>
               </div>
               <div className="relative group" data-hub-id="text-inquiry" data-hub-label="Text Inquiry Studio" data-hub-section="core">
                 <button type="button" data-hub-launch="true" data-help-key="learning_hub_text_inquiry_card" onClick={openTextInquiryStudio} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-fuchsia-50 to-cyan-50 border border-fuchsia-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center" aria-describedby={textInquiryLaunchError ? 'text-inquiry-launch-error' : undefined}>

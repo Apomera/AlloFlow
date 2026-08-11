@@ -34,7 +34,7 @@ const createPromptsLibrary = ({ STEM_TOOL_REGISTRY } = {}) => {
   //      lesson while being told almost nothing about what they do.
   //   2. STEM_TOOL_REGISTRY is populated by registerTool, which only runs
   //      once the STEM plugins load ON DEMAND. A teacher who never opened
-  //      the STEM Lab got an EMPTY list and silently lost every
+  //      the STEAM Lab got an EMPTY list and silently lost every
   //      recommendation.
   // tool_index.json is built at build time (dev-tools/build_tool_index.cjs)
   // from each tool's own self-description, so it is complete regardless of
@@ -61,7 +61,7 @@ const createPromptsLibrary = ({ STEM_TOOL_REGISTRY } = {}) => {
     // plugins load on demand, so the constructor-time snapshot is an empty array
     // for the life of the page. That snapshot is why lesson plans have been
     // shipping an empty tool list; reading live at least degrades to real data
-    // once a user has opened the STEM Lab.
+    // once a user has opened the STEAM Lab.
     if (!idx || !idx.length) {
       let live = stemToolRegistry;
       try {
@@ -138,8 +138,8 @@ const createPromptsLibrary = ({ STEM_TOOL_REGISTRY } = {}) => {
         8. Closure & Assessment: A closing discussion script. **Explicitly reference** the "Exit Ticket" (Quiz) provided.
         9. EXTENSIONS:
            ${extensionInstruction}
-        10. STEM Lab Tools (if applicable):
-           Review these interactive STEM Lab simulation tools and recommend 1-3 that align with this lesson's learning objectives:
+        10. STEAM Lab Tools (if applicable):
+           Review these interactive STEAM Lab simulation tools and recommend 1-3 that align with this lesson's learning objectives:
            ${JSON.stringify(selectStemTools(sourceTopic, gradeLevel))}
            If any tools are relevant, include a "recommendedStemTools" array in the output JSON. Each entry should have: id (tool ID), rationale (1 sentence tied to a learning objective), and suggestedActivity (short activity description).
            If no tools are relevant, omit the field entirely.

@@ -1,5 +1,5 @@
 // ============================================================
-// stem_tool_gamestudio.js — Game Design Studio (STEM Lab)
+// stem_tool_gamestudio.js — Game Design Studio (STEAM Lab)
 // Standalone CDN plugin — extracted & enhanced
 // ============================================================
 
@@ -27,7 +27,7 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -1819,7 +1819,7 @@ window.StemLab = window.StemLab || {
                 ),
                 // SVG difficulty curve visualization
                 h('div', { className: 'p-2 rounded border border-slate-200 bg-slate-50' },
-                  h('svg', { viewBox: '0 0 360 150', className: 'w-full h-32' },
+                  h('svg', { role: 'img', 'aria-label': __alloT('stem.gamestudio.curve_img', 'Difficulty curve chart'), viewBox: '0 0 360 150', className: 'w-full h-32' },
                     // Axes
                     h('line', { x1: 20, y1: 130, x2: 340, y2: 130, stroke: '#94a3b8', strokeWidth: 1 }),
                     h('line', { x1: 20, y1: 20, x2: 20, y2: 130, stroke: '#94a3b8', strokeWidth: 1 }),

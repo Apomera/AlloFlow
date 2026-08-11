@@ -42,7 +42,7 @@ test.describe('Beehive tool live tabs interaction', () => {
       }
 
       console.log('Opening STEM Lab...');
-      const stemLabBtn = page.getByRole('button', { name: /^STEM Lab\b/i }).first();
+      const stemLabBtn = page.getByRole('button', { name: /^STEAM Lab\b/i }).first();
       await stemLabBtn.waitFor({ state: 'visible', timeout: 30000 });
       await page.waitForTimeout(3000); // Wait for React hydration
       await stemLabBtn.click({ force: true });

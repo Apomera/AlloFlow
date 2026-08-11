@@ -33,7 +33,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -3939,7 +3939,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                   if (isRecording) stopRecording();
                   setStemLabTool(null);
                 },
-                'aria-label': t('stem.oratory.go_back_to_stem_lab_tool_list', 'Go back to STEM Lab tool list')
+                'aria-label': t('stem.oratory.go_back_to_stem_lab_tool_list', 'Go back to STEAM Lab tool list')
               },
                 ArrowLeft && h(ArrowLeft, { size: 14 }),
                 t('stem.oratory.back_3', 'Back')),

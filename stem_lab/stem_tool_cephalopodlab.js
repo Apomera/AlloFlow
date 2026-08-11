@@ -9164,7 +9164,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         },
         ferpa: {
           term: 'FERPA (Family Educational Rights and Privacy Act)',
-          def: 'US law (1974) protecting student educational records. This Cephalopod Lab module stores no PII and makes no network calls — its data stays local to the browser. Note: other STEM Lab tools may use cloud AI features, so check each tool individually rather than assuming the whole platform is offline.',
+          def: 'US law (1974) protecting student educational records. This Cephalopod Lab module stores no PII and makes no network calls — its data stays local to the browser. Note: other STEAM Lab tools may use cloud AI features, so check each tool individually rather than assuming the whole platform is offline.',
           related: ['privacy', 'student_data'],
           sources: [
             { title: __alloT('stem.cephalopodlab.20_u_s_c_1232g', '20 U.S.C. § 1232g'), year: 1974 },

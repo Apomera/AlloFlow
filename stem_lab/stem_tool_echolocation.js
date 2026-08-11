@@ -1,4 +1,4 @@
-// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -5225,7 +5225,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         h('div', { className: 'flex items-center justify-between' },
           h('div', { className: 'flex items-center gap-3' },
             h('button', {
-              'aria-label': t('stem.echolocation.back_to_stem_lab_menu', 'Back to STEM Lab menu'),
+              'aria-label': t('stem.echolocation.back_to_stem_lab_menu', 'Back to STEAM Lab menu'),
               onClick: function() { if (setStemLabTool) setStemLabTool(null); },
               className: 'p-2 rounded-lg transition-all ' + (isDark ? 'hover:bg-slate-700' : 'hover:bg-slate-200')
             }, h(ArrowLeft, { size: 18 })),

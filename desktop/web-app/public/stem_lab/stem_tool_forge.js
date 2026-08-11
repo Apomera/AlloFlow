@@ -1,4 +1,4 @@
-/* stem_tool_forge.js — the Tool Forge: a plugin-authoring harness for STEM Lab /
+/* stem_tool_forge.js — the Tool Forge: a plugin-authoring harness for STEAM Lab /
  * SEL Hub tools, in-app and teacher-gated.
  *
  * Two doors over one backend:
@@ -29,7 +29,7 @@
 // ==FORGE_CONTRACT_CORE_BEGIN== (vendored from dev-tools/forge_contract_core.js — kept in sync by dev-tools/check_forge_contract_sync.cjs; DO NOT edit here, edit the source)
 /* forge_contract_core.js — the PLUGIN CONTRACT, as one portable module.
  *
- * Single source of truth for "what is a conformant STEM Lab / SEL Hub tool":
+ * Single source of truth for "what is a conformant STEAM Lab / SEL Hub tool":
  *   - CONTRACT: the manifest (required fields, theme colors, categories, the ctx
  *     surface the host actually injects, the quest-key rule).
  *   - validateSource(src, acornParse): a BROWSER-PORTABLE structural validator
@@ -559,7 +559,7 @@
   window.StemLab.registerTool('forge', {
     icon: '🛠️',
     label: 'Tool Forge',
-    desc: 'Author, validate, and preview new STEM Lab / SEL Hub plugins — describe one in plain language (AI builds a conforming plugin) or hand-code against the contract, with a live in-sandbox render-smoke and the same contract gate the deploy pipeline runs. Teacher / developer tool.',
+    desc: 'Author, validate, and preview new STEAM Lab / SEL Hub plugins — describe one in plain language (AI builds a conforming plugin) or hand-code against the contract, with a live in-sandbox render-smoke and the same contract gate the deploy pipeline runs. Teacher / developer tool.',
     color: 'indigo',
     category: 'coding',
     render: function (ctx) {
@@ -696,7 +696,7 @@
       (function () {
         var plan = null, source = '', issues = [];
         stage('architect', t('stem.forge.sr_architect', 'Architect: planning the tool'));
-        var archPrompt = 'Plan an AlloFlow ' + (target === 'sel' ? 'SEL Hub' : 'STEM Lab') + ' plugin for this request:\n"' + desc.replace(/"/g, "'") + '"\nGrade level: ' + grade + '.\nReturn ONLY JSON: {"id":"camelCaseId","label":"...","desc":"...","icon":"single emoji","color":"theme name","category":"...","concept":"the core concept students explore","interactions":["the 2-4 concrete things the student does"],"stateShape":"the fields kept in toolData"}';
+        var archPrompt = 'Plan an AlloFlow ' + (target === 'sel' ? 'SEL Hub' : 'STEAM Lab') + ' plugin for this request:\n"' + desc.replace(/"/g, "'") + '"\nGrade level: ' + grade + '.\nReturn ONLY JSON: {"id":"camelCaseId","label":"...","desc":"...","icon":"single emoji","color":"theme name","category":"...","concept":"the core concept students explore","interactions":["the 2-4 concrete things the student does"],"stateShape":"the fields kept in toolData"}';
         Promise.resolve(cg(archPrompt, true)).then(function (p) {
           if (cancelled()) throw new Error('__forge_cancelled__');
           plan = p && typeof p === 'object' ? p : null;
@@ -855,7 +855,7 @@
       return h('div', { style: { padding: 24, color: fg, maxWidth: 640 } },
         h('h2', { style: { marginTop: 0 } }, '🛠️ ' + t('stem.forge.label', 'Tool Forge')),
         h('p', { style: { color: sub, lineHeight: 1.6 } },
-          t('stem.forge.teacher_only', 'The Tool Forge is a teacher / developer workspace for authoring new STEM Lab and SEL Hub tools. Switch on Teacher Mode to open it.'))
+          t('stem.forge.teacher_only', 'The Tool Forge is a teacher / developer workspace for authoring new STEAM Lab and SEL Hub tools. Switch on Teacher Mode to open it.'))
       );
     }
 
@@ -901,7 +901,7 @@
                 h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
                   h('label', { style: { fontSize: 13 } }, t('stem.forge.target', 'Target') + ':'),
                   h('select', { value: target, onChange: function (e) { setTarget(e.target.value); }, 'aria-label': t('stem.forge.target', 'Target'), style: { padding: '6px 8px', borderRadius: 6, border: '1px solid ' + border, background: panelBg, color: fg } },
-                    h('option', { value: 'stem' }, 'STEM Lab'),
+                    h('option', { value: 'stem' }, 'STEAM Lab'),
                     h('option', { value: 'sel' }, 'SEL Hub')),
                   h('button', { onClick: generate, disabled: busy, 'aria-busy': busy, style: btn(true) }, busy ? t('stem.forge.working', 'Working…') : t('stem.forge.generate', 'Generate plugin')),
                   // Four sequential model calls with no way out until now.

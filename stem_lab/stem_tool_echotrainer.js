@@ -1,4 +1,4 @@
-// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -652,6 +652,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
     render: function(ctx) {
       // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
       var t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      // Message templates with named placeholders. ctx.t takes no interpolation
+      // arguments, so anything carrying a value is substituted here rather than
+      // glued together with + — fragments cannot be reordered by a translator.
+      var tFmt = function (k, fb, vars) {
+        var out = t(k, fb);
+        if (!vars) return out;
+        return String(out).replace(/\{(\w+)\}/g, function (whole, name) {
+          return Object.prototype.hasOwnProperty.call(vars, name) ? String(vars[name]) : whole;
+        });
+      };
       var React = ctx.React; var h = React.createElement; var useState = React.useState; var useEffect = React.useEffect; var useRef = React.useRef; var useCallback = React.useCallback;
       var d = (ctx.toolData && ctx.toolData['echoTrainer']) || {};
       // Live ref to `d` for continuous loops. Two useEffects (3D render
@@ -728,7 +738,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         }
         if (hasAny) {
           updMulti(merged);
-          if (announceToSR) announceToSR('Progress restored. Goals found: ' + (merged.goalsFound || saved.goalsFound || 0) + '.');
+          if (announceToSR) announceToSR(tFmt('stem.echotrainer.sr_progress_restored', 'Progress restored. Goals found: {count}.', { count: merged.goalsFound || saved.goalsFound || 0 }));
         }
       }, []);
 
@@ -737,6 +747,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         if (!hydratedRef.current) return;
         saveEchoProgress(d);
       }, [d.goalsFound, d.blindWins, d.urbanNoCarHit, d.batMasterWin, d.schoolWin, d.waypointComplete, d.matQuizCorrect, d.difficulty, d.envType]);
+
+      // ── Release the AudioContext when the tool unmounts ──
+      // Browsers cap concurrent AudioContexts (~6). Without this, every visit left
+      // one open; after a few visits `new AudioContext()` threw, initAudio()'s catch
+      // returned null, and clicks went silent with nothing shown to the user.
+      useEffect(function() {
+        return function() {
+          var au = audioRef.current;
+          audioRef.current = null;
+          if (!au || !au.ctx) return;
+          try {
+            if (au.bins) { for (var bi = 0; bi < au.bins.length; bi++) { try { au.bins[bi].disconnect(); } catch (e) {} } }
+          } catch (e) {}
+          try { au.ctx.close(); } catch (e) {}
+        };
+      }, []);
 
       if (!mapRef.current || mapRef.current.seed !== seed || mapRef.current.type !== envType) {
         mapRef.current = generateEnvironment(envType, seed);
@@ -772,7 +798,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           for (var ci = 0; ci < caneLen; ci++) {
             caneData[ci] = Math.exp(-ci / (caneLen * 0.08)) * Math.sin(ci / (caneLen * 0.12) * Math.PI * 2) * 0.9;
           }
-          audioRef.current = { ctx: ctx2, clickBuf: buf, caneBuf: caneBuf };
+          // HRTF panning is a convolution per node, and emitClick fires 32 rays
+          // (plus 3 bounces each). Creating a panner per ray meant up to ~500 nodes
+          // per click. Rays that fall in the same angular bin are within a few
+          // degrees of each other — far finer than human echolocation acuity — so
+          // they can share one panner. Every echo tap still gets its own delay,
+          // filter and gain, so the sound is as dense as before.
+          audioRef.current = { ctx: ctx2, clickBuf: buf, caneBuf: caneBuf, bins: null };
           return audioRef.current;
         } catch(e) { return null; }
       }
@@ -788,6 +820,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         updMulti({ clicks: (d.clicks || 0) + 1 });
         if (window._alloHaptic) window._alloHaptic('echo');
         var activeBuf = clickType === 'cane' ? audio.caneBuf : audio.clickBuf;
+
+        // One panner per angular bin for this click, positioned at the bin centre.
+        // Fresh per click so a click fired while earlier echoes are still ringing
+        // cannot drag those echoes to a new direction.
+        var ECHO_BINS = 8;
+        var binFan = Math.PI * 0.67;
+        var binPanners = [];
+        var clickNodes = [];
+        function binPannerFor(worldAngle) {
+            var rel = worldAngle - player.angle;
+            var idx = Math.round(((rel + binFan / 2) / binFan) * (ECHO_BINS - 1));
+            if (idx < 0) idx = 0; else if (idx > ECHO_BINS - 1) idx = ECHO_BINS - 1;
+            if (binPanners[idx]) return binPanners[idx];
+            var pn = ac.createPanner();
+            pn.panningModel = 'HRTF';
+            pn.distanceModel = 'inverse';
+            pn.refDistance = 1;
+            pn.maxDistance = 80;
+            pn.rolloffFactor = 1;
+            // Bin centre, expressed head-relative (listener faces -Z).
+            var binRel = -binFan / 2 + (idx / (ECHO_BINS - 1)) * binFan;
+            pn.positionX.value = Math.sin(binRel) * 4;
+            pn.positionY.value = 0;
+            pn.positionZ.value = -Math.cos(binRel) * 4;
+            pn.connect(ac.destination);
+            binPanners[idx] = pn;
+            clickNodes.push(pn);
+            return pn;
+        }
+        // Tear the whole click down once its longest tail has finished, so the graph
+        // does not accumulate delays, filters and panners run after run.
+        //
+        // This is deliberately a timer and not source.onended: the click buffer is
+        // 8ms long, so onended fires almost immediately, while the echo it feeds is
+        // still sitting in a DelayNode for up to 0.6s. Retiring on onended would cut
+        // every echo off before it sounded.
+        var clickTail = 0;
+        var clickTimer = null;
+        function retireClickNodes(tailSec) {
+            if (tailSec > clickTail) clickTail = tailSec;
+            if (clickTimer) clearTimeout(clickTimer);
+            clickTimer = setTimeout(function() {
+              for (var ni = 0; ni < clickNodes.length; ni++) { try { clickNodes[ni].disconnect(); } catch (e) {} }
+              clickNodes.length = 0;
+              binPanners.length = 0;
+            }, (clickTail + 0.3) * 1000);
+        }
         if (has3D || viewMode === 'echo') {
           pulsesRef.current.push({ x: player.x, y: player.y, radius: 0, maxRadius: 500, birth: Date.now(), hits: [] });
         }
@@ -856,20 +935,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             filter.frequency.value = filterHz;
             var gain = ac.createGain();
             gain.gain.value = atten * 0.35;
-            var panner = ac.createPanner();
-            panner.panningModel = 'HRTF';
-            panner.distanceModel = 'inverse';
-            panner.refDistance = 1;
-            panner.maxDistance = 80;
-            panner.rolloffFactor = 1;
-            var echoWorldX = Math.cos(ra) * Math.min(minDist * 0.01, 8);
-            var echoWorldZ = Math.sin(ra) * Math.min(minDist * 0.01, 8);
-            var cosA = Math.cos(-player.angle), sinA = Math.sin(-player.angle);
-            panner.positionX.value = echoWorldX * cosA - echoWorldZ * sinA;
-            panner.positionY.value = 0;
-            panner.positionZ.value = echoWorldX * sinA + echoWorldZ * cosA;
-            echoSrc.connect(delay); delay.connect(filter); filter.connect(gain); gain.connect(panner); panner.connect(ac.destination);
+            var panner = binPannerFor(ra);
+            echoSrc.connect(delay); delay.connect(filter); filter.connect(gain); gain.connect(panner);
+            clickNodes.push(echoSrc, delay, filter, gain);
             echoSrc.start();
+            retireClickNodes(delaySec + activeBuf.duration);
             if (multiBounce && minDist < 400) {
               for (var bri = 0; bri < 3; bri++) {
                 var bounceAngle = ra + Math.PI + (bri - 1) * 0.3;
@@ -890,14 +960,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
                   var bDel = ac.createDelay(1.0); bDel.delayTime.value = bDelay;
                   var bF = ac.createBiquadFilter(); bF.type = 'lowpass'; bF.frequency.value = bFilt;
                   var bG = ac.createGain(); bG.gain.value = bAtten * 0.2;
-                  var bP = ac.createPanner(); bP.panningModel = 'HRTF'; bP.distanceModel = 'inverse'; bP.refDistance = 1; bP.maxDistance = 80;
-                  var bWorldX = Math.cos(bounceAngle) * Math.min((minDist + bMinDist) * 0.005, 6);
-                  var bWorldZ = Math.sin(bounceAngle) * Math.min((minDist + bMinDist) * 0.005, 6);
-                  bP.positionX.value = bWorldX * cosA - bWorldZ * sinA;
-                  bP.positionY.value = 0;
-                  bP.positionZ.value = bWorldX * sinA + bWorldZ * cosA;
-                  bSrc.connect(bDel); bDel.connect(bF); bF.connect(bG); bG.connect(bP); bP.connect(ac.destination);
+                  var bP = binPannerFor(bounceAngle);
+                  bSrc.connect(bDel); bDel.connect(bF); bF.connect(bG); bG.connect(bP);
+                  clickNodes.push(bSrc, bDel, bF, bG);
                   bSrc.start();
+                  retireClickNodes(bDelay + activeBuf.duration);
                 }
               }
             }
@@ -935,7 +1002,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           var realDistMeters = Math.round(minDist * 0.1 * 10) / 10; // 1px = 0.1m, round to 1 decimal
           upd('distChallenge', { active: true, targetDist: realDistMeters, targetMat: hitMat, answer: null, result: null });
           emitClick(); // fire a sonar pulse so they can hear it
-          if (announceToSR) announceToSR('Distance challenge! You just clicked. How far is the ' + hitMat + ' surface ahead of you? Choose an estimate.');
+          if (announceToSR) announceToSR(tFmt('stem.echotrainer.sr_distance_challenge', 'Distance challenge! You just clicked. How far is the {material} surface ahead of you? Choose an estimate.', { material: hitMat }));
         }
       }
 
@@ -978,9 +1045,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           }
           upd('matQuiz', { active: true, correctMat: hitMat, options: options, answer: null, result: null });
           emitClick();
-          if (announceToSR) announceToSR('Material quiz! Listen to the echo ahead and identify the material.');
+          if (announceToSR) announceToSR(t('stem.echotrainer.material_quiz_listen_to_the_echo_ahead', 'Material quiz! Listen to the echo ahead and identify the material.'));
         } else {
-          if (addToast) addToast('No surface detected ahead. Try facing a wall first.', 'info');
+          if (addToast) addToast(t('stem.echotrainer.no_surface_detected_ahead_try_facing_a', 'No surface detected ahead. Try facing a wall first.'), 'info');
         }
       }
 
@@ -1227,14 +1294,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             if (adist < hitRadius) {
               if (ag.kind === 'car' && bumpFlash <= 0) {
                 bumpFlash = 0.5; carHitRef.current = true; updMulti({ bumps: (d.bumps || 0) + 3 });
-                if (addToast) addToast('\uD83D\uDE97 Hit by a car! -3 bumps penalty', 'error'); if (announceToSR) announceToSR('Hit by a car! 3 bump penalty.'); if (window._alloHaptic) window._alloHaptic('bump');
+                if (addToast) addToast(t('stem.echotrainer.hit_by_a_car_3_bumps_penalty', '\uD83D\uDE97 Hit by a car! -3 bumps penalty'), 'error'); if (announceToSR) announceToSR(t('stem.echotrainer.hit_by_a_car_3_bump_penalty', 'Hit by a car! 3 bump penalty.')); if (window._alloHaptic) window._alloHaptic('bump');
                 try { var cac = audioRef.current && audioRef.current.ctx; if (cac) { var co = cac.createOscillator(); var cg = cac.createGain(); co.type = 'sawtooth'; co.frequency.value = 180; cg.gain.setValueAtTime(0.12, cac.currentTime); cg.gain.exponentialRampToValueAtTime(0.001, cac.currentTime + 0.3); co.connect(cg); cg.connect(cac.destination); co.start(); co.stop(cac.currentTime + 0.3); } } catch(e) {}
               } else if (ag.kind === 'cyclist' && bumpFlash <= 0) {
                 bumpFlash = 0.4; updMulti({ bumps: (d.bumps || 0) + 2 });
-                if (addToast) addToast('\uD83D\uDEB4 Hit by a cyclist! -2 bumps penalty', 'warn'); if (announceToSR) announceToSR('Hit by a cyclist! 2 bump penalty.'); if (window._alloHaptic) window._alloHaptic('bump');
+                if (addToast) addToast(t('stem.echotrainer.hit_by_a_cyclist_2_bumps_penalty', '\uD83D\uDEB4 Hit by a cyclist! -2 bumps penalty'), 'warn'); if (announceToSR) announceToSR(t('stem.echotrainer.hit_by_a_cyclist_2_bump_penalty', 'Hit by a cyclist! 2 bump penalty.')); if (window._alloHaptic) window._alloHaptic('bump');
               } else if ((ag.kind === 'pedestrian' || ag.kind === 'jogger') && bumpFlash <= 0) {
                 bumpFlash = 0.2; updMulti({ bumps: (d.bumps || 0) + 1 });
-                if (addToast) addToast('\uD83D\uDEB6 Bumped into a ' + ag.kind + '!', 'warn'); if (announceToSR) announceToSR('Bumped into a ' + ag.kind + '.'); if (window._alloHaptic) window._alloHaptic('bump');
+                if (addToast) addToast(tFmt('stem.echotrainer.toast_bumped', '\uD83D\uDEB6 Bumped into a {kind}!', { kind: ag.kind }), 'warn'); if (announceToSR) announceToSR(tFmt('stem.echotrainer.sr_bumped', 'Bumped into a {kind}.', { kind: ag.kind })); if (window._alloHaptic) window._alloHaptic('bump');
               }
             }
           }
@@ -1370,13 +1437,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
                   var wpXP = 15 + route.points.length * 8;
                   var wpUpdateObj = { goalFoundThisRun: true, goalsFound: goalsFound + 1, waypointIdx: nextIdx, waypointComplete: true };
                   updMulti(wpUpdateObj);
-                  if (addToast) addToast('\uD83C\uDFC1 Route complete! ' + route.name + ' \u2192 ' + wpXP + ' XP!', 'success');
+                  if (addToast) addToast(tFmt('stem.echotrainer.toast_route_complete', '\uD83C\uDFC1 Route complete! {route} \u2192 {xp} XP!', { route: route.name, xp: wpXP }), 'success');
                   if (awardXP) awardXP('echoTrainer', Math.round(wpXP * diff.xpMult), 'Waypoint route: ' + route.name);
-                  if (announceToSR) announceToSR('Route complete! ' + route.name + '. ' + wpXP + ' XP earned.');
+                  if (announceToSR) announceToSR(tFmt('stem.echotrainer.sr_route_complete', 'Route complete! {route}. {xp} XP earned.', { route: route.name, xp: wpXP }));
                 } else {
                   upd('waypointIdx', nextIdx);
-                  if (addToast) addToast('\u2705 Waypoint ' + nextIdx + '/' + route.points.length + ': ' + route.points[nextIdx].label, 'info');
-                  if (announceToSR) announceToSR('Waypoint reached! Next: ' + route.points[nextIdx].label);
+                  if (addToast) addToast(tFmt('stem.echotrainer.toast_waypoint', '\u2705 Waypoint {n}/{total}: {label}', { n: nextIdx, total: route.points.length, label: route.points[nextIdx].label }), 'info');
+                  if (announceToSR) announceToSR(tFmt('stem.echotrainer.sr_waypoint', 'Waypoint reached! Next: {label}', { label: route.points[nextIdx].label }));
                   if (awardXP) awardXP('echoTrainer', 8, 'Waypoint: ' + route.points[wpIdx].label);
                 }
               }
@@ -1397,7 +1464,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
                 var baseXP = isAudioOnly ? 30 : (currentViewMode === 'echo' ? 20 : 10);
                 var bumpPenalty = Math.min(baseXP - 5, d.bumps || 0);
                 var finalXP = Math.max(5, Math.round((baseXP - bumpPenalty) * diff.xpMult));
-                var modeLabel = currentViewMode === 'audio' ? 'Audio-only' : currentViewMode === 'echo' ? 'Echo Vision' : 'Revealed';
+                var modeLabel = currentViewMode === 'audio' ? t('stem.echotrainer.mode_audio_only', 'Audio-only') : currentViewMode === 'echo' ? t('stem.echotrainer.mode_echo_vision', 'Echo Vision') : t('stem.echotrainer.mode_revealed', 'Revealed');
                 var runTime = Math.floor((Date.now() - runStartRef.current) / 1000);
                 var runHistory = (d.runHistory || []).slice();
                 runHistory.push({ env: envType, mode: modeLabel, difficulty: diff.label, time: runTime, clicks: d.clicks || 0, bumps: d.bumps || 0, xp: finalXP });
@@ -1406,16 +1473,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
                 updMulti(updateObj);
                 var feedbackMsg = '';
                 var avgBumpsPerClick = (d.bumps || 0) / Math.max(1, d.clicks || 1);
-                if ((d.bumps || 0) === 0) feedbackMsg = 'Perfect navigation! Zero wall bumps.';
-                else if (avgBumpsPerClick > 0.5) feedbackMsg = 'Tip: You\'re bumping into walls frequently. Try clicking more often before moving to build your echo map.';
-                else if (avgBumpsPerClick > 0.2) feedbackMsg = 'Good awareness, but some bumps. Slow down near surfaces and use multiple clicks to triangulate.';
-                else feedbackMsg = 'Strong performance! You\'re reading echoes well.';
+                if ((d.bumps || 0) === 0) feedbackMsg = t('stem.echotrainer.feedback_perfect', 'Perfect navigation! Zero wall bumps.');
+                else if (avgBumpsPerClick > 0.5) feedbackMsg = t('stem.echotrainer.feedback_many_bumps', 'Tip: You\'re bumping into walls frequently. Try clicking more often before moving to build your echo map.');
+                else if (avgBumpsPerClick > 0.2) feedbackMsg = t('stem.echotrainer.feedback_some_bumps', 'Good awareness, but some bumps. Slow down near surfaces and use multiple clicks to triangulate.');
+                else feedbackMsg = t('stem.echotrainer.feedback_strong', 'Strong performance! You\'re reading echoes well.');
                 if (runTime > 120) feedbackMsg += ' Try to find the goal faster next time \u2014 click efficiency helps.';
                 if ((d.clicks || 0) < 5) feedbackMsg += ' You barely used sonar! Click more to build a richer echo map.';
-                if (addToast) addToast('\uD83C\uDFC6 ' + finalXP + ' XP! ' + feedbackMsg, 'success');
+                if (addToast) addToast(tFmt('stem.echotrainer.toast_goal_found', '\uD83C\uDFC6 {xp} XP! {feedback}', { xp: finalXP, feedback: feedbackMsg }), 'success');
                 if (window._alloHaptic) window._alloHaptic('achieve');
                 if (awardXP) awardXP('echoTrainer', finalXP, modeLabel + ': ' + (d.bumps || 0) + ' bumps');
-                if (announceToSR) announceToSR('Goal found! ' + finalXP + ' XP earned. ' + (d.bumps || 0) + ' wall bumps. ' + modeLabel + ' mode.');
+                if (announceToSR) announceToSR(tFmt('stem.echotrainer.sr_goal_found', 'Goal found! {xp} XP earned. {bumps} wall bumps. {mode} mode.', { xp: finalXP, bumps: d.bumps || 0, mode: modeLabel }));
               }
             });
           }
@@ -1557,7 +1624,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
                   var baseXP2 = isAudioOnly2d ? 30 : (currentViewMode2d === 'echo' ? 20 : 10);
                   var bumpPenalty2 = Math.min(baseXP2 - 5, d.bumps || 0);
                   var finalXP2 = Math.max(5, Math.round((baseXP2 - bumpPenalty2) * diff.xpMult));
-                  var modeLabel2 = currentViewMode2d === 'audio' ? 'Audio-only' : currentViewMode2d === 'echo' ? 'Echo Vision' : 'Map revealed';
+                  var modeLabel2 = currentViewMode2d === 'audio' ? t('stem.echotrainer.mode_audio_only', 'Audio-only') : currentViewMode2d === 'echo' ? t('stem.echotrainer.mode_echo_vision', 'Echo Vision') : t('stem.echotrainer.mode_revealed', 'Revealed');
                   var runTime2 = Math.floor((Date.now() - runStartRef.current) / 1000);
                   var runHistory2 = (d.runHistory || []).slice();
                   runHistory2.push({ env: envType, mode: modeLabel2, difficulty: diff.label, time: runTime2, clicks: d.clicks || 0, bumps: d.bumps || 0, xp: finalXP2 });
@@ -1566,16 +1633,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
                   updMulti(updateObj2d);
                   var feedbackMsg2 = '';
                   var avgBumpsPerClick2 = (d.bumps || 0) / Math.max(1, d.clicks || 1);
-                  if ((d.bumps || 0) === 0) feedbackMsg2 = 'Perfect navigation! Zero wall bumps.';
-                  else if (avgBumpsPerClick2 > 0.5) feedbackMsg2 = 'Tip: You\'re bumping into walls frequently. Try clicking more often before moving to build your echo map.';
-                  else if (avgBumpsPerClick2 > 0.2) feedbackMsg2 = 'Good awareness, but some bumps. Slow down near surfaces and use multiple clicks to triangulate.';
-                  else feedbackMsg2 = 'Strong performance! You\'re reading echoes well.';
+                  if ((d.bumps || 0) === 0) feedbackMsg2 = t('stem.echotrainer.feedback_perfect', 'Perfect navigation! Zero wall bumps.');
+                  else if (avgBumpsPerClick2 > 0.5) feedbackMsg2 = t('stem.echotrainer.feedback_many_bumps', 'Tip: You\'re bumping into walls frequently. Try clicking more often before moving to build your echo map.');
+                  else if (avgBumpsPerClick2 > 0.2) feedbackMsg2 = t('stem.echotrainer.feedback_some_bumps', 'Good awareness, but some bumps. Slow down near surfaces and use multiple clicks to triangulate.');
+                  else feedbackMsg2 = t('stem.echotrainer.feedback_strong', 'Strong performance! You\'re reading echoes well.');
                   if (runTime2 > 120) feedbackMsg2 += ' Try to find the goal faster next time \u2014 click efficiency helps.';
                   if ((d.clicks || 0) < 5) feedbackMsg2 += ' You barely used sonar! Click more to build a richer echo map.';
-                  if (addToast) addToast('\uD83C\uDFC6 ' + finalXP2 + ' XP! ' + feedbackMsg2, 'success');
+                  if (addToast) addToast(tFmt('stem.echotrainer.toast_goal_found', '\uD83C\uDFC6 {xp} XP! {feedback}', { xp: finalXP2, feedback: feedbackMsg2 }), 'success');
                   if (window._alloHaptic) window._alloHaptic('achieve');
                   if (awardXP) awardXP('echoTrainer', finalXP2, modeLabel2 + ': ' + (d.bumps || 0) + ' bumps');
-                  if (announceToSR) announceToSR('Goal found! ' + finalXP2 + ' XP earned. ' + (d.bumps || 0) + ' wall bumps. ' + modeLabel2 + ' mode.');
+                  if (announceToSR) announceToSR(tFmt('stem.echotrainer.sr_goal_found', 'Goal found! {xp} XP earned. {bumps} wall bumps. {mode} mode.', { xp: finalXP2, bumps: d.bumps || 0, mode: modeLabel2 }));
                 }
               });
             }
@@ -1590,7 +1657,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         if (next === 'reveal') { upd('hasRevealed', true); }
         upd('viewMode', next);
         var labels = { echo: 'Echo Vision \u2014 sonar pulses illuminate surfaces', audio: 'Audio Only \u2014 pure darkness, hardest mode', reveal: 'Reveal \u2014 full visibility (debug/teacher mode)' };
-        if (announceToSR) announceToSR('View mode: ' + labels[next]);
+        if (announceToSR) announceToSR(tFmt('stem.echotrainer.sr_view_mode', 'View mode: {mode}', { mode: labels[next] }));
       }
 
       var agentCounts = []; var agts = agentsRef.current;
@@ -1643,7 +1710,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
 
       return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px', height: '100%' } },
         h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' } },
-          h('button', { onClick: function() { if (setStemLabTool) setStemLabTool(null); }, 'aria-label': t('stem.echotrainer.back_to_stem_lab', 'Back to STEM Lab'), style: { background: isDark ? '#1e293b' : '#f1f5f9', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), borderRadius: '8px', padding: '6px 12px', color: isDark ? '#94a3b8' : '#475569', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' } }, ArrowLeft ? h(ArrowLeft, { size: 14 }) : '\u2190', t('stem.echotrainer.stem_lab', ' STEM Lab')),
+          h('button', { onClick: function() { if (setStemLabTool) setStemLabTool(null); }, 'aria-label': t('stem.echotrainer.back_to_stem_lab', 'Back to STEAM Lab'), style: { background: isDark ? '#1e293b' : '#f1f5f9', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), borderRadius: '8px', padding: '6px 12px', color: isDark ? '#94a3b8' : '#475569', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' } }, ArrowLeft ? h(ArrowLeft, { size: 14 }) : '\u2190', t('stem.echotrainer.stem_lab', ' STEAM Lab')),
           h('div', { style: { fontSize: '18px', fontWeight: 900, color: isDark ? '#e2e8f0' : '#1e293b' } }, t('stem.echotrainer.echo_navigator', '\uD83C\uDFA7 Echo Navigator')),
           has3D ? h('span', { style: { fontSize: '10px', fontWeight: 800, color: '#3b82f6', background: isDark ? '#1e3a5f' : '#eff6ff', padding: '2px 8px', borderRadius: '6px', border: '1px solid #3b82f680' } }, '3D') : null,
           h('div', { style: { fontSize: '11px', color: isDark ? '#94a3b8' : '#64748b', marginLeft: '8px' } }, t('stem.echotrainer.navigate_by_sound_alone', 'Navigate by sound alone'))
@@ -1667,7 +1734,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             ),
             h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
               h('button', { onClick: emitClick, style: { padding: '10px 16px', borderRadius: '10px', border: '1px solid #c4b5fd', background: isDark ? '#6d28d9' : '#5b21b6', color: '#fff', fontSize: '13px', fontWeight: 900, cursor: 'pointer' } }, t('stem.echotrainer.emit_sonar', 'Emit Sonar')),
-              h('button', { onClick: cycleViewMode, 'aria-label': 'Cycle view mode: currently ' + (d.viewMode || 'echo'), style: { padding: '10px 14px', borderRadius: '10px', border: '1px solid ' + viewTone.border, background: viewTone.bg, color: viewTone.color, fontSize: '13px', fontWeight: 900, cursor: 'pointer' } }, viewTone.label),
+              h('button', { onClick: cycleViewMode, 'aria-label': tFmt('stem.echotrainer.aria_cycle_view', 'Cycle view mode: currently {mode}', { mode: d.viewMode || 'echo' }), style: { padding: '10px 14px', borderRadius: '10px', border: '1px solid ' + viewTone.border, background: viewTone.bg, color: viewTone.color, fontSize: '13px', fontWeight: 900, cursor: 'pointer' } }, viewTone.label),
               h('span', { style: { alignSelf: 'center', padding: '6px 10px', borderRadius: '10px', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.22)' : '#cbd5e1'), color: isDark ? '#e2e8f0' : '#334155', background: isDark ? 'rgba(15,23,42,0.56)' : 'rgba(255,255,255,0.7)', fontSize: '12px', fontWeight: 800 } }, currentEnv.name + ' - ' + diff.label)
             )
           ),
@@ -1766,7 +1833,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
               'aria-label': unlocked ? (env.name + ': ' + env.desc + (is3D ? ' (3D available)' : '')) : (env.name + ' (Locked: ' + (ENV_UNLOCK[env.id] && ENV_UNLOCK[env.id].label || '') + ')'),
               'aria-pressed': active ? 'true' : 'false',
               title: unlocked ? env.desc : 'Locked: ' + (ENV_UNLOCK[env.id] && ENV_UNLOCK[env.id].label || ''),
-              onClick: unlocked ? function() { var envId = env.id; return function() { var newSeed = Math.floor(Math.random() * 999999); updMulti({ envType: envId, seed: newSeed, viewMode: 'echo', hasRevealed: false, goalFoundThisRun: false, clicks: 0, bumps: 0, waypointMode: false, waypointIdx: 0, matQuiz: null }); mapRef.current = null; agentsRef.current = []; playerRef.current = { x: 400, y: 700, angle: -Math.PI / 2 }; yawRef.current = -Math.PI / 2; pitchRef.current = 0; carHitRef.current = false; goalFoundRef.current = false; coverageRef.current = null; runStartRef.current = Date.now(); if (announceToSR) announceToSR('Environment: ' + env.name + '. ' + env.desc + (is3D ? ' 3D mode.' : ' 2D mode.') + ' Press Space to click.'); }; }() : undefined,
+              onClick: unlocked ? function() { var envId = env.id; return function() { var newSeed = Math.floor(Math.random() * 999999); updMulti({ envType: envId, seed: newSeed, viewMode: 'echo', hasRevealed: false, goalFoundThisRun: false, clicks: 0, bumps: 0, waypointMode: false, waypointIdx: 0, matQuiz: null }); mapRef.current = null; agentsRef.current = []; playerRef.current = { x: 400, y: 700, angle: -Math.PI / 2 }; yawRef.current = -Math.PI / 2; pitchRef.current = 0; carHitRef.current = false; goalFoundRef.current = false; coverageRef.current = null; runStartRef.current = Date.now(); if (announceToSR) announceToSR(tFmt('stem.echotrainer.sr_environment_selected', 'Environment: {name}. {desc} {mode} Press Space to click.', { name: env.name, desc: env.desc, mode: is3D ? t('stem.echotrainer.sr_mode_3d', '3D mode.') : t('stem.echotrainer.sr_mode_2d', '2D mode.') })); }; }() : undefined,
               style: {
                 padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 700,
                 cursor: unlocked ? 'pointer' : 'not-allowed',
@@ -1780,8 +1847,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         ),
         h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' } },
           h('button', { onClick: emitClick, style: { padding: '8px 20px', borderRadius: '8px', border: 'none', background: '#7c3aed', color: '#fff', fontSize: '13px', fontWeight: 800, cursor: 'pointer' } }, t('stem.echotrainer.click_space', '\uD83D\uDD0A Click (Space)')),
-          h('button', { onClick: function() { upd('clickType', clickType === 'tongue' ? 'cane' : 'tongue'); if (announceToSR) announceToSR('Sound: ' + (clickType === 'tongue' ? 'Cane tap' : 'Tongue click')); }, style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), background: isDark ? '#1e293b' : '#fff', color: isDark ? '#94a3b8' : '#475569', fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, clickType === 'tongue' ? '\uD83D\uDC45 Tongue Click' : '\uD83E\uDDAF Cane Tap'),
-          h('button', { onClick: cycleViewMode, 'aria-label': 'Cycle view mode: currently ' + (d.viewMode || 'echo'), style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + viewModeColor + '80', background: isDark ? '#1e293b' : '#fff', color: viewModeColor, fontSize: '12px', fontWeight: 800, cursor: 'pointer' } }, viewModeLabel),
+          h('button', { onClick: function() { upd('clickType', clickType === 'tongue' ? 'cane' : 'tongue'); if (announceToSR) announceToSR(tFmt('stem.echotrainer.sr_sound_changed', 'Sound: {sound}', { sound: clickType === 'tongue' ? t('stem.echotrainer.sound_cane_tap', 'Cane tap') : t('stem.echotrainer.sound_tongue_click', 'Tongue click') })); }, style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), background: isDark ? '#1e293b' : '#fff', color: isDark ? '#94a3b8' : '#475569', fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, clickType === 'tongue' ? '\uD83D\uDC45 Tongue Click' : '\uD83E\uDDAF Cane Tap'),
+          h('button', { onClick: cycleViewMode, 'aria-label': tFmt('stem.echotrainer.aria_cycle_view', 'Cycle view mode: currently {mode}', { mode: d.viewMode || 'echo' }), style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + viewModeColor + '80', background: isDark ? '#1e293b' : '#fff', color: viewModeColor, fontSize: '12px', fontWeight: 800, cursor: 'pointer' } }, viewModeLabel),
           h('button', { onClick: function() { upd('multiBounce', !multiBounce); if (announceToSR) announceToSR(multiBounce ? 'Multi-bounce echoes off' : 'Multi-bounce echoes on \u2014 more realistic but harder'); }, 'aria-label': multiBounce ? 'Turn off multi-bounce echoes' : 'Turn on multi-bounce echoes (advanced)', 'aria-pressed': multiBounce ? 'true' : 'false', style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (multiBounce ? '#f59e0b' : (isDark ? '#334155' : '#e2e8f0')), background: multiBounce ? '#78350f' : (isDark ? '#1e293b' : '#fff'), color: multiBounce ? '#fbbf24' : (isDark ? '#94a3b8' : '#475569'), fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, multiBounce ? '\uD83D\uDD04 Multi-Bounce ON' : '\uD83D\uDD04 Multi-Bounce'),
           h('button', {
             onClick: startDistanceChallenge,
@@ -1803,7 +1870,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             'aria-label': waypointMode ? 'Disable waypoint challenge' : 'Enable waypoint navigation challenge',
             style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (waypointMode ? '#22c55e' : (isDark ? '#334155' : '#e2e8f0')), background: waypointMode ? '#166534' : (isDark ? '#1e293b' : '#fff'), color: waypointMode ? '#86efac' : (isDark ? '#94a3b8' : '#475569'), fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
           }, waypointMode ? '\uD83D\uDEA9 Waypoint ON (' + (d.waypointIdx || 0) + '/' + WAYPOINT_ROUTES[envType].points.length + ')' : '\uD83D\uDEA9 Waypoint Challenge') : null,
-          h('button', { onClick: function() { var newSeed = Math.floor(Math.random() * 999999); updMulti({ seed: newSeed, viewMode: 'echo', hasRevealed: false, goalFoundThisRun: false, clicks: 0, bumps: 0, waypointMode: false, waypointIdx: 0, matQuiz: null }); mapRef.current = null; agentsRef.current = []; playerRef.current = { x: 400, y: 700, angle: -Math.PI / 2 }; yawRef.current = -Math.PI / 2; pitchRef.current = 0; carHitRef.current = false; goalFoundRef.current = false; coverageRef.current = null; runStartRef.current = Date.now(); if (announceToSR) announceToSR('New ' + envType + ' environment generated.'); }, 'aria-label': t('stem.echotrainer.generate_new_random_layout', 'Generate new random layout'), style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), background: isDark ? '#1e293b' : '#fff', color: isDark ? '#94a3b8' : '#475569', fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, t('stem.echotrainer.new_layout', '\uD83C\uDFB2 New Layout')),
+          h('button', { onClick: function() { var newSeed = Math.floor(Math.random() * 999999); updMulti({ seed: newSeed, viewMode: 'echo', hasRevealed: false, goalFoundThisRun: false, clicks: 0, bumps: 0, waypointMode: false, waypointIdx: 0, matQuiz: null }); mapRef.current = null; agentsRef.current = []; playerRef.current = { x: 400, y: 700, angle: -Math.PI / 2 }; yawRef.current = -Math.PI / 2; pitchRef.current = 0; carHitRef.current = false; goalFoundRef.current = false; coverageRef.current = null; runStartRef.current = Date.now(); if (announceToSR) announceToSR(tFmt('stem.echotrainer.sr_regenerated', 'New {env} environment generated.', { env: envType })); }, 'aria-label': t('stem.echotrainer.generate_new_random_layout', 'Generate new random layout'), style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), background: isDark ? '#1e293b' : '#fff', color: isDark ? '#94a3b8' : '#475569', fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, t('stem.echotrainer.new_layout', '\uD83C\uDFB2 New Layout')),
           d.goalFoundThisRun && h('span', { style: { padding: '8px 16px', borderRadius: '8px', background: '#dcfce7', color: '#166534', fontSize: '12px', fontWeight: 800 } }, '\uD83C\uDFC6 Goal Found!' + ((d.viewMode || 'echo') === 'audio' ? ' (Blind! \uD83C\uDFA7)' : ''))
         ),
         // ── Waypoint HUD info ──
@@ -1817,7 +1884,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           h('span', { style: { fontSize: '11px', fontWeight: 700, color: isDark ? '#94a3b8' : '#475569' } }, 'Difficulty:'),
           DIFFICULTY.map(function(dLvl) {
             var isActive = diffId === dLvl.id;
-            return h('button', { key: dLvl.id, 'aria-label': dLvl.label + ': ' + dLvl.desc, 'aria-pressed': isActive ? 'true' : 'false', onClick: function() { upd('difficulty', dLvl.id); if (announceToSR) announceToSR('Difficulty: ' + dLvl.label + '. ' + dLvl.desc); }, style: { padding: '5px 12px', borderRadius: '8px', border: '1px solid ' + (isActive ? '#818cf8' : (isDark ? '#334155' : '#e2e8f0')), background: isActive ? '#4338ca' : (isDark ? '#1e293b' : '#fff'), color: isActive ? '#fff' : (isDark ? '#94a3b8' : '#475569'), fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, dLvl.icon + ' ' + dLvl.label);
+            return h('button', { key: dLvl.id, 'aria-label': tFmt('stem.echotrainer.aria_difficulty', '{name}: {desc}', { name: dLvl.label, desc: dLvl.desc }), 'aria-pressed': isActive ? 'true' : 'false', onClick: function() { upd('difficulty', dLvl.id); if (announceToSR) announceToSR(tFmt('stem.echotrainer.sr_difficulty', 'Difficulty: {name}. {desc}', { name: dLvl.label, desc: dLvl.desc })); }, style: { padding: '5px 12px', borderRadius: '8px', border: '1px solid ' + (isActive ? '#818cf8' : (isDark ? '#334155' : '#e2e8f0')), background: isActive ? '#4338ca' : (isDark ? '#1e293b' : '#fff'), color: isActive ? '#fff' : (isDark ? '#94a3b8' : '#475569'), fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, dLvl.icon + ' ' + dLvl.label);
           })
         ),
         h('details', { style: { fontSize: '11px', borderRadius: '8px', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), overflow: 'hidden' } },
@@ -1853,10 +1920,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
               ) : null
           )
         ),
-        (envType === 'simple_room' && tutStep < 4) ? h('div', { role: 'region', 'aria-label': 'Tutorial step ' + (tutStep + 1) + ' of 4', tabIndex: 0, style: { background: isDark ? '#0f172a' : '#eff6ff', border: '2px solid #3b82f6', borderRadius: '12px', padding: '16px', position: 'relative', zIndex: 10 } },
-          h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' } }, h('span', { style: { fontSize: '14px', fontWeight: 800, color: '#3b82f6' } }, 'Tutorial ' + (tutStep + 1) + '/4'), h('span', { style: { fontSize: '12px', fontWeight: 700, color: isDark ? '#e2e8f0' : '#1e293b' } }, TUTORIAL_STEPS[tutStep].title)),
-          h('p', { style: { fontSize: '12px', color: isDark ? '#94a3b8' : '#475569', lineHeight: 1.6, margin: '0 0 10px 0' } }, TUTORIAL_STEPS[tutStep].text),
-          h('button', { onClick: function() { var next = tutStep + 1; upd('tutStep', next); if (next >= 4 && announceToSR) announceToSR('Tutorial complete! You are ready to explore on your own.'); }, 'aria-label': tutStep < 3 ? 'Next tutorial step' : 'Complete tutorial', style: { padding: '6px 16px', borderRadius: '8px', border: 'none', background: '#1d4ed8', color: '#fff', fontSize: '12px', fontWeight: 800, cursor: 'pointer' } }, tutStep < 3 ? 'Next \u2192' : 'Got It!')
+        (envType === 'simple_room' && tutStep < 4) ? h('div', { role: 'region', 'aria-label': tFmt('stem.echotrainer.aria_tutorial_step', 'Tutorial step {n} of 4', { n: tutStep + 1 }), tabIndex: 0, style: { background: isDark ? '#0f172a' : '#eff6ff', border: '2px solid #3b82f6', borderRadius: '12px', padding: '16px', position: 'relative', zIndex: 10 } },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' } }, h('span', { style: { fontSize: '14px', fontWeight: 800, color: '#3b82f6' } }, tFmt('stem.echotrainer.tut_counter', 'Tutorial {n}/4', { n: tutStep + 1 })), h('span', { style: { fontSize: '12px', fontWeight: 700, color: isDark ? '#e2e8f0' : '#1e293b' } }, t('stem.echotrainer.tut_' + tutStep + '_title', TUTORIAL_STEPS[tutStep].title))),
+          h('p', { style: { fontSize: '12px', color: isDark ? '#94a3b8' : '#475569', lineHeight: 1.6, margin: '0 0 10px 0' } }, t('stem.echotrainer.tut_' + tutStep + '_text', TUTORIAL_STEPS[tutStep].text)),
+          h('button', { onClick: function() { var next = tutStep + 1; upd('tutStep', next); if (next >= 4 && announceToSR) announceToSR(t('stem.echotrainer.tutorial_complete_you_are_ready_to_exp', 'Tutorial complete! You are ready to explore on your own.')); }, 'aria-label': tutStep < 3 ? 'Next tutorial step' : 'Complete tutorial', style: { padding: '6px 16px', borderRadius: '8px', border: 'none', background: '#1d4ed8', color: '#fff', fontSize: '12px', fontWeight: 800, cursor: 'pointer' } }, tutStep < 3 ? 'Next \u2192' : 'Got It!')
         ) : null,
         // Distance challenge UI
         (d.distChallenge && d.distChallenge.active && !d.distChallenge.result) ? h('div', {
@@ -1866,7 +1933,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         },
           h('div', { style: { fontWeight: 800, fontSize: '13px', color: '#7c3aed', marginBottom: '6px' } }, t('stem.echotrainer.distance_challenge', '\uD83D\uDCCF Distance Challenge')),
           h('p', { style: { fontSize: '12px', color: isDark ? '#e2e8f0' : '#1e293b', margin: '0 0 10px 0' } },
-            'You just sent a sonar pulse. How far is the ' + (d.distChallenge.targetMat || 'wall') + ' surface directly ahead of you?'),
+            tFmt('stem.echotrainer.dist_prompt', 'You just sent a sonar pulse. How far is the {material} surface directly ahead of you?', { material: d.distChallenge.targetMat || t('stem.echotrainer.material_wall', 'wall') })),
           h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
             [0.5, 1, 2, 3, 5, 8, 12, 20].map(function(est) {
               return h('button', {
@@ -1874,9 +1941,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
                 onClick: function() {
                   var actual = d.distChallenge.targetDist;
                   var error = Math.abs(est - actual);
-                  var pct = Math.round((error / actual) * 100);
-                  var grade = pct < 15 ? 'Excellent!' : pct < 30 ? 'Good!' : pct < 50 ? 'Fair' : 'Keep practicing';
-                  var resultStr = grade + ' Actual: ' + actual + 'm. Your guess: ' + est + 'm (' + pct + '% off).';
+                  // Guard the divisor: targetDist rounds to one decimal, so standing
+                  // against a surface yields 0 and the percentage became Infinity.
+                  var pct = actual > 0 ? Math.round((error / actual) * 100) : (error > 0 ? 100 : 0);
+                  var grade = pct < 15 ? t('stem.echotrainer.grade_excellent', 'Excellent!')
+                    : pct < 30 ? t('stem.echotrainer.grade_good', 'Good!')
+                    : pct < 50 ? t('stem.echotrainer.grade_fair', 'Fair')
+                    : t('stem.echotrainer.grade_keep_practicing', 'Keep practicing');
+                  var resultStr = grade + ' ' + tFmt('stem.echotrainer.dist_result', 'Actual: {actual}m. Your guess: {guess}m ({pct}% off).', { actual: actual, guess: est, pct: pct });
                   upd('distChallenge', { active: true, targetDist: actual, targetMat: d.distChallenge.targetMat, answer: est, result: resultStr });
                   if (announceToSR) announceToSR(resultStr);
                   if (pct < 15 && awardXP) awardXP('echoTrainer', 5, 'Distance estimation: ' + pct + '% error');
@@ -1916,7 +1988,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
                   var correct = opt === matQuiz.correctMat;
                   var newTotal = (d.matQuizTotal || 0) + 1;
                   var newCorrect = (d.matQuizCorrect || 0) + (correct ? 1 : 0);
-                  var explanation = correct ? 'Correct! ' + opt + ' has a ' + (matHints[opt] || '') + ' sound signature.' : 'Not quite. The material was ' + matQuiz.correctMat + ' (' + (matHints[matQuiz.correctMat] || '') + '). You guessed ' + opt + '.';
+                  var explanation = correct
+                    ? tFmt('stem.echotrainer.mat_correct', 'Correct! {material} has a {hint} sound signature.', { material: opt, hint: matHints[opt] || '' })
+                    : tFmt('stem.echotrainer.mat_wrong', 'Not quite. The material was {material} ({hint}). You guessed {guess}.', { material: matQuiz.correctMat, hint: matHints[matQuiz.correctMat] || '', guess: opt });
                   var resultObj = { active: true, correctMat: matQuiz.correctMat, options: matQuiz.options, answer: opt, result: explanation };
                   updMulti({ matQuiz: resultObj, matQuizTotal: newTotal, matQuizCorrect: newCorrect });
                   if (announceToSR) announceToSR(explanation);
@@ -1961,7 +2035,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             h('div', { style: { position: 'absolute', left: '50%', top: 0, bottom: 0, width: '2px', background: 'rgba(163,190,252,0.4)', transform: 'translateX(-1px)' } })
           )
         ) : null,
-        !has3D ? h('canvas', { ref: canvasRef, className: 'echotrainer-focus-canvas', role: 'application', 'aria-label': 'Echo navigation area. WASD to move, arrows to turn, Space to click. ' + ((d.viewMode || 'echo') === 'reveal' ? 'Map visible.' : 'Audio sonar mode \u2014 listen for echoes.'), tabIndex: 0, style: { width: '100%', flex: 1, minHeight: '350px', borderRadius: '12px', background: '#080810', display: 'block', cursor: 'crosshair' }, onKeyDown: function(e) { if (e.code === 'Space') { e.preventDefault(); emitClick(); } keysRef.current[e.code] = true; }, onKeyUp: function(e) { keysRef.current[e.code] = false; } }) : null,
+        !has3D ? h('canvas', { ref: canvasRef, className: 'echotrainer-focus-canvas', role: 'application', 'aria-label': tFmt('stem.echotrainer.aria_nav_area', 'Echo navigation area. WASD to move, arrows to turn, Space to click. {mode}', { mode: (d.viewMode || 'echo') === 'reveal' ? t('stem.echotrainer.aria_map_visible', 'Map visible.') : t('stem.echotrainer.aria_sonar_mode', 'Audio sonar mode \u2014 listen for echoes.') }), tabIndex: 0, style: { width: '100%', flex: 1, minHeight: '350px', borderRadius: '12px', background: '#080810', display: 'block', cursor: 'crosshair' }, onKeyDown: function(e) { if (e.code === 'Space') { e.preventDefault(); emitClick(); } keysRef.current[e.code] = true; }, onKeyUp: function(e) { keysRef.current[e.code] = false; } }) : null,
         h('div', { style: { display: 'flex', gap: '12px', flexWrap: 'wrap', fontSize: '10px', color: isDark ? '#94a3b8' : '#64748b' } },
           has3D ? h('span', null, t('stem.echotrainer.click_to_lock_mouse_click_again_to_son', '\uD83D\uDDB1 Click to lock mouse, click again to sonar')) : null,
           h('span', null, '\uD83C\uDFAE WASD: Move' + (has3D ? ', Q/E: Strafe' : '/Arrows: Turn')),

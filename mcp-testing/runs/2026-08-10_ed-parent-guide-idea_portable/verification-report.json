@@ -1,0 +1,50 @@
+{
+  "binding": {
+    "html_sha256": "b83b6a9beee4d9c45bb35dec54df0ea41947a902a336f911535d52e95ba6e1ed",
+    "plan_sha256": "96db08536e507d53f3c11c855c855aa9f3d5e80b1f9e7a89757b99571f7ba567",
+    "source_sha256": "31910c54e4b52fea0b8c79d08a9a707ab43f413261b3ae15335d82c1fd0753a5"
+  },
+  "counts": {
+    "discrepancies": 5,
+    "items": 16,
+    "unreadable": 0,
+    "verified": 11
+  },
+  "createdAt": "2026-08-11T01:44:09Z",
+  "discrepancies": [
+    {
+      "id": "heading-002",
+      "kind": "heading",
+      "note": "Discrepancy: no 'Notes' heading exists anywhere in the source. The footnotes sit at the bottom of page 1 with no heading text; the rebuild's h2 'Notes' is a synthesized section title for the relocated footnotes, and the HTML renders no review note disclosing the addition."
+    },
+    {
+      "id": "global-completeness",
+      "kind": "global",
+      "note": "Discrepancy: source page 1 carries three internal link annotations on the superscript footnote markers [1][2][3] (GoTo links jumping to the footnotes); in the rebuild these markers are plain text with no anchors linking to the relocated Notes section. The blank page image (image-001-obj74.png, 888x157 DeviceGray, renders solid white) was also dropped. Neither is disclosed - the HTML contains no review-notes section. All running text, both external links, both emails, the letterhead image, and the signature block are present."
+    },
+    {
+      "id": "global-no-invention",
+      "kind": "global",
+      "note": "Discrepancy: the h2 'Notes' is document content that does not exist anywhere in the source and is undisclosed. All other additions are standard accessibility scaffolding (skip link, page-break marker labeled 'Page 2', meta description) rather than document content; body text otherwise matches the source with no invented sentences."
+    },
+    {
+      "id": "global-reading-order",
+      "kind": "global",
+      "note": "Discrepancy on the disclosure clause: the linear order itself is an improvement (letterhead, date, salutation, body with the page-1/page-2 straddling sentence rejoined, signature block, then footnotes last), but the relocation of footnotes 1-3 from the bottom of page 1 to an end-of-document Notes section after the page-2 signature is nowhere disclosed - the rebuilt HTML renders no review notes."
+    },
+    {
+      "id": "global-review-notes",
+      "kind": "global",
+      "note": "Discrepancy: the rebuilt HTML contains no review-notes section at all, so none of the observed transformations are disclosed: footnotes 1-3 relocated under a synthesized 'Notes' h2; footnote-marker internal links dropped (plain [1][2][3] text); the cross-page sentence rejoined with page-2 text inside a paragraph tagged data-source-page=\"1\"; the blank image obj74 omitted; and the metadata title's trailing ' (PDF)' trimmed from the h1."
+    }
+  ],
+  "meaning": "'verified' means an independent reader attested every item against the source. It does not upgrade any compliance claim, and the script cannot prove the reader's independence - it records the attestation.",
+  "result": "discrepancies-found",
+  "schemaVersion": "1.0",
+  "unreadable": [],
+  "verifier": {
+    "context_isolation": "fresh-context",
+    "model": "claude-fable-5",
+    "statement": "I read source.pdf directly via pdfjs: reading-order per-page lines (extract_pages.cjs / pages-ordered.json), the raw object-order text layer, italic-face evidence (extract_f3.cjs: TimesNewRomanPS-ItalicMT items on page 1, roman-only page 2), embedded metadata Title (meta.cjs), and link annotations on both pages via a page.getAnnotations() script I wrote (check_annots.cjs); I viewed both extracted images (image-002-obj75.jpg letterhead, image-001-obj74.png blank) with the Read tool, then read alloflow-output/source-accessible.html in full (all 76 lines, which render no review-notes section) and compared it block by block against the source. I did not read repair-plan.json or any other notes."
+  }
+}

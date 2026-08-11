@@ -532,21 +532,21 @@ function runOpenStemToolCommand(c, params, t) {
   const openLab = () => { try { c.openStemLab(); } catch (_) {} };
   if (typeof c.openStemTool !== 'function') {
     openLab();
-    return t('cmd.open_stem_tool_unsupported', 'STEM Lab opened. This build cannot jump straight to a named tool.');
+    return t('cmd.open_stem_tool_unsupported', 'STEAM Lab opened. This build cannot jump straight to a named tool.');
   }
   if (!query) {
     openLab();
-    return t('cmd.open_stem_tool_none', 'STEM Lab opened. Name a tool and I can go straight to it.');
+    return t('cmd.open_stem_tool_none', 'STEAM Lab opened. Name a tool and I can go straight to it.');
   }
   const res = resolveStemTool(query);
   if (res.noCatalog) {
     openLab();
-    return t('cmd.open_stem_tool_no_index', 'STEM Lab opened. The tool catalog was not available, so browse the list.');
+    return t('cmd.open_stem_tool_no_index', 'STEAM Lab opened. The tool catalog was not available, so browse the list.');
   }
   const best = res.matches[0];
   if (!best) {
     openLab();
-    return t('cmd.open_stem_tool_miss', 'No STEM tool matched ') + JSON.stringify(query) + t('cmd.open_stem_tool_miss_tail', '. STEM Lab opened so you can browse.');
+    return t('cmd.open_stem_tool_miss', 'No STEM tool matched ') + JSON.stringify(query) + t('cmd.open_stem_tool_miss_tail', '. STEAM Lab opened so you can browse.');
   }
   // On a near-tie, open nothing and ask. Silently opening the wrong tool is a
   // worse failure than one extra turn, especially for the agent, which cannot
@@ -823,7 +823,7 @@ function buildAlloCommands(ctx, opts = {}) {
     // ── Open a tool (added 2026-06-13) — quick-launch the workspaces that normally live behind a
     //    hub card. Each is opensPanel-tagged so launching it CLOSES any open hub / other tool (the
     //    panel-stacking fix) instead of stacking. The ctx open-closures mirror the hub cards. ──
-    { id: 'open_stem_lab', opensPanel: 'stemLab', icon: '🔬', roles: 'all', label: t('cmd.open_stem_lab', 'Open the STEM Lab'), aliases: ['stem lab', 'stem', 'science lab', 'math lab', 'simulations', 'labs'], hint: t('cmd.open_stem_lab_hint', 'Interactive science & math tools'), run: (c) => { c.openStemLab(); return t('cmd.open_stem_lab_done', 'STEM Lab opened.'); } },
+    { id: 'open_stem_lab', opensPanel: 'stemLab', icon: '🔬', roles: 'all', label: t('cmd.open_stem_lab', 'Open the STEAM Lab'), aliases: ['steam lab', 'steam', 'stem lab', 'stem', 'open the stem lab', 'open the steam lab', 'science lab', 'math lab', 'simulations', 'labs'], hint: t('cmd.open_stem_lab_hint', 'Interactive science & math tools'), run: (c) => { c.openStemLab(); return t('cmd.open_stem_lab_done', 'STEAM Lab opened.'); } },
     { id: 'open_storyforge', opensPanel: 'storyForge', icon: '✍️', roles: 'all', label: t('cmd.open_storyforge', 'Open StoryForge'), aliases: ['storyforge', 'story forge', 'creative writing', 'write a story'], hint: t('cmd.open_storyforge_hint', 'Guided creative writing'), run: (c) => { c.openStoryForge(); return t('cmd.open_storyforge_done', 'StoryForge opened.'); } },
     { id: 'open_allohaven', opensPanel: 'alloHaven', icon: '🏝️', roles: 'all', label: t('cmd.open_allohaven', 'Open AlloHaven'), aliases: ['allohaven', 'allo haven', 'haven', 'calm space', 'regulation space', 'break space'], hint: t('cmd.open_allohaven_hint', 'A calm, regulating space'), run: (c) => { c.openAlloHaven(); return t('cmd.open_allohaven_done', 'AlloHaven opened.'); } },
     { id: 'open_behavior_lens', opensPanel: 'behaviorLens', icon: '🔎', roles: 'teacher', label: t('cmd.open_behavior_lens', 'Open the Behavior Lens'), aliases: ['behavior lens', 'behaviour lens', 'abc data', 'behavior data', 'fba', 'observation'], hint: t('cmd.open_behavior_lens_hint', 'Behavior observation & analysis'), run: (c) => { c.openBehaviorLens(); return t('cmd.open_behavior_lens_done', 'Behavior Lens opened.'); } },
@@ -833,9 +833,9 @@ function buildAlloCommands(ctx, opts = {}) {
     { id: 'open_cinematic_studio', opensPanel: 'cinematicStudio', icon: '🎬', roles: 'teacher', label: t('cmd.open_cinematic_studio', 'Open Cinematic Studio'), aliases: ['cinematic studio', 'cinematic crawl', 'title crawl', 'intro video', 'video opener'], hint: t('cmd.open_cinematic_studio_hint', 'Create cinematic intros and explainers'), run: (c) => { c.openCinematicStudio(); return t('cmd.open_cinematic_studio_done', 'Cinematic Studio opened.'); } },
     { id: 'open_allo_studio', opensPanel: 'alloStudio', icon: '🖼️', roles: 'teacher', label: t('cmd.open_allo_studio', 'Open Page Designer'), aliases: ['allostudio', 'allo studio', 'page designer', 'design studio', 'poster editor', 'worksheet editor', 'flyer studio', 'slide deck', 'powerpoint'], hint: t('cmd.open_allo_studio_hint', 'Design accessible posters, flyers, worksheets, and slide decks'), run: (c) => { c.openAlloStudio(); return t('cmd.open_allo_studio_done', 'Page Designer opened.'); } },
     { id: 'open_accessibility_lab', opensPanel: 'accessibilityLab', icon: '♿', roles: 'teacher', label: t('cmd.open_accessibility_lab', 'Open the Accessibility Lab'), aliases: ['accessibility lab', 'a11y lab', 'accessibility checker', 'wcag', 'contrast checker'], hint: t('cmd.open_accessibility_lab_hint', 'Check & improve accessibility'), run: (c) => { c.openAccessibilityLab(); return t('cmd.open_accessibility_lab_done', 'Accessibility Lab opened.'); } },
-    { id: 'open_lumen', opensPanel: 'stemLab', icon: '💡', roles: 'teacher', label: t('cmd.open_lumen', 'Open Lumen (data canvas)'), aliases: ['lumen', 'data canvas', 'chart data', 'graph data', 'progress charts', 'visualize data'], hint: t('cmd.open_lumen_hint', 'Turn assessment data into charts'), run: (c) => { c.openLumen(); return t('cmd.open_lumen_done', 'Lumen opened in the STEM Lab.'); } },
+    { id: 'open_lumen', opensPanel: 'stemLab', icon: '💡', roles: 'teacher', label: t('cmd.open_lumen', 'Open Lumen (data canvas)'), aliases: ['lumen', 'data canvas', 'chart data', 'graph data', 'progress charts', 'visualize data'], hint: t('cmd.open_lumen_hint', 'Turn assessment data into charts'), run: (c) => { c.openLumen(); return t('cmd.open_lumen_done', 'Lumen opened in the STEAM Lab.'); } },
     { id: 'open_free_forms', opensPanel: 'stemLab', icon: '🏛️', roles: 'all', label: t('cmd.open_free_forms', 'Open Free Forms'), aliases: ['free forms', 'world of forms', 'forms', 'build a venn', 'story mountain', '3d organizer', 'build my own organizer'], hint: t('cmd.open_free_forms_hint', 'Build your own 3D World of Forms'), run: (c) => { c.openFreeForms(); return t('cmd.open_free_forms_done', 'Free Forms opened.'); } },
-    { id: 'open_stem_tool', opensPanel: 'stemLab', icon: '🧪', roles: 'all', label: t('cmd.open_stem_tool', 'Open a specific STEM tool'), aliases: ['open stem tool', 'launch stem tool', 'open simulation', 'open simulator', 'start stem tool', 'open lab tool', 'jump to tool'], hint: t('cmd.open_stem_tool_hint', 'Name any STEM Lab tool and go straight to it'), run: (c, params) => runOpenStemToolCommand(c, params || {}, t) },
+    { id: 'open_stem_tool', opensPanel: 'stemLab', icon: '🧪', roles: 'all', label: t('cmd.open_stem_tool', 'Open a specific STEM tool'), aliases: ['open stem tool', 'launch stem tool', 'open simulation', 'open simulator', 'start stem tool', 'open lab tool', 'jump to tool'], hint: t('cmd.open_stem_tool_hint', 'Name any STEAM Lab tool and go straight to it'), run: (c, params) => runOpenStemToolCommand(c, params || {}, t) },
     // ── Restored to the canonical source (2026-08-04) ──────────────────────
     // These 27 shipped in the BUILT module only (0c8bd276e), so every rebuild
     // deleted them. Ported back verbatim so source is canonical again.
@@ -1418,7 +1418,7 @@ function _intentContextBrief(ctx) {
     const surfaces = [];
     if (ctx.educatorHubOpen) surfaces.push("Educator Hub");
     if (ctx.learningHubOpen) surfaces.push("Learning Hub");
-    if (ctx.stemLabOpen) surfaces.push("STEM Lab" + (ctx.stemLabTool ? " (" + ctx.stemLabTool + ")" : ""));
+    if (ctx.stemLabOpen) surfaces.push("STEAM Lab" + (ctx.stemLabTool ? " (" + ctx.stemLabTool + ")" : ""));
     if (ctx.symbolStudioOpen) surfaces.push("Symbol Studio");
     if (ctx.behaviorLensOpen) surfaces.push("Behavior Lens");
     if (ctx.pipelineOpen) surfaces.push(ctx.pipelineFixRunning ? "PDF remediation (fixing now)" : "PDF remediation");
@@ -2542,7 +2542,7 @@ function _recordCommandUse(commandId) {
 const CTX_FLAG = { liveSession:'liveSessionActive', pipeline:'pipelineOpen', educatorHub:'educatorHubOpen', learningHub:'learningHubOpen', sourceSetup:'sourceSetupOpen', symbolStudio:'symbolStudioOpen', videoStudio:'videoStudioOpen', alloStudio:'alloStudioOpen', cinematicStudio:'cinematicStudioOpen', stemLab:'stemLabOpen', openGroove:'openGrooveOpen', timelineStudio:'timelineStudioOpen', linguaPractice:'linguaPracticeOpen', testPrepHub:'testPrepHubOpen', researchHub:'researchHubOpen', litLab:'litLabOpen', mindMap:'mindMapOpen', poetTree:'poetTreeOpen', behaviorLens:'behaviorLensOpen', content:'contentLoaded', reading:(c)=>!!(c.zenActive||c.focusActive) };
 // Priority when several contexts are active (tool > pipeline > hub > content > reading).
 const CTX_PRIORITY = ['sourceSetup','liveSession','videoStudio','alloStudio','cinematicStudio','symbolStudio','stemLab','openGroove','timelineStudio','linguaPractice','testPrepHub','researchHub','litLab','mindMap','poetTree','behaviorLens','pipeline','educatorHub','learningHub','content','reading'];
-const CONTEXT_LABEL_FALLBACK = { sourceSetup:'Here — Source setup', liveSession:'Here — Live session', pipeline:'Here — Pipeline results', educatorHub:'Here — Educator Hub', learningHub:'Here — Learning Hub', symbolStudio:'Here — Symbol Studio', videoStudio:'Here — Video Studio', alloStudio:'Here — Page Designer', cinematicStudio:'Here — Cinematic Studio', stemLab:'Here — STEM Lab', openGroove:'Here — Open Groove Studio', timelineStudio:'Here — Timeline Studio', linguaPractice:'Here — Lingua Practice', testPrepHub:'Here — Test Prep Hub', researchHub:'Here — Research Hub', litLab:'Here — Lit Lab', mindMap:'Here — Throughline', poetTree:'Here — Poet Tree', behaviorLens:'Here — Behavior Lens', content:'Here — this content', reading:'Here — Reading mode' };
+const CONTEXT_LABEL_FALLBACK = { sourceSetup:'Here — Source setup', liveSession:'Here — Live session', pipeline:'Here — Pipeline results', educatorHub:'Here — Educator Hub', learningHub:'Here — Learning Hub', symbolStudio:'Here — Symbol Studio', videoStudio:'Here — Video Studio', alloStudio:'Here — Page Designer', cinematicStudio:'Here — Cinematic Studio', stemLab:'Here — STEAM Lab', openGroove:'Here — Open Groove Studio', timelineStudio:'Here — Timeline Studio', linguaPractice:'Here — Lingua Practice', testPrepHub:'Here — Test Prep Hub', researchHub:'Here — Research Hub', litLab:'Here — Lit Lab', mindMap:'Here — Throughline', poetTree:'Here — Poet Tree', behaviorLens:'Here — Behavior Lens', content:'Here — this content', reading:'Here — Reading mode' };
 function _activeContexts(ctx) {
   if (!ctx) return [];
   return CTX_PRIORITY.filter((k) => { const f = CTX_FLAG[k]; return typeof f === 'function' ? f(ctx) : !!ctx[f]; });

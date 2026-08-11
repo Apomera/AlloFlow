@@ -1,4 +1,4 @@
-// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -4020,10 +4020,10 @@ window.StemLab = window.StemLab || {
       }
 
       var backBtn = h('button', Object.assign({
-        onClick: function() { setStemLabTool(null); if (announceToSR) announceToSR('Returned to STEM Lab tools'); },
+        onClick: function() { setStemLabTool(null); if (announceToSR) announceToSR('Returned to STEAM Lab tools'); },
         className: 'semi-action flex items-center gap-1 rounded-lg border border-slate-600 bg-slate-900/80 px-3 py-2 text-xs font-bold text-slate-100 hover:border-cyan-400 hover:bg-slate-800 hover:text-white transition-colors mb-3'
       }, a11yClick ? a11yClick(function() { setStemLabTool(null); }) : {}),
-        h(ArrowLeft, { size: 14 }), t('stem.semiconductor.back_to_stem_lab', ' Back to STEM Lab')
+        h(ArrowLeft, { size: 14 }), t('stem.semiconductor.back_to_stem_lab', ' Back to STEAM Lab')
       );
 
       var semiconductorTabKeyDown = function(e, index) {

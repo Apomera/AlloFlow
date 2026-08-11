@@ -1122,12 +1122,19 @@ function normalizeLocalTaskSupport(value = {}) {
         remediationJson: normalizeLocalTaskState(support.remediationJson || support.remediation || probeSupport.remediationJson),
     };
 }
-function localModelSupportsTask(profile = {}, task = 'simple-text') {
+// Raw probe verdict: 'pass' | 'fail' | 'partial' | 'unknown' | 'unavailable'.
+// Callers that GATE on capability must use this rather than the boolean below —
+// localModelSupportsTask() is true only for 'pass', so treating false as "cannot
+// do it" would block every model that has simply never been probed.
+function localTaskState(profile = {}, task = 'simple-text') {
     const support = normalizeLocalTaskSupport(profile.taskSupport || {});
     const normalizedTask = String(task || 'simple-text').toLowerCase();
-    if (normalizedTask === 'remediation' || normalizedTask === 'remediation-json') return support.remediationJson === 'pass';
-    if (normalizedTask === 'json' || normalizedTask === 'strict-json') return support.strictJson === 'pass';
-    return support.simpleText === 'pass';
+    if (normalizedTask === 'remediation' || normalizedTask === 'remediation-json') return support.remediationJson;
+    if (normalizedTask === 'json' || normalizedTask === 'strict-json') return support.strictJson;
+    return support.simpleText;
+}
+function localModelSupportsTask(profile = {}, task = 'simple-text') {
+    return localTaskState(profile, task) === 'pass';
 }
 function buildLocalModelProfile(config = {}) {
     const backend = config.backend || 'local';
@@ -1195,6 +1202,115 @@ function tuneLocalTextOptions(prompt, opts = {}, profile = buildLocalModelProfil
         promptLikelyTooLarge: approxPromptTokens + profile.reserveTokens >= profile.contextWindow,
     };
 }
+// ─── Constrained decoding for small local models ───────────────────────────
+// response_format:{type:'json_object'} buys a GENERIC JSON grammar: the output
+// is syntactically valid but its SHAPE is unconstrained, so a 3B/4B model
+// happily returns well-formed JSON with the wrong keys. llama.cpp (the pinned
+// b9878 build behind alloflow-local) and LM Studio both accept a json_schema,
+// which they compile to a GBNF grammar — making the wrong shape structurally
+// impossible to emit rather than merely discouraged.
+//
+// ★ These schemas are load-bearing in a way prompt text is not: a constrained
+// model CANNOT deviate from them, so an inaccurate schema silently truncates
+// real fields instead of producing a visible error. Every schema therefore
+// lists the FULL property set the dispatcher's normalizer reads, and requires
+// only the fields the resource genuinely cannot render without.
+const LOCAL_SCHEMA_STRING = { type: 'string' };
+const LOCAL_STRING_LIST = { type: 'array', items: { type: 'string' } };
+// ★ Each schema below is transcribed from the LOCAL branch's own prompt in
+// generate_dispatcher_source.jsx and its normalizer, NOT from the cloud prompt
+// and not from the resource's display shape. Those differ: the local glossary
+// prompt asks for { "terms": [...] } with a "tier" field, the local FAQ prompt
+// asks for { "faqs": [...] }, and brainstorm asks for { "ideas": [...] } with a
+// "connection". A schema copied from the wrong one would constrain the model
+// into a shape unwrapArray() then reads as empty. Resource types whose local
+// path reuses the shared cloud prompt (anchor-chart, dbq, note-taking) are
+// deliberately ABSENT until their shape is verified the same way.
+const LOCAL_RESOURCE_SCHEMAS = {
+    glossary: {
+        type: 'object',
+        properties: {
+            terms: {
+                type: 'array',
+                items: {
+                    type: 'object',
+                    properties: {
+                        term: LOCAL_SCHEMA_STRING,
+                        def: LOCAL_SCHEMA_STRING,
+                        tier: { type: 'string', enum: ['Academic', 'Domain-Specific'] },
+                        translations: { type: 'object' },
+                    },
+                    required: ['term', 'def', 'tier'],
+                },
+            },
+        },
+        required: ['terms'],
+    },
+    faq: {
+        type: 'object',
+        properties: {
+            faqs: {
+                type: 'array',
+                items: {
+                    type: 'object',
+                    properties: { question: LOCAL_SCHEMA_STRING, answer: LOCAL_SCHEMA_STRING },
+                    required: ['question', 'answer'],
+                },
+            },
+        },
+        required: ['faqs'],
+    },
+    brainstorm: {
+        type: 'object',
+        properties: {
+            ideas: {
+                type: 'array',
+                items: {
+                    type: 'object',
+                    properties: {
+                        title: LOCAL_SCHEMA_STRING,
+                        description: LOCAL_SCHEMA_STRING,
+                        connection: LOCAL_SCHEMA_STRING,
+                    },
+                    required: ['title', 'description'],
+                },
+            },
+        },
+        required: ['ideas'],
+    },
+    'lesson-plan': {
+        type: 'object',
+        properties: {
+            essentialQuestion: LOCAL_SCHEMA_STRING,
+            objectives: LOCAL_STRING_LIST,
+            hook: LOCAL_SCHEMA_STRING,
+            directInstruction: LOCAL_SCHEMA_STRING,
+            guidedPractice: LOCAL_SCHEMA_STRING,
+            independentPractice: LOCAL_SCHEMA_STRING,
+            closure: LOCAL_SCHEMA_STRING,
+            extensions: LOCAL_STRING_LIST,
+        },
+        required: ['essentialQuestion', 'objectives'],
+    },
+};
+// Off by default. The schemas above have NOT been validated against a live
+// GGUF yet (see the local-engine audit), and a wrong schema under constrained
+// decoding is worse than no schema at all — it drops real fields with no error.
+// Opt in per-device with localStorage.alloflow_local_json_schema = '1', or
+// globally once a live run confirms each shape.
+function localSchemaModeEnabled() {
+    try {
+        if (typeof window === 'undefined') return false;
+        if (window.__alloLocalJsonSchema === true) return true;
+        return window.localStorage && window.localStorage.getItem('alloflow_local_json_schema') === '1';
+    } catch (_) {
+        return false;
+    }
+}
+function resourceSchemaFor(type) {
+    if (!localSchemaModeEnabled()) return null;
+    return LOCAL_RESOURCE_SCHEMAS[String(type || '')] || null;
+}
 // Terminal-marker sentinel for OpenAI SSE ("data: [DONE]"); a Symbol can never
 // collide with real streamed content.
 const STREAM_DONE = (typeof Symbol === 'function') ? Symbol('alloflow.stream.done') : ' __ALLO_STREAM_DONE__';
@@ -1206,6 +1322,10 @@ if (typeof window !== 'undefined') {
         tuneLocalTextOptions,
         buildLocalTaskSupportFromProbe,
         localModelSupportsTask,
+        localTaskState,
+        LOCAL_RESOURCE_SCHEMAS,
+        localSchemaModeEnabled,
+        resourceSchemaFor,
     };
 }
 
@@ -1305,7 +1425,20 @@ class AIProvider {
     // 2026-07-16), and its json_schema variant needs a full schema this
     // generic layer doesn't have. So for LM Studio send NO response_format
     // and lean on the prompt's JSON instruction (see _jsonPromptSuffix).
-    _openaiJsonFormat() {
+    _openaiJsonFormat(schema = null) {
+        // With a real schema in hand, the backends that compile one to a grammar
+        // should get it — including LM Studio, whose 2026-07-16 rejection was
+        // specifically that json_schema is the only object form it accepts and
+        // this layer had no schema to give it. Servers we do not control
+        // ('custom', 'localai') keep the conservative json_object behaviour.
+        if (schema && (this.backend === 'alloflow-local' || this.backend === 'lmstudio')) {
+            return {
+                response_format: {
+                    type: 'json_schema',
+                    json_schema: { name: 'alloflow_resource', strict: false, schema },
+                },
+            };
+        }
         if (this.backend === 'lmstudio') return {};
         return { response_format: { type: 'json_object' } };
     }
@@ -1368,7 +1501,7 @@ class AIProvider {
      * @param {number} [opts.maxTokens=8192] - Max output tokens
      * @returns {Promise<string|Object>} Generated text (or {text, groundingMetadata} if search=true)
      */
-    async generateText(prompt, { json = false, search = false, temperature = null, maxTokens = 8192, onProgress = null, signal = null } = {}) {
+    async generateText(prompt, { json = false, search = false, temperature = null, maxTokens = 8192, onProgress = null, signal = null, schema = null } = {}) {
         if (signal && signal.aborted) {
             const error = new Error('Text generation cancelled.');
             error.name = 'AbortError';
@@ -1403,7 +1536,7 @@ class AIProvider {
             case 'alloflow-local':
             case 'custom':
             default:
-                return this._openaiGenerateText(prompt, { json, search, temperature, maxTokens: effectiveMaxTokens, onProgress, localProfile: this.localModelProfile, localUsage, signal });
+                return this._openaiGenerateText(prompt, { json, search, temperature, maxTokens: effectiveMaxTokens, onProgress, localProfile: this.localModelProfile, localUsage, signal, schema });
         }
     }
 
@@ -1507,7 +1640,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         return text || '';
     }
 
-    async _openaiGenerateText(prompt, { json, search, temperature, maxTokens, onProgress, localProfile = null, localUsage = null, signal = null } = {}) {
+    async _openaiGenerateText(prompt, { json, search, temperature, maxTokens, onProgress, localProfile = null, localUsage = null, signal = null, localRetryDepth = 0, schema = null } = {}) {
         // ── Additive local-only streaming progress (opt-in; Phase 1) ──────────
         // Cloud is untouched: gemini/claude use their own methods, and hosted
         // 'openai' is excluded by isLocalTextBackend(). This branch engages ONLY
@@ -1534,8 +1667,15 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         };
         if (_sink && !search && isLocalTextBackend(this.backend)) {
             try {
-                const streamed = await this._openaiStreamText(prompt, { json, temperature, maxTokens, localProfile, localUsage, signal }, _sink);
-                if (typeof streamed === 'string') return streamed;
+                const streamMeta = {};
+                const streamed = await this._openaiStreamText(prompt, { json, temperature, maxTokens, localProfile, localUsage, signal, schema }, _sink, streamMeta);
+                if (typeof streamed === 'string') {
+                    return await this._finalizeLocalText(streamed, {
+                        prompt, json, temperature, maxTokens, localProfile, localUsage, signal, schema,
+                        finishReason: streamMeta.finishReason || null,
+                        depth: localRetryDepth,
+                    });
+                }
             } catch (streamErr) {
                 if (streamErr && streamErr.name === 'AbortError') throw streamErr;
                 this._warnLog('[AIProvider] local stream progress failed — falling back to non-stream:', streamErr && streamErr.message ? streamErr.message : streamErr);
@@ -1564,7 +1704,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 model: this.models.default,
                 messages: [{ role: 'user', content: effectivePrompt }],
                 stream: false,
-                ...(json ? { format: 'json' } : {}),
+                ...(json ? { format: (schema && this.backend === 'ollama') ? schema : 'json' } : {}),
                 options: {
                     num_predict: maxTokens,
                     ...(temperature !== null ? { temperature } : {}),
@@ -1574,7 +1714,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 model: this.models.default,
                 messages: [{ role: 'user', content: effectivePrompt }],
                 max_tokens: maxTokens,
-                ...(json ? this._openaiJsonFormat() : {}),
+                ...(json ? this._openaiJsonFormat(schema) : {}),
                 ...(temperature !== null ? { temperature } : {}),
             };
 
@@ -1606,6 +1746,116 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         if (search) {
             return { text, groundingMetadata: requestSearchMetadata };
         }
+        return await this._finalizeLocalText(text, {
+            prompt, json, temperature, maxTokens, localProfile, localUsage, signal, schema,
+            finishReason: this._readFinishReason(data),
+            depth: localRetryDepth,
+        });
+    }
+
+    // ── Local-only truncation detection + self-healing JSON repair ────────────
+    // The Gemini path has read finishReason and self-healed malformed JSON since
+    // it was written (see _geminiGenerateText). The local path had NEITHER, which
+    // is backwards: a 3B/4B model is far likelier than Gemini to run out of output
+    // budget mid-object or emit a stray token, and the downstream salvage in the
+    // dispatcher (parseJsonLenient) slices to the outermost bracket pair — which
+    // can never repair a truncation, because the closing brace was never emitted.
+    // The teacher saw an empty resource and no reason for it. Everything here is
+    // gated on isLocalTextBackend(), so cloud and hosted 'openai' are untouched.
+
+    // finish_reason for an OpenAI-compatible body, or done_reason for Ollama.
+    _readFinishReason(data) {
+        if (!data) return null;
+        if (this.backend === 'ollama') return data.done_reason || null;
+        const choice = data.choices && data.choices[0];
+        return (choice && (choice.finish_reason || choice.finishReason)) || null;
+    }
+
+    // Would the dispatcher be able to parse this? Mirrors parseJsonLenient's
+    // bracket-slicing salvage so we only spend a repair round-trip on text that
+    // genuinely cannot be recovered downstream.
+    _localJsonRecoverable(text) {
+        const cleaned = String(text || '')
+            .replace(/```(?:json|javascript|js)?/gi, '')
+            .replace(/```/g, '')
+            .trim();
+        if (!cleaned) return false;
+        const attempts = [cleaned];
+        const arrStart = cleaned.indexOf('[');
+        const arrEnd = cleaned.lastIndexOf(']');
+        if (arrStart >= 0 && arrEnd > arrStart) attempts.push(cleaned.slice(arrStart, arrEnd + 1));
+        const objStart = cleaned.indexOf('{');
+        const objEnd = cleaned.lastIndexOf('}');
+        if (objStart >= 0 && objEnd > objStart) attempts.push(cleaned.slice(objStart, objEnd + 1));
+        for (const candidate of attempts) {
+            try { JSON.parse(candidate); return true; } catch (_) { /* try the next slice */ }
+        }
+        return false;
+    }
+
+    // How much bigger can the output budget get without overrunning the context
+    // window? tuneLocalTextOptions clamps to the model PROFILE's ceiling, which is
+    // deliberately conservative; on a truncation we are allowed to spend the real
+    // headroom instead, but never more than the caller originally asked for.
+    _localGrownTokenBudget(maxTokens, localUsage, localProfile) {
+        const usage = localUsage || {};
+        const profile = localProfile || {};
+        const contextWindow = Number(usage.contextWindow || profile.contextWindow || 0);
+        const promptTokens = Number(usage.promptTokens || 0);
+        const reserve = Number(profile.reserveTokens || 384);
+        const ceiling = Number(usage.requestedMaxTokens || 8192);
+        const room = contextWindow - promptTokens - reserve;
+        if (!(room > 0)) return 0;
+        const grown = Math.min(Math.max(maxTokens * 2, maxTokens + 512), room, ceiling);
+        return grown > maxTokens ? Math.floor(grown) : 0;
+    }
+
+    async _finalizeLocalText(text, { prompt, json, temperature, maxTokens, localProfile, localUsage, signal, schema = null, finishReason, depth = 0 } = {}) {
+        if (!isLocalTextBackend(this.backend)) return text;
+        const truncated = String(finishReason || '').toLowerCase() === 'length';
+        if (!truncated && (!json || this._localJsonRecoverable(text))) return text;
+
+        // One retry only. depth is threaded through _openaiGenerateText so a
+        // model that truncates every single time cannot spin the classroom
+        // laptop forever.
+        if (depth >= 1) {
+            if (truncated) this._warnLog('[AIProvider] local generation truncated again after retry — returning the partial result.');
+            return text;
+        }
+
+        if (truncated) {
+            const grown = this._localGrownTokenBudget(maxTokens, localUsage, localProfile);
+            if (grown) {
+                this._warnLog(`[AIProvider] local generation hit the output ceiling (${maxTokens} tokens) — retrying with ${grown}.`);
+                return this._openaiGenerateText(prompt, {
+                    json, search: false, temperature, maxTokens: grown,
+                    onProgress: null, localProfile,
+                    localUsage: { ...(localUsage || {}), maxTokens: grown },
+                    signal, schema, localRetryDepth: depth + 1,
+                });
+            }
+            this._warnLog('[AIProvider] local generation truncated with no context headroom left to retry in.');
+            if (!json || this._localJsonRecoverable(text)) return text;
+        }
+
+        // Malformed JSON with budget to spare: repair it, exactly as the Gemini
+        // path does on MALFORMED_FUNCTION_CALL.
+        this._warnLog('[AIProvider] local model returned unparseable JSON — initiating self-healing repair...');
+        const repairPrompt = `SYSTEM ALERT: You just generated malformed JSON that crashed the application.
+Your Malformed Output: """${text || '(empty response)'}"""
+TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, trailing commas) and return ONLY the valid JSON. If the output was cut off mid-structure, complete it as briefly as possible. Do not explain or add any text.`;
+        try {
+            const repaired = await this._openaiGenerateText(repairPrompt, {
+                json: true, search: false, temperature: 0.1,
+                maxTokens: this._localGrownTokenBudget(maxTokens, localUsage, localProfile) || maxTokens,
+                onProgress: null, localProfile, localUsage, signal, schema, localRetryDepth: depth + 1,
+            });
+            if (this._localJsonRecoverable(repaired)) return repaired;
+            this._warnLog('[AIProvider] local JSON repair did not produce parseable JSON — returning the original.');
+        } catch (repairErr) {
+            if (repairErr && repairErr.name === 'AbortError') throw repairErr;
+            this._warnLog('[AIProvider] local JSON repair failed:', repairErr && repairErr.message ? repairErr.message : repairErr);
+        }
         return text;
     }
 
@@ -1614,7 +1864,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     // firing `sink({ phase, backend, receivedChars, chunks, done })` as deltas
     // arrive, and returns the SAME final string the non-stream path produces.
     // Throws on any transport/parse problem so the caller falls back cleanly.
-    async _openaiStreamText(prompt, { json, temperature, maxTokens, localProfile = null, localUsage = null, signal = null }, sink) {
+    async _openaiStreamText(prompt, { json, temperature, maxTokens, localProfile = null, localUsage = null, signal = null, schema = null }, sink, outMeta = null) {
         const isOllama = this.backend === 'ollama';
         const url = isOllama
             ? `${this.baseUrl}/api/chat`
@@ -1637,7 +1887,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 model: this.models.default,
                 messages: [{ role: 'user', content: streamPrompt }],
                 stream: true,
-                ...(json ? { format: 'json' } : {}),
+                ...(json ? { format: (schema && this.backend === 'ollama') ? schema : 'json' } : {}),
                 options: {
                     num_predict: maxTokens,
                     ...(temperature != null ? { temperature } : {}),
@@ -1648,7 +1898,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 messages: [{ role: 'user', content: streamPrompt }],
                 max_tokens: maxTokens,
                 stream: true,
-                ...(json ? this._openaiJsonFormat() : {}),
+                ...(json ? this._openaiJsonFormat(schema) : {}),
                 ...(temperature != null ? { temperature } : {}),
             };
 
@@ -1682,6 +1932,15 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             } catch (_) { /* a broken sink must never break generation */ }
         };
         const consume = (line) => {
+            // A streamed truncation is only visible in the terminal chunk's
+            // finish_reason/done_reason; the delta parsers below intentionally
+            // return content only, so sniff it here and hand it to the caller
+            // through outMeta (the return value stays the plain string every
+            // existing caller expects).
+            if (outMeta) {
+                const reason = this._sniffStreamFinishReason(line, isOllama);
+                if (reason) outMeta.finishReason = reason;
+            }
             const piece = isOllama ? this._parseOllamaStreamLine(line) : this._parseOpenAiStreamLine(line);
             if (piece === STREAM_DONE || !piece) return;
             acc += piece;
@@ -1709,6 +1968,24 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
 
         emit(true);
         return acc;
+    }
+
+    // finish_reason (OpenAI SSE) / done_reason (Ollama NDJSON) from one streamed
+    // line, or '' when the line carries none. Only the terminal chunk has one.
+    _sniffStreamFinishReason(line, isOllama) {
+        let payload = String(line || '');
+        if (!isOllama) {
+            if (payload.indexOf('data:') === 0) payload = payload.slice(5).trim();
+            if (!payload || payload === '[DONE]') return '';
+        }
+        try {
+            const obj = JSON.parse(payload);
+            if (!obj) return '';
+            if (isOllama) return obj.done_reason || '';
+            const choice = obj.choices && obj.choices[0];
+            return (choice && (choice.finish_reason || choice.finishReason)) || '';
+        } catch (_) { /* keep-alive / comment / partial line — no reason to read */ }
+        return '';
     }
 
     // Parse one line of an Ollama /api/chat streaming response (NDJSON).
@@ -2932,6 +3209,10 @@ if (typeof module !== 'undefined' && module.exports) {
         tuneLocalTextOptions,
         buildLocalTaskSupportFromProbe,
         localModelSupportsTask,
+        localTaskState,
+        LOCAL_RESOURCE_SCHEMAS,
+        localSchemaModeEnabled,
+        resourceSchemaFor,
     };
 }
 

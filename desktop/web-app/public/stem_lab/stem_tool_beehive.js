@@ -2723,6 +2723,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     timerByDifficulty: { easy: 150, normal: 110, hard: 75 }
   };
 
+  // Wing beat, shared by every 3D bee in this file (flight avatars, hive
+  // foragers, RTS swarms). A honey bee beats ~230 times a second, far past any
+  // frame rate, so the honest choice is a legible stylised beat rather than a
+  // strobing one: fast enough to read as "buzzing", slow enough to see.
+  // Amplitude tracks effort so the picture and the physics agree.
+  function beatBeeWings(avatar, clock, effort, reduced) {
+    var wings = avatar && avatar.userData && avatar.userData.wings;
+    if (!wings) return;
+    var amp = 0.30 + 0.55 * Math.max(0, Math.min(1, effort == null ? 0.5 : effort));
+    for (var wi = 0; wi < wings.length; wi++) {
+      var w = wings[wi];
+      var swing = reduced ? 0 : Math.sin(clock * 0.055 + w.pair * 0.9) * amp;
+      w.pivot.rotation.z = w.side * (0.16 + swing);
+      w.pivot.rotation.x = reduced ? 0 : Math.sin(clock * 0.055 + w.pair * 0.9 + 1.2) * 0.18;
+    }
+  }
+
   // Canonical per-colony reset. Cross-run learning artifacts (badges, notebook,
   // role career records, preferences) intentionally live outside this patch.
   function bhCreateNewColonyState() {
@@ -3114,6 +3131,1038 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       timeline: timeline
     };
   }
+
+  // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+  // 3D SCENES FOR THE BEEKEEPER AND QUEEN SIMULATIONS
+  //
+  // The Drone Flight sim already renders a real WebGL world. The other two
+  // simulations were canvas-only, which costs them the two things a hive is
+  // hardest to teach flat: that a Langstroth hive is a STACK you take apart
+  // box by box, and that an RTS "forage frontline" is a place on the ground
+  // rather than a number in a bar.
+  //
+  // Everything that is NOT scene content \u2014 WebGL setup, orbit, picking,
+  // labels, keyboard camera, context-loss recovery, pause-when-unseen, and
+  // the no-WebGL fallback \u2014 belongs to the host shell
+  // (window.StemLab.makeBayViewer), so this file builds geometry only and
+  // there is no third copy of that lifecycle in the codebase.
+  //
+  // The shell owns per-mesh SCALE, emissive and opacity for the registered
+  // group meshes (that is how selection and recede work), so live data is
+  // driven through POSITION, VISIBILITY and inner-child scale in the frame
+  // callback instead. Anything animated here must stay inside a registered
+  // group's children, never on the group itself.
+  // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+  var BEE_3D_NULL_VIEWER = {
+    attach: function () {}, sync: function () {}, nudge: function () {},
+    zoom: function () {}, reset: function () {}, status: function () { return 'failed'; }
+  };
+  // Two different failures used to be reported with one message elsewhere in
+  // the lab: an old host cannot be fixed by retrying the network, and telling
+  // a teacher to check the wifi sends them the wrong way.
+  var BEE_3D_MISSING = null;
+
+  // A small stylised bee used by both scenes. Deliberately not the flight
+  // sim's full avatar: at bay scale a six-legged model is mush, and what has
+  // to read at 40 pixels is "striped body, blurred wings, moving".
+  function build3dMiniBee(THREE, opts) {
+    opts = opts || {};
+    var bodyColor = opts.body || 0xfbbf24;
+    var group = new THREE.Group();
+    var bodyMat = new THREE.MeshPhongMaterial({ color: bodyColor, shininess: 18 });
+    var darkMat = new THREE.MeshPhongMaterial({ color: opts.dark == null ? 0x27201a : opts.dark, shininess: 6 });
+    // Wings stay small and faint on purpose: at bay scale a bright opaque wing
+    // is the largest thing on the model and the bee stops reading as a bee.
+    var wingMat = new THREE.MeshPhongMaterial({ color: 0xeaf4ff, transparent: true, opacity: 0.30, shininess: 60, side: THREE.DoubleSide, depthWrite: false });
+    var abdomen = new THREE.Mesh(new THREE.SphereGeometry(1, 8, 6), bodyMat);
+    abdomen.scale.set(0.030, 0.028, 0.048); abdomen.position.z = 0.028; group.add(abdomen);
+    var thorax = new THREE.Mesh(new THREE.SphereGeometry(1, 8, 6), darkMat);
+    thorax.scale.set(0.030, 0.029, 0.030); thorax.position.z = -0.026; group.add(thorax);
+    var band = new THREE.Mesh(new THREE.SphereGeometry(1, 8, 6), darkMat);
+    band.scale.set(0.031, 0.029, 0.009); band.position.z = 0.030; group.add(band);
+    var wings = [];
+    [-1, 1].forEach(function (side) {
+      var pivot = new THREE.Group();
+      pivot.position.set(0, 0.020, -0.016);
+      var blade = new THREE.Mesh(new THREE.SphereGeometry(1, 6, 5), wingMat);
+      blade.scale.set(0.036, 0.003, 0.016);
+      blade.position.x = side * 0.034;
+      pivot.add(blade); group.add(pivot);
+      wings.push({ pivot: pivot, side: side, pair: 0 });
+    });
+    group.userData.wings = wings;
+    if (opts.scale) group.scale.setScalar(opts.scale);
+    return group;
+  }
+
+  // \u2500\u2500 Beekeeper: the hive as a stack you can take apart \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+  // ── What a comb face says ──────────────────────────────────────────────
+  // Reading a frame is THE beekeeping skill, and the layout is not decorative:
+  //   * the queen lays a solid ellipse in the middle of the frame,
+  //   * nurses pack pollen in a band immediately around the brood,
+  //   * honey is stored in an arch over the top of both,
+  //   * and a failing queen leaves GAPS in the brood — the "spotty pattern"
+  //     that is the first thing an inspector looks for.
+  // Kept as a pure function of position and colony state so the pattern rules
+  // are testable without a GPU, and so the 3D comb and any future 2D diagram
+  // can never drift apart.
+  //
+  // u and v run -1..1 across the comb face; v = +1 is the top bar.
+  function bhCellNoise(u, v) {
+    var n = Math.sin(u * 127.1 + v * 311.7) * 43758.5453;
+    return n - Math.floor(n);
+  }
+  function bhClamp01(value, fallback) {
+    var n = typeof value === 'number' && isFinite(value) ? value : fallback;
+    return Math.max(0, Math.min(1, n));
+  }
+  function bhCombCellRole(u, v, state) {
+    var s = state || {};
+    var brood = bhClamp01(s.broodFill, 0.5);
+    var honey = bhClamp01(s.honeyFill, 0.3);
+    var pollen = bhClamp01(s.pollenLevel, 0.5);
+    var laying = bhClamp01(s.layingRate, 1);
+    // Undrawn foundation at the very edges: bees draw comb from the middle out,
+    // so a young or shrinking colony has bare corners.
+    var drawn = 0.62 + 0.38 * Math.max(brood, honey);
+    if (Math.abs(u) > drawn || Math.abs(v) > drawn) return 'foundation';
+    // Honey arch over the top. It sits ABOVE the brood, never through it.
+    var arch = 0.86 - honey * 0.42;
+    if (v > arch) return honey > 0.05 ? 'honey' : 'empty';
+    // Brood ellipse. Offset downward because the nest sits low on the frame.
+    var e = (u / 0.84) * (u / 0.84) + ((v + 0.16) / 0.70) * ((v + 0.16) / 0.70);
+    // Scales all the way to nothing. An earlier version kept a 0.18 floor so a
+    // starter nest stayed visible, and that floor drew a brood patch on the
+    // HONEY SUPER comb, which is painted with broodFill 0 — above a queen
+    // excluder, whose entire job is that brood cannot get there.
+    var broodEdge = brood * 1.22;
+    if (broodEdge > 0.0001 && e < broodEdge) {
+      // A queen who is failing skips cells. At full laying rate the pattern is
+      // wall to wall; the gaps appear first, long before the count drops.
+      if (bhCellNoise(u * 31, v * 31) > 0.12 + laying * 0.88) return 'empty';
+      // Drone brood sits along the BOTTOM edge of the nest, in larger cells
+      // with domed "bullet" cappings. Worth drawing rather than glossing:
+      // varroa prefer drone brood because drones stay capped three days longer,
+      // which is exactly why drone-comb trapping works as a mite control.
+      if (v < -0.34 && e > broodEdge * 0.44) return 'drone_brood';
+      // Capped brood in the middle, open larvae at the growing edge — the nest
+      // expands outward, so the youngest brood is always on the rim.
+      return e > broodEdge * 0.62 ? 'open_brood' : 'capped_brood';
+    }
+    // Pollen is stored AROUND a nest, so with no nest there is no band — the
+    // same guard, for the same reason.
+    if (broodEdge > 0.0001 && e < broodEdge + 0.34 + pollen * 0.30) return pollen > 0.05 ? 'pollen' : 'empty';
+    return 'empty';
+  }
+  // Pollen is stored by plant, and different plants give different colours —
+  // a "pollen band" in a real hive is a mosaic, not one shade.
+  var BH_POLLEN_COLORS = ['#e8a33d', '#d97706', '#f5d020', '#b45309', '#f97316', '#caa53a'];
+  function bhCombCellColor(role, u, v, contrast) {
+    if (contrast) {
+      if (role === 'capped_brood' || role === 'honey') return '#ffffff';
+      if (role === 'open_brood' || role === 'pollen' || role === 'drone_brood') return '#a0a0a0';
+      return '#303030';
+    }
+    if (role === 'capped_brood') return '#bd8b53';
+    if (role === 'drone_brood') return '#9c6a35';
+    if (role === 'open_brood') return '#efe4c6';
+    if (role === 'honey') return '#f6ecc9';
+    if (role === 'pollen') return BH_POLLEN_COLORS[Math.floor(bhCellNoise(v * 17, u * 17) * BH_POLLEN_COLORS.length) % BH_POLLEN_COLORS.length];
+    if (role === 'foundation') return '#8d7a56';
+    return '#6d4f24';
+  }
+  // Queens are marked with a dot whose colour encodes the year she was reared,
+  // on a five-year international cycle. It is how a beekeeper knows, at a
+  // glance on a crowded frame, both WHICH bee is the queen and HOW OLD she is.
+  var BH_QUEEN_MARK_COLORS = ['#3b82f6', '#f8fafc', '#facc15', '#ef4444', '#22c55e'];
+  var BH_QUEEN_MARK_NAMES = ['blue', 'white', 'yellow', 'red', 'green'];
+  function bhQueenMarkIndex(year) {
+    var y = typeof year === 'number' && isFinite(year) ? Math.floor(year) : 2026;
+    return ((y % 10) % 5 + 5) % 5;
+  }
+
+  var HIVE_3D_PARTS = [
+    { id: 'outer_cover', label: 'Outer cover', color: '#8fa3b8',
+      desc: 'The telescoping lid. It sheds rain and is the first thing off in any inspection \u2014 which is why nothing structural is ever attached to it.' },
+    { id: 'inner_cover', label: 'Inner cover', color: '#cbd5e1',
+      desc: 'A flat board with a centre hole. It keeps the bees from gluing the outer cover down with propolis, and its hole doubles as an upper entrance and a feeder port.' },
+    { id: 'honey_super', label: 'Honey super', color: '#f0a726',
+      desc: 'The surplus box. Everything stored here is above the colony\u2019s own needs, which is what makes harvesting it fair rather than theft. Add supers BEFORE the flow, not during it.' },
+    { id: 'excluder', label: 'Queen excluder', color: '#dbe3ec',
+      desc: 'A grid sized so workers pass and the wider queen cannot. It keeps brood out of the honey supers. Some beekeepers call it a "honey excluder" because bees are reluctant to cross it \u2014 that argument is genuinely unsettled.' },
+    { id: 'brood_box', label: 'Brood box', color: '#b0741f',
+      desc: 'The colony\u2019s home. Queen, brood, pollen and the winter cluster all live here, and it is never harvested.' },
+    { id: 'brood_frames', label: 'Brood frames', color: '#e3b04b',
+      desc: 'Langstroth\u2019s 1851 insight: leave a 6\u20139 mm gap ("bee space") around each frame and the bees will not glue it in place, so a frame can be lifted out and read like a page.' },
+    { id: 'entrance', label: 'Entrance & landing board', color: '#8a5a2b',
+      desc: 'Where foragers land and guards stand. Traffic here is the fastest field read of colony strength, and narrowing it is the standard defence against robbing.' },
+    { id: 'stand', label: 'Bottom board & stand', color: '#6d7a8a',
+      desc: 'Lifts the hive off wet ground and gives ventilation. A screened bottom board also lets some varroa mites fall out of the colony entirely.' },
+    { id: 'queen', label: 'The queen', color: '#f0abfc',
+      desc: 'One queen, longer than any worker, marked with a coloured dot. The colour is not decoration: it runs on a five-year international cycle, so the dot tells a beekeeper the year she was reared as well as which bee to look for. Find her and the colony has a future; fail to find her and the brood pattern is the next place to look.' },
+    { id: 'foragers', label: 'Foragers in flight', color: '#facc15',
+      desc: 'The orientation and foraging traffic. On a strong summer afternoon this stream is continuous; it thins to nothing in the winter cluster.' }
+  ];
+
+  function hive3dBuildScene(THREE, api) {
+    var meshes = {};
+    var picks = [];
+    var anchor = new THREE.Group();
+    // The shell's camera always looks at y = 0.30, so the hive is lifted to put
+    // its middle there. Built around y = 0 it sat in the bottom-right corner of
+    // the frame with the sky taking two thirds of the panel.
+    anchor.position.y = 0.62;
+    api.scene.add(anchor);
+
+    var contrast = !!api.contrast;
+    function colorOf(id) {
+      if (contrast) return '#ffffff';
+      for (var i = 0; i < HIVE_3D_PARTS.length; i++) if (HIVE_3D_PARTS[i].id === id) return HIVE_3D_PARTS[i].color;
+      return '#94a3b8';
+    }
+    function mat(id, opts) {
+      var o = opts || {};
+      return new THREE.MeshPhongMaterial({
+        color: new THREE.Color(o.color || colorOf(id)),
+        shininess: contrast ? 0 : (o.shininess == null ? 14 : o.shininess),
+        specular: contrast ? 0x000000 : 0x4b5563,
+        transparent: o.opacity != null && o.opacity < 1,
+        opacity: o.opacity == null ? 1 : o.opacity,
+        side: o.side || THREE.FrontSide
+      });
+    }
+    function block(id, w, hgt, dpt, x, y, z, opts) {
+      var m = new THREE.Mesh(new THREE.BoxGeometry(w, hgt, dpt), mat(id, opts));
+      m.position.set(x, y, z);
+      if (api.wantShadow) { m.castShadow = true; m.receiveShadow = true; }
+      return m;
+    }
+    // The shell's raycaster reads userData.partId off the FIRST hit and does
+    // not recurse, so every sub-mesh has to be registered individually and
+    // tagged with its parent part. Pushing the Group alone silently disables
+    // picking for that part — the group has no geometry to hit.
+    function register(id, group, parent) {
+      group.userData.partId = id;
+      group.traverse(function (o) {
+        if (!o.isMesh) return;
+        o.userData.partId = id;
+        picks.push(o);
+        if (api.wantShadow) { o.castShadow = true; o.receiveShadow = true; }
+      });
+      // A part can be parented INSIDE another part's group so it travels with
+      // it — the queen has to stay on her frame when the frame is pulled out.
+      // Register the container FIRST: this traverse re-tags the sub-part's
+      // meshes, and the last write is the one the raycaster reads.
+      (parent || anchor).add(group);
+      meshes[id] = group;
+      return group;
+    }
+    // A comb face drawn as actual hexagonal cells. This is the single biggest
+    // difference between "a brown rectangle" and "a frame you can read": the
+    // brood ellipse, the pollen mosaic, the honey arch and the gaps of a
+    // failing queen are all just per-cell colours over one instanced draw.
+    // Falls back to the flat panel underneath if the host has no batch helper.
+    function buildCombCells(parentGroup, z, centerY, faceW, faceH) {
+      var makeBatch = window.StemLab && window.StemLab.makeVoxelBatch;
+      if (typeof makeBatch !== 'function') return null;
+      var r = 0.0165;
+      // Flat-top hexagons, which is the orientation a Cylinder with 6 radial
+      // segments already has once its axis is turned to face the viewer.
+      var colStep = 1.5 * r, rowStep = Math.sqrt(3) * r;
+      var cols = Math.floor(faceW / colStep);
+      var rows = Math.floor(faceH / rowStep);
+      var cells = [];
+      for (var cx = 0; cx < cols; cx++) {
+        for (var cy = 0; cy < rows; cy++) {
+          var x = -faceW / 2 + colStep * (cx + 0.5);
+          var y = -faceH / 2 + rowStep * (cy + 0.5) + (cx % 2 ? rowStep / 2 : 0);
+          if (y > faceH / 2 - rowStep * 0.4) continue;
+          cells.push({ x: x, y: centerY + y, u: x / (faceW / 2), v: y / (faceH / 2) });
+        }
+      }
+      var cellGeo = new THREE.CylinderGeometry(r * 0.94, r * 0.94, 0.020, 6);
+      cellGeo.rotateX(Math.PI / 2);           // hex face toward the viewer
+      var batch = makeBatch(THREE, {
+        capacity: cells.length,
+        geometry: cellGeo,
+        material: new THREE.MeshPhongMaterial({ color: 0xffffff, shininess: contrast ? 0 : 14, specular: contrast ? 0x000000 : 0x3f4650 })
+      });
+      batch.mesh.position.z = z;
+      parentGroup.add(batch.mesh);
+      return { batch: batch, cells: cells, sig: '' };
+    }
+    function paintCombCells(face, state, key) {
+      if (!face || face.sig === key) return;
+      face.sig = key;
+      for (var i = 0; i < face.cells.length; i++) {
+        var cell = face.cells[i];
+        var role = bhCombCellRole(cell.u, cell.v, state);
+        // Cells are set slightly proud or sunk by role, so capped brood and
+        // capped honey catch the light as raised caps the way they really do.
+        // Drone cappings are domed and stand proud of the comb — that bulge is
+        // how you tell drone brood from worker brood across a room, so it is
+        // drawn as depth rather than only as a different colour.
+        var proud = role === 'drone_brood' ? 0.011 : (role === 'capped_brood' || role === 'honey' ? 0.004 : 0);
+        face.batch.set(i, cell.x, cell.y, proud,
+          role === 'foundation' ? 0.72 : (role === 'drone_brood' ? 1.16 : 1),
+          bhCombCellColor(role, cell.u, cell.v, contrast));
+      }
+      face.batch.commit(face.cells.length);
+    }
+
+    var BW = 1.30, BD = 0.92, WALL = 0.055;
+    // Every box is built with its front (+z) wall missing. That is the whole
+    // point of the view: a closed cube teaches nothing, and a learner who can
+    // see the frames hanging inside understands "stack of boxes full of
+    // removable pages" without a caption.
+    function hiveBoxShell(id, height, y) {
+      var g = new THREE.Group();
+      g.add(block(id, BW, height, WALL, 0, y, -BD / 2 + WALL / 2));
+      g.add(block(id, WALL, height, BD - WALL * 2, -BW / 2 + WALL / 2, y, 0));
+      g.add(block(id, WALL, height, BD - WALL * 2, BW / 2 - WALL / 2, y, 0));
+      // A stub of the front wall on each side, so the box still reads as a box
+      // rather than a three-sided panel.
+      g.add(block(id, 0.22, height, WALL, -BW / 2 + 0.11, y, BD / 2 - WALL / 2));
+      g.add(block(id, 0.22, height, WALL, BW / 2 - 0.11, y, BD / 2 - WALL / 2));
+      return g;
+    }
+
+    // \u2500\u2500 Stand and bottom board \u2500\u2500
+    var standGroup = new THREE.Group();
+    standGroup.add(block('stand', BW + 0.14, 0.07, BD + 0.10, 0, -0.92, 0));
+    [-1, 1].forEach(function (sx) {
+      [-1, 1].forEach(function (sz) {
+        standGroup.add(block('stand', 0.11, 0.30, 0.11, sx * (BW / 2 - 0.06), -1.10, sz * (BD / 2 - 0.06)));
+      });
+    });
+    register('stand', standGroup);
+
+    // \u2500\u2500 Entrance and landing board \u2500\u2500
+    var entranceGroup = new THREE.Group();
+    var landing = block('entrance', BW, 0.045, 0.34, 0, -0.875, BD / 2 + 0.15);
+    landing.rotation.x = -0.10;
+    entranceGroup.add(landing);
+    entranceGroup.add(block('entrance', BW - 0.34, 0.055, 0.06, 0, -0.845, BD / 2 - 0.02, { color: contrast ? '#ffffff' : '#3b2412' }));
+    register('entrance', entranceGroup);
+
+    // \u2500\u2500 Brood box, its frames, and the brood pattern on the front comb \u2500\u2500
+    var broodY = -0.545, broodH = 0.60;
+    register('brood_box', hiveBoxShell('brood_box', broodH, broodY));
+
+    // Every frame gets its four wooden bars, not just a top bar. Without the
+    // side and bottom timbers the front comb is an unbroken slab of wax filling
+    // the whole opening, and the box reads as empty rather than as a frame you
+    // could lift out — which is the one idea a Langstroth hive exists to show.
+    function addFrameTimber(group, mat3d, y, height, z) {
+      var span = BW - 0.08, bar = 0.034, depth = 0.05;
+      var top = new THREE.Mesh(new THREE.BoxGeometry(span, bar, depth), mat3d);
+      top.position.set(0, y + height / 2, z); group.add(top);
+      var bottom = new THREE.Mesh(new THREE.BoxGeometry(span - 0.04, bar * 0.8, depth), mat3d);
+      bottom.position.set(0, y - height / 2, z); group.add(bottom);
+      [-1, 1].forEach(function (side) {
+        var end = new THREE.Mesh(new THREE.BoxGeometry(bar, height, depth), mat3d);
+        end.position.set(side * (span / 2 - bar / 2), y, z); group.add(end);
+      });
+    }
+
+    var broodFrameGroup = new THREE.Group();
+    // The frame nearest the front is the one an inspection actually lifts out,
+    // so it gets its own group: selecting it slides it toward the viewer.
+    var broodBackGroup = new THREE.Group();
+    var broodFrontGroup = new THREE.Group();
+    broodFrameGroup.add(broodBackGroup);
+    broodFrameGroup.add(broodFrontGroup);
+    var broodFrameFaces = [];
+    var combMat = mat('brood_frames', { color: contrast ? '#ffffff' : '#8a6a34', shininess: 4 });
+    var frameBarMat = mat('brood_frames', { color: contrast ? '#ffffff' : '#e8cd94', shininess: 8 });
+    for (var bf = 0; bf < 6; bf++) {
+      var bz = BD / 2 - 0.14 - bf * 0.125;
+      var intoGroup = bf === 0 ? broodFrontGroup : broodBackGroup;
+      var comb = new THREE.Mesh(new THREE.BoxGeometry(BW - 0.16, broodH - 0.13, 0.035), combMat);
+      comb.position.set(0, broodY - 0.02, bz);
+      intoGroup.add(comb);
+      addFrameTimber(intoGroup, frameBarMat, broodY - 0.02, broodH - 0.13, bz);
+      broodFrameFaces.push({ comb: comb, z: bz });
+    }
+    // Brood pattern on the front comb: capped brood in the middle, a pollen
+    // band around it, honey arched over the top. That layout is not decoration
+    // \u2014 it is the single picture a beekeeper reads a colony from, and a
+    // patchy centre is the classic "spotty pattern" queen-failure sign.
+    var patternZ = broodFrameFaces[0].z + 0.026;
+    var broodFace = buildCombCells(broodFrontGroup, patternZ, broodY - 0.02, BW - 0.20, broodH - 0.19);
+    // Fallback pattern for a host with no batch helper. Same three zones, drawn
+    // flat: the reading still works, only the cells are missing.
+    var broodPatch = null, pollenBand = null, honeyArc = null;
+    if (!broodFace) {
+      broodPatch = new THREE.Mesh(new THREE.CircleGeometry(0.30, 26), mat('brood_frames', { color: contrast ? '#ffffff' : '#c99a5e', shininess: 4 }));
+      broodPatch.position.set(0, broodY - 0.06, patternZ);
+      broodFrontGroup.add(broodPatch);
+      pollenBand = new THREE.Mesh(new THREE.RingGeometry(0.30, 0.40, 30), mat('brood_frames', { color: contrast ? '#ffffff' : '#e08a2a', shininess: 4 }));
+      pollenBand.position.set(0, broodY - 0.06, patternZ - 0.002);
+      broodFrontGroup.add(pollenBand);
+      honeyArc = new THREE.Mesh(new THREE.RingGeometry(0.40, 0.50, 30, 1, Math.PI * 0.16, Math.PI * 0.68), mat('brood_frames', { color: contrast ? '#ffffff' : '#f7c948', shininess: 40 }));
+      honeyArc.position.set(0, broodY - 0.06, patternZ - 0.002);
+      broodFrontGroup.add(honeyArc);
+    }
+    // House bees working the comb. A frame with no bees on it is a museum
+    // exhibit; the traffic is what tells you the nest is alive.
+    var combBees = [];
+    for (var cb = 0; cb < 12; cb++) {
+      var houseBee = build3dMiniBee(THREE, { body: contrast ? 0xffffff : 0xdca933, dark: contrast ? 0x000000 : 0x241d16, scale: 0.55 });
+      houseBee.rotation.x = -Math.PI / 2;    // lying flat against the comb face
+      houseBee.userData.crawl = { phase: cb * 0.83, radius: 0.10 + (cb % 5) * 0.075, speed: 0.5 + (cb % 4) * 0.22, tilt: cb * 1.1 };
+      broodFrontGroup.add(houseBee);
+      combBees.push(houseBee);
+    }
+    // The winter cluster. Bees do not hibernate — they ball up over the brood
+    // nest and shiver, and the ball shrinks and grows with the temperature.
+    // Showing this instead of scattered bees is the whole point of a winter
+    // frame: the colony is there, it is just not flying.
+    var clusterGroup = new THREE.Group();
+    for (var cl = 0; cl < 40; cl++) {
+      var clusterBee = new THREE.Mesh(new THREE.SphereGeometry(0.030, 6, 5), mat('brood_frames', { color: contrast ? '#ffffff' : (cl % 3 ? '#b98b3c' : '#5c4423'), shininess: 6 }));
+      var ca = cl * 2.399, cr = 0.20 * Math.sqrt((cl + 0.5) / 40);
+      clusterBee.position.set(Math.cos(ca) * cr * 1.45, broodY - 0.08 + Math.sin(ca) * cr, patternZ + 0.02 + (cl % 3) * 0.012);
+      clusterGroup.add(clusterBee);
+    }
+    clusterGroup.visible = false;
+    broodFrontGroup.add(clusterGroup);
+    // Swarm cells. Peanut-shaped, hanging off the BOTTOM bar of a frame — that
+    // position is the tell, because supersedure cells (a colony quietly
+    // replacing a failing queen) are built on the FACE of the comb instead.
+    // A crowded colony builds these, and once they are capped the swarm leaves.
+    var queenCellGroup = new THREE.Group();
+    var queenCellMat = mat('brood_frames', { color: contrast ? '#ffffff' : '#a9762f', shininess: 6 });
+    for (var qc = 0; qc < 5; qc++) {
+      // Test the constructor BEFORE calling it. `new THREE.CapsuleGeometry ? a : b`
+      // binds as `(new THREE.CapsuleGeometry) ? a : b`, so on pinned r128 — which
+      // has no CapsuleGeometry — the guard itself throws and takes the scene down.
+      var cellGeometry = typeof THREE.CapsuleGeometry === 'function'
+        ? new THREE.CapsuleGeometry(0.021, 0.055, 4, 8)
+        : new THREE.CylinderGeometry(0.016, 0.024, 0.085, 8);
+      var cell = new THREE.Mesh(cellGeometry, queenCellMat);
+      cell.position.set(-0.30 + qc * 0.15, broodY - 0.02 - (broodH - 0.19) / 2 - 0.045, patternZ - 0.004);
+      // Tipped well forward. Swarm cells hang under the bottom bar, so from a
+      // normal above-the-hive angle they are edge-on and easy to miss — which
+      // is exactly why beekeepers are told to TILT the frame to check for them.
+      cell.rotation.x = 0.62;
+      cell.rotation.z = (qc % 2 ? 1 : -1) * 0.12;
+      queenCellGroup.add(cell);
+    }
+    queenCellGroup.visible = false;
+    broodFrontGroup.add(queenCellGroup);
+    // Varroa. Drawn on the brood face because that is where they reproduce \u2014
+    // a mite count is a brood-cell problem before it is an adult-bee problem.
+    var mites = [];
+    var miteMat = mat('brood_frames', { color: contrast ? '#ffffff' : '#8e1c1c', shininess: 30 });
+    for (var mi = 0; mi < 14; mi++) {
+      var mite = new THREE.Mesh(new THREE.SphereGeometry(0.020, 6, 5), miteMat);
+      var ma = mi * 2.399;
+      mite.position.set(Math.cos(ma) * (0.06 + (mi % 5) * 0.048), broodY - 0.06 + Math.sin(ma) * (0.05 + (mi % 4) * 0.05), patternZ + 0.012);
+      mite.visible = false;
+      broodFrontGroup.add(mite);
+      mites.push(mite);
+    }
+    register('brood_frames', broodFrameGroup);
+
+    // The queen. Registered after the frames and parented into the front one,
+    // so she is her own pickable part and still travels with the comb she is
+    // standing on. Longer abdomen, and the year-coded mark on her thorax.
+    var queenGroup = new THREE.Group();
+    var queenBody = build3dMiniBee(THREE, { body: contrast ? 0xffffff : 0xd98b22, dark: contrast ? 0x000000 : 0x2b1d10, scale: 0.95 });
+    queenBody.rotation.x = -Math.PI / 2;
+    // A queen is not a bigger worker — she is a LONGER one. Stretching only the
+    // abdomen along its own axis is the whole silhouette difference, and it is
+    // what lets a learner pick her out of a crowded frame.
+    queenBody.children.forEach(function (node) {
+      if (node.isMesh && node.position.z > 0.02) { node.scale.z *= 1.9; node.position.z *= 1.35; }
+    });
+    queenGroup.add(queenBody);
+    var queenMarkRing = new THREE.Mesh(new THREE.CircleGeometry(0.0165, 14), mat('queen', { color: contrast ? '#000000' : '#1c1917', shininess: 0 }));
+    queenMarkRing.position.set(0, 0.019, -0.018);
+    queenMarkRing.rotation.x = -Math.PI / 2;
+    queenGroup.add(queenMarkRing);
+    var queenMark = new THREE.Mesh(new THREE.CircleGeometry(0.0115, 14), mat('queen', { color: contrast ? '#ffffff' : BH_QUEEN_MARK_COLORS[bhQueenMarkIndex(2026)], shininess: 40 }));
+    queenMark.position.set(0, 0.022, -0.018);
+    queenMark.rotation.x = -Math.PI / 2;
+    queenGroup.add(queenMark);
+    // Her retinue: nurses face INWARD toward her, grooming and feeding. That
+    // ring of attention is often what a beekeeper actually spots first.
+    var retinue = [];
+    for (var rt = 0; rt < 6; rt++) {
+      var attendant = build3dMiniBee(THREE, { body: contrast ? 0xffffff : 0xc99a3a, dark: contrast ? 0x000000 : 0x241d16, scale: 0.48 });
+      attendant.rotation.x = -Math.PI / 2;
+      attendant.userData.slot = rt;
+      queenGroup.add(attendant);
+      retinue.push(attendant);
+    }
+    register('queen', queenGroup, broodFrontGroup);
+
+    // \u2500\u2500 Queen excluder \u2500\u2500
+    var excluderGroup = new THREE.Group();
+    var excluderY = -0.222;
+    excluderGroup.add(block('excluder', BW, 0.018, 0.07, 0, excluderY, -BD / 2 + 0.04));
+    excluderGroup.add(block('excluder', BW, 0.018, 0.07, 0, excluderY, BD / 2 - 0.04));
+    for (var xb = 0; xb < 11; xb++) {
+      excluderGroup.add(block('excluder', 0.022, 0.014, BD - 0.10, -BW / 2 + 0.09 + xb * ((BW - 0.18) / 10), excluderY, 0));
+    }
+    register('excluder', excluderGroup);
+
+    // \u2500\u2500 Honey super and its filling frames \u2500\u2500
+    var superY = 0.045, superH = 0.46;
+    var superGroup = new THREE.Group();
+    // Every extra super is a whole box: shell, frames, timbers and comb face.
+    // All three are built up front and shown or hidden per frame, because
+    // rebuilding the scene on a state change would drop the camera and the
+    // WebGL context every time a student pressed "Add super".
+    var superBoxes = [];
+
+    var superFrameGroup = new THREE.Group();
+    var superFills = [];
+    var superCombMat = mat('honey_super', { color: contrast ? '#ffffff' : '#7d5a24', shininess: 6 });
+    // Capped honey is sealed under WHITE wax cappings, not left amber. That is
+    // how a beekeeper tells a finished frame from a wet one at a glance, and it
+    // also stops the fill blending into the amber box it sits in.
+    var cappedMat = mat('honey_super', { color: contrast ? '#ffffff' : '#f6ecc9', shininess: 12 });
+    var superFrameH = superH - 0.11;
+    for (var sf = 0; sf < 6; sf++) {
+      var sz = BD / 2 - 0.14 - sf * 0.125;
+      var empty = new THREE.Mesh(new THREE.BoxGeometry(BW - 0.16, superFrameH, 0.030), superCombMat);
+      empty.position.set(0, superY - 0.015, sz);
+      superFrameGroup.add(empty);
+      // Capped honey fills a frame from the TOP DOWN, so the fill panel is
+      // pinned to the top bar and grows downward. Filling upward from the
+      // bottom would teach the wrong thing about how a super fills.
+      var fill = new THREE.Mesh(new THREE.BoxGeometry(BW - 0.19, superFrameH, 0.038), cappedMat);
+      fill.position.set(0, superY - 0.015, sz);
+      superFrameGroup.add(fill);
+      addFrameTimber(superFrameGroup, frameBarMat, superY - 0.015, superFrameH, sz);
+      superFills.push({ fill: fill, top: superY - 0.015 + superFrameH / 2, height: superFrameH, index: sf, z: sz });
+    }
+    var superFace = buildCombCells(superFrameGroup, superFills[0].z + 0.026, superY - 0.015, BW - 0.22, superFrameH - 0.06);
+    var superBox0 = new THREE.Group();
+    superBox0.add(hiveBoxShell('honey_super', superH, superY));
+    superBox0.add(superFrameGroup);
+    superGroup.add(superBox0);
+    superBoxes.push({ group: superBox0, fills: superFills, face: superFace });
+    // Supers 2 and 3. Same box, and their comb faces are painted from the same
+    // model — so a stack that is filling reads bottom box first, exactly the
+    // order bees actually work upward through supers.
+    for (var extraSuper = 1; extraSuper < 3; extraSuper++) {
+      var extraGroup = new THREE.Group();
+      extraGroup.add(hiveBoxShell('honey_super', superH, superY));
+      var extraFrames = new THREE.Group();
+      var extraFills = [];
+      for (var xf = 0; xf < 6; xf++) {
+        var xz = BD / 2 - 0.14 - xf * 0.125;
+        var xEmpty = new THREE.Mesh(new THREE.BoxGeometry(BW - 0.16, superFrameH, 0.030), superCombMat);
+        xEmpty.position.set(0, superY - 0.015, xz);
+        extraFrames.add(xEmpty);
+        var xFill = new THREE.Mesh(new THREE.BoxGeometry(BW - 0.19, superFrameH, 0.038), cappedMat);
+        xFill.position.set(0, superY - 0.015, xz);
+        extraFrames.add(xFill);
+        addFrameTimber(extraFrames, frameBarMat, superY - 0.015, superFrameH, xz);
+        extraFills.push({ fill: xFill, top: superY - 0.015 + superFrameH / 2, height: superFrameH, index: xf, z: xz });
+      }
+      var extraFace = buildCombCells(extraFrames, extraFills[0].z + 0.026, superY - 0.015, BW - 0.22, superFrameH - 0.06);
+      extraGroup.add(extraFrames);
+      extraGroup.position.y = extraSuper * superH;
+      extraGroup.visible = false;
+      superGroup.add(extraGroup);
+      superBoxes.push({ group: extraGroup, fills: extraFills, face: extraFace });
+    }
+    register('honey_super', superGroup);
+
+    // \u2500\u2500 Inner and outer covers \u2500\u2500
+    var innerGroup = new THREE.Group();
+    innerGroup.add(block('inner_cover', BW, 0.032, BD, 0, 0.295, 0));
+    innerGroup.add(new THREE.Mesh(new THREE.TorusGeometry(0.10, 0.018, 8, 20), mat('inner_cover')));
+    innerGroup.children[1].rotation.x = Math.PI / 2;
+    innerGroup.children[1].position.set(0, 0.312, 0);
+    register('inner_cover', innerGroup);
+
+    var outerGroup = new THREE.Group();
+    outerGroup.add(block('outer_cover', BW + 0.09, 0.055, BD + 0.09, 0, 0.365, 0, { shininess: 52 }));
+    outerGroup.add(block('outer_cover', BW + 0.09, 0.070, 0.030, 0, 0.322, BD / 2 + 0.030, { shininess: 52 }));
+    outerGroup.add(block('outer_cover', BW + 0.09, 0.070, 0.030, 0, 0.322, -BD / 2 - 0.030, { shininess: 52 }));
+    register('outer_cover', outerGroup);
+
+    // \u2500\u2500 Foragers \u2500\u2500
+    var foragerGroup = new THREE.Group();
+    var foragers = [];
+    for (var fi = 0; fi < 22; fi++) {
+      var bee = build3dMiniBee(THREE, { body: contrast ? 0xffffff : 0xf5c542, dark: contrast ? 0x000000 : 0x241d16, scale: 0.6 });
+      bee.userData.orbit = { radius: 0.42 + (fi % 5) * 0.16, phase: fi * 0.61, lift: (fi % 4) * 0.10, speed: 0.55 + (fi % 3) * 0.22 };
+      foragerGroup.add(bee);
+      foragers.push(bee);
+    }
+    register('foragers', foragerGroup);
+
+    // Ground pad, so the hive sits on something and the shadows land.
+    var pad = new THREE.Mesh(new THREE.CircleGeometry(1.9, 40), mat('stand', { color: contrast ? '#000000' : '#3f6b3a', shininess: 2 }));
+    pad.rotation.x = -Math.PI / 2;
+    pad.position.y = -1.26;
+    if (api.wantShadow) pad.receiveShadow = true;
+    anchor.add(pad);
+    // The apiary around the hive. The whole simulation runs on a seasonal
+    // cycle, and a hive that looks identical in January and June quietly
+    // teaches that the season is a number rather than the thing driving
+    // everything else on screen.
+    var meadowGroup = new THREE.Group();
+    var meadowBlooms = [];
+    var bloomStemMat = mat('stand', { color: contrast ? '#ffffff' : '#2f6b34', shininess: 3 });
+    var bloomHeadGeo = new THREE.SphereGeometry(0.036, 7, 6);
+    var bloomStemGeo = new THREE.CylinderGeometry(0.008, 0.008, 0.15, 5);
+    for (var mb = 0; mb < 26; mb++) {
+      var bloomAngle = mb * 2.399;
+      var bloomRadius = 1.06 + (mb % 5) * 0.15;
+      var bx = Math.cos(bloomAngle) * bloomRadius;
+      var bz = Math.sin(bloomAngle) * bloomRadius * 0.78;
+      var stem = new THREE.Mesh(bloomStemGeo, bloomStemMat);
+      stem.position.set(bx, -1.19, bz);
+      meadowGroup.add(stem);
+      var head = new THREE.Mesh(bloomHeadGeo, mat('stand', { color: contrast ? '#ffffff' : '#e879b0', shininess: 26 }));
+      head.position.set(bx, -1.10, bz);
+      meadowGroup.add(head);
+      meadowBlooms.push({ stem: stem, head: head, hue: mb % 4, phase: mb * 0.7 });
+    }
+    anchor.add(meadowGroup);
+    // Snow: a cap on the lid and a dusting on the ground, shown only in winter.
+    var snowGroup = new THREE.Group();
+    var snowMat = mat('stand', { color: contrast ? '#ffffff' : '#f1f5f9', shininess: 4 });
+    var snowPad = new THREE.Mesh(new THREE.CircleGeometry(1.88, 40), snowMat);
+    snowPad.rotation.x = -Math.PI / 2;
+    snowPad.position.y = -1.24;
+    snowGroup.add(snowPad);
+    var snowCap = new THREE.Mesh(new THREE.BoxGeometry(BW + 0.10, 0.030, BD + 0.10), snowMat);
+    snowCap.position.y = 0.408;
+    snowGroup.add(snowCap);
+    snowGroup.visible = false;
+    anchor.add(snowGroup);
+    // Season palettes for the ground. Autumn is not just "browner": the forage
+    // is over, which is the point the colour is there to make.
+    var SEASON_PAD_COLORS = ['#4e8a3f', '#3f6b3a', '#7a6b2e', '#5c6b58'];
+    var SEASON_BLOOM_COLORS = [
+      ['#e879b0', '#f9a8d4', '#fbbf24', '#c084fc'],
+      ['#fbbf24', '#f472b6', '#a3e635', '#fb923c'],
+      ['#d97706', '#b45309', '#eab308', '#a16207'],
+      ['#94a3b8', '#94a3b8', '#94a3b8', '#94a3b8']
+    ];
+
+    // Stack lift offsets for the exploded view, in the order a real inspection
+    // takes the hive apart. The numbers are cumulative gaps, not absolute
+    // heights, so a box can be resized without re-tuning the explosion.
+    var stackLift = [
+      { group: meshes.outer_cover, lift: 1.05 },
+      { group: meshes.inner_cover, lift: 0.80 },
+      { group: superGroup, lift: 0.52 },
+      { group: meshes.excluder, lift: 0.30 },
+      { group: meshes.brood_frames, lift: 0.12 }
+    ];
+
+    function frame(nowMs, sceneProps, reduced) {
+      var sp = sceneProps || {};
+      var clock = reduced ? 0 : nowMs;
+      var honeyFill = Math.max(0, Math.min(1, sp.honeyFill == null ? 0.3 : sp.honeyFill));
+      var broodFill = Math.max(0, Math.min(1, sp.broodFill == null ? 0.5 : sp.broodFill));
+      var varroa = Math.max(0, Math.min(1, sp.varroa == null ? 0 : sp.varroa));
+      var traffic = Math.max(0, Math.min(1, sp.traffic == null ? 0.5 : sp.traffic));
+      var pollenLevel = Math.max(0, Math.min(1, sp.pollenLevel == null ? 0.5 : sp.pollenLevel));
+      var layingRate = Math.max(0, Math.min(1, sp.layingRate == null ? 1 : sp.layingRate));
+      var wintering = sp.season === 3;
+      var seasonIndex = Math.max(0, Math.min(3, Math.floor(sp.season == null ? 1 : sp.season)));
+      var superCount = Math.max(1, Math.min(superBoxes.length, Math.round(sp.superCount == null ? 1 : sp.superCount)));
+      // Boxes of honey, not a fraction of one box — a three-super stack has
+      // three times the room, and the model has to show which boxes are full.
+      var honeyBoxes = Math.max(0, sp.honeyBoxes == null ? honeyFill : sp.honeyBoxes);
+      var swarmPressure = Math.max(0, Math.min(1.5, sp.swarmPressure == null ? 0 : sp.swarmPressure));
+      var exploded = sp.exploded ? 1 : 0;
+      var pulled = sp.pulled ? 1 : 0;
+
+      // Bees work UPWARD through a stack and OUTWARD across a box, so the
+      // bottom super fills before the one above it, and within each box the
+      // frame nearest the brood nest fills first. Filling everything evenly
+      // would hide the one thing the stack is here to show.
+      for (var bi = 0; bi < superBoxes.length; bi++) {
+        var box = superBoxes[bi];
+        box.group.visible = bi < superCount;
+        box.group.position.y = bi * (superH + (exploded ? 0.10 : 0));
+        if (!box.group.visible) continue;
+        var boxShare = Math.max(0, Math.min(1, honeyBoxes - bi));
+        for (var i = 0; i < box.fills.length; i++) {
+          var slot = box.fills[i];
+          var share = Math.max(0, Math.min(1, boxShare * box.fills.length - i));
+          var hgt = Math.max(0.0001, share * slot.height);
+          slot.fill.scale.y = hgt / slot.height;
+          slot.fill.position.y = slot.top - hgt / 2;
+          slot.fill.visible = share > 0.02;
+        }
+      }
+      // The covers ride on top of whatever the stack has grown to.
+      var stackTop = (superCount - 1) * superH;
+      // …and the whole hive shrinks and drops to stay in frame as it grows. The
+      // shell owns the camera distance, so the scene cannot pull the camera
+      // back; scaling the anchor is the equivalent move and it keeps a
+      // three-super stack from walking off the top of the panel. The anchor is
+      // not one of the registered part meshes, so the shell's own scale pass
+      // never fights this.
+      var stackScale = 1 / (1 + (superCount - 1) * 0.24);
+      var stackDrop = 0.62 - stackTop * 0.46;
+      anchor.scale.setScalar(anchor.scale.x + (stackScale - anchor.scale.x) * (reduced ? 1 : 0.12));
+      anchor.position.y += (stackDrop - anchor.position.y) * (reduced ? 1 : 0.12);
+      if (meshes.inner_cover) meshes.inner_cover.userData.stackTop = stackTop;
+      if (meshes.outer_cover) meshes.outer_cover.userData.stackTop = stackTop;
+      // Repaint the comb only when the reading actually changes. Recolouring
+      // ~500 instances every frame would cost more than the whole rest of the
+      // scene to say the same thing sixty times a second.
+      // The arch of honey a BROOD frame carries is the nest's own winter store,
+      // not the surplus in the supers — capping it keeps the super's fill from
+      // swallowing the brood nest on the one frame the lesson is read from.
+      var combState = { broodFill: broodFill, honeyFill: Math.min(0.5, honeyFill), pollenLevel: pollenLevel, layingRate: layingRate };
+      paintCombCells(broodFace, combState,
+        Math.round(broodFill * 40) + '|' + Math.round(honeyFill * 40) + '|' + Math.round(pollenLevel * 20) + '|' + Math.round(layingRate * 20));
+      // Nothing but honey belongs above the excluder, so the super comb is
+      // painted with the brood and pollen terms zeroed rather than reusing the
+      // brood-nest reading — a super with a brood patch in it would be wrong.
+      for (var pb = 0; pb < superBoxes.length; pb++) {
+        if (pb >= superCount) continue;
+        var boxFill = Math.max(0, Math.min(1, honeyBoxes - pb));
+        paintCombCells(superBoxes[pb].face, { broodFill: 0, honeyFill: boxFill, pollenLevel: 0, layingRate: 1 },
+          's' + pb + '|' + Math.round(boxFill * 40));
+      }
+      if (broodPatch) {
+        var patchScale = 0.42 + broodFill * 0.72;
+        broodPatch.scale.set(patchScale, patchScale, 1);
+        pollenBand.scale.set(0.72 + broodFill * 0.42, 0.72 + broodFill * 0.42, 1);
+        honeyArc.scale.set(0.80 + honeyFill * 0.30, 0.80 + honeyFill * 0.30, 1);
+      }
+      var miteCount = Math.round(varroa * mites.length);
+      for (var mv = 0; mv < mites.length; mv++) mites[mv].visible = mv < miteCount;
+
+      for (var si = 0; si < stackLift.length; si++) {
+        var entry = stackLift[si];
+        if (!entry.group) continue;
+        var wantY = exploded * entry.lift + (entry.group.userData.stackTop || 0);
+        entry.group.position.y += (wantY - entry.group.position.y) * (reduced ? 1 : 0.14);
+      }
+
+      // Queen cells appear once crowding pushes the colony toward swarming.
+      // This is the same crowdRatio the simulation itself uses to fire a swarm
+      // event, so the warning on the frame and the event in the log agree.
+      queenCellGroup.visible = swarmPressure > 0.55 && !wintering;
+      if (queenCellGroup.visible && !reduced) {
+        queenCellGroup.children.forEach(function (qcell, qi) {
+          qcell.rotation.z = (qi % 2 ? 1 : -1) * (0.12 + 0.03 * Math.sin(clock * 0.0014 + qi));
+        });
+      }
+
+      // Seasonal setting.
+      var padColor = SEASON_PAD_COLORS[seasonIndex];
+      if (!contrast && pad.material.userData._season !== seasonIndex) {
+        pad.material.userData._season = seasonIndex;
+        pad.material.color.set(padColor);
+      }
+      snowGroup.visible = wintering;
+      // Winter forage is gone, so the blooms go with it — the dearth is the
+      // reason the colony is clustered, not a separate fact to be told.
+      meadowGroup.visible = !wintering;
+      if (!contrast && meadowGroup.visible) {
+        for (var mbi = 0; mbi < meadowBlooms.length; mbi++) {
+          var bloom = meadowBlooms[mbi];
+          if (bloom.head.material.userData._season !== seasonIndex) {
+            bloom.head.material.userData._season = seasonIndex;
+            bloom.head.material.color.set(SEASON_BLOOM_COLORS[seasonIndex][bloom.hue]);
+          }
+          // Autumn stands are sparse and shorter; spring is coming up fast.
+          var bloomScale = seasonIndex === 2 ? 0.62 : seasonIndex === 0 ? 0.86 : 1;
+          bloom.head.scale.setScalar(bloomScale * (reduced ? 1 : 1 + 0.05 * Math.sin(clock * 0.0018 + bloom.phase)));
+          bloom.stem.scale.y = bloomScale;
+        }
+      }
+
+      // Selecting the frames (or the queen) draws the front frame out of the
+      // box and turns it slightly, which is exactly the motion an inspection
+      // makes: lift, tilt to the light, read the pattern.
+      var wantPullZ = pulled * 0.46, wantPullY = pulled * 0.06;
+      broodFrontGroup.position.z += (wantPullZ - broodFrontGroup.position.z) * (reduced ? 1 : 0.13);
+      broodFrontGroup.position.y += (wantPullY - broodFrontGroup.position.y) * (reduced ? 1 : 0.13);
+      broodFrontGroup.rotation.y += ((pulled ? -0.16 : 0) - broodFrontGroup.rotation.y) * (reduced ? 1 : 0.13);
+
+      // Winter: the colony balls up over the nest instead of working the comb.
+      clusterGroup.visible = wintering;
+      if (wintering && !reduced) {
+        // The ball tightens as it gets colder and loosens on a mild day; a
+        // static blob would suggest the bees are dormant, and they are not.
+        clusterGroup.scale.setScalar(0.92 + 0.08 * Math.sin(clock * 0.0009));
+      }
+      for (var hb = 0; hb < combBees.length; hb++) {
+        var houseBee = combBees[hb];
+        houseBee.visible = !wintering && hb < Math.round(traffic * combBees.length) + 3;
+        if (!houseBee.visible) continue;
+        var crawl = houseBee.userData.crawl;
+        var crawlAngle = clock * 0.00022 * crawl.speed + crawl.phase;
+        houseBee.position.set(
+          Math.cos(crawlAngle + crawl.tilt) * crawl.radius * 1.9,
+          broodY - 0.05 + Math.sin(crawlAngle) * crawl.radius,
+          patternZ + 0.028);
+        houseBee.rotation.y = crawlAngle;
+        beatBeeWings(houseBee, clock * 0.12, 0.15, reduced);
+      }
+
+      // The queen walks the brood nest looking for an empty cell to lay in, so
+      // her path stays INSIDE the pattern rather than wandering the whole frame.
+      var queenVisible = !wintering;
+      queenGroup.visible = queenVisible;
+      if (queenVisible) {
+        var queenAngle = clock * 0.00013;
+        var queenReach = 0.08 + broodFill * 0.20;
+        var queenX = Math.cos(queenAngle) * queenReach * 1.45;
+        var queenY = broodY - 0.06 + Math.sin(queenAngle * 1.6) * queenReach;
+        queenGroup.position.set(queenX, queenY, patternZ + 0.034);
+        queenGroup.rotation.y = queenAngle + Math.PI / 2;
+        for (var rq = 0; rq < retinue.length; rq++) {
+          var ring = (rq / retinue.length) * Math.PI * 2 + clock * 0.00021;
+          retinue[rq].position.set(Math.cos(ring) * 0.055, Math.sin(ring) * 0.042, -0.002);
+          // Facing inward is the whole tell — a retinue is bees pointing AT her.
+          retinue[rq].rotation.y = -ring + Math.PI;
+          beatBeeWings(retinue[rq], clock * 0.12, 0.12, reduced);
+        }
+      }
+
+      // Foragers loop out from the entrance and back. The visible count tracks
+      // colony strength, which makes "the hive got weaker" something a learner
+      // sees at the door before they read it in a number.
+      var activeForagers = Math.round(traffic * foragers.length);
+      for (var fj = 0; fj < foragers.length; fj++) {
+        var bee = foragers[fj];
+        bee.visible = fj < activeForagers;
+        if (!bee.visible) continue;
+        var orbit = bee.userData.orbit;
+        var ang = clock * 0.00042 * orbit.speed + orbit.phase;
+        var radius = orbit.radius;
+        bee.position.set(Math.cos(ang) * radius, -0.72 + orbit.lift + Math.sin(ang * 1.7) * 0.08, BD / 2 + 0.18 + Math.sin(ang) * radius * 0.7);
+        bee.rotation.y = -ang + Math.PI / 2;
+        beatBeeWings(bee, clock, 0.9, reduced);
+      }
+    }
+
+    return { meshes: meshes, picks: picks, anchor: anchor, frame: frame };
+  }
+
+  // \u2500\u2500 Queen RTS: the frontline as a place, not a percentage \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+  var QUEEN_3D_PARTS = [
+    { id: 'home_hive', label: 'Your colony', color: '#a78bfa',
+      desc: 'Your hive. It grows and shrinks with colony health \u2014 every order you give is paid for out of this.' },
+    { id: 'rival_hive', label: 'Rival colony', color: '#fb7185',
+      desc: 'The competing colony. Real hives do compete for the same flowers, and a strong neighbour can rob a weak hive outright.' },
+    { id: 'forage_field', label: 'Contested forage', color: '#facc15',
+      desc: 'The shared meadow. Each bloom shows who is currently working it, so the "frontline" percentage has a physical place on the ground.' },
+    { id: 'swarm', label: 'Your foragers', color: '#fbbf24',
+      desc: 'Bees in transit. Nobody is directing them: recruitment by dance plus individual choice produces the whole pattern. That is what decentralized control looks like.' },
+    { id: 'guard_line', label: 'Frontline marker', color: '#38bdf8',
+      desc: 'Where your foraging range currently meets the rival\u2019s. It moves when scouting, recruitment or defence shifts the balance \u2014 it is an outcome, not an order.' }
+  ];
+
+  function queen3dBuildScene(THREE, api) {
+    var meshes = {};
+    var picks = [];
+    var anchor = new THREE.Group();
+    // Same reason as the hive scene: the shell looks at y = 0.30.
+    anchor.position.y = 0.36;
+    api.scene.add(anchor);
+
+    var contrast = !!api.contrast;
+    function colorOf(id) {
+      if (contrast) return '#ffffff';
+      for (var i = 0; i < QUEEN_3D_PARTS.length; i++) if (QUEEN_3D_PARTS[i].id === id) return QUEEN_3D_PARTS[i].color;
+      return '#94a3b8';
+    }
+    function mat(id, opts) {
+      var o = opts || {};
+      return new THREE.MeshPhongMaterial({
+        color: new THREE.Color(o.color || colorOf(id)),
+        shininess: contrast ? 0 : (o.shininess == null ? 16 : o.shininess),
+        specular: contrast ? 0x000000 : 0x4b5563,
+        transparent: o.opacity != null && o.opacity < 1,
+        opacity: o.opacity == null ? 1 : o.opacity
+      });
+    }
+    // Same contract as the hive scene: individual meshes, each tagged with the
+    // part it belongs to, because the shell's raycast is non-recursive.
+    function register(id, group) {
+      group.userData.partId = id;
+      group.traverse(function (o) {
+        if (!o.isMesh) return;
+        o.userData.partId = id;
+        picks.push(o);
+      });
+      anchor.add(group);
+      meshes[id] = group;
+      return group;
+    }
+
+    var FIELD_W = 3.2, FIELD_D = 2.0, GROUND_Y = -0.62;
+    var ground = new THREE.Mesh(new THREE.BoxGeometry(FIELD_W, 0.08, FIELD_D), mat('forage_field', { color: contrast ? '#000000' : '#3d6b39', shininess: 2 }));
+    ground.position.y = GROUND_Y;
+    if (api.wantShadow) ground.receiveShadow = true;
+    anchor.add(ground);
+
+    function buildHive(id, x, tint) {
+      var g = new THREE.Group();
+      var body = new THREE.Group();
+      // A skep-shaped stack: three tapering drums. It reads as "hive" at a
+      // glance in a way a plain box does not, and the taper gives the health
+      // scaling something visible to act on.
+      var tiers = [[0.34, 0.30, 0.26], [0.30, 0.26, 0.22], [0.26, 0.16, 0.15]];
+      for (var ti = 0; ti < tiers.length; ti++) {
+        var drum = new THREE.Mesh(new THREE.CylinderGeometry(tiers[ti][1], tiers[ti][0], tiers[ti][2], 18), mat(id, { color: tint }));
+        drum.position.y = GROUND_Y + 0.04 + 0.13 + ti * 0.23;
+        if (api.wantShadow) { drum.castShadow = true; drum.receiveShadow = true; }
+        body.add(drum);
+      }
+      var cap = new THREE.Mesh(new THREE.SphereGeometry(0.17, 14, 10), mat(id, { color: tint, shininess: 40 }));
+      cap.position.y = GROUND_Y + 0.04 + 0.13 + tiers.length * 0.23 - 0.05;
+      body.add(cap);
+      var door = new THREE.Mesh(new THREE.BoxGeometry(0.20, 0.05, 0.05), mat(id, { color: contrast ? '#000000' : '#241a10' }));
+      door.position.set(0, GROUND_Y + 0.10, 0.30);
+      body.add(door);
+      g.add(body);
+      // Health ring on the ground. A ring reads as a quantity at any camera
+      // angle, unlike a bar that foreshortens away to nothing.
+      var ring = new THREE.Mesh(new THREE.RingGeometry(0.36, 0.46, 34), mat(id, { color: tint, opacity: 0.75, shininess: 0 }));
+      ring.rotation.x = -Math.PI / 2;
+      ring.position.set(0, GROUND_Y + 0.05, 0);
+      g.add(ring);
+      g.position.x = x;
+      g.userData = { body: body, ring: ring };
+      return g;
+    }
+    register('home_hive', buildHive('home_hive', -1.24, contrast ? '#ffffff' : '#9d7bf0'));
+    register('rival_hive', buildHive('rival_hive', 1.24, contrast ? '#ffffff' : '#ef5f78'));
+
+    // \u2500\u2500 Forage field \u2500\u2500
+    // 44 blooms laid out across the contested strip. Each one flips between
+    // "yours" and "theirs" as the frontline moves, so the meadow itself is the
+    // scoreboard. Two shared materials, swapped by reference \u2014 recolouring 44
+    // materials every frame would be the expensive way to say the same thing.
+    var minePetalMat = mat('forage_field', { color: contrast ? '#ffffff' : '#c9a6ff', shininess: 34 });
+    var theirsPetalMat = mat('forage_field', { color: contrast ? '#555555' : '#f4778c', shininess: 34 });
+    var stemMat = mat('forage_field', { color: contrast ? '#ffffff' : '#2f6b34', shininess: 4 });
+    var fieldGroup = new THREE.Group();
+    var blooms = [];
+    var bloomGeo = new THREE.SphereGeometry(0.055, 8, 6);
+    var stemGeo = new THREE.CylinderGeometry(0.012, 0.012, 0.20, 5);
+    for (var bi = 0; bi < 44; bi++) {
+      var col = bi % 11, row = Math.floor(bi / 11);
+      var bx = -0.90 + col * 0.18 + (row % 2 ? 0.05 : -0.05);
+      var bz = -0.66 + row * 0.44;
+      var stem = new THREE.Mesh(stemGeo, stemMat);
+      stem.position.set(bx, GROUND_Y + 0.14, bz);
+      fieldGroup.add(stem);
+      var bloom = new THREE.Mesh(bloomGeo, minePetalMat);
+      bloom.position.set(bx, GROUND_Y + 0.25, bz);
+      if (api.wantShadow) bloom.castShadow = true;
+      fieldGroup.add(bloom);
+      // Threshold in 0..1 across the strip: a bloom is yours while your share
+      // of the frontline reaches past it.
+      blooms.push({ mesh: bloom, threshold: (bx + 0.95) / 1.90, base: GROUND_Y + 0.25, phase: bi * 0.7 });
+    }
+    register('forage_field', fieldGroup);
+
+    // \u2500\u2500 Frontline marker \u2500\u2500
+    var guardGroup = new THREE.Group();
+    var guardPost = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.016, 0.52, 8), mat('guard_line', { opacity: 0.9 }));
+    guardPost.position.y = GROUND_Y + 0.30;
+    guardGroup.add(guardPost);
+    var guardFlag = new THREE.Mesh(new THREE.BoxGeometry(0.20, 0.10, 0.012), mat('guard_line'));
+    guardFlag.position.set(0.10, GROUND_Y + 0.50, 0);
+    guardGroup.add(guardFlag);
+    var guardBase = new THREE.Mesh(new THREE.RingGeometry(0.07, 0.13, 22), mat('guard_line', { opacity: 0.7 }));
+    guardBase.rotation.x = -Math.PI / 2;
+    guardBase.position.y = GROUND_Y + 0.05;
+    guardGroup.add(guardBase);
+    register('guard_line', guardGroup);
+
+    // \u2500\u2500 Forager swarm \u2500\u2500
+    var swarmGroup = new THREE.Group();
+    var swarmBees = [];
+    for (var si2 = 0; si2 < 26; si2++) {
+      var bee = build3dMiniBee(THREE, { body: contrast ? 0xffffff : 0xf5c542, dark: contrast ? 0x000000 : 0x241d16, scale: 1.5 });
+      bee.userData.route = { phase: si2 * 0.24, speed: 0.34 + (si2 % 5) * 0.09, lane: -0.62 + (si2 % 7) * 0.21, lift: 0.16 + (si2 % 4) * 0.09 };
+      swarmGroup.add(bee);
+      swarmBees.push(bee);
+    }
+    register('swarm', swarmGroup);
+
+    function frame(nowMs, sceneProps, reduced) {
+      var sp = sceneProps || {};
+      var clock = reduced ? 0 : nowMs;
+      var share = Math.max(0, Math.min(1, sp.share == null ? 0.5 : sp.share));
+      var homeHealth = Math.max(0, Math.min(1, sp.homeHealth == null ? 1 : sp.homeHealth));
+      var rivalHealth = Math.max(0, Math.min(1, sp.rivalHealth == null ? 1 : sp.rivalHealth));
+      var forageRate = Math.max(0, Math.min(1, sp.forageRate == null ? 0.5 : sp.forageRate));
+
+      var home = meshes.home_hive, rival = meshes.rival_hive;
+      if (home && home.userData.body) {
+        home.userData.body.scale.set(0.62 + homeHealth * 0.46, 0.55 + homeHealth * 0.55, 0.62 + homeHealth * 0.46);
+        home.userData.ring.scale.setScalar(0.5 + homeHealth * 0.7);
+      }
+      if (rival && rival.userData.body) {
+        rival.userData.body.scale.set(0.62 + rivalHealth * 0.46, 0.55 + rivalHealth * 0.55, 0.62 + rivalHealth * 0.46);
+        rival.userData.ring.scale.setScalar(0.5 + rivalHealth * 0.7);
+      }
+
+      for (var bi2 = 0; bi2 < blooms.length; bi2++) {
+        var b = blooms[bi2];
+        var wantMat = b.threshold <= share ? minePetalMat : theirsPetalMat;
+        if (b.mesh.material !== wantMat) b.mesh.material = wantMat;
+        b.mesh.position.y = b.base + (reduced ? 0 : Math.sin(clock * 0.0016 + b.phase) * 0.012);
+      }
+
+      var guardX = -0.95 + share * 1.90;
+      var guard = meshes.guard_line;
+      if (guard) {
+        guard.position.x += (guardX - guard.position.x) * (reduced ? 1 : 0.12);
+        guardPost.rotation.z = reduced ? 0 : Math.sin(clock * 0.0022) * 0.05;
+      }
+
+      // Foragers run out to the frontline and back. Their turnaround point is
+      // the frontline itself, so pushing the line forward visibly lengthens
+      // every bee's commute \u2014 the cost that makes the RTS a trade-off.
+      var activeBees = Math.round(forageRate * swarmBees.length);
+      for (var sj = 0; sj < swarmBees.length; sj++) {
+        var sb = swarmBees[sj];
+        sb.visible = sj < activeBees;
+        if (!sb.visible) continue;
+        var route = sb.userData.route;
+        var trip = ((clock * 0.00016 * route.speed) + route.phase) % 2;
+        var travel = trip < 1 ? trip : 2 - trip;
+        var x = -1.16 + travel * (guardX + 1.16);
+        sb.position.set(x, GROUND_Y + 0.30 + route.lift + (reduced ? 0 : Math.sin(clock * 0.004 + route.phase) * 0.04), route.lane);
+        sb.rotation.y = trip < 1 ? Math.PI / 2 : -Math.PI / 2;
+        beatBeeWings(sb, clock, 0.85, reduced);
+      }
+    }
+
+    return { meshes: meshes, picks: picks, anchor: anchor, frame: frame };
+  }
+
+  function makeBeeViewer(parts, buildScene, home) {
+    var mk = window.StemLab && window.StemLab.makeBayViewer;
+    if (!mk) { BEE_3D_MISSING = 'host'; return BEE_3D_NULL_VIEWER; }
+    return mk({
+      parts: parts.map(function (p) { return { id: p.id, label: p.label, color: p.color }; }),
+      buildScene: buildScene,
+      home: home
+    });
+  }
+  var HIVE_3D_VIEWER = makeBeeViewer(HIVE_3D_PARTS, hive3dBuildScene, { yaw: -0.62, pitch: 0.34, dist: 4.3 });
+  var QUEEN_3D_VIEWER = makeBeeViewer(QUEEN_3D_PARTS, queen3dBuildScene, { yaw: 0, pitch: 0.56, dist: 4.7 });
+  // Stable identities. A fresh callback each render makes React tear the
+  // viewer down and rebuild the WebGL context on every state change.
+  function hive3dAttach(node) { HIVE_3D_VIEWER.attach(node || null); }
+  function queen3dAttach(node) { QUEEN_3D_VIEWER.attach(node || null); }
 
   window.StemLab.registerTool('beehive', {
     icon: '\uD83D\uDC1D',
@@ -3716,7 +4765,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var dt = new Date();
           var dateStamp = dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
           lines.push('# 🐝 Beehive Colony Report');
-          lines.push('*Generated ' + dateStamp + ' — Beehive Simulator · AlloFlow STEM Lab*');
+          lines.push('*Generated ' + dateStamp + ' — Beehive Simulator · AlloFlow STEAM Lab*');
           lines.push('');
           lines.push('## Overview');
           lines.push('- **Subspecies:** ' + activeSubspecies.emoji + ' ' + activeSubspecies.name + ' (*' + activeSubspecies.sci + '*) from ' + activeSubspecies.origin);
@@ -18125,6 +19174,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             (objects.horizonHills || []).forEach(function(node, index) { node.visible = tier !== 'eco' || index % profile.detailStride === 0; });
             (objects.depthMarkers || []).forEach(function(node, index) { node.visible = tier === 'high' || index % profile.detailStride === 0; });
             (objects.clouds || []).forEach(function(node, index) { node.visible = tier !== 'eco' || index % 2 === 0; });
+            (objects.grassTufts || []).forEach(function(node, index) { node.visible = tier === 'high' || index % profile.detailStride === 0; });
+            (objects.butterflies || []).forEach(function(node, index) { node.visible = tier !== 'eco' && (tier === 'high' || index % 2 === 0); });
             updateDroneQualityBadge(tier, reason || 'quality applied');
           }
           function syncAdaptiveDroneQuality(dt) {
@@ -18195,15 +19246,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             if ('outputEncoding' in renderer && THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
             renderer.shadowMap.enabled = initialQuality.shadows; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             if (THREE.ACESFilmicToneMapping) renderer.toneMapping = THREE.ACESFilmicToneMapping;
-            renderer.toneMappingExposure = 0.94;
+            renderer.toneMappingExposure = 1.02;
             var scene = new THREE.Scene();
             scene.fog = new THREE.Fog(0x72bee0, 360, 2600);
             var camera = new THREE.PerspectiveCamera(62, W / H, 0.5, 2600);
-            scene.add(new THREE.HemisphereLight(0xdbeafe, 0x183f28, 0.96));
-            var sun = new THREE.DirectionalLight(0xfff1c2, 1.35);
+            scene.add(new THREE.HemisphereLight(0xcfe4f7, 0x24503a, 0.58));
+            var sun = new THREE.DirectionalLight(0xfff1c2, 1.18);
             sun.position.set(-120, 260, 160);
             scene.add(sun);
-            var rim = new THREE.DirectionalLight(0x7dd3fc, 0.38);
+            var rim = new THREE.DirectionalLight(0x7dd3fc, 0.26);
             rim.position.set(180, 80, -240);
             scene.add(rim);
 
@@ -18218,7 +19269,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             ground.rotation.x = -Math.PI / 2;
             ground.position.y = -1;
             scene.add(ground);
-            var meadow = new THREE.Mesh(new THREE.PlaneGeometry(6000, 6000), basic(0x52a65a, { transparent: true, opacity: 0.38 }));
+            var meadow = new THREE.Mesh(new THREE.PlaneGeometry(6000, 6000), basic(0x3f8c4c, { transparent: true, opacity: 0.22 }));
             meadow.rotation.x = -Math.PI / 2;
             meadow.position.y = -0.95;
             ground.receiveShadow = true; meadow.receiveShadow = true;
@@ -18242,8 +19293,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             var shared = {
               trunk: mat(0x7c4a2d), leaf: mat(0x217a3a), leafLight: mat(0x43a047),
               stone: mat(0x94a3b8), roof: mat(0x475569), pole: mat(0xcbd5e1),
-              stem: mat(0x15803d), wing: mat(0xbfdbfe, { transparent: true, opacity: 0.45, depthWrite: false }),
+              stem: mat(0x15803d), wing: mat(0xdbeafe, { transparent: true, opacity: 0.34, depthWrite: false, roughness: 0.3, side: THREE.DoubleSide }),
               drone: mat(0xfbbf24), dark: mat(0x292524), bird: mat(0x1e293b),
+              // Thorax fuzz reads as hair by being rougher and paler than the
+              // abdomen plates; the eye is near-black and glossy so the drone's
+              // wrap-around eyes catch a highlight and the head is legible.
+              fuzz: mat(0xd8a13a, { roughness: 1, metalness: 0 }),
+              eye: mat(0x1c1917, { roughness: 0.25, metalness: 0.1 }),
+              pollen: mat(0xf59e0b, { emissive: 0xb45309, emissiveIntensity: 0.35, roughness: 0.9 }),
+              rival: mat(0xd97706),
+              butterflyWing: mat(0xfda4af, { transparent: true, opacity: 0.85, side: THREE.DoubleSide, emissive: 0xf43f5e, emissiveIntensity: 0.12 }),
+              grass: mat(0x2f7d3f, { roughness: 1 }),
               queen: mat(0xf59e0b, { emissive: 0x7c2d12, emissiveIntensity: 0.45 }),
               boost: mat(0xfacc15, { emissive: 0xca8a04, emissiveIntensity: 0.9 }),
               flower: [0xf472b6, 0xfbbf24, 0xa78bfa, 0xfb923c, 0x34d399, 0xf87171, 0x60a5fa].map(function(col) { return mat(col, { emissive: col, emissiveIntensity: 0.25 }); })
@@ -18261,6 +19321,90 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               hill.position.set((hillIndex - 4.5) * 235 + Math.sin(hillIndex * 1.7) * 90, 28, -980 - (hillIndex % 3) * 330);
               hill.rotation.y = hillIndex * 0.37; scene.add(hill); objects.horizonHills.push(hill);
             }
+            // ── Sky dome + sun ──
+            // A flat clear colour gives the flight no "up". A gradient dome plus a
+            // visible sun restores the horizon reference a pilot actually banks
+            // against, and gives the scenario tinting somewhere to land: the dome
+            // is multiplied by the same sky colour the fog already uses, so storm
+            // and dusk keep working with no extra state.
+            // The dome rides with the camera, so it never clips the far plane no
+            // matter how far down the corridor the bee flies.
+            // Coloured per VERTEX from world height rather than by a texture.
+            // A texture forces you to know which way three.js runs sphere UVs,
+            // and getting it upside down puts the deep blue under the horizon —
+            // which is exactly what happened. Height is unambiguous.
+            // The band nearest the horizon is deliberately close to the fog
+            // colour: the dome is excluded from fog (it is meant to stay crisp),
+            // so any gap between the two reads as a hard line of "sea" behind
+            // the meadow.
+            var skyDome = null;
+            try {
+              var domeGeometry = new THREE.SphereGeometry(1500, 24, 16);
+              var domePos = domeGeometry.attributes.position;
+              var domeColors = new Float32Array(domePos.count * 3);
+              var domeTop = new THREE.Color(0x2f7fc4);
+              var domeHorizon = new THREE.Color(0xdfeaf2);
+              var domeBelow = new THREE.Color(0xc8dbe6);
+              var domeScratch = new THREE.Color();
+              for (var dv = 0; dv < domePos.count; dv++) {
+                var heightNorm = domePos.getY(dv) / 1500;
+                domeScratch.copy(domeHorizon).lerp(heightNorm >= 0 ? domeTop : domeBelow,
+                  Math.min(1, Math.pow(Math.abs(heightNorm), heightNorm >= 0 ? 0.62 : 1.0)));
+                domeColors[dv * 3] = domeScratch.r;
+                domeColors[dv * 3 + 1] = domeScratch.g;
+                domeColors[dv * 3 + 2] = domeScratch.b;
+              }
+              domeGeometry.setAttribute('color', new THREE.BufferAttribute(domeColors, 3));
+              skyDome = new THREE.Mesh(domeGeometry, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, depthWrite: false, fog: false }));
+              skyDome.renderOrder = -10;
+              scene.add(skyDome);
+            } catch (skyError) { skyDome = null; }
+            objects.skyDome = skyDome;
+            var sunDisc = null;
+            if (skyDome) {
+              sunDisc = new THREE.Group();
+              var sunCore = mesh(new THREE.CircleGeometry(52, 28), basic(0xfff7d6, { transparent: true, opacity: 0.95, depthWrite: false, fog: false }));
+              var sunGlow = mesh(new THREE.CircleGeometry(140, 28), basic(0xfde68a, { transparent: true, opacity: 0.22, depthWrite: false, fog: false }));
+              sunGlow.position.z = -1; sunDisc.add(sunGlow); sunDisc.add(sunCore);
+              sunDisc.renderOrder = -9;
+              skyDome.add(sunDisc);
+              // Same direction as the key light, so highlights and glare agree.
+              sunDisc.position.set(-120, 260, 160).normalize().multiplyScalar(1180);
+            }
+            objects.sunDisc = sunDisc;
+            // ── Ground detail ──
+            // Speed over an empty plane is unreadable: without near-field texture
+            // the bee appears to hover no matter how fast it goes. Grass tufts give
+            // the optic flow that makes throttle changes felt, and they are the
+            // first thing dropped on Eco hardware.
+            var grassTufts = [];
+            for (var grassIndex = 0; grassIndex < 150; grassIndex++) {
+              var tuft = mesh(cone, shared.grass, [2.2 + (grassIndex % 3) * 0.7, 6 + (grassIndex % 5) * 2.4, 2.2]);
+              var grassAngle = grassIndex * 2.399;
+              tuft.position.set(Math.sin(grassAngle) * (60 + (grassIndex % 7) * 26), 2.4, -20 - (grassIndex * 9.4) % 1400);
+              tuft.rotation.y = grassAngle;
+              scene.add(tuft); grassTufts.push(tuft);
+            }
+            objects.grassTufts = grassTufts;
+            // Butterflies. Pure ambience, and deliberately harmless: they never
+            // enter the collision or scoring model, so a learner can watch them
+            // without wondering whether they were meant to chase one.
+            var butterflies = [];
+            for (var flutterIndex = 0; flutterIndex < 8; flutterIndex++) {
+              var flutter = new THREE.Group();
+              flutter.add(mesh(sphere, shared.dark, [0.7, 0.7, 2.6]));
+              var flutterWings = [];
+              [-1, 1].forEach(function(side) {
+                var flutterPivot = new THREE.Group();
+                var flutterBlade = mesh(sphere, shared.butterflyWing, [5.2, 0.2, 4.0]);
+                flutterBlade.position.x = side * 5.0;
+                flutterPivot.add(flutterBlade); flutter.add(flutterPivot);
+                flutterWings.push({ pivot: flutterPivot, side: side });
+              });
+              flutter.userData = { wings: flutterWings, baseX: Math.sin(flutterIndex * 1.9) * 150, baseZ: -90 - flutterIndex * 165, baseY: 16 + (flutterIndex % 4) * 9, phase: flutterIndex * 0.83 };
+              scene.add(flutter); butterflies.push(flutter);
+            }
+            objects.butterflies = butterflies;
             var depthPostMaterial = basic(0x38bdf8, { transparent: true, opacity: 0.62, depthWrite: false });
             var depthCapMaterial = basic(0x22d3ee, { transparent: true, opacity: 0.86, depthWrite: false });
             for (var depthIndex = 1; depthIndex <= 14; depthIndex++) {
@@ -18285,17 +19429,88 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             obstacleWarnRing.rotation.x = Math.PI / 2; obstacleWarnRing.position.y = 2; obstacleWarn.add(obstacleWarnRing);
             var obstacleWarnLight = new THREE.PointLight(0xfb7185, 0.8, 80); obstacleWarnLight.position.y = 12; obstacleWarn.add(obstacleWarnLight);
             obstacleWarn.visible = false; scene.add(obstacleWarn); objects.obstacleWarn = obstacleWarn;
-            var playerDrone = new THREE.Group();
-            var playerBody = mesh(sphere, shared.drone, [5.5, 3, 3.4]); playerDrone.add(playerBody);
-            var playerStripe = mesh(box, shared.dark, [1.2, 5.8, 3.4]); playerStripe.position.x = -0.5; playerDrone.add(playerStripe);
-            var playerWingL = mesh(sphere, shared.wing, [5.2, 0.45, 2.2]); playerWingL.position.set(-3.5, 2.4, 0); playerDrone.add(playerWingL);
-            var playerWingR = playerWingL.clone(); playerWingR.position.x = 3.5; playerDrone.add(playerWingR);
-            var playerBeacon = mesh(new THREE.TorusGeometry(7, 0.65, 8, 24), basic(0x67e8f9, { transparent: true, opacity: 0.8, side: THREE.DoubleSide, depthWrite: false })); playerBeacon.rotation.x = Math.PI / 2; playerBeacon.position.y = -3.5; playerDrone.add(playerBeacon);
+            var playerDrone = buildBeeAvatar({ scale: 1, beacon: true });
             playerDrone.visible = false; scene.add(playerDrone); objects.playerDrone = playerDrone;
+            // Contact shadow. In cockpit view the drone itself is invisible, so the
+            // ONLY continuous altitude cue in the 3D world was the numeric HUD. A
+            // dark ellipse tracking the bee across the ground gives the same reading
+            // the way a real pilot gets it — shadow close and hard means low, far
+            // and faint means high — and it costs one unlit disc.
+            var playerShadow = mesh(new THREE.CircleGeometry(7, 24), basic(0x0b2b16, { transparent: true, opacity: 0.32, depthWrite: false }));
+            playerShadow.rotation.x = -Math.PI / 2; playerShadow.position.y = -0.6; playerShadow.visible = false;
+            scene.add(playerShadow); objects.playerShadow = playerShadow;
             function mesh(geometry, material, scale) {
               var m = new THREE.Mesh(geometry, material);
               if (scale) m.scale.set(scale[0], scale[1], scale[2]);
               return m;
+            }
+            // ── Bee avatar ──
+            // The player and every rival used to be a stretched sphere with a box
+            // through it and two static paddles. A learner flying a "drone bee" on
+            // a mating flight should be able to SEE a drone bee: three body
+            // segments, the huge wrap-around drone eyes, four wings that actually
+            // beat, and pollen baskets that fill as nectar is gathered. Built from
+            // the shared unit geometries so a full rival flight adds no new
+            // geometry allocations.
+            // Nose points -Z, matching the flight model's forward vector at yaw 0.
+            function buildBeeAvatar(opts) {
+              opts = opts || {};
+              var s = opts.scale == null ? 1 : opts.scale;
+              var bodyMat = opts.bodyMat || shared.drone;
+              var group = new THREE.Group();
+              var core = new THREE.Group(); core.scale.setScalar(s); group.add(core);
+              // Head + compound eyes. Drone eyes meet at the top of the head, which
+              // is the field mark that separates a drone from a worker.
+              var head = mesh(sphere, shared.dark, [2.1, 2.0, 1.9]); head.position.z = -4.3; core.add(head);
+              [-1, 1].forEach(function(side) {
+                var eye = mesh(sphere, shared.eye, [1.05, 1.5, 1.15]);
+                eye.position.set(side * 1.25, 0.35, -4.75); core.add(eye);
+                var antenna = mesh(cylinder, shared.dark, [0.16, 2.6, 0.16]);
+                antenna.position.set(side * 0.85, 1.35, -5.5); antenna.rotation.x = 1.15; antenna.rotation.z = side * 0.28; core.add(antenna);
+              });
+              // Thorax (fuzzy, the wing engine) then the striped abdomen.
+              var thorax = mesh(sphere, shared.fuzz, [2.85, 2.65, 2.9]); thorax.position.z = -1.1; core.add(thorax);
+              var waist = mesh(sphere, shared.dark, [2.0, 1.9, 0.9]); waist.position.z = 1.0; core.add(waist);
+              var abdomen = mesh(sphere, bodyMat, [2.5, 2.35, 4.2]); abdomen.position.z = 3.6; core.add(abdomen);
+              [1.5, 3.4, 5.3].forEach(function(sz, bandIndex) {
+                var band = mesh(sphere, shared.dark, [2.42 - bandIndex * 0.22, 2.3 - bandIndex * 0.22, 0.52]);
+                band.position.z = sz; core.add(band);
+              });
+              var tip = mesh(cone, shared.dark, [1.5, 2.0, 1.5]); tip.position.z = 7.0; tip.rotation.x = -Math.PI / 2; core.add(tip);
+              // Four wings on pivots so the beat rotates about the root, not the
+              // wing's own centre — a wing spinning about its middle reads as a
+              // propeller, which is exactly the wrong idea about insect flight.
+              var wings = [];
+              [[-1, -0.4, 4.6, 2.1], [1, -0.4, 4.6, 2.1], [-1, 1.3, 3.4, 1.6], [1, 1.3, 3.4, 1.6]].forEach(function(spec) {
+                var pivot = new THREE.Group();
+                pivot.position.set(spec[0] * 1.0, 1.9, -1.0 + spec[1]);
+                var blade = mesh(sphere, shared.wing, [spec[2], 0.16, spec[3]]);
+                blade.position.set(spec[0] * spec[2] * 0.92, 0, 0);
+                pivot.add(blade); core.add(pivot);
+                wings.push({ pivot: pivot, side: spec[0], pair: spec[1] > 0 ? 1 : 0 });
+              });
+              // Legs, and the corbiculae (pollen baskets) that grow with the haul.
+              var pollenSacs = [];
+              [-1, 1].forEach(function(side) {
+                for (var legIndex = 0; legIndex < 3; legIndex++) {
+                  var leg = mesh(cylinder, shared.dark, [0.2, 2.2, 0.2]);
+                  leg.position.set(side * 1.9, -1.6, -2.6 + legIndex * 1.5);
+                  leg.rotation.z = side * 0.6; leg.rotation.x = 0.25; core.add(leg);
+                }
+                var sac = mesh(sphere, shared.pollen, [1.05, 1.05, 1.3]);
+                sac.position.set(side * 2.3, -2.3, 0.6); sac.visible = false; core.add(sac);
+                pollenSacs.push(sac);
+              });
+              var beacon = null;
+              if (opts.beacon) {
+                beacon = mesh(new THREE.TorusGeometry(7, 0.65, 8, 24), basic(0x67e8f9, { transparent: true, opacity: 0.8, side: THREE.DoubleSide, depthWrite: false }));
+                beacon.rotation.x = Math.PI / 2; beacon.position.y = -4.6; group.add(beacon);
+              }
+              group.userData.wings = wings;
+              group.userData.pollenSacs = pollenSacs;
+              group.userData.beacon = beacon;
+              group.userData.core = core;
+              return group;
             }
             (ds.obstacles || []).forEach(function(ob) {
               var group = new THREE.Group();
@@ -18341,10 +19556,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               scene.add(group); objects.thermals.push(group);
             });
             (ds.drones || []).forEach(function(od) {
-              var group = new THREE.Group(); var body = mesh(sphere, shared.drone, [4.5, 2.5, 2.8]); group.add(body);
-              var stripe = mesh(box, shared.dark, [1.1, 4.5, 3]); stripe.position.x = -0.5; group.add(stripe);
-              var left = mesh(sphere, shared.wing, [4.5, 0.45, 2]); left.position.set(-3, 2.2, 0); group.add(left);
-              var right = left.clone(); right.position.x = 3; group.add(right);
+              var group = buildBeeAvatar({ scale: 0.82, bodyMat: shared.rival });
               var trafficRing = mesh(new THREE.TorusGeometry(12, 1, 8, 24), basic(0xfb923c, { transparent: true, opacity: 0.65, side: THREE.DoubleSide, depthWrite: false })); trafficRing.rotation.x = Math.PI / 2; trafficRing.position.y = -5; trafficRing.visible = false; group.add(trafficRing);
               scene.add(group); objects.drones.push({ group: group, drone: od, alert: trafficRing });
             });
@@ -18356,7 +19568,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               scene.add(group); objects.birds.push({ group: group, bird: bird, wings: [wingL, wingR], alert: alertRing });
             });
             (ds.nearQueens || []).forEach(function(q) {
-              var group = new THREE.Group(); var body = mesh(sphere, shared.queen, [7, 4, 4]); group.add(body);
+              // A virgin queen is bigger than a drone and her abdomen is longer and
+              // tapered — that is how a drone finds her in the congregation area, so
+              // the model has to show it rather than leaving a generic amber blob.
+              var group = buildBeeAvatar({ scale: 1.25, bodyMat: shared.queen });
+              if (group.userData.core) group.userData.core.children.forEach(function(node) {
+                if (node.position && node.position.z > 2.5) node.scale.z *= 1.45;
+              });
               var glow = mesh(sphere, basic(0xfbbf24, { transparent: true, opacity: 0.16, depthWrite: false }), [18, 18, 18]); group.add(glow);
               var marker = mesh(ring, basic(0xfde68a, { transparent: true, opacity: 0.75, side: THREE.DoubleSide, depthWrite: false })); marker.rotation.x = -Math.PI / 2; marker.position.y = -8; marker.scale.set(1.5, 1.5, 1.5); group.add(marker);
               scene.add(group); objects.queens.push({ group: group, queen: q });
@@ -18441,12 +19659,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             ds.cameraStabilized = cameraStabilized;
             var cameraBob = prefersReducedMotion ? 0 : Math.sin(now * 0.008) * Math.min(cameraStabilized ? 0.006 : 0.018, (ds.speed || 0) * 0.0015);
             var fwdX = Math.sin(ds.yaw || 0), fwdZ = -Math.cos(ds.yaw || 0);
+            var throttleEffort = Math.max(0, Math.min(1, (ds.speed || 0) / 11));
+            // Pollen load drives the corbiculae on every bee in the scene, so the
+            // haul is visible on the model and not only in the HUD counter.
+            var nectarLoadRatio = Math.max(0, Math.min(1, ((ds.nectarCollected != null ? ds.nectarCollected : ds.pollenCollected) || 0) / Math.max(1, ds.nectarGoal || ds.pollenGoal || 10)));
+            function dressBeeAvatar(avatar, effort, load) {
+              beatBeeWings(avatar, now, effort, prefersReducedMotion);
+              var sacs = avatar && avatar.userData && avatar.userData.pollenSacs;
+              if (!sacs) return;
+              for (var sacIndex = 0; sacIndex < sacs.length; sacIndex++) {
+                sacs[sacIndex].visible = load > 0.04;
+                sacs[sacIndex].scale.set(0.5 + load * 0.9, 0.5 + load * 0.9, 0.6 + load * 1.1);
+              }
+            }
             if (o.playerDrone) {
               o.playerDrone.visible = cameraMode === 'chase';
               o.playerDrone.position.set(ds.x, ds.y, ds.z);
               o.playerDrone.rotation.order = 'YXZ';
               o.playerDrone.rotation.set(ds.pitch || 0, ds.yaw || 0, ds.roll || 0);
-              o.playerDrone.children[4].rotation.z = prefersReducedMotion ? 0 : now * 0.002;
+              if (o.playerDrone.userData.beacon) o.playerDrone.userData.beacon.rotation.z = prefersReducedMotion ? 0 : now * 0.002;
+              dressBeeAvatar(o.playerDrone, throttleEffort, nectarLoadRatio);
+            }
+            if (o.playerShadow) {
+              // Faint and wide when high, tight and dark when low — the same
+              // reading a pilot takes off their own shadow on short final.
+              var shadowAltitude = Math.max(0, ds.y || 0);
+              var shadowVisible = ds.phase !== 'end' && shadowAltitude < 260;
+              o.playerShadow.visible = shadowVisible;
+              if (shadowVisible) {
+                o.playerShadow.position.set(ds.x, -0.6, ds.z);
+                o.playerShadow.scale.setScalar(0.85 + shadowAltitude * 0.011);
+                o.playerShadow.material.opacity = Math.max(0.08, 0.46 - shadowAltitude * 0.0013);
+              }
+            }
+            if (o.butterflies && o.butterflies.length) {
+              o.butterflies.forEach(function(flutter, flutterIndex) {
+                var base = flutter.userData || {};
+                var wander = prefersReducedMotion ? 0 : now * 0.00042 + (base.phase || 0);
+                flutter.position.set((base.baseX || 0) + Math.cos(wander) * 34, (base.baseY || 16) + Math.sin(wander * 1.7) * 5, (base.baseZ || -200) + Math.sin(wander) * 34);
+                flutter.rotation.y = -wander;
+                (base.wings || []).forEach(function(fw) {
+                  fw.pivot.rotation.z = fw.side * (prefersReducedMotion ? 0.5 : 0.35 + 0.75 * (0.5 + 0.5 * Math.sin(now * 0.011 + flutterIndex)));
+                });
+              });
             }
             if (cameraMode === 'chase') {
               var chasePosition = new THREE.Vector3(ds.x - fwdX * 46, ds.y + 22, ds.z - fwdZ * 46);
@@ -18466,6 +19721,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             t.scene.fog.near = (340 + Math.min(180, (ds.y || 0) * 0.65)) * Math.max(0.76, visibilityScale);
             t.scene.fog.far = (2350 + Math.min(520, (ds.y || 0) * 1.4)) * visibilityScale;
             t.camera.updateMatrixWorld();
+            // Dome and sun ride the camera, so this has to follow the camera move
+            // for the frame or the horizon lags a frame behind the aircraft.
+            if (o.skyDome) {
+              o.skyDome.position.copy(t.camera.position);
+              o.skyDome.updateMatrixWorld();
+              o.skyDome.material.color.copy(skyColor).lerp(new THREE.Color(0xffffff), 0.18);
+              if (o.sunDisc) o.sunDisc.lookAt(t.camera.position);
+            }
             if (o.dcaBeacon) { o.dcaBeacon.visible = !ds.reachedDca && ds.phase !== 'mating' && ds.phase !== 'end'; o.dcaBeacon.rotation.y = now * 0.00028; o.dcaBeacon.children[1].rotation.z = now * 0.00055; }
             if (o.queenBeacon && ds.nearQueens && ds.nearQueens[0]) { var signalQueen = ds.nearQueens[0]; o.queenBeacon.position.set(signalQueen.x, 0, signalQueen.z); o.queenBeacon.visible = !signalQueen.caught && (ds.phase === 'congregation' || ds.reachedDca); o.queenBeacon.rotation.y = -now * 0.0004; o.queenBeacon.children[1].rotation.z = now * 0.0007; }
             if (o.obstacleWarn) {
@@ -18535,9 +19798,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             });
             o.flowers.forEach(function(item, idx) { var active = !item.flower.collected && item.flower.hasNectar !== false; item.group.visible = true; item.bloom.scale.setScalar(active ? 1 + 0.08 * Math.sin(now * 0.006 + idx) : 0.48); if (item.halo) item.halo.visible = active; });
             o.thermals.forEach(function(item, idx) { item.rotation.y = now * 0.00035 * (idx % 2 ? -1 : 1); item.children.forEach(function(child) { child.material.opacity = 0.12 + 0.05 * Math.sin(now * 0.003 + idx); }); });
-            o.drones.forEach(function(item) { var trafficDx = ds.x - item.drone.x, trafficDy = ds.y - item.drone.y, trafficDz = ds.z - item.drone.z; var trafficDistance = Math.sqrt(trafficDx * trafficDx + trafficDy * trafficDy + trafficDz * trafficDz); item.group.position.set(item.drone.x, item.drone.y, item.drone.z); item.group.rotation.y = Math.atan2(item.drone.vx, -item.drone.vz); if (item.alert) { item.alert.visible = trafficDistance < 110; item.alert.material.opacity = trafficDistance < 30 ? 0.95 : 0.4; item.alert.scale.setScalar(1 + 0.1 * Math.sin(now * 0.009)); } });
+            o.drones.forEach(function(item) { var trafficDx = ds.x - item.drone.x, trafficDy = ds.y - item.drone.y, trafficDz = ds.z - item.drone.z; var trafficDistance = Math.sqrt(trafficDx * trafficDx + trafficDy * trafficDy + trafficDz * trafficDz); item.group.position.set(item.drone.x, item.drone.y, item.drone.z); item.group.rotation.y = Math.atan2(item.drone.vx, -item.drone.vz); dressBeeAvatar(item.group, 0.75, 0); if (item.alert) { item.alert.visible = trafficDistance < 110; item.alert.material.opacity = trafficDistance < 30 ? 0.95 : 0.4; item.alert.scale.setScalar(1 + 0.1 * Math.sin(now * 0.009)); } });
             o.birds.forEach(function(item) { item.group.position.set(item.bird.x, item.bird.y, item.bird.z); item.group.rotation.y = Math.atan2(item.bird.vx, -item.bird.vz); var flap = Math.sin(item.bird.wingPhase) * 0.42; item.wings[0].rotation.z = -0.28 - flap; item.wings[1].rotation.z = 0.28 + flap; var hazardDx = ds.x - item.bird.x, hazardDy = ds.y - item.bird.y, hazardDz = ds.z - item.bird.z; var hazardDist = Math.sqrt(hazardDx * hazardDx + hazardDy * hazardDy + hazardDz * hazardDz); if (item.alert) { item.alert.visible = hazardDist < 120; item.alert.material.opacity = hazardDist < 45 ? 0.92 : 0.42; item.alert.scale.setScalar(1 + 0.12 * Math.sin(now * 0.01)); } });
-            o.queens.forEach(function(item) { item.group.position.set(item.queen.x, item.queen.y, item.queen.z); item.group.visible = !item.queen.caught; item.group.rotation.y += 0.006; item.group.children[1].scale.setScalar(1 + 0.16 * Math.sin(now * 0.004)); });
+            o.queens.forEach(function(item) { item.group.position.set(item.queen.x, item.queen.y, item.queen.z); item.group.visible = !item.queen.caught; item.group.rotation.y += 0.006; dressBeeAvatar(item.group, 0.45, 0); item.group.children[1].scale.setScalar(1 + 0.16 * Math.sin(now * 0.004)); });
             var particleLimit = t.particleLimit || 240;
             for (var pi = 0; pi < 240; pi++) { var pt = pi < particleLimit ? (ds.particles || [])[pi] : null; var off = pi * 3; t.particlePositions[off] = pt ? pt.x : 0; t.particlePositions[off + 1] = pt ? pt.y : -9999; t.particlePositions[off + 2] = pt ? pt.z : 0; }
             o.particlePoints.geometry.attributes.position.needsUpdate = true;
@@ -20445,6 +21708,183 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         }
 
         // Queen RTS canvas rendering
+        // ══ 3D bays for the Beekeeper and Queen simulations ══
+        // Status lives in component state because the host viewer reports
+        // loading/ready/failed asynchronously and the fallback copy has to
+        // change with it. Selection and the panel toggles live in tool data so
+        // they survive a mode switch, like every other preference here.
+        var _hive3dStatusState = React.useState(HIVE_3D_VIEWER.status ? HIVE_3D_VIEWER.status() : 'idle');
+        var hive3dStatus = _hive3dStatusState[0], setHive3dStatus = _hive3dStatusState[1];
+        var _queen3dStatusState = React.useState(QUEEN_3D_VIEWER.status ? QUEEN_3D_VIEWER.status() : 'idle');
+        var queen3dStatus = _queen3dStatusState[0], setQueen3dStatus = _queen3dStatusState[1];
+        var hive3dPart = d.hive3dPart || null;
+        var hive3dExploded = d.hive3dExploded === true;
+        var show3dHive = d.show3dHive !== false;
+        var queen3dPart = d.queen3dPart || null;
+        var show3dQueen = d.show3dQueen !== false;
+        // Live readings, normalised once so the scene and the caption below it
+        // can never disagree about what the hive is currently doing.
+        // 60 lb is a full medium super of capped honey — the number a keeper
+        // would actually call "full", not an arbitrary ceiling.
+        var hive3dHoneyFill = Math.max(0, Math.min(1, honey / 60));
+        var hive3dBroodFill = Math.max(0, Math.min(1, brood / 12000));
+        var hive3dVarroa = Math.max(0, Math.min(1, varroaLevel / 100));
+        // Winter bees cluster instead of flying, so entrance traffic collapses
+        // even when the colony is perfectly healthy. Flattening that would
+        // teach the wrong thing about a quiet hive in January.
+        var hive3dTraffic = Math.max(0, Math.min(1, (workers / 45000) * (season === 3 ? 0.12 : season === 0 ? 0.72 : 1)));
+        var hive3dPollen = Math.max(0, Math.min(1, pollen / 30));
+        // Queen health drives how SOLID the brood pattern is. A failing queen
+        // shows up as gaps in the comb long before the brood count falls, and
+        // that is the read the 3D frame is here to teach.
+        var hive3dLaying = Math.max(0, Math.min(1, queenHealth / 100));
+        // Pulling the front frame out is what selecting the frames (or the
+        // queen standing on them) means — the same gesture as an inspection.
+        var hive3dPulled = hive3dPart === 'brood_frames' || hive3dPart === 'queen';
+        // Comb capacity is what "Add super" actually buys in this simulation:
+        // the base hive is 80 and each super adds 40. Showing the boxes means a
+        // student can see the move they made, instead of trusting a number.
+        var hive3dCapacity = bhBoundedNumber(d.capacity, 80, 0, 1000000);
+        var hive3dSuperCount = Math.max(1, Math.min(3, 1 + Math.round((hive3dCapacity - 80) / 40)));
+        // Boxes of honey, so a full stack reads as a full stack.
+        var hive3dHoneyBoxes = Math.max(0, honey / 60);
+        // The SAME crowding ratio the colony stepper uses to fire a swarm event,
+        // so the queen cells on the frame and the event in the log never
+        // disagree about whether this colony is about to swarm.
+        var hive3dSwarmPressure = workers / Math.max(1, hive3dCapacity * 350);
+        React.useEffect(function() {
+          HIVE_3D_VIEWER.sync({
+            selected: hive3dPart,
+            dark: isDark,
+            contrast: isContrast,
+            showAllLabels: hive3dExploded,
+            sceneProps: {
+              honeyFill: hive3dHoneyFill, broodFill: hive3dBroodFill,
+              varroa: hive3dVarroa, traffic: hive3dTraffic, exploded: hive3dExploded,
+              pollenLevel: hive3dPollen, layingRate: hive3dLaying,
+              season: season, pulled: hive3dPulled,
+              superCount: hive3dSuperCount, honeyBoxes: hive3dHoneyBoxes,
+              swarmPressure: hive3dSwarmPressure
+            },
+            onPick: function(id) {
+              upd('hive3dPart', id);
+              for (var i = 0; i < HIVE_3D_PARTS.length; i++) {
+                if (HIVE_3D_PARTS[i].id === id) { announceBee(HIVE_3D_PARTS[i].label + '. ' + HIVE_3D_PARTS[i].desc, false); break; }
+              }
+            },
+            onStatus: function(next) { setHive3dStatus(next); }
+          });
+        }, [hive3dPart, hive3dExploded, isDark, isContrast, hive3dHoneyFill, hive3dBroodFill,
+          hive3dVarroa, hive3dTraffic, hive3dPollen, hive3dLaying, hive3dPulled, season,
+          hive3dSuperCount, hive3dHoneyBoxes, hive3dSwarmPressure]);
+
+        var queen3dShare = Math.max(0, Math.min(1, (queenTerritory || 50) / 100));
+        var queen3dHome = Math.max(0, Math.min(1, (queenHiveHealth || 0) / 100));
+        var queen3dRival = Math.max(0, Math.min(1, ((queenRival && queenRival.health) || 0) / 100));
+        var queen3dForage = Math.max(0, Math.min(1, ((queenPopulation && queenPopulation.foragers) || 0) / 600));
+        React.useEffect(function() {
+          QUEEN_3D_VIEWER.sync({
+            selected: queen3dPart,
+            dark: isDark,
+            contrast: isContrast,
+            sceneProps: {
+              share: queen3dShare, homeHealth: queen3dHome,
+              rivalHealth: queen3dRival, forageRate: queen3dForage
+            },
+            onPick: function(id) {
+              upd('queen3dPart', id);
+              for (var i = 0; i < QUEEN_3D_PARTS.length; i++) {
+                if (QUEEN_3D_PARTS[i].id === id) { announceBee(QUEEN_3D_PARTS[i].label + '. ' + QUEEN_3D_PARTS[i].desc, false); break; }
+              }
+            },
+            onStatus: function(next) { setQueen3dStatus(next); }
+          });
+        }, [queen3dPart, isDark, isContrast, queen3dShare, queen3dHome, queen3dRival, queen3dForage]);
+
+        // One panel shell for both bays. The two scenes differ only in their
+        // parts list, their caption and one extra control, so a second copy of
+        // the surrounding chrome would be a second thing to keep accessible.
+        function renderBee3dBay(cfg) {
+          var ready = cfg.status === 'ready';
+          var accent = cfg.accent;
+          var selected = null;
+          for (var pi = 0; pi < cfg.parts.length; pi++) if (cfg.parts[pi].id === cfg.selected) selected = cfg.parts[pi];
+          var controls = [
+            ['◀', 'Rotate left', function() { cfg.viewer.nudge(-0.3, 0); }],
+            ['▶', 'Rotate right', function() { cfg.viewer.nudge(0.3, 0); }],
+            ['▲', 'Tilt up', function() { cfg.viewer.nudge(0, 0.2); }],
+            ['▼', 'Tilt down', function() { cfg.viewer.nudge(0, -0.2); }],
+            ['＋', 'Zoom in', function() { cfg.viewer.zoom(-0.6); }],
+            ['－', 'Zoom out', function() { cfg.viewer.zoom(0.6); }],
+            ['↺', 'Reset view', function() { cfg.viewer.reset(); }]
+          ];
+          return h('section', {
+            key: 'beehive-3d-' + cfg.id,
+            'data-beehive-3d-bay': cfg.id,
+            'data-beehive-3d-status': cfg.status,
+            className: 'rounded-2xl border p-3 ' + (dk ? 'border-slate-700/60 bg-slate-900/65' : 'border-slate-300 bg-white'),
+            'aria-label': cfg.title
+          },
+            h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
+              h('div', { className: 'min-w-0' },
+                h('div', { className: 'text-[10px] font-black uppercase tracking-[0.15em] ' + accent.label }, cfg.eyebrow),
+                h('p', { className: 'mt-1 text-[11px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, cfg.blurb)),
+              h('button', {
+                type: 'button',
+                onClick: function() { upd(cfg.toggleKey, !cfg.open); announceBee(cfg.open ? cfg.title + ' hidden.' : cfg.title + ' shown.', false); },
+                'aria-expanded': cfg.open ? 'true' : 'false',
+                'aria-label': (cfg.open ? 'Hide ' : 'Show ') + cfg.title,
+                className: 'inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-lg border px-3 text-[11px] font-black ' + accent.button
+              }, h('span', { 'aria-hidden': 'true' }, cfg.open ? '▾' : '▸'), cfg.open ? 'Hide 3D' : 'Show 3D')),
+            cfg.open && h('div', { className: 'mt-2 space-y-2' },
+              h('div', {
+                className: 'relative overflow-hidden rounded-xl border ' + accent.frame,
+                style: { height: 'clamp(260px, 34vw, 340px)', background: dk ? '#0b1220' : '#dfe6ef' }
+              },
+                h('div', { ref: cfg.attach, style: { position: 'absolute', inset: 0 } }),
+                !ready && h('div', {
+                  role: 'status',
+                  className: 'absolute inset-0 flex items-center justify-center p-4 text-center',
+                  style: { background: dk ? 'rgba(11,18,32,0.92)' : 'rgba(223,230,239,0.94)' }
+                },
+                  h('p', { className: 'text-[11px] font-bold ' + (dk ? 'text-slate-300' : 'text-slate-600') },
+                    cfg.status === 'loading'
+                      ? 'Loading the 3D view…'
+                      : (BEE_3D_MISSING === 'host'
+                        ? 'The 3D view needs a newer STEAM Lab host than this build has. Everything else in this simulation still works.'
+                        : cfg.fallback)))),
+              h('div', { role: 'group', 'aria-label': cfg.title + ' camera controls', className: 'flex flex-wrap gap-1' },
+                controls.map(function(control) {
+                  return h('button', {
+                    key: control[1], type: 'button', 'aria-label': control[1], title: control[1],
+                    disabled: !ready, onClick: control[2],
+                    className: 'min-h-[44px] min-w-[44px] rounded-lg border px-3 text-[11px] font-bold ' + accent.button,
+                    style: { opacity: ready ? 1 : 0.45 }
+                  }, control[0]);
+                }).concat(cfg.extraControls || [])),
+              h('p', { className: 'text-[11px] font-bold ' + (dk ? 'text-slate-300' : 'text-slate-600') }, cfg.pickPrompt),
+              h('div', { className: 'flex flex-wrap gap-1', role: 'group', 'aria-label': cfg.title + ' parts' },
+                cfg.parts.map(function(part) {
+                  var on = cfg.selected === part.id;
+                  return h('button', {
+                    key: part.id, type: 'button',
+                    'aria-pressed': on ? 'true' : 'false',
+                    'aria-label': (on ? 'Hide' : 'Show') + ' details for ' + part.label,
+                    onClick: function() {
+                      var next = on ? null : part.id;
+                      upd(cfg.partKey, next);
+                      if (next) announceBee(part.label + '. ' + part.desc, false);
+                    },
+                    className: 'min-h-[44px] rounded-lg border px-3 text-[11px] font-bold ' + (on ? accent.chipOn : accent.chip)
+                  }, part.label);
+                })),
+              selected && h('div', {
+                role: 'status',
+                className: 'rounded-xl border p-3 text-[11px] leading-relaxed ' + accent.frame + ' ' + (dk ? 'bg-slate-950/50 text-slate-200' : 'bg-slate-50 text-slate-700')
+              }, h('strong', { className: accent.label }, selected.label + ' — '), selected.desc),
+              cfg.readout));
+        }
+
         React.useEffect(function() {
           if (viewMode !== 'queen' || !queenGameActive) return;
           // Ref-ready retry — prevents blank canvas when ref attaches late.
@@ -22299,6 +23739,96 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               }, '\u26F6')),
             // The interactive action dock above exposes every scene hotspot to pointer, keyboard, and touch users.
           ),
+          // ═══ 3D HIVE BAY (beekeeper only) ═══
+          // The 2D scene shows the apiary from outside. This shows the same
+          // colony as the object a beekeeper actually handles: a stack that
+          // comes apart, with the live honey, brood, mite and traffic numbers
+          // drawn INTO the hive rather than printed beside it.
+          viewMode === 'beekeeper' && renderBee3dBay({
+            id: 'hive',
+            viewer: HIVE_3D_VIEWER,
+            attach: hive3dAttach,
+            status: hive3dStatus,
+            parts: HIVE_3D_PARTS,
+            selected: hive3dPart,
+            partKey: 'hive3dPart',
+            toggleKey: 'show3dHive',
+            open: show3dHive,
+            title: '3D hive',
+            eyebrow: '🧰 The hive in 3D',
+            blurb: 'Drag to turn the hive, or use the buttons and the parts list. The comb is drawn cell by cell from this colony right now — worker and drone brood, pollen, honey, and the gaps a failing queen leaves. Supers you add appear on the stack, the meadow follows the season, and picking the frames or the queen slides the front frame out the way an inspection lifts it.',
+            pickPrompt: 'Pick a part of the hive',
+            fallback: 'The 3D hive could not start on this device, usually because WebGL is unavailable or blocked. The hive cross-section in the Inspect hive panel shows the same structure.',
+            accent: {
+              label: dk ? 'text-amber-300' : 'text-amber-700',
+              frame: dk ? 'border-amber-700/45' : 'border-amber-300',
+              button: dk ? 'border-amber-600/45 bg-slate-900 text-amber-100 hover:bg-slate-800' : 'border-amber-300 bg-white text-amber-800 hover:bg-amber-50',
+              chip: dk ? 'border-slate-700 bg-slate-900 text-slate-200 hover:bg-slate-800' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50',
+              chipOn: dk ? 'border-amber-400 bg-amber-500/25 text-amber-100' : 'border-amber-500 bg-amber-100 text-amber-900'
+            },
+            extraControls: [h('button', {
+              key: 'hive-explode',
+              type: 'button',
+              onClick: function() {
+                var next = !hive3dExploded;
+                upd('hive3dExploded', next);
+                announceBee(next ? 'Hive opened. The boxes lift apart in inspection order: outer cover, inner cover, honey super, queen excluder, then the brood frames.' : 'Hive closed back into a single stack.', false);
+              },
+              'aria-pressed': hive3dExploded ? 'true' : 'false',
+              // Same Label-in-Name rule as the queen button: the accessible name
+              // opens with the visible text so speech input can reach it.
+              'aria-label': hive3dExploded
+                ? 'Close hive: stack the boxes back together'
+                : 'Open hive: lift the boxes apart in inspection order — outer cover, inner cover, honey super, queen excluder, then the brood frames',
+              title: hive3dExploded ? 'Close hive' : 'Open hive',
+              disabled: hive3dStatus !== 'ready',
+              className: 'min-h-[44px] rounded-lg border px-3 text-[11px] font-black ' + (hive3dExploded
+                ? (dk ? 'border-amber-400 bg-amber-500/25 text-amber-100' : 'border-amber-500 bg-amber-100 text-amber-900')
+                : (dk ? 'border-amber-600/45 bg-slate-900 text-amber-100 hover:bg-slate-800' : 'border-amber-300 bg-white text-amber-800 hover:bg-amber-50')),
+              style: { opacity: hive3dStatus === 'ready' ? 1 : 0.45 }
+            }, hive3dExploded ? '⇊ Close hive' : '⇈ Open hive'),
+            h('button', {
+              key: 'hive-find-queen',
+              type: 'button',
+              onClick: function() {
+                var next = hive3dPart === 'queen' ? null : 'queen';
+                upd('hive3dPart', next);
+                announceBee(next
+                  ? 'Front frame drawn out. The queen is the long bee with the ' + BH_QUEEN_MARK_NAMES[bhQueenMarkIndex(2026)] + ' mark on her thorax, ringed by nurses facing inward.'
+                  : 'Queen deselected. The frame slides back into the brood box.', false);
+              },
+              'aria-pressed': hive3dPart === 'queen' ? 'true' : 'false',
+              // The accessible name has to CONTAIN the visible label (WCAG 2.5.3,
+              // Label in Name) — otherwise a speech-input user says what the
+              // button says and nothing happens. In winter the button reads
+              // "Queen in cluster", so the announced name has to as well; an
+              // earlier version announced "Find the queen" year-round while the
+              // visible text had already changed.
+              'aria-label': season === 3
+                ? 'Queen in cluster: the colony is wintering, so she cannot be shown on a frame'
+                : hive3dPart === 'queen'
+                  ? 'Find the queen: pressed. Stop highlighting her and slide the frame back'
+                  : 'Find the queen: draw out the front frame and highlight her',
+              title: season === 3 ? 'Queen in cluster' : 'Find the queen',
+              disabled: hive3dStatus !== 'ready' || season === 3,
+              className: 'min-h-[44px] rounded-lg border px-3 text-[11px] font-black ' + (hive3dPart === 'queen'
+                ? (dk ? 'border-fuchsia-400 bg-fuchsia-500/25 text-fuchsia-100' : 'border-fuchsia-500 bg-fuchsia-100 text-fuchsia-900')
+                : (dk ? 'border-amber-600/45 bg-slate-900 text-amber-100 hover:bg-slate-800' : 'border-amber-300 bg-white text-amber-800 hover:bg-amber-50')),
+              style: { opacity: hive3dStatus === 'ready' && season !== 3 ? 1 : 0.45 }
+            }, season === 3 ? '❄ Queen in cluster' : '\uD83D\uDC51 Find the queen')],
+            readout: h('p', { className: 'text-[10px] leading-relaxed ' + (dk ? 'text-slate-400' : 'text-slate-500') },
+              'Showing now: super ' + Math.round(hive3dHoneyFill * 100) + '% capped (' + honey + ' lb) · brood pattern ' + Math.round(hive3dBroodFill * 100) + '% (' + brood + ' cells) · mite load ' + Math.round(hive3dVarroa * 100) + '% · entrance traffic ' + Math.round(hive3dTraffic * 100) + '%' + (season === 3 ? ' (winter cluster — bees stay in)' : '') + '. '
+              + hive3dSuperCount + (hive3dSuperCount === 1 ? ' super' : ' supers') + ' on the stack. '
+              + (queenHealth >= 85
+                ? 'The brood is wall-to-wall, which is what a laying queen looks like.'
+                : queenHealth >= 55
+                  ? 'Gaps are opening in the brood — a spotty pattern is the first sign a queen is failing.'
+                  : 'The pattern is badly broken. Check for a queen before anything else.')
+              + (hive3dSwarmPressure > 0.55 && season !== 3
+                ? ' Queen cells are hanging off the bottom bar: this colony is crowded and preparing to swarm. Add a super before it leaves.'
+                : ''))
+          }),
+
           // ═══ EDUCATIONAL VIEW SELECTOR (beekeeper only) ═══
           // Maps the canonical BEE_VIEWS registry (all 18 built diagrams). The
           // first 10 also carry a Shift+1..0 shortcut hint; the other 8 (which
@@ -22712,6 +24242,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         h('p', { className: 'mt-1 text-[10px] leading-relaxed text-white/80' }, 'Lesson: ' + (queenOpening === 'fortify' ? 'Defense creates time, but time still needs a food pipeline.' : queenOpening === 'forage' ? 'Territory is valuable only if the hive can defend the workers holding it.' : 'A flexible start turns scouting into your first real advantage.')))
                   ),                  renderQueenBattlefield(),
                   renderQueenBattlefieldDock(),
+                  // The forage frontline is the one RTS number that is really a
+                  // PLACE. On the 2D map it is a dashed line; here the meadow
+                  // itself changes hands bloom by bloom, and every forager's
+                  // commute gets longer as the line is pushed out — which is the
+                  // trade-off the strategy layer is actually built on.
+                  renderBee3dBay({
+                    id: 'queen',
+                    viewer: QUEEN_3D_VIEWER,
+                    attach: queen3dAttach,
+                    status: queen3dStatus,
+                    parts: QUEEN_3D_PARTS,
+                    selected: queen3dPart,
+                    partKey: 'queen3dPart',
+                    toggleKey: 'show3dQueen',
+                    open: show3dQueen,
+                    title: '3D forage map',
+                    eyebrow: '🗺️ The frontline in 3D',
+                    blurb: 'Drag to turn the meadow. Each bloom shows who is working it, the flag marks where your range meets the rival’s, and the swarm turns around at that flag.',
+                    pickPrompt: 'Pick something on the map',
+                    fallback: 'The 3D forage map could not start on this device, usually because WebGL is unavailable or blocked. The 2D battlefield above carries the same frontline reading.',
+                    accent: {
+                      label: dk ? 'text-purple-300' : 'text-purple-700',
+                      frame: dk ? 'border-purple-700/45' : 'border-purple-300',
+                      button: dk ? 'border-purple-600/45 bg-slate-900 text-purple-100 hover:bg-slate-800' : 'border-purple-300 bg-white text-purple-800 hover:bg-purple-50',
+                      chip: dk ? 'border-slate-700 bg-slate-900 text-slate-200 hover:bg-slate-800' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50',
+                      chipOn: dk ? 'border-purple-400 bg-purple-500/25 text-purple-100' : 'border-purple-500 bg-purple-100 text-purple-900'
+                    },
+                    readout: h('p', { className: 'text-[10px] leading-relaxed ' + (dk ? 'text-slate-400' : 'text-slate-500') },
+                      'Showing now: you hold ' + Math.round(queen3dShare * 100) + '% of the forage strip · brood core ' + Math.round(queenHiveHealth) + '% · ' + queenRival.name + ' ' + Math.round(queenRival.health) + '% · ' + Math.round(queenPopulation.foragers) + ' foragers assigned.')
+                  }),
                   renderQueenImpactTimeline(),
                   (function() {
                     var advice = queenStrategicRead();
@@ -24247,6 +25807,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       SIMULATION_PARAMS: SIMULATION_PARAMS,
       DRONE_FLIGHT_PARAMS: DRONE_FLIGHT_PARAMS,
       bhCreateNewColonyState: bhCreateNewColonyState,
+      // 3D scene builders. Exported so a browser harness can render and
+      // SCREENSHOT the hive and forage-map geometry without booting the whole
+      // app — a 3D claim that has never been looked at is not a verified claim.
+      HIVE_3D_PARTS: HIVE_3D_PARTS, QUEEN_3D_PARTS: QUEEN_3D_PARTS,
+      bhCombCellRole: bhCombCellRole, bhCombCellColor: bhCombCellColor,
+      bhQueenMarkIndex: bhQueenMarkIndex, BH_QUEEN_MARK_NAMES: BH_QUEEN_MARK_NAMES,
+      hive3dBuildScene: hive3dBuildScene, queen3dBuildScene: queen3dBuildScene,
+      build3dMiniBee: build3dMiniBee, beatBeeWings: beatBeeWings,
       BEE_SPECIES: BEE_SPECIES, COLONY_ROLES: COLONY_ROLES,
       WAGGLE_DANCE_GUIDE: WAGGLE_DANCE_GUIDE, POLLINATOR_PLANTS: POLLINATOR_PLANTS,
       COLONY_THREATS: COLONY_THREATS, HONEY_VARIETALS: HONEY_VARIETALS,

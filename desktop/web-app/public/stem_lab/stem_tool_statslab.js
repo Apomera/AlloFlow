@@ -2015,7 +2015,7 @@ window.StemLab = window.StemLab || {
             h('p', { style: { margin: '0 0 10px', fontSize: 12, opacity: 0.85, lineHeight: 1.4 } }, __alloT('stem.statslab.set_true_effect_size_alpha_and_per_gro', 'Set true effect size, alpha, and per-group sample size. Predict where the design moves between futile, underpowered, well-powered, and overkill. No score, no reveal.')),
             h('div', { style: { display: 'inline-block', padding: '4px 12px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 12, fontWeight: 800, marginBottom: 6 } }, sm.label + ' (Power ≈ ' + (power * 100).toFixed(0) + '%)'),
             h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
-            h('svg', { width: '100%', height: 160, viewBox: '0 0 320 160', style: { background: 'var(--sl-chart-bg)', borderRadius: 6, marginBottom: 10 } },
+            h('svg', { role: 'img', 'aria-label': __alloT('stem.statslab.dist_img', 'Sampling distribution chart'), width: '100%', height: 160, viewBox: '0 0 320 160', style: { background: 'var(--sl-chart-bg)', borderRadius: 6, marginBottom: 10 } },
               h('line', { x1: 36, y1: 130, x2: 296, y2: 130, stroke: 'var(--sl-chart-axis)' }),
               h('line', { x1: 36, y1: 18, x2: 36, y2: 130, stroke: 'var(--sl-chart-axis)' }),
               h('line', { x1: 36, y1: 130 - 0.8 * 110, x2: 296, y2: 130 - 0.8 * 110, stroke: 'var(--sl-chart-secondary)', strokeWidth: 1.5, strokeDasharray: '3 3' }),

@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════
-// AlloFlow STEM Lab — Timeline Studio (TimelineJS + AI document→timeline)
+// AlloFlow STEAM Lab — Timeline Studio (TimelineJS + AI document→timeline)
 //
 // The renderer is a COMPANION WINDOW (timeline_studio/timeline_studio.html)
 // that embeds TimelineJS3 by Northwestern University Knight Lab

@@ -842,7 +842,7 @@ function HeaderBar(props) {
       onClick: () => setShowLearningHub(true),
       "data-help-key": "header_learning_hub",
       className: "px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wider hover:bg-white/10 text-white/80 hover:text-white border border-white/10",
-      title: t("header.learning_tools_tooltip") || "Learning Tools (STEM Lab, SEL Hub, Research Hub, LitLab, PoetTree, StoryForge)",
+      title: t("header.learning_tools_tooltip") || "Learning Tools (STEAM Lab, SEL Hub, Research Hub, LitLab, PoetTree, StoryForge)",
       "aria-label": t("header.learning_tools_aria") || "Learning Tools"
     },
     /* @__PURE__ */ React.createElement("span", { style: { fontSize: "14px", lineHeight: 1 } }, "\u{1F9E0}"),

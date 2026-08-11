@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════
-// AlloFlow STEM Lab — Sim Shelf (PhET simulations + POE coach) launcher + AI bridge
+// AlloFlow STEAM Lab — Sim Shelf (PhET simulations + POE coach) launcher + AI bridge
 //
 // The shelf itself is a COMPANION WINDOW (sim_shelf/sim_shelf.html): a
 // curated set of PhET Interactive Simulations (University of Colorado
@@ -154,17 +154,17 @@
       function returnToCatalog() {
         if (typeof setStemLabTool !== 'function') return;
         setStemLabTool(null);
-        if (announceToSR) announceToSR(t('stem.simShelf.returned_catalog_sr', 'Returned to the STEM Lab tools.'));
+        if (announceToSR) announceToSR(t('stem.simShelf.returned_catalog_sr', 'Returned to the STEAM Lab tools.'));
       }
 
       return h('div', { className: 'flex flex-col gap-4 animate-in fade-in duration-300 max-w-2xl' },
         typeof setStemLabTool === 'function' && h('button', {
           onClick: returnToCatalog,
           className: 'inline-flex w-fit items-center gap-2 rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-xs font-bold text-slate-200 transition-colors hover:bg-slate-800 active:scale-[0.97]',
-          'aria-label': t('stem.simShelf.back_to_tools', 'Back to STEM Lab tools')
+          'aria-label': t('stem.simShelf.back_to_tools', 'Back to STEAM Lab tools')
         },
           ArrowLeft ? h(ArrowLeft, { size: 16 }) : null,
-          h('span', null, t('stem.simShelf.back_to_tools', 'Back to STEM Lab tools'))
+          h('span', null, t('stem.simShelf.back_to_tools', 'Back to STEAM Lab tools'))
         ),
         h('h2', { className: 'text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-400' },
           t('stem.simShelf.title', '🧪 Sim Shelf — predict first, then play')),

@@ -9553,7 +9553,7 @@
             ),
 
             h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid #0f172a', fontSize: 10.5, color: '#475569', lineHeight: 1.5 } },
-              __alloT('stem.astronomy.sources_nasa_nasa_gov_international_da', 'Sources: NASA (nasa.gov) · International Dark-Sky Association (darksky.org) · NGSS Lead States, 2013 · Bortle, J. (2001), "Introducing the Bortle Dark-Sky Scale" · Penobscot Nation, Passamaquoddy Tribe, and other Wabanaki sources for the local sky traditions. Printed from AlloFlow STEM Lab.')
+              __alloT('stem.astronomy.sources_nasa_nasa_gov_international_da', 'Sources: NASA (nasa.gov) · International Dark-Sky Association (darksky.org) · NGSS Lead States, 2013 · Bortle, J. (2001), "Introducing the Bortle Dark-Sky Scale" · Penobscot Nation, Passamaquoddy Tribe, and other Wabanaki sources for the local sky traditions. Printed from AlloFlow STEAM Lab.')
             )
           )
         );

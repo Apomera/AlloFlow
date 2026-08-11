@@ -1441,7 +1441,7 @@ function MathPanel(props) {
   ), /* @__PURE__ */ React.createElement("label", { htmlFor: "mathGraph", className: "text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1" }, /* @__PURE__ */ React.createElement(ImageIcon, { size: 12, className: "text-blue-500" }), " ", t("math.graph_label"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2", "data-help-key": "math_manipulatives" }, /* @__PURE__ */ React.createElement(
     "input",
     {
-      "aria-label": "Attach STEM Lab manipulatives to generated problems",
+      "aria-label": "Attach STEAM Lab manipulatives to generated problems",
       id: "mathManipulatives",
       type: "checkbox",
       checked: autoAttachManipulatives !== false,

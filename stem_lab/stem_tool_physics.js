@@ -5,7 +5,7 @@
 // ═══════════════════════════════════════════
 
 // ═══════════════════════════════════════════
-// stem_tool_science.js — STEM Lab Science Tools
+// stem_tool_science.js — STEAM Lab Science Tools
 // 29 registered tools
 // Auto-extracted (Phase 2 modularization)
 // ═══════════════════════════════════════════
@@ -38,7 +38,7 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');

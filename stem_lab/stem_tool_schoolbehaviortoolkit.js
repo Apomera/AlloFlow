@@ -1423,7 +1423,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
 
       function renderHeader() {
         return h('div', { style: { padding: '20px 24px 16px', borderBottom: '1px solid rgba(20,184,166,0.20)', display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' } },
-          h('button', { onClick: function() { if (setStemLabTool) setStemLabTool(null); }, 'aria-label': __alloT('stem.schoolbehaviortoolkit.back_to_stem_lab', 'Back to STEM Lab'),
+          h('button', { onClick: function() { if (setStemLabTool) setStemLabTool(null); }, 'aria-label': __alloT('stem.schoolbehaviortoolkit.back_to_stem_lab', 'Back to STEAM Lab'),
             style: { background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 16 } }, '←'),
           // Circular accent badge — same vocabulary as the rest of the
           // design system. 56px (large hero size).
@@ -2020,7 +2020,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                 circularBadge('🐭', '#fb923c', 44),
                 h('div', null,
                   h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fb923c' } }, 'BehaviorLab'),
-                  h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginTop: 2 } }, __alloT('stem.schoolbehaviortoolkit.stem_lab_behavioral_science', 'STEM Lab → Behavioral Science'))
+                  h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginTop: 2 } }, __alloT('stem.schoolbehaviortoolkit.stem_lab_behavioral_science', 'STEAM Lab → Behavioral Science'))
                 )
               ),
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 8 } },

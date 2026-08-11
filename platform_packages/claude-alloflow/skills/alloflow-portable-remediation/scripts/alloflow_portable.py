@@ -26,7 +26,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 
-VERSION = "0.2.5"
+VERSION = "0.2.6"
 MAX_SOURCE_BYTES = 200 * 1024 * 1024
 MAX_PLAN_BYTES = 8 * 1024 * 1024
 MAX_HTML_BYTES = 8 * 1024 * 1024
@@ -354,15 +354,23 @@ def validate_plan(plan: Dict[str, Any], plan_dir: Path) -> Dict[str, Any]:
     image_blocks = 0
     embedded_image_chars = 0
     allowed_by_type = {
-        "heading": {"type", "level", "text", "source_page"},
-        "paragraph": {"type", "text", "runs", "source_page"},
-        "blockquote": {"type", "text", "cite", "runs", "source_page"},
-        "list": {"type", "ordered", "items", "item_runs", "source_page"},
-        "table": {"type", "caption", "columns", "rows", "row_headers", "cell_runs", "source_page"},
-        "image": {"type", "alt", "decorative", "path", "caption", "source_page"},
-        "link": {"type", "text", "url", "source_page"},
+        "heading": {"type", "level", "text", "source_page", "id"},
+        "paragraph": {"type", "text", "runs", "source_page", "id"},
+        "blockquote": {"type", "text", "cite", "runs", "source_page", "id"},
+        "list": {"type", "ordered", "items", "item_runs", "source_page", "id"},
+        "table": {"type", "caption", "columns", "rows", "row_headers", "cell_runs", "source_page", "id"},
+        "image": {"type", "alt", "decorative", "path", "caption", "source_page", "id"},
+        "link": {"type", "text", "url", "source_page", "id"},
         "page_break": {"type", "page", "label"},
     }
+    # Optional stable anchors (2026-08-10, ed-parent-guide run): a block may
+    # declare an `id` so runs can carry working in-document `#id` links —
+    # source PDFs routinely link footnote markers to their footnotes via GoTo
+    # annotations, and without addressable targets a rebuild silently flattens
+    # that navigation to plain text. Reserved names/prefixes are refused so a
+    # plan id can never collide with the ids the renderer generates itself.
+    declared_ids: set = set()
+    internal_href_sites: List[Tuple[str, str]] = []
 
     for index, raw in enumerate(blocks):
         where = f"blocks[{index}]"
@@ -378,6 +386,17 @@ def validate_plan(plan: Dict[str, Any], plan_dir: Path) -> Dict[str, Any]:
 
         if kind != "page_break":
             expect_int(raw.get("source_page"), where + ".source_page", errors, 1, page_count or 1000)
+
+        if "id" in raw and kind != "page_break":
+            raw_id = raw.get("id")
+            if not isinstance(raw_id, str) or not re.fullmatch(r"[a-z][a-z0-9-]{0,63}", raw_id):
+                errors.append(where + ".id must match [a-z][a-z0-9-]{0,63} (lowercase, hyphenated).")
+            elif raw_id == "main-content" or raw_id.startswith("alloflow-"):
+                errors.append(where + ".id uses a reserved name (main-content / alloflow-*).")
+            elif raw_id in declared_ids:
+                errors.append(where + f".id '{raw_id}' is declared more than once.")
+            else:
+                declared_ids.add(raw_id)
 
         if kind == "heading":
             level = expect_int(raw.get("level"), where + ".level", errors, 1, 6)
@@ -535,6 +554,34 @@ def validate_plan(plan: Dict[str, Any], plan_dir: Path) -> Dict[str, Any]:
         if current > previous + 1:
             errors.append(f"Heading hierarchy skips from h{previous} to h{current}.")
 
+    # Every internal `#target` link must resolve to a declared block id — a
+    # dangling in-document link is worse than no link (it navigates nowhere and
+    # screen readers announce it as actionable).
+    def _collect_internal_hrefs(runs_value: Any, at: str) -> None:
+        if not isinstance(runs_value, list):
+            return
+        for run in runs_value:
+            if isinstance(run, dict):
+                href = run.get("href")
+                if isinstance(href, str) and href.startswith("#"):
+                    internal_href_sites.append((at, href[1:]))
+
+    for index, block in enumerate(normalized_blocks):
+        at = f"blocks[{index}]"
+        _collect_internal_hrefs(block.get("runs"), at + ".runs")
+        for run_index, entry in enumerate(block.get("item_runs") or []):
+            _collect_internal_hrefs(entry, f"{at}.item_runs[{run_index}]")
+        for row_index, row_entry in enumerate(block.get("cell_runs") or []):
+            for cell_index, cell_entry in enumerate(row_entry or []):
+                _collect_internal_hrefs(cell_entry, f"{at}.cell_runs[{row_index}][{cell_index}]")
+        if block.get("type") == "link":
+            url = str(block.get("url") or "")
+            if url.startswith("#"):
+                internal_href_sites.append((at + ".url", url[1:]))
+    for at, target in internal_href_sites:
+        if target not in declared_ids:
+            errors.append(at + f" links to '#{target}' but no block declares id '{target}'.")
+
     review_notes = plan.get("review_notes")
     if not isinstance(review_notes, list):
         errors.append("review_notes must be an array.")
@@ -624,6 +671,10 @@ def render_html(validated: Dict[str, Any]) -> str:
         kind = block["type"]
         page = block.get("source_page")
         source_attr = f' data-source-page="{int(page)}"' if page else ""
+        # Plan-declared anchor ids (validated: unique, non-reserved) let runs
+        # carry working in-document links — e.g. footnote markers → footnotes.
+        if block.get("id"):
+            source_attr = f' id="{esc(block["id"])}"' + source_attr
         if kind == "heading":
             level = int(block["level"])
             parts.append(f"<h{level}{source_attr}>{esc(block['text'])}</h{level}>")
@@ -740,7 +791,27 @@ def render_html(validated: Dict[str, Any]) -> str:
     subject_meta = (
         f'<meta name="description" content="{esc(document["subject"])}">' if document.get("subject") else ""
     )
-    body = "\n".join(parts)
+    # Review notes travel WITH the deliverable (2026-08-10, ed-parent-guide
+    # verification round): they used to land only in the report JSON, so to any
+    # reader of the HTML/PDF itself every disclosed transformation looked
+    # undisclosed — the independent-verification loop failed its own disclosure
+    # items on an honestly-authored plan. The appendix is explicitly marked as
+    # remediation metadata, not source content, and page-breaks onto its own
+    # page in the tagged PDF.
+    notes = validated.get("review_notes") or []
+    if notes:
+        note_items = "".join(f"<li>{esc_lines(str(note))}</li>" for note in notes)
+        notes_section = (
+            '\n<section class="alloflow-review-notes" aria-labelledby="alloflow-review-notes-heading">'
+            '\n<h2 id="alloflow-review-notes-heading">Remediation notes</h2>'
+            '\n<p>The notes below were written during the accessible rebuild of this document. '
+            "They are part of the remediation record, not of the source document: they disclose "
+            "every transformation, uncertainty, and omission the rebuild made.</p>"
+            f"\n<ol>{note_items}</ol>\n</section>"
+        )
+    else:
+        notes_section = ""
+    body = "\n".join(parts) + notes_section
     return f"""<!doctype html>
 <html lang="{esc(document['language'])}">
 <head>
@@ -780,6 +851,8 @@ img {{ display: block; height: auto; max-width: 100%; }}
 figcaption, .alloflow-figure-caption {{ margin-top: .35rem; color: #374151; }}
 .alloflow-figure-fallback {{ border: 2px solid #6b7280; padding: .75rem; }}
 .alloflow-page-break {{ display: block; break-before: page; height: 0; }}
+.alloflow-review-notes {{ break-before: page; margin-top: 2.5rem; border-top: .18rem solid #4b5563; padding-top: 1rem; font-size: .95rem; }}
+.alloflow-review-notes h2 {{ font-size: 1.3rem; }}
 @media print {{
   body {{ max-width: none; padding: 0; }}
   .skip-link {{ display: none; }}
@@ -1240,6 +1313,19 @@ def remediate(args: argparse.Namespace) -> Dict[str, Any]:
             "the document owner.",
             3,
         )
+
+    # Annotation-aware link audit (2026-08-10): warning-only, can never fail a
+    # plan. Catches a GoTo-linked footnote apparatus flattened to plain text
+    # and a written-out URL rebuilt under a different scheme than the source
+    # annotation actually carried.
+    if source_receipt["kind"] == "pdf":
+        try:
+            source_annotations = _pdf_extract_annotations(source.read_bytes())
+            validated["warnings"].extend(
+                _annotation_link_warnings(source_annotations, validated)
+            )
+        except Exception:
+            pass
 
     out_dir.mkdir(parents=True, exist_ok=True)
     stem = safe_stem(source.name)
@@ -2957,6 +3043,408 @@ def _pdf_extract_text(data: bytes) -> Dict[str, Any]:
     return {"pages": len(pages), "characters": len(text), "text": text[:MAX_TEXT_CHARS]}
 
 
+# ── Reading-order extraction (2026-08-10, ed-parent-guide run) ───────────────
+# The recall-bearing extractor above reports text in OBJECT order, which is
+# routinely not reading order (that run's page 2 preceded page 1). This is a
+# deliberately SEPARATE pass — the recall channels stay pinned to the original
+# extractor so ordering work can never move a corpus scoreboard — that tracks
+# the text-positioning operators (Tm/Td/TD/TL/T*) well enough to group lines
+# and sort them top-down. Honest limits, disclosed in the output note: no CTM
+# math (rotated pages and transformed Form XObjects keep their local
+# coordinates) and single-column assumptions (multi-column pages interleave).
+
+_TEXT_POS_OPS = re.compile(
+    rb"/(?P<font>\w+)\s+[\d.+-]+\s+Tf"
+    rb"|\((?P<lit>(?:[^()\\]|\\.)*)\)\s*(?P<litop>Tj|'|\")"
+    rb"|<(?P<hex>[0-9A-Fa-f\s]+)>\s*Tj"
+    rb"|\[(?P<tj>(?:[^\]\\]|\\.)*)\]\s*TJ"
+    rb"|(?P<tm>(?:[\d.+-]+\s+){5}[\d.+-]+)\s+Tm"
+    rb"|(?P<td>[\d.+-]+\s+[\d.+-]+)\s+(?P<tdop>Td|TD)"
+    rb"|(?P<tl>[\d.+-]+)\s+TL"
+    rb"|(?P<tstar>T\*)"
+    rb"|(?P<bt>\bBT\b)"
+    rb"|/(?P<xobj>\w+)\s+Do\b"
+)
+
+
+def _pdf_extract_text_ordered(data: bytes) -> Dict[str, Any]:
+    index: Dict[int, Tuple[bytes, Optional[bytes]]] = {}
+    for number, dictionary, raw in _pdf_iter_stream_objects(data):
+        index[number] = (dictionary, raw)
+
+    def page_fonts(page_dict: bytes) -> Dict[str, Dict[str, Any]]:
+        resources = _dict_value(index, page_dict, "Resources")
+        seen_parents = 0
+        node = page_dict
+        while resources is None and seen_parents < 8:
+            parent = re.search(rb"/Parent\s+(\d+)\s+0\s+R", node)
+            if not parent:
+                break
+            entry = index.get(int(parent.group(1)))
+            if not entry:
+                break
+            node = entry[0]
+            resources = _dict_value(index, node, "Resources")
+            seen_parents += 1
+        return _fonts_from_resources(index, resources)
+
+    pages: List[List[str]] = []
+    for number, (dictionary, raw) in sorted(index.items(), key=lambda item: item[0]):
+        if not re.search(rb"/Type\s*/Page\b", dictionary) or re.search(rb"/Type\s*/Pages\b", dictionary):
+            continue
+        content_refs: List[int] = []
+        direct = re.search(rb"/Contents\s+(\d+)\s+0\s+R", dictionary)
+        if direct:
+            ref = int(direct.group(1))
+            if ref in index:
+                content_refs.append(ref)
+            else:
+                array_obj = re.search(
+                    rb"(?:^|[\r\n])" + str(ref).encode("ascii") + rb"\s+0\s+obj\s*\[([^\]]*)\]",
+                    data,
+                )
+                if array_obj:
+                    content_refs.extend(
+                        int(item) for item in re.findall(rb"(\d+)\s+0\s+R", array_obj.group(1))
+                    )
+        else:
+            array = re.search(rb"/Contents\s*\[([^\]]*)\]", dictionary)
+            if array:
+                content_refs.extend(int(ref) for ref in re.findall(rb"(\d+)\s+0\s+R", array.group(1)))
+        fonts = page_fonts(dictionary)
+        runs: List[Tuple[float, float, int, str]] = []
+        seq = [0]
+        draw_budget = [4000]
+
+        def collect(content: bytes, own_fonts: Dict[str, Dict[str, Any]], resources: Optional[bytes], depth: int, stack: Tuple[int, ...]) -> None:
+            if depth > 6 or not content:
+                return
+            xobjects = _dict_value(index, resources, "XObject")
+            next_stack = stack
+            current: Optional[Dict[str, Any]] = None
+            # Text LINE matrix [a b c d e f]. Td/TD/T*/TL operands are in
+            # UNSCALED text space — a `-1.15 Td` line advance under an
+            # `11.04 ... Tm` moves ~12.7pt on the page — so translations must
+            # go through the matrix, not straight onto x/y (the first cut did
+            # exactly that and split words across line bins).
+            tm = [1.0, 0.0, 0.0, 1.0, 0.0, 0.0]
+            leading = 0.0
+
+            def translate(dx: float, dy: float) -> None:
+                tm[4] += dx * tm[0] + dy * tm[2]
+                tm[5] += dx * tm[1] + dy * tm[3]
+
+            def emit(piece: str) -> None:
+                if piece:
+                    seq[0] += 1
+                    runs.append((tm[5], tm[4], seq[0], piece))
+
+            for match in _TEXT_POS_OPS.finditer(content):
+                group = match.lastgroup
+                if group == "font":
+                    current = own_fonts.get(match.group("font").decode("latin1"))
+                elif group == "litop":
+                    if match.group("litop") in (b"'", b'"'):
+                        translate(0.0, -leading)
+                    emit(_decode_literal_string(match.group("lit"), current))
+                elif group == "hex":
+                    emit(_decode_hex_string(match.group("hex"), current))
+                elif group == "tj":
+                    pieces: List[str] = []
+                    for lit, hexs, number_str in _TJ_PIECES.findall(match.group("tj")):
+                        if lit:
+                            pieces.append(_decode_literal_string(lit, current))
+                        elif hexs:
+                            pieces.append(_decode_hex_string(hexs, current))
+                        elif number_str and abs(float(number_str)) >= _TJ_SPACE_THRESHOLD:
+                            pieces.append(" ")
+                    emit("".join(pieces))
+                elif group == "tm":
+                    values = [float(value) for value in match.group("tm").split()]
+                    if len(values) == 6:
+                        tm = values
+                elif group == "tdop":
+                    dx, dy = (float(value) for value in match.group("td").split())
+                    if match.group("tdop") == b"TD":
+                        leading = -dy
+                    translate(dx, dy)
+                elif group == "tl":
+                    leading = float(match.group("tl"))
+                elif group == "tstar":
+                    translate(0.0, -leading)
+                elif group == "bt":
+                    tm = [1.0, 0.0, 0.0, 1.0, 0.0, 0.0]
+                    leading = 0.0
+                elif group == "xobj":
+                    if not xobjects or draw_budget[0] <= 0:
+                        continue
+                    named = re.search(
+                        rb"/" + re.escape(match.group("xobj")) + rb"\s+(\d+)\s+0\s+R", xobjects
+                    )
+                    if not named:
+                        continue
+                    xnum = int(named.group(1))
+                    if xnum in stack:
+                        continue
+                    xentry = index.get(xnum)
+                    if not xentry or xentry[1] is None or not re.search(rb"/Subtype\s*/Form\b", xentry[0]):
+                        continue
+                    xcontent = _decompress_stream(xentry[0], xentry[1])
+                    if not xcontent:
+                        continue
+                    xresources = _dict_value(index, xentry[0], "Resources")
+                    xfonts = own_fonts
+                    if xresources is not None:
+                        xfont_dict = _fonts_from_resources(index, xresources)
+                        if xfont_dict:
+                            xfonts = {**own_fonts, **xfont_dict}
+                    draw_budget[0] -= 1
+                    collect(
+                        xcontent,
+                        xfonts,
+                        xresources if xresources is not None else resources,
+                        depth + 1,
+                        next_stack + (xnum,),
+                    )
+
+        # The /Contents array is ONE logical stream: PDF splits it anywhere
+        # between lexical tokens, so fonts, text matrices, and even a single
+        # TJ array routinely straddle stream boundaries (this corpus letter
+        # splits each page into 8 streams — parsing them separately dropped a
+        # whole line and every cross-boundary font binding). Concatenate
+        # before parsing, as the spec instructs readers to.
+        page_resources = _dict_value(index, dictionary, "Resources")
+        stream_parts: List[bytes] = []
+        for ref in content_refs:
+            entry = index.get(ref)
+            if not entry or entry[1] is None:
+                continue
+            part = _decompress_stream(entry[0], entry[1])
+            if part:
+                stream_parts.append(part)
+        collect(b"\n".join(stream_parts), fonts, page_resources, 0, ())
+        # Group runs into lines by y (2pt tolerance via rounding), order lines
+        # top-down, and keep a stable x-then-sequence order within a line
+        # (consecutive show ops share their positioning op's x; stability
+        # preserves their emission order).
+        lines: Dict[int, List[Tuple[float, int, str]]] = {}
+        for y_value, x_value, sequence, piece in runs:
+            key = int(round(y_value / 2.0))
+            lines.setdefault(key, []).append((x_value, sequence, piece))
+        ordered: List[str] = []
+        for key in sorted(lines.keys(), reverse=True):
+            entries = sorted(lines[key], key=lambda item: item[0])
+            ordered.append("".join(piece for _, _, piece in entries))
+        pages.append(ordered)
+
+    page_texts = ["\n".join(lines) for lines in pages]
+    text = "\n\n".join(page_texts)
+    if not text.strip():
+        return {"pages": len(pages), "characters": 0, "text": "", "pageTexts": []}
+    return {
+        "pages": len(pages),
+        "characters": len(text),
+        "text": text[:MAX_TEXT_CHARS],
+        "pageTexts": [value[:MAX_TEXT_CHARS] for value in page_texts],
+    }
+
+
+# ── Link-annotation extraction (2026-08-10, ed-parent-guide run) ─────────────
+# Source PDFs carry navigation the text layer never shows: URI annotations and
+# internal GoTo links (footnote markers → footnotes). Both the plan author and
+# the independent verifier had to hand-write pdfjs scripts to see them, and a
+# rebuild that silently flattens them loses real function. Deterministic,
+# stdlib-only, same byte-level machinery as the extractors above.
+
+_ANNOT_STRING_ESCAPES = {
+    b"n": "\n", b"r": "\r", b"t": "\t", b"b": "\b", b"f": "\f",
+    b"(": "(", b")": ")", b"\\": "\\",
+}
+
+
+def _annot_string(value: bytes) -> str:
+    out: List[str] = []
+    i = 0
+    while i < len(value):
+        ch = value[i:i + 1]
+        if ch == b"\\" and i + 1 < len(value):
+            nxt = value[i + 1:i + 2]
+            if nxt in _ANNOT_STRING_ESCAPES:
+                out.append(_ANNOT_STRING_ESCAPES[nxt])
+                i += 2
+                continue
+            if nxt.isdigit():
+                octal = value[i + 1:i + 4]
+                digits = octal[: len(octal) - len(octal.lstrip(b"01234567"))] or octal[:1]
+                try:
+                    out.append(chr(int(digits[:3], 8)))
+                except ValueError:
+                    pass
+                i += 1 + len(digits[:3])
+                continue
+            i += 1
+            continue
+        out.append(ch.decode("latin1"))
+        i += 1
+    return "".join(out)
+
+
+def _pdf_extract_annotations(data: bytes) -> Dict[str, Any]:
+    index: Dict[int, Tuple[bytes, Optional[bytes]]] = {}
+    for number, dictionary, raw in _pdf_iter_stream_objects(data):
+        index[number] = (dictionary, raw)
+
+    page_numbers: List[int] = []
+    for number, (dictionary, raw) in sorted(index.items(), key=lambda item: item[0]):
+        if re.search(rb"/Type\s*/Page\b", dictionary) and not re.search(rb"/Type\s*/Pages\b", dictionary):
+            page_numbers.append(number)
+    page_object_to_index = {value: position + 1 for position, value in enumerate(page_numbers)}
+
+    def annot_refs_for_page(dictionary: bytes) -> List[int]:
+        inline = re.search(rb"/Annots\s*\[([^\]]*)\]", dictionary)
+        if inline:
+            return [int(ref) for ref in re.findall(rb"(\d+)\s+0\s+R", inline.group(1))]
+        ref = re.search(rb"/Annots\s+(\d+)\s+0\s+R", dictionary)
+        if ref:
+            # The array object may have been yielded into the index (incl. from
+            # inside an /ObjStm container, where a raw-byte scan never sees it).
+            entry = index.get(int(ref.group(1)))
+            if entry and entry[0].lstrip().startswith(b"["):
+                return [int(item) for item in re.findall(rb"(\d+)\s+0\s+R", entry[0])]
+            array_obj = re.search(
+                rb"(?:^|[\r\n])" + ref.group(1) + rb"\s+0\s+obj\s*\[([^\]]*)\]", data
+            )
+            if array_obj:
+                return [int(item) for item in re.findall(rb"(\d+)\s+0\s+R", array_obj.group(1))]
+        return []
+
+    def resolve_action(dictionary: bytes) -> Optional[bytes]:
+        action = _dict_value(index, dictionary, "A")
+        return action
+
+    pages_out: List[Dict[str, Any]] = []
+    totals = {"uri": 0, "internal": 0, "other": 0}
+    for page_number in page_numbers:
+        dictionary = index[page_number][0]
+        links: List[Dict[str, Any]] = []
+        other: Dict[str, int] = {}
+        for annot_ref in annot_refs_for_page(dictionary):
+            entry = index.get(annot_ref)
+            if not entry:
+                continue
+            annot = entry[0]
+            subtype_match = re.search(rb"/Subtype\s*/(\w+)", annot)
+            subtype = subtype_match.group(1).decode("latin1") if subtype_match else "Unknown"
+            if subtype != "Link":
+                totals["other"] += 1
+                other[subtype] = other.get(subtype, 0) + 1
+                continue
+            action = resolve_action(annot)
+            uri_match = None
+            if action is not None and re.search(rb"/S\s*/URI\b", action):
+                uri_match = (
+                    re.search(rb"/URI\s*\(((?:[^()\\]|\\.)*)\)", action)
+                    or re.search(rb"/URI\s*<([0-9A-Fa-f\s]+)>", action)
+                )
+            if uri_match:
+                raw_uri = uri_match.group(1)
+                if b"(" not in uri_match.group(0)[:6] and re.fullmatch(rb"[0-9A-Fa-f\s]+", raw_uri):
+                    try:
+                        uri_value = bytes.fromhex(raw_uri.replace(b" ", b"").decode("ascii")).decode("latin1")
+                    except ValueError:
+                        uri_value = ""
+                else:
+                    uri_value = _annot_string(raw_uri)
+                totals["uri"] += 1
+                links.append({"kind": "uri", "uri": uri_value})
+                continue
+            dest_page = None
+            dest = re.search(rb"/(?:Dest|D)\s*\[\s*(\d+)\s+0\s+R", annot)
+            if not dest and action is not None and re.search(rb"/S\s*/GoTo\b", action):
+                dest = re.search(rb"/D\s*\[\s*(\d+)\s+0\s+R", action)
+            if dest:
+                dest_page = page_object_to_index.get(int(dest.group(1)))
+                totals["internal"] += 1
+                links.append({"kind": "internal", "targetPage": dest_page})
+                continue
+            named = re.search(rb"/(?:Dest|D)\s*(?:\(((?:[^()\\]|\\.)*)\)|/(\w+))", annot) or (
+                re.search(rb"/D\s*(?:\(((?:[^()\\]|\\.)*)\)|/(\w+))", action) if action is not None else None
+            )
+            if named:
+                totals["internal"] += 1
+                name_bytes = named.group(1) or named.group(2) or b""
+                links.append({"kind": "internal", "namedDestination": _annot_string(name_bytes)})
+                continue
+            totals["other"] += 1
+            other["LinkUnresolved"] = other.get("LinkUnresolved", 0) + 1
+        pages_out.append({"page": page_object_to_index[page_number], "links": links, "otherAnnotations": other})
+
+    return {
+        "pages": pages_out,
+        "totals": totals,
+        "note": (
+            "Deterministic byte-level scan. Pages are numbered in object order (matching "
+            "extract-text), which is usually but not always presentation order. Named "
+            "destinations are reported unresolved."
+        ),
+    }
+
+
+def _annotation_link_warnings(annotations: Dict[str, Any], validated: Dict[str, Any]) -> List[str]:
+    """Warning-only cross-check of the plan's links against the source's link
+    annotations. Never fails a plan — it names what may have been flattened."""
+
+    warnings: List[str] = []
+    plan_hrefs: List[str] = []
+    for block in validated["blocks"]:
+        for runs_value in [block.get("runs")] + list(block.get("item_runs") or []):
+            for run in runs_value or []:
+                if isinstance(run, dict) and run.get("href"):
+                    plan_hrefs.append(str(run["href"]))
+        for row_entry in block.get("cell_runs") or []:
+            for cell_entry in row_entry or []:
+                for run in cell_entry or []:
+                    if isinstance(run, dict) and run.get("href"):
+                        plan_hrefs.append(str(run["href"]))
+        if block.get("type") == "link" and block.get("url"):
+            plan_hrefs.append(str(block["url"]))
+
+    totals = annotations.get("totals") or {}
+    internal_count = int(totals.get("internal") or 0)
+    if internal_count and not any(href.startswith("#") for href in plan_hrefs):
+        warnings.append(
+            f"The source carries {internal_count} internal link annotation(s) (e.g. footnote "
+            "markers linking to footnotes) but the plan declares no '#' anchors — in-document "
+            "navigation may have been flattened to plain text. Declare block ids and '#id' "
+            "runs to carry it."
+        )
+
+    def _schemeless(value: str) -> str:
+        stripped = re.sub(r"^https?://", "", value.strip().lower())
+        return stripped.rstrip("/")
+
+    annotation_uris = [
+        str(link.get("uri") or "")
+        for page in annotations.get("pages") or []
+        for link in page.get("links") or []
+        if link.get("kind") == "uri"
+    ]
+    for href in plan_hrefs:
+        if not href.lower().startswith(("http://", "https://")):
+            continue
+        for uri in annotation_uris:
+            if not uri.lower().startswith(("http://", "https://")):
+                continue
+            if _schemeless(href) == _schemeless(uri) and href.split(":", 1)[0].lower() != uri.split(":", 1)[0].lower():
+                warnings.append(
+                    f"Link scheme differs from the source annotation: plan has '{href}' but the "
+                    f"source annotation carries '{uri}'. Keep the source's scheme unless there is "
+                    "a reason not to."
+                )
+                break
+    return warnings
+
+
 def _tokens(text: str) -> "Counter[str]":
     from collections import Counter
 
@@ -3110,7 +3598,9 @@ def merge_plans_command(args: argparse.Namespace) -> Dict[str, Any]:
 def extract_text_command(args: argparse.Namespace) -> Dict[str, Any]:
     source = Path(args.source).resolve()
     receipt = ensure_source_pdf(source)
-    extraction = _pdf_extract_text(source.read_bytes())
+    data = source.read_bytes()
+    ordered = bool(getattr(args, "ordered", False))
+    extraction = _pdf_extract_text_ordered(data) if ordered else _pdf_extract_text(data)
     token_count = sum(_tokens(extraction["text"]).values())
     result = {
         "ok": True,
@@ -3118,15 +3608,42 @@ def extract_text_command(args: argparse.Namespace) -> Dict[str, Any]:
         "pages": extraction["pages"],
         "characters": extraction["characters"],
         "tokens": token_count,
+        "ordered": ordered,
         "note": (
-            "Deterministic extraction (literal strings + ToUnicode CMaps). Low counts on a "
-            "document that visibly contains text mean the encoding is out of scope, not that "
-            "the document is empty - fall back to reading it."
+            (
+                "Reading-order extraction: lines grouped by text-positioning operators and "
+                "sorted top-down per page. Honest limits: no CTM math (rotated pages and "
+                "transformed Form XObjects keep local coordinates) and single-column "
+                "assumptions (multi-column pages interleave). The unordered channel remains "
+                "the recall reference."
+            )
+            if ordered
+            else (
+                "Deterministic extraction (literal strings + ToUnicode CMaps). Low counts on a "
+                "document that visibly contains text mean the encoding is out of scope, not that "
+                "the document is empty - fall back to reading it. Output is in OBJECT order, "
+                "not reading order; pass --ordered for a best-effort reading-order view."
+            )
         ),
     }
     if args.include_text:
         result["text"] = extraction["text"]
+        if ordered:
+            result["pageTexts"] = extraction.get("pageTexts") or []
     return result
+
+
+def extract_annotations_command(args: argparse.Namespace) -> Dict[str, Any]:
+    source = Path(args.source).resolve()
+    receipt = ensure_source_pdf(source)
+    annotations = _pdf_extract_annotations(source.read_bytes())
+    return {
+        "ok": True,
+        "source": receipt,
+        "pages": annotations["pages"],
+        "totals": annotations["totals"],
+        "note": annotations["note"],
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -3536,6 +4053,17 @@ def build_parser() -> argparse.ArgumentParser:
     )
     text_parser.add_argument("--source", required=True)
     text_parser.add_argument("--include-text", action="store_true")
+    text_parser.add_argument(
+        "--ordered",
+        action="store_true",
+        help="Best-effort reading order (positional line grouping) instead of object order.",
+    )
+
+    annotations_parser = subparsers.add_parser(
+        "extract-annotations",
+        help="Deterministically list a PDF's link annotations (URI + internal GoTo) per page.",
+    )
+    annotations_parser.add_argument("--source", required=True)
 
     verify_init = subparsers.add_parser(
         "verify-init",
@@ -3593,6 +4121,8 @@ def main() -> int:
             result = merge_plans_command(args)
         elif args.command == "extract-text":
             result = extract_text_command(args)
+        elif args.command == "extract-annotations":
+            result = extract_annotations_command(args)
         elif args.command == "verify-init":
             result = verify_init_command(args)
         elif args.command == "verify-check":

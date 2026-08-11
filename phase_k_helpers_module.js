@@ -2423,7 +2423,7 @@ ${typeof window !== "undefined" && typeof window.formatToolCatalogForPrompt === 
             - **dbq**: Document-Based Question activity with primary sources. Use for social studies, history, civics.
             - **note-taking**: Scaffolded note-taking templates (Cornell / Lab Report / Reading Response). Persists across lessons.
             - **anchor-chart**: EL-style class anchor chart (Reference / Process / Concept Map / Comparison).
-            - **math**: Opens the STEM Lab (interactive math/science exploration).
+            - **math**: Opens the STEAM Lab (interactive math/science exploration).
             - **lesson-plan**: Teacher-facing synthesis. ALWAYS place LAST.
             - **gemini-bridge**: Interactive sim/app generator.
             - **alignment-report**: Post-hoc audit. Only include if explicit standards + user requests audit.`}

@@ -236,7 +236,9 @@ describe('Water Cycle Precipitation Lab', () => {
 
     expect(html).toContain('data-temperature-profile-editor="three-point"');
     expect(html).toContain('Middle-atmosphere temperature');
-    expect(html).toContain('Each 0\u00B0C crossing becomes a visible phase-change layer.');
+    // Pinned without the trailing punctuation: the invariant is that the hint
+    // explains what a crossing means, not exactly where the sentence ends.
+    expect(html).toContain('Each 0\u00B0C crossing becomes a visible phase-change layer');
   });
   it('checks flash-to-thunder distance estimates with qualitative feedback', () => {
     const kernel = loadPrecipitationKernel();

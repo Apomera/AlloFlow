@@ -1,4 +1,4 @@
-// ── Reduced motion CSS (WCAG 2.3.3), shared across all STEM Lab tools ──
+// ── Reduced motion CSS (WCAG 2.3.3), shared across all STEAM Lab tools ──
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -5334,7 +5334,7 @@ const d = labToolData.rocks || {};
                     RK_CRYSTAL_UNAVAILABLE === 'host'
                       ? React.createElement("p", { className: "text-[11px] text-slate-800 mt-1.5 bg-amber-50 border border-amber-300 rounded-lg p-2" },
                           React.createElement("span", { className: "font-black" }, __alloT('stem.rocks.crystal3d_host_stale_label', "3D unavailable: ")),
-                          __alloT('stem.rocks.crystal3d_host_stale', "this build's STEM Lab host is older than this tool and does not provide the 3D viewer. Everything else on this page works normally; the structure is described in full above.")
+                          __alloT('stem.rocks.crystal3d_host_stale', "this build's STEAM Lab host is older than this tool and does not provide the 3D viewer. Everything else on this page works normally; the structure is described in full above.")
                         )
                       : React.createElement("p", { className: "text-[11px] text-slate-700 mt-1.5" },
                           __alloT('stem.rocks.crystal3d_offline_note', "If the 3D view stays blank, the engine is served from a CDN your network may block — every other panel on this page still works offline.")

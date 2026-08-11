@@ -52,7 +52,7 @@
   var guidedTitle = copy('launch_pad.guided_title', 'Guided Mode');
   var guidedDesc = copy('launch_pad.guided_desc', 'Follow a recommended path with step-by-step support.');
   var learningToolsTitle = copy('launch_pad.learning_tools_title', 'Learning Tools');
-  var learningToolsDesc = copy('launch_pad.learning_tools_desc', 'STEM Lab, StoryForge, SEL Hub, Research Hub & more - explore, create, investigate, and grow.');
+  var learningToolsDesc = copy('launch_pad.learning_tools_desc', 'STEAM Lab, StoryForge, SEL Hub, Research Hub & more - explore, create, investigate, and grow.');
   var educatorToolsTitle = copy('launch_pad.educator_tools_title', 'Educator Tools');
   var educatorToolsDesc = copy('launch_pad.educator_tools_desc_open', 'BehaviorLens, Report Writer, and other professional educator tools.');
   var switchHint = copy('launch_pad.switch_hint', 'You can switch modes later.');

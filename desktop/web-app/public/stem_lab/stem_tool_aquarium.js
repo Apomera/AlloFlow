@@ -768,7 +768,7 @@ window.StemLab = window.StemLab || {
   })();
   window.AquariumEcosystemCore = AquariumEcosystemCore;
   // === End aquarium ecosystem core ===
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -2066,7 +2066,7 @@ window.StemLab = window.StemLab || {
     {
       ecosystem: 'Hydrothermal vents',
       where: 'Mid-ocean ridges, deep water',
-      ecosystem: 'Chemosynthetic — bacteria use sulfur compounds for energy',
+      energy: 'Chemosynthetic — bacteria use sulfur compounds for energy',
       life: 'Tube worms, vent crabs, mussels — entirely independent of sunlight',
     },
     {
@@ -2103,7 +2103,7 @@ window.StemLab = window.StemLab || {
       role: 'Marine ecologist',
       training: 'MS or PhD in ecology',
       pay: '$60-110K',
-      role: 'Study ecosystem-level processes',
+      duties: 'Study ecosystem-level processes',
     },
     {
       role: 'Aquaculture specialist',
@@ -2117,7 +2117,7 @@ window.StemLab = window.StemLab || {
       training: 'MS or PhD in fisheries biology',
       pay: '$70-120K',
       employers: 'NOAA Fisheries (NMFS), state agencies, regional councils',
-      role: 'Set catch limits, study fish stocks',
+      duties: 'Set catch limits, study fish stocks',
     },
     {
       role: 'Marine conservation',
@@ -2141,7 +2141,7 @@ window.StemLab = window.StemLab || {
       role: 'Aquarium maintenance service',
       training: 'Apprenticeship + biology background',
       pay: '$40-70K',
-      role: 'Maintain residential and commercial aquariums',
+      duties: 'Maintain residential and commercial aquariums',
     },
     {
       role: 'Coral propagator',
@@ -2195,7 +2195,7 @@ window.StemLab = window.StemLab || {
       role: 'NOAA Corps officer',
       training: 'BS in science + officer training',
       pay: 'Federal military pay scale',
-      role: 'Operate NOAA research vessels and aircraft',
+      duties: 'Operate NOAA research vessels and aircraft',
     },
   ];
 
@@ -4129,7 +4129,7 @@ window.StemLab = window.StemLab || {
     },
     {
       reference: 'Seinfeld "The Sponge" episode',
-      reference: 'Pop culture echoes through aquarium hobby — many subtle references',
+      note: 'Pop culture echoes through aquarium hobby — many subtle references',
     },
   ];
 
@@ -8014,6 +8014,33 @@ window.StemLab = window.StemLab || {
     }
   ]);
 
+  // ── Part 3 — the two banks that were authored but never wired ──────────
+  // AQUARIUM_QUIZ (31) and AQUARIUM_QUIZ_EXTENDED (15) were declared and then
+  // referenced nowhere, so 46 authored questions never reached a learner.
+  //
+  // They cannot simply be concatenated: this bank grades by INDEX (i ===
+  // q.correct) while those two store the answer TEXT, so appending them raw
+  // would leave every one of them permanently ungradeable. Convert here, and
+  // do it BEFORE the position-rotation below so the new questions get the same
+  // anti-position-bias treatment as the rest.
+  Array.prototype.push.apply(AQUARIUM_QUIZ_BANK, [].concat(AQUARIUM_QUIZ, AQUARIUM_QUIZ_EXTENDED)
+    .map(function (q, i) {
+      var idx = q.options.indexOf(q.correct);
+      // Verified at wiring time: all 46 map to exactly one option. Anything that
+      // ever stops matching is dropped rather than silently graded as option 0.
+      if (idx < 0) return null;
+      return {
+        id: 'q-legacy-' + (i + 1),
+        category: q.topic || 'General',
+        difficulty: q.difficulty || 'medium',
+        question: q.question,
+        options: q.options.slice(),
+        correct: idx,
+        explanation: q.explanation
+      };
+    })
+    .filter(Boolean));
+
   // The authored bank put 75% of correct answers in slot 2 (measured
   // 12/75/10/3 by the position-bias scanner), so the structured quiz could
   // be passed by position. Rotate each question ONCE here, after both bank
@@ -10650,7 +10677,7 @@ window.StemLab = window.StemLab || {
   // FINAL APPENDIX \u2014 author notes + change log
   // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
   var AUTHOR_NOTES = {
-    intent: 'This Aquarium STEM Lab tool aims to combine rigorous biology and chemistry curriculum with the hands-on craft of aquarium keeping. It serves multiple grade levels (5-12) and connects to NGSS standards in life science, physical science, and earth/space science.',
+    intent: 'This Aquarium STEAM Lab tool aims to combine rigorous biology and chemistry curriculum with the hands-on craft of aquarium keeping. It serves multiple grade levels (5-12) and connects to NGSS standards in life science, physical science, and earth/space science.',
     pedagogicalApproach: 'Inquiry-based learning. Each module includes both content reference AND hands-on activities. Students should not just READ about the nitrogen cycle \u2014 they should track real readings in a real tank.',
     sourceMaterial: [
       'Practical Fishkeeping magazine (UK)',
@@ -10667,7 +10694,7 @@ window.StemLab = window.StemLab || {
       'Aquatic Gardeners Association resources'
     ],
     factCheckingApproach: 'Where possible, primary research sources cited. Where general knowledge, hobbyist consensus across multiple authoritative sources (e.g., Aquarium Co-Op + Aquarium Gardeners Assoc). When evidence is uncertain or evolving (e.g., specific welfare standards), this is noted.',
-    contributorAcknowledgements: 'Built within AlloFlow STEM Lab system as part of the broader UDL platform supporting accessibility and inclusion across grade levels and learning needs.',
+    contributorAcknowledgements: 'Built within AlloFlow STEAM Lab system as part of the broader UDL platform supporting accessibility and inclusion across grade levels and learning needs.',
     licenseNotes: 'Curriculum content is meant for educational use. Cited works are referenced with attribution. Commercial use should comply with original publisher terms.'
   };
 
@@ -12013,6 +12040,114 @@ window.StemLab = window.StemLab || {
       )
     );
   }
+  // ═══════════════════════════════════════════════════════════════
+  // REFERENCE LIBRARY — index of the authored reference tables
+  //
+  // Every table below was written and then never referenced, so roughly 1,400
+  // entries of authored content — two glossaries, species and coral catalogues,
+  // disease and emergency guides, lab activities, an NGSS map — existed in the
+  // file but could not be reached from the UI. This index is what makes them
+  // reachable: the Reference mode renders straight from it, so adding a table
+  // to the tool is now one line here rather than a bespoke panel.
+  //
+  // `titleKey` names the field to use as each entry's heading. Several tables
+  // key on a slug id ('spot-discus'), so the readable field is named instead.
+  // ═══════════════════════════════════════════════════════════════
+  var AQUARIUM_REFERENCE_LIBRARY = [
+    { id: 'COMMON_SUBSTRATE_COMPARISON', title: 'Common substrate comparison', category: 'Equipment & routine', titleKey: 'substrate', data: COMMON_SUBSTRATE_COMPARISON },
+    { id: 'EQUIPMENT_BRAND_GUIDE', title: 'Equipment brand guide', category: 'Equipment & routine', titleKey: 'category', data: EQUIPMENT_BRAND_GUIDE },
+    { id: 'EQUIPMENT_GUIDE', title: 'Equipment guide', category: 'Equipment & routine', titleKey: 'category', data: EQUIPMENT_GUIDE },
+    { id: 'ESSENTIAL_TOOLS', title: 'Essential tools', category: 'Equipment & routine', titleKey: 'tool', data: ESSENTIAL_TOOLS },
+    { id: 'SALTWATER_EQUIPMENT', title: 'Saltwater equipment', category: 'Equipment & routine', titleKey: 'equipment', data: SALTWATER_EQUIPMENT },
+    { id: 'TANK_BUDGET_CALCULATOR', title: 'Tank budget calculator', category: 'Equipment & routine', titleKey: 'tankSize', data: TANK_BUDGET_CALCULATOR },
+    { id: 'TANK_SETUP', title: 'Tank setup', category: 'Equipment & routine', titleKey: 'step', data: TANK_SETUP },
+    { id: 'TESTING_SCHEDULE', title: 'Testing schedule', category: 'Equipment & routine', titleKey: 'stage', data: TESTING_SCHEDULE },
+    { id: 'WATER_CHANGE_TIMING_GUIDE', title: 'Water change timing guide', category: 'Equipment & routine', titleKey: 'tankType', data: WATER_CHANGE_TIMING_GUIDE },
+    { id: 'YEAR_ROUND_CARE', title: 'Year round care', category: 'Equipment & routine', titleKey: 'time', data: YEAR_ROUND_CARE },
+    { id: 'FINAL_TIPS_AQUARISTS', title: 'Final tips for aquarists', category: 'Guides & FAQ', titleKey: null, data: FINAL_TIPS_AQUARISTS },
+    { id: 'AQUARIUM_FAQ', title: 'Frequently asked questions', category: 'Guides & FAQ', titleKey: 'q', data: AQUARIUM_FAQ },
+    { id: 'FAQ_GENERAL_RESPONSES', title: 'Getting started answers', category: 'Guides & FAQ', titleKey: 'question', data: FAQ_GENERAL_RESPONSES },
+    { id: 'HOBBYIST_RESOURCES', title: 'Hobbyist resources', category: 'Guides & FAQ', titleKey: 'resource', data: HOBBYIST_RESOURCES },
+    { id: 'MARINE_CAREERS', title: 'Marine careers', category: 'Guides & FAQ', titleKey: 'role', data: MARINE_CAREERS },
+    { id: 'EXTENDED_FAQ', title: 'More questions answered', category: 'Guides & FAQ', titleKey: 'question', data: EXTENDED_FAQ },
+    { id: 'BEGINNER_MISTAKES', title: 'Beginner mistakes', category: 'Health & troubleshooting', titleKey: 'mistake', data: BEGINNER_MISTAKES },
+    { id: 'COMMON_MISCONCEPTIONS_GUIDE', title: 'Common misconceptions guide', category: 'Health & troubleshooting', titleKey: 'misconception', data: COMMON_MISCONCEPTIONS_GUIDE },
+    { id: 'EMERGENCY_RESPONSE_GUIDE', title: 'Emergency response guide', category: 'Health & troubleshooting', titleKey: 'situation', data: EMERGENCY_RESPONSE_GUIDE },
+    { id: 'FISH_DISEASES', title: 'Fish diseases', category: 'Health & troubleshooting', titleKey: 'disease', data: FISH_DISEASES },
+    { id: 'FISH_HEALTH', title: 'Fish health', category: 'Health & troubleshooting', titleKey: 'sign', data: FISH_HEALTH },
+    { id: 'AQUARIUM_MYTHS_DEBUNKED', title: 'Myths debunked', category: 'Health & troubleshooting', titleKey: 'myth', data: AQUARIUM_MYTHS_DEBUNKED },
+    { id: 'EXPERT_QUOTES', title: 'Expert quotes', category: 'History & culture', titleKey: 'author', data: EXPERT_QUOTES },
+    { id: 'FAMOUS_AQUARIUMS', title: 'Famous aquariums', category: 'History & culture', titleKey: 'name', data: FAMOUS_AQUARIUMS },
+    { id: 'FAMOUS_MARINE_BIOLOGISTS', title: 'Famous marine biologists', category: 'History & culture', titleKey: 'name', data: FAMOUS_MARINE_BIOLOGISTS },
+    { id: 'FISH_IN_CULTURE', title: 'Fish in culture', category: 'History & culture', titleKey: 'reference', data: FISH_IN_CULTURE },
+    { id: 'FISH_SOCIETIES', title: 'Fish societies', category: 'History & culture', titleKey: 'name', data: FISH_SOCIETIES },
+    { id: 'FISHKEEPING_HISTORY', title: 'Fishkeeping history', category: 'History & culture', titleKey: 'era', data: FISHKEEPING_HISTORY },
+    { id: 'AQUARIUM_LITERATURE', title: 'Further reading', category: 'History & culture', titleKey: 'title', data: AQUARIUM_LITERATURE },
+    { id: 'AQUARIUM_HISTORY_TIMELINE', title: 'History timeline', category: 'History & culture', titleKey: 'year', data: AQUARIUM_HISTORY_TIMELINE },
+    { id: 'MARINE_SCIENTIST_PROFILES', title: 'Marine scientist profiles', category: 'History & culture', titleKey: 'name', data: MARINE_SCIENTIST_PROFILES },
+    { id: 'PUBLIC_AQUARIUM_PROFILES', title: 'Public aquarium profiles', category: 'History & culture', titleKey: 'name', data: PUBLIC_AQUARIUM_PROFILES },
+    { id: 'AQUARIUM_QUOTES', title: 'Quotations', category: 'History & culture', titleKey: 'quote', data: AQUARIUM_QUOTES },
+    { id: 'AQUARIUM_TRIVIA', title: 'Trivia', category: 'History & culture', titleKey: 'fact', data: AQUARIUM_TRIVIA },
+    { id: 'AQUATIC_INVERTEBRATES', title: 'Aquatic invertebrates', category: 'Livestock', titleKey: 'name', data: AQUATIC_INVERTEBRATES },
+    { id: 'BREEDING_BASICS', title: 'Breeding basics', category: 'Livestock', titleKey: 'species', data: BREEDING_BASICS },
+    { id: 'BREEDING_ENCYCLOPEDIA', title: 'Breeding encyclopedia', category: 'Livestock', titleKey: 'species', data: BREEDING_ENCYCLOPEDIA },
+    { id: 'CICHLID_FAMILY_GUIDE', title: 'Cichlid family guide', category: 'Livestock', titleKey: 'species', data: CICHLID_FAMILY_GUIDE },
+    { id: 'FISH_ANATOMY_GUIDE', title: 'Fish anatomy guide', category: 'Livestock', titleKey: 'system', data: FISH_ANATOMY_GUIDE },
+    { id: 'FISH_CARE_CALENDAR', title: 'Fish care calendar', category: 'Livestock', titleKey: 'frequency', data: FISH_CARE_CALENDAR },
+    { id: 'FISH_FOOD_GUIDE', title: 'Fish food guide', category: 'Livestock', titleKey: 'category', data: FISH_FOOD_GUIDE },
+    { id: 'FISH_SPECIES_CATALOG', title: 'Fish species catalog', category: 'Livestock', titleKey: 'name', data: FISH_SPECIES_CATALOG },
+    { id: 'NOTABLE_FISH', title: 'Notable fish', category: 'Livestock', titleKey: 'fish', data: NOTABLE_FISH },
+    { id: 'POND_FISH', title: 'Pond fish', category: 'Livestock', titleKey: 'name', data: POND_FISH },
+    { id: 'SALTWATER_FISH', title: 'Saltwater fish', category: 'Livestock', titleKey: 'name', data: SALTWATER_FISH },
+    { id: 'SPECIES_SPOTLIGHTS', title: 'Species spotlights', category: 'Livestock', titleKey: 'common', data: SPECIES_SPOTLIGHTS },
+    { id: 'STOCKING_GUIDE', title: 'Stocking guide', category: 'Livestock', titleKey: 'tankSize', data: STOCKING_GUIDE },
+    { id: 'CONSERVATION_ACTIONS', title: 'Conservation actions', category: 'Ocean & conservation', titleKey: 'action', data: CONSERVATION_ACTIONS },
+    { id: 'CONSERVATION_CASE_STUDIES', title: 'Conservation case studies', category: 'Ocean & conservation', titleKey: 'title', data: CONSERVATION_CASE_STUDIES },
+    { id: 'CONSERVATION_ISSUES', title: 'Conservation issues', category: 'Ocean & conservation', titleKey: 'issue', data: CONSERVATION_ISSUES },
+    { id: 'ECOSYSTEM_FOOD_WEB', title: 'Ecosystem food web', category: 'Ocean & conservation', titleKey: 'role', data: ECOSYSTEM_FOOD_WEB },
+    { id: 'ETHICS_CHECKLIST', title: 'Ethics checklist', category: 'Ocean & conservation', titleKey: 'principle', data: ETHICS_CHECKLIST },
+    { id: 'FUTURE_TRENDS', title: 'Future trends', category: 'Ocean & conservation', titleKey: 'trend', data: FUTURE_TRENDS },
+    { id: 'LANDMARK_RESEARCH_PAPERS', title: 'Landmark research papers', category: 'Ocean & conservation', titleKey: 'title', data: LANDMARK_RESEARCH_PAPERS },
+    { id: 'MARINE_ECOSYSTEM_ZONES', title: 'Marine ecosystem zones', category: 'Ocean & conservation', titleKey: 'zone', data: MARINE_ECOSYSTEM_ZONES },
+    { id: 'OCEAN_ECOSYSTEMS', title: 'Ocean ecosystems', category: 'Ocean & conservation', titleKey: 'zone', data: OCEAN_ECOSYSTEMS },
+    { id: 'REGIONAL_BIODIVERSITY', title: 'Regional biodiversity', category: 'Ocean & conservation', titleKey: 'region', data: REGIONAL_BIODIVERSITY },
+    { id: 'RESEARCH_PROMPTS', title: 'Research prompts', category: 'Ocean & conservation', titleKey: 'title', data: RESEARCH_PROMPTS },
+    { id: 'SUSTAINABLE_SEAFOOD', title: 'Sustainable seafood', category: 'Ocean & conservation', titleKey: 'label', data: SUSTAINABLE_SEAFOOD },
+    { id: 'ALGAE_FIELD_GUIDE', title: 'Algae field guide', category: 'Plants, algae & corals', titleKey: 'common', data: ALGAE_FIELD_GUIDE },
+    { id: 'ALGAE_TYPES', title: 'Algae types', category: 'Plants, algae & corals', titleKey: 'type', data: ALGAE_TYPES },
+    { id: 'AQUASCAPING', title: 'Aquascaping', category: 'Plants, algae & corals', titleKey: 'principle', data: AQUASCAPING },
+    { id: 'AQUASCAPING_STYLES', title: 'Aquascaping styles', category: 'Plants, algae & corals', titleKey: 'style', data: AQUASCAPING_STYLES },
+    { id: 'AQUATIC_PLANTS', title: 'Aquatic plants', category: 'Plants, algae & corals', titleKey: 'name', data: AQUATIC_PLANTS },
+    { id: 'CORAL_CATALOG', title: 'Coral catalog', category: 'Plants, algae & corals', titleKey: 'common', data: CORAL_CATALOG },
+    { id: 'CORAL_TYPES', title: 'Coral types', category: 'Plants, algae & corals', titleKey: 'type', data: CORAL_TYPES },
+    { id: 'PLANT_CARE', title: 'Plant care', category: 'Plants, algae & corals', titleKey: 'principle', data: PLANT_CARE },
+    { id: 'PLANT_COMPATIBILITY', title: 'Plant compatibility', category: 'Plants, algae & corals', titleKey: 'species', data: PLANT_COMPATIBILITY },
+    { id: 'AQUARIUM_GLOSSARY', title: 'Glossary (everyday terms)', category: 'Reference', titleKey: 'term', data: AQUARIUM_GLOSSARY },
+    { id: 'AQUARIUM_GLOSSARY_TECHNICAL', title: 'Glossary (technical terms)', category: 'Reference', titleKey: 'term', data: AQUARIUM_GLOSSARY_TECHNICAL },
+    { id: 'MARINE_BIOLOGY', title: 'Marine biology', category: 'Reference', titleKey: 'concept', data: MARINE_BIOLOGY },
+    { id: 'QUICK_REFERENCE_CARDS', title: 'Quick reference cards', category: 'Reference', titleKey: 'card', data: QUICK_REFERENCE_CARDS },
+    { id: 'REEF_TANK', title: 'Reef tank parameters', category: 'Reference', titleKey: 'param', data: REEF_TANK },
+    { id: 'SCIENTIFIC_CONCEPTS', title: 'Scientific concepts', category: 'Reference', titleKey: 'concept', data: SCIENTIFIC_CONCEPTS },
+    { id: 'ADDITIONAL_LAB_ACTIVITIES', title: 'Additional lab activities', category: 'Teaching', titleKey: 'activity', data: ADDITIONAL_LAB_ACTIVITIES },
+    { id: 'ASSESSMENT_RUBRICS', title: 'Assessment rubrics', category: 'Teaching', titleKey: 'rubric', data: ASSESSMENT_RUBRICS },
+    { id: 'CLASSROOM_SAFETY_GUIDE', title: 'Classroom safety guide', category: 'Teaching', titleKey: 'topic', data: CLASSROOM_SAFETY_GUIDE },
+    { id: 'EXTENDED_LAB_ACTIVITIES', title: 'Extended lab activities', category: 'Teaching', titleKey: 'title', data: EXTENDED_LAB_ACTIVITIES },
+    { id: 'GRADE_LEVEL_VOCABULARY', title: 'Grade level vocabulary', category: 'Teaching', titleKey: 'grade', data: GRADE_LEVEL_VOCABULARY },
+    { id: 'AQUARIUM_INQUIRY', title: 'Inquiry questions', category: 'Teaching', titleKey: null, data: AQUARIUM_INQUIRY },
+    { id: 'AQUARIUM_LAB_ACTIVITIES', title: 'Lab activities', category: 'Teaching', titleKey: 'title', data: AQUARIUM_LAB_ACTIVITIES },
+    { id: 'NGSS_STANDARDS_MAP', title: 'NGSS standards map', category: 'Teaching', titleKey: 'grade', data: NGSS_STANDARDS_MAP },
+    { id: 'PRINTABLE_WORKSHEETS', title: 'Printable worksheets', category: 'Teaching', titleKey: 'title', data: PRINTABLE_WORKSHEETS },
+    { id: 'PROJECT_BASED_LEARNING_UNITS', title: 'Project based learning units', category: 'Teaching', titleKey: 'unit', data: PROJECT_BASED_LEARNING_UNITS },
+    { id: 'SEASONAL_OBSERVATIONS', title: 'Seasonal observations', category: 'Teaching', titleKey: 'season', data: SEASONAL_OBSERVATIONS },
+    { id: 'STANDARDS_ALIGNMENT', title: 'Standards alignment', category: 'Teaching', titleKey: 'framework', data: STANDARDS_ALIGNMENT },
+    { id: 'TEACHER_RESOURCES', title: 'Teacher resources', category: 'Teaching', titleKey: 'resource', data: TEACHER_RESOURCES },
+    { id: 'TOOL_REFLECTIONS', title: 'Tool reflections', category: 'Teaching', titleKey: 'reflection', data: TOOL_REFLECTIONS },
+    { id: 'AQUARIUM_MATH', title: 'Everyday aquarium maths', category: 'Water science', titleKey: 'problem', data: AQUARIUM_MATH },
+    { id: 'AQUARIUM_MATH_PROBLEMS', title: 'Maths problem set', category: 'Water science', titleKey: 'topic', data: AQUARIUM_MATH_PROBLEMS },
+    { id: 'NITROGEN_CYCLE', title: 'Nitrogen cycle', category: 'Water science', titleKey: 'stage', data: NITROGEN_CYCLE },
+    { id: 'WATER_CHEMISTRY', title: 'Water chemistry', category: 'Water science', titleKey: 'parameter', data: WATER_CHEMISTRY },
+  ];
+
   window.StemLab.registerTool('aquarium', {
     icon: '\uD83D\uDC20',
     label: "Aquarium Lab",
@@ -19326,7 +19461,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
           // ═══ RENDER ═══
 
-          var modeColors = { tank: 'cyan', ocean: 'blue', marine: 'indigo', learn: 'emerald', quiz: 'amber', waterlab: 'violet', designer: 'pink', stressHunt: 'rose' };
+          var modeColors = { tank: 'cyan', ocean: 'blue', marine: 'indigo', learn: 'emerald', reference: 'sky', quiz: 'amber', waterlab: 'violet', designer: 'pink', stressHunt: 'rose' };
 
           var mColor = modeColors[mode] || 'cyan';
 
@@ -19335,6 +19470,7 @@ var d = (labToolData && labToolData._aquarium) || {};
             { id: 'ocean', icon: '\uD83C\uDF0A', label: __alloT('stem.aquarium.ocean_ecology', 'Ocean Ecology'), activeClass: 'bg-gradient-to-r from-blue-600 to-blue-600 text-white shadow-lg shadow-blue-500/25' },
             { id: 'marine', icon: '\uD83D\uDD2C', label: __alloT('stem.aquarium.marine_science', 'Marine Science'), activeClass: 'bg-gradient-to-r from-indigo-600 to-indigo-600 text-white shadow-lg shadow-indigo-500/25' },
             { id: 'learn', icon: '\uD83D\uDCD6', label: __alloT('stem.aquarium.learn', 'Learn'), activeClass: 'bg-gradient-to-r from-emerald-700 to-emerald-700 text-white shadow-lg shadow-emerald-500/25' },
+            { id: 'reference', icon: '\uD83D\uDCDA', label: __alloT('stem.aquarium.reference', 'Reference'), activeClass: 'bg-gradient-to-r from-sky-700 to-sky-700 text-white shadow-lg shadow-sky-500/25' },
             { id: 'quiz', icon: '\uD83C\uDFAF', label: __alloT('stem.aquarium.quiz', 'Quiz'), activeClass: 'bg-gradient-to-r from-amber-700 to-amber-700 text-white shadow-lg shadow-amber-500/25' },
             { id: 'waterlab', icon: '\uD83E\uDDEA', label: __alloT('stem.aquarium.water_lab', 'Water Lab'), activeClass: 'bg-gradient-to-r from-violet-600 to-violet-600 text-white shadow-lg shadow-violet-500/25' },
             { id: 'designer', icon: '\u270F\uFE0F', label: __alloT('stem.aquarium.designer', 'Designer'), activeClass: 'bg-gradient-to-r from-pink-600 to-pink-600 text-white shadow-lg shadow-pink-500/25' },
@@ -24841,6 +24977,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                 )
 
               )
+            )
             ,
 
             // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 MODE 4: LEARN LIBRARY \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
@@ -24919,6 +25056,161 @@ var d = (labToolData && labToolData._aquarium) || {};
                         )
                       )
                     )
+                  )
+                )
+              );
+            })()
+            ,
+
+            // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 MODE: REFERENCE LIBRARY \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+            // Renders straight from AQUARIUM_REFERENCE_LIBRARY. Every table it
+            // names was authored and then left unreachable; this is the screen
+            // that reaches them. The renderer is deliberately generic \u2014 it walks
+            // whatever fields an entry happens to have \u2014 because the 92 tables
+            // do not share a schema and hand-writing 92 panels would guarantee
+            // the next table added goes unwired too.
+            mode === 'reference' && (function () {
+              var refCat = d.refCategory || 'All';
+              var refSection = d.refSection || AQUARIUM_REFERENCE_LIBRARY[0].id;
+              var refQuery = (d.refQuery || '').trim().toLowerCase();
+
+              var refCategories = ['All'].concat((function () {
+                var seen = {}, out = [];
+                AQUARIUM_REFERENCE_LIBRARY.forEach(function (s) {
+                  if (!seen[s.category]) { seen[s.category] = 1; out.push(s.category); }
+                });
+                return out;
+              })());
+
+              var refVisible = AQUARIUM_REFERENCE_LIBRARY.filter(function (s) {
+                if (refCat !== 'All' && s.category !== refCat) return false;
+                if (!refQuery) return true;
+                return (s.title + ' ' + s.category).toLowerCase().indexOf(refQuery) !== -1;
+              });
+              var refActive = AQUARIUM_REFERENCE_LIBRARY.filter(function (s) { return s.id === refSection; })[0]
+                || refVisible[0] || AQUARIUM_REFERENCE_LIBRARY[0];
+
+              // Turn one field of one entry into readable nodes. Values come as
+              // strings, arrays of strings, or small objects, so all three are
+              // handled rather than rendering "[object Object]".
+              function refValue(val) {
+                if (val == null) return null;
+                if (Array.isArray(val)) {
+                  return React.createElement('ul', { className: 'list-disc pl-4 space-y-0.5' },
+                    val.map(function (v, i) {
+                      return React.createElement('li', { key: i, className: 'text-[11px] text-slate-700' },
+                        (v && typeof v === 'object') ? Object.keys(v).map(function (k) { return k + ': ' + v[k]; }).join(' \u00b7 ') : String(v));
+                    }));
+                }
+                if (typeof val === 'object') {
+                  return React.createElement('div', { className: 'space-y-0.5' },
+                    Object.keys(val).map(function (k) {
+                      return React.createElement('p', { key: k, className: 'text-[11px] text-slate-700' },
+                        React.createElement('span', { className: 'font-bold text-slate-500' }, k + ': '), String(val[k]));
+                    }));
+                }
+                return React.createElement('p', { className: 'text-[11px] text-slate-700 leading-relaxed' }, String(val));
+              }
+
+              function refLabel(key) {
+                return key.replace(/([A-Z])/g, ' $1').replace(/^./, function (c) { return c.toUpperCase(); });
+              }
+
+              function refEntry(entry, i) {
+                // Some tables are plain arrays of sentences rather than objects.
+                if (typeof entry === 'string') {
+                  return React.createElement('li', {
+                    key: i, className: 'rounded-xl border border-sky-200 bg-white p-2.5 text-[12px] text-slate-800 leading-relaxed'
+                  }, entry);
+                }
+                var titleKey = refActive.titleKey;
+                var heading = (titleKey && entry[titleKey] != null) ? String(entry[titleKey]) : ('Entry ' + (i + 1));
+                return React.createElement('li', {
+                  key: i, className: 'rounded-xl border border-sky-200 bg-white p-2.5'
+                },
+                  React.createElement('h5', { className: 'text-[12px] font-black text-sky-900 mb-1' }, heading),
+                  React.createElement('div', { className: 'space-y-1' },
+                    Object.keys(entry).filter(function (k) { return k !== titleKey && k !== 'id'; }).map(function (k) {
+                      var node = refValue(entry[k]);
+                      if (!node) return null;
+                      return React.createElement('div', { key: k },
+                        React.createElement('span', { className: 'text-[9px] font-black uppercase tracking-wide text-sky-600' }, refLabel(k)),
+                        node);
+                    })
+                  )
+                );
+              }
+
+              var totalEntries = AQUARIUM_REFERENCE_LIBRARY.reduce(function (n, s) { return n + s.data.length; }, 0);
+
+              return React.createElement('div', { className: 'space-y-3', 'data-aquarium-reference': 'true' },
+                React.createElement('div', { className: 'rounded-2xl border-2 border-sky-300 bg-gradient-to-br from-sky-50 via-white to-cyan-50 p-3' },
+                  React.createElement('div', { className: 'flex items-center gap-2 mb-2' },
+                    React.createElement('span', { 'aria-hidden': 'true', className: 'text-2xl' }, '\ud83d\udcda'),
+                    React.createElement('h3', { className: 'text-base font-black text-sky-900' },
+                      __alloT('stem.aquarium.reference_library', 'Reference Library')),
+                    React.createElement('span', { className: 'ml-auto text-[10px] font-bold text-sky-700 bg-white border border-sky-300 rounded-full px-2 py-0.5' },
+                      AQUARIUM_REFERENCE_LIBRARY.length + ' tables \u00b7 ' + totalEntries + ' entries')
+                  ),
+                  React.createElement('p', { className: 'text-xs text-slate-700 leading-relaxed' },
+                    __alloT('stem.aquarium.reference_library_intro', 'Species and coral catalogues, two glossaries, disease and emergency guides, lab activities, standards maps and more. Pick a category, then a table.'))
+                ),
+
+                React.createElement('div', { className: 'flex flex-wrap items-center gap-2' },
+                  React.createElement('label', { htmlFor: 'aq-ref-search', className: 'sr-only' },
+                    __alloT('stem.aquarium.search_reference_tables', 'Search reference tables')),
+                  React.createElement('input', {
+                    id: 'aq-ref-search', type: 'search', value: d.refQuery || '',
+                    placeholder: __alloT('stem.aquarium.search_tables', 'Search tables\u2026'),
+                    onChange: function (e) { upd('refQuery', e.target.value); },
+                    className: 'flex-1 min-w-[10rem] rounded-lg border border-sky-300 px-2.5 py-1.5 text-[12px]'
+                  }),
+                  React.createElement('span', { className: 'text-[10px] font-bold text-slate-500' },
+                    refVisible.length === AQUARIUM_REFERENCE_LIBRARY.length
+                      ? __alloT('stem.aquarium.showing_all', 'showing all')
+                      : 'showing ' + refVisible.length)
+                ),
+
+                React.createElement('div', { className: 'flex flex-wrap gap-1', role: 'group', 'aria-label': 'Reference categories' },
+                  refCategories.map(function (c) {
+                    var sel = c === refCat;
+                    return React.createElement('button', {
+                      key: c, type: 'button', 'aria-pressed': sel ? 'true' : 'false',
+                      onClick: function () { upd('refCategory', c); },
+                      className: 'text-[11px] font-bold px-2.5 py-1 rounded-full border ' +
+                        (sel ? 'bg-sky-700 text-white border-sky-800' : 'bg-white text-sky-800 border-sky-300 hover:bg-sky-50')
+                    }, c);
+                  })
+                ),
+
+                React.createElement('div', { className: 'grid grid-cols-1 lg:grid-cols-12 gap-3' },
+                  React.createElement('aside', { className: 'lg:col-span-4 space-y-1.5 max-h-[640px] overflow-y-auto pr-1' },
+                    refVisible.length === 0
+                      ? React.createElement('p', { className: 'text-[11px] text-slate-600 italic' },
+                          __alloT('stem.aquarium.no_table_matches', 'No table matches that search.'))
+                      : refVisible.map(function (s) {
+                          var sel = s.id === refActive.id;
+                          return React.createElement('button', {
+                            key: s.id, type: 'button', 'aria-pressed': sel ? 'true' : 'false',
+                            onClick: function () { upd('refSection', s.id); },
+                            className: 'w-full text-left rounded-xl border p-2.5 transition-all ' +
+                              (sel ? 'bg-sky-700 text-white border-sky-800 shadow-md' : 'bg-white text-slate-800 border-slate-200 hover:border-sky-300')
+                          },
+                            React.createElement('span', { className: 'block text-[12px] font-black' }, s.title),
+                            React.createElement('span', { className: 'block text-[10px] ' + (sel ? 'text-sky-100' : 'text-slate-500') },
+                              s.category + ' \u00b7 ' + s.data.length + ' entries')
+                          );
+                        })
+                  ),
+                  React.createElement('section', {
+                    className: 'lg:col-span-8 rounded-2xl border-2 border-sky-200 bg-sky-50/40 p-3 max-h-[640px] overflow-y-auto',
+                    'aria-label': refActive.title
+                  },
+                    React.createElement('h4', { className: 'text-sm font-black text-sky-900 mb-2' },
+                      refActive.title + ' \u2014 ' + refActive.data.length + ' entries'),
+                    // list-none is explicit rather than relying on Tailwind's
+                    // preflight reset: these are cards, not a bulleted list.
+                    React.createElement('ul', { className: 'space-y-2 list-none' }, refActive.data.map(refEntry))
                   )
                 )
               );
@@ -25615,7 +25907,6 @@ var d = (labToolData && labToolData._aquarium) || {};
               );
             })()
 
-            )
 
           );
       })();

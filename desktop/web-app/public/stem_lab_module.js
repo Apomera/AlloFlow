@@ -1,4 +1,4 @@
-// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -26,7 +26,7 @@
   if (window.AlloModules && window.AlloModules.StemLab) { console.log('[CDN] StemLab already loaded, skipping duplicate'); } else {
     // stem_lab_module.js
     // Canonical hand-maintained source — edited directly, NOT generated from AlloFlowANTI.txt
-    // STEM Lab module for AlloFlow - loaded from GitHub CDN
+    // STEAM Lab module for AlloFlow - loaded from GitHub CDN
 
     // ── Shared "engaged" definition (2026-07-27) ──────────────────────────────
     // timeSpent quests must mean the same thing as a directions `time` goal and
@@ -1555,7 +1555,7 @@
         //
         // The check_find_deref.cjs gate flags new `.find(...).field` writes;
         // existing instances are converted opportunistically as authors touch
-        // each tool. STEM Lab audit (2026-06-07) found ~10 tools with this
+        // each tool. STEAM Lab audit (2026-06-07) found ~10 tools with this
         // pattern; autorepair / learning_lab / rocks were the HIGH-severity
         // first-pass conversions.
         findById: function(arr, id) {
@@ -1804,7 +1804,7 @@
       var isDark = _stemTheme === 'dark';
       var isContrast = _stemTheme === 'contrast';
 
-      // ── STEM Lab Global Sound Effect Helper ──
+      // ── STEAM Lab Global Sound Effect Helper ──
       var _stemAudioCtx = null;
       function stemBeep(freq, dur, vol) {
         try {
@@ -2071,7 +2071,7 @@
         return function() { var el = document.getElementById(id); if (el) el.remove(); };
       }, []);
 
-      // ── STEM Lab XP System (per-activity cap: 100 XP) ──
+      // ── STEAM Lab XP System (per-activity cap: 100 XP) ──
       var stemXpData = (labToolData && labToolData._stemXP) || {};
       function awardStemXP(activityId, points, reason) {
         var _awardedPts = Math.min(points, Math.max(0, 100 - getStemXP(activityId)));
@@ -2559,7 +2559,7 @@
       }
 
       // Sync incoming activeStation prop from main app (e.g. resource pack click)
-      // When the main app sets activeStation and opens STEM Lab, auto-load that station
+      // When the main app sets activeStation and opens STEAM Lab, auto-load that station
       React.useEffect(function () {
         if (props.activeStation && props.activeStation.id) {
           _setActiveStationId(props.activeStation.id);
@@ -2570,7 +2570,7 @@
             _setSavedStations(updated);
             try { localStorage.setItem('alloflow_stem_stations', JSON.stringify(updated)); } catch (e) {}
           }
-          // Clear the prop so re-opening STEM Lab without a station click doesn't re-trigger
+          // Clear the prop so re-opening STEAM Lab without a station click doesn't re-trigger
           if (typeof props.setActiveStation === 'function') props.setActiveStation(null);
         }
       }, [props.activeStation]);
@@ -2642,7 +2642,7 @@
       // ── Keyboard Accessibility ──
       React.useEffect(function () {
         function handleKeyDown(e) {
-          // Escape to close STEM Lab
+          // Escape to close STEAM Lab
           if (e.key === 'Escape') {
             // If a tool is open, close the tool first
             if (stemLabTool) {
@@ -2651,7 +2651,7 @@
               announceToSR('Tool closed');
               return;
             }
-            // Otherwise close STEM Lab
+            // Otherwise close STEAM Lab
             e.preventDefault();
             if (typeof setShowStemLab === 'function') setShowStemLab(false);
           }
@@ -3354,7 +3354,7 @@
           // dark navy bg; kept subtle so the build editor stays legible (same tuning
           // philosophy as geometryworld). Plain render until the r128 addons load; any
           // failure falls back to renderer.render — can never break the tool. This is
-          // the LAST un-bloomed 3D surface in STEM Lab.
+          // the LAST un-bloomed 3D surface in STEAM Lab.
           renderer._alloComposer = null;
           (function(){
             if (window.AlloPostFXEnabled === false) return;
@@ -4031,9 +4031,9 @@
       }
       var _activeStemToolMeta = stemLabTool ? _getActiveStemToolMeta(stemLabTool) : null;
 
-      // STEM Lab modal JSX
+      // STEAM Lab modal JSX
       return /*#__PURE__*/React.createElement("div", {
-        "data-stem-lab": "true", role: "dialog", "aria-modal": "true", "aria-label": stemLabTool ? "STEM Lab: " + (_activeStemToolMeta ? _activeStemToolMeta.label : stemLabTool) : "STEM Lab",
+        "data-stem-lab": "true", role: "dialog", "aria-modal": "true", "aria-label": stemLabTool ? "STEAM Lab: " + (_activeStemToolMeta ? _activeStemToolMeta.label : stemLabTool) : "STEAM Lab",
         className: "fixed inset-0 z-[9999] flex items-stretch justify-center stem-lab-modal" + (_reduceMotion ? " reduce-motion" : ""),
         style: {
           zIndex: 10020,
@@ -4098,7 +4098,7 @@
           className: "stem-lab-title-lockup"
         }, /*#__PURE__*/React.createElement("h2", {
           className: "text-lg font-bold tracking-tight"
-        }, "\uD83E\uDDEA STEM Lab"), /*#__PURE__*/React.createElement("p", {
+        }, "\uD83E\uDDEA STEAM Lab"), /*#__PURE__*/React.createElement("p", {
           className: "text-xs text-white/70"
         }, "Create problems, build assessments, explore with manipulatives"))), /*#__PURE__*/React.createElement("div", {
           className: "stem-lab-actionbar flex items-center gap-3"
@@ -4175,11 +4175,11 @@
         /*#__PURE__*/React.createElement("button", {
           onClick: () => setShowStemLab(false),
           className: "p-1.5 hover:bg-white/20 rounded-lg transition-colors",
-          "aria-label": "Close STEM Lab"
+          "aria-label": "Close STEAM Lab"
         }, /*#__PURE__*/React.createElement(X, {
           size: 20
         })))), /*#__PURE__*/React.createElement("div", {
-          className: "stem-lab-tablist flex border-b px-6", role: "tablist", "aria-label": "STEM Lab navigation",
+          className: "stem-lab-tablist flex border-b px-6", role: "tablist", "aria-label": "STEAM Lab navigation",
           style: { backgroundColor: _pal.bgAlt, borderColor: _pal.border }
         }, [{
           id: 'create',
@@ -4205,7 +4205,7 @@
         stemLabTab === 'explore' && stemLabTool && _activeStemToolMeta && /*#__PURE__*/React.createElement("div", {
           className: "stem-active-toolbar",
           role: "region",
-          "aria-label": "Current STEM Lab tool",
+          "aria-label": "Current STEAM Lab tool",
           style: {
             backgroundColor: isContrast ? '#000' : (isDark ? 'rgba(15,23,42,0.94)' : 'rgba(255,255,255,0.94)'),
             borderColor: _pal.border
@@ -4217,9 +4217,9 @@
           className: "stem-active-tool-back",
           onClick: function () {
             setStemLabTool(null);
-            if (typeof announceToSR === 'function') announceToSR('Returned to all STEM Lab tools');
+            if (typeof announceToSR === 'function') announceToSR('Returned to all STEAM Lab tools');
           },
-          "aria-label": "Back to all STEM Lab tools",
+          "aria-label": "Back to all STEAM Lab tools",
           style: {
             backgroundColor: isContrast ? '#111' : (isDark ? 'rgba(99,102,241,0.18)' : '#eef2ff'),
             color: isContrast ? '#fbbf24' : (isDark ? '#c7d2fe' : '#3730a3'),
@@ -4253,7 +4253,7 @@
           ),
           React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'auto 1fr auto 1fr', gap: '4px 16px', fontSize: 12 } },
             React.createElement("kbd", { style: { background: _pal.bgAlt, border: '1px solid ' + _pal.border, padding: '1px 6px', borderRadius: 3, fontFamily: 'monospace', fontSize: 11 } }, "Esc"),
-            React.createElement("span", { style: { color: _pal.textMuted } }, stemLabTool ? "Close tool / Close lab" : "Close STEM Lab"),
+            React.createElement("span", { style: { color: _pal.textMuted } }, stemLabTool ? "Close tool / Close lab" : "Close STEAM Lab"),
             React.createElement("kbd", { style: { background: _pal.bgAlt, border: '1px solid ' + _pal.border, padding: '1px 6px', borderRadius: 3, fontFamily: 'monospace', fontSize: 11 } }, "Alt+1"),
             React.createElement("span", { style: { color: _pal.textMuted } }, "Create tab"),
             React.createElement("kbd", { style: { background: _pal.bgAlt, border: '1px solid ' + _pal.border, padding: '1px 6px', borderRadius: 3, fontFamily: 'monospace', fontSize: 11 } }, "Alt+2"),
@@ -4301,14 +4301,14 @@
         ),
         // ═══ XP Progress Overlay Panel ═══
         _showXpPanel && React.createElement("div", {
-          role: "region", "aria-label": "STEM Lab XP Progress",
+          role: "region", "aria-label": "STEAM Lab XP Progress",
           className: "relative",
           style: { borderBottom: '2px solid ' + _pal.border }
         },
           React.createElement("div", { className: "p-4 max-w-4xl mx-auto", style: { background: 'linear-gradient(135deg, #fffbeb, #fef3c7, #fffbeb)' } },
             React.createElement("div", { className: "flex items-center gap-2 mb-3" },
               React.createElement("span", { style: { fontSize: '20px', filter: 'drop-shadow(0 0 4px rgba(255,200,0,0.7))' } }, "\u2B50"),
-              React.createElement("h4", { className: "text-sm font-black text-amber-800" }, "STEM Lab XP Progress"),
+              React.createElement("h4", { className: "text-sm font-black text-amber-800" }, "STEAM Lab XP Progress"),
               React.createElement("span", { className: "ml-auto text-xs font-black text-amber-700 px-2.5 py-1 rounded-full", style: { background: 'linear-gradient(135deg, #f59e0b, #eab308)', color: '#1e293b', boxShadow: '0 2px 6px rgba(245,158,11,0.3)' } }, totalStemXP + " Total XP"),
               React.createElement("button", { onClick: function() { _setShowXpPanel(false); }, "aria-label": "Close XP panel", className: "ml-2 p-1 rounded-full hover:bg-amber-200 transition-colors text-amber-800" }, "\u2715")
             ),
@@ -4576,7 +4576,9 @@
         }, /*#__PURE__*/React.createElement("div", {
           className: "flex items-center gap-2"
         }, /*#__PURE__*/React.createElement("select", {
-          'aria-label': 'Question type',
+          // 'aria-label': 'Question type' also sat here. This object already ends
+          // with "aria-label": "Block type", and the last duplicate key wins, so
+          // the first was dead — the control has always announced "Block type".
           value: block.type,
           onChange: e => {
             const nb = [...assessmentBlocks];
@@ -5023,6 +5025,12 @@
                 desc: 'Evolution + natural selection: Selection Sandbox, Galápagos Beak Lab, Phylogenetic Tree Builder, plus quick labs on Hardy-Weinberg, genetic drift, common ancestry, evolution misconceptions. Maine wildlife examples.',
                 color: 'emerald', ready: true
               },
+              {
+                id: 'organismId', icon: '🧬', label: 'Taxonomy Explorer',
+                desc: 'Walk the ranked tree of life, meet the lookalike pairs that fool experienced foragers, and learn why the boxes keep moving — Linnaean ranks vs cladistics, what a species even is, and the organisms that break the system. Photo identification is built but held back pending expert review of its hazard copy.',
+                color: 'emerald', ready: true,
+                aliases: ['taxonomy', 'classification', 'organism id', 'identify organism', 'linnaean', 'cladistics', 'species', 'lookalikes', 'mimicry', 'tree of life', 'dichotomous key']
+              },
               { id: 'dinoLab', icon: '🦕', label: 'Dino Lab', desc: 'Explore 360+ dinosaurs across deep time: search, compare, dig fossils, build food webs, and meet the bird connection — with how-we-know notes on every species.', color: 'emerald', ready: true },
               {
                 id: 'alphaFoldExplorer', icon: '\u03B1', label: 'AlphaFold Explorer',
@@ -5459,7 +5467,7 @@
               { id: 'arccity', icon: '🌆', label: 'Arc City', desc: 'Author functions, re-light a neon city, and battle across two function-powered Circuit Clash arenas.', color: 'fuchsia', ready: true },
               { id: 'spaceColony', label: 'Kepler Colony', icon: '🛖', desc: 'Colonize an alien planet! Turn-based cooperative strategy where mastering science unlocks colony survival.', color: 'indigo', ready: true },
               { id: 'spaceExplorer', label: 'Space Explorer', icon: '🛸', desc: 'Roguelike missions across the solar system. AI-generated challenges teach real science through strategic decisions.', color: 'purple', ready: true },
-              { id: 'alloBotSage', label: 'AlloBot: Starbound Sage', icon: '\uD83E\uDDD9\u200D\u2642\uFE0F', desc: 'Cozy sci-fi roguelite. AlloBot\u2019s spells unlock as you master other STEM Lab tools \u2014 and every cast is a retrieval-practice micro-challenge. Spaced practice, in-game.', color: 'violet', ready: true }
+              { id: 'alloBotSage', label: 'AlloBot: Starbound Sage', icon: '\uD83E\uDDD9\u200D\u2642\uFE0F', desc: 'Cozy sci-fi roguelite. AlloBot\u2019s spells unlock as you master other STEAM Lab tools \u2014 and every cast is a retrieval-practice micro-challenge. Spaced practice, in-game.', color: 'violet', ready: true }
             ];
             // ── Tool search filter ──
             // Lazily built id -> index-entry map; rebuilt if the index arrives late.
@@ -5673,7 +5681,7 @@
                 };
               });
               var prompt = [
-                'You are helping a student choose a STEM Lab tool.',
+                'You are helping a student choose a STEAM Lab tool.',
                 'Student interest: ' + interest,
                 'Choose up to 4 tools from this catalog. Use only exact ids from the catalog.',
                 'Return strict JSON only, no markdown, as an array of objects: [{"id":"toolId","reason":"short reason","starter":"first thing to try"}].',
@@ -5713,7 +5721,7 @@
             // Reads each tool's persistent window slot (with localStorage
             // fallback) and renders a single dashboard tile per tool that
             // has the mastery primitive wired in. Surfaces 10 simultaneous
-            // engagement counts so kids see their full STEM Lab progress at
+            // engagement counts so kids see their full STEAM Lab progress at
             // a glance and can jump straight into the tool with one click.
             // Only shows tools where the user has mastered ≥1 item, so the
             // atlas stays out of the way for first-time visitors.
@@ -5789,7 +5797,7 @@
           // ── Mastery Atlas (only shows when at least one tool has progress) ──
           _atlasActive.length > 0 && /*#__PURE__*/React.createElement("div", {
             role: 'region',
-            'aria-label': 'STEM Lab Mastery Atlas — ' + _atlasTotal + ' total items mastered across ' + _atlasActive.length + ' tools',
+            'aria-label': 'STEAM Lab Mastery Atlas — ' + _atlasTotal + ' total items mastered across ' + _atlasActive.length + ' tools',
             className: "mb-4 rounded-2xl p-4 border-2",
             style: { background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #312e81 100%)', borderColor: 'rgba(99,102,241,0.50)' }
           },
@@ -5854,7 +5862,7 @@
               },
               placeholder: "Search " + _totalToolCount + " tools...",
               className: "w-full px-4 py-2.5 pl-10 text-sm border border-slate-500 rounded-xl bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all",
-              'aria-label': 'Search STEM Lab tools'
+              'aria-label': 'Search STEAM Lab tools'
             }),
             /*#__PURE__*/React.createElement("span", { className: "absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none" }, "\uD83D\uDD0D"),
               _stemToolSearch && /*#__PURE__*/React.createElement("button", {
@@ -5884,14 +5892,14 @@
               onClick: function () {
                 _setStemToolSearch('');
                 upd('_categoryFilter', '');
-                if (typeof announceToSR === 'function') announceToSR('Showing all STEM Lab tools');
+                if (typeof announceToSR === 'function') announceToSR('Showing all STEAM Lab tools');
               },
               style: {
                 backgroundColor: isContrast ? '#111' : (isDark ? 'rgba(99,102,241,0.18)' : '#eef2ff'),
                 color: isContrast ? '#fbbf24' : (isDark ? '#c7d2fe' : '#3730a3'),
                 borderColor: isContrast ? '#fbbf24' : 'rgba(99,102,241,0.35)'
               },
-              "aria-label": "Clear STEM Lab catalog filters"
+              "aria-label": "Clear STEAM Lab catalog filters"
             }, "\u2715", React.createElement("span", null, "Clear filters"))
           ),
 
@@ -6645,7 +6653,7 @@
           ) : null,
 
           // Tool grid
-          /*#__PURE__*/React.createElement("div", { role: 'region', 'aria-label': _activeStation ? _activeStation.name + ' station tools' : 'STEM Lab tools',
+          /*#__PURE__*/React.createElement("div", { role: 'region', 'aria-label': _activeStation ? _activeStation.name + ' station tools' : 'STEAM Lab tools',
               className: "stem-tool-grid"
             }, _filteredTools.map(function (tool) {
               if (tool.category) {
@@ -6965,6 +6973,7 @@
             statsLab: true,
             learningLab: true,
             consciousnessLab: true,
+            organismId: true,
             // Added May 15 2026 — was registering successfully but missing
             // from this map caused the fallback at line ~4489 to return
             // null, so the user saw a blank tile content area.
@@ -7045,7 +7054,7 @@
           }
           function _backFromStemPluginError() {
             setStemLabTool(null);
-            if (typeof announceToSR === 'function') announceToSR('Returned to all STEM Lab tools');
+            if (typeof announceToSR === 'function') announceToSR('Returned to all STEAM Lab tools');
           }
           function _renderStemPluginLoadError(message) {
             return React.createElement('div', {
@@ -7064,7 +7073,7 @@
               React.createElement('button', {
                 type: 'button', onClick: _backFromStemPluginError,
                 className: 'mx-1 px-4 py-2 rounded-xl border border-slate-400 font-black text-sm',
-                'aria-label': 'Back to all STEM Lab tools'
+                'aria-label': 'Back to all STEAM Lab tools'
               }, 'All tools')
             );
           }
@@ -7073,7 +7082,7 @@
           if (!window.StemLab.isRegistered(stemLabTool)) {
             var _pluginStatus = _pluginLoadState ? _pluginLoadState.status : '';
             if (['error', 'loaded'].indexOf(_pluginStatus) !== -1) {
-              var _pluginError = _pluginLoadState.error ? _pluginLoadState.error : 'The plugin loaded but did not register with STEM Lab.';
+              var _pluginError = _pluginLoadState.error ? _pluginLoadState.error : 'The plugin loaded but did not register with STEAM Lab.';
               return _renderStemPluginLoadError(_pluginError);
             }
             return React.createElement("div", {
@@ -7214,9 +7223,15 @@
             sourceProvenance: sourceProvenance && typeof sourceProvenance === 'object' ? sourceProvenance : null,
             sourceLocator: typeof sourceLocator === 'string' ? sourceLocator : '',
             sourceType: typeof sourceType === 'string' ? sourceType : '',
-            gradeLevel: typeof gradeLevel === 'string' ? gradeLevel : '',
-            studentNickname: typeof studentNickname === 'string' ? studentNickname : '',
-            isTeacherMode: isTeacherMode !== false,
+            // gradeLevel, studentNickname and isTeacherMode were ALSO defined
+            // here, roughly sixty lines above their real definitions further down
+            // this same object literal. Duplicate keys are legal JavaScript and
+            // the LAST one wins, so these three were dead — and the isTeacherMode
+            // one was dangerous: `isTeacherMode !== false` evaluates to TRUE when
+            // the host omits the flag, i.e. it would have defaulted every learner
+            // into teacher mode. The surviving `!!isTeacherMode` defaults to
+            // false, which is the safe reading, but only by accident of ordering.
+            // Removing the dead trio changes no behaviour and removes the trap.
             // Coarse-grained grade banding for tools that target tiers rather than
             // single grades (firstresponse, swimlab, etc. expect 'k2'|'g35'|'g68'|'g912').
             gradeBand: (function() {

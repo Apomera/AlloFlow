@@ -2008,7 +2008,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
         h('header', { className: 'stewardship-command' },
           h('div', { className: 'stewardship-command-top' },
             h('div', { className: 'stewardship-command-title' },
-              ArrowLeft ? h('button', { type: 'button', className: 'stewardship-back', onClick: function() { setStemLabTool(null); }, 'aria-label': __alloT('stem.stewardship.back_to_stem_lab', 'Back to STEM Lab') }, __alloT('stem.stewardship.back_4', 'Back')) : null,
+              ArrowLeft ? h('button', { type: 'button', className: 'stewardship-back', onClick: function() { setStemLabTool(null); }, 'aria-label': __alloT('stem.stewardship.back_to_stem_lab', 'Back to STEAM Lab') }, __alloT('stem.stewardship.back_4', 'Back')) : null,
               h('div', null,
                 h('p', { className: 'stewardship-eyebrow' }, __alloT('stem.stewardship.mission_label', 'Systems stewardship mission')),
                 h('h2', { className: 'stewardship-title' }, __alloT('stem.stewardship.environmental_stewardship_campaigns', 'Environmental Stewardship Campaigns')),

@@ -1579,6 +1579,52 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             return false;
         }
     })();
+    // Constrained decoding for small local models: llama.cpp and LM Studio
+    // compile a JSON schema to a GBNF grammar, so the shape becomes impossible
+    // to get wrong rather than merely requested in prose. Returns null unless
+    // the device has opted in AND this type has a verified schema, in which
+    // case the extra arg is inert and the call behaves exactly as before.
+    const localSchemaArg = (schemaType) => {
+        try {
+            const helpers = typeof window !== 'undefined' ? window.AIBackendLocal : null;
+            if (!usesLocalTextBackend || !helpers || typeof helpers.resourceSchemaFor !== 'function') return null;
+            const schema = helpers.resourceSchemaFor(schemaType);
+            return schema ? { schema } : null;
+        } catch (_) {
+            return null;
+        }
+    };
+    // The engine probe has always measured whether the loaded model can hold a
+    // strict-JSON shape, and /api/engine/status has always reported it — but
+    // nothing ever read it, so an unfit model was handed strict-JSON work anyway
+    // and failed later as "Failed to parse … JSON. The AI response was not
+    // valid." That message blames the response; the real answer is that this
+    // model cannot do this job. Fail up front, and say which model and what to do.
+    //
+    // ★ Gates on a definite 'fail' ONLY. localModelSupportsTask() is true just
+    // for 'pass', so gating on it would also block every model that has simply
+    // never been probed ('unknown') — the common case on a fresh install.
+    const assertLocalTaskSupported = (task, resourceLabel) => {
+        if (!usesLocalTextBackend) return;
+        try {
+            const w = typeof window !== 'undefined' ? window : null;
+            const helpers = w && w.AIBackendLocal;
+            const active = w && w.__alloActiveAIBackend;
+            const profile = active && active.localModelProfile;
+            if (!helpers || typeof helpers.localTaskState !== 'function' || !profile) return;
+            if (helpers.localTaskState(profile, task) !== 'fail') return;
+            const modelName = profile.modelId || (active && active.model) || 'the local model';
+            const err = new Error(
+                `${resourceLabel} needs structured output, and the model check found that ${modelName} could not produce it. ` +
+                'Run the model check again from Settings, choose a larger local model, or switch to a cloud backend for this resource.'
+            );
+            err.alloLocalCapability = task;
+            throw err;
+        } catch (capabilityErr) {
+            if (capabilityErr && capabilityErr.alloLocalCapability) throw capabilityErr;
+            // A malformed profile must never block generation.
+        }
+    };
     const emitLocalTaskProgress = (current, total, label) => {
         if (!usesLocalTextBackend) return;
         try {
@@ -1976,7 +2022,8 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             `;
             setGenerationStep(t('status_steps.extracting_vocab'));
             setGenerationTaskProgress(0, 2, t('status_steps.extracting_vocab'));
-            const result = await callGemini(prompt, true);
+            assertLocalTaskSupported('strict-json', 'The glossary');
+            const result = await callGemini(prompt, true, false, null, null, null, localSchemaArg('glossary'));
             setGenerationTaskProgress(1, 2, t('status_steps.extracting_vocab'));
             const parsed = parseJsonLenient(result, {});
             const parsedContent = unwrapArray(parsed, ['terms', 'items', 'glossary']).slice(0, localTermLimit)
@@ -2606,8 +2653,13 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                   repaired = guardedRepair.text.trim();
               }
           }
+          // Declared OUTSIDE both blocks: the second `if (repaired)` below both
+          // reads and reassigns it. It was `let`-scoped to the first block, so
+          // every non-English refine threw ReferenceError at the citation
+          // sanitize step. The two blocks stay separate because the first one
+          // can set `repaired = null` to bail out of the second.
+          let repairedEnglish = '';
           if (repaired) {
-              let repairedEnglish = '';
               if (effectiveLanguage !== 'English') {
                   setGenerationStep(t('status_steps.translating') || 'Translating refined text...');
                   const repairedTranslation = await translateCitationSafe(repaired, 'length-repair-translation');
@@ -3778,7 +3830,8 @@ ${_itemsBlock}`;
             `;
             setGenerationStep(t('status_steps.identifying_misconceptions'));
             setGenerationTaskProgress(0, 1, t('status_steps.identifying_misconceptions'));
-            const result = await callGemini(prompt, true);
+            assertLocalTaskSupported('strict-json', 'The FAQ');
+            const result = await callGemini(prompt, true, false, null, null, null, localSchemaArg('faq'));
             const parsed = parseJsonLenient(result, {});
             content = unwrapArray(parsed, ['faqs', 'questions', 'items']).slice(0, localFaqCount)
                 .map(item => ({
@@ -3852,7 +3905,8 @@ ${_itemsBlock}`;
                 """
              `;
              setGenerationTaskProgress(0, 1, t('status_steps.brainstorming') || "Brainstorming ideas...");
-             const result = await callGemini(prompt, true);
+             assertLocalTaskSupported('strict-json', 'The brainstorm list');
+             const result = await callGemini(prompt, true, false, null, null, null, localSchemaArg('brainstorm'));
              const parsed = parseJsonLenient(result, {});
              content = unwrapArray(parsed, ['ideas', 'activities', 'items']).slice(0, 8)
                  .map(item => ({
@@ -5386,7 +5440,8 @@ Return ONLY JSON:
              `;
              setGenerationTaskProgress(0, 1, isIndependentMode ? t('lesson_plan.status_creating_study') : (isParentMode ? t('lesson_plan.status_creating_family') : t('lesson_plan.status_synthesizing')));
          }
-         const result = await callGemini(prompt, true);
+         assertLocalTaskSupported('strict-json', 'The lesson plan');
+         const result = await callGemini(prompt, true, false, null, null, null, localSchemaArg('lesson-plan'));
          if (usesLocalTextBackend) setGenerationTaskProgress(1, 1, isIndependentMode ? t('lesson_plan.status_creating_study') : (isParentMode ? t('lesson_plan.status_creating_family') : t('lesson_plan.status_synthesizing')));
          try {
              content = usesLocalTextBackend ? parseJsonLenient(result, null) : safeJsonParse(result);

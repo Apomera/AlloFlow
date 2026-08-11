@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════
-// AlloFlow STEM Lab — Molecule Shelf (Mol* viewer + Notice-Wonder coach)
+// AlloFlow STEAM Lab — Molecule Shelf (Mol* viewer + Notice-Wonder coach)
 //
 // The shelf itself is a COMPANION WINDOW (molecule_shelf/molecule_shelf.html):
 // Mol* (molstar.org, MIT) — the WebGL molecular-structure viewer used by the
@@ -206,17 +206,17 @@
       function returnToLab() {
         if (typeof setStemLabTool !== 'function') return;
         setStemLabTool(returnTool || null);
-        if (announceToSR) announceToSR(returnTool ? t('stem.moleculeShelf.returned_sr', 'Returned to Molecule Lab.') : t('stem.moleculeShelf.returned_catalog_sr', 'Returned to the STEM Lab tools.'));
+        if (announceToSR) announceToSR(returnTool ? t('stem.moleculeShelf.returned_sr', 'Returned to Molecule Lab.') : t('stem.moleculeShelf.returned_catalog_sr', 'Returned to the STEAM Lab tools.'));
       }
 
       return h('div', { className: 'flex flex-col gap-4 animate-in fade-in duration-300 max-w-2xl' },
         typeof setStemLabTool === 'function' && h('button', {
           onClick: returnToLab,
           className: 'inline-flex w-fit items-center gap-2 rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-xs font-bold text-slate-200 transition-colors hover:bg-slate-800 active:scale-[0.97]',
-          'aria-label': returnTool ? t('stem.moleculeShelf.back_to_lab', 'Back to Molecule Lab') : t('stem.moleculeShelf.back_to_tools', 'Back to STEM Lab tools')
+          'aria-label': returnTool ? t('stem.moleculeShelf.back_to_lab', 'Back to Molecule Lab') : t('stem.moleculeShelf.back_to_tools', 'Back to STEAM Lab tools')
         },
           ArrowLeft ? h(ArrowLeft, { size: 16 }) : null,
-          h('span', null, returnTool ? t('stem.moleculeShelf.back_to_lab', 'Back to Molecule Lab') : t('stem.moleculeShelf.back_to_tools', 'Back to STEM Lab tools'))
+          h('span', null, returnTool ? t('stem.moleculeShelf.back_to_lab', 'Back to Molecule Lab') : t('stem.moleculeShelf.back_to_tools', 'Back to STEAM Lab tools'))
         ),
         h('h2', { className: 'text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-violet-400' },
           t('stem.moleculeShelf.title', '🧬 Molecule Shelf — real 3D structures, up close')),

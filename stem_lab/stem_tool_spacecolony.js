@@ -31,7 +31,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -429,7 +429,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
       var callGemini = ctx.callGemini;
       // AI gate (default OFF). The turn-advance "planet event" game-master call
       // fired on EVERY turn with no consent/teacher gate — the largest unmetered
-      // AI surface in STEM Lab. Gate it: when off, the turn still advances and the
+      // AI surface in STEAM Lab. Gate it: when off, the turn still advances and the
       // local (non-AI) dawnData.discovery still shows. Player-initiated generative
       // tools (science gates and Founder Forge) remain explicit; exploration payoffs work offline.
       var aiHintsEnabled = !!(ctx && ctx.aiHintsEnabled);

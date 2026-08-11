@@ -1,4 +1,4 @@
-// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -1378,7 +1378,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
     }
 
     parts.push('<hr style="margin-top:32px;border:none;border-top:1px solid #ccc;">');
-    parts.push('<div class="dim" style="text-align:center;">Renewables Lab — part of AlloFlow STEM Lab. Sources cited: NREL, IEA, IRENA, EIA, BOEM, IPCC. Educational only.</div>');
+    parts.push('<div class="dim" style="text-align:center;">Renewables Lab — part of AlloFlow STEAM Lab. Sources cited: NREL, IEA, IRENA, EIA, BOEM, IPCC. Educational only.</div>');
     parts.push('</body></html>');
     return parts.join('');
   }

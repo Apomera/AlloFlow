@@ -21,7 +21,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
 (function() {
   'use strict';
 
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -722,7 +722,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             )
           ),
           h('div', { className: 'mt-8 text-center text-xs text-slate-600' },
-            t('stem.evolab.stem_lab_tool_evolution_natural_select', 'STEM Lab tool · Evolution & natural selection · Maine examples sprinkled in')
+            t('stem.evolab.stem_lab_tool_evolution_natural_select', 'STEAM Lab tool · Evolution & natural selection · Maine examples sprinkled in')
           )
         );
       }

@@ -335,7 +335,7 @@
     className: "flex items-center justify-between mb-3"
   }, /*#__PURE__*/React.createElement("h3", {
     className: "text-base font-black text-emerald-900 flex items-center gap-2"
-  }, "🔬 Recommended STEM Lab Tools"), /*#__PURE__*/React.createElement("button", {
+  }, "🔬 Recommended STEAM Lab Tools"), /*#__PURE__*/React.createElement("button", {
     onClick: () => {
       const tools = generatedContent.data.recommendedStemTools.map(t => t.id);
       const station = {
@@ -350,7 +350,7 @@
       existing.push(station);
       localStorage.setItem('alloflow_stem_stations', JSON.stringify(existing));
       setActiveStation(station);
-      addToast && addToast('✅ STEM Station created! Open STEM Lab to see your curated tools.');
+      addToast && addToast('✅ STEM Station created! Open STEAM Lab to see your curated tools.');
     },
     className: "flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-full shadow-md hover:shadow-lg transition-all"
   }, "📌 Create Station")), /*#__PURE__*/React.createElement("div", {

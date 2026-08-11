@@ -1,4 +1,4 @@
-// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -10,7 +10,7 @@
 
 // ═══════════════════════════════════════════════════════
 // stem_tool_epidemic.js — Epidemic Modeling Lab  v4.0
-// Enhanced STEM Lab tool — 12 sub-tools
+// Enhanced STEAM Lab tool — 12 sub-tools
 // SIR · SEIR · R₀ Explorer · Vaccination · Interventions
 // Outbreak Map · Contact Trace · History · Scenarios
 // Challenge · Battle · Learn

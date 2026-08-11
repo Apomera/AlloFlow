@@ -2029,7 +2029,7 @@ const executeSaveFile = async (deps) => {
       // Assessment Literacy junk-science mastery: per-scenario first-correct
       // log from the "Spot the Junk Science" capstone module.
       const assessmentLiteracy = (typeof window !== 'undefined' && window.__alloflowAssessmentLiteracy) || null;
-      // SEL Hub teacher-authored custom Station bundles (parallel to STEM Lab
+      // SEL Hub teacher-authored custom Station bundles (parallel to STEAM Lab
       // Stations). Written to window.__alloflowSelStations by sel_hub_module.js
       // whenever the savedStations React state changes. Without riding the
       // project JSON these are wiped between Canvas sessions even though
@@ -2566,7 +2566,7 @@ ${(typeof window !== 'undefined' && typeof window.formatToolCatalogForPrompt ===
             - **dbq**: Document-Based Question activity with primary sources. Use for social studies, history, civics.
             - **note-taking**: Scaffolded note-taking templates (Cornell / Lab Report / Reading Response). Persists across lessons.
             - **anchor-chart**: EL-style class anchor chart (Reference / Process / Concept Map / Comparison).
-            - **math**: Opens the STEM Lab (interactive math/science exploration).
+            - **math**: Opens the STEAM Lab (interactive math/science exploration).
             - **lesson-plan**: Teacher-facing synthesis. ALWAYS place LAST.
             - **gemini-bridge**: Interactive sim/app generator.
             - **alignment-report**: Post-hoc audit. Only include if explicit standards + user requests audit.`}

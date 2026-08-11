@@ -932,7 +932,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('diagnosisEligi
 
 // Leadership Hub standalone host. The hidden StemLab registration remains for
 // backward-compatible saved links, but the discoverable professional surface
-// uses this dedicated dialog rather than the STEM Lab shell.
+// uses this dedicated dialog rather than the STEAM Lab shell.
 (function exposeDiagnosisEligibilityPanel() {
   'use strict';
   window.AlloModules = window.AlloModules || {};

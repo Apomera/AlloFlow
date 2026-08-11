@@ -2386,9 +2386,9 @@ Return ONLY the adapted text, no commentary.`;
                 const avgCorrect = mathHist.length > 0 ? Math.round(mathHist.reduce((s, r) => s + (r.correct || 0), 0) / mathHist.length) : 0;
                 educational += `Average correct per session: ${avgCorrect}`;
             }
-            // Explore score (STEM Lab XP)
+            // Explore score (STEAM Lab XP)
             if (longitudinalData.exploreScore) {
-                educational += `\nSTEM Lab Explore XP: ${longitudinalData.exploreScore}`;
+                educational += `\nSTEAM Lab Explore XP: ${longitudinalData.exploreScore}`;
             }
             // Dashboard data summary
             const dash = longitudinalData.dashboardData || [];

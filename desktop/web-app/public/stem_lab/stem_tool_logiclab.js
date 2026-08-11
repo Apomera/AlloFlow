@@ -19,7 +19,7 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -1081,6 +1081,9 @@ window.StemLab = window.StemLab || {
                       return React.createElement("div", { 
                         key: v, draggable: true,
                         onDragStart: function(e) { _drag.sym = v; e.dataTransfer.effectAllowed='copy'; },
+                        role: 'button', tabIndex: 0,
+                        'aria-label': 'Insert variable ' + v,
+                        onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd({ expression: expr + v }); } },
                         onClick: function() { upd({ expression: expr + v }); },
                         className: "w-10 h-10 flex items-center justify-center font-black text-white text-base rounded-xl cursor-grab hover:scale-110 shadow-md select-none transition-transform",
                         style: { background: _symColor[v] }
@@ -1093,6 +1096,9 @@ window.StemLab = window.StemLab || {
                       return React.createElement("div", { 
                         key: sym, draggable: true,
                         onDragStart: function(e) { _drag.sym = ' '+sym+' '; e.dataTransfer.effectAllowed='copy'; },
+                        role: 'button', tabIndex: 0,
+                        'aria-label': 'Insert ' + (CONN[sym] ? CONN[sym].eng : sym),
+                        onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd({ expression: expr+' '+sym+' ' }); } },
                         onClick: function() { upd({ expression: expr+' '+sym+' ' }); },
                         className: "px-3 h-10 flex items-center justify-center font-black text-white text-sm rounded-xl cursor-grab hover:scale-110 shadow-md select-none transition-transform",
                         title: CONN[sym] ? CONN[sym].eng : sym,
@@ -1103,6 +1109,9 @@ window.StemLab = window.StemLab || {
                       return React.createElement("div", { 
                         key: v, draggable: true,
                         onDragStart: function(e) { _drag.sym = v; e.dataTransfer.effectAllowed='copy'; },
+                        role: 'button', tabIndex: 0,
+                        'aria-label': 'Insert ' + v,
+                        onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd({ expression: expr+v }); } },
                         onClick: function() { upd({ expression: expr+v }); },
                         className: "w-10 h-10 flex items-center justify-center font-black text-slate-600 text-base rounded-xl cursor-grab hover:scale-110 shadow-md select-none transition-transform bg-slate-100 hover:bg-slate-200"
                       }, v);
@@ -2377,7 +2386,7 @@ window.StemLab = window.StemLab || {
                     })
                   ),
                   // Gate SVG
-                  React.createElement("svg", { width: "120", height: "80", viewBox: "0 0 120 80" },
+                  React.createElement("svg", { role: 'img', 'aria-label': t('stem.logiclab.gate_img', 'Logic gate diagram showing the current input states'), width: "120", height: "80", viewBox: "0 0 120 80" },
                     React.createElement("line", { x1:"0",y1:isUnaryGate?"40":"25",x2:"35",y2:isUnaryGate?"40":"25",stroke:gateInputs.A?"#059669":"#dc2626",strokeWidth:"3" }),
                     !isUnaryGate && React.createElement("line", { x1:"0",y1:"55",x2:"35",y2:"55",stroke:gateInputs.B?"#059669":"#dc2626",strokeWidth:"3" }),
                     (function() {

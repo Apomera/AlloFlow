@@ -33,7 +33,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -3258,7 +3258,7 @@ dataRef.current = d;
               },
                 React.createElement("button", {
                   onClick: function () { setStemLabTool(null); },
-                  'aria-label': __alloT('stem.behaviorlab.back_to_stem_lab', 'Back to STEM Lab'),
+                  'aria-label': __alloT('stem.behaviorlab.back_to_stem_lab', 'Back to STEAM Lab'),
                   style: {
                     background: 'rgba(255,255,255,0.06)',
                     border: '1px solid var(--allo-stem-border, #334155)',
@@ -5028,7 +5028,7 @@ dataRef.current = d;
                 React.createElement("b", null, __alloT('stem.behaviorlab.we_deliberately_built_that_content_as_', "We deliberately built that content as a separate tool, not here.")),
                 __alloT('stem.behaviorlab.the_skinner_box_visual_frame_should_no', " The Skinner-box visual frame should not be adjacent to \"how to handle a kid in crisis\" content — different tonal space, different ethical weight. The Toolkit covers PBIS three-tier framework, replacement behaviors mapped to FBA functions, setting events (slow triggers most BIPs miss), Geoff Colvin's seven-phase Acting-Out Cycle for crisis de-escalation, and Restraint & Seclusion ethics anchored in Maine Chapter 33.")),
               React.createElement("div", { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.55, fontStyle: 'italic' } },
-                __alloT('stem.behaviorlab.open_stem_lab_behavioral_science', "Open STEM Lab → Behavioral Science → "),
+                __alloT('stem.behaviorlab.open_stem_lab_behavioral_science', "Open STEAM Lab → Behavioral Science → "),
                 React.createElement("b", { style: { color: '#5eead4' } }, __alloT('stem.behaviorlab.school_behavior_toolkit', '"🏫 School Behavior Toolkit."')))
             ),
 

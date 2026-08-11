@@ -61,7 +61,7 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -737,7 +737,7 @@ window.StemLab = window.StemLab || {
       // NOTE: There used to be an embedded "Number Line" mode here. It's been
       // removed (v3.2) because a much richer standalone tool already exists at
       // stem_tool_numberline.js (4 tabs, drag-the-marker, fraction/decimal/percent
-      // equivalence). Use that tool from the STEM Lab launcher for number-line work.
+      // equivalence). Use that tool from the STEAM Lab launcher for number-line work.
 
       // Fraction Bars: which denominators to display, highlighted parts per denom
       var fbDenoms = _m.fbDenoms || [1, 2, 3, 4, 6, 8, 12];
@@ -2442,7 +2442,7 @@ window.StemLab = window.StemLab || {
         };
         var pbSvg = function(type, color, size) {
           var pts = pbPolyPoints(type, size / 2, size / 2, size * 0.32);
-          return h('svg', {
+          return h('svg', { 'aria-hidden': 'true',
             width: size, height: size, viewBox: '0 0 ' + size + ' ' + size,
             style: { display: 'block' }
           },
@@ -2645,7 +2645,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'space-y-3 max-w-3xl mx-auto animate-in fade-in duration-200' },
           headerEl,
           h('div', { className: 'bg-white rounded-xl border-2 border-sky-200 p-3 flex justify-center' },
-            h('svg', { viewBox: '0 0 ' + svgW + ' ' + svgW, width: '100%', style: { maxWidth: svgW + 'px' } },
+            h('svg', { role: 'img', 'aria-label': __alloT('stem.manipulatives.fraction_circle_img', 'Fraction circle model'), viewBox: '0 0 ' + svgW + ' ' + svgW, width: '100%', style: { maxWidth: svgW + 'px' } },
               segElements,
               pegs
             )
@@ -3216,7 +3216,7 @@ window.StemLab = window.StemLab || {
           return h('div', { className: 'space-y-3' },
             h('div', { className: 'bg-blue-50 rounded-xl p-4 border-2 border-blue-200' },
               h('p', { className: 'text-xs font-bold text-blue-700 mb-2' }, 'NUMBER LINE — jump forward from ' + t.a + ' by ' + t.b),
-              h('svg', { width: 560, height: 96, viewBox: '0 0 560 96', style: { maxWidth: '100%' } },
+              h('svg', { 'aria-hidden': 'true', width: 560, height: 96, viewBox: '0 0 560 96', style: { maxWidth: '100%' } },
                 // Line
                 h('line', { x1: 10, y1: 70, x2: 550, y2: 70, stroke: '#1e3a8a', strokeWidth: 2 }),
                 // Tick marks
@@ -3256,7 +3256,7 @@ window.StemLab = window.StemLab || {
           return h('div', { className: 'space-y-3' },
             h('div', { className: 'bg-blue-50 rounded-xl p-4 border-2 border-blue-200' },
               h('p', { className: 'text-xs font-bold text-blue-700 mb-2' }, 'NUMBER LINE — jump BACKWARD from ' + t.a + ' by ' + t.b),
-              h('svg', { width: 560, height: 96, viewBox: '0 0 560 96', style: { maxWidth: '100%' } },
+              h('svg', { 'aria-hidden': 'true', width: 560, height: 96, viewBox: '0 0 560 96', style: { maxWidth: '100%' } },
                 h('line', { x1: 10, y1: 70, x2: 550, y2: 70, stroke: '#1e3a8a', strokeWidth: 2 }),
                 Array.from({ length: max + 1 }).map(function(_, n) {
                   return h('g', { key: 'tk' + n },
@@ -3700,7 +3700,7 @@ window.StemLab = window.StemLab || {
           h('div', { style: { padding: 14, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
             h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · load index ' + loadIndex.toFixed(1)),
             h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
-            h('svg', { width: '100%', height: 80, viewBox: '0 0 320 80', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
+            h('svg', { role: 'img', 'aria-label': __alloT('stem.manipulatives.dist_img', 'Sampling distribution chart'), width: '100%', height: 80, viewBox: '0 0 320 80', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
               h('rect', { x: 30, y: 30, width: 260, height: 26, fill: '#0f172a', stroke: '#1e293b' }),
               h('rect', { x: 30 + Math.max(0, Math.min(220, 60)), y: 30, width: 60, height: 26, fill: '#4ade80', opacity: 0.4 }),
               h('text', { x: 120, y: 22, fill: '#4ade80', fontSize: 9, textAnchor: 'middle' }, __alloT('stem.manipulatives.sweet_spot', 'sweet spot')),

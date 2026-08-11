@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════
-// AlloFlow STEM Lab — Nuclear & Radiation Lab
+// AlloFlow STEAM Lab — Nuclear & Radiation Lab
 //
 // Before this tool, zero of 129 tools were findable by searching "nuclear",
 // "half-life", "isotope" or "radiation safety". The apparent hits were false
@@ -3910,7 +3910,6 @@
                 'data-a11y-static': 'true',
                 'aria-describedby': 'rx-live-readings',
                 'aria-label': 'Reactor control panel showing a power trace, fuel temperature, net reactivity in pcm and xenon level. Use the controls below; every reading is also given as text under the panel.',
-                'aria-describedby': 'rx-live-readings',
                 style: { width: '100%', height: '100%', display: 'block' } }))
           ),
 

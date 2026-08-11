@@ -679,7 +679,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
         'IT IS NEVER SET IN STONE. The IEP is reviewed at least annually, your child is reevaluated at least every three years, and you can request an IEP meeting at any time in between. A 504 plan carries its own protections and grievance path.',
         'DISCIPLINE HAS A GUARDRAIL. If a child with an IEP or 504 faces removal beyond ten school days, the team must hold a MANIFESTATION DETERMINATION: was the behavior substantially caused by the disability, or by the plan not being implemented? If yes, the child generally returns, and the team\'s job becomes fixing the plan — often with a functional behavior assessment — not extending the punishment.',
         'THE IEP MUST LOOK PAST GRADUATION. By age 16 — earlier in many states — the IEP must include TRANSITION PLANNING: measurable goals for life after school (work, training, independent living) and the services to get there, built around the student\'s own stated interests. The student should be invited to these meetings; it is their future being planned.',
-        'WANT TO READ THE ACTUAL RULE? Every right above comes from a written regulation you are allowed to read yourself. The Education Law Navigator in STEM Lab shows the verbatim text of IDEA Part B and Section 504 — searchable, date-stamped, with federal and state rules side by side. Nothing in it is paraphrased.'
+        'WANT TO READ THE ACTUAL RULE? Every right above comes from a written regulation you are allowed to read yourself. The Education Law Navigator in STEAM Lab shows the verbatim text of IDEA Part B and Section 504 — searchable, date-stamped, with federal and state rules side by side. Nothing in it is paraphrased.'
       ]
     },
     {
@@ -802,7 +802,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
         },
         className: 'inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-bold border transition-colors',
         style: { background: pal.panel, borderColor: pal.border, color: pal.text },
-        'aria-label': view === 'menu' ? __alloT('stem.parentingLab.back_tools', 'Back to STEM Lab tools') : __alloT('stem.parentingLab.back_menu', 'Back to Parenting Lab menu')
+        'aria-label': view === 'menu' ? __alloT('stem.parentingLab.back_tools', 'Back to STEAM Lab tools') : __alloT('stem.parentingLab.back_menu', 'Back to Parenting Lab menu')
       }, view === 'menu' ? '← ' + __alloT('stem.parentingLab.tools', 'Tools') : '← ' + __alloT('stem.parentingLab.menu', 'Menu'));
 
       // ── The badge legend — teachable on its own ──

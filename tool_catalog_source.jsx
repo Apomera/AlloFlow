@@ -140,7 +140,7 @@ const TOOL_CATALOG = [
   },
   {
     id: 'math',
-    description: 'Opens the STEM Lab — hands-on math/science tools (algebra, calculus, statistics, physics simulations, chemistry, anatomy, etc.).',
+    description: 'Opens the STEAM Lab — hands-on math/science tools (algebra, calculus, statistics, physics simulations, chemistry, anatomy, etc.).',
     whenToUse: 'Use for STEM content where students benefit from interactive exploration. NOT for simple arithmetic problems (use quiz for that).',
     inAutofill: true,
     sidebarKey: 'sidebar.tool_math',

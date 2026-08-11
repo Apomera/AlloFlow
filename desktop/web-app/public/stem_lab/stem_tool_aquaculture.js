@@ -7948,6 +7948,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
   });
 
   function _renderAquacultureLab(ctx) {
+    // Guarded i18n alias. pondSvg() below calls __alloT for its SVG aria-label;
+    // without this declaration that call throws ReferenceError the moment the
+    // pond renders. Falls back to the literal, so no pack entry is required.
+    var __alloT = function (k, fb) {
+      var v;
+      try { v = (ctx && typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; }
+      return (v == null) ? (fb != null ? fb : k) : v;
+    };
     var React = window.React || (ctx && ctx.React);
     var h = React ? React.createElement : null;
     var useState = React.useState, useEffect = React.useEffect, useRef = React.useRef;
@@ -19018,7 +19026,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       },
       {
         section: 'Connection to Other AlloFlow Tools',
-        content: 'AquacultureLab connects to: WeldLab (skilled trades pathway); StatsLab (data analysis); NutritionLab (seafood nutrition); ClimateExplorer (climate science); SEL Hub (career planning + community); other STEM Lab tools (BehaviorLab, PetsLab, BirdLab, etc.).'
+        content: 'AquacultureLab connects to: WeldLab (skilled trades pathway); StatsLab (data analysis); NutritionLab (seafood nutrition); ClimateExplorer (climate science); SEL Hub (career planning + community); other STEAM Lab tools (BehaviorLab, PetsLab, BirdLab, etc.).'
       },
       {
         section: 'For Educators',
@@ -22267,7 +22275,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         for (var r = 0; r < rippleN; r++) {
           ripples.push(h('path', { key: 'r' + r, d: 'M 10 ' + (115 + r * 4) + ' Q 50 ' + (110 + r * 4) + ' 100 ' + (115 + r * 4) + ' T 200 ' + (115 + r * 4) + ' T 310 ' + (115 + r * 4), stroke: '#67e8f9', strokeWidth: 1, fill: 'none', opacity: 0.5 }));
         }
-        return h('svg', { viewBox: '0 0 320 140', style: { width: '100%', height: 160, display: 'block' } },
+        return h('svg', { role: 'img', 'aria-label': __alloT('stem.aquaculture.pond_img', 'Pond simulation view'), viewBox: '0 0 320 140', style: { width: '100%', height: 160, display: 'block' } },
           h('rect', { x: 0, y: 0, width: 320, height: 140, fill: '#0f1c2f' }),
           h('rect', { x: 0, y: 20, width: 320, height: 100, fill: '#1e3a5f', opacity: 0.7 }),
           ripples,
