@@ -44,6 +44,8 @@ const GATES = [
   ['check_sre_math_speech.cjs', 60_000, 'math is spoken correctly by screen readers'],
   ['scan_silent_announcer.cjs', 60_000,
     'a tool that defines its own announceToSR which only parks a string in toolData discards EVERY screen-reader announcement (lifeskills lost 67, epidemic before it) — the live region exists so axe passes and nothing else can see it'],
+  ['scan_fn_in_tool_state.cjs', 60_000,
+    'tool state round-trips through JSON, so a function stored on it is silently dropped: Number Line then graded correct answers WRONG via its fallback (f31baa5c9) and Fractions threw on reload (68015ac8c)'],
 ];
 
 function run(script) {
