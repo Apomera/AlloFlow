@@ -34,7 +34,9 @@
 
   function cardinal(degrees) {
     var labels = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
-    return labels[Math.round((((Number(degrees) || 0) % 360) / 45)) % 8];
+    // Double-normalize: a negative bearing (-45 % 360 is -45 in JS) would index labels[-1].
+    var normalized = (((Number(degrees) || 0) % 360) + 360) % 360;
+    return labels[Math.round(normalized / 45) % 8];
   }
 
   var SCENARIOS = [
@@ -7319,6 +7321,18 @@ var geographyGroup = new THREE.Group();
         );
       }
 
+      // Every authored reasoning question listed its correct option FIRST. Grading is
+      // id-keyed, so a deterministic per-question rotation (seeded by the question id —
+      // stable across renders, no mid-question reshuffles) removes the position tell.
+      function rotateReasoningOptions(question, index) {
+        var seed = 0;
+        var key = String(question.id);
+        for (var i = 0; i < key.length; i += 1) seed = (seed * 31 + key.charCodeAt(i)) % 997;
+        var shift = (seed + index) % question.options.length;
+        if (shift) question.options = question.options.slice(shift).concat(question.options.slice(0, shift));
+        return question;
+      }
+
       function reasoningPulseQuestions() {
         var fairTest = {
           id: 'fairTest',
@@ -7346,7 +7360,7 @@ var geographyGroup = new THREE.Group();
             explanation: 'More clues, such as wind, temperature, and clouds, make a weather idea stronger.'
           },
           fairTest
-        ];
+        ].map(rotateReasoningOptions);
         var systems = {
           id: 'systems',
           title: band === '3-5' ? 'Read a station pattern' : 'Interpret system signals',
@@ -7374,7 +7388,7 @@ var geographyGroup = new THREE.Group();
             ],
             explanation: 'The small teaching ensemble demonstrates sensitivity and agreement among modeled starts; it is not an operational probability or a guarantee.'
           }
-        ];
+        ].map(rotateReasoningOptions);
         var saturation = {
           id: 'saturation',
           title: band === '3-5' ? 'Connect moisture and clouds' : 'Moisture and saturation',
@@ -7387,7 +7401,7 @@ var geographyGroup = new THREE.Group();
           ],
           explanation: 'A smaller temperature-dew point spread means higher relative humidity and air closer to saturation, making cloud formation more likely when lift or cooling occurs.'
         };
-        return [systems, saturation, fairTest];
+        return [systems, saturation, fairTest].map(rotateReasoningOptions);
       }
 
       function forecastMission() {
