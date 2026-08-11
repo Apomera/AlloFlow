@@ -253,12 +253,20 @@
           // builds do not wait on a school-network CDN timeout. CDN fallbacks keep
           // the hosted Canvas surface resilient when the local asset is absent.
           var localThreeUrls = [];
+          var localOrbitUrls = [];
           try {
             var stemScripts = document.getElementsByTagName('script');
             for (var si = 0; si < stemScripts.length; si++) {
               var stemSrc = stemScripts[si].src || '';
               if (stemSrc.indexOf('stem_lab_module.js') !== -1) {
                 localThreeUrls.push(new URL('../vendor/three-r128/three.min.js', stemSrc).href);
+                // OrbitControls gets the same local-first treatment as the core.
+                // Without it the core resolved from the bundled asset but orbit still
+                // waited on a CDN, so offline and desktop builds silently lost camera
+                // control in EVERY 3D tool while looking like a successful load.
+                // vendor/three-r128/OrbitControls.js is the classic global build
+                // (assigns THREE.OrbitControls), so a plain <script> is correct here.
+                localOrbitUrls.push(new URL('../vendor/three-r128/OrbitControls.js', stemSrc).href);
                 break;
               }
             }
@@ -270,7 +278,7 @@
           return core.then(function () {
             if (!wantOrbit || window.THREE.OrbitControls) return true;
             var orbit = self.loadScriptResilient(
-              ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js', 'https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js'],
+              localOrbitUrls.concat(['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js', 'https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js']),
               { cacheKey: 'three-orbit', check: function () { return !!(window.THREE && window.THREE.OrbitControls); } });
             return opts.orbitRequired ? orbit : orbit.catch(function () { console.warn('[StemLab] OrbitControls failed to load, proceeding without orbit controls'); return true; });
           }).then(function () { return window.THREE; });
@@ -5008,6 +5016,11 @@
                 color: 'emerald', ready: true
               },
               {
+                id: 'treeLab', icon: '🌳', label: 'Tree Life Lab',
+                desc: 'Photosynthesis at the whole-tree scale in 3D: what limits the rate hour to hour, what a big tree spends just staying alive, why rings narrow with age, and how trees make more of themselves with seeds and without.',
+                color: 'emerald', ready: true
+              },
+              {
                 id: 'cellAtlasLab', icon: '\u2237', label: 'Cell Atlas Lab',
                 desc: 'Classify human pancreatic cell types from gene-expression evidence, compare marker profiles, solve mystery cells, and follow insulin toward AlphaFold structure.',
                 color: 'cyan', ready: true
@@ -5243,6 +5256,12 @@
                 color: 'amber', ready: true
               },
               { id: '_cat_EngineeringDesign', icon: '', label: '\u2699\uFE0F Engineering & Design', desc: '', color: 'slate', chip: 'engineering', category: true },
+              {
+                // @tool machineLab
+                id: 'machineLab', icon: '\u2699\uFE0F', label: 'Machine Lab',
+                desc: 'Levers, pulleys, ramps, wedges and screws. See how simple machines trade distance for force, and prove it with your own predictions.',
+                color: 'amber', ready: true
+              },
               {
                 // @tool circuit
                 id: 'circuit', icon: '🔌', label: t('stem.tools_menu.circuit_builder'),
