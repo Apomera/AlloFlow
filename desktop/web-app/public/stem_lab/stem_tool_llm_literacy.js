@@ -927,6 +927,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
     }
   };
 
+  // The authored checks never put the correct option at slot A (3 at B, 2 at
+  // C across the five sections) — free information. Rotate each check's
+  // options deterministically; correct flags and `why` feedback live on the
+  // option objects, so no remap is needed. Deterministic so picks persisted
+  // by index stay valid across sessions.
+  Object.keys(CHECKS).forEach(function (key, ki) {
+    var q = CHECKS[key];
+    if (!q || !Array.isArray(q.options) || q.options.length < 2) return;
+    var shift = (ki * 7 + 3) % q.options.length;
+    if (!shift) return;
+    q.options = q.options.slice(shift).concat(q.options.slice(0, shift));
+  });
+
   // ─────────────────────────────────────────────────────────
   // MISCONCEPTIONS: common wrong beliefs about AI with corrections
   // ─────────────────────────────────────────────────────────

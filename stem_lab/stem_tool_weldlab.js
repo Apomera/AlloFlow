@@ -4791,6 +4791,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         }
       ];
 
+      // Every safety scenario authored its correct response FIRST (4 of 4),
+      // so the drill rendered "always pick A" — the wrong habit to teach for
+      // weld-shop safety. Rotate each scenario's choices deterministically
+      // (stable across renders, so picks stored by index stay valid). The
+      // correct flag and explanation live on the choice objects, so no
+      // remap is needed.
+      SAFETY_SCENARIOS.forEach(function (sc, i) {
+        if (!Array.isArray(sc.choices) || sc.choices.length < 2) return;
+        var shift = (i * 7 + 3) % sc.choices.length;
+        if (!shift) return;
+        sc.choices = sc.choices.slice(shift).concat(sc.choices.slice(0, shift));
+      });
+
       function PPESafetyLab() {
         var view_state = usePersistedState('ps_view', 'gear');
         var view = view_state[0], setLocalView = view_state[1];
