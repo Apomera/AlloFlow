@@ -320,6 +320,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     return (volume / stemArea) * 1000;
   }
 
+  // Coerce anything that came out of storage into a tree the renderer can survive.
+  // Missing numbers fall back to a fresh seedling's, arrays are forced to arrays.
+  function normaliseTree(raw, speciesId) {
+    var base = newTree(speciesId);
+    if (!raw || typeof raw !== 'object') return base;
+    var out = Object.assign({}, base, raw);
+    ['age', 'heightM', 'dbhCm', 'leafArea', 'leafMass', 'rootMass', 'sapwoodMass',
+      'heartwoodMass', 'reserves', 'seedsBanked', 'deficitYears'].forEach(function (k) {
+      var v = out[k];
+      if (typeof v !== 'number' || !isFinite(v)) out[k] = base[k];
+    });
+    if (!Array.isArray(out.rings)) out.rings = [];
+    if (!Array.isArray(out.history)) out.history = [];
+    // A ring with a non-numeric width would reach the SVG as NaN and silently
+    // collapse the chart, so drop anything malformed rather than draw it.
+    out.rings = out.rings.filter(function (r) {
+      return r && typeof r === 'object' && typeof r.widthMm === 'number' && isFinite(r.widthMm);
+    });
+    out.alive = out.alive !== false;
+    if (typeof out.speciesId !== 'string') out.speciesId = base.speciesId;
+    return out;
+  }
+
   function newTree(speciesId) {
     var sp = speciesById(speciesId);
     return {
@@ -521,7 +544,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       strongAgainst: ['browsing'], weakAgainst: ['pathogen', 'fire']
     },
     {
-      id: 'basal_resprout', name: 'Basal resprout', icon: '🥈',
+      id: 'basal_resprout', name: 'Basal resprout', icon: '♻️',
       cost: 0.3, establish: 0.85, distance: 0.05, diversity: 0,
       blurb: 'Not really a new tree: the same root system rebuilding a top after losing one. The fastest recovery there is.',
       strongAgainst: ['fire', 'browsing'], weakAgainst: ['pathogen']
@@ -577,7 +600,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
 
       var p = strat.establish;
       var note = '';
-      if (strat.strongAgainst.indexOf(event.id) >= 0) { p = clamp(p * 2.1, 0, 0.95); note = 'Favoured by ' + event.name.toLowerCase() + '.'; }
+      if (strat.strongAgainst.indexOf(event.id) >= 0) { p = clamp(p * 2.1, 0, 0.95); note = 'Comes through ' + event.name.toLowerCase() + ' better than the alternatives.'; }
       else if (strat.weakAgainst.indexOf(event.id) >= 0) { p = p * 0.25; note = 'Badly hurt by ' + event.name.toLowerCase() + '.'; }
 
       // The clonal penalty that makes the game a real decision: a pathogen travelling
@@ -663,15 +686,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     { id: 'clones', label: 'Clonal offspring', color: '#86efac' }
   ];
 
-  var NULL_VIEWER = {
-    attach: function () {}, sync: function () {}, nudge: function () {},
-    zoom: function () {}, reset: function () {}, status: function () { return 'failed'; }
-  };
-  function makeViewer(cfg) {
-    var mk = window.StemLab && window.StemLab.makeBayViewer;
-    if (!mk) { console.warn('[TreeLab] host viewer shell unavailable - 3D disabled, 2D profile intact'); return NULL_VIEWER; }
-    return mk(cfg);
-  }
+  // Resolved LAZILY, on first use, rather than captured at module load.
+  //
+  // The rest of the makeBayViewer family calls mk(cfg) at module scope, which is only
+  // safe because the host happens to load at boot while plugins load on first hub-open.
+  // If that ordering ever slips — a slow CDN response for stem_lab_module.js, a user
+  // who opens the hub the instant the app boots — the tool captures a null viewer ONCE
+  // and 3D is silently dead for the whole session with no error anywhere.
+  //
+  // Resolving on demand costs nothing and cannot get stuck: whichever render first
+  // finds the host wins, and every call before that degrades to the 2D profile.
+  var TREE3D = (function () {
+    var real = null;
+    var lastProps = null;
+    var warned = false;
+    var CFG = {
+      parts: TREE_PARTS,
+      buildScene: buildTreeScene,
+      // The shell takes `home` once, which is why buildTreeScene normalises every tree
+      // into VIS_H and centres it on the shell's fixed lookAt target. dist follows from
+      // that budget: the camera is 42 degrees VERTICAL, so fitting 2.6 units needs
+      // 1.3/tan(21 deg) = 3.39, and the rest is margin for sway and a wide crown.
+      home: { yaw: 0.62, pitch: 0.42, dist: 4.3 }
+    };
+    function resolve() {
+      if (real) return real;
+      var mk = window.StemLab && window.StemLab.makeBayViewer;
+      if (!mk) {
+        if (!warned) {
+          warned = true;
+          console.warn('[TreeLab] host viewer shell not present yet - 3D deferred, 2D profile intact');
+        }
+        return null;
+      }
+      real = mk(CFG);
+      // React calls sync() during render and attach() during commit, so props can
+      // arrive before the viewer exists. Replay the last ones into it.
+      if (lastProps) { try { real.sync(lastProps); } catch (e) {} }
+      return real;
+    }
+    // attach MUST keep a stable identity: an inline ref gets a new one every render,
+    // which makes React call ref(null)+ref(node) each pass and re-initialise the
+    // canvas endlessly. These wrappers are created once, here.
+    return {
+      attach: function (node) { var v = resolve(); if (v) v.attach(node); },
+      sync: function (p) { lastProps = p; var v = resolve(); if (v) v.sync(p); },
+      nudge: function (a, b) { var v = resolve(); if (v) v.nudge(a, b); },
+      zoom: function (delta) { var v = resolve(); if (v) v.zoom(delta); },
+      reset: function () { var v = resolve(); if (v) v.reset(); },
+      status: function () { var v = resolve(); return v ? v.status() : 'idle'; }
+    };
+  })();
 
   // Seasonal foliage colour. Hex only: a canvas or a THREE material cannot resolve
   // var(--token), and a string like 'var(--x)' is silently ignored rather than
@@ -1002,16 +1067,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     return { meshes: meshes, picks: picks, anchor: trunk, frame: frame };
   }
 
-  // The shell takes `home` once, at module load, so it cannot re-frame per tree —
-  // which is exactly why buildTreeScene normalises every tree into VIS_H and centres
-  // it on the shell's fixed lookAt target. dist follows from that budget: the camera
-  // is 42 degrees VERTICAL, so fitting 2.6 units needs 1.3/tan(21°) = 3.39, and the
-  // rest is margin for the sway and a wide crown.
-  var TREE3D = makeViewer({
-    parts: TREE_PARTS,
-    buildScene: buildTreeScene,
-    home: { yaw: 0.62, pitch: 0.42, dist: 4.3 }
-  });
 
   // ─────────────────────────────────────────────────────────
   // SECTION 7: REGISTRATION + RENDER
@@ -1086,7 +1141,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
 
       var view = d.view || 'grow';
       var sp = speciesById(d.speciesId || 'oak');
-      var tree = d.tree || newTree(sp.id);
+      var tree = normaliseTree(d.tree, sp.id);
       var season = d.season || 'summer';
 
       var envCfg = {
@@ -1105,6 +1160,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       }, tree.leafArea, aperture);
       var liveResp = maintenanceRespiration(sp, tree);
       var liveNet = live.gross - liveResp;
+      // Season total spread over a ~180-day growing season. The prose beside this
+      // quotes gallons per DAY, so a seasonal total in litres made the two unreadable
+      // against each other.
+      var transpirationPerDay =
+        (tree.leafArea * aperture * clamp((envCfg.tempC - 5) / 30, 0.05, 1) * 210) / 180;
+      function fmtInt(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
 
       // ── Shared UI atoms ──
       function card(children, extra) {
@@ -1116,7 +1177,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         }, children);
       }
       function heading(txt, sub) {
-        return h('div', { style: { marginBottom: 10 } }, [
+        return h('div', { key: 'hd', style: { marginBottom: 10 } }, [
           h('div', { key: 'h', style: { fontWeight: 700, fontSize: 15, color: T.text } }, txt),
           sub ? h('div', { key: 's', style: { fontSize: 12, color: T.dim, marginTop: 3, lineHeight: 1.5 } }, sub) : null
         ]);
@@ -1167,6 +1228,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       }
       function modelNote(txt) {
         return h('p', {
+          key: 'modelnote',
           role: 'note',
           style: { fontSize: 11, color: T.dim, lineHeight: 1.55, marginTop: 10, paddingTop: 8, borderTop: '1px dashed ' + T.border }
         }, txt);
@@ -1195,7 +1257,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       }
       function resetTree(newSpeciesId) {
         var sid = newSpeciesId || sp.id;
-        updMulti({ tree: newTree(sid), speciesId: sid });
+        // Committed carbon and the last result belong to the OLD species. Left in
+        // place, a student who set up an aspen root-sucker run and then switched to
+        // oak would carry that commitment across and resolve a strategy oak does not
+        // have — the Spread list would offer three routes while the results reported
+        // a fourth. Reproduction carbon is reset with the tree anyway.
+        updMulti({ tree: newTree(sid), speciesId: sid, spend: {}, lastSpread: null });
         srSay('Reset to a new ' + speciesById(sid).name + ' seedling.');
       }
 
@@ -1348,13 +1415,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         ]);
       }
 
+      // Decorative hues are meaningful in normal themes and actively harmful in high
+      // contrast, where everything must resolve to the black/white/yellow ramp.
+      function tone(hex) { return isContrast ? T.accent : hex; }
+
       function allocSlider(k, labelTxt, hex) {
         var pct = Math.round(alloc[k] * 100);
         var id = 'treelab-alloc-' + k;
         return h('div', { key: k, style: { marginBottom: 9 } }, [
           h('label', { key: 'l', htmlFor: id, style: { display: 'flex', justifyContent: 'space-between', fontSize: 12, color: T.dim, marginBottom: 4 } }, [
             h('span', { key: 'a', style: { display: 'flex', alignItems: 'center', gap: 6 } }, [
-              h('span', { key: 'sw', style: { width: 10, height: 10, borderRadius: 2, background: hex, display: 'inline-block' } }),
+              h('span', { key: 'sw', style: { width: 10, height: 10, borderRadius: 2, background: tone(hex), display: 'inline-block', border: isContrast ? '1px solid ' + T.text : 'none' } }),
               labelTxt
             ]),
             h('span', { key: 'b', style: { fontWeight: 700, color: T.text } }, pct + '%')
@@ -1366,7 +1437,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
               next[k] = parseFloat(e.target.value) / 100;
               upd('alloc', next);
             },
-            style: { width: '100%', accentColor: hex }
+            style: { width: '100%', accentColor: tone(hex) }
           })
         ]);
       }
@@ -1383,7 +1454,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           var hgt = clamp((r.widthMm / maxW) * (H - 18), 1, H - 18);
           return h('rect', {
             key: 'r' + i, x: i * bw, y: (H - 14) - hgt, width: Math.max(0.6, bw * 0.82), height: hgt,
-            fill: r.stress ? '#dc2626' : '#a16207'
+            fill: isContrast ? (r.stress ? '#ff6666' : '#ffff00') : (r.stress ? '#dc2626' : '#a16207')
           });
         });
         return card([
@@ -1431,10 +1502,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             atLeast(band, 'g912')
               ? 'Four factors, and the rate follows the smallest of them. This is the question a living tree answers every hour, and its answer is recorded permanently in the rings.'
               : 'Four things a tree needs. Whichever is shortest sets the speed, no matter how much of the others there is.'),
-          bar(__alloT('stem.treelab.light', 'Light'), live.factors.light, '#facc15'),
-          bar(CO2, live.factors.co2, '#60a5fa'),
-          bar(__alloT('stem.treelab.temperature', 'Temperature'), live.factors.temp, '#fb923c'),
-          bar(__alloT('stem.treelab.water', 'Water'), live.factors.water, '#38bdf8'),
+          bar(__alloT('stem.treelab.light', 'Light'), live.factors.light, tone('#facc15')),
+          bar(CO2, live.factors.co2, tone('#60a5fa')),
+          bar(__alloT('stem.treelab.temperature', 'Temperature'), live.factors.temp, tone('#fb923c')),
+          bar(__alloT('stem.treelab.water', 'Water'), live.factors.water, tone('#38bdf8')),
           h('div', { key: 'note', style: { marginTop: 6, fontSize: 12, color: T.dim, lineHeight: 1.55 } },
             __alloT('stem.treelab.liebig',
               'This is why enriching ' + CO2 + ' does little for a tree that is short of water: a closed stoma admits no ' + CO2 + ' however much of it is outside.'))
@@ -1445,8 +1516,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             heading(__alloT('stem.treelab.the_trade', 'The trade the tree cannot avoid'),
               __alloT('stem.treelab.the_trade_sub', 'The pore that admits ' + CO2 + ' is the pore that loses ' + H2O + '. There is no setting that does only the good half.')),
             h('div', { key: 'g', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: 8 } }, [
-              statTile('in', CO2 + ' entering', Math.round(aperture * 100) + '%', '#60a5fa'),
-              statTile('out', H2O + ' lost', Math.round(tree.leafArea * aperture * clamp((envCfg.tempC - 5) / 30, 0.05, 1) * 210) + ' L/season', '#38bdf8')
+              statTile('in', CO2 + ' entering', Math.round(aperture * 100) + '%', tone('#60a5fa')),
+              statTile('out', H2O + ' lost', fmtInt(Math.round(transpirationPerDay)) + ' L/day', tone('#38bdf8'))
             ]),
             h('p', { key: 'p', style: { fontSize: 12, color: T.dim, marginTop: 8, lineHeight: 1.55 } },
               __alloT('stem.treelab.trade_body', 'A large tree can move well over 100 gallons of water in a day this way. Almost all of it is the unavoidable price of leaving the stomata open long enough to take carbon in.'))
@@ -1458,10 +1529,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             heading(__alloT('stem.treelab.the_bill', 'The respiration bill'),
               __alloT('stem.treelab.the_bill_sub', 'The part students most often miss: a big tree does not only gain more, it SPENDS more, every hour, forever.')),
             h('div', { key: 'g', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(130px,1fr))', gap: 8 } }, [
-              statTile('lm', 'Living leaf', round(tree.leafMass, 1) + ' kg', '#22c55e'),
-              statTile('rm', 'Fine root', round(tree.rootMass, 1) + ' kg', '#a16207'),
-              statTile('sm', 'Sapwood (living)', round(tree.sapwoodMass, 1) + ' kg', '#f59e0b'),
-              statTile('hm', 'Heartwood (dead, free)', round(tree.heartwoodMass, 1) + ' kg', '#78716c')
+              statTile('lm', 'Living leaf', round(tree.leafMass, 1) + ' kg C', tone('#22c55e')),
+              statTile('rm', 'Fine root', round(tree.rootMass, 1) + ' kg C', tone('#a16207')),
+              statTile('sm', 'Sapwood (living)', round(tree.sapwoodMass, 1) + ' kg C', tone('#f59e0b')),
+              statTile('hm', 'Heartwood (dead, free)', round(tree.heartwoodMass, 1) + ' kg C', tone('#78716c'))
             ]),
             h('p', { key: 'p', style: { fontSize: 12, color: T.dim, marginTop: 8, lineHeight: 1.55 } },
               __alloT('stem.treelab.bill_body', 'Converting sapwood to heartwood is how a tree keeps getting bigger without its maintenance cost rising forever. Dead wood still holds the tree up and costs nothing to keep.')),
@@ -1560,7 +1631,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         var totalSpent = 0;
         Object.keys(spend).forEach(function (k) { totalSpent += spend[k] || 0; });
         var remaining = round(budget - totalSpent, 2);
-        var last = d.lastSpread || null;
+        // Same class as the tree above: a half-written result object would throw on
+        // `res.results.map` and take the entire view with it.
+        var lastRaw = d.lastSpread;
+        var last = (lastRaw && lastRaw.res && Array.isArray(lastRaw.res.results)) ? lastRaw : null;
 
         var kids = [];
         kids.push(card([
@@ -1625,8 +1699,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         return kids;
       }
 
-      function runSpread(spend, remaining) {
+      function runSpread(rawSpend, remaining) {
         if (remaining < 0) { sfxBad(); return; }
+        // Defence in depth behind the reset in resetTree: never resolve a strategy
+        // this species does not actually use, whatever is sitting in stored state.
+        var spend = {};
+        Object.keys(rawSpend || {}).forEach(function (k) {
+          if (sp.modes.indexOf(k) >= 0 && rawSpend[k] > 0) spend[k] = rawSpend[k];
+        });
+        if (!Object.keys(spend).length) { sfxBad(); return; }
         var rounds = (d.spreadRounds || 0);
         // Seeded from the round number so a class can replay the same decade and
         // compare two strategies against identical weather.
@@ -1785,7 +1866,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
               }
             }, t.icon + ' ' + t.label);
           })),
-        h('div', { key: 'body' }, body),
+        h('div', { key: 'body' }, Array.isArray(body)
+          ? body.map(function (node, i) {
+            if (!node || typeof node !== 'object' || node.key != null) return node;
+            return ctx.React.cloneElement(node, { key: 'card' + i });
+          })
+          : body),
         h('p', { key: 'sp-note', style: { fontSize: 11, color: T.dim, lineHeight: 1.55, marginTop: 4 } }, sp.note)
       ]);
     }
@@ -1797,7 +1883,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     stomatalAperture: stomatalAperture, limitingFactor: limitingFactor,
     grossPhotosynthesis: grossPhotosynthesis, maintenanceRespiration: maintenanceRespiration,
     ringWidthMm: ringWidthMm, newTree: newTree, simulateYear: simulateYear,
-    normaliseAlloc: normaliseAlloc, envForYear: envForYear,
+    normaliseAlloc: normaliseAlloc, normaliseTree: normaliseTree, envForYear: envForYear,
     resolveSpread: resolveSpread, lcg: lcg, speciesById: speciesById,
     strategyById: strategyById, resolveBand: resolveBand, atLeast: atLeast,
     SPECIES: SPECIES, STRATEGIES: STRATEGIES, QUIZ: QUIZ, BANDS: BANDS

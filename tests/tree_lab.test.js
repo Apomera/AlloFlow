@@ -320,6 +320,121 @@ describe('Tree Life Lab — renders every view', () => {
   });
 });
 
+describe('Tree Life Lab — never renders blank', () => {
+  // StemLab.renderTool() CATCHES and returns null, so any throw in render is a
+  // silently blank tool: no console error, no failing gate, nothing a teacher could
+  // report beyond "it does not work". Eight states used to do exactly that, all of
+  // them reachable from ordinary persisted JSON.
+  function goodTree() {
+    const E = engine();
+    let t = E.newTree('oak');
+    for (let i = 0; i < 60; i += 1) t = E.simulateYear(t, E.speciesById('oak'), GOOD_ENV, ALLOC);
+    return t;
+  }
+
+  it('survives a partial or corrupt stored tree', () => {
+    const t = goodTree();
+    const HOSTILE = [
+      ['missing rings', { age: 5, heightM: 2, dbhCm: 3, leafArea: 4, alive: true }],
+      ['only an age', { age: 9 }],
+      ['empty object', {}],
+      ['a string', 'corrupt'],
+      ['rings null', { ...t, rings: null }],
+      ['rings a string', { ...t, rings: 'x' }],
+      ['rings holding junk', { ...t, rings: [null, 'x', { widthMm: 'wide' }, { widthMm: NaN }] }],
+      ['numbers as NaN', { ...t, heightM: NaN, dbhCm: NaN, leafArea: NaN }],
+      ['no deficitYears (older save)', { ...t, deficitYears: undefined }],
+      ['seedsBanked undefined', { ...t, seedsBanked: undefined }],
+    ];
+    for (const [label, tree] of HOSTILE) {
+      for (const view of ['grow', 'spread']) {
+        const html = render({ treeLab: { view, tree } });
+        expect(html.length, `${view} blanked on ${label}`).toBeGreaterThan(500);
+      }
+    }
+  });
+
+  it('survives a malformed spread result', () => {
+    const tree = goodTree();
+    const HOSTILE = [
+      ['no res', { event: 'fire' }],
+      ['res without results', { event: 'fire', res: {} }],
+      ['results not an array', { event: 'fire', res: { results: 'x' } }],
+      ['unknown event id', { event: 'meteor', res: { results: [], established: 0 } }],
+    ];
+    for (const [label, lastSpread] of HOSTILE) {
+      const html = render({ treeLab: { view: 'spread', tree, lastSpread } });
+      expect(html.length, `spread blanked on ${label}`).toBeGreaterThan(500);
+    }
+  });
+
+  it('survives junk in every other stored field', () => {
+    const tree = goodTree();
+    const CASES = [
+      ['no toolData', undefined],
+      ['empty', {}],
+      ['null slice', { treeLab: null }],
+      ['unknown view', { treeLab: { view: 'nope', tree } }],
+      ['unknown species', { treeLab: { view: 'grow', speciesId: 'banana', tree } }],
+      ['alloc null', { treeLab: { view: 'grow', tree, alloc: null } }],
+      ['alloc a string', { treeLab: { view: 'grow', tree, alloc: 'x' } }],
+      ['spend a string', { treeLab: { view: 'spread', tree, spend: 'nope' } }],
+      ['spend unknown strategy', { treeLab: { view: 'spread', tree, spend: { warp_drive: 5 } } }],
+      ['quizIdx out of range', { treeLab: { view: 'quiz', tree, quizIdx: 999 } }],
+      ['quizIdx negative', { treeLab: { view: 'quiz', tree, quizIdx: -5 } }],
+      ['sliders out of range', { treeLab: { view: 'grow', tree, light: 99, soilWater: -3, tempC: 9999, co2ppm: -1 } }],
+      ['unknown death cause', { treeLab: { view: 'grow', tree: { ...tree, alive: false, causeOfDeath: 'lightning' } } }],
+    ];
+    for (const [label, data] of CASES) {
+      const html = render(data);
+      expect(html.length, `blanked on ${label}`).toBeGreaterThan(500);
+    }
+  });
+
+  it('survives a hostile ctx', () => {
+    const tree = goodTree();
+    const OVERRIDES = [
+      ['no t()', { t: undefined }],
+      ['t() throws', { t: () => { throw new Error('lang pack missing'); } }],
+      ['t() returns undefined', { t: () => undefined }],
+      ['no addToast', { addToast: undefined }],
+      ['no awardXP', { awardXP: undefined }],
+      ['no gradeBand', { gradeBand: undefined }],
+      ['stale gradeBand spelling', { gradeBand: 'K-2' }],
+    ];
+    for (const [label, over] of OVERRIDES) {
+      const html = render({ treeLab: { view: 'grow', tree } }, over);
+      expect(html.length, `blanked on ${label}`).toBeGreaterThan(500);
+    }
+  });
+
+  it('normalises any stored tree into a shape the renderer can use', () => {
+    const E = engine();
+    for (const raw of [null, undefined, 'x', 42, {}, { age: 'old' }, { rings: 'no' }]) {
+      const t = E.normaliseTree(raw, 'oak');
+      expect(Array.isArray(t.rings)).toBe(true);
+      expect(Array.isArray(t.history)).toBe(true);
+      expect(Number.isFinite(t.heightM)).toBe(true);
+      expect(Number.isFinite(t.age)).toBe(true);
+      expect(Number.isFinite(t.seedsBanked)).toBe(true);
+    }
+    // Good values must pass through untouched.
+    const real = goodTree();
+    const kept = E.normaliseTree(real, 'oak');
+    expect(kept.heightM).toBe(real.heightM);
+    expect(kept.rings.length).toBe(real.rings.length);
+  });
+
+  it('keeps working when the host viewer shell is absent', () => {
+    // Plugins load on first hub-open while the host loads at boot. If that ordering
+    // ever slips, the tool must still render its numbers — and capturing the viewer
+    // at module load would have made 3D silently dead for the whole session.
+    const html = render({ treeLab: { view: 'grow', tree: goodTree() } });
+    expect(html).toContain('carbon budget');
+    expect(html.length).toBeGreaterThan(1000);
+  });
+});
+
 describe('Tree Life Lab — banks and mirrors', () => {
   it('does not let a student score the quiz by answer position', () => {
     const E = engine();
@@ -340,6 +455,53 @@ describe('Tree Life Lab — banks and mirrors', () => {
     const cdn = readFileSync(resolve(process.cwd(), SOURCE), 'utf8');
     const mirror = readFileSync(resolve(process.cwd(), MIRROR), 'utf8');
     expect(mirror).toBe(cdn);
+  });
+
+  it('lets no decorative colour survive into high-contrast mode', () => {
+    // Found by screenshot, not by any gate: the CONDITION sliders adapted because
+    // they read T.accent, but the ALLOCATION sliders and the ring bars carried raw
+    // hex, so brown-on-black tracks survived into the one mode whose entire purpose
+    // is maximum contrast.
+    const E = engine();
+    const oak = E.speciesById('oak');
+    let tree = E.newTree('oak');
+    for (let i = 0; i < 50; i += 1) tree = E.simulateYear(tree, oak, GOOD_ENV, ALLOC);
+    const DECORATIVE = ['#22c55e', '#a16207', '#f59e0b', '#ec4899', '#38bdf8',
+      '#facc15', '#60a5fa', '#fb923c', '#78716c'];
+    for (const view of ['grow', 'chem']) {
+      resetStemLab();
+      loadTool(SOURCE, 'treeLab');
+      const html = renderTool('treeLab', { treeLab: { view, tree, bandOverride: 'g912' } }, { isContrast: true });
+      for (const hex of DECORATIVE) {
+        expect(html.includes(hex), `${view} leaks ${hex} into high contrast`).toBe(false);
+      }
+    }
+  });
+
+  it('offers only the strategies the current species actually uses', () => {
+    // Stale committed carbon used to survive a species switch, so the Spread list
+    // offered oak's three routes while a run resolved aspen's root suckers as well.
+    const E = engine();
+    let tree = E.newTree('oak');
+    for (let i = 0; i < 60; i += 1) tree = E.simulateYear(tree, E.speciesById('oak'), GOOD_ENV, ALLOC);
+    const html = render({
+      treeLab: { view: 'spread', speciesId: 'oak', tree, spend: { root_sucker: 9 } },
+    });
+    // Oak has seed_animal, mast and basal_resprout. Root suckering is aspen's route.
+    expect(html).toContain('Animal-planted seed');
+    expect(html).toContain('Basal resprout');
+    expect(html).not.toContain('Root sucker');
+  });
+
+  it('labels every carbon mass as carbon, not biomass', () => {
+    // These are kg of CARBON throughout the engine; a bare "kg" reads as biomass and
+    // is about half the real figure.
+    const E = engine();
+    let tree = E.newTree('oak');
+    for (let i = 0; i < 60; i += 1) tree = E.simulateYear(tree, E.speciesById('oak'), GOOD_ENV, ALLOC);
+    const html = render({ treeLab: { view: 'chem', bandOverride: 'g912', tree } });
+    expect(html).toContain('kg C');
+    expect(/(\d)\s*kg(?!\s*C)/.test(html.replace(/kg C/g, 'kgC')), 'a bare "kg" survived').toBe(false);
   });
 
   it('avoids var() in canvas and THREE colour paths', () => {
