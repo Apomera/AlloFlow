@@ -156,7 +156,11 @@
     return out;
   }
   function tickLabel(v, step) {
-    var dp = step >= 1 ? 0 : Math.min(3, Math.ceil(-Math.log10(step)));
+    // Use however many decimals the step itself needs (up to 3). The old
+    // magnitude rule gave step 2.5 zero decimals, so a 0-10 axis read
+    // "0, 3, 5, 8, 10", and gave step 0.25 one decimal ("0.3, 0.5, 0.8").
+    var dp = 0;
+    while (dp < 3 && Math.abs(step * Math.pow(10, dp) - Math.round(step * Math.pow(10, dp))) > 1e-9) dp++;
     return v.toFixed(dp);
   }
 
