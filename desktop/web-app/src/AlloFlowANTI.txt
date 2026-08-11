@@ -5005,6 +5005,14 @@ const __alloPushLog = (level, args) => {
 };
 const debugLog = (...args) => { __alloPushLog('debug', args); if (DEBUG_LOG) console.log(...args); };
 const warnLog = (...args) => { __alloPushLog('warn', args); console.warn(...args); };
+// Activating a STEM tool is not the same as loading it: the plugin lives on the CDN
+// and only __alloEnsureStemPluginLoaded requests it. Every entry point that sets the
+// active tool routes through here, so a tool opened from the command palette, a hub
+// button or a generated-content handoff loads exactly like an Explore tile click.
+// Top level on purpose: it closes over nothing but window.
+const _alloRequestStemPlugin = (id) => {
+  try { if (id && typeof window.__alloEnsureStemPluginLoaded === 'function') window.__alloEnsureStemPluginLoaded(String(id)); } catch (_) {}
+};
 // Uncaught errors and rejections never reached the ring buffer, so in Canvas — where
 // the console is unreachable — an exception that leaves click handlers unattached was
 // invisible. Record every one, and keep the FIRST separately: when an error is thrown
@@ -15880,6 +15888,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       if (gen && Array.isArray(gen.branches)) {
         setLabToolData(prev => ({ ...prev, _ffImport: { main: gen.main, branches: gen.branches, structureType: gen.structureType || null } }));
       }
+      _alloRequestStemPlugin('freeForms');
       setStemLabTool('freeForms');
       setShowStemLab(true);
     };
@@ -37292,6 +37301,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           setLabToolData(prev => Object.assign({}, prev, {
               [presetKey]: Object.assign({}, (prev && prev[presetKey]) || {}, incomingPreset)
           }));
+          _alloRequestStemPlugin(item.toolId);
           setStemLabTool(item.toolId);
           setShowStemLab(true);
           setGeneratedContent({ ...item, type: item.type, data: item.data, id: item.id });
@@ -40209,13 +40219,13 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       openMindMap: () => { setThroughlineSeedUnitId(null); setShowMindMap(true); },
       openPoetTree: () => setShowPoetTree(true),
       openAccessibilityLab: () => setIsAccessibilityLabOpen(true),
-      openLumen: () => { setStemLabTool('lumen'); setShowStemLab(true); },
-      openFreeForms: () => { setStemLabTool('freeForms'); setShowStemLab(true); },
+      openLumen: () => { _alloRequestStemPlugin('lumen'); setStemLabTool('lumen'); setShowStemLab(true); },
+      openFreeForms: () => { _alloRequestStemPlugin('freeForms'); setStemLabTool('freeForms'); setShowStemLab(true); },
       // Generic launcher behind the open_stem_tool command. The id is resolved
       // from the capability index up in the command layer, so the host just
       // honours it. Setting the tab matters: the lab renders the active tool
       // only while the Explore tab is showing.
-      openStemTool: (id) => { if (!id) return false; setStemLabTool(String(id)); setStemLabTab('explore'); setShowStemLab(true); return true; },
+      openStemTool: (id) => { if (!id) return false; _alloRequestStemPlugin(id); setStemLabTool(String(id)); setStemLabTab('explore'); setShowStemLab(true); return true; },
       openCommunityCatalog: () => setIsCommunityCatalogOpen(true),
       readingLibraryIndex: readingLibraryIndexForBot,
       openReadingBook: (slug) => {
