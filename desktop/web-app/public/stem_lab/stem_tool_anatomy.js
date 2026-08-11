@@ -909,6 +909,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       }
     }
     if (showCrosshair) { cx.setLineDash([5, 5]); line(midX, scanY, midX, scanY + scanH, 'rgba(34,211,238,.55)'); line(scanX, midY, scanX + scanW, midY, 'rgba(34,211,238,.55)'); cx.setLineDash([]); }
+    // Keyboard placement cursor. A sighted keyboard user needs to SEE where Enter will
+    // land; the announcement alone serves a screen reader and nobody else. Drawn only
+    // when a cursor has actually been moved, so the mouse path looks unchanged.
+    if (typeof state.kbX === 'number' && typeof state.kbY === 'number') {
+      var kx = scanX + state.kbX * scanW, ky = scanY + state.kbY * scanH;
+      cx.setLineDash([]);
+      cx.strokeStyle = '#fbbf24'; cx.lineWidth = 2;
+      cx.beginPath(); cx.arc(kx, ky, 9, 0, Math.PI * 2); cx.stroke();
+      cx.beginPath();
+      cx.moveTo(kx - 14, ky); cx.lineTo(kx - 4, ky);
+      cx.moveTo(kx + 4, ky); cx.lineTo(kx + 14, ky);
+      cx.moveTo(kx, ky - 14); cx.lineTo(kx, ky - 4);
+      cx.moveTo(kx, ky + 4); cx.lineTo(kx, ky + 14);
+      cx.stroke();
+    }
     cx.font = 'bold 11px Inter, system-ui, sans-serif'; cx.textAlign = 'center'; cx.textBaseline = 'middle';
     labels.forEach(function(label) {
       var normalizedLabel = String(label.text || '').toLowerCase();
@@ -12185,10 +12200,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     )
                   );
                 }
-                function handleImagingClick(event) {
-                  var canvas = event.currentTarget, rect = canvas.getBoundingClientRect();
-                  var x = Math.max(0, Math.min(1, ((event.clientX - rect.left) / rect.width - 44 / 640) / (552 / 640)));
-                  var y = Math.max(0, Math.min(1, ((event.clientY - rect.top) / rect.height - 28 / 480) / (408 / 480)));
+                // Placement is separated from the mouse event so the keyboard path can
+                // reach exactly the same code. This canvas was Class A: role + tabIndex +
+                // onClick and NO key handler, so it took focus, announced itself, and did
+                // nothing on Enter. Placing pins and rulers on a scan is the whole
+                // activity here, and it was impossible without a mouse.
+                function placeImagingAt(x, y) {
                   if (imagingTool === 'ruler' && savedImaging.rulerStart && typeof savedImaging.rulerStart === 'object') {
                     var start = savedImaging.rulerStart;
                     var dx = (x - start.x) * 552, dy = (y - start.y) * 408;
@@ -12205,7 +12222,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     if (typeof announceToSR === 'function') announceToSR('Observation pin recorded on slice ' + Math.round(sliceValue) + '.');
                   }
                 }
-                var drawingState = { modality: modality, region: region, plane: plane, slice: sliceValue, sequence: sequence, windowWidth: windowWidth, windowLevel: windowLevel, showLabels: showLabels, showCrosshair: showCrosshair, focusTerms: bodyScopeDepth.targets, annotations: visibleImagingAnnotations };
+                function handleImagingClick(event) {
+                  var canvas = event.currentTarget, rect = canvas.getBoundingClientRect();
+                  var x = Math.max(0, Math.min(1, ((event.clientX - rect.left) / rect.width - 44 / 640) / (552 / 640)));
+                  var y = Math.max(0, Math.min(1, ((event.clientY - rect.top) / rect.height - 28 / 480) / (408 / 480)));
+                  setImaging({ kbX: x, kbY: y });
+                  placeImagingAt(x, y);
+                }
+
+                // Keyboard equivalent: arrows walk a cursor across the slice, Enter or
+                // Space places at it, Escape abandons a ruler that has one end down.
+                // Shift takes a coarse step so crossing the image does not take fifty
+                // presses. Every move is announced, because the cursor is the only thing
+                // a screen-reader user has to go on.
+                var kbX = typeof savedImaging.kbX === 'number' ? savedImaging.kbX : 0.5;
+                var kbY = typeof savedImaging.kbY === 'number' ? savedImaging.kbY : 0.5;
+                function handleImagingKey(event) {
+                  var k = event.key;
+                  var step = event.shiftKey ? 0.1 : 0.02;
+                  var nx = kbX, ny = kbY;
+                  if (k === 'ArrowLeft') nx = Math.max(0, kbX - step);
+                  else if (k === 'ArrowRight') nx = Math.min(1, kbX + step);
+                  else if (k === 'ArrowUp') ny = Math.max(0, kbY - step);
+                  else if (k === 'ArrowDown') ny = Math.min(1, kbY + step);
+                  else if (k === 'Enter' || k === ' ' || k === 'Spacebar') {
+                    event.preventDefault();
+                    placeImagingAt(kbX, kbY);
+                    return;
+                  } else if (k === 'Escape') {
+                    if (savedImaging.rulerStart) {
+                      setImaging({ rulerStart: null });
+                      if (typeof announceToSR === 'function') announceToSR('Ruler cancelled.');
+                    }
+                    return;
+                  } else {
+                    return;   // never swallow Tab, and leave every other key alone
+                  }
+                  event.preventDefault();
+                  setImaging({ kbX: nx, kbY: ny });
+                  if (typeof announceToSR === 'function') {
+                    announceToSR('Cursor at ' + Math.round(nx * 100) + ' percent across, '
+                      + Math.round(ny * 100) + ' percent down.');
+                  }
+                }
+
+                var drawingState = { kbX: kbX, kbY: kbY, modality: modality, region: region, plane: plane, slice: sliceValue, sequence: sequence, windowWidth: windowWidth, windowLevel: windowLevel, showLabels: showLabels, showCrosshair: showCrosshair, focusTerms: bodyScopeDepth.targets, annotations: visibleImagingAnnotations };
                 return h('section', { className: 'rounded-2xl border-2 border-cyan-200 bg-white p-4 shadow-sm', 'data-anatomy-imaging-workspace': 'true', 'aria-labelledby': 'anatomy-imaging-title' },
                   h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
                     h('div', null,
@@ -12223,7 +12284,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         h('div', { className: 'inline-flex rounded-lg border border-indigo-200 bg-indigo-50 p-1', role: 'group', 'aria-label': 'Anatomical plane' }, [['axial', 'Axial'], ['coronal', 'Coronal'], ['sagittal', 'Sagittal']].map(function(item) { return h('button', { key: item[0], type: 'button', 'aria-pressed': plane === item[0], onClick: function() { setImaging({ plane: item[0], rulerStart: null }); }, className: 'rounded-md px-2.5 py-1.5 text-xs font-bold ' + (plane === item[0] ? 'bg-indigo-700 text-white' : 'text-indigo-800 hover:bg-white') }, item[1]); }))
                       ),
                       h('div', { className: 'overflow-hidden rounded-xl border-2 border-slate-700 bg-slate-950 shadow-xl' },
-                        h('canvas', { key: [modality, region, plane, sliceValue, sequence, windowWidth, windowLevel, showLabels, showCrosshair, bodyScopeDepth.id, visibleImagingAnnotations.length].join('-'), width: 640, height: 480, role: 'img', tabIndex: 0, 'data-anatomy-imaging-canvas': 'true', 'aria-label': modality + ' synthetic ' + region + ' phantom in the ' + plane + ' plane, slice ' + Math.round(sliceValue) + '. Visible teaching structures: ' + regionStructures.join(', ') + '. Depth focus: ' + bodyScopeDepth.targetLabel + '. ' + visibleImagingAnnotations.length + ' annotations on this slice.', onClick: handleImagingClick, style: { display: 'block', width: '100%', height: 'auto', cursor: imagingTool === 'ruler' ? 'crosshair' : 'copy' }, ref: function(canvas) { if (!canvas) return; var context = canvas.getContext && canvas.getContext('2d'); if (context) drawAnatomyImagingSlice(context, canvas.width, canvas.height, drawingState); } })
+                        h('canvas', { key: [modality, region, plane, sliceValue, sequence, windowWidth, windowLevel, showLabels, showCrosshair, bodyScopeDepth.id, visibleImagingAnnotations.length].join('-'), width: 640, height: 480, role: 'application', tabIndex: 0, 'data-anatomy-imaging-canvas': 'true', 'aria-label': modality + ' synthetic ' + region + ' phantom in the ' + plane + ' plane, slice ' + Math.round(sliceValue) + '. Visible teaching structures: ' + regionStructures.join(', ') + '. Depth focus: ' + bodyScopeDepth.targetLabel + '. ' + visibleImagingAnnotations.length + ' annotations on this slice.' + ' Arrow keys move a placement cursor, Enter places the current tool, Escape cancels a ruler.', onClick: handleImagingClick, onKeyDown: handleImagingKey, style: { display: 'block', width: '100%', height: 'auto', cursor: imagingTool === 'ruler' ? 'crosshair' : 'copy' }, ref: function(canvas) { if (!canvas) return; var context = canvas.getContext && canvas.getContext('2d'); if (context) drawAnatomyImagingSlice(context, canvas.width, canvas.height, drawingState); } })
                       ),
                       h('div', { className: 'mt-2 flex flex-wrap items-center gap-2' },
                         h('label', { htmlFor: 'anatomy-imaging-slice', className: 'text-xs font-black text-slate-700' }, 'Slice ' + Math.round(sliceValue) + ' / 100'),
