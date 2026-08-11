@@ -1512,6 +1512,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
     { q: 'What is a Beaver Dam Analog (BDA)?', choices: ['A computer model of beaver behavior', 'A human-built structure that mimics a beaver dam to restore wetlands in fire-prone areas', 'A type of fire extinguisher', 'A beaver-shaped robot'], answer: 1 }
   );
 
+  // The authored bank put 24 of 32 correct answers at choice B (and none at
+  // A or D), so "always pick B" scored 75% blind. Rotate each question's
+  // choices deterministically and remap the answer index to match. This MUST
+  // run below the QUIZ_QUESTIONS.push(...) block above — half the bank is
+  // appended there, and a rotation placed at the array literal would leave
+  // those 16 questions in authored order.
+  QUIZ_QUESTIONS.forEach(function (q, i) {
+    var len = q.choices.length;
+    var shift = (i * 7 + 3) % len;
+    if (!shift) return;
+    q.choices = q.choices.slice(shift).concat(q.choices.slice(0, shift));
+    q.answer = (q.answer - shift + len) % len;
+  });
+
   // ═══════════════════════════════════════════
   // BEAVER & FIRE RESILIENCE
   // ═══════════════════════════════════════════

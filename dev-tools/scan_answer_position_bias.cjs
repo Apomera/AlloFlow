@@ -1,10 +1,17 @@
 // Catalog-wide answer-position-bias sweep over stem_lab/stem_tool_*.js.
 //
-// Detects the two authoring schemas actually used in this repo:
-//   A) index schema:  correct: <n>  paired with an options/opts/a array
+// Detects the authoring schemas actually used in this repo:
+//   A) index schema:  correct: <n> OR answer: <n>  paired with an
+//      options/opts/choices/a array (either order). `answer:` was missed in
+//      the first pass and hid the astronomy / dinolab / microbiology /
+//      nutritionlab stacked banks entirely.
 //   B) string schema: a: '<text>'   paired with an opts/options array
+// KNOWN BLIND SPOT: flag schema (`correct: true` on choice OBJECTS, e.g.
+// evolab, bakingscience) spans too many lines for these regexes — check those
+// banks by hand with `grep -n "correct: true"`.
 // For each tool it reports the distribution of correct-answer positions, and
-// whether the file contains a shuffle (which would neutralise a biased bank).
+// whether the file neutralises authored order — either a shuffle or the
+// deterministic per-question rotation fix (fingerprint: `* 7 + 3) %`).
 //
 // Reports only; changes nothing.
 const fs = require('fs');
@@ -31,7 +38,7 @@ for (const f of files) {
   // Schema A: options array followed by `correct: n`  (options|opts|a|choices)
   // `choices` was missed in the first pass and hid 68 questions in autorepair
   // alone — keep this alternation in sync with any new authoring style.
-  const reA = /(?:options|opts|choices|a):\s*\[([^\]]{4,600})\]\s*,\s*correct:\s*(\d+)/g;
+  const reA = /(?:options|opts|choices|a):\s*\[([^\]]{4,600})\]\s*,\s*(?:correct|answer):\s*(\d+)/g;
   let m;
   while ((m = reA.exec(src))) {
     const opts = splitOptions(m[1]);
@@ -41,7 +48,7 @@ for (const f of files) {
     counts[opts.length][idx]++; total++;
   }
   // Schema A': `correct: n` preceding the array
-  const reA2 = /correct:\s*(\d+)\s*,\s*(?:options|opts|choices|a):\s*\[([^\]]{4,600})\]/g;
+  const reA2 = /(?:correct|answer):\s*(\d+)\s*,\s*(?:options|opts|choices|a):\s*\[([^\]]{4,600})\]/g;
   while ((m = reA2.exec(src))) {
     const opts = splitOptions(m[2]);
     const idx = parseInt(m[1], 10);
@@ -62,7 +69,12 @@ for (const f of files) {
 
   if (total < 8) continue; // too few to judge
 
-  const hasShuffle = /Fisher|shuffle|Shuffle|sort\(\s*function\s*\(\s*\)\s*\{\s*return\s+Math\.random/.test(src);
+  // "Neutralised" = a runtime shuffle OR the deterministic rotation fix.
+  // The rotation fingerprint is the shared shift recipe `... * 7 + 3) % len`
+  // (also written `* 7) + 3) %`) used by every rotation IIFE in the catalog —
+  // geometryworld's gwRotateQuestionTree and punnett's punnettRotateBank were
+  // flagged as unshuffled for months because this check only knew shuffles.
+  const hasShuffle = /Fisher|shuffle|Shuffle|sort\(\s*function\s*\(\s*\)\s*\{\s*return\s+Math\.random|\*\s*7\s*\)?\s*\+\s*3\s*\)\s*%/.test(src);
 
   // judge the dominant arity only
   const arity = Object.keys(counts).sort((a, b) => counts[b].reduce((x, y) => x + y, 0) - counts[a].reduce((x, y) => x + y, 0))[0];

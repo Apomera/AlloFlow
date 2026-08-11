@@ -9,7 +9,9 @@ import { describe, expect, it } from 'vitest';
 // Classification (2026-08-11 sweep of all 38 registration sites): most sites
 // are safe — useEffect cleanups, self-cleaning modal dialogs, game-engine
 // dispose paths, or handlers requiring the event target inside the tool root
-// (dissection). These six were behaviorally leaking and now carry guards.
+// (dissection). These seven were behaviorally leaking and now carry guards
+// (solarsystem's Alt+digit handler was the last, fixed after the other
+// session's work on that file landed).
 
 const read = (f) => fs.readFileSync('stem_lab/' + f, 'utf8');
 const pub = (f) => fs.readFileSync('desktop/web-app/public/stem_lab/' + f, 'utf8');
@@ -21,7 +23,8 @@ const GUARDED = [
   { file: 'stem_tool_volume.js', guard: "[data-volume-root]", marker: 'data-volume-root' },
   { file: 'stem_tool_fractions.js', guard: "[data-fractions-root]", marker: 'data-fractions-root' },
   { file: 'stem_tool_spacecolony.js', guard: "[data-spacecolony-root]", marker: 'data-spacecolony-root' },
-  { file: 'stem_tool_cyberdefense.js', guard: "cyber-defense-region", marker: "id: 'cyber-defense-region'" }
+  { file: 'stem_tool_cyberdefense.js', guard: "cyber-defense-region", marker: "id: 'cyber-defense-region'" },
+  { file: 'stem_tool_solarsystem.js', guard: "[data-solarsystem-tool]", marker: '"data-solarsystem-tool": true' }
 ];
 
 describe('unmount guards on leaking window keydown handlers', () => {
@@ -49,9 +52,6 @@ describe('no unguarded global-swap keydown handlers remain in the catalog', () =
     const offenders = [];
     for (const f of files) {
       const src = read(f);
-      // Allowlist: solarsystem's Alt+digit handler leaks too, but the file is
-      // carrying another session's uncommitted work — fix it there, not here.
-      if (f === 'stem_tool_solarsystem.js') continue;
       const re = /window\._[A-Za-z]+\s*=\s*function\s*\(\s*e?\s*\)\s*\{([\s\S]{0,700})/g;
       let m;
       while ((m = re.exec(src)) !== null) {

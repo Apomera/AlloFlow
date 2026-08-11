@@ -1233,6 +1233,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             { q: 'How many unique diminished 7th chords exist?', a: '3', opts: ['3', '12', '6', '4'] },
           ];
 
+          // The authored bank put every correct answer FIRST in its opts
+          // (27 of 27), so the quiz rendered "always pick A". Rotate each
+          // question's opts deterministically — grading compares option TEXT
+          // to q.a, so no index remap is needed. Deterministic because this
+          // runs on every render.
+          MUSIC_QUIZ.forEach(function (q, i) {
+            var len = q.opts.length;
+            var shift = (i * 7 + 3) % len;
+            if (!shift) return;
+            q.opts = q.opts.slice(shift).concat(q.opts.slice(0, shift));
+          });
+
           // ═══ STATE ═══
           var synthTab = d.synthTab || 'play';
           var selectedRoot = d.selectedRoot || 'C';
@@ -5024,10 +5036,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                       var roots = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
                       var correctType = chordNames[Math.floor(Math.random() * chordNames.length)];
                       var correctRoot = roots[Math.floor(Math.random() * roots.length)];
-                      var wrongOpts = chordNames.filter(function (c) { return c !== correctType; });
-                      wrongOpts.sort(function () { return Math.random() - 0.5; });
-                      var opts = [correctType].concat(wrongOpts.slice(0, 3));
-                      opts.sort(function () { return Math.random() - 0.5; });
+                      // Fisher-Yates: the old Math.random()-0.5 comparator
+                      // sorts left the correct chord type biased toward the
+                      // first slot.
+                      var fy = function (arr) {
+                        var a = arr.slice();
+                        for (var i = a.length - 1; i > 0; i--) {
+                          var j = Math.floor(Math.random() * (i + 1));
+                          var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+                        }
+                        return a;
+                      };
+                      var wrongOpts = fy(chordNames.filter(function (c) { return c !== correctType; }));
+                      var opts = fy([correctType].concat(wrongOpts.slice(0, 3)));
                       playChord(correctRoot, correctType, 0);
                       upd('chordDetect', { root: correctRoot, type: correctType, opts: opts, answered: false, chosen: null });
                     },

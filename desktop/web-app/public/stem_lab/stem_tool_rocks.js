@@ -2803,7 +2803,21 @@ const d = labToolData.rocks || {};
             }
           ];
 
-
+          // The authored bank put every correct answer FIRST in its options
+          // (18 of 18), so the quiz rendered "always pick A". Rotate each
+          // question's options deterministically; wrongFeedback is keyed by
+          // position, so it rotates in lockstep. Grading compares option TEXT
+          // to q.a, so no index remap is needed. Deterministic because this
+          // runs on every render.
+          QUIZ_BANK.forEach(function (q, i) {
+            var len = q.options.length;
+            var shift = (i * 7 + 3) % len;
+            if (!shift) return;
+            q.options = q.options.slice(shift).concat(q.options.slice(0, shift));
+            if (Array.isArray(q.wrongFeedback) && q.wrongFeedback.length === len) {
+              q.wrongFeedback = q.wrongFeedback.slice(shift).concat(q.wrongFeedback.slice(0, shift));
+            }
+          });
 
           const selRock = d.selectedRock ? ROCKS.find(r => r.id === d.selectedRock) : null;
 

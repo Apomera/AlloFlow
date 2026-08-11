@@ -314,6 +314,10 @@ const d = labToolData.solarSystem || {};
             window.removeEventListener('keydown', window._solarKeyHandler);
           }
           window._solarKeyHandler = function(e) {
+            // Window-level handler with no unmount cleanup: without this
+            // guard, Alt+1..5 kept firing (and preventDefault-ing) after the
+            // player left Solar System for another tool.
+            if (!document.querySelector('[data-solarsystem-tool]')) return;
             if (e.altKey) {
               if (e.key === '1') { e.preventDefault(); upd('viewTab', 'overview'); }
               if (e.key === '2') { e.preventDefault(); upd('viewTab', 'surface'); }

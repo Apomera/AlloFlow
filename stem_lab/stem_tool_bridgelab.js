@@ -199,6 +199,17 @@
     { q: 'The "slenderness ratio" L/r of a compression member is critical to buckling. What does a HIGH slenderness ratio mean?', choices: ['The member is short + stocky (low buckling risk)', 'The member is long + thin (high buckling risk)', 'The member is wide + flat', 'It only applies to tension members'], answer: 1, explain: 'Slenderness ratio L/r = length divided by radius of gyration. High slenderness = long relative to its width = prone to buckling. Steel design codes typically limit slenderness to about 200 for compression members; structural designers will add bracing or change cross-section to keep it lower.' }
   ];
 
+  // The authored bank put 9 of 15 correct answers at choice B (and none at
+  // D), so "always pick B" beat chance 2.4×. Rotate each question's choices
+  // deterministically and remap the answer index to match.
+  QUIZ_QUESTIONS.forEach(function (q, i) {
+    var len = q.choices.length;
+    var shift = (i * 7 + 3) % len;
+    if (!shift) return;
+    q.choices = q.choices.slice(shift).concat(q.choices.slice(0, shift));
+    q.answer = (q.answer - shift + len) % len;
+  });
+
   // ──────────────────────────────────────────────────────────────────
   // Truss force analysis — simplified deep-beam approximation
   // ──────────────────────────────────────────────────────────────────
