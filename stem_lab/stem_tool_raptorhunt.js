@@ -136,6 +136,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
     if (lr) { lr.textContent = ''; setTimeout(function() { lr.textContent = msg; }, 30); }
   }
 
+  // Unbiased Fisher-Yates shuffle (returns a new array). The old
+  // `.sort(function() { return Math.random() - 0.5; })` idiom is biased on
+  // every engine and left quiz options in near-authored order.
+  function rhShuffle(list) {
+    var a = list.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+    }
+    return a;
+  }
+
   // ─── Three.js loader (shared bootstrap) ───
   function ensureThreeJS(onReady, onError) {
     // Shared resilient loader: multi-CDN fallback + timeout (host provides it).
@@ -14026,11 +14038,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                       key: b.uid,
                       onClick: function() {
                         if (idr) return; // already done
-                        // Pick a random ordering of options including the correct
-                        var opts = b.wrong.slice(0, 2).concat([b.preyName]).sort(function() { return Math.random() - 0.5; });
-                        // Use a simple confirm-style prompt (cycle through options)
-                        // Actually we'll show options inline below.
-                        // For now, store which bone is "active" for picking
+                        // Options render in the identification panel below;
+                        // here we just mark which bone is active.
                         setPD({ activeBone: b.uid });
                       },
                       disabled: !!idr,
@@ -14046,8 +14055,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   var activeBone = (pd.bones || []).filter(function(b) { return b.uid === pd.activeBone && !pd.identified[b.uid]; })[0];
                   if (!activeBone) return null;
                   var opts = activeBone.wrong.slice(0, 2).concat([activeBone.preyName]);
-                  // Deterministic shuffle by uid
-                  opts = opts.sort(function(a, b) { return (a + activeBone.uid).localeCompare(b + activeBone.uid); });
+                  // Deterministic shuffle by uid — stable across re-renders so
+                  // the options don't jump while the player reads them. FNV-1a
+                  // (xor-then-multiply) rather than localeCompare of option +
+                  // uid, which the uid suffix never influenced (every bone got
+                  // alphabetical order). A separable polynomial hash has the
+                  // same flaw, so the xor step is load-bearing here.
+                  var rhBoneKey = function(s) { var hsh = 2166136261; for (var ci = 0; ci < s.length; ci++) { hsh = Math.imul(hsh ^ s.charCodeAt(ci), 16777619) >>> 0; } return hsh; };
+                  opts = opts.slice().sort(function(a, b) { return rhBoneKey(activeBone.uid + '|' + a) - rhBoneKey(activeBone.uid + '|' + b); });
                   return h('div', { className: 'bg-slate-900/60 border border-amber-700/40 rounded-lg p-3' },
                     h('div', { className: 'text-xs font-bold text-amber-300 mb-2' }, __alloT('stem.raptorhunt.identify_this_bone', '🦴 Identify this bone')),
                     h('div', { className: 'text-xs text-slate-200 mb-3 italic' }, 'Signature: ' + activeBone.signature),
@@ -14329,8 +14344,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             // Pick a random part + 3 wrong options
             var pickIdx = Math.floor(Math.random() * ANATOMY.parts.length);
             var pick = ANATOMY.parts[pickIdx];
-            var wrong = ANATOMY.parts.filter(function(p) { return p.id !== pick.id; }).slice().sort(function() { return Math.random() - 0.5; }).slice(0, 3);
-            var opts = [pick].concat(wrong).sort(function() { return Math.random() - 0.5; });
+            var wrong = rhShuffle(ANATOMY.parts.filter(function(p) { return p.id !== pick.id; })).slice(0, 3);
+            var opts = rhShuffle([pick].concat(wrong));
             setRH({ anatomyMode: 'quiz', anatomyQuizPart: pick.id, anatomyQuizOptions: opts.map(function(p) { return p.id; }), anatomyQuizResult: null, anatomyHover: null });
           } else {
             setRH({ anatomyMode: 'explore', anatomyHover: null });
@@ -14339,8 +14354,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         function nextQuiz() {
           var pickIdx = Math.floor(Math.random() * ANATOMY.parts.length);
           var pick = ANATOMY.parts[pickIdx];
-          var wrong = ANATOMY.parts.filter(function(p) { return p.id !== pick.id; }).slice().sort(function() { return Math.random() - 0.5; }).slice(0, 3);
-          var opts = [pick].concat(wrong).sort(function() { return Math.random() - 0.5; });
+          var wrong = rhShuffle(ANATOMY.parts.filter(function(p) { return p.id !== pick.id; })).slice(0, 3);
+          var opts = rhShuffle([pick].concat(wrong));
           setRH({ anatomyQuizPart: pick.id, anatomyQuizOptions: opts.map(function(p) { return p.id; }), anatomyQuizResult: null });
         }
         function submitGuess(guessId) {

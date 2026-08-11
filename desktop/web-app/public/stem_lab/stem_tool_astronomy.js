@@ -1317,6 +1317,17 @@
     { q: 'Which is the closest star system to our Sun?', choices: ['Sirius', 'Vega', 'Alpha Centauri (triple system, includes Proxima)', 'Betelgeuse'], answer: 2, explain: 'Alpha Centauri is 4.37 light-years away — a triple system of Alpha Centauri A, B, and Proxima Centauri. Proxima Centauri b, an Earth-mass planet in the habitable zone, was discovered in 2016.' }
   ];
 
+  // The authored bank never put a correct answer at choice 0 (spread was
+  // 0/6/8/1), so "never pick A" was free information. Rotate each question's
+  // choices deterministically and remap the answer index to match.
+  QUIZ_QUESTIONS.forEach(function (q, i) {
+    var len = q.choices.length;
+    var shift = (i * 7 + 3) % len;
+    if (!shift) return;
+    q.choices = q.choices.slice(shift).concat(q.choices.slice(0, shift));
+    q.answer = (q.answer - shift + len) % len;
+  });
+
   // Plugin registration
   window.StemLab.registerTool('astronomy', {
     icon: '🔭',

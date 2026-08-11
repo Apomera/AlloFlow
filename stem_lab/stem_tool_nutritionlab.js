@@ -17054,6 +17054,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         }
       ];
 
+      // The authored labels put 8 of 12 correct answers at choice index 1
+      // (and 17 of 22 file-wide, counting the myths bank below), so "always
+      // pick B" nearly aced every challenge. Rotate each question's
+      // choices deterministically (stable across renders, so stored answer
+      // indices stay valid) and remap the answer index to match.
+      LABELS.forEach(function (lab, li) {
+        lab.questions.forEach(function (q, qi) {
+          var len = q.choices.length;
+          var shift = (li * 5 + qi * 7 + 3) % len;
+          if (!shift) return;
+          q.choices = q.choices.slice(shift).concat(q.choices.slice(0, shift));
+          q.answer = (q.answer - shift + len) % len;
+        });
+      });
+
       function NutritionFactsPanel(props) {
         // FDA-spec-style Nutrition Facts panel — high-contrast monochrome
         // for legibility, mirrors the layout the FDA mandates on packaged food.
@@ -18079,6 +18094,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           cite: 'Harvard T.H. Chan · BMJ meta-analysis 2019 · CDC'
         }
       ];
+
+      // The authored myths put 9 of 10 correct answers at choice index 1 —
+      // worse than chance could explain. Rotate each myth's choices
+      // deterministically (stable across renders, so persisted picks stay
+      // valid) and remap the answer index to match.
+      MYTHS.forEach(function (m, mi) {
+        var len = m.choices.length;
+        var shift = (mi * 7 + 3) % len;
+        if (!shift) return;
+        m.choices = m.choices.slice(shift).concat(m.choices.slice(0, shift));
+        m.answer = (m.answer - shift + len) % len;
+      });
 
       function NutritionMythsLab() {
         var idx_state = usePersistedState('my_idx', 0);
