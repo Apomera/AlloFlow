@@ -1211,10 +1211,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       var alloc = normaliseAlloc(d.alloc);
 
       // Live readout for the CURRENT settings, independent of the yearly step.
-      var aperture = stomatalAperture(envCfg.soilWater, sp.droughtTol, false);
-      var live = grossPhotosynthesis(sp, {
-        tempC: envCfg.tempC, light: envCfg.light, co2ppm: envCfg.co2ppm, soilWater: envCfg.soilWater
-      }, tree.leafArea, aperture);
+      // Same environment the next simulated year will see, so a drought is visible in
+      // the headline numbers and in the limiting factor immediately, not only in
+      // hindsight once the ring has already been laid.
+      var liveEnv = envForYear(envCfg, tree.age);
+      var inDrought = !!liveEnv.drought;
+      var aperture = stomatalAperture(liveEnv.soilWater, sp.droughtTol, false);
+      var live = grossPhotosynthesis(sp, liveEnv, tree.leafArea, aperture);
       var liveResp = maintenanceRespiration(sp, tree);
       var liveNet = live.gross - liveResp;
       // Season total spread over a ~180-day growing season. The prose beside this
@@ -1357,6 +1360,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         srSay(next ? 'Playing at ' + speed.label + '.' : 'Paused at age ' + tree.age + '.');
       }
 
+      function sendDrought(years) {
+        var list = [];
+        for (var i = 0; i < years; i++) list.push(tree.age + i);
+        upd('droughtYears', list);
+        sfxBad();
+        srSay(__alloT('stem.treelab.drought_started', 'A drought begins. It will last ') + years +
+          __alloT('stem.treelab.drought_years', ' years.'));
+        if (addToast) addToast('☀️ ' + __alloT('stem.treelab.drought_toast', 'Drought'), 'error');
+      }
+      function endDrought() {
+        upd('droughtYears', []);
+        srSay(__alloT('stem.treelab.drought_over', 'The rains return.'));
+      }
+
       function resetTree(newSpeciesId) {
         var sid = newSpeciesId || sp.id;
         // Committed carbon and the last result belong to the OLD species. Left in
@@ -1364,7 +1381,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         // oak would carry that commitment across and resolve a strategy oak does not
         // have — the Spread list would offer three routes while the results reported
         // a fourth. Reproduction carbon is reset with the tree anyway.
-        updMulti({ tree: newTree(sid), speciesId: sid, spend: {}, lastSpread: null, playing: false, yearPhase: 0 });
+        updMulti({ tree: newTree(sid), speciesId: sid, spend: {}, lastSpread: null, playing: false, yearPhase: 0, droughtYears: [] });
         CLOCK.stop();
         srSay('Reset to a new ' + speciesById(sid).name + ' seedling.');
       }
@@ -1469,6 +1486,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
               __alloT('stem.treelab.via_stomata',
                 'Strictly, ' + CO2 + ' is the number running lowest — but only because water stress has closed the stomata that let ' + CO2 + ' in. Water is the cause. Adding ' + CO2 + ' here would change almost nothing.')) : null
           ]),
+          inDrought ? h('div', { key: 'dr', style: { marginTop: 8, padding: 8, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.warn, fontSize: 12, color: T.text, lineHeight: 1.5 } },
+            '☀️ ' + __alloT('stem.treelab.drought_banner', 'Drought year. The tree has closed its stomata to save water, so it is taking in very little carbon.')) : null,
           liveNet < 0 ? h('div', { key: 'warn', style: { marginTop: 8, fontSize: 12, color: T.bad, lineHeight: 1.5 } },
             __alloT('stem.treelab.negative_year', 'The tree is spending more than it makes and is living off reserves. A few years of this is survivable. Many are not.')) : null,
           modelNote(__alloT('stem.treelab.model_note',
@@ -1486,9 +1505,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             function (v) { upd('tempC', v); }, function (v) { return v + ' ' + DEG + 'C'; }),
           atLeast(band, 'g68') ? slider('co2', CO2 + ' concentration', envCfg.co2ppm, 180, 900, 10,
             function (v) { upd('co2ppm', v); }, function (v) { return v + ' ppm'; }) : null,
+          h('div', { key: 'drought', style: { marginTop: 10, paddingTop: 10, borderTop: '1px dashed ' + T.border } }, [
+            h('div', { key: 'lbl', style: { fontSize: 12, color: T.dim, marginBottom: 6, lineHeight: 1.5 } },
+              inDrought
+                ? __alloT('stem.treelab.drought_on', 'A drought is running. Soil water is a third of what you set, the stomata are closing, and the ring this year will show it.')
+                : __alloT('stem.treelab.drought_off', 'Send a dry spell and watch what it does to the ring and to the limiting factor.')),
+            inDrought
+              ? btn('rain', '🌧 ' + __alloT('stem.treelab.end_drought', 'End the drought'), endDrought, { small: true })
+              : btn('dry3', '☀️ ' + __alloT('stem.treelab.drought_3', 'Drought for 3 years'), function () { sendDrought(3); }, { small: true }),
+            !inDrought && atLeast(band, 'g68')
+              ? btn('dry8', '☀️ ' + __alloT('stem.treelab.drought_8', 'Drought for 8 years'), function () { sendDrought(8); }, { small: true, tone: 'ghost' })
+              : null
+          ]),
           atLeast(band, 'g68') ? h('div', { key: 'ap', style: { marginTop: 6 } },
             bar(__alloT('stem.treelab.stomata_open', 'Stomata open'), aperture, T.accent,
-              aperture < 0.5
+              aperture < 0.9
                 ? __alloT('stem.treelab.stomata_closing', 'Closing to save water. Less ' + H2O + ' out, but also less ' + CO2 + ' in.')
                 : __alloT('stem.treelab.stomata_open_note', 'Wide open. Carbon is coming in and water is going out through the same pores.'))) : null
         ]));
@@ -1591,6 +1622,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
 
       // Ring panel. Drawn as SVG rects with hex fills: an SVG presentation attribute
       // cannot resolve var(--token) any more than a canvas fillStyle can.
+      // Colours match the factor bars on the Chemistry tab, so the same idea reads the
+      // same way in both places.
+      var LIMIT_HUE = { light: '#facc15', co2: '#60a5fa', water: '#38bdf8', temperature: '#fb923c' };
+      var LIMIT_NAME = {
+        light: __alloT('stem.treelab.light', 'Light'),
+        co2: CO2,
+        water: __alloT('stem.treelab.water', 'Water'),
+        temperature: __alloT('stem.treelab.temperature', 'Temperature')
+      };
+
+      function limitBand() {
+        var hist = (tree.history || []).slice(-60);
+        if (!hist.length || !atLeast(band, 'g35')) return null;
+        var W = 100, BH = 10;
+        var bw = W / hist.length;
+        var seen = {};
+        var cells = hist.map(function (rec, i) {
+          var id = rec && rec.limiting;
+          if (id) seen[id] = true;
+          return h('rect', {
+            key: 'l' + i, x: i * bw, y: 0, width: Math.max(0.6, bw * 0.94), height: BH,
+            fill: tone(LIMIT_HUE[id] || '#94a3b8')
+          });
+        });
+        var legend = Object.keys(seen);
+        return h('div', { key: 'limband', style: { marginTop: 8 } }, [
+          h('div', { key: 'lbl', style: { fontSize: 11, color: T.dim, marginBottom: 3 } },
+            __alloT('stem.treelab.limit_band', 'What was limiting, year by year')),
+          h('svg', {
+            key: 'svg', viewBox: '0 0 ' + W + ' ' + BH, preserveAspectRatio: 'none',
+            style: { width: '100%', height: 14, borderRadius: 4, border: '1px solid ' + T.border },
+            role: 'img',
+            'aria-label': __alloT('stem.treelab.limit_band_alt', 'Limiting factor for each of the last ')
+              + hist.length + __alloT('stem.treelab.limit_band_alt2', ' years. Most recent: ')
+              + (LIMIT_NAME[hist[hist.length - 1].limiting] || '')
+          }, cells),
+          h('div', { key: 'key', style: { display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 5 } },
+            legend.map(function (id) {
+              return h('span', { key: id, style: { display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: T.dim } }, [
+                h('span', { key: 's', style: { width: 9, height: 9, borderRadius: 2, background: tone(LIMIT_HUE[id] || '#94a3b8'), display: 'inline-block', border: isContrast ? '1px solid ' + T.text : 'none' } }),
+                LIMIT_NAME[id] || id
+              ]);
+            }))
+        ]);
+      }
+
       function ringPanel() {
         var rings = tree.rings.slice(-60);
         var maxW = 0.4;
@@ -1617,6 +1694,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           }, bars.concat([
             h('line', { key: 'base', x1: 0, y1: H - 14, x2: W, y2: H - 14, stroke: T.border, strokeWidth: 0.5 })
           ])),
+          limitBand(),
           h('div', { key: 'lg', style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: T.dim, marginTop: 4 } }, [
             h('span', { key: 'a' }, __alloT('stem.treelab.year', 'Year') + ' ' + (rings.length ? rings[0].year : 0)),
             h('span', { key: 'b' }, __alloT('stem.treelab.widest', 'Widest ') + round(maxW, 2) + ' mm'),

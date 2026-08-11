@@ -626,6 +626,69 @@ describe('Tree Life Lab — banks and mirrors', () => {
     expect(src, 'btn() must forward ariaLabel to the element').toContain("'aria-label': o.ariaLabel || undefined");
   });
 
+  it('lets a student cause a drought and shows the whole causal chain', () => {
+    // The engine modelled drought from the start (soil water cut to a third, which
+    // shuts the stomata, makes water the limit and starts the deficit clock) and
+    // nothing in the UI could ever trigger one. Built but unreachable.
+    const E = engine();
+    const oak = E.speciesById('oak');
+    let t = E.newTree('oak');
+    const cfg = { ...GOOD_ENV, droughtYears: [28, 29, 30, 31, 32] };
+    for (let i = 0; i < 45; i += 1) t = E.simulateYear(t, oak, E.envForYear(cfg, t.age), ALLOC);
+
+    const byYear = Object.fromEntries(t.history.map((h) => [h.year, h]));
+    const before = byYear[27];
+    const during = byYear[31];
+    const after = byYear[38];
+
+    expect(during.limiting, 'drought did not make water the limit').toBe('water');
+    expect(during.ring, 'drought did not narrow the ring').toBeLessThan(before.ring * 0.5);
+    expect(after.ring, 'the tree never recovered after the rains').toBeGreaterThan(during.ring);
+    expect(t.alive, 'a five-year drought should be survivable').toBe(true);
+
+    // A drought-intolerant species must shut its stomata harder at the same soil water
+    // than a tolerant one. That difference IS the trait.
+    const dry = 0.75 * 0.35;
+    expect(E.stomatalAperture(dry, E.speciesById('willow').droughtTol, false))
+      .toBeLessThan(E.stomatalAperture(dry, oak.droughtTol, false));
+
+    // And the UI must surface it rather than leaving it to the numbers.
+    const html = render({ treeLab: { view: 'grow', tree: t, droughtYears: [t.age, t.age + 1] } });
+    expect(html).toContain('Drought year');
+    expect(html).toContain('End the drought');
+  });
+
+  it('shows which factor was limiting in each past year', () => {
+    // Every simulated year has always recorded its limiting factor, and nothing ever
+    // displayed it. It is the tool's thesis as a picture: light limits a young tree,
+    // water takes over in a drought, and the ring beneath narrows the same year.
+    const E = engine();
+    let t = E.newTree('oak');
+    const cfg = { ...GOOD_ENV, droughtYears: [20, 21, 22] };
+    for (let i = 0; i < 35; i += 1) t = E.simulateYear(t, E.speciesById('oak'), E.envForYear(cfg, t.age), ALLOC);
+
+    const html = render({ treeLab: { view: 'grow', tree: t, bandOverride: 'g68' } });
+    expect(html).toContain('What was limiting, year by year');
+    // The band legend names only the factors that actually occurred.
+    expect(html).toContain('Water');
+    // K-2 does not get it: the idea needs the limiting-factor concept first.
+    const k2 = render({ treeLab: { view: 'grow', tree: t, bandOverride: 'k2' } });
+    expect(k2).not.toContain('What was limiting, year by year');
+  });
+
+  it('does not call the stomata wide open while they are closing', () => {
+    // They read 57% during a drought and the caption still said "Wide open", which is
+    // exactly backwards from what that panel exists to teach.
+    const E = engine();
+    let t = E.newTree('oak');
+    for (let i = 0; i < 40; i += 1) t = E.simulateYear(t, E.speciesById('oak'), GOOD_ENV, ALLOC);
+    const drought = render({
+      treeLab: { view: 'grow', tree: t, bandOverride: 'g68', droughtYears: [t.age] },
+    });
+    expect(drought).toContain('Closing to save water');
+    expect(drought).not.toContain('Wide open');
+  });
+
   it('leaves no user-visible string a language pack cannot reach', () => {
     // Static greps cannot answer this and never could: a string routed through a
     // module-scope data table reaches __alloT at RENDER time and looks hardcoded to a
