@@ -265,3 +265,29 @@ describe('bridge transport', () => {
     });
   });
 });
+
+// ─── Cancelling an abandoned request ────────────────────────────────────────
+// The app keeps an AbortController per request and drops it on
+// 'allostudio-ai-cancel'. The popup has always sent that; the page was not,
+// so an abandoned request left the app burning a vision call on a screen
+// nobody was looking at while the page waited out its own timeout.
+describe('request cancellation', () => {
+  it('sends the cancel message the app already listens for', () => {
+    expect(html).toContain("type: 'allostudio-ai-cancel', requestId: id");
+    expect(moduleText).toContain("ev.data.type === 'allostudio-ai-cancel'");
+    expect(moduleText).toContain("'allostudio-ai-cancel'"); // still in VS_AI_BRIDGE_TYPES
+  });
+
+  it('cancels on timeout, on stopping the watch, and on leaving the page', () => {
+    expect(html).toContain('timer = setTimeout(function () { cancelBridgeRequest(id); finish({ error: \'timed out\' }); }');
+    const stop = html.slice(html.indexOf('function stopWatch()'), html.indexOf('// ── Floating mirror'));
+    expect(stop).toContain('cancelPendingRequest()');
+    expect(html).toContain("window.addEventListener('pagehide', function () { try { cancelPendingRequest(); stopWatch(); }");
+  });
+
+  it('clears the pending id once a request settles, so a stale cancel is not sent', () => {
+    const fn = html.slice(html.indexOf('function bridgeRequest('), html.indexOf('// ── Backend settings'));
+    expect(fn).toContain('if (pendingRequestId === id) pendingRequestId = null;');
+    expect(fn).toContain('pendingRequestId = id;');
+  });
+});

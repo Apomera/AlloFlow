@@ -189,13 +189,37 @@
     if (bridgeToken) payload.bridge = bridgeToken;
     return payload;
   }
+  // In-flight request id, so anything that ends the session can call it off.
+  var pendingRequestId = null;
+  // The app holds an AbortController per request and drops it on
+  // 'allostudio-ai-cancel' (vsAiBridgeReceiver). Without this, abandoning a
+  // request leaves the app burning a vision call on a screen nobody is looking
+  // at any more, and the page just waits out its timeout. The popup has always
+  // sent this; the page was the one not doing it.
+  function cancelBridgeRequest(id) {
+    if (!id || !opener || opener.closed || !openerOrigin) return;
+    try { opener.postMessage(withBridge({ type: 'allostudio-ai-cancel', requestId: id }), openerOrigin); } catch (_) {}
+  }
+  function cancelPendingRequest() {
+    if (!pendingRequestId) return;
+    cancelBridgeRequest(pendingRequestId);
+    pendingRequestId = null;
+  }
   function bridgeRequest(type, payload, timeoutMs) {
     return new Promise(function (resolve) {
       if (!opener || opener.closed || !openerOrigin) { resolve({ error: 'needs the AlloFlow window' }); return; }
       var id = 'ic' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
       var responseType = type.replace('-request', '-response');
       var timer = null, settled = false;
-      function finish(v) { if (settled) return; settled = true; if (timer) clearTimeout(timer); window.removeEventListener('message', onMsg); resolve(v); }
+      pendingRequestId = id;
+      function finish(v) {
+        if (settled) return;
+        settled = true;
+        if (timer) clearTimeout(timer);
+        window.removeEventListener('message', onMsg);
+        if (pendingRequestId === id) pendingRequestId = null;
+        resolve(v);
+      }
       function onMsg(ev) {
         if (ev.source !== opener || !ev.data || ev.data.type !== responseType || ev.data.id !== id) return;
         if (openerOrigin && ev.origin && ev.origin !== openerOrigin) return;
@@ -203,7 +227,7 @@
         finish(ev.data);
       }
       window.addEventListener('message', onMsg);
-      timer = setTimeout(function () { finish({ error: 'timed out' }); }, timeoutMs || 45000);
+      timer = setTimeout(function () { cancelBridgeRequest(id); finish({ error: 'timed out' }); }, timeoutMs || 45000);
       try { opener.postMessage(withBridge(Object.assign({ type: type, id: id }, payload)), openerOrigin); }
       catch (_) { finish({ error: 'could not reach the AlloFlow window' }); }
     });
@@ -350,6 +374,8 @@
     if (!watchStream) return;
     try { watchStream.getTracks().forEach(function (tr) { tr.stop(); }); } catch (_) {}
     watchStream = null;
+    // The screen this question was about is gone, so the answer is worthless.
+    cancelPendingRequest();
     stopAuto();
     hideOverlay();
     stopPip();
@@ -556,7 +582,7 @@
     }
   });
   $('coachGoal').addEventListener('change', function () { history = []; });
-  window.addEventListener('pagehide', function () { try { stopWatch(); } catch (_) {} });
+  window.addEventListener('pagehide', function () { try { cancelPendingRequest(); stopWatch(); } catch (_) {} });
 })();
 </script>
 </body>
