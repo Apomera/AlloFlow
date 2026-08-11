@@ -334,6 +334,24 @@ window.SelHub = window.SelHub || {
 
       // State
       var activeTab    = d.activeTab || 'map';
+
+      // ── Fixed hook block ──
+      // render() is called inline by the host's SelPluginBridge, so every hook
+      // here lands in the HOST's hook list. This effect used to sit inside the
+      // `activeTab === 'focus'` branch, which meant switching tabs changed the
+      // host's hook count and threw "Rendered more hooks than during the
+      // previous render" (React #310). Declared unconditionally and gated on
+      // the tab inside instead. Gate: dev-tools/scan_hook_order_branches.cjs.
+      React.useEffect(function() {
+        if (activeTab !== 'focus') return undefined;
+        var fStart0 = d.focusStartTime || 0;
+        if (!(fStart0 > 0) || d.focusPaused) return undefined;
+        var t = setInterval(function() {
+          upd({ focusTick: (d.focusTick || 0) + 1 });
+        }, 1000);
+        return function() { clearInterval(t); };
+      }, [activeTab, d.focusStartTime, d.focusPaused, d.focusTick]);
+
       var soundOn      = d.soundOn != null ? d.soundOn : true;
       var mapAnswers   = d.mapAnswers || {}; // { domainId: [score0, score1] }
       var mapDone      = d.mapDone || false;
@@ -986,15 +1004,11 @@ window.SelHub = window.SelHub || {
           skipPhase();
         }
 
-        // Animation tick (force re-render every second while running)
-        React.useEffect(function() {
-          if (fStart > 0 && !fPaused) {
-            var t = setInterval(function() {
-              upd({ focusTick: (d.focusTick || 0) + 1 });
-            }, 1000);
-            return function() { clearInterval(t); };
-          }
-        }, [fStart, fPaused, d.focusTick]);
+        // The focus-timer tick effect lives in the fixed hook block at the top
+        // of render(). It cannot be declared here: this whole branch only runs
+        // when activeTab === 'focus', and render() executes inline inside the
+        // host's SelPluginBridge, so a hook here changes the HOST's hook count
+        // the moment the learner switches tabs (React #310).
 
         // SVG ring
         var ringSize = 200, ringStroke = 14;

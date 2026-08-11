@@ -19713,6 +19713,16 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('howlTracker'))) 
       function sfxCorrect() {}
       function sfxCheckin() {}
       function upd(o) { if (typeof o === 'object' && ctx.updateMulti) ctx.updateMulti('howlTracker', o); }
+
+      // ── Fixed hook block ──
+      // Hooks here land in the HOST's hook list (render runs inline inside
+      // SelPluginBridge), so they must be unconditional and gated internally.
+      // Gate: dev-tools/scan_hook_order_branches.cjs.
+      React.useEffect(function() {
+        if (activeTab !== 'protocol_run' || !d.pfRunning) return undefined;
+        var int = setInterval(function() { upd({ pfNow: Date.now() }); }, 1000);
+        return function() { clearInterval(int); };
+      }, [activeTab, d.pfRunning]);
       // === SPLICE_VISUALS_HERE ===
 // Part 1 of visual components for sel_tool_howl.js
 
@@ -19975,11 +19985,13 @@ if (activeTab === 'protocol_run') {
     else {
       var phase = p.steps && p.steps[pfPhase];
       var phaseDur = phase ? (phase.durationMin || 5) * 60 : 60;
-      React.useEffect && React.useEffect(function() {
-        if (!pfRunning) return;
-        var int = setInterval(function() { upd({ pfNow: Date.now() }); }, 1000);
-        return function() { clearInterval(int); };
-      }, [pfRunning]);
+      // The protocol timer tick lives in the fixed hook block below `upd`.
+      // It cannot be declared here: this sits four `if` levels deep, reached
+      // only when activeTab === 'protocol_run' and a protocol is loaded, and
+      // render() runs inline inside the host's SelPluginBridge — so a hook
+      // here changes the HOST's hook count on any tab switch (React #310).
+      // The `React.useEffect &&` feature-detect does not help; the surrounding
+      // branches are the conditional part.
       var elapsedSec = pfRunning ? Math.floor((Date.now() - (d.pfStart || Date.now())) / 1000) : 0;
       var remaining = Math.max(0, phaseDur - elapsedSec);
       var minLeft = Math.floor(remaining / 60);

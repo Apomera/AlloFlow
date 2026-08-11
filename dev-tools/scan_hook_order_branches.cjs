@@ -132,7 +132,20 @@ function isConditionalHookPosition(ancestors, fnIndex, hookName, hookNode) {
       return true;
     }
     if (CONDITIONAL_TYPES.has(n.type)) return true;
-    if (n.type === 'LogicalExpression' && ancestors[i + 1] === n.right) return true;
+    if (n.type === 'LogicalExpression' && ancestors[i + 1] === n.right) {
+      // Feature-detect short-circuit: `React.useEffect && React.useEffect(...)`.
+      // The test IS the hook function, which cannot appear or vanish between
+      // renders of a mounted host, so the call either always happens or never
+      // does — the hook count stays fixed either way. SEL Hub writes hooks this
+      // way throughout (howl, mindfulness, zones). Same reasoning as the
+      // ternary feature-detect handled above.
+      const l = n.left;
+      const lName = l && (l.type === 'MemberExpression'
+        ? (l.property && (l.property.name || l.property.value))
+        : (l.type === 'Identifier' ? l.name : null));
+      if (n.operator === '&&' && lName === hookName) continue;
+      return true;
+    }
     if (FN_TYPES.has(n.type) && !isIife(n, ancestors[i - 1])) return true;
   }
   return false;

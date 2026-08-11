@@ -95,6 +95,15 @@ window.SelHub = window.SelHub || {
   // for WCAG AA normal text. teal-600 only gave 3.80:1 — borderline-fail
   // on the many ~13-15px bold buttons where "large text" 3:1 doesn't apply.
   var TEAL        = '#0f766e';   // teal-700 — white-on-it = 5.48:1 ✓
+  // Theme remap, declared at MODULE scope because the helper components below
+  // (reset(), the saved-plans panel, the grounding screens) call it and they
+  // live outside render(). It used to be declared with `var` INSIDE render, so
+  // those five call sites resolved to nothing and threw ReferenceError the
+  // moment a learner reached them — invisible to check_sel_render, which never
+  // walks those paths. render() reassigns this each pass; until then it is
+  // identity, so an early caller still gets a usable colour instead of a crash.
+  var _ccC = function (hex) { return hex; };
+
   var TEAL_DARK   = '#115e59';   // teal-800
   var TEAL_LIGHT  = '#f0fdfa';   // teal-50
   var TEAL_BORDER = '#99f6e4';   // teal-200
@@ -1397,7 +1406,9 @@ window.SelHub = window.SelHub || {
       var _ccCHC = !!_ccCTheme.isContrast, _ccCDark = !_ccCHC && !!_ccCTheme.isDark;
       var _CCC_DARK = {'#fff':'#1e293b','#f8fafc':'#0f172a','#f1f5f9':'#1e293b','#fffbeb':'#2e2410','#fff7ed':'#2e2410','#fef2f2':'#2e1414','#f0fdf4':'#0b2e22','#f0fdfa':'#0c2e2a','#ccfbf1':'#0c3e38','#eff6ff':'#0e1f3a','#64748b':'#94a3b8','#94a3b8':'#94a3b8','#e5e7eb':'#334155','#e2e8f0':'#334155','#d1d5db':'#475569','#cbd5e1':'#475569','#92400e':'#fde68a','#78350f':'#fcd34d','#991b1b':'#fca5a5','#7f1d1d':'#fca5a5','#dc2626':'#f87171','#b91c1c':'#f87171','#9f1239':'#fda4af','#1e40af':'#93c5fd','#0369a1':'#7dd3fc','#9a3412':'#fdba74','#fff1f2':'#2e1418','#065f46':'#6ee7b7'};
       var _CCC_HC = {'#fff':'#000000','#f8fafc':'#000000','#f1f5f9':'#000000','#fffbeb':'#000000','#fff7ed':'#000000','#fef2f2':'#000000','#f0fdf4':'#000000','#f0fdfa':'#000000','#ccfbf1':'#000000','#eff6ff':'#000000','#64748b':'#ffff00','#94a3b8':'#ffff00','#e5e7eb':'#ffff00','#e2e8f0':'#ffff00','#d1d5db':'#ffff00','#cbd5e1':'#ffff00','#92400e':'#ffff00','#78350f':'#ffff00','#991b1b':'#ffff00','#7f1d1d':'#ffff00','#dc2626':'#ffff00','#b91c1c':'#ffff00','#9f1239':'#ffff00','#1e40af':'#ffff00','#0369a1':'#ffff00','#9a3412':'#ffff00','#fff1f2':'#000000','#065f46':'#ffff00'};
-      var _ccC = function(hex){ return _ccCHC ? (_CCC_HC[hex]||hex) : (_ccCDark ? (_CCC_DARK[hex]||hex) : hex); };
+      // Assignment, not `var`: this refreshes the MODULE-scope binding declared
+      // near the palette, which the out-of-render helpers below depend on.
+      _ccC = function(hex){ return _ccCHC ? (_CCC_HC[hex]||hex) : (_ccCDark ? (_CCC_DARK[hex]||hex) : hex); };
       var React = ctx.React;
       var h = React.createElement;
       var addToast = ctx.addToast || function(){};
@@ -1517,6 +1528,19 @@ window.SelHub = window.SelHub || {
 
       var consented = !!d.consented;
       var section   = d.section || 'mykit';
+
+      // ── Fixed hook block ──
+      // render() is called inline by the host's SelPluginBridge, so every hook
+      // here lands in the HOST's hook list. This breath-timer tick used to sit
+      // inside the `section === 'breath'` branch, so moving between sections
+      // changed the host's hook count and threw "Rendered more hooks than
+      // during the previous render" (React #310). Declared unconditionally and
+      // gated on the section inside. Gate: dev-tools/scan_hook_order_branches.cjs.
+      React.useEffect(function() {
+        if (section !== 'breath' || !d.breathRunning) return undefined;
+        var t = setInterval(function() { upd('breathTick', (d.breathTick || 0) + 1); }, 250);
+        return function() { clearInterval(t); };
+      }, [section, d.breathRunning, d.breathTick]);
 
       var SECTIONS = [
         { id: 'mykit',               icon: '🛡', label: 'My Safety Kit' },
@@ -1739,12 +1763,11 @@ window.SelHub = window.SelHub || {
         function stop()  { upd('breathRunning', false); upd('breathStart', 0); }
 
         // Tick (force re-render each second while running)
-        React.useEffect(function() {
-          if (bRunning) {
-            var t = setInterval(function() { upd('breathTick', (d.breathTick || 0) + 1); }, 250);
-            return function() { clearInterval(t); };
-          }
-        }, [bRunning, d.breathTick]);
+        // The breath-tick effect lives in the fixed hook block near the top of
+        // render(). It cannot be declared here: this branch only runs when
+        // section === 'breath', and render() executes inline inside the host's
+        // SelPluginBridge, so a hook here changes the HOST's hook count as soon
+        // as the learner moves between sections (React #310).
 
         var circleScale = 1;
         if (bRunning) {

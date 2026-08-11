@@ -35277,6 +35277,37 @@ window.SelHub = window.SelHub || {
 
       // Navigation
       var activeTab      = d.activeTab || 'checkin';
+
+      // ── Fixed hook block ──
+      // render() runs inline inside the host's SelPluginBridge, so every hook
+      // here lands in the HOST's hook list. The zone-quiz seed effect used to
+      // sit inside the `activeTab === 'zone_quiz'` branch, so switching tabs
+      // changed the host's hook count and threw "Rendered more hooks than
+      // during the previous render" (React #310). The `React.useEffect &&`
+      // feature-detect around it did not help: the surrounding `if` is the
+      // conditional part. _pickQuestion moved up with it since both the effect
+      // and the quiz's Next button call it.
+      // Gate: dev-tools/scan_hook_order_branches.cjs.
+      function _pickQuestion() {
+        if (typeof ZONE_SCENARIOS !== 'undefined' && ZONE_SCENARIOS.length) {
+          var pool = ZONE_SCENARIOS.filter(function(s) { return !s.forBand || s.forBand === band || s.forBand === 'all'; });
+          if (!pool.length) pool = ZONE_SCENARIOS;
+          var q = pool[Math.floor(Math.random() * pool.length)];
+          var story = (q.story && q.story[band]) || q.scenario;
+          return { story: story, cues: q.observableCues || [], correct: q.bestAnswer, explanation: (q.explanation && q.explanation[band]) || '', whatToDo: q.whatTheyMightNeed || '' };
+        }
+        var fallback = [
+          { story: 'Friend slumped at desk, not responding to teacher prompts', cues: ['head down', 'silent', 'low energy'], correct: 'blue', explanation: 'Classic Blue signs: slumped posture, withdrawal, low energy.', whatToDo: 'Gentle presence. Don\'t force engagement. Maybe offer a snack or a quiet moment together.' },
+          { story: 'Student bouncing leg, tapping pencil rapidly, eyes darting', cues: ['fidgeting', 'fast movement', 'scanning'], correct: 'yellow', explanation: 'Yellow Zone: elevated activation. Could be anxiety, ADHD, or anticipation.', whatToDo: 'Acknowledge: "I see you have a lot of energy right now." Offer a quick movement break or a fidget.' },
+          { story: 'Kid in flow, fully absorbed in a building project, soft smile', cues: ['relaxed body', 'focused gaze', 'gentle smile'], correct: 'green', explanation: 'Green Zone: regulated, focused, present. The ideal state for learning.', whatToDo: 'Don\'t interrupt unless necessary. This is the gold-standard state.' },
+          { story: 'Student screaming after a friend broke their project', cues: ['shouting', 'red face', 'shaking'], correct: 'red', explanation: 'Red Zone: out of control. Emotional flooding has happened.', whatToDo: 'Stay calm yourself. Reduce demands. Offer space. Validate later when capacity returns.' }
+        ];
+        return fallback[Math.floor(Math.random() * fallback.length)];
+      }
+      React.useEffect(function() {
+        if (activeTab !== 'zone_quiz') return;
+        if (!d.qzCurrent) upd({ qzCurrent: _pickQuestion() });
+      }, [activeTab, d.qzCurrent]);
       var soundEnabled   = d.soundEnabled != null ? d.soundEnabled : true;
 
       // Check-in state
@@ -37605,25 +37636,15 @@ if (activeTab === 'zone_quiz') {
   var qzRevealed = d.qzRevealed || false;
   var ZONE_COLORS = { blue: _zoFg('#3b82f6'), green: _zoFg('#22c55e'), yellow: _zoFg('#fde047'), red: _zoFg('#ef4444') };
   // Pool of quick scenarios — pull from agent data if available else built-in
-  function _pickQuestion() {
-    if (typeof ZONE_SCENARIOS !== 'undefined' && ZONE_SCENARIOS.length) {
-      var pool = ZONE_SCENARIOS.filter(function(s) { return !s.forBand || s.forBand === band || s.forBand === 'all'; });
-      if (!pool.length) pool = ZONE_SCENARIOS;
-      var q = pool[Math.floor(Math.random() * pool.length)];
-      var story = (q.story && q.story[band]) || q.scenario;
-      return { story: story, cues: q.observableCues || [], correct: q.bestAnswer, explanation: (q.explanation && q.explanation[band]) || '', whatToDo: q.whatTheyMightNeed || '' };
-    }
-    var fallback = [
-      { story: 'Friend slumped at desk, not responding to teacher prompts', cues: ['head down', 'silent', 'low energy'], correct: 'blue', explanation: 'Classic Blue signs: slumped posture, withdrawal, low energy.', whatToDo: 'Gentle presence. Don\'t force engagement. Maybe offer a snack or a quiet moment together.' },
-      { story: 'Student bouncing leg, tapping pencil rapidly, eyes darting', cues: ['fidgeting', 'fast movement', 'scanning'], correct: 'yellow', explanation: 'Yellow Zone: elevated activation. Could be anxiety, ADHD, or anticipation.', whatToDo: 'Acknowledge: "I see you have a lot of energy right now." Offer a quick movement break or a fidget.' },
-      { story: 'Kid in flow, fully absorbed in a building project, soft smile', cues: ['relaxed body', 'focused gaze', 'gentle smile'], correct: 'green', explanation: 'Green Zone: regulated, focused, present. The ideal state for learning.', whatToDo: 'Don\'t interrupt unless necessary. This is the gold-standard state.' },
-      { story: 'Student screaming after a friend broke their project', cues: ['shouting', 'red face', 'shaking'], correct: 'red', explanation: 'Red Zone: out of control. Emotional flooding has happened.', whatToDo: 'Stay calm yourself. Reduce demands. Offer space. Validate later when capacity returns.' }
-    ];
-    return fallback[Math.floor(Math.random() * fallback.length)];
-  }
-  React.useEffect && React.useEffect(function() {
-    if (!qzCurrent) upd({ qzCurrent: _pickQuestion() });
-  }, [qzCurrent]);
+  // _pickQuestion is declared in the fixed hook block at the top of render(),
+  // alongside the effect that seeds the first question.
+
+  // The seed effect lives in the fixed hook block near the top of render().
+  // It cannot be declared here: this whole block only runs when
+  // activeTab === 'zone_quiz', and render() executes inline inside the host's
+  // SelPluginBridge, so a hook here changes the HOST's hook count the moment
+  // the learner switches tabs (React #310). The `React.useEffect &&` guard
+  // does not help — the surrounding `if` is the conditional part.
   function _answer(z) {
     if (qzRevealed) return;
     var correct = qzCurrent.correct === z;
