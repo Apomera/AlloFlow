@@ -18997,6 +18997,43 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       });
       return () => { cancelled = true; };
   }, [hasSelectedRole]);
+
+  // ── Session resume (2026-08-11) ──────────────────────────────────────────
+  // Reloading mid-session (an update, crash recovery, a stuck view) used to
+  // walk the teacher back through the launch pad + role wizard every time. A
+  // RECENT role choice on this device now resumes automatically. Strictly
+  // weaker than student-entry params and the family deep link (both return
+  // early here), time-boxed so a shared device cannot be trapped in a stale
+  // role, and the teacher password gate is honored exactly as a manual card
+  // click would honor it. The window refreshes on a use heartbeat below, so
+  // "recent" means recent USE, not recent role-picking.
+  const ALLO_SESSION_RESUME_MS = 6 * 60 * 60 * 1000;
+  const _alloSessionResumeHandledRef = useRef(false);
+  useEffect(() => {
+      if (_alloSessionResumeHandledRef.current || hasSelectedRole || hasSelectedMode) return;
+      if (_alloHasAnyStudentEntry()) return;
+      try { if (new URLSearchParams(window.location.search || '').has('allo_family')) return; } catch (_) {}
+      let saved = null;
+      try { saved = JSON.parse(localStorage.getItem('alloflow_session_resume') || 'null'); } catch (_) {}
+      if (!saved || !saved.role || saved.role === 'student') return;
+      if (!Number.isFinite(saved.at) || (Date.now() - saved.at) > ALLO_SESSION_RESUME_MS) return;
+      _alloSessionResumeHandledRef.current = true;
+      setHasSelectedMode(true);
+      if (APP_CONFIG._cfg_validation_key) {
+          setPendingRole(saved.role);
+          setIsGateOpen(true);
+      } else {
+          executeRoleSelect(saved.role);
+      }
+  }, [hasSelectedRole, hasSelectedMode]);
+  useEffect(() => {
+      if (!hasSelectedRole || (!isTeacherMode && !isParentMode && !isIndependentMode)) return undefined;
+      const role = isParentMode ? 'parent' : (isIndependentMode ? 'independent' : 'teacher');
+      const stamp = () => { try { localStorage.setItem('alloflow_session_resume', JSON.stringify({ role, at: Date.now() })); } catch (_) {} };
+      stamp();
+      const heartbeat = setInterval(stamp, 120000);
+      return () => clearInterval(heartbeat);
+  }, [hasSelectedRole, isTeacherMode, isParentMode, isIndependentMode]);
   const handleStudentEntryConfirm = (name, mode) => {
       setStudentNickname(name);
       setStudentProjectSettings(prev => ({
@@ -31021,6 +31058,18 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
           keyErr.isConfigState = true;
           throw keyErr;
         }
+        if (response.status === 404) {
+          // Google closed the imagen-4.0 predict family to new users
+          // (2026-08 field report: every image burned 3 retries on a
+          // permanent 404). Remember for the whole session and let the
+          // caller fall back to the Gemini image model instead.
+          window.__alloImagenGone = true;
+          console.warn('[Imagen] Model retired for this key (' + errBody.substring(0, 120) + ') — switching to the Gemini image model for this session.');
+          const goneErr = new Error('HTTP Error: 404 (Imagen unavailable on this key)');
+          goneErr.isConfigState = true;
+          goneErr.isImagenGone = true;
+          throw goneErr;
+        }
         console.error("[Imagen] HTTP Error:", response.status, errBody.substring(0, 200));
         throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
       }
@@ -31079,7 +31128,31 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
         console.error("[Imagen] All retries exhausted:", err.message);
         throw err;
       }
-    };    const runWithLocalFallback = async (runner) => {
+    };    const runWithGeminiImageFallback = async (runner) => {
+      // Imagen already known-gone this session: skip the doomed predict call
+      // entirely (and its retries) and draw with the Gemini image model.
+      const geminiDraw = async () => {
+        if (typeof window.callGeminiImageEdit !== 'function') return null;
+        const drawn = await window.callGeminiImageEdit(prompt, null, width, qual, null, _signal ? { signal: _signal } : null);
+        if (drawn) console.log('[Imagen] ✅ Generated via ' + ((typeof GEMINI_MODELS !== 'undefined' && GEMINI_MODELS.image) || 'the Gemini image model') + ' (Imagen unavailable on this key).');
+        return drawn;
+      };
+      if (window.__alloImagenGone) {
+        const drawn = await geminiDraw();
+        if (drawn) return drawn;
+      }
+      try {
+        return await runner();
+      } catch (err) {
+        if ((err && err.name === 'AbortError') || (_signal && _signal.aborted)) throw err;
+        if (err && err.isImagenGone) {
+          const drawn = await geminiDraw();
+          if (drawn) return drawn;
+        }
+        throw err;
+      }
+    };
+    const runWithLocalFallback = async (runner) => {
       try {
         return await runner();
       } catch (err) {
@@ -31097,12 +31170,12 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     if (imagenRateLimitedRef.current) {
       // imagenQueueRef.current never rejects (it is always assigned with a
       // trailing .catch(() => {})), so a single fulfillment handler suffices.
-      const queuedRequest = imagenQueueRef.current.then(() => { _throwIfImageAborted(); return runWithLocalFallback(executeWithRetry); });
+      const queuedRequest = imagenQueueRef.current.then(() => { _throwIfImageAborted(); return runWithGeminiImageFallback(() => runWithLocalFallback(executeWithRetry)); });
       imagenQueueRef.current = queuedRequest.catch(() => {});
       return queuedRequest;
     } else {
       _throwIfImageAborted();
-      return runWithLocalFallback(executeWithRetry);
+      return runWithGeminiImageFallback(() => runWithLocalFallback(executeWithRetry));
     }
   };
   // Browsers render animated GIFs natively in <img> tags, so panels that
