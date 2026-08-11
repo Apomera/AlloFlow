@@ -210,6 +210,20 @@ describe('the player treats the target as print, not sound', () => {
     expect(MODULE).toMatch(/"pa_large", "pa_phoneme", "phonics", "text", "spelling", "handwriting"/);
   });
 
+  it('the adaptive ladder culminates in connected text — English sessions only', () => {
+    const idx = MODULE.indexOf('const ORTHO_ORDER = [');
+    expect(idx).toBeGreaterThan(0);
+    const ladder = MODULE.slice(idx, idx + 900);
+    expect(ladder).toMatch(/"missing_letter",/);
+    // Gated exactly like the picker: never auto-advance into an activity
+    // the language would hide.
+    expect(ladder).toMatch(/indexOf\("en"\) === 0\)\s*\? \["read_sentence", "read_passage"\]\s*: \[\]/);
+  });
+
+  it('a sentence-initial blank fills capitalized', () => {
+    expect(MODULE).toMatch(/rsBoard\.before \? rsWord : rsWord\.charAt\(0\)\.toUpperCase\(\) \+ rsWord\.slice\(1\)/);
+  });
+
   it('tap works wherever drag does (WCAG 2.5.7)', () => {
     const idx = MODULE.indexOf('case "read_sentence": {');
     expect(idx).toBeGreaterThan(0);

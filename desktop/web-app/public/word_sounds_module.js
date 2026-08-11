@@ -12522,6 +12522,15 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     "spelling_bee",
                     "word_scramble",
                     "missing_letter",
+                    // The bridge is the destination: once spelling is
+                    // mastered, an adaptive session arrives at connected
+                    // text and culminates in the story. English sessions
+                    // only — the sentence activities are language-gated
+                    // and the auto-director must never advance into an
+                    // activity the picker would hide.
+                    ...((!wordSoundsLanguage || String(wordSoundsLanguage).toLowerCase().indexOf("en") === 0)
+                      ? ["read_sentence", "read_passage"]
+                      : []),
                   ];
                   const orthoIdx = ORTHO_ORDER.indexOf(wordSoundsActivity);
                   if (orthoIdx >= 0 && orthoIdx < ORTHO_ORDER.length - 1) {
@@ -16216,7 +16225,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                           onDrop: (e) => { e.preventDefault(); setReadSentenceDragOver(false); const _dw = e.dataTransfer.getData("text/plain"); if (_dw) rsCheck(_dw); },
                           className: "inline-flex items-center justify-center min-w-[5rem] px-3 py-1 rounded-xl border-2 border-dashed transition-colors " + (rsSolved ? "border-emerald-400 bg-emerald-50 text-emerald-700" : readSentenceDragOver ? "border-violet-500 bg-violet-50 text-violet-800" : "border-slate-400 text-slate-400"),
                         },
-                        rsSolved ? rsWord : "____",
+                        // A sentence-initial blank fills capitalized — the
+                        // chips stay lowercase (word-bank convention), but
+                        // the completed sentence should read correctly.
+                        rsSolved ? (rsBoard.before ? rsWord : rsWord.charAt(0).toUpperCase() + rsWord.slice(1)) : "____",
                       ),
                       rsBoard.after ? /*#__PURE__*/ React.createElement("span", null, rsBoard.after) : null,
                     ),
@@ -16261,7 +16273,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               : null;
             const rpCheck = (w) => checkAnswer((w || ""), rpWord);
             const rpSolved = showWordText;
-            const rpBlank = (key) => /*#__PURE__*/ React.createElement(
+            const rpBlank = (key, capitalize) => /*#__PURE__*/ React.createElement(
               "span",
               {
                 key,
@@ -16270,7 +16282,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 onDrop: (e) => { e.preventDefault(); setReadPassageDragOver(false); const _dw = e.dataTransfer.getData("text/plain"); if (_dw) rpCheck(_dw); },
                 className: "inline-flex items-center justify-center min-w-[4rem] px-2 py-0.5 rounded-lg border-2 border-dashed transition-colors " + (rpSolved ? "border-emerald-400 bg-emerald-50 text-emerald-700" : readPassageDragOver ? "border-violet-500 bg-violet-50 text-violet-800" : "border-slate-400 text-slate-400"),
               },
-              rpSolved ? rpWord : "____",
+              // Sentence-initial blanks fill capitalized so the completed
+              // story reads correctly.
+              rpSolved ? (capitalize ? rpWord.charAt(0).toUpperCase() + rpWord.slice(1) : rpWord) : "____",
             );
             return /*#__PURE__*/ React.createElement("div", { className: "flex flex-col items-center gap-5 p-4" },
               /*#__PURE__*/ React.createElement("p", { className: "text-xs font-semibold text-violet-600 uppercase tracking-wide" }, ts("word_sounds.read_passage_prompt") || "Read the story. Which word finishes it?"),
@@ -16291,7 +16305,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                             "div",
                             { key: "rp-line-" + i, className: "flex flex-wrap items-center gap-2" },
                             p.before ? /*#__PURE__*/ React.createElement("span", null, p.before) : null,
-                            rpBlank("rp-blank-" + i),
+                            rpBlank("rp-blank-" + i, !p.before),
                             p.after ? /*#__PURE__*/ React.createElement("span", null, p.after) : null,
                           ),
                       ),

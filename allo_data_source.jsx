@@ -120,7 +120,7 @@ const WORD_SOUNDS_STRINGS = {
     'word_sounds.sr_phoneme_keys': '. Press Space to hear, Enter to remove.',
     'word_sounds.sr_number': 'Number ',
     'word_sounds.sr_dismiss': 'Dismiss',
-    'word_sounds.lang_hidden_activities_hint': 'Some letter- and spelling-pattern activities are designed for English and are hidden for this language.',
+    'word_sounds.lang_hidden_activities_hint': 'Some letter-pattern, spelling, and sentence-reading activities are designed for English and are hidden for this language.',
     'word_sounds.lang_hidden_activities': 'Some activities are English-only',
     'word_sounds.tracing_path_note': 'This handwriting exercise uses path-dependent input because it evaluates the complete drawing path. Use a mouse, stylus, or touch gesture to trace from the green start dot.',
     'word_sounds.aac_abbrev': 'AAC',

@@ -724,7 +724,7 @@
     "kokoro_recommended": "Recommended for Word Sounds: Kokoro local voice",
     "label_details": "Label Details",
     "lang_hidden_activities": "Some activities are English-only",
-    "lang_hidden_activities_hint": "Some letter- and spelling-pattern activities are designed for English and are hidden for this language.",
+    "lang_hidden_activities_hint": "Some letter-pattern, spelling, and sentence-reading activities are designed for English and are hidden for this language.",
     "letter_tracing_desc": "Practice letter formation with guided tracing",
     "letters_correct": "{count}/{total} letters correct",
     "level_n": "⭐ Level {n}",

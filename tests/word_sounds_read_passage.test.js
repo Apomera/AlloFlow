@@ -135,7 +135,9 @@ describe('the player treats the story as print', () => {
     expect(idx).toBeGreaterThan(0);
     const block = MODULE.slice(idx, MODULE.indexOf('default:', idx));
     expect(block).toMatch(/onClick: \(\) => rpCheck\(w\)/);
-    expect(block).toMatch(/rpBlank\("rp-blank-" \+ i\)/);
+    expect(block).toMatch(/rpBlank\("rp-blank-" \+ i, !p\.before\)/);
+    // A sentence-initial blank fills capitalized.
+    expect(block).toMatch(/capitalize \? rpWord\.charAt\(0\)\.toUpperCase\(\)/);
     // Target-less sentences render as plain lines.
     expect(block).toMatch(/p\.text\s*\?/);
   });
