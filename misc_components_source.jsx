@@ -726,6 +726,51 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                             each: onGenerateImage ? ((i) => onGenerateImage(i, preloadedWords[i] && (preloadedWords[i].targetWord || preloadedWords[i].word))) : null,
                         });
 
+                        // Connected-text boards carry their own audio: the
+                        // completed sentence or story is read back after a
+                        // correct answer from a clip keyed by the full text.
+                        // A rate-limited packing run can land every WORD clip
+                        // and still miss these, and nothing else on this list
+                        // would say so. No fix button for the same reason as
+                        // portable word audio: only the setup compiler can
+                        // write _ttsAssets.
+                        addGap({
+                            key: 'sentence_audio',
+                            test: (w) => {
+                                const b = w && w.activityItems;
+                                if (!b) return false;
+                                const texts = [
+                                    b.read_sentence && b.read_sentence.sentence,
+                                    b.read_passage && b.read_passage.story,
+                                    b.sentence_match && b.sentence_match.sentence,
+                                ].filter(Boolean);
+                                return texts.some((s) => !portableKeys.has(norm(s)));
+                            },
+                            text: (n) => `🔇 ${n} word${n === 1 ? '' : 's'} whose sentence or story read-back audio did not pack. On student devices the read-back will be missing or fall back to a lower-quality voice; re-prepare the pack in setup.`,
+                            each: null,
+                        });
+
+                        // Picture the Sentence reveals its tray only when EVERY
+                        // tile has its picture (a half-loaded tray lets a child
+                        // pick "the one that loaded"), so one missing image
+                        // stalls the whole item on a student device.
+                        const missingTileImgs = preloadedWords.reduce((sum, w) => {
+                            const sm = w && w.activityItems && w.activityItems.sentence_match;
+                            if (!sm) return sum;
+                            const tiles = [...(sm.sequence || []), ...(sm.extras || [])];
+                            return sum + tiles.filter((c) => !imageKeys.has(norm(c))).length;
+                        }, 0);
+                        addGap({
+                            key: 'tile_images',
+                            test: (w) => {
+                                const sm = w && w.activityItems && w.activityItems.sentence_match;
+                                if (!sm) return false;
+                                return [...(sm.sequence || []), ...(sm.extras || [])].some((c) => !imageKeys.has(norm(c)));
+                            },
+                            text: () => `🖼️ ${missingTileImgs} Picture the Sentence tile${missingTileImgs === 1 ? '' : 's'} without a picture. The tray waits for every picture, so these items stall on student devices; re-prepare the pack in setup.`,
+                            each: null,
+                        });
+
                         // Generated words the app cannot vouch for. Not an
                         // error: the curated lists are a few hundred words and
                         // a real vocabulary is far larger, so this is a "worth

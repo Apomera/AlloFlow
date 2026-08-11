@@ -12187,6 +12187,12 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             }
             submissionLockRef.current = true;
             setAttempts(0);
+            // Connected-text read-backs are longer than the standard 2s
+            // advance window — a three-sentence story runs 5-7s and was
+            // being talked over by the NEXT item's instruction audio. When
+            // a read-back plays, the advance waits for it (scaled by text
+            // length, clamped so a long story can never stall the session).
+            let _rbAdvanceMs = 2000;
             const newStreak = isCorrect
               ? attempts > 0
                 ? wordSoundsScore.streak
@@ -12227,6 +12233,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                         ? sentenceMatchBoardRef.current?.sentence
                         : null;
                 if (_rbText && !isProbeMode) {
+                  _rbAdvanceMs = Math.min(6500, Math.max(2000, 350 + _rbText.split(/\s+/).length * 400));
                   const _rsRun = audioRunIdRef.current;
                   setTimeout(() => {
                     if (isMountedRef.current && audioRunIdRef.current === _rsRun)
@@ -13412,7 +13419,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   }
                 }
               },
-              isProbeMode ? (isCorrect ? 800 : 1200) : isCorrect ? 2000 : 3000,
+              isProbeMode ? (isCorrect ? 800 : 1200) : isCorrect ? _rbAdvanceMs : 3000,
             );
           } catch (e) {
             warnLog("CheckAnswer CRITICAL FAIL", e);
