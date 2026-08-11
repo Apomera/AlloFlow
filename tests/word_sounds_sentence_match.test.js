@@ -113,6 +113,17 @@ describe('the player treats the sentence as print', () => {
     expect(MODULE).toMatch(/checkAnswer\(ok \? "correct" : "incorrect", "correct"\);/);
   });
 
+  it('a wrong ordering marks WHICH slots were right before the retry clears', () => {
+    expect(MODULE).toMatch(/setSentenceMatchMarks\(slotsNext\.map\(\(w, i\) => w === smBoard\.sequence\[i\]\)\);/);
+    // Marks render on the slots (green keeps, red shakes)...
+    expect(MODULE).toMatch(/sentenceMatchMarks\[i\]\s*\?\s*"border-emerald-500/);
+    // ...and are held long enough to read before the tray clears.
+    const idx = MODULE.indexOf('setSentenceMatchMarks(null);\n                  }\n                }, 1400);');
+    expect(idx).toBeGreaterThan(0);
+    // Cleared on every board rebuild and activity change.
+    expect((MODULE.match(/setSentenceMatchMarks\(null\);/g) || []).length).toBeGreaterThanOrEqual(3);
+  });
+
   it('reads the sentence back on correct via the shared read-back map', () => {
     const idx = MODULE.indexOf('const _rbText =');
     expect(idx).toBeGreaterThan(0);

@@ -2088,6 +2088,14 @@
                      // Same contract as the sentence clip: the instruction
                      // string must byte-match word_sounds.read_passage_prompt.
                      tasks.add(boards.read_passage.story);
+                     // Per-sentence clips too: the player reads the completed
+                     // story back line by line with a follow-along highlight,
+                     // and each line needs its own clip to stay in sync.
+                     String(boards.read_passage.story)
+                         .split(/(?<=[.!?])\s+/)
+                         .map((s) => s.trim())
+                         .filter(Boolean)
+                         .forEach((s) => tasks.add(s));
                      tasks.add('Read the story. Which word finishes it?');
                  }
                  if (boards.sentence_match?.sentence) {

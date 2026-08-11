@@ -130,6 +130,27 @@ describe('the player treats the story as print', () => {
     expect(block).toMatch(/_rbText && !isProbeMode/);
   });
 
+  it('the read-back follows along line by line, and never highlights the wrong line', () => {
+    const idx = MODULE.indexOf('const _rbLines =');
+    expect(idx).toBeGreaterThan(0);
+    const block = MODULE.slice(idx, idx + 1400);
+    // Sequential per-line playback with a highlight...
+    expect(block).toMatch(/setReadPassageReadingLine\(_li\);/);
+    expect(block).toMatch(/await handleAudio\(_rbLines\[_li\]\);/);
+    // ...only when the split lines up with the rendered parts; otherwise the
+    // single whole-story clip, rather than a drifting highlight.
+    expect(block).toMatch(/_rbLines\.length === _rbLineCount/);
+    expect(block).toMatch(/handleAudio\(_rbText\);/);
+    // The lines actually render the highlight.
+    expect(MODULE).toMatch(/readPassageReadingLine === i \? " bg-violet-100 px-2 -mx-2" : ""/);
+  });
+
+  it('the pack carries a clip per story sentence so the follow-along stays in sync', () => {
+    const idx = SOURCE.indexOf('tasks.add(boards.read_passage.story);');
+    expect(idx).toBeGreaterThan(0);
+    expect(SOURCE.slice(idx, idx + 600)).toMatch(/\.split\(\/\(\?<=\[\.!\?\]\)\\s\+\/\)/);
+  });
+
   it('every blank is a drop target and every chip a tappable button', () => {
     const idx = MODULE.indexOf('case "read_passage": {');
     expect(idx).toBeGreaterThan(0);

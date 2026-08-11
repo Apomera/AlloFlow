@@ -2027,6 +2027,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
         }
         if (boards.read_passage?.story) {
           tasks.add(boards.read_passage.story);
+          String(boards.read_passage.story).split(/(?<=[.!?])\s+/).map((s) => s.trim()).filter(Boolean).forEach((s) => tasks.add(s));
           tasks.add("Read the story. Which word finishes it?");
         }
         if (boards.sentence_match?.sentence) {

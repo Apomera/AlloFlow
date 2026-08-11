@@ -3523,6 +3523,17 @@
       }, [sentenceMatchBoard]);
       const [sentenceMatchSlots, setSentenceMatchSlots] = React.useState([]);
       const lastWordForSentenceMatch = React.useRef(null);
+      // Per-slot right/wrong marks shown briefly after a wrong ordering —
+      // the child learns WHICH picture was misplaced, not just "try again".
+      const [sentenceMatchMarks, setSentenceMatchMarks] = React.useState(null);
+      // Chip-level feedback for the cloze activities: the tapped chip itself
+      // flashes green or shakes red, so the feedback lands where the child's
+      // eyes already are (the banner is far away and reads slower than K-2).
+      const [rsChipFeedback, setRsChipFeedback] = React.useState(null);
+      const rsChipTimerRef = React.useRef(null);
+      // Which story line the read-back is currently speaking (karaoke-style
+      // follow-along on the completed story).
+      const [readPassageReadingLine, setReadPassageReadingLine] = React.useState(null);
       const [isPrefetching, setIsPrefetching] = React.useState(false);
       const internalAudioCache = React.useRef(new Map());
       const audioInstances = React.useRef(new Map());
@@ -8248,6 +8259,7 @@
         if (board) board.tiles = fisherYatesShuffle([...board.sequence, ...board.extras]);
         setSentenceMatchBoard(board);
         setSentenceMatchSlots(board ? board.sequence.map(() => null) : []);
+        setSentenceMatchMarks(null);
         if (!board) return;
         // Backfill any tile without a packed picture (teacher devices only —
         // the student boundary nulls callImagen).
@@ -10985,8 +10997,12 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           readPassagePreparedForRef.current = null;
           setSentenceMatchBoard(null);
           setSentenceMatchSlots([]);
+          setSentenceMatchMarks(null);
           lastWordForSentenceMatch.current = null;
           sentenceMatchPreparedForRef.current = null;
+          setRsChipFeedback(null);
+          if (rsChipTimerRef.current) { clearTimeout(rsChipTimerRef.current); rsChipTimerRef.current = null; }
+          setReadPassageReadingLine(null);
           // Sight & Spell: the rebuild effect is gated on option COUNT, not
           // word — without this reset, re-entering orthography served the
           // previous word's misspellings with the new word patched at index 0.
@@ -12235,9 +12251,30 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 if (_rbText && !isProbeMode) {
                   _rbAdvanceMs = Math.min(6500, Math.max(2000, 350 + _rbText.split(/\s+/).length * 400));
                   const _rsRun = audioRunIdRef.current;
+                  // Read the Story reads back line by line with a follow-along
+                  // highlight (karaoke-style). Per-sentence clips are packed
+                  // alongside the whole-story clip; if the split doesn't line
+                  // up with the rendered parts, fall back to the single clip
+                  // rather than highlight the wrong line.
+                  const _rbLines =
+                    wordSoundsActivity === "read_passage"
+                      ? _rbText.split(/(?<=[.!?])\s+/).filter(Boolean)
+                      : null;
+                  const _rbLineCount = readPassageBoardRef.current?.parts?.length;
                   setTimeout(() => {
-                    if (isMountedRef.current && audioRunIdRef.current === _rsRun)
+                    if (!isMountedRef.current || audioRunIdRef.current !== _rsRun) return;
+                    if (_rbLines && _rbLines.length > 1 && _rbLines.length === _rbLineCount) {
+                      (async () => {
+                        for (let _li = 0; _li < _rbLines.length; _li++) {
+                          if (!isMountedRef.current || audioRunIdRef.current !== _rsRun) break;
+                          setReadPassageReadingLine(_li);
+                          try { await handleAudio(_rbLines[_li]); } catch (e) { /* keep going */ }
+                        }
+                        if (isMountedRef.current) setReadPassageReadingLine(null);
+                      })();
+                    } else {
                       handleAudio(_rbText);
+                    }
                   }, 350);
                 }
               }
@@ -16199,17 +16236,40 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             const rsImg = rsImgRaw
               ? ((typeof rsImgRaw === "string" && (rsImgRaw.startsWith("data:") || rsImgRaw.startsWith("http"))) ? rsImgRaw : "data:image/png;base64," + rsImgRaw)
               : null;
-            const rsCheck = (w) => checkAnswer((w || ""), rsWord);
+            const rsCheck = (w) => {
+              const _ok = (w || "").toLowerCase().trim() === rsWord.toLowerCase().trim();
+              if (rsChipTimerRef.current) clearTimeout(rsChipTimerRef.current);
+              setRsChipFeedback({ word: w, ok: _ok });
+              rsChipTimerRef.current = setTimeout(() => {
+                if (isMountedRef.current) setRsChipFeedback(null);
+              }, 900);
+              checkAnswer((w || ""), rsWord);
+            };
+            const rsChipClass = (w) =>
+              rsChipFeedback && rsChipFeedback.word === w
+                ? (rsChipFeedback.ok
+                  ? " border-emerald-500 bg-emerald-50 ring-2 ring-emerald-300 ws-bounce"
+                  : " border-red-400 bg-red-50 animate-shake")
+                : "";
             // showWordText fills the blank: set on the second attempt (the
             // standard reveal scaffold) and on a correct answer.
             const rsSolved = showWordText;
             return /*#__PURE__*/ React.createElement("div", { className: "flex flex-col items-center gap-5 p-4" },
               /*#__PURE__*/ React.createElement("p", { className: "text-xs font-semibold text-violet-600 uppercase tracking-wide" }, ts("word_sounds.read_sentence_prompt") || "Read the sentence. Which word finishes it?"),
-              rsImg && /*#__PURE__*/ React.createElement("img", {
-                src: rsImg,
-                alt: ts("word_sounds.read_sentence_picture_hint") || "Picture hint",
-                className: "w-28 h-28 object-contain rounded-2xl border-2 border-slate-200 bg-white shadow-md",
-              }),
+              rsImg
+                ? /*#__PURE__*/ React.createElement("img", {
+                  src: rsImg,
+                  alt: ts("word_sounds.read_sentence_picture_hint") || "Picture hint",
+                  className: "w-28 h-28 object-contain rounded-2xl border-2 border-slate-200 bg-white shadow-md",
+                })
+                // No picture packed for this word: anchor with the printed
+                // word instead. That turns the item into print matching — a
+                // weaker task, but an answerable and fair one; a sight-word
+                // frame with no anchor at all would be a guessing game.
+                : (rsReady && /*#__PURE__*/ React.createElement("div", { className: "flex items-center gap-2" },
+                    /*#__PURE__*/ React.createElement("span", { className: "text-xs font-semibold text-slate-500 uppercase tracking-wide" }, ts("word_sounds.read_sentence_word_hint") || "Your word:"),
+                    /*#__PURE__*/ React.createElement("span", { className: "px-4 py-1.5 rounded-2xl border-2 border-violet-200 bg-violet-50 text-2xl font-black text-violet-700 lowercase" }, rsWord),
+                  )),
               !rsReady
                 ? /*#__PURE__*/ React.createElement("p", { className: "text-slate-500 text-sm font-semibold italic" }, ts("word_sounds.read_sentence_preparing") || "Preparing your sentence...")
                 : /*#__PURE__*/ React.createElement(React.Fragment, null,
@@ -16246,7 +16306,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                           onDragStart: (e) => { e.dataTransfer.setData("text/plain", w); e.dataTransfer.effectAllowed = "move"; },
                           onDragEnd: () => setReadSentenceDragOver(false),
                           onClick: () => rsCheck(w),
-                          className: "px-5 py-3 bg-white border-2 border-slate-200 rounded-2xl shadow-md text-2xl font-bold text-slate-800 lowercase hover:border-violet-400 hover:scale-105 transition-all cursor-grab active:cursor-grabbing",
+                          className: "px-5 py-3 bg-white border-2 border-slate-200 rounded-2xl shadow-md text-2xl font-bold text-slate-800 lowercase hover:border-violet-400 hover:scale-105 transition-all cursor-grab active:cursor-grabbing" + rsChipClass(w),
                         },
                         w,
                       )),
@@ -16271,7 +16331,21 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             const rpImg = rpImgRaw
               ? ((typeof rpImgRaw === "string" && (rpImgRaw.startsWith("data:") || rpImgRaw.startsWith("http"))) ? rpImgRaw : "data:image/png;base64," + rpImgRaw)
               : null;
-            const rpCheck = (w) => checkAnswer((w || ""), rpWord);
+            const rpCheck = (w) => {
+              const _ok = (w || "").toLowerCase().trim() === rpWord.toLowerCase().trim();
+              if (rsChipTimerRef.current) clearTimeout(rsChipTimerRef.current);
+              setRsChipFeedback({ word: w, ok: _ok });
+              rsChipTimerRef.current = setTimeout(() => {
+                if (isMountedRef.current) setRsChipFeedback(null);
+              }, 900);
+              checkAnswer((w || ""), rpWord);
+            };
+            const rpChipClass = (w) =>
+              rsChipFeedback && rsChipFeedback.word === w
+                ? (rsChipFeedback.ok
+                  ? " border-emerald-500 bg-emerald-50 ring-2 ring-emerald-300 ws-bounce"
+                  : " border-red-400 bg-red-50 animate-shake")
+                : "";
             const rpSolved = showWordText;
             const rpBlank = (key, capitalize) => /*#__PURE__*/ React.createElement(
               "span",
@@ -16288,11 +16362,18 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             );
             return /*#__PURE__*/ React.createElement("div", { className: "flex flex-col items-center gap-5 p-4" },
               /*#__PURE__*/ React.createElement("p", { className: "text-xs font-semibold text-violet-600 uppercase tracking-wide" }, ts("word_sounds.read_passage_prompt") || "Read the story. Which word finishes it?"),
-              rpImg && /*#__PURE__*/ React.createElement("img", {
-                src: rpImg,
-                alt: ts("word_sounds.read_sentence_picture_hint") || "Picture hint",
-                className: "w-24 h-24 object-contain rounded-2xl border-2 border-slate-200 bg-white shadow-md",
-              }),
+              rpImg
+                ? /*#__PURE__*/ React.createElement("img", {
+                  src: rpImg,
+                  alt: ts("word_sounds.read_sentence_picture_hint") || "Picture hint",
+                  className: "w-24 h-24 object-contain rounded-2xl border-2 border-slate-200 bg-white shadow-md",
+                })
+                // Same word-card fallback as Finish the Sentence: never an
+                // unanchored guessing game.
+                : (rpReady && /*#__PURE__*/ React.createElement("div", { className: "flex items-center gap-2" },
+                    /*#__PURE__*/ React.createElement("span", { className: "text-xs font-semibold text-slate-500 uppercase tracking-wide" }, ts("word_sounds.read_sentence_word_hint") || "Your word:"),
+                    /*#__PURE__*/ React.createElement("span", { className: "px-4 py-1.5 rounded-2xl border-2 border-violet-200 bg-violet-50 text-2xl font-black text-violet-700 lowercase" }, rpWord),
+                  )),
               !rpReady
                 ? /*#__PURE__*/ React.createElement("p", { className: "text-slate-500 text-sm font-semibold italic" }, ts("word_sounds.read_sentence_preparing") || "Preparing your sentence...")
                 : /*#__PURE__*/ React.createElement(React.Fragment, null,
@@ -16300,10 +16381,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       "div",
                       { className: "flex flex-col items-start gap-3 max-w-xl text-2xl font-black text-slate-800 bg-gradient-to-br from-slate-50 to-violet-50 rounded-2xl border border-violet-100 px-6 py-5" },
                       ...rpBoard.parts.map((p, i) => p.text
-                        ? /*#__PURE__*/ React.createElement("div", { key: "rp-line-" + i }, p.text)
+                        ? /*#__PURE__*/ React.createElement("div", { key: "rp-line-" + i, className: "transition-colors rounded-lg" + (readPassageReadingLine === i ? " bg-violet-100 px-2 -mx-2" : "") }, p.text)
                         : /*#__PURE__*/ React.createElement(
                             "div",
-                            { key: "rp-line-" + i, className: "flex flex-wrap items-center gap-2" },
+                            { key: "rp-line-" + i, className: "flex flex-wrap items-center gap-2 transition-colors rounded-lg" + (readPassageReadingLine === i ? " bg-violet-100 px-2 -mx-2" : "") },
                             p.before ? /*#__PURE__*/ React.createElement("span", null, p.before) : null,
                             rpBlank("rp-blank-" + i, !p.before),
                             p.after ? /*#__PURE__*/ React.createElement("span", null, p.after) : null,
@@ -16323,7 +16404,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                           onDragStart: (e) => { e.dataTransfer.setData("text/plain", w); e.dataTransfer.effectAllowed = "move"; },
                           onDragEnd: () => setReadPassageDragOver(false),
                           onClick: () => rpCheck(w),
-                          className: "px-5 py-3 bg-white border-2 border-slate-200 rounded-2xl shadow-md text-2xl font-bold text-slate-800 lowercase hover:border-violet-400 hover:scale-105 transition-all cursor-grab active:cursor-grabbing",
+                          className: "px-5 py-3 bg-white border-2 border-slate-200 rounded-2xl shadow-md text-2xl font-bold text-slate-800 lowercase hover:border-violet-400 hover:scale-105 transition-all cursor-grab active:cursor-grabbing" + rpChipClass(w),
                         },
                         w,
                       )),
@@ -16350,11 +16431,17 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             const smGrade = (slotsNext) => {
               if (!slotsNext.every(Boolean)) return;
               const ok = slotsNext.every((w, i) => w === smBoard.sequence[i]);
+              // Per-slot marks teach WHICH picture was misplaced — held long
+              // enough to read before the retry clears the tray.
+              setSentenceMatchMarks(slotsNext.map((w, i) => w === smBoard.sequence[i]));
               checkAnswer(ok ? "correct" : "incorrect", "correct");
               if (!ok) {
                 setTimeout(() => {
-                  if (isMountedRef.current) setSentenceMatchSlots(smBoard.sequence.map(() => null));
-                }, 900);
+                  if (isMountedRef.current) {
+                    setSentenceMatchSlots(smBoard.sequence.map(() => null));
+                    setSentenceMatchMarks(null);
+                  }
+                }, 1400);
               }
             };
             const smPlace = (w, slotIdx) => {
@@ -16396,7 +16483,11 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                             "aria-label": placed
                               ? (ts("word_sounds.sentence_match_slot_filled", { n: i + 1, word: placed }) || ("Slot " + (i + 1) + ": " + placed + " — activate to remove"))
                               : (ts("word_sounds.sentence_match_slot_empty", { n: i + 1 }) || ("Slot " + (i + 1) + ", empty")),
-                            className: "relative w-24 h-24 rounded-2xl border-2 border-dashed flex items-center justify-center transition-colors " + (placed ? "border-violet-400 bg-white shadow-md" : "border-slate-400 bg-slate-50"),
+                            className: "relative w-24 h-24 rounded-2xl border-2 border-dashed flex items-center justify-center transition-colors " + (sentenceMatchMarks
+                              ? (sentenceMatchMarks[i]
+                                ? "border-emerald-500 bg-emerald-50 ring-2 ring-emerald-300"
+                                : "border-red-400 bg-red-50 ring-2 ring-red-200 animate-shake")
+                              : placed ? "border-violet-400 bg-white shadow-md" : "border-slate-400 bg-slate-50"),
                           },
                           /*#__PURE__*/ React.createElement("span", { className: "absolute -top-2 -left-2 w-6 h-6 rounded-full bg-violet-600 text-white text-xs font-bold flex items-center justify-center" }, i + 1),
                           img

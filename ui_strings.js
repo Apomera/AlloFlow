@@ -812,6 +812,7 @@
     "read_sentence_picture_hint": "Picture hint",
     "read_sentence_preparing": "Preparing your sentence...",
     "read_sentence_prompt": "Read the sentence. Which word finishes it?",
+    "read_sentence_word_hint": "Your word:",
     "real_recording": "Real recording",
     "sentence_match_desc": "Read a sentence and place its pictures in order",
     "sentence_match_order_hint": "Place the pictures in the order they appear",

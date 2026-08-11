@@ -224,6 +224,24 @@ describe('the player treats the target as print, not sound', () => {
     expect(MODULE).toMatch(/rsBoard\.before \? rsWord : rsWord\.charAt\(0\)\.toUpperCase\(\) \+ rsWord\.slice\(1\)/);
   });
 
+  it('the tapped chip itself shows right/wrong, where the child is looking', () => {
+    const idx = MODULE.indexOf('const rsChipClass = (w) =>');
+    expect(idx).toBeGreaterThan(0);
+    const block = MODULE.slice(idx, idx + 500);
+    expect(block).toMatch(/ws-bounce/);
+    expect(block).toMatch(/animate-shake/);
+    // Applied to the chip, cleared on activity change.
+    expect(MODULE).toMatch(/cursor-grab active:cursor-grabbing" \+ rsChipClass\(w\)/);
+    expect(MODULE).toMatch(/setRsChipFeedback\(null\);/);
+  });
+
+  it('with no picture packed, the printed word anchors instead of a guessing game', () => {
+    expect(MODULE).toMatch(/ts\("word_sounds\.read_sentence_word_hint"\) \|\| "Your word:"/);
+    // The key exists in both string tables (the i18n gate enforces the pair).
+    expect(read('allo_data_source.jsx')).toMatch(/'word_sounds\.read_sentence_word_hint': 'Your word:'/);
+    expect(read('ui_strings.js')).toMatch(/"read_sentence_word_hint": "Your word:"/);
+  });
+
   it('tap works wherever drag does (WCAG 2.5.7)', () => {
     const idx = MODULE.indexOf('case "read_sentence": {');
     expect(idx).toBeGreaterThan(0);

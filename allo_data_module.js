@@ -112,6 +112,7 @@ const WORD_SOUNDS_STRINGS = {
     'word_sounds.read_sentence_drag_prompt': 'Drag the word into the blank, or tap it',
     'word_sounds.read_sentence_preparing': 'Preparing your sentence...',
     'word_sounds.read_sentence_picture_hint': 'Picture hint',
+    'word_sounds.read_sentence_word_hint': 'Your word:',
     'word_sounds.activity_read_passage': 'Read the Story',
     'word_sounds.read_passage_desc': 'Read a tiny story and pick its missing word',
     'word_sounds.read_passage_prompt': 'Read the story. Which word finishes it?',
