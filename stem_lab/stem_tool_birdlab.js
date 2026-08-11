@@ -21113,7 +21113,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 h('rect', { x: 195, y: 40, width: 10, height: 340, fill: 'url(#featherShaft)', rx: 4 }),
                 FEATHER_PARTS.map(function(p, i) {
                   var active = pick === p.id;
-                  return h('g', { key: p.id, onClick: function() { setPick(p.id); }, style: { cursor: 'pointer' } },
+                  return h('g', { key: p.id,
+                    // Mouse-only until now: every feather part's description was
+                    // unreachable without a pointer, so the content did not exist.
+                    role: 'button', tabIndex: 0,
+                    'aria-pressed': active ? 'true' : 'false',
+                    'aria-label': p.label,
+                    'data-feather-part': p.id,
+                    onKeyDown: function(pid) { return function(ev) {
+                      if (ev.key !== 'Enter' && ev.key !== ' ' && ev.key !== 'Spacebar') return;
+                      ev.preventDefault();
+                      setPick(pid);
+                    }; }(p.id),
+                    onClick: function() { setPick(p.id); }, style: { cursor: 'pointer' } },
                     h('circle', { cx: p.x, cy: p.y, r: 18, fill: active ? '#fde047' : 'rgba(254,243,199,0.9)', stroke: active ? '#ca8a04' : '#92400e', strokeWidth: 2 }),
                     h('text', { x: p.x, y: p.y+5, textAnchor: 'middle', fontSize: 16, fontWeight: 900, fill: '#7c2d12' }, (i+1).toString()));
                 }))),
@@ -21972,7 +21984,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 // Markers
                 TOPOLOGY.map(function(t, i) {
                   var active = pick === t.id;
-                  return h('g', { key: t.id, onClick: function() { setPick(t.id); }, style: { cursor: 'pointer' } },
+                  return h('g', { key: t.id,
+                    role: 'button', tabIndex: 0,
+                    'aria-pressed': (pick === t.id) ? 'true' : 'false',
+                    'aria-label': t.label,
+                    'data-topo-part': t.id,
+                    onKeyDown: function(tid) { return function(ev) {
+                      if (ev.key !== 'Enter' && ev.key !== ' ' && ev.key !== 'Spacebar') return;
+                      ev.preventDefault();
+                      setPick(tid);
+                    }; }(t.id),
+                    onClick: function() { setPick(t.id); }, style: { cursor: 'pointer' } },
                     h('circle', { cx: t.x, cy: t.y, r: 12, fill: active ? '#fde047' : 'rgba(254,243,199,0.9)', stroke: active ? '#ca8a04' : '#92400e', strokeWidth: 2 }),
                     h('text', { x: t.x, y: t.y+4, textAnchor: 'middle', fontSize: 11, fontWeight: 900, fill: '#7c2d12' }, (i+1).toString()));
                 }))),
