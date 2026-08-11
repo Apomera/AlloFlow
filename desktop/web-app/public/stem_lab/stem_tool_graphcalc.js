@@ -132,11 +132,37 @@
      Grade-Band Helper
      ═══════════════════════════════════════════════════════════ */
   function getGradeBand(ctx) {
-    var g = ctx.gradeLevel || 5;
+    var g = ctx.gradeLevel;
+    // gradeLevel arrives as a STRING ('5th Grade') in the live ctx; numeric
+    // comparisons on a string are all false, which parked every student in g912.
+    if (typeof g !== 'number') {
+      var gl = String(g || '5th Grade').toLowerCase();
+      if (/k|1st|2nd|pre/.test(gl)) return 'k2';
+      if (/3rd|4th|5th/.test(gl)) return 'g35';
+      if (/6th|7th|8th/.test(gl)) return 'g68';
+      if (/9th|10|11|12|high/.test(gl)) return 'g912';
+      return 'g35';
+    }
     if (g <= 2) return 'k2';
     if (g <= 5) return 'g35';
     if (g <= 8) return 'g68';
     return 'g912';
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     Expression cleanup (shared by canvas, table, analyze, trace,
+     derivative — previously copy-pasted at each site)
+     ═══════════════════════════════════════════════════════════ */
+  function gcCleanExpr(raw) {
+    var e = String(raw).replace(/^y\s*=\s*/i, '').replace(/^f\s*\(x\)\s*=\s*/i, '');
+    e = e.replace(/(\d)([x])/gi, '$1*$2').replace(/([x])(\d)/gi, '$1*$2');
+    // Calculator convention (and this tool's own coach tip): log( is base 10,
+    // ln( is natural. mathjs's log( is natural and it has NO ln — so the Math
+    // Pad's ln button produced an invalid expression and the curve silently
+    // vanished. Order matters: map log→log10 BEFORE ln→log. (Not \b: it fails
+    // after a digit — '2ln(x)' — because digit→letter is not a word boundary.)
+    e = e.replace(/(^|[^A-Za-z_])log\s*\(/gi, '$1log10(').replace(/(^|[^A-Za-z_])ln\s*\(/gi, '$1log(');
+    return e;
   }
 
   /* ═══════════════════════════════════════════════════════════
@@ -187,7 +213,7 @@
      ═══════════════════════════════════════════════════════════ */
   window.StemLab.registerTool('graphCalc', {
     icon: '\uD83D\uDCC8',
-    label: 'graphCalc',
+    label: 'Graphing Calculator',
     desc: 'Graph functions, analyze zeros and intersections, explore transformations',
     color: 'indigo',
     category: 'math',
@@ -377,9 +403,7 @@
         var tableRows = [];
         if (showTable && funcs[0] && funcs[0].expr && window.math) {
           try {
-            var tExpr = funcs[0].expr.replace(/^y\s*=\s*/i, '').replace(/^f\s*\(x\)\s*=\s*/i, '');
-            tExpr = tExpr.replace(/(\d)([x])/gi, '$1*$2').replace(/([x])(\d)/gi, '$1*$2');
-            var tCompiled = math.compile(tExpr);
+            var tCompiled = math.compile(gcCleanExpr(funcs[0].expr));
             for (var tx = tableX; tx <= tableX + 10 * tableStep; tx += tableStep) {
               try {
                 var _tScope = { x: tx };
@@ -425,9 +449,7 @@
           try {
             var f1 = funcs[0];
             if (f1 && f1.expr && f1.expr.trim()) {
-              var e1 = f1.expr.replace(/^y\s*=\s*/i, '').replace(/^f\s*\(x\)\s*=\s*/i, '');
-              e1 = e1.replace(/(\d)([x])/gi, '$1*$2').replace(/([x])(\d)/gi, '$1*$2');
-              var c1 = math.compile(e1);
+              var c1 = math.compile(gcCleanExpr(f1.expr));
               var sA = {};
               if (d.sliderA != null) sA.a = d.sliderA; if (d.sliderB != null) sA.b = d.sliderB; if (d.sliderC != null) sA.c = d.sliderC;
               var step = (win.xmax - win.xmin) / 500;
@@ -439,7 +461,10 @@
                     var lo = prevX, hi = sx;
                     for (var bi = 0; bi < 30; bi++) { var mid = (lo + hi) / 2; var mval = c1.evaluate(Object.assign({ x: mid }, sA)); if (c1.evaluate(Object.assign({ x: lo }, sA)) * mval < 0) hi = mid; else lo = mid; }
                     var root = (lo + hi) / 2;
-                    if (zeros.length === 0 || Math.abs(zeros[zeros.length - 1].x - root) > step * 2) zeros.push({ x: root });
+                    // A sign flip across a vertical asymptote (tan x at pi/2, 1/x at 0)
+                    // bisects to a point where f is huge, not zero — confirm before reporting.
+                    var rootVal = c1.evaluate(Object.assign({ x: root }, sA));
+                    if (typeof rootVal === 'number' && isFinite(rootVal) && Math.abs(rootVal) < 0.5 && (zeros.length === 0 || Math.abs(zeros[zeros.length - 1].x - root) > step * 2)) zeros.push({ x: root });
                   }
                   prevY = sy; prevX = sx;
                 } catch (e) { prevY = null; }
@@ -447,9 +472,7 @@
               for (var fi2 = 1; fi2 < funcs.length; fi2++) {
                 var f2 = funcs[fi2]; if (!f2 || !f2.expr || !f2.expr.trim()) continue;
                 try {
-                  var e2 = f2.expr.replace(/^y\s*=\s*/i, '').replace(/^f\s*\(x\)\s*=\s*/i, '');
-                  e2 = e2.replace(/(\d)([x])/gi, '$1*$2').replace(/([x])(\d)/gi, '$1*$2');
-                  var c2 = math.compile(e2);
+                  var c2 = math.compile(gcCleanExpr(f2.expr));
                   var pDiff = null; var pXd = null;
                   for (var ix = win.xmin; ix <= win.xmax; ix += step) {
                     try {
@@ -460,7 +483,11 @@
                         var ilo = pXd, ihi = ix;
                         for (var ibi = 0; ibi < 30; ibi++) { var imid = (ilo + ihi) / 2; var dd = c1.evaluate(Object.assign({ x: imid }, sA)) - c2.evaluate(Object.assign({ x: imid }, sA)); if ((c1.evaluate(Object.assign({ x: ilo }, sA)) - c2.evaluate(Object.assign({ x: ilo }, sA))) * dd < 0) ihi = imid; else ilo = imid; }
                         var iroot = (ilo + ihi) / 2;
-                        inters.push({ x: iroot, y: c1.evaluate(Object.assign({ x: iroot }, sA)), f2: fi2 });
+                        // Same asymptote guard: the curves must actually MEET here, not
+                        // have their difference blow up across a discontinuity.
+                        var iv1 = c1.evaluate(Object.assign({ x: iroot }, sA));
+                        var iv2 = c2.evaluate(Object.assign({ x: iroot }, sA));
+                        if (typeof iv1 === 'number' && typeof iv2 === 'number' && isFinite(iv1) && isFinite(iv2) && Math.abs(iv1 - iv2) < 0.5) inters.push({ x: iroot, y: iv1, f2: fi2 });
                       }
                       pDiff = diff2; pXd = ix;
                     } catch (e) { pDiff = null; }
@@ -535,8 +562,7 @@
           funcs.forEach(function(fn, fi) {
             if (!fn.expr || !fn.expr.trim()) return;
             try {
-              var expr = fn.expr.replace(/^y\s*=\s*/i, '').replace(/^f\s*\(x\)\s*=\s*/i, '');
-              expr = expr.replace(/(\d)([x])/gi, '$1*$2').replace(/([x])(\d)/gi, '$1*$2');
+              var expr = gcCleanExpr(fn.expr);
               if (/sin|cos|tan/.test(expr)) usedTrig = true;
               var compiled = math.compile(expr);
               c.strokeStyle = fn.color; c.lineWidth = 2.5; c.shadowColor = fn.color; c.shadowBlur = 8; c.beginPath();
@@ -574,9 +600,7 @@
           // Derivative tangent
           if (d.showDeriv && funcs[0] && funcs[0].expr) {
             try {
-              var de = funcs[0].expr.replace(/^y\s*=\s*/i, '').replace(/^f\s*\(x\)\s*=\s*/i, '');
-              de = de.replace(/(\d)([x])/gi, '$1*$2').replace(/([x])(\d)/gi, '$1*$2');
-              var dc = math.compile(de); var dx = d.derivX != null ? d.derivX : 0;
+              var dc = math.compile(gcCleanExpr(funcs[0].expr)); var dx = d.derivX != null ? d.derivX : 0;
               var dsc = Object.assign({ x: dx }, sA);
               var slope = (dc.evaluate(Object.assign({}, dsc, { x: dx + 0.0001 })) - dc.evaluate(Object.assign({}, dsc, { x: dx - 0.0001 }))) / 0.0002;
               var yAtX = dc.evaluate(dsc);
@@ -600,9 +624,7 @@
             funcs.forEach(function(fn) {
               if (!fn.expr || !fn.expr.trim()) return;
               try {
-                var trE = fn.expr.replace(/^y\s*=\s*/i, '').replace(/^f\s*\(x\)\s*=\s*/i, '');
-                trE = trE.replace(/(\d)([x])/gi, '$1*$2').replace(/([x])(\d)/gi, '$1*$2');
-                var trY = math.compile(trE).evaluate(Object.assign({ x: d.traceX }, sA));
+                var trY = math.compile(gcCleanExpr(fn.expr)).evaluate(Object.assign({ x: d.traceX }, sA));
                 if (typeof trY === 'number' && isFinite(trY)) {
                   c.beginPath(); c.arc(trX, toPixelY(trY), 4, 0, Math.PI * 2); c.fillStyle = fn.color; c.fill();
                   c.fillStyle = '#fbbf24'; c.textAlign = 'left';
