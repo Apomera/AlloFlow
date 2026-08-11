@@ -360,6 +360,11 @@ const PLAN_CONTRACTS = Object.freeze({
     demoSafe: false,
     reason: "Opens the recorder popup that hosts the coach; a demo cannot meaningfully drive it."
   },
+  open_it_coach: {
+    demoSafe: false,
+    interaction: "external",
+    reason: "Opens a separate top-level window that asks for a screen share; a demo cannot drive it and should not try."
+  },
   download_voice_models: { demoSafe: false, interaction: "external", reason: "Starts a ~40 MB network download into durable device storage." },
   set_model_download_policy: { params: ["policy"] },
   toggle_wake_word: { demoSafe: false, reason: "Changes when the live microphone routes commands." },
@@ -778,6 +783,20 @@ function buildAlloCommands(ctx, opts = {}) {
     { id: "open_ai_settings", icon: "\u{1F916}", roles: "teacher", label: t("cmd.open_ai_settings", "Open AI settings"), aliases: ["ai settings", "ai backend", "api key", "model settings"], hint: t("cmd.open_ai_settings_hint", "Configure the AI backend"), run: (c) => {
       c.setShowAIBackendModal(true);
       return t("cmd.open_ai_settings_done", "AI settings opened.");
+    } },
+    // The standalone Screen Coach: a separate top-level page, because the site
+    // it coaches is not AlloFlow. Posture is decided HERE, from the app's own
+    // mode, and travels in the URL. The page defaults to learner on its own, so
+    // a lost or malformed parameter lands on the restrictive side; only a
+    // teacher (and not a parent surface, which is not a teacher) gets the
+    // unrestricted posture. Distinct from open_screen_coach, which stays with
+    // the recorder: that one coaches while you record, this one is the tool you
+    // open when a website is fighting you.
+    { id: "open_it_coach", icon: "\u{1F9ED}", roles: "all", when: () => typeof window !== "undefined" && typeof window.open === "function", label: t("cmd.open_it_coach", "Coach me through another website"), aliases: ["it coach", "help me use this website", "help me use another website", "guide me through a website", "walk me through this site", "how do i use this site", "stuck on a website"], hint: t("cmd.open_it_coach_hint", "Opens a coach that watches a site you share and suggests the next step \u2014 it advises, you do the clicking"), run: (c) => {
+      const posture = c && c.isTeacherMode && !c.isParentMode ? "educator" : "learner";
+      const win = window.open("https://alloflow-cdn.pages.dev/it_coach/it_coach.html?posture=" + posture, "alloflow-it-coach");
+      if (!win) return t("cmd.open_it_coach_blocked", "The browser blocked the coach window. Allow pop-ups for AlloFlow and try again.");
+      return posture === "learner" ? t("cmd.open_it_coach_done_learner", "Screen Coach opened in a new window. Share the website you are stuck on and it will suggest the next step. It helps you use the site; it will not answer schoolwork.") : t("cmd.open_it_coach_done", "Screen Coach opened in a new window. Share any tab or window and it will suggest the next step. Nothing is recorded.");
     } },
     // ── Navigate (added 2026-06-13: dashboard + roster + project-settings parity) ──
     { id: "go_dashboard", opensPanel: "dashboard", icon: "\u{1F3E0}", roles: "all", label: t("cmd.go_dashboard", "Go to the dashboard"), aliases: ["dashboard", "home", "go home", "main view", "overview"], hint: t("cmd.go_dashboard_hint", "Back to the main lesson view"), run: (c) => {
@@ -3056,6 +3075,7 @@ const CMD_GROUP = {
   open_video_studio: "tools",
   open_cinematic_studio: "tools",
   open_allo_studio: "tools",
+  open_it_coach: "tools",
   open_accessibility_lab: "tools",
   open_lumen: "tools",
   open_free_forms: "tools",
