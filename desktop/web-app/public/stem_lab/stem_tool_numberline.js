@@ -278,9 +278,11 @@ window.StemLab = window.StemLab || {
             } else if (type === 'between') {
               var a = randInt(rMin, rMax - 2);
               var b = a + randInt(2, 4);
+              // Any integer strictly between low and high is accepted — graded
+              // declaratively in checkAnswer from low/high, NOT via a function
+              // stored in state (functions do not survive state serialization,
+              // and the fallback exact-match would mark valid answers wrong).
               ch = { type: 'between', question: 'Name a whole number between ' + a + ' and ' + b + '.', low: a, high: b, answer: a + 1 };
-              // Accept any integer strictly between a and b
-              ch._checkFn = function(ans) { return ans > a && ans < b && ans === Math.floor(ans); };
 
             } else if (type === 'fraction') {
               var den = pick([2, 3, 4, 5, 8, 10]);
@@ -288,8 +290,8 @@ window.StemLab = window.StemLab || {
               var fracVal = num / den;
               var displayFrac = num + '/' + den;
               var arrowPos = fracVal;
-              ch = { type: 'fraction', _arrowValue: arrowPos, question: 'The arrow points to ' + displayFrac + '. What is this as a decimal? (1 decimal place)', answer: Math.round(fracVal * 10) / 10 };
-              ch._checkFn = function(ans) { return Math.abs(ans - fracVal) < 0.06; };
+              // exact carries the unrounded value; graded with tolerance in checkAnswer.
+              ch = { type: 'fraction', _arrowValue: arrowPos, question: 'The arrow points to ' + displayFrac + '. What is this as a decimal? (1 decimal place)', answer: Math.round(fracVal * 10) / 10, exact: fracVal };
               upd({ range: { min: Math.floor(fracVal) - 1, max: Math.ceil(fracVal) + 1 } });
             }
 
@@ -310,7 +312,12 @@ window.StemLab = window.StemLab || {
 
             var ok;
             if (challenge._checkFn) {
+              // Legacy in-memory challenges only; new challenges grade declaratively below.
               ok = challenge._checkFn(ans);
+            } else if (challenge.type === 'between') {
+              ok = ans > challenge.low && ans < challenge.high && ans === Math.floor(ans);
+            } else if (challenge.type === 'fraction') {
+              ok = Math.abs(ans - (challenge.exact != null ? challenge.exact : challenge.answer)) < 0.06;
             } else if (challenge.type === 'estimate') {
               ok = Math.abs(ans - challenge.answer) <= Math.max(1, rLen * 0.05);
             } else if (challenge.type === 'place') {
@@ -387,6 +394,7 @@ window.StemLab = window.StemLab || {
               else if (key === '2') { sfxClick(); upd({ tab: 'challenges' }); }
               else if (key === '3') { sfxClick(); upd({ tab: 'skipcount' }); }
               else if (key === '4') { sfxClick(); upd({ tab: 'fracdec' }); }
+              else if (key === '5') { sfxClick(); upd({ tab: 'magCompare' }); }
               else if (key === 'n' || key === 'N') { if (tab === 'challenges') genChallenge(); }
               else if (key === '?' || key === '/') { upd({ showAITutor: !showAITutor }); }
             };
@@ -1167,7 +1175,7 @@ window.StemLab = window.StemLab || {
                 'aria-valuemin': fdMin,
                 'aria-valuemax': fdMax,
                 'aria-valuenow': Math.round(fdValue * 1000) / 1000,
-                'aria-valuetext': decimal + ', which is ' + simpNum + ' over ' + simpDen + (isRepeatingDecimal ? ', repeating decimal' : ''),
+                'aria-valuetext': decimal + (isExactFrac ? ', which is ' + simpNum + ' over ' + simpDen : ', near ' + nearestNum + ' over ' + fdDen) + (isRepeatingDecimal ? ', repeating decimal' : ''),
                 onPointerDown: startPointer,
                 onKeyDown: handleLineKey
               },
@@ -2040,7 +2048,7 @@ window.StemLab = window.StemLab || {
             (function() {
               var TAB_META = {
                 explore:    { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)', icon: '\uD83D\uDCCF', title: t('stem.numberline.explore_the_visual_home_for_number_sen', 'Explore \u2014 the visual home for number sense'),  hint: t('stem.numberline.numbers_as_positions_on_a_line_not_jus', 'Numbers as positions on a line, not just symbols. Negatives mirror across zero. Fractions sit BETWEEN integers; decimals are the same idea finer-grained. Common Core 2.MD.6, 3.NF.2, 6.NS.6.') },
-                challenges: { accent: '#d97706', soft: 'rgba(217,119,6,0.10)', icon: '\uD83C\uDFAF', title: t('stem.numberline.challenges_estimate_locate_compare', 'Challenges \u2014 estimate, locate, compare'),          hint: t('stem.numberline.where_does_7_8_sit_what_about_2_4_esti', 'Where does 7/8 sit? What about \u22122.4? Estimation builds magnitude sense. Studies (Siegler 2009) show number-line precision predicts later math success better than rote facts.') },
+                challenges: { accent: '#d97706', soft: 'rgba(217,119,6,0.10)', icon: '\uD83C\uDFAF', title: t('stem.numberline.challenges_estimate_locate_compare', 'Challenges \u2014 estimate, locate, compare'),          hint: t('stem.numberline.where_does_7_8_sit_what_about_2_4_esti', 'Where does 7/8 sit? What about \u22122.4? Estimation builds magnitude sense. Research by Siegler and colleagues links number-line estimation precision to later math achievement.') },
                 skipcount:  { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\uD83D\uDD22', title: t('stem.numberline.skip_count_the_bridge_to_multiplicatio', 'Skip Count \u2014 the bridge to multiplication'),     hint: t('stem.numberline.2_4_6_8_the_2_times_table_walking_skip', '2, 4, 6, 8\u2026 = the 2 times table walking. Skip counting by 5s and 10s pre-builds money and time. Counting backward by 3s pre-builds subtraction and division. The line shows the rhythm.') },
                 fracdec:    { accent: '#0e7490', soft: 'rgba(14,116,144,0.10)', icon: '\u00BD', title: t('stem.numberline.fractions_decimals_same_point_two_name', 'Fractions \u2194 Decimals, same point, two names'), hint: t('stem.numberline.a_fraction_is_a_division_problem_a_dec', 'A fraction is a division problem. A decimal is a fraction with a hidden denominator of 10, 100, 1000\u2026 1/4 and 0.25 are the SAME spot on the line. Common Core 4.NF.6, 4.NF.7, 5.NBT.3.') },
                 magCompare: { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)', icon: '🔄', title: t('stem.numberline.compare_magnitude_discovery', 'Compare — magnitude discovery'), hint: t('stem.numberline.two_fractions_four_possible_relationsh', 'Two fractions, four possible relationships: equal, touching the ½ landmark, A smaller, or B smaller. Sweep the sliders, log what you notice, and write your own comparison rule.') }
@@ -2161,7 +2169,7 @@ window.StemLab = window.StemLab || {
 
             // Keyboard hints
             h('p', { className: 'sr-only' },
-              t('stem.numberline.1_4_tabs_n_new_challenge_ai_tutor_on_m', '\u2328\uFE0F 1-4: tabs | N: new challenge | ?: AI tutor | \u2190 \u2192 on marker: nudge | Home/End: ends')
+              t('stem.numberline.1_4_tabs_n_new_challenge_ai_tutor_on_m', '\u2328\uFE0F 1-5: tabs | N: new challenge | ?: AI tutor | \u2190 \u2192 on marker: nudge | Home/End: ends')
             ),
 
             // \u2550\u2550\u2550 INTEGERS & ABSOLUTE VALUE \u2550\u2550\u2550
