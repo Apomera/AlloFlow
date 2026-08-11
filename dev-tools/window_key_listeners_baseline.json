@@ -1,0 +1,33 @@
+{
+  "note": "Sites the 2026-08-11 all-38 sweep judged safe in shapes this scanner cannot verify statically (modal focus traps, bind-once trampolines, engine dispose paths). Regenerate with --update-baseline only after re-reading the sites.",
+  "accepted": {
+    "stem_tool_aquaculture.js": [
+      "keydown:handler onKeyDown",
+      "keyup:handler onKeyUp"
+    ],
+    "stem_tool_cell.js": [
+      "keydown:handler onKey",
+      "keyup:handler onKey"
+    ],
+    "stem_tool_cyberdefense.js": [
+      "keydown:handler onKeyDown"
+    ],
+    "stem_tool_dissection.js": [
+      "keydown:inline handler"
+    ],
+    "stem_tool_fisherlab.js": [
+      "keydown:handler onKeyDown",
+      "keyup:handler onKeyUp"
+    ],
+    "stem_tool_learning_lab.js": [
+      "keydown:handler onKeyDown",
+      "keydown:handler onKeyDown"
+    ],
+    "stem_tool_roadready.js": [
+      "keydown:handler _autoplayResumeOnce"
+    ],
+    "stem_tool_typingpractice.js": [
+      "keydown:handler onKeyDown"
+    ]
+  }
+}

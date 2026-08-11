@@ -46,6 +46,8 @@ const GATES = [
     'a tool that defines its own announceToSR which only parks a string in toolData discards EVERY screen-reader announcement (lifeskills lost 67, epidemic before it) — the live region exists so axe passes and nothing else can see it'],
   ['scan_fn_in_tool_state.cjs', 60_000,
     'tool state round-trips through JSON, so a function stored on it is silently dropped: Number Line then graded correct answers WRONG via its fallback (f31baa5c9) and Fractions threw on reload (68015ac8c)'],
+  ['scan_window_key_listeners.cjs', 60_000,
+    "a window key listener outlives the tool that added it — multtable's Q/S/? kept starting quizzes and AI calls from inside OTHER tools (e1950eb7c). Baselined: fails only on a NEW unguarded listener"],
 ];
 
 function run(script) {
