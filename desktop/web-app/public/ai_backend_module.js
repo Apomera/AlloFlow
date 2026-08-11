@@ -1232,7 +1232,7 @@ class AIProvider {
         this.isCanvasEnv = config.isCanvasEnv || false;
         const providerTextDefault = this.backend === 'openai'
             ? 'gpt-4o-mini'
-            : (this.backend === 'claude' ? 'claude-sonnet-4-20250514' : 'gemini-3-flash-preview');
+            : (this.backend === 'claude' ? 'claude-sonnet-5' : 'gemini-3-flash-preview');
         this.models = {
             default: config.models?.default || providerTextDefault,
             fallback: config.models?.fallback || providerTextDefault,
@@ -1762,7 +1762,8 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             model: this.models.default,
             max_tokens: maxTokens || 8192,
             messages: [{ role: 'user', content: prompt }],
-            ...(temperature !== null ? { temperature } : {}),
+            // No sampling params: current Claude models (Sonnet 5 / Opus 5) reject
+            // non-default temperature/top_p with a 400 — steer via the prompt instead.
         };
 
         // If search is requested, augment prompt with web search results
@@ -1779,6 +1780,9 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 'Content-Type': 'application/json',
                 'x-api-key': this.apiKey,
                 'anthropic-version': '2023-06-01',
+                // Anthropic's CORS opt-in for browser-direct calls; without it every
+                // request from a page context fails preflight before reaching the API.
+                'anthropic-dangerous-direct-browser-access': 'true',
             },
             body: JSON.stringify(payload),
             signal,
@@ -2671,9 +2675,13 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                     url = `${this.baseUrl}/models?key=${this.apiKey}`;
                     break;
                 case 'claude':
+                    // Anthropic has no keyless public /v1/models the browser can hit pre-auth,
+                    // so this stays a static catalog — keep it to CURRENT ids (stale entries
+                    // 404 at generate time: sonnet-4-20250514 and 3-5-haiku are retired).
                     return [
-                        { id: 'claude-sonnet-4-20250514', type: 'text' },
-                        { id: 'claude-3-5-haiku-20241022', type: 'text' },
+                        { id: 'claude-sonnet-5', type: 'text' },
+                        { id: 'claude-opus-5', type: 'text' },
+                        { id: 'claude-haiku-4-5', type: 'text' },
                     ];
                 default:
                     url = `${this.baseUrl}/v1/models`;
