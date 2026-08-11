@@ -835,6 +835,44 @@ describe('Tree Life Lab — banks and mirrors', () => {
     expect(drought).not.toContain('Wide open');
   });
 
+  it('drives Transport from live state instead of prose alone', () => {
+    // It was the only view with no numbers in it: two prose cards and one aperture
+    // bar. Phloem in particular was pure assertion — "sugar goes where it is needed"
+    // with nothing showing where that is, when the allocation sliders on the Grow tab
+    // ARE the sink list.
+    const E = engine();
+    let t = E.newTree('oak');
+    for (let i = 0; i < 55; i += 1) t = E.simulateYear(t, E.speciesById('oak'), GOOD_ENV, ALLOC);
+
+    const summer = render({ treeLab: { view: 'transport', tree: t, season: 'summer', bandOverride: 'g68' } });
+    expect(summer).toContain('litres a day');          // xylem carries a real volume
+    expect(summer).toContain('Source right now: the leaves');
+    expect(summer).toContain('Stored reserves');
+
+    // Spring runs the phloem the other way: the tree builds a canopy out of last
+    // year's store before it has leaves to make sugar with.
+    const spring = render({ treeLab: { view: 'transport', tree: t, season: 'spring', bandOverride: 'g68' } });
+    expect(spring).toContain('stored reserves in the roots and trunk');
+    // ...and the store cannot be a destination while it is the source.
+    const springSinks = spring.slice(spring.indexOf('Source right now'));
+    expect(springSinks).not.toContain('Stored reserves');
+  });
+
+  it('says a deficit year is a deficit instead of dividing zero five ways', () => {
+    // With no surplus every sink rendered a full-width share bar labelled "0 kg C".
+    // The shares said 30/25/30/5/10 and the values said nothing is moving; both were
+    // true and together they read as broken.
+    const E = engine();
+    let t = E.newTree('oak');
+    for (let i = 0; i < 55; i += 1) t = E.simulateYear(t, E.speciesById('oak'), GOOD_ENV, ALLOC);
+    const html = render({
+      treeLab: { view: 'transport', tree: t, season: 'summer', bandOverride: 'g912', droughtYears: [t.age] },
+    });
+    expect(html).toContain('Nothing to send out');
+    expect(html).toContain('Sinks become the source');
+    expect(html).not.toMatch(/0 kg C/);
+  });
+
   it('leaves no user-visible string a language pack cannot reach', () => {
     // Static greps cannot answer this and never could: a string routed through a
     // module-scope data table reaches __alloT at RENDER time and looks hardcoded to a

@@ -1809,6 +1809,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         if (addToast) addToast('Opening ' + labelTxt, 'info');
       }
 
+      // Where this year's sugar is actually going, straight from the student's own
+      // allocation. In spring the phloem runs the other way: the tree spends stored
+      // reserves building leaves BEFORE it has leaves to make sugar with, which is the
+      // detail that makes "direction is not fixed" land.
+      function sinkRows() {
+        var springDraw = (season === 'spring');
+        var rows = [
+          ['leaf', __alloT('stem.treelab.leaves', 'Leaves'), alloc.leaf, '#22c55e'],
+          ['root', __alloT('stem.treelab.roots', 'Roots'), alloc.root, '#a16207'],
+          ['wood', __alloT('stem.treelab.wood', 'Wood (height and rings)'), alloc.wood, '#f59e0b'],
+          ['repro', __alloT('stem.treelab.reproduction', 'Reproduction'), alloc.repro, '#ec4899'],
+          ['store', __alloT('stem.treelab.reserves', 'Stored reserves'), alloc.store, '#38bdf8']
+        ].filter(function (r) { return !(springDraw && r[0] === 'store'); });
+        var surplus = Math.max(0, liveNet);
+        if (surplus <= 0 && !springDraw) {
+          return h('div', { key: 'deficit', style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.bad, borderLeft: '4px solid ' + T.bad } }, [
+            h('div', { key: 'a', style: { fontWeight: 700, color: T.text, fontSize: 13 } },
+              __alloT('stem.treelab.no_surplus', 'Nothing to send out')),
+            h('div', { key: 'b', style: { fontSize: 12, color: T.dim, marginTop: 3, lineHeight: 1.55 } },
+              __alloT('stem.treelab.no_surplus_note', 'The tree is spending more than it makes, so there is no surplus to divide. The phloem is running the other way: stored sugar is being pulled back OUT of the roots and trunk to keep the living tissue alive. Sinks become the source.'))
+          ]);
+        }
+        return h('div', { key: 'sinks' }, [
+          h('div', { key: 'src', style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, borderLeft: '4px solid ' + (springDraw ? tone('#38bdf8') : tone('#22c55e')), marginBottom: 8 } }, [
+            h('div', { key: 'a', style: { fontWeight: 700, color: T.text, fontSize: 13 } },
+              springDraw
+                ? __alloT('stem.treelab.source_spring', 'Source right now: stored reserves in the roots and trunk')
+                : __alloT('stem.treelab.source_summer', 'Source right now: the leaves')),
+            h('div', { key: 'b', style: { fontSize: 12, color: T.dim, marginTop: 3, lineHeight: 1.5 } },
+              springDraw
+                ? __alloT('stem.treelab.source_spring_note', 'The canopy is not built yet, so sugar runs UP from store to build it. The tree is spending last year to pay for this one.')
+                : round(surplus, 2) + ' kg C ' + __alloT('stem.treelab.to_spend', 'to send out this year'))
+          ]),
+          h('div', { key: 'rows' }, rows.map(function (r) {
+            var share = r[2];
+            return h('div', { key: r[0], style: { marginBottom: 7 } }, [
+              h('div', { key: 'l', style: { display: 'flex', justifyContent: 'space-between', fontSize: 12, color: T.dim, marginBottom: 3 } }, [
+                h('span', { key: 'a', style: { display: 'flex', alignItems: 'center', gap: 6 } }, [
+                  h('span', { key: 's', style: { width: 9, height: 9, borderRadius: 2, background: tone(r[3]), display: 'inline-block', border: isContrast ? '1px solid ' + T.text : 'none' } }),
+                  (springDraw ? '↑ ' : '↓ ') + r[1]
+                ]),
+                h('span', { key: 'b', style: { fontWeight: 700, color: T.text } },
+                  round(surplus * share, 2) + ' kg C')
+              ]),
+              h('div', { key: 't', style: { height: 8, background: T.cardAlt, borderRadius: 4, overflow: 'hidden', border: '1px solid ' + T.border } },
+                h('div', { style: { height: '100%', width: Math.round(clamp(share, 0, 1) * 100) + '%', background: tone(r[3]) } }))
+            ]);
+          }))
+        ]);
+      }
+
       function viewTransport() {
         var kids = [];
         var flowUp = Math.round(aperture * 100);
@@ -1824,7 +1875,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
                   : (atLeast(band, 'g68')
                     ? __alloT('stem.treelab.xylem_g68', 'Dead hollow cells carrying water up from the roots. Evaporation at the leaves does the pulling.')
                     : __alloT('stem.treelab.xylem_k2', 'Carries water up from the roots to the leaves.'))),
-              h('div', { key: 'm', style: { marginTop: 8 } }, bar(__alloT('stem.treelab.flow_now', 'Flow right now'), aperture, '#38bdf8', flowUp + '% of maximum'))
+              h('div', { key: 'm', style: { marginTop: 8 } }, bar(__alloT('stem.treelab.flow_now', 'Flow right now'), aperture, tone('#38bdf8'),
+                fmtInt(Math.round(transpirationPerDay)) + ' ' + __alloT('stem.treelab.litres_day', 'litres a day') + ' · ' + flowUp + '%')),
+              inDrought && atLeast(band, 'g912') ? h('div', { key: 'cav', style: { marginTop: 6, fontSize: 11, color: T.warn, lineHeight: 1.5 } },
+                __alloT('stem.treelab.tension_note', 'Under drought the column is pulled harder against a drier soil. Push the tension far enough and an air bubble breaks the thread, and that segment of xylem never carries water again.')) : null
             ]),
             h('div', { key: 'p', style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, borderLeft: '4px solid #f59e0b' } }, [
               h('div', { key: 'h', style: { fontWeight: 700, color: T.text, marginBottom: 4 } }, '↓ ' + (atLeast(band, 'g68') ? 'Phloem' : 'Sugar pipes')),
@@ -1839,6 +1893,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         ]));
 
         if (atLeast(band, 'g68')) {
+          kids.push(card([
+            heading(__alloT('stem.treelab.where_sugar', 'Where this year’s sugar is going'),
+              __alloT('stem.treelab.where_sugar_sub', 'Straight from the allocation you set on the Grow tab. Phloem has no fixed direction: it runs from wherever sugar IS to wherever it is being spent.')),
+            sinkRows()
+          ]));
+
           kids.push(card([
             heading(__alloT('stem.treelab.girdling', 'Why cutting a ring of bark kills a tree'),
               __alloT('stem.treelab.girdling_sub', 'A useful test of whether the two systems have really landed.')),
