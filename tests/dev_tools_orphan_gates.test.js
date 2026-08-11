@@ -50,6 +50,8 @@ const GATES = [
     "a window key listener outlives the tool that added it — multtable's Q/S/? kept starting quizzes and AI calls from inside OTHER tools (e1950eb7c). Baselined: fails only on a NEW unguarded listener"],
   ['scan_mouse_only_controls.cjs', 60_000,
     'a non-native element with role="button"/"switch" + onClick and no key handler is announced as a control that Enter/Space cannot operate (Assessment Literacy 006c25805, Probability marble-bag switch). Baselined: canvases use described alternatives instead'],
+  ['scan_inline_canvas_refs.cjs', 60_000,
+    'an INLINE ref re-runs its setup on every re-render, and these tools push state while animating — molecule re-ran a 120k-attempt Monte Carlo and stacked a new rAF loop each time. Baselined at 1 (beehive); a NEW one fails'],
 ];
 
 // Timeouts are deliberately generous. These scripts each re-read and re-parse

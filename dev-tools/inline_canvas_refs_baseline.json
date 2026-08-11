@@ -1,0 +1,8 @@
+{
+  "note": "Known unguarded inline canvas refs that are accepted for now. beehive: uses setTransform + clearRect already, so the only cost is a bitmap realloc per re-render (churn, not visible corruption), and the file was open in another session when the sweep ran. Regenerate with --update-baseline only after re-reading each site.",
+  "accepted": {
+    "stem_tool_beehive.js": [
+      "assigns cv.width @25639; assigns cv.height @25639"
+    ]
+  }
+}

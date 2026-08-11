@@ -207,10 +207,23 @@ const files = fileArgs.length ? fileArgs
       .filter((f) => /^stem_tool_.*\.js$/.test(f))
       .map((f) => path.join('stem_lab', f));
 
+// Baselined like check_free_vars, so the gate can BLOCK on anything new while
+// acknowledging what is already known and owned elsewhere. Keyed on the work
+// description rather than the line number, because a line moves whenever
+// anything above it changes.
+const BASELINE_FILE = path.join(__dirname, 'inline_canvas_refs_baseline.json');
+let baseline = {};
+try { baseline = JSON.parse(fs.readFileSync(BASELINE_FILE, 'utf8')).accepted || {}; } catch (e) {}
+const writeBaseline = argv.includes('--update-baseline');
+const seen = {};
+
 let failFiles = 0, failCount = 0, infoCount = 0, parseErrors = 0;
 for (const rel of files) {
   const r = scanFile(path.resolve(ROOT, rel));
   if (r.parseError) { parseErrors++; console.log('PARSE FAIL ' + rel + ': ' + r.parseError); continue; }
+  const base = path.basename(rel);
+  if (r.fails.length) seen[base] = r.fails.map((f) => f.work.join('; '));
+  r.fails = r.fails.filter((f) => !(baseline[base] || []).includes(f.work.join('; ')));
   if (r.fails.length) {
     failFiles++; failCount += r.fails.length;
     console.log('FLAG ' + rel);
@@ -222,9 +235,16 @@ for (const rel of files) {
     for (const f of r.infos) console.log('   ~ inline ref @' + f.line + ' (guarded): ' + f.work.join('; '));
   }
 }
+if (writeBaseline) {
+  fs.writeFileSync(BASELINE_FILE, JSON.stringify({
+    note: 'Known unguarded inline canvas refs that are accepted for now. beehive: uses setTransform + clearRect already, so the only cost is a bitmap realloc per re-render (churn, not visible corruption), and the file was open in another session when the sweep ran. Regenerate with --update-baseline only after re-reading each site.',
+    accepted: seen,
+  }, null, 2) + '\n', 'utf8');
+  console.log('baseline written: ' + Object.keys(seen).length + ' file(s)');
+}
 if (!quiet || failFiles || parseErrors) {
   console.log('---');
-  console.log('scan_inline_canvas_refs: ' + files.length + ' file(s), ' + failCount + ' unguarded re-init ref(s) in '
+  console.log('scan_inline_canvas_refs: ' + files.length + ' file(s), ' + failCount + ' NEW unguarded re-init ref(s) in '
     + failFiles + ' file(s), ' + infoCount + ' guarded (' + (showInfo ? 'shown' : '--info to list') + '), '
     + parseErrors + ' parse failure(s).');
 }
