@@ -920,6 +920,75 @@ describe('Tree Life Lab — banks and mirrors', () => {
     expect(E.strategyById('seed_animal').blurb).toMatch(/cached/);
   });
 
+  it('shows a cumulative record so the tradeoff can be read across rounds', () => {
+    // spreadTotals, bestDiverse, bestClonal and spreadRounds were all written and the
+    // only UI read was the 3D clone count. One round is an anecdote; the seed-versus-
+    // clonal tradeoff only becomes visible across several against different events.
+    const E = engine();
+    let tree = E.newTree('oak');
+    for (let i = 0; i < 50; i += 1) tree = E.simulateYear(tree, E.speciesById('oak'), GOOD_ENV, ALLOC);
+
+    const oneRound = render({
+      treeLab: {
+        view: 'spread', tree,
+        spreadLog: [{ event: 'calm', diverse: 1, clonal: 4 }],
+        spreadTotals: { diverse: 1, clonal: 4 },
+      },
+    });
+    expect(oneRound).toContain('Your record so far');
+    expect(oneRound).toContain('One decade is an anecdote');   // refuses to conclude
+
+    // A clonal-heavy record names the specific exposure it bought.
+    const clonal = render({
+      treeLab: {
+        view: 'spread', tree,
+        spreadLog: [
+          { event: 'calm', diverse: 0, clonal: 5 },
+          { event: 'fire', diverse: 1, clonal: 6 },
+          { event: 'browsing', diverse: 0, clonal: 4 },
+        ],
+        spreadTotals: { diverse: 1, clonal: 15 },
+      },
+    });
+    expect(clonal).toMatch(/One root pathogen reaches all of them/);
+
+    const seedy = render({
+      treeLab: {
+        view: 'spread', tree,
+        spreadLog: [{ event: 'calm', diverse: 6, clonal: 0 }, { event: 'pathogen', diverse: 5, clonal: 0 }],
+        spreadTotals: { diverse: 11, clonal: 0 },
+      },
+    });
+    expect(seedy).toMatch(/paid for that in how few of them took/);
+  });
+
+  it('does not carry one tree’s clones over to the next seedling', () => {
+    // The 3D scene reads its clone count straight from spreadTotals, and resetTree did
+    // not clear it, so a fresh seedling rendered the previous tree's whole stand.
+    const src = readFileSync(resolve(process.cwd(), SOURCE), 'utf8');
+    const start = src.indexOf('function resetTree(');
+    const body = src.slice(start, src.indexOf('\n      }', start));
+    expect(body, 'resetTree leaves spreadTotals behind').toContain('spreadTotals');
+    expect(body).toContain('spreadLog');
+  });
+
+  it('scores the knowledge check per question, not per click', () => {
+    // Re-answering the same question must not inflate the score, and the score must
+    // count only questions the current band actually shows.
+    const E = engine();
+    const html = render({
+      treeLab: { view: 'quiz', bandOverride: 'k2', quizSeen: { 0: 'right', 7: 'wrong' } },
+    });
+    expect(html).toMatch(/1 \/ 2 right/);
+
+    const fresh = render({ treeLab: { view: 'quiz', bandOverride: 'k2' } });
+    expect(fresh).toContain('Not answered yet');
+
+    // A k2 learner sees a subset, so a g912-only answer must not count toward it.
+    const g912only = render({ treeLab: { view: 'quiz', bandOverride: 'k2', quizSeen: { 4: 'right' } } });
+    expect(g912only).toContain('Not answered yet');
+  });
+
   it('leaves no user-visible string a language pack cannot reach', () => {
     // Static greps cannot answer this and never could: a string routed through a
     // module-scope data table reaches __alloT at RENDER time and looks hardcoded to a

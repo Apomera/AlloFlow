@@ -1381,7 +1381,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         // oak would carry that commitment across and resolve a strategy oak does not
         // have — the Spread list would offer three routes while the results reported
         // a fourth. Reproduction carbon is reset with the tree anyway.
-        updMulti({ tree: newTree(sid), speciesId: sid, spend: {}, lastSpread: null, playing: false, yearPhase: 0, droughtYears: [] });
+        updMulti({
+          tree: newTree(sid), speciesId: sid, spend: {}, lastSpread: null, playing: false,
+          yearPhase: 0, droughtYears: [],
+          // The record belongs to the tree that earned it, and the 3D scene reads its
+          // clone count from spreadTotals — a fresh seedling was inheriting the
+          // previous tree's whole stand of clones.
+          spreadTotals: { diverse: 0, clonal: 0 }, spreadLog: [], spreadRounds: 0
+        });
         CLOCK.stop();
         srSay('Reset to a new ' + speciesById(sid).name + ' seedling.');
       }
@@ -1989,6 +1996,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         ]));
 
         if (last) kids.push(spreadResult(last));
+        var rec = spreadRecord();
+        if (rec) kids.push(rec);
         return kids;
       }
 
@@ -2012,11 +2021,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         var totals = Object.assign({ diverse: 0, clonal: 0 }, d.spreadTotals || {});
         totals.diverse += res.diverseCount;
         totals.clonal += res.clonalCount;
+        var log = (Array.isArray(d.spreadLog) ? d.spreadLog : []).concat([{
+          event: ev.id, diverse: res.diverseCount, clonal: res.clonalCount
+        }]).slice(-12);
 
         updMulti({
           lastSpread: { event: ev.id, res: res },
           spreadRounds: rounds + 1,
           spreadTotals: totals,
+          spreadLog: log,
           bestDiverse: Math.max(d.bestDiverse || 0, res.diverseCount),
           bestClonal: Math.max(d.bestClonal || 0, res.clonalCount),
           spend: {},
@@ -2025,6 +2038,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         if (res.established > 0) { sfxGrow(); xp(6); } else { sfxBad(); }
         srSay(ev.name + '. ' + res.established + ' descendant' + (res.established === 1 ? '' : 's') + ' established.');
         if (addToast) addToast(ev.icon + ' ' + ev.name + ': ' + res.established + ' established', res.established > 0 ? 'success' : 'error');
+      }
+
+      function spreadRecord() {
+        var log = Array.isArray(d.spreadLog) ? d.spreadLog : [];
+        if (!log.length) return null;
+        var totals = d.spreadTotals || { diverse: 0, clonal: 0 };
+        var all = totals.diverse + totals.clonal;
+
+        // Say what the student's OWN rounds show, rather than restating the lesson.
+        // With one round there is nothing to compare, so it says so.
+        var verdict;
+        if (log.length < 2) {
+          verdict = __alloT('stem.treelab.record_one_round', 'One decade is an anecdote. Run another against a different event before drawing a conclusion.');
+        } else if (totals.clonal > totals.diverse * 2) {
+          verdict = __alloT('stem.treelab.record_clonal', 'Your descendants are overwhelmingly clonal: reliable, close to home, and every one of them carrying the same susceptibility. One root pathogen reaches all of them.');
+        } else if (totals.diverse > totals.clonal * 2) {
+          verdict = __alloT('stem.treelab.record_seed', 'Your descendants are overwhelmingly from seed: genetically varied and spread wide, and you paid for that in how few of them took.');
+        } else {
+          verdict = __alloT('stem.treelab.record_mixed', 'You are hedging — copies close by that almost always take, plus seedlings further out that mostly do not. Most real trees settle here too.');
+        }
+
+        return card([
+          heading(__alloT('stem.treelab.record', 'Your record so far'),
+            __alloT('stem.treelab.record_sub', 'Every decade you have run with this tree.')),
+          h('div', { key: 'tot', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(110px,1fr))', gap: 8, marginBottom: 10 } }, [
+            statTile('r', __alloT('stem.treelab.decades', 'Decades run'), String(log.length), T.accent),
+            statTile('d', __alloT('stem.treelab.from_seed', 'From seed'), String(totals.diverse), tone('#ec4899')),
+            statTile('c', __alloT('stem.treelab.clonal', 'Clonal copies'), String(totals.clonal), tone('#86efac')),
+            atLeast(band, 'g68')
+              ? statTile('x', __alloT('stem.treelab.diversity', 'Genetic diversity'),
+                (all > 0 ? Math.round((totals.diverse / all) * 100) : 0) + '%', T.accent)
+              : null
+          ].filter(Boolean)),
+          h('div', { key: 'rows' }, log.map(function (r, i) {
+            var e = eventById(r.event);
+            var took = r.diverse + r.clonal;
+            return h('div', {
+              key: 'lr' + i,
+              style: { display: 'flex', justifyContent: 'space-between', gap: 8, padding: '6px 0', borderBottom: '1px solid ' + T.border, fontSize: 12 }
+            }, [
+              h('span', { key: 'a', style: { color: T.dim } },
+                (i + 1) + '. ' + e.icon + ' ' + __alloT('stem.treelab.event_' + e.id, e.name)),
+              h('span', { key: 'b', style: { color: took > 0 ? T.text : T.dim, fontWeight: 600 } },
+                took + ' ' + __alloT('stem.treelab.established_short', 'established')
+                + (took > 0 ? '  (' + r.diverse + ' / ' + r.clonal + ')' : ''))
+            ]);
+          })),
+          h('p', { key: 'v', style: { fontSize: 12, color: T.dim, lineHeight: 1.55, marginTop: 10 } }, verdict)
+        ]);
       }
 
       function spreadResult(last) {
@@ -2064,6 +2126,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         ]);
       }
 
+      // One dot per question in this band: filled when answered, and the running score
+      // counts only questions this band actually shows.
+      function scoreStrip(pool) {
+        var seen = d.quizSeen || {};
+        var right = 0, done = 0;
+        pool.forEach(function (q) {
+          var st = seen[QUIZ.indexOf(q)];
+          if (!st) return;
+          done++;
+          if (st === 'right') right++;
+        });
+        return h('div', { key: 'score', style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 10 } }, [
+          h('div', { key: 'dots', style: { display: 'flex', gap: 4 } }, pool.map(function (q, i) {
+            var st = seen[QUIZ.indexOf(q)];
+            return h('span', {
+              key: 'd' + i,
+              style: {
+                width: 9, height: 9, borderRadius: 5, display: 'inline-block',
+                border: '1px solid ' + T.border,
+                background: st === 'right' ? T.good : (st === 'wrong' ? T.bad : 'transparent')
+              }
+            });
+          })),
+          h('span', { key: 'n', style: { fontSize: 12, color: T.dim } },
+            done === 0
+              ? __alloT('stem.treelab.score_none', 'Not answered yet')
+              : right + ' / ' + done + ' ' + __alloT('stem.treelab.score_right', 'right'))
+        ]);
+      }
+
       function viewQuiz() {
         var pool = QUIZ.filter(function (q) { return bandRank(band) >= bandRank(q.band); });
         if (pool.length === 0) pool = QUIZ.slice(0, 3);
@@ -2079,6 +2171,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         return [card([
           heading(__alloT('stem.treelab.check', 'Knowledge check'),
             __alloT('stem.treelab.check_sub', 'Question ') + (idx + 1) + ' / ' + pool.length + ' · ' + BAND_LABEL[band]),
+          scoreStrip(pool),
           h('p', { key: 'q', style: { fontSize: 14, color: T.text, lineHeight: 1.6, marginBottom: 10, fontWeight: 600 } },
             __alloT('stem.treelab.quiz' + qKey + '_q', q.q)),
           h('div', { key: 'opts', role: 'group', 'aria-label': 'Answer choices' }, q.a.map(function (opt, i) {
@@ -2090,9 +2183,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             return h('button', {
               key: 'o' + i, type: 'button', disabled: answered,
               onClick: function () {
-                upd('quizPick', i);
-                if (isCorrect) { sfxGrow(); xp(3); srSay('Correct.'); }
-                else { sfxBad(); srSay('Not quite.'); }
+                var seen = Object.assign({}, d.quizSeen || {});
+                var first = !seen[qKey];
+                seen[qKey] = isCorrect ? 'right' : 'wrong';
+                updMulti({ quizPick: i, quizSeen: seen });
+                if (isCorrect) {
+                  sfxGrow();
+                  if (first) xp(3);
+                  srSay(__alloT('stem.treelab.correct', 'Correct.'));
+                } else {
+                  sfxBad();
+                  srSay(__alloT('stem.treelab.not_quite', 'Not quite.'));
+                }
               },
               style: {
                 display: 'block', width: '100%', textAlign: 'left', padding: '10px 12px',
