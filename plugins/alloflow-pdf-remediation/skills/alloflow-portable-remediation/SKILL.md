@@ -167,6 +167,24 @@ manifest (`{"items": [{"source": ..., "plan": ...}, ...]}`, at most 60), and
 run `batch-remediate --manifest M --out-dir D`. Report the per-file scoreboard
 it returns — every failure by name — never just "done".
 
+When the run will be reviewed by an administrator or accessibility
+coordinator, finish with:
+
+   ```text
+   python "<skill-dir>/scripts/alloflow_portable.py" summary-report \
+     --run-dir "<out-dir>" [--before-validation before.json] \
+     [--verification verification-report.json]
+   ```
+
+   It folds the run's stamped evidence (accessibility report, optional
+   before-validation from `validate-pdf` on the ORIGINAL file, optional
+   verification report, privacy receipt) into one self-contained
+   plain-language HTML page (`*-evidence-summary.html`) that can be emailed
+   or filed without any technical tooling. It adds nothing: every figure is
+   read from the artifacts, and the no-compliance-claim language is carried
+   through. Running `validate-pdf` on the original first gives the page a
+   real before/after row.
+
 For a translated or plain-language copy, author a second plan from the same
 source with `document.variant` set to `"translated"` or `"simplified"`, a
 review note describing the transformation, and (for translations)

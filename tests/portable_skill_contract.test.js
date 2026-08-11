@@ -156,3 +156,39 @@ describe('AlloFlow portable skill distribution contract', () => {
     expect(readFileSync(join(skillRoot, 'SKILL.md'), 'utf8')).toMatch(/no paid Worker/i);
     expect(existsSync(join(skillRoot, 'LICENSE'))).toBe(true);
   });});
+
+describe('summary-report (reviewer evidence page)', () => {
+  // Fixture = the committed ed-parent-guide evidence run: a real before-
+  // validation, a real v2 verification report, and a stamped accessibility
+  // report, so the page's numbers are exercised against genuine artifacts.
+  const RUN_DIR = resolve(ROOT, 'mcp-testing/runs/2026-08-10_ed-parent-guide-idea_portable');
+  const ENGINE = join(CANONICAL, 'scripts/alloflow_portable.py');
+
+  it('folds a run into one self-contained plain-language page, zeros printed', () => {
+    const scratch = mkdtempSync(join(tmpdir(), 'alloflow-summary-'));
+    scratchDirectories.push(scratch);
+    const out = join(scratch, 'evidence.html');
+    const stdout = execFileSync(PYTHON, [
+      ENGINE, 'summary-report',
+      '--run-dir', RUN_DIR,
+      '--report', join(RUN_DIR, 'alloflow-output-v2/source-accessibility-report.json'),
+      '--verification', join(RUN_DIR, 'verification-report-v2.json'),
+      '--out', out,
+    ], { cwd: ROOT, encoding: 'utf8' });
+    const result = JSON.parse(stdout);
+    expect(result.ok).toBe(true);
+    expect(result.usedBeforeValidation).toBe(true);
+    expect(result.usedVerification).toBe(true);
+    const page = readFileSync(out, 'utf8');
+    // Before/after scoring from the stamped artifacts:
+    expect(page).toContain('FAILED: 5 rules, 18 checks');
+    expect(page).toContain('PASSED: 0 failed rules');
+    // Zeros must PRINT (esc() folds falsy to empty — the _show contract):
+    expect(page).toContain('0 discrepancies, 0 unreadable');
+    expect(page).toContain('requests blocked by the renderer: 0');
+    // Honesty language carried through verbatim:
+    expect(page).toContain('never determines legal compliance');
+    // Self-contained: no external fetches of any kind.
+    expect(page).not.toMatch(/src="http|href="http[^"]*\.(?:css|js)/);
+  });
+});

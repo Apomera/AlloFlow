@@ -1,6 +1,6 @@
 {
   "name": "alloflow-pdf-remediation",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "description": "Rebuild attached PDFs for accessibility in the active file sandbox with no paid Worker, institution account, or separate API key.",
   "author": {
     "name": "AlloFlow",

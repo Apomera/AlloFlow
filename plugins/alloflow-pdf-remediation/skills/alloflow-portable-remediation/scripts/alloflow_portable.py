@@ -26,7 +26,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 
-VERSION = "0.2.7"
+VERSION = "0.2.8"
 MAX_SOURCE_BYTES = 200 * 1024 * 1024
 MAX_PLAN_BYTES = 8 * 1024 * 1024
 MAX_HTML_BYTES = 8 * 1024 * 1024
@@ -3684,6 +3684,254 @@ def extract_annotations_command(args: argparse.Namespace) -> Dict[str, Any]:
     }
 
 
+# ── Reviewer evidence summary (round 15) ─────────────────────────────────────
+# The run artifacts are machine-honest JSON, which is exactly wrong for the
+# person who has to sign off: an accessibility coordinator or administrator
+# needs ONE page they can open, read, and file, without a JSON viewer or a
+# git checkout. summary-report folds a run's evidence (accessibility report,
+# optional before-validation, optional verification report, privacy receipt)
+# into a single self-contained HTML page in plain language. It ADDS nothing:
+# every number is read from the stamped artifacts, and the honesty language
+# (review required, no compliance claim) is carried through verbatim.
+
+_VERDICT_PLAIN = {
+    "pdf_generated_validation_passed_review_required": (
+        "A tagged PDF was generated and local veraPDF validation passed every PDF/UA-1 rule. "
+        "A person must still compare meaning and fidelity with the source before distribution."
+    ),
+    "pdf_generated_with_known_issues": (
+        "A tagged PDF was generated, but veraPDF found unresolved PDF/UA rules; see the failed-rule list."
+    ),
+    "pdf_generated_unverified_review_required": (
+        "A tagged PDF was generated but local PDF/UA validation did not complete, so its conformance is unverified."
+    ),
+    "html_only_review_required": (
+        "The semantic accessible HTML rebuild exists, but this machine could not generate a tagged PDF "
+        "(that tier needs a local Chromium renderer). The HTML, report, and receipt are the deliverables."
+    ),
+    "blocked": "The document type or plan could not be processed safely; see the report.",
+}
+
+
+def _load_json_quiet(path: Optional[Path]) -> Optional[Dict[str, Any]]:
+    if not path or not path.is_file():
+        return None
+    try:
+        loaded = json.loads(path.read_text(encoding="utf-8"))
+        return loaded if isinstance(loaded, dict) else None
+    except (OSError, ValueError):
+        return None
+
+
+def _find_one(run_dir: Path, suffix: str) -> Optional[Path]:
+    matches = sorted(run_dir.glob("*" + suffix))
+    return matches[0] if matches else None
+
+
+def _show(value: Any) -> str:
+    """Reviewer-page formatter: zeros and booleans must PRINT (esc() folds
+    falsy values to empty strings, which read as missing data on a page whose
+    whole job is showing '0 discrepancies' and 'no')."""
+    if value is None:
+        return "not recorded"
+    if isinstance(value, bool):
+        return "yes" if value else "no"
+    return esc(value) or "0"
+
+
+def summary_report_command(args: argparse.Namespace) -> Dict[str, Any]:
+    run_dir = Path(args.run_dir).resolve()
+    if not run_dir.is_dir():
+        raise PortableError("summary-report needs an existing run directory.", 2)
+    report_path = Path(args.report).resolve() if getattr(args, "report", None) else _find_one(run_dir, "-accessibility-report.json")
+    report = _load_json_quiet(report_path)
+    if not report:
+        raise PortableError("No *-accessibility-report.json found in the run directory.", 2)
+    before = _load_json_quiet(Path(args.before_validation).resolve()) if getattr(args, "before_validation", None) else _load_json_quiet(run_dir / "before-verapdf.json")
+    verification = _load_json_quiet(Path(args.verification).resolve()) if getattr(args, "verification", None) else (
+        _load_json_quiet(_find_one(run_dir, "verification-report-v2.json"))
+        or _load_json_quiet(_find_one(run_dir, "verification-report.json"))
+    )
+    receipt = _load_json_quiet(_find_one(run_dir, "-privacy-receipt.json"))
+
+    checks = report.get("checks") or {}
+    source = report.get("source") or {}
+    ua = checks.get("pdfUaValidation") or {}
+    src_recall = checks.get("sourceTextRecall") or {}
+    out_recall = checks.get("outputTextRecall") or {}
+    audit = checks.get("staticHtmlAudit") or {}
+    verdict = str(report.get("verdict") or "")
+    doc_name = str(source.get("basename") or "document")
+    created = str(report.get("createdAt") or "")
+
+    def _pct(value: Any) -> str:
+        try:
+            return f"{float(value) * 100:.1f}%"
+        except (TypeError, ValueError):
+            return "not measured"
+
+    rows: List[str] = []
+
+    def row(label: str, before_val: str, after_val: str) -> None:
+        rows.append(
+            f"<tr><th scope=\"row\">{esc(label)}</th><td>{esc(before_val)}</td><td>{esc(after_val)}</td></tr>"
+        )
+
+    if before:
+        before_rules = before.get("failedRules") or []
+        before_checks = sum(int(rule.get("failedChecks") or 0) for rule in before_rules if isinstance(rule, dict))
+        row(
+            "PDF/UA-1 validation (veraPDF, ISO 14289-1)",
+            ("FAILED: " + str(before.get("failedRuleCount")) + " rules, " + str(before_checks) + " checks")
+            if before.get("compliant") is False else ("PASSED" if before.get("compliant") else "not run"),
+            ("PASSED: 0 failed rules" if ua.get("compliant") else ("FAILED: " + str(ua.get("failedRuleCount")) + " rules")) if ua.get("status") == "completed" else "not run on this machine",
+        )
+    failed_before_list = ""
+    if before and before.get("failedRules"):
+        items = "".join(
+            "<li><strong>" + esc(rule.get("clause")) + "</strong> (" + _show(rule.get("failedChecks")) + " occurrence(s)): "
+            + esc(str(rule.get("description") or "")[:220]) + "</li>"
+            for rule in before.get("failedRules") if isinstance(rule, dict)
+        )
+        failed_before_list = (
+            "<details><summary>What the original file failed (rule by rule)</summary><ul>" + items + "</ul></details>"
+        )
+
+    recall_block = (
+        "<tr><th scope=\"row\">Source text carried into the rebuild</th><td>reference</td><td>"
+        + esc(_pct(src_recall.get("recall")) if src_recall.get("status") == "completed" else ("not measurable: " + str(src_recall.get("status") or "scanned source")))
+        + (" (" + _show(src_recall.get("missingTokens")) + " of " + _show(src_recall.get("sourceTokens")) + " words missing)" if src_recall.get("status") == "completed" else "")
+        + "</td></tr>"
+        + "<tr><th scope=\"row\">Rebuild text carried into the tagged PDF</th><td>&#8212;</td><td>"
+        + esc(_pct(out_recall.get("recall")) if out_recall.get("status") == "completed" else "no tagged PDF on this run")
+        + "</td></tr>"
+    )
+
+    if verification:
+        counts = verification.get("counts") or {}
+        verifier = verification.get("verifier") or {}
+        result = str(verification.get("result") or "")
+        verification_html = (
+            "<p><strong>Result: " + esc(result or "not run") + ".</strong> "
+            + _show(counts.get("verified")) + " of " + _show(counts.get("items"))
+            + " checks attested by an independent reader who did not build the rebuild ("
+            + _show(counts.get("discrepancies")) + " discrepancies, "
+            + _show(counts.get("unreadable")) + " unreadable).</p>"
+            + ("<p>Reader attestation: " + esc(verifier.get("statement")) + "</p>" if verifier.get("statement") else "")
+        )
+        if verification.get("discrepancies"):
+            verification_html += "<ul>" + "".join(
+                "<li>" + esc((item or {}).get("note")) + "</li>" for item in verification["discrepancies"]
+            ) + "</ul>"
+    else:
+        verification_html = (
+            "<p><strong>Not run.</strong> The independent second-reader check was not performed for this run; "
+            "the rebuild rests on its author's self-report plus the automated evidence above.</p>"
+        )
+
+    manual = report.get("manualReview") or []
+    manual_html = "<ol>" + "".join("<li>" + esc_lines(str(note)) + "</li>" for note in manual) + "</ol>" if manual else "<p>None recorded.</p>"
+
+    receipt_html = ""
+    if receipt:
+        receipt_html = (
+            "<ul>"
+            "<li>Network policy while processing the document: <strong>" + esc(receipt.get("documentNetworkPolicy")) + "</strong>; "
+            "requests blocked by the renderer: " + _show(receipt.get("documentRequestsBlockedByRenderer")) + ".</li>"
+            "<li>AlloFlow service called by the scripts: " + _show(receipt.get("alloflowServiceInvokedByScripts")) + "; "
+            "model API called by the scripts: " + _show(receipt.get("modelApiCalledByScripts")) + "; "
+            "document text logged by the scripts: " + _show(receipt.get("documentTextLoggedByScripts")) + ".</li>"
+            "<li>Scope: " + esc(receipt.get("assuranceScope")) + "</li>"
+            "</ul>"
+        )
+
+    artifacts = report.get("artifacts") or {}
+    artifact_list = "".join(
+        "<li>" + esc(key) + ": <code>" + esc(value) + "</code></li>" for key, value in artifacts.items() if value
+    )
+
+    page = f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Accessibility remediation evidence: {esc(doc_name)}</title>
+<style>
+:root {{ color-scheme: light; }}
+html {{ background: #f5f6f8; color: #16202b; font: 15px/1.55 Arial, Helvetica, sans-serif; }}
+body {{ margin: 0 auto; max-width: 52rem; padding: 1.2rem; }}
+main {{ background: #ffffff; border: 1px solid #c9d1da; border-radius: 10px; padding: 1.4rem 1.7rem 1.7rem; }}
+h1 {{ font-size: 1.45rem; line-height: 1.25; border-bottom: 3px solid #1d4ed8; padding-bottom: .4rem; }}
+h2 {{ font-size: 1.12rem; margin-top: 1.7rem; }}
+table {{ border-collapse: collapse; width: 100%; margin: .8rem 0; }}
+th, td {{ border: 1px solid #64748b; padding: .5rem .6rem; text-align: left; vertical-align: top; }}
+thead th {{ background: #e8edf3; }}
+tbody th {{ background: #f2f5f8; font-weight: 600; width: 40%; }}
+.verdict {{ border: 2px solid #1d4ed8; border-radius: 8px; background: #eef3ff; padding: .8rem 1rem; margin: 1rem 0; }}
+.limits {{ border-top: 2px solid #64748b; margin-top: 2rem; padding-top: .9rem; font-size: .92rem; }}
+details {{ margin: .6rem 0; }}
+code {{ background: #f2f5f8; padding: 0 .25rem; }}
+footer {{ margin-top: 1rem; font-size: .85rem; color: #3d4b5c; }}
+@media print {{ html {{ background: #ffffff; }} main {{ border: 0; padding: 0; }} }}
+</style>
+</head>
+<body>
+<main>
+<h1>Accessibility remediation evidence<br>{esc(doc_name)}</h1>
+<p>Prepared {esc(created)} by the AlloFlow portable remediation workflow, engine {esc(report.get('alloflowPortableVersion') or VERSION)}.
+Every figure on this page is read from the run's stamped evidence files; nothing is added or estimated.</p>
+
+<div class="verdict"><strong>Outcome:</strong> {esc(_VERDICT_PLAIN.get(verdict, verdict or 'see report'))}</div>
+
+<h2>Before and after</h2>
+<table>
+<caption>Independent, deterministic measurements (no AI judgement involved)</caption>
+<thead><tr><th scope="col">Measure</th><th scope="col">Original file</th><th scope="col">Accessible rebuild</th></tr></thead>
+<tbody>
+{''.join(rows)}
+{recall_block}
+<tr><th scope="row">Structural audit of the rebuilt HTML</th><td>&#8212;</td><td>{_show(len(audit.get('errors') or []))} errors, {_show(len(audit.get('warnings') or []))} warnings ({_show((audit.get('counts') or {}).get('headings'))} headings, {_show((audit.get('counts') or {}).get('links'))} links, {_show((audit.get('counts') or {}).get('tables'))} tables, {_show((audit.get('counts') or {}).get('images'))} images)</td></tr>
+</tbody>
+</table>
+{failed_before_list}
+<p>"Words missing" counts every word of the original file's own text layer that does not appear in the rebuild; a scanned
+original has no text layer, so that measure is honestly reported as not measurable rather than invented.</p>
+
+<h2>Independent verification (second reader)</h2>
+{verification_html}
+
+<h2>Disclosures and items needing human review</h2>
+{manual_html}
+
+<h2>Privacy</h2>
+{receipt_html or '<p>No privacy receipt found in this run directory.</p>'}
+
+<h2>Files in this evidence set</h2>
+<ul>{artifact_list}</ul>
+
+<div class="limits">
+<h2>What this page is not</h2>
+<p>This workflow never determines legal compliance. "Validation passed" means the generated PDF passed every
+machine-checkable PDF/UA-1 rule in a local veraPDF run; meaning, fidelity, and the final call about distribution
+belong to a person. Interactive forms, signed records, and legal records are refused by design rather than rebuilt.</p>
+</div>
+<footer>Generated offline by alloflow_portable.py summary-report; the page is self-contained and safe to email or file.</footer>
+</main>
+</body>
+</html>
+"""
+    out_path = Path(args.out).resolve() if getattr(args, "out", None) else run_dir / (safe_stem(doc_name) + "-evidence-summary.html")
+    out_path.write_text(page, encoding="utf-8")
+    return {
+        "ok": True,
+        "summary": out_path.name,
+        "verdict": verdict,
+        "usedBeforeValidation": bool(before),
+        "usedVerification": bool(verification),
+        "note": "Plain-language reviewer page assembled from the run's stamped evidence files only.",
+    }
+
+
 # ---------------------------------------------------------------------------
 # Independent verification (two-model rule).
 #
@@ -4103,6 +4351,16 @@ def build_parser() -> argparse.ArgumentParser:
     )
     annotations_parser.add_argument("--source", required=True)
 
+    summary_parser = subparsers.add_parser(
+        "summary-report",
+        help="Fold a run's evidence files into one plain-language reviewer HTML page.",
+    )
+    summary_parser.add_argument("--run-dir", required=True)
+    summary_parser.add_argument("--out")
+    summary_parser.add_argument("--report")
+    summary_parser.add_argument("--before-validation")
+    summary_parser.add_argument("--verification")
+
     verify_init = subparsers.add_parser(
         "verify-init",
         help="Derive an independent-verification worksheet from a repair plan.",
@@ -4161,6 +4419,8 @@ def main() -> int:
             result = extract_text_command(args)
         elif args.command == "extract-annotations":
             result = extract_annotations_command(args)
+        elif args.command == "summary-report":
+            result = summary_report_command(args)
         elif args.command == "verify-init":
             result = verify_init_command(args)
         elif args.command == "verify-check":
