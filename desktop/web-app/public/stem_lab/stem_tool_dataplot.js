@@ -494,12 +494,16 @@ window.StemLab = window.StemLab || {
         var stemMap = {};
         sortedY.forEach(function(y) {
           var val = Math.round(y);
-          var stem = Math.floor(val / 10);
-          var leaf = Math.abs(val % 10);
-          if (!stemMap[stem]) stemMap[stem] = [];
-          stemMap[stem].push(leaf);
+          // Truncate toward zero: floor(-23/10) = -3 filed -23 under stem -3 (reads as -33).
+          // -23 belongs to stem -2 leaf 3; values in (-10, 0) get their own '-0' stem row.
+          var stem = val < 0 ? -Math.floor(-val / 10) : Math.floor(val / 10);
+          var stemKey = (val < 0 && stem === 0) ? '-0' : String(stem);
+          var leaf = Math.abs(val) % 10;
+          if (!stemMap[stemKey]) stemMap[stemKey] = [];
+          stemMap[stemKey].push(leaf);
         });
-        Object.keys(stemMap).sort(function(a, b) { return parseInt(a) - parseInt(b); }).forEach(function(stem) {
+        var stemSortVal = function(k) { return k === '-0' ? -0.5 : parseInt(k, 10); };
+        Object.keys(stemMap).sort(function(a, b) { return stemSortVal(a) - stemSortVal(b); }).forEach(function(stem) {
           stemLeafData.push({ stem: stem, leaves: stemMap[stem].sort(function(a, b) { return a - b; }) });
         });
       }
@@ -731,13 +735,25 @@ window.StemLab = window.StemLab || {
       // ══════════════════════════════════════════════════════════════
       // ── Quiz System (4 types) ──
       // ══════════════════════════════════════════════════════════════
+      // Unbiased Fisher-Yates; the Math.random()-0.5 comparator it replaces left
+      // correct answers clustered near their authored position.
+      var fyShuffle = function(arr) {
+        for (var fi = arr.length - 1; fi > 0; fi--) {
+          var fj = Math.floor(Math.random() * (fi + 1));
+          var ft = arr[fi]; arr[fi] = arr[fj]; arr[fj] = ft;
+        }
+        return arr;
+      };
       var makeQuiz = function() {
         var used = Object.assign({}, quizTypesUsed);
         used[quizType] = true;
+        // Quizzes replace the plotted data — record an undo entry so the
+        // student's own dataset is recoverable afterwards.
+        var quizUndo = pushUndo();
         if (quizType === 'correlation') {
           var s = correlationScenarios[Math.floor(Math.random() * correlationScenarios.length)];
           var pts = s.gen();
-          updMulti({ dpQuiz: { type: 'correlation', text: s.q, answer: s.a, pts: pts, opts: ['Positive', 'Negative', 'None'].sort(function() { return Math.random() - 0.5; }), answered: false }, points: pts, quizTypesUsed: used });
+          updMulti({ dpQuiz: { type: 'correlation', text: s.q, answer: s.a, pts: pts, opts: fyShuffle(['Positive', 'Negative', 'None']), answered: false }, points: pts, undoStack: quizUndo, quizTypesUsed: used });
         } else if (quizType === 'guessR2') {
           var sc = guessR2Scenarios[Math.floor(Math.random() * guessR2Scenarios.length)];
           var pts2 = generateCorrelated(sc.r, 15);
@@ -754,15 +770,15 @@ window.StemLab = window.StemLab || {
             var fake = Math.round(Math.random() * 100) / 100;
             if (opts2.indexOf(fake) === -1 && Math.abs(fake - actualR2) > 0.1) opts2.push(fake);
           }
-          opts2.sort(function() { return Math.random() - 0.5; });
-          updMulti({ dpQuiz: { type: 'guessR2', text: t('stem.dataplot.estimate_the_r_for_this_scatter_plot', 'Estimate the R\u00B2 for this scatter plot'), answer: actualR2.toFixed(2), pts: pts2, opts: opts2.map(function(o) { return o.toFixed(2); }), answered: false }, points: pts2, quizTypesUsed: used });
+          fyShuffle(opts2);
+          updMulti({ dpQuiz: { type: 'guessR2', text: t('stem.dataplot.estimate_the_r_for_this_scatter_plot', 'Estimate the R\u00B2 for this scatter plot'), answer: actualR2.toFixed(2), pts: pts2, opts: opts2.map(function(o) { return o.toFixed(2); }), answered: false }, points: pts2, undoStack: quizUndo, quizTypesUsed: used });
         } else if (quizType === 'matchChart') {
           var mc = matchChartScenarios[Math.floor(Math.random() * matchChartScenarios.length)];
-          updMulti({ dpQuiz: { type: 'matchChart', text: mc.q, answer: mc.a, opts: mc.opts.slice().sort(function() { return Math.random() - 0.5; }), answered: false }, quizTypesUsed: used });
+          updMulti({ dpQuiz: { type: 'matchChart', text: mc.q, answer: mc.a, opts: fyShuffle(mc.opts.slice()), answered: false }, quizTypesUsed: used });
         } else if (quizType === 'outlier') {
           var os = outlierScenarios[Math.floor(Math.random() * outlierScenarios.length)];
           var result = os.gen();
-          updMulti({ dpQuiz: { type: 'outlier', text: 'Which point is the outlier in ' + os.label + '?', answer: result.outlierIdx, pts: result.pts, answered: false }, points: result.pts, quizTypesUsed: used });
+          updMulti({ dpQuiz: { type: 'outlier', text: 'Which point is the outlier in ' + os.label + '?', answer: result.outlierIdx, pts: result.pts, answered: false }, points: result.pts, undoStack: quizUndo, quizTypesUsed: used });
         }
         checkBadges({ quizTypesUsed: used });
       };
@@ -1318,13 +1334,16 @@ window.StemLab = window.StemLab || {
                     n >= 3 ? { name: t('stem.dataplot.quadratic', 'Quadratic'), eq: 'y = ' + quadA.toFixed(4) + 'x\u00B2 + ' + quadB.toFixed(2) + 'x + ' + quadC.toFixed(2), r2: quadR2 } : null,
                     expA ? { name: t('stem.dataplot.exponential', 'Exponential'), eq: 'y = ' + expA.toFixed(2) + 'e^(' + expB.toFixed(4) + 'x)', r2: expR2 } : null,
                     logB ? { name: t('stem.dataplot.logarithmic', 'Logarithmic'), eq: 'y = ' + logA.toFixed(2) + ' + ' + logB.toFixed(2) + 'ln(x)', r2: logR2 } : null
-                  ].filter(Boolean).sort(function(a, b) { return Math.abs(b.r2) - Math.abs(a.r2); }).map(function(reg) {
+                  // Sort and color by RAW R\u00B2, not |R\u00B2|: a negative R\u00B2 means the fit is
+                  // WORSE than the mean line \u2014 abs() ranked catastrophic fits first
+                  // and painted them green.
+                  ].filter(Boolean).sort(function(a, b) { return b.r2 - a.r2; }).map(function(reg) {
                     var best = reg.r2 === Math.max(r2, quadR2, expR2, logR2);
                     return h('div', { key: reg.name, className: 'flex items-center gap-2 p-2 rounded-lg ' + (best ? 'bg-emerald-50 border border-emerald-200' : 'bg-slate-50') },
                       best && h('span', { className: 'text-[11px] font-bold text-emerald-600' }, t('stem.dataplot.best', '\u2B50 Best')),
                       h('span', { className: 'text-xs font-bold text-slate-700 w-20' }, reg.name),
                       h('span', { className: 'text-[11px] font-mono text-slate-600 flex-1' }, reg.eq),
-                      h('span', { className: 'text-xs font-bold ' + (Math.abs(reg.r2) > 0.8 ? 'text-emerald-600' : 'text-yellow-600') }, 'R\u00B2=' + reg.r2.toFixed(4))
+                      h('span', { className: 'text-xs font-bold ' + (reg.r2 > 0.8 ? 'text-emerald-600' : reg.r2 > 0.3 ? 'text-yellow-600' : 'text-red-500') }, 'R\u00B2=' + reg.r2.toFixed(4))
                     );
                   })
                 )
@@ -1405,7 +1424,7 @@ window.StemLab = window.StemLab || {
                       h('span', { className: 'text-slate-600 tracking-wider' }, row.leaves.join(' '))
                     );
                   }),
-                  h('div', { className: 'text-[11px] text-slate-600 font-sans mt-2' }, t('stem.dataplot.key_stem_leaf_stem_10_leaf_e_g_7_3_73', 'Key: stem|leaf = stem\u00D710 + leaf (e.g. 7|3 = 73)'))
+                  h('div', { className: 'text-[11px] text-slate-600 font-sans mt-2' }, t('stem.dataplot.key_stem_leaf_stem_10_leaf_e_g_7_3_73', 'Key: 7|3 = 73. Negative stems read away from zero: -2|3 = -23.'))
                 )
               )
             )
