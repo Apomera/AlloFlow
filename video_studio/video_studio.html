@@ -4134,6 +4134,10 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     return cat([ebmlHeader, segment]);
   }
 
+  // What a learner is told when the coach declines to work on the task itself.
+  // Named so both the refusal and the test that pins it read from one string.
+  var VS_COACH_CONTENT_REFUSAL = 'That looks like schoolwork, so I am not going to walk you through the answer. I can help you find your way around the page instead: ask me where a button, menu, or setting is.';
+
   // Clamp a Screen Coach reply. Advisory by contract: guidance is a short
   // instruction for the HUMAN, the target box is normalized 0-1 or null.
   // A malformed box becomes null (no annotation) rather than a wrong arrow.
@@ -4141,8 +4145,31 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   // clamp its own reply. A standalone coach page has no module in front of it,
   // so an un-shared copy would silently lose the null-when-unsure rule, which
   // is the entire reason this function exists.
-  function vsSanitizeCoachAdvice(raw) {
+  //
+  // opts.posture === 'learner' enforces the governing rule from the provenance
+  // design: Socratic about the lesson, direct about the tool. The coach helps a
+  // student operate software; it never advances the schoolwork on the screen.
+  // Enforcement is HERE and not only in the prompt, because a prompt is a
+  // request and this is a guarantee. An academic-content reply is REPLACED
+  // whole, guidance and box together: a highlight drawn around the right answer
+  // IS the answer, so trimming the text alone would leak it through the canvas.
+  //
+  // An unclassified reply counts as content for a learner. The prompt always
+  // asks for the field, so a missing one means the model could not tell us what
+  // it was looking at, and that is not a model to trust with the distinction.
+  function vsSanitizeCoachAdvice(raw, opts) {
     raw = raw && typeof raw === 'object' ? raw : {};
+    opts = opts && typeof opts === 'object' ? opts : {};
+    var kind = (raw.kind === 'navigation' || raw.kind === 'content') ? raw.kind : 'unknown';
+    if (opts.posture === 'learner' && kind !== 'navigation') {
+      return {
+        guidance: VS_COACH_CONTENT_REFUSAL,
+        target: null,
+        done: false,
+        kind: kind,
+        refused: true
+      };
+    }
     var target = null;
     var tb = raw.target;
     if (tb && typeof tb === 'object') {
@@ -4156,7 +4183,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     return {
       guidance: String(raw.guidance || '').trim().slice(0, 400),
       target: target,
-      done: raw.done === true
+      done: raw.done === true,
+      kind: kind,
+      refused: false
     };
   }
   // [VS_SHARED_END]
@@ -14213,6 +14242,13 @@ function buildContactSheet(t, count, shouldCancel) {
   var coachHistory = [];
   var coachWatchStream = null;
   var coachPipWin = null, coachPipRaf = 0, coachLastAdvice = null;
+  // Posture decides what the coach will help with. The app opens this popup for
+  // educators, so 'educator' is the default; a learner surface opens it with
+  // ?allo_posture=learner and gets the navigation-only contract. The URL only
+  // ever RESTRICTS what the coach will do, so a guessed or forged value cannot
+  // unlock anything: any value that is not exactly 'learner' is the posture the
+  // teacher-facing entry point already had.
+  var coachPosture = bridgeParams.get('allo_posture') === 'learner' ? 'learner' : 'educator';
   function coachCaptureActive() {
     var v = $('previewVideo');
     return !!(v && v.srcObject && v.videoWidth > 0 && (coachWatchStream || (rec && rec.state !== 'inactive')));
@@ -14373,7 +14409,8 @@ function buildContactSheet(t, count, shouldCancel) {
       goal: String($('coachGoal').value || '').slice(0, 300),
       imageBase64: frame,
       mimeType: 'image/jpeg',
-      history: coachHistory.slice(-3).join('\n')
+      history: coachHistory.slice(-3).join('\n'),
+      posture: coachPosture
     }, 45000);
     coachBusy = false;
     if (resp.error) {
@@ -14382,6 +14419,20 @@ function buildContactSheet(t, count, shouldCancel) {
     }
     var guidance = String(resp.guidance || '').slice(0, 400);
     if (!guidance) { setStatus($('coachStatus'), 'The coach had no suggestion for this screen.', 'warn'); return; }
+    // A refusal is not guidance. Keeping it out of the history stops it being
+    // fed back as "already given", and stopping the auto loop stops the coach
+    // repeating the same refusal every 12 seconds at a student who is simply
+    // doing their homework with the tool open.
+    if (resp.refused) {
+      coachLastAdvice = null;
+      hideCoachOverlay();
+      if (coachPipWin && coachPipWin.__coachBar) coachPipWin.__coachBar.textContent = '📓 ' + guidance;
+      setStatus($('coachStatus'), '📓 ' + guidance, 'warn');
+      announce('Coach: ' + guidance);
+      speakCoach(guidance);
+      stopCoachAuto();
+      return;
+    }
     coachHistory.push(guidance);
     coachLastAdvice = resp;
     if (coachPipWin && coachPipWin.__coachBar) coachPipWin.__coachBar.textContent = (resp.done ? '✅ ' : '👉 ') + guidance;
@@ -14395,6 +14446,15 @@ function buildContactSheet(t, count, shouldCancel) {
     announce('Coach: ' + guidance);
     speakCoach(guidance);
     if (resp.done) stopCoachAuto();
+  }
+  // Say the posture out loud. A student should know what this will and will not
+  // do before they share a screen, not discover it at the first refusal.
+  if (coachPosture === 'learner') {
+    var coachPostureNote = document.createElement('p');
+    coachPostureNote.className = 'status';
+    coachPostureNote.id = 'coachPostureNote';
+    coachPostureNote.textContent = '📓 Learner mode: this coach helps you use the website. It will not answer questions, quizzes, or other schoolwork that is on the screen.';
+    $('coachPanel').insertBefore(coachPostureNote, $('coachPrivacyAck').parentNode);
   }
   $('coachSuggestBtn').addEventListener('click', function () { runCoachSuggest(false); });
   $('coachWatchBtn').addEventListener('click', startCoachWatch);

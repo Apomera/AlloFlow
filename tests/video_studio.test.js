@@ -3330,7 +3330,7 @@ describe('screen coach', () => {
   const coachMod = readFileSync(resolve(process.cwd(), 'video_studio_module.js'), 'utf-8');
 
   it('sanitizer clamps the target box and drops unusable ones to null', () => {
-    expect(VS.vsSanitizeCoachAdvice(null)).toEqual({ guidance: '', target: null, done: false });
+    expect(VS.vsSanitizeCoachAdvice(null)).toEqual({ guidance: '', target: null, done: false, kind: 'unknown', refused: false });
     const good = VS.vsSanitizeCoachAdvice({ guidance: 'Click Export.', target: { x: 0.9, y: 0.5, w: 0.4, h: 0.1 }, done: 'yes' });
     expect(good.guidance).toBe('Click Export.');
     expect(good.done).toBe(false); // only boolean true counts
@@ -3348,7 +3348,7 @@ describe('screen coach', () => {
     expect(handler).toContain('never claim you performed or will perform anything');
     expect(handler).toContain('use null when unsure rather than guessing');
     expect(handler).toContain("coachRespond({ error: 'vision-unavailable' })");
-    expect(handler).toContain('vsSanitizeCoachAdvice(cParsed)');
+    expect(handler).toContain('vsSanitizeCoachAdvice(cParsed, { posture: coachPosture })');
   });
 
   it('popup gates on consent, states the advisory contract, and cleans up with the capture', () => {
@@ -3409,12 +3409,80 @@ describe('screen coach', () => {
       expect(end).toBeGreaterThan(begin);
       return t.slice(begin, end);
     };
-    expect(sharedOf(coachMod)).toContain('function vsSanitizeCoachAdvice(raw)');
-    expect(sharedOf(coachHtml)).toContain('function vsSanitizeCoachAdvice(raw)');
+    expect(sharedOf(coachMod)).toContain('function vsSanitizeCoachAdvice(raw, opts)');
+    expect(sharedOf(coachHtml)).toContain('function vsSanitizeCoachAdvice(raw, opts)');
     // Exactly one definition per file: the move must not have left a duplicate.
     expect(coachMod.match(/function vsSanitizeCoachAdvice\(/g)).toHaveLength(1);
     expect(coachHtml.match(/function vsSanitizeCoachAdvice\(/g)).toHaveLength(1);
     // Still exported, so the module bridge keeps sanitizing its own replies.
     expect(coachMod).toContain('vsSanitizeCoachAdvice: vsSanitizeCoachAdvice');
+  });
+
+  // ── Learner posture: the tool, never the task ────────────────────────────
+  // "Socratic about the lesson, direct about the tool" (PROCESS_PROVENANCE
+  // design §13.1). For a student the coach may help with software and must not
+  // advance schoolwork on the screen. The prompt asks; the sanitizer guarantees.
+  describe('learner posture guardrail', () => {
+    const content = { guidance: 'Choose 42, it is the correct answer.', target: { x: 0.2, y: 0.3, w: 0.2, h: 0.1 }, done: true, kind: 'content' };
+    const nav = { guidance: 'Click Submit at the bottom right.', target: { x: 0.8, y: 0.9, w: 0.1, h: 0.05 }, done: false, kind: 'navigation' };
+
+    it('replaces an academic-content reply whole, box included', () => {
+      const out = VS.vsSanitizeCoachAdvice(content, { posture: 'learner' });
+      expect(out.refused).toBe(true);
+      expect(out.guidance).not.toContain('42');
+      expect(out.guidance).toContain('schoolwork');
+      // The box is the leak that matters: a highlight around the right answer
+      // IS the answer, even with the text stripped.
+      expect(out.target).toBeNull();
+      expect(out.done).toBe(false);
+    });
+
+    it('lets navigation help through untouched', () => {
+      const out = VS.vsSanitizeCoachAdvice(nav, { posture: 'learner' });
+      expect(out.refused).toBe(false);
+      expect(out.guidance).toBe('Click Submit at the bottom right.');
+      expect(out.target).toEqual({ x: 0.8, y: 0.9, w: 0.1, h: 0.05 });
+    });
+
+    it('treats an unclassified reply as content for a learner', () => {
+      for (const raw of [{ guidance: 'The answer is B.' }, { guidance: 'x', kind: 'nav' }, { guidance: 'x', kind: null }]) {
+        const out = VS.vsSanitizeCoachAdvice(raw, { posture: 'learner' });
+        expect(out.refused).toBe(true);
+        expect(out.target).toBeNull();
+      }
+    });
+
+    it('leaves the educator posture, and the default, unrestricted', () => {
+      for (const opts of [undefined, {}, { posture: 'educator' }, { posture: 'nonsense' }]) {
+        const out = VS.vsSanitizeCoachAdvice(content, opts);
+        expect(out.refused).toBe(false);
+        expect(out.guidance).toContain('42');
+        expect(out.target).not.toBeNull();
+      }
+    });
+
+    it('asks the model to classify, and defaults the ambiguous case to content', () => {
+      const handler = coachMod.slice(coachMod.indexOf("ev.data.type === 'allostudio-coach-request'"), coachMod.indexOf("ev.data.type === 'allostudio-lesson-request'"));
+      expect(handler).toContain('"kind":"navigation"|"content"');
+      expect(handler).toContain('or you are unsure, answer "content"');
+      expect(handler).toContain('THE USER IS A STUDENT');
+      // Posture reaches the clamp, not just the prompt.
+      expect(handler).toContain("creq.posture === 'learner' ? 'learner' : 'educator'");
+      expect(handler).toContain('vsSanitizeCoachAdvice(cParsed, { posture: coachPosture })');
+    });
+
+    it('popup sends its posture, defaults to educator, and cannot be widened by URL', () => {
+      expect(coachHtml).toContain("var coachPosture = bridgeParams.get('allo_posture') === 'learner' ? 'learner' : 'educator';");
+      expect(coachHtml).toContain('posture: coachPosture');
+      // A refusal must not become "guidance already given", must clear the
+      // overlay, and must stop the 12s loop rather than nagging.
+      const run = coachHtml.slice(coachHtml.indexOf('async function runCoachSuggest'), coachHtml.indexOf("$('coachSuggestBtn').addEventListener"));
+      const refusal = run.slice(run.indexOf('if (resp.refused)'));
+      expect(refusal).toContain('hideCoachOverlay()');
+      expect(refusal).toContain('stopCoachAuto()');
+      expect(run.indexOf('if (resp.refused)')).toBeLessThan(run.indexOf('coachHistory.push(guidance)'));
+      // And the student is told the rule before they share, not at the refusal.
+      expect(coachHtml).toContain('It will not answer questions, quizzes, or other schoolwork');
+    });
   });
 });

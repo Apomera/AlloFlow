@@ -2864,6 +2864,10 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     return cat([ebmlHeader, segment]);
   }
 
+  // What a learner is told when the coach declines to work on the task itself.
+  // Named so both the refusal and the test that pins it read from one string.
+  var VS_COACH_CONTENT_REFUSAL = 'That looks like schoolwork, so I am not going to walk you through the answer. I can help you find your way around the page instead: ask me where a button, menu, or setting is.';
+
   // Clamp a Screen Coach reply. Advisory by contract: guidance is a short
   // instruction for the HUMAN, the target box is normalized 0-1 or null.
   // A malformed box becomes null (no annotation) rather than a wrong arrow.
@@ -2871,8 +2875,31 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   // clamp its own reply. A standalone coach page has no module in front of it,
   // so an un-shared copy would silently lose the null-when-unsure rule, which
   // is the entire reason this function exists.
-  function vsSanitizeCoachAdvice(raw) {
+  //
+  // opts.posture === 'learner' enforces the governing rule from the provenance
+  // design: Socratic about the lesson, direct about the tool. The coach helps a
+  // student operate software; it never advances the schoolwork on the screen.
+  // Enforcement is HERE and not only in the prompt, because a prompt is a
+  // request and this is a guarantee. An academic-content reply is REPLACED
+  // whole, guidance and box together: a highlight drawn around the right answer
+  // IS the answer, so trimming the text alone would leak it through the canvas.
+  //
+  // An unclassified reply counts as content for a learner. The prompt always
+  // asks for the field, so a missing one means the model could not tell us what
+  // it was looking at, and that is not a model to trust with the distinction.
+  function vsSanitizeCoachAdvice(raw, opts) {
     raw = raw && typeof raw === 'object' ? raw : {};
+    opts = opts && typeof opts === 'object' ? opts : {};
+    var kind = (raw.kind === 'navigation' || raw.kind === 'content') ? raw.kind : 'unknown';
+    if (opts.posture === 'learner' && kind !== 'navigation') {
+      return {
+        guidance: VS_COACH_CONTENT_REFUSAL,
+        target: null,
+        done: false,
+        kind: kind,
+        refused: true
+      };
+    }
     var target = null;
     var tb = raw.target;
     if (tb && typeof tb === 'object') {
@@ -2886,7 +2913,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     return {
       guidance: String(raw.guidance || '').trim().slice(0, 400),
       target: target,
-      done: raw.done === true
+      done: raw.done === true,
+      kind: kind,
+      refused: false
     };
   }
   // [VS_SHARED_END]
@@ -3829,13 +3858,23 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         var coachVisionFn = (typeof window !== 'undefined') ? window.callGeminiVision : null;
         if (typeof coachVisionFn !== 'function') { coachRespond({ error: 'vision-unavailable' }); return; }
         var coachGoal = String(creq.goal || '').slice(0, 300);
+        // Posture governs what the coach is willing to help with. 'learner' is
+        // navigation-only: the tool, never the task. The prompt asks for it and
+        // vsSanitizeCoachAdvice enforces it, so a model that ignores the ask
+        // still cannot get schoolwork guidance onto a student's screen.
+        var coachPosture = creq.posture === 'learner' ? 'learner' : 'educator';
         var coachPrompt = 'You are a patient screen coach helping a user operate software they can see but you cannot touch.\n' +
           'The image is ONE screenshot of the screen surface the user chose to share (it may be any website or application).\n' +
+          (coachPosture === 'learner'
+            ? 'THE USER IS A STUDENT. Help them OPERATE the software only. Never answer, solve, complete, or hint at academic work shown on the screen: quiz and test questions, problems, prompts, readings, or anything they are being asked to produce. Helping with a button, menu, setting, upload, or submission is always fine.\n'
+            : '') +
           'USER GOAL: ' + (coachGoal || 'not stated — suggest the most useful next step visible on this screen') + '\n' +
           (creq.history ? ('GUIDANCE ALREADY GIVEN (do not repeat it):\n' + String(creq.history).slice(0, 1200) + '\n') : '') +
           'Give the SINGLE best next step the user should take THEMSELVES. You cannot click, type, or navigate — never claim you performed or will perform anything. ' +
           'If the goal appears complete, say so. If this screen cannot progress the goal, say what to open first. If you cannot tell what is on screen, say that honestly.\n' +
-          'Respond with ONLY JSON (no prose): {"guidance":"one or two short imperative sentences for the user","target":{"x":0-1,"y":0-1,"w":0-1,"h":0-1} or null,"done":true|false}. ' +
+          'CLASSIFY the step you are proposing. "navigation" = operating the software (finding or using a control, menu, setting, field, upload, or submit action). ' +
+          '"content" = doing the academic work itself (answering a question, solving a problem, choosing an option in a quiz, writing or revising a response). When both could apply, or you are unsure, answer "content".\n' +
+          'Respond with ONLY JSON (no prose): {"guidance":"one or two short imperative sentences for the user","target":{"x":0-1,"y":0-1,"w":0-1,"h":0-1} or null,"done":true|false,"kind":"navigation"|"content"}. ' +
           '"target" is a normalized box around the ONE element the user should act on next — use null when unsure rather than guessing.';
         Promise.resolve().then(function () { return coachVisionFn(coachPrompt, creq.imageBase64, creq.mimeType || 'image/jpeg', { signal: coachAbort.signal }); }).then(function (res) {
           var cText = (typeof res === 'string') ? res : ((res && (res.text || res.output)) || JSON.stringify(res));
@@ -3845,7 +3884,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             if (cm) { try { cParsed = JSON.parse(cm[0]); } catch (_2) {} }
           }
           if (!cParsed || typeof cParsed !== 'object') { coachRespond({ error: 'the AI reply was not readable' }); return; }
-          coachRespond(vsSanitizeCoachAdvice(cParsed));
+          coachRespond(vsSanitizeCoachAdvice(cParsed, { posture: coachPosture }));
         }).catch(function (e) {
           if (coachAbort.signal.aborted || (e && e.name === 'AbortError')) { vsAiForgetRequest(creq.id); return; }
           coachRespond({ error: String((e && e.message) || e).slice(0, 200) });
