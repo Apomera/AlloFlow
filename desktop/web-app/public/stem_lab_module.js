@@ -6949,6 +6949,9 @@
             epidemicSim: true, fireEcology: true, microbiology: true, molecule: true, opticsLab: true, punnett: true,
             rocks: true, rockCycle: true, geologyExplorer: true, science: true, solarSystem: true,
             titrationLab: true, universe: true, unitConvert: true, waterCycle: true, weatherSystems: true,
+            // Aug 2026: Tree Life Lab — whole-organism photosynthesis, 3D growth clock,
+            // and the reproduction-strategy game.
+            treeLab: true,
             // Engineering & CS
             archStudio: true, bridgeLab: true, circuit: true, codingPlayground: true,
             cyberDefense: true, magnetism: true, semiconductor: true,
@@ -7100,6 +7103,21 @@
           // Show skeleton loader while plugin hasn't registered yet
           if (!window.StemLab.isRegistered(stemLabTool)) {
             var _pluginStatus = _pluginLoadState ? _pluginLoadState.status : '';
+            // Safety net: an empty status means NOTHING was ever requested for this
+            // tool, which is the one state that waits forever — the 20s timeout is
+            // armed inside the loader, so with no request there is no timeout and no
+            // error card either. That happens when a caller activates a tool without
+            // going through _openStemTool. Those callers are fixed, but request it
+            // here too so a future entry point cannot reintroduce a silent hang.
+            // Safe to call during render: loadOne() ignores a repeat while a load is
+            // already in flight, and the status stops being empty immediately after.
+            if (!_pluginStatus) {
+              try {
+                if (typeof window.__alloEnsureStemPluginLoaded === 'function') {
+                  window.__alloEnsureStemPluginLoaded(stemLabTool);
+                }
+              } catch (e) {}
+            }
             if (['error', 'loaded'].indexOf(_pluginStatus) !== -1) {
               var _pluginError = _pluginLoadState.error ? _pluginLoadState.error : 'The plugin loaded but did not register with STEAM Lab.';
               return _renderStemPluginLoadError(_pluginError);
