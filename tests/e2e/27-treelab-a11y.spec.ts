@@ -72,6 +72,7 @@ const SURFACES: Array<[string, string, string, Theme]> = [
   ['Grow (K-2)', 'grow', 'k2', 'light'],
   ['Chemistry (light)', 'chem', 'g912', 'light'],
   ['Chemistry (dark)', 'chem', 'g912', 'dark'],
+  ['Chemistry (high contrast)', 'chem', 'g912', 'contrast'],
   ['Transport', 'transport', 'g68', 'light'],
   ['Spread map (light)', 'spread', 'g68', 'light'],
   ['Spread map (dark)', 'spread', 'g68', 'dark'],

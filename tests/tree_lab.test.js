@@ -1358,3 +1358,95 @@ describe('Tree Life Lab — the spread map', () => {
     expect(html, 'markers were dropped without saying so').toMatch(/Showing \d+ of \d+ attempts/);
   });
 });
+
+describe('Tree Life Lab — response curves', () => {
+  function chem(over) {
+    const E = engine();
+    const sp = E.speciesById('oak');
+    let t = E.newTree('oak');
+    for (let i = 0; i < 70 && t.alive; i++) t = E.simulateYear(t, sp, GOOD_ENV, ALLOC);
+    return render({
+      treeLab: Object.assign(
+        { view: 'chem', bandOverride: 'g912', speciesId: 'oak', tree: t,
+          light: 0.85, soilWater: 0.75, tempC: 22, co2ppm: 420 },
+        over || {}),
+    });
+  }
+  // Each panel's polyline, as arrays of plotted y values.
+  function paths(html) {
+    return [...html.matchAll(/<path d="(M[^"]+?)" fill="none"/g)].map((m) =>
+      m[1].split(/[ML]/).filter(Boolean).map((p) => parseFloat(p.trim().split(/\s+/)[1])));
+  }
+
+  it('plots the whole rate, so a gated input comes back FLAT', () => {
+    // The point of the figure. In deep shade, light is the smaller of the two supply
+    // terms, so sweeping CO2 from 180 to 900 ppm must change nothing at all — the
+    // curve is a straight horizontal line. Plotting the isolated CO2 factor instead
+    // would draw a rising curve and teach the opposite of what the tool says.
+    const shade = paths(chem({ light: 0.12 }));
+    expect(shade.length, 'expected four panels').toBe(4);
+    const co2 = shade[1];
+    const spread = Math.max(...co2) - Math.min(...co2);
+    expect(spread, `the CO2 curve moved ${spread.toFixed(2)}px while light was limiting`).toBeLessThan(0.6);
+
+    // And with light plentiful it is NOT flat, or the test above would pass on a bug
+    // that simply never draws the CO2 curve.
+    const lit = paths(chem({ light: 0.95 }))[1];
+    expect(Math.max(...lit) - Math.min(...lit)).toBeGreaterThan(5);
+  });
+
+  it('shares one y scale across all four panels', () => {
+    // Per-panel autoscaling would make a flat curve look like a full-height one and
+    // destroy the only comparison the figure exists to support.
+    const html = chem();
+    // Every panel prints two ticks, its maximum and a zero; only the maxima are
+    // compared. A first version of this compared both and "found" two scales.
+    const ticks = [...html.matchAll(/tabular-nums[^>]*>([\d.]+)<\/text>/g)].map((m) => m[1]);
+    const maxima = [...new Set(ticks.filter((v) => v !== '0'))];
+    expect(ticks.filter((v) => v === '0').length, 'expected one zero tick per panel').toBe(4);
+    expect(maxima.length, `panels disagree on the y maximum: ${maxima.join(', ')}`).toBe(1);
+  });
+
+  it('marks exactly one panel as limiting, and it is the one the engine names', () => {
+    const html = chem({ light: 0.12 });
+    expect([...html.matchAll(/LIMITING/g)].length).toBe(1);
+    // In deep shade with everything else ample, light is what the engine reports.
+    const lightPanelFirst = html.indexOf('LIMITING') < html.indexOf('CO');
+    expect(lightPanelFirst, 'the badge is not on the light panel').toBe(true);
+  });
+
+  it('reports water, not CO2, when drought is the real cause', () => {
+    // The tool's signature subtlety: under drought CO2 is the smallest NUMBER, but
+    // closed stomata are why. The figure must not send a student off to add CO2.
+    const html = chem({ soilWater: 0.1, tempC: 26 });
+    expect(html).toMatch(/closed the stomata/);
+  });
+
+  it('never claims a scale in units it does not have, and says the points are the model’s', () => {
+    const html = chem();
+    expect(html).toMatch(/kg of carbon a year/);
+    expect(html).toMatch(/re-run with that one input changed/);
+  });
+
+  it('gives K-2 the picture-free version rather than four axes', () => {
+    const html = chem({ bandOverride: 'k2' });
+    expect(html).not.toMatch(/LIMITING/);
+    expect(html).toMatch(/does not eat food from the soil/);
+  });
+
+  it('uses a factor palette that a colour-blind reader can separate', () => {
+    // The previous palette put CO2 on #60a5fa and water on #38bdf8 — two light blues
+    // 6.7 ΔE apart for NORMAL vision, and they are the exact pair this tool teaches
+    // students to distinguish. Pin the fix so it cannot quietly regress.
+    const html = chem();
+    // The validated hues are in use...
+    expect(html, 'CO2 is not on the validated violet').toMatch(/#7c3aed/);
+    expect(html, 'water is not on the validated blue').toMatch(/#0284c7/);
+    expect(html, 'light is not on the validated gold').toMatch(/#ca8a04/);
+    expect(html, 'temperature is not on the validated red').toMatch(/#dc2626/);
+    // ...and the retired two-blues pair is gone from this view entirely, including
+    // the factor BARS under the figure, which kept their own hardcoded copies and
+    // would otherwise have shown a different colour for the same factor.
+    expect(html, 'an old factor hue survived').not.toMatch(/#60a5fa|#facc15/);
+  });
+});

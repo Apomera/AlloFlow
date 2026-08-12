@@ -763,6 +763,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
   }
   var BARK = { oak: '#6b4f2a', aspen: '#c9c6b4', willow: '#5b4636', pine: '#7a4b2a', redwood: '#8a4a2f' };
 
+  // The four limiting factors, as a categorical palette. Assigned in a fixed order and
+  // never cycled: a factor keeps its hue whatever else is on screen.
+  //
+  // Validated, not eyeballed. The previous set put CO2 on #60a5fa and water on
+  // #38bdf8 — 6.7 ΔE apart for normal vision (floor 15) and 5.0 under deuteranopia —
+  // which are precisely the two the tool teaches students to distinguish.
+  function FACTOR_HUES(dark) {
+    return {
+      light: dark ? '#bf8700' : '#ca8a04',
+      co2: '#7c3aed',
+      water: '#0284c7',
+      temperature: '#dc2626'
+    };
+  }
+
   function mixHex(a, b, t) {
     var pa = parseInt(a.slice(1), 16), pb = parseInt(b.slice(1), 16);
     var r = Math.round(((pa >> 16) & 255) * (1 - t) + ((pb >> 16) & 255) * t);
@@ -2741,7 +2756,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       // cannot resolve var(--token) any more than a canvas fillStyle can.
       // Colours match the factor bars on the Chemistry tab, so the same idea reads the
       // same way in both places.
-      var LIMIT_HUE = { light: '#facc15', co2: '#60a5fa', water: '#38bdf8', temperature: '#fb923c' };
+      var LIMIT_HUE = FACTOR_HUES(isDark);
+      function FACTOR_HUE(id) { return LIMIT_HUE[id] || '#94a3b8'; }
       var LIMIT_NAME = {
         light: __alloT('stem.treelab.light', 'Light'),
         co2: CO2,
@@ -2820,6 +2836,182 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         ]);
       }
 
+      // ── Response curves ──────────────────────────────────────────────────────
+      // The Chemistry view was tiles, bars and prose — no picture at all — for the one
+      // idea in this tool that a picture settles instantly.
+      //
+      // What is plotted is NOT the isolated factor. It is the WHOLE RATE, swept over
+      // one input with everything else held where the student left it, and every point
+      // comes from calling grossPhotosynthesis itself rather than from a re-derivation
+      // that could drift from it. That distinction is the entire lesson: when CO2 is
+      // the smaller of the two supply terms, the light curve comes back FLAT, and
+      // "raising any other input changes nothing until this one stops being the
+      // smallest" stops being a sentence and becomes a shape.
+      //
+      // Four inputs on four different scales, so: small multiples sharing ONE y axis.
+      // A second y axis would invent a relationship between ppm and degrees.
+      var CURVES = [
+        { id: 'light', label: __alloT('stem.treelab.light', 'Light'), min: 0, max: 1,
+          at: liveEnv.light, fmt: function (v) { return Math.round(v * 100) + '%'; },
+          set: function (e, v) { e.light = v; } },
+        { id: 'co2', label: CO2, min: 180, max: 900,
+          at: liveEnv.co2ppm, fmt: function (v) { return Math.round(v) + ' ppm'; },
+          set: function (e, v) { e.co2ppm = v; } },
+        { id: 'water', label: __alloT('stem.treelab.soil_water', 'Soil water'), min: 0, max: 1,
+          at: liveEnv.soilWater, fmt: function (v) { return Math.round(v * 100) + '%'; },
+          set: function (e, v) { e.soilWater = v; } },
+        { id: 'temperature', label: __alloT('stem.treelab.temperature', 'Temperature'), min: -5, max: 45,
+          at: liveEnv.tempC, fmt: function (v) { return Math.round(v) + DEG + 'C'; },
+          set: function (e, v) { e.tempC = v; } }
+      ];
+
+      function sampleCurve(c) {
+        var N = 40, pts = [];
+        for (var i = 0; i <= N; i++) {
+          var x = c.min + (c.max - c.min) * (i / N);
+          var e = Object.assign({}, liveEnv);
+          c.set(e, x);
+          // Aperture is recomputed per sample, not carried over: sweeping soil water
+          // while holding the stomata where they were would draw a tree that keeps
+          // breathing through a drought.
+          var ap = stomatalAperture(e.soilWater, sp.droughtTol, false);
+          pts.push({ x: x, y: grossPhotosynthesis(sp, e, tree.leafArea, ap).gross });
+        }
+        return pts;
+      }
+
+      function curvePanel() {
+        var series = CURVES.map(function (c) {
+          var pts = sampleCurve(c);
+          var peak = 0;
+          pts.forEach(function (p) { if (p.y > peak) peak = p.y; });
+          return { c: c, pts: pts, peak: peak };
+        });
+        // One shared y scale across all four panels, so a flat curve reads as flat
+        // AGAINST the others rather than being silently rescaled to fill its own box.
+        var yMax = 0;
+        series.forEach(function (s2) { if (s2.peak > yMax) yMax = s2.peak; });
+        if (yMax <= 0) yMax = 1;
+
+        var W = 260, H = 140, PADL = 34, PADR = 10, PADT = 10, PADB = 26;
+        var PW = W - PADL - PADR, PH = H - PADT - PADB;
+
+        function panel(s2) {
+          var c = s2.c;
+          var limiting = live.limiting && live.limiting.id === c.id;
+          var hue = tone(FACTOR_HUE(c.id));
+          var sx = function (x) { return PADL + PW * ((x - c.min) / (c.max - c.min)); };
+          var sy = function (y) { return PADT + PH * (1 - clamp(y / yMax, 0, 1)); };
+          var line = s2.pts.map(function (p, i) {
+            return (i ? 'L' : 'M') + round(sx(p.x), 1) + ' ' + round(sy(p.y), 1);
+          }).join(' ');
+          var area = line + ' L' + round(sx(c.max), 1) + ' ' + (PADT + PH) + ' L' + round(sx(c.min), 1) + ' ' + (PADT + PH) + ' Z';
+          var atX = clamp(c.at, c.min, c.max);
+          var here = { x: sx(atX), y: sy(live.gross) };
+
+          return h('div', {
+            key: c.id,
+            style: {
+              background: T.cardAlt, border: '1px solid ' + (limiting ? hue : T.border),
+              borderRadius: 8, padding: 8
+            }
+          }, [
+            h('div', { key: 'hd', style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 } }, [
+              // Identity comes from a swatch BESIDE the text, never by colouring the
+              // text: these hues are chosen to read as marks, not as type.
+              h('span', {
+                key: 'sw', 'aria-hidden': 'true',
+                style: { width: 10, height: 10, borderRadius: 2, background: hue, flex: '0 0 auto' }
+              }),
+              h('span', { key: 'l', style: { fontSize: 12, fontWeight: 700, color: T.text } }, c.label),
+              limiting ? h('span', {
+                key: 'b',
+                style: {
+                  marginLeft: 'auto', fontSize: 10, fontWeight: 700, letterSpacing: 0.2,
+                  color: T.onAccent, background: T.accent, borderRadius: 4, padding: '1px 6px'
+                }
+              }, __alloT('stem.treelab.limiting_badge', 'LIMITING')) : null
+            ]),
+            h('svg', {
+              key: 'svg', viewBox: '0 0 ' + W + ' ' + H, role: 'img',
+              'aria-label': __alloT('stem.treelab.curve_alt_' + c.id,
+                c.label + ' response curve. At ' + c.fmt(atX) + ' the tree makes '
+                + round(live.gross, 2) + ' kg C a year'
+                + (limiting ? ', and this is the factor holding the rate down.'
+                            : '. Raising this alone would not lift the rate, because something else is smaller.')),
+              style: { width: '100%', height: 'auto', display: 'block' }
+            }, [
+              // Hairline, SOLID, one step off the surface. Dashed grid reads as a
+              // threshold or a projection when it is only a ruler.
+              h('g', { key: 'grid', stroke: T.border, strokeWidth: 1, fill: 'none' }, [
+                h('line', { key: 'x', x1: PADL, y1: PADT + PH, x2: PADL + PW, y2: PADT + PH }),
+                h('line', { key: 'y', x1: PADL, y1: PADT, x2: PADL, y2: PADT + PH })
+              ]),
+              h('path', { key: 'area', d: area, fill: hue, fillOpacity: 0.1, stroke: 'none' }),
+              h('path', {
+                key: 'line', d: line, fill: 'none', stroke: hue,
+                strokeWidth: 2, strokeLinejoin: 'round', strokeLinecap: 'round'
+              }),
+              // Where this tree is standing right now. Drag a condition slider on the
+              // Grow view and it slides along the curve: that is the interaction, and
+              // it beats a tooltip because it changes the tree as well as the readout.
+              h('line', {
+                key: 'drop', x1: here.x, y1: here.y, x2: here.x, y2: PADT + PH,
+                stroke: hue, strokeWidth: 1, strokeOpacity: 0.45
+              }),
+              h('circle', {
+                key: 'dot', cx: here.x, cy: here.y, r: 5,
+                fill: hue, stroke: T.cardAlt, strokeWidth: 2
+              }),
+              h('text', {
+                key: 'y1', x: PADL - 5, y: PADT + 4, textAnchor: 'end',
+                style: { fontSize: '10px', fill: T.dim, fontVariantNumeric: 'tabular-nums' }
+              }, round(yMax, 1)),
+              h('text', {
+                key: 'y0', x: PADL - 5, y: PADT + PH, textAnchor: 'end',
+                style: { fontSize: '10px', fill: T.dim, fontVariantNumeric: 'tabular-nums' }
+              }, '0'),
+              h('text', {
+                key: 'x0', x: PADL, y: H - 14, textAnchor: 'start',
+                style: { fontSize: '10px', fill: T.dim }
+              }, c.fmt(c.min)),
+              h('text', {
+                key: 'x1', x: PADL + PW, y: H - 14, textAnchor: 'end',
+                style: { fontSize: '10px', fill: T.dim }
+              }, c.fmt(c.max)),
+              // ONE direct label, on the only point that matters. A number on every
+              // sample would be noise nobody reads.
+              h('text', {
+                key: 'here',
+                x: clamp(here.x, PADL + 2, PADL + PW - 2),
+                y: H - 3,
+                textAnchor: here.x > PADL + PW * 0.7 ? 'end' : (here.x < PADL + PW * 0.3 ? 'start' : 'middle'),
+                style: { fontSize: '10px', fill: T.text, fontWeight: 700 }
+              }, c.fmt(atX))
+            ])
+          ]);
+        }
+
+        return card([
+          heading(__alloT('stem.treelab.curves_title', 'What happens if you change one thing'),
+            atLeast(band, 'g68')
+              ? __alloT('stem.treelab.curves_sub_g68', 'Each panel sweeps ONE condition across its whole range and leaves the other three where you set them. Upward on every panel is gross photosynthesis in kg of carbon a year, on one shared scale. The dot is where this tree is standing, and a curve that has gone flat under the dot is telling you that more of that input buys nothing.')
+              : __alloT('stem.treelab.curves_sub_k2', 'Each picture shows what happens if you change just one thing. Higher means more sugar made. The dot is where your tree is now.')),
+          h('div', {
+            key: 'grid',
+            style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(210px,1fr))', gap: 10 }
+          }, series.map(panel)),
+          h('p', { key: 'read', style: { fontSize: 12, color: T.text, lineHeight: 1.55, marginTop: 10 } },
+            live.limiting && live.limiting.viaStomata
+              ? __alloT('stem.treelab.curves_read_stomata',
+                'Look at the ' + CO2 + ' panel and the water panel together. ' + CO2 + ' is the smaller number, but the reason is that drought has closed the stomata that let it in — which is why the water panel is the one marked.')
+              : __alloT('stem.treelab.curves_read',
+                'The flat panels are the ones where this tree already has more than it can use. The marked one is where the next improvement would actually come from.')),
+          modelNote(__alloT('stem.treelab.curves_note',
+            'Every point on every curve is the model’s own annual figure for this tree, re-run with that one input changed — not a sketch of the shape. The shapes are the standard ones (a saturating light response, a saturating ' + CO2 + ' response, a temperature optimum), and the magnitudes are the right order for a temperate tree, but no figure here should be quoted as data.'))
+        ]);
+      }
+
       function viewChem() {
         var kids = [];
         if (!atLeast(band, 'g35')) {
@@ -2839,15 +3031,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           return kids;
         }
 
+        // Picture first, then the same four numbers as labelled bars directly beneath
+        // it. The bars are the chart's accessible twin, not a duplicate: nothing here
+        // is reachable only by reading a shape.
+        kids.push(curvePanel());
+
         kids.push(card([
           heading(__alloT('stem.treelab.what_limits', 'What is limiting the rate?'),
             atLeast(band, 'g912')
               ? __alloT('stem.treelab.limits_sub_g912', 'Four factors, and the rate follows the smallest of them. This is the question a living tree answers every hour, and its answer is recorded permanently in the rings.')
               : __alloT('stem.treelab.limits_sub_g68', 'Four things a tree needs. Whichever is shortest sets the speed, no matter how much of the others there is.')),
-          bar(__alloT('stem.treelab.light', 'Light'), live.factors.light, tone('#facc15')),
-          bar(CO2, live.factors.co2, tone('#60a5fa')),
-          bar(__alloT('stem.treelab.temperature', 'Temperature'), live.factors.temp, tone('#fb923c')),
-          bar(__alloT('stem.treelab.water', 'Water'), live.factors.water, tone('#38bdf8')),
+          bar(__alloT('stem.treelab.light', 'Light'), live.factors.light, tone(FACTOR_HUE('light'))),
+          bar(CO2, live.factors.co2, tone(FACTOR_HUE('co2'))),
+          bar(__alloT('stem.treelab.temperature', 'Temperature'), live.factors.temp, tone(FACTOR_HUE('temperature'))),
+          bar(__alloT('stem.treelab.water', 'Water'), live.factors.water, tone(FACTOR_HUE('water'))),
           h('div', { key: 'note', style: { marginTop: 6, fontSize: 12, color: T.dim, lineHeight: 1.55 } },
             __alloT('stem.treelab.liebig',
               'This is why enriching ' + CO2 + ' does little for a tree that is short of water. A stoma pulled most of the way shut admits very little ' + CO2 + ' however much is outside, so the extra arrives as a large share of almost nothing.'))
@@ -2858,8 +3055,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             heading(__alloT('stem.treelab.the_trade', 'The trade the tree cannot avoid'),
               __alloT('stem.treelab.the_trade_sub', 'The pore that admits ' + CO2 + ' is the pore that loses ' + H2O + '. There is no setting that does only the good half.')),
             h('div', { key: 'g', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: 8 } }, [
-              statTile('in', CO2 + ' entering', Math.round(aperture * 100) + '%', tone('#60a5fa')),
-              statTile('out', H2O + ' lost', fmtInt(Math.round(transpirationPerDay)) + ' L/day', tone('#38bdf8'))
+              // The same two quantities the curves and the bars above plot, in the same
+              // view, so they carry the same two hues. Left on the old pair they were
+              // the only place in Chemistry still showing CO2 and water as one blue.
+              statTile('in', CO2 + ' entering', Math.round(aperture * 100) + '%', tone(FACTOR_HUE('co2'))),
+              statTile('out', H2O + ' lost', fmtInt(Math.round(transpirationPerDay)) + ' L/day', tone(FACTOR_HUE('water')))
             ]),
             h('p', { key: 'p', style: { fontSize: 12, color: T.dim, marginTop: 8, lineHeight: 1.55 } },
               __alloT('stem.treelab.trade_body', 'A large tree can move well over 100 gallons of water in a day this way. Almost all of it is the unavoidable price of leaving the stomata open long enough to take carbon in.'))
