@@ -454,3 +454,53 @@ describe('bridge token stays out of the request line', () => {
     expect(sheet).toContain("'#bridgeToken='");
   });
 });
+
+// ─── Accessibility of the coach surface ─────────────────────────────────────
+describe('coach accessibility', () => {
+  // #coachStatus and #beStatus are themselves role="status" aria-live regions.
+  // Writing to one AND calling announce() read the same sentence twice, on top
+  // of the spoken guidance: three channels for one message. The Studio popup
+  // had to unpick the same storm.
+  it('announces each suggestion once, not twice', () => {
+    const suggest = html.slice(html.indexOf('async function suggest(fromAuto)'), html.indexOf("$('coachSuggestBtn').addEventListener"));
+    expect(suggest).not.toContain("announce('Coach: '");
+    // #live is still there for messages with no visible home.
+    expect(html).toContain("announce('Screen Coach is watching");
+    expect(html).toContain('id="live" class="sr-only" aria-live="polite" role="status"');
+    // And the visible status element is still a live region.
+    expect(html).toContain('id="coachStatus" role="status" aria-live="polite" aria-atomic="true"');
+  });
+
+  // The amber box lives on a canvas that must be aria-hidden, so a screen
+  // reader gets nothing from it unless the position is also said in words.
+  it('says where the highlight landed, not just that there is one', () => {
+    expect(html).toContain('function describeTarget(box)');
+    const suggest = html.slice(html.indexOf('async function suggest(fromAuto)'), html.indexOf("$('coachSuggestBtn').addEventListener"));
+    expect(suggest).toContain('var where = describeTarget(resp.target);');
+    expect(suggest).toContain("' Look at the ' + where");
+    // Spoken guidance carries it too, for a user who is not reading the page.
+    expect(suggest).toContain("speak(guidance + (where ? '. Look at the ' + where + '.' : ''))");
+    // Coarse by design: the box is an estimate and thirds are honest about it.
+    expect(html).toContain("centre < 0.34 ? low : (centre < 0.67 ? mid : high)");
+  });
+
+  it('does not drop keyboard focus while a request is in flight', () => {
+    const suggest = html.slice(html.indexOf('async function suggest(fromAuto)'), html.indexOf("$('coachSuggestBtn').addEventListener"));
+    expect(suggest).toContain("var hadFocus = document.activeElement === $('coachSuggestBtn');");
+    expect(suggest).toContain("$('coachSuggestBtn').setAttribute('aria-busy', 'true');");
+    // Both exits restore it: the error path and the success path.
+    expect((suggest.match(/restoreFocus\(\);/g) || []).length).toBe(2);
+    expect((suggest.match(/removeAttribute\('aria-busy'\)/g) || []).length).toBe(2);
+  });
+
+  it('keeps every control a real element the keyboard already understands', () => {
+    // No hand-rolled controls: nothing on this page carries role="button", so
+    // there is no way to build the mouse-only trap the repo keeps hitting.
+    expect(html).not.toContain('role="button"');
+    expect(html).toMatch(/<button[^>]*id="coachSuggestBtn"/);
+    expect(html).toMatch(/<button[^>]*id="coachWatchBtn"/);
+    // The drawing surface is hidden from assistive tech, with the words above
+    // carrying the information instead.
+    expect(html).toContain('id="coachOverlay" hidden aria-hidden="true"');
+  });
+});

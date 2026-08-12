@@ -129,7 +129,30 @@
   'use strict';
   var $ = function (id) { return document.getElementById(id); };
   var live = $('live');
+  // #live is for messages that have no visible home. Anything written into
+  // #coachStatus or #beStatus is ALREADY announced: both carry role="status"
+  // aria-live="polite". Announcing those again here made a screen reader read
+  // every suggestion twice, on top of the spoken guidance -- three channels for
+  // one sentence. Same aria-live storm the Studio popup had to unpick.
   function announce(msg) { live.textContent = msg; }
+
+  // Describe where the highlight landed, in words. The amber box is drawn on a
+  // canvas that is aria-hidden by necessity, so without this a screen-reader
+  // user gets "highlighted on the picture below" and no idea where. Coarse on
+  // purpose: the box is an estimate, and thirds are honest about that.
+  function describeTarget(box) {
+    if (!box) return '';
+    var band = function (start, size, low, mid, high) {
+      var centre = start + (size / 2);
+      return centre < 0.34 ? low : (centre < 0.67 ? mid : high);
+    };
+    var vertical = band(box.y, box.h, 'top', 'middle', 'bottom');
+    var horizontal = band(box.x, box.w, 'left', 'centre', 'right');
+    if (vertical === 'middle' && horizontal === 'centre') return 'centre of the shared screen';
+    if (horizontal === 'centre') return vertical + ' centre of the shared screen';
+    if (vertical === 'middle') return horizontal + ' side of the shared screen';
+    return vertical + ' ' + horizontal + ' of the shared screen';
+  }
   function setStatus(el, msg, cls) { el.textContent = msg || ''; el.className = 'status' + (cls ? ' ' + cls : ''); }
 
   // ── Posture ──────────────────────────────────────────────────────────────
@@ -564,7 +587,14 @@
     if (!frame) { setStatus($('coachStatus'), 'Could not read a picture from the share.', 'warn'); return; }
 
     busy = true;
+    // Disabling the focused element drops focus to <body>, so a keyboard or
+    // screen-reader user who just pressed this button loses their place and has
+    // to Tab back from the top. Remember whether we owned focus and give it
+    // back when the button returns.
+    var hadFocus = document.activeElement === $('coachSuggestBtn');
+    var restoreFocus = function () { if (hadFocus) { try { $('coachSuggestBtn').focus(); } catch (_) {} } };
     $('coachSuggestBtn').disabled = true;
+    $('coachSuggestBtn').setAttribute('aria-busy', 'true');
     setStatus($('coachStatus'), 'Asking the coach…');
     var resp;
     try {
@@ -591,12 +621,16 @@
     } catch (e) {
       busy = false;
       $('coachSuggestBtn').disabled = false;
+      $('coachSuggestBtn').removeAttribute('aria-busy');
+      restoreFocus();
       setStatus($('coachStatus'), 'Coach unavailable: ' + String((e && e.message) || e).slice(0, 160), 'warn');
       stopAuto();
       return;
     }
     busy = false;
     $('coachSuggestBtn').disabled = false;
+    $('coachSuggestBtn').removeAttribute('aria-busy');
+    restoreFocus();
 
     var guidance = String(resp.guidance || '').slice(0, 400);
     if (!guidance) { setStatus($('coachStatus'), 'The coach had no suggestion for this screen.', 'warn'); return; }
@@ -609,7 +643,6 @@
       hideOverlay();
       if (pipWin && pipWin.__coachBar) pipWin.__coachBar.textContent = '📓 ' + guidance;
       setStatus($('coachStatus'), '📓 ' + guidance, 'warn');
-      announce('Coach: ' + guidance);
       speak(guidance);
       stopAuto();
       return;
@@ -623,10 +656,10 @@
     li.textContent = guidance;
     $('coachSteps').appendChild(li);
     while ($('coachSteps').children.length > 8) $('coachSteps').removeChild($('coachSteps').firstChild);
-    setStatus($('coachStatus'), (resp.done ? '✅ ' : '👉 ') + guidance + (resp.target ? ' (highlighted on the picture below: this is the AI’s estimate of where to look)' : ''), resp.done ? 'ok' : undefined);
+    var where = describeTarget(resp.target);
+    setStatus($('coachStatus'), (resp.done ? '✅ ' : '👉 ') + guidance + (where ? ' Look at the ' + where + ' — highlighted below, and an estimate.' : ''), resp.done ? 'ok' : undefined);
     drawTarget(resp.target);
-    announce('Coach: ' + guidance);
-    speak(guidance);
+    speak(guidance + (where ? '. Look at the ' + where + '.' : ''));
     if (resp.done) stopAuto();
   }
 
