@@ -1470,7 +1470,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
                 kernelResult.provenance && React.createElement("div", { className: "text-[10px] mt-1", style: { color: _muted } }, "Source: " + kernelResult.provenance.rowCount + " rows · " + (kernelResult.provenance.columns || []).join(', ') + " · read-only query"),
                 kernelResult.rows.length > 0 && React.createElement("div", { className: "overflow-x-auto mt-2" },
                   React.createElement("table", { className: "w-full text-left text-[10px]", style: { borderCollapse: 'collapse' } },
-                    React.createElement("thead", null, React.createElement("tr", null, kernelResult.columns.map(function(column) { return React.createElement("th", { key: column, className: "p-1", style: { background: _svgBg, color: _accent, border: '1px solid ' + _border } }, column); }))),
+                    React.createElement("thead", null, React.createElement("tr", null, kernelResult.columns.map(function(column) { return React.createElement("th", { scope: 'col', key: column, className: "p-1", style: { background: _svgBg, color: _accent, border: '1px solid ' + _border } }, column); }))),
                     React.createElement("tbody", null, kernelResult.rows.map(function(row, ri) { return React.createElement("tr", { key: ri }, kernelResult.columns.map(function(column) { return React.createElement("td", { key: column, className: "p-1 font-mono", style: { color: _text, border: '1px solid ' + _border } }, row[column] == null ? '—' : String(row[column])); })); }))
                   )
                 ),
@@ -1495,6 +1495,10 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 React.createElement("input", {
 
+                  // Placeholder-only naming: gone the moment the field has a
+                  // value. Reusing the same t() call gives a persistent name
+                  // without inventing a translation key.
+                  "aria-label": t('stem.datastudio.label', "Label"),
                   type: "text", placeholder: t('stem.datastudio.label', "Label"),
 
                   value: editRow.label,
@@ -1518,6 +1522,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 React.createElement("input", {
 
+                  "aria-label": t('stem.datastudio.value', "Value"),
                   type: "number", placeholder: t('stem.datastudio.value', "Value"),
 
                   value: editRow.value,

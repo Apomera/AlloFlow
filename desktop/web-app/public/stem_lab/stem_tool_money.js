@@ -3000,7 +3000,7 @@ window.StemLab = window.StemLab || {
                         ),
                         React.createElement("div", { className: "flex items-center gap-2" },
                           React.createElement("label", { className: "text-xs font-bold text-slate-700 w-20" }, __alloT('stem.money.grand_total', "Grand Total:")),
-                          React.createElement("input", { type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', value: d.cartGuessTotal != null ? d.cartGuessTotal : '', onChange: function (e) { upd('cartGuessTotal', e.target.value === '' ? null : parseFloat(e.target.value)); upd('cartCheckoutFb', null); }, className: "px-2 py-1.5 border border-amber-600 rounded-lg text-xs font-bold w-28 focus:ring-2 focus:ring-amber-400 outline-none" })
+                          React.createElement("input", { 'aria-label': __alloT('stem.money.grand_total', "Grand Total:"), type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', value: d.cartGuessTotal != null ? d.cartGuessTotal : '', onChange: function (e) { upd('cartGuessTotal', e.target.value === '' ? null : parseFloat(e.target.value)); upd('cartCheckoutFb', null); }, className: "px-2 py-1.5 border border-amber-600 rounded-lg text-xs font-bold w-28 focus:ring-2 focus:ring-amber-400 outline-none" })
                         )
                       ),
                       React.createElement("button", { "aria-label": __alloT('stem.money.check_my_math', "Check My Math"), onClick: function () {
@@ -3688,7 +3688,7 @@ window.StemLab = window.StemLab || {
                       )
                     ),
                     React.createElement("div", { className: "flex items-center gap-2" },
-                      React.createElement("input", { type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', value: d.estAnswer != null ? d.estAnswer : '', onChange: function (e) { upd('estAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); upd('estFb', null); }, className: "flex-1 px-3 py-2 border border-indigo-600 rounded-lg text-sm font-bold focus:ring-2 focus:ring-indigo-400 outline-none" }),
+                      React.createElement("input", { "aria-label": __alloT('stem.money.your_estimate', "Your estimate"), type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', value: d.estAnswer != null ? d.estAnswer : '', onChange: function (e) { upd('estAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); upd('estFb', null); }, className: "flex-1 px-3 py-2 border border-indigo-600 rounded-lg text-sm font-bold focus:ring-2 focus:ring-indigo-400 outline-none" }),
                       React.createElement("button", { "aria-label": __alloT('stem.money.gen_change_check', "Gen Change Check"), onClick: function () {
                         if (d.estAnswer == null) return;
                         var tol = isJPY ? 0.5 : 0.015;
@@ -3762,7 +3762,7 @@ window.StemLab = window.StemLab || {
                     ),
                     React.createElement("div", { className: "flex items-center gap-2" },
                       React.createElement("label", { className: "text-xs font-bold text-slate-600" }, __alloT('stem.money.final_price', "Final price:")),
-                      React.createElement("input", { type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', value: d.csAnswer != null ? d.csAnswer : '', onChange: function (e) { upd('csAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); upd('csFb', null); }, className: "flex-1 px-3 py-2 border border-fuchsia-600 rounded-lg text-sm font-bold focus:ring-2 focus:ring-fuchsia-400 outline-none" }),
+                      React.createElement("input", { 'aria-label': __alloT('stem.money.final_price', "Final price:"), type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', value: d.csAnswer != null ? d.csAnswer : '', onChange: function (e) { upd('csAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); upd('csFb', null); }, className: "flex-1 px-3 py-2 border border-fuchsia-600 rounded-lg text-sm font-bold focus:ring-2 focus:ring-fuchsia-400 outline-none" }),
                       React.createElement("button", { "aria-label": __alloT('stem.money.gen_structured_problem', "Gen Structured Problem"), onClick: function () {
                         if (d.csAnswer == null) return;
                         var tol = isJPY ? 0.5 : 0.02;
@@ -3792,7 +3792,7 @@ window.StemLab = window.StemLab || {
                       d.spAnswers.map(function (ans, i) {
                         return React.createElement("div", { key: i, className: "flex items-center gap-2" },
                           React.createElement("label", { className: "text-xs font-bold text-cyan-700 w-24" }, ans.label + ':'),
-                          React.createElement("input", { type: "number", step: '0.01', placeholder: '$...', value: d.spUserAnswers && d.spUserAnswers[i] != null ? d.spUserAnswers[i] : '', onChange: function (e) {
+                          React.createElement("input", { 'aria-label': ans.label, type: "number", step: '0.01', placeholder: '$...', value: d.spUserAnswers && d.spUserAnswers[i] != null ? d.spUserAnswers[i] : '', onChange: function (e) {
                             var arr = (d.spUserAnswers || []).slice();
                             arr[i] = e.target.value === '' ? null : parseFloat(e.target.value);
                             upd('spUserAnswers', arr); upd('spFb', null);

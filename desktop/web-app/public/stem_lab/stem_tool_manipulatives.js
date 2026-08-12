@@ -3851,8 +3851,33 @@ window.StemLab = window.StemLab || {
           document.body.appendChild(a); a.click(); document.body.removeChild(a);
         };
 
-        var resetProgress = function() {
-          if (confirm('Reset ALL progress (score, badges, streaks, solves)? This cannot be undone.')) {
+        var resetProgress = async function() {
+          // window.confirm() is not reliably operable with a screen reader, takes
+          // no focus management, and cannot carry a described danger state — so
+          // this routes through the shared accessible dialog, matching the
+          // pattern in stem_tool_allobotsage.js.
+          //
+          // Fails CLOSED. If the dialog service is missing the reset does NOT
+          // run: falling back to window.confirm would reinstate the barrier this
+          // removes, and proceeding silently would wipe a student's score,
+          // badges and streaks with no confirmation at all.
+          var confirmApi = typeof window !== 'undefined' && window.AlloFlowUX && window.AlloFlowUX.confirm;
+          var unavailable = 'Reset is unavailable right now, so your progress was kept.';
+          if (typeof confirmApi !== 'function') {
+            if (addToast) addToast(unavailable, 'warning');
+            return;
+          }
+          var confirmed = false;
+          try {
+            confirmed = await confirmApi(
+              'Reset ALL progress (score, badges, streaks, solves)? This cannot be undone.',
+              { title: 'Reset progress', confirmText: 'Reset progress', cancelText: 'Keep my progress', tone: 'warning' }
+            );
+          } catch (e) {
+            if (addToast) addToast(unavailable, 'warning');
+            return;
+          }
+          if (confirmed) {
             upd({
               score: { correct: 0, total: 0 }, streak: 0,
               earnedBadges: {}, modesVisited: {},
@@ -5149,9 +5174,9 @@ window.StemLab = window.StemLab || {
             h('table', { className: 'w-full text-xs', style: { borderCollapse: 'separate', borderSpacing: 2 } },
               h('thead', null,
                 h('tr', null,
-                  h('th', { className: 'text-left text-green-800 font-bold py-1' }, __alloT('stem.manipulatives.manipulative', 'Manipulative')),
+                  h('th', { scope: 'col', className: 'text-left text-green-800 font-bold py-1' }, __alloT('stem.manipulatives.manipulative', 'Manipulative')),
                   grades.map(function(g) {
-                    return h('th', { key: g, className: 'text-center text-green-800 font-bold py-1 px-2 min-w-[44px]' }, g);
+                    return h('th', { scope: 'col', key: g, className: 'text-center text-green-800 font-bold py-1 px-2 min-w-[44px]' }, g);
                   })
                 )
               ),

@@ -117,43 +117,379 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
   if(!document.getElementById("migr-a11y")){var _s=document.createElement("style");_s.id="migr-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}";document.head.appendChild(_s);}
 
 
-  // ── Module-scoped bird drawing ──
-  function drawBird(c, x, y, size, flapPhase, facing, color, isDark) {
+  // ── Colour helpers ─────────────────────────────────────────────────────────
+  // Every fill in this tool resolves to a literal colour string: a canvas
+  // fillStyle set to 'var(--something)' is silently ignored by the 2D context,
+  // so CSS custom properties never reach these helpers.
+  function migrHexRgb(hex) {
+    if (typeof hex !== 'string') return null;
+    var s = hex.trim();
+    if (s.charAt(0) !== '#') return null;
+    if (s.length === 4) return { r: parseInt(s.charAt(1) + s.charAt(1), 16), g: parseInt(s.charAt(2) + s.charAt(2), 16), b: parseInt(s.charAt(3) + s.charAt(3), 16) };
+    if (s.length === 7) return { r: parseInt(s.slice(1, 3), 16), g: parseInt(s.slice(3, 5), 16), b: parseInt(s.slice(5, 7), 16) };
+    return null;
+  }
+  // amt > 0 lightens toward white, amt < 0 darkens toward black. Returns hex so
+  // the result can be fed straight back into migrShade/migrAlpha. Anything that
+  // is not a hex literal (rgba() strings, gradients) passes through untouched.
+  function migrShade(color, amt) {
+    var rgb = migrHexRgb(color);
+    if (!rgb) return color;
+    function mix(v) { var o = amt >= 0 ? v + (255 - v) * amt : v * (1 + amt); return Math.max(0, Math.min(255, Math.round(o))); }
+    function hx(v) { var s2 = v.toString(16); return s2.length < 2 ? '0' + s2 : s2; }
+    return '#' + hx(mix(rgb.r)) + hx(mix(rgb.g)) + hx(mix(rgb.b));
+  }
+  function migrAlpha(color, a) {
+    var rgb = migrHexRgb(color);
+    if (!rgb) return color;
+    return 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',' + a + ')';
+  }
+
+  // ── Rounded-rectangle path (no roundRect(): Safari 15 and older WebViews
+  // still ship a 2D context without it, and the desktop shell bundles one) ──
+  function migrRoundPath(c, x, y, w, h, r) {
+    var rr = Math.min(r, w / 2, h / 2);
+    c.beginPath();
+    c.moveTo(x + rr, y);
+    c.lineTo(x + w - rr, y); c.quadraticCurveTo(x + w, y, x + w, y + rr);
+    c.lineTo(x + w, y + h - rr); c.quadraticCurveTo(x + w, y + h, x + w - rr, y + h);
+    c.lineTo(x + rr, y + h); c.quadraticCurveTo(x, y + h, x, y + h - rr);
+    c.lineTo(x, y + rr); c.quadraticCurveTo(x, y, x + rr, y);
+    c.closePath();
+  }
+
+  // Shared HUD card: every on-canvas readout in this tool uses it, so the seven
+  // tabs read as one instrument panel instead of seven ad-hoc grey boxes.
+  function migrPanel(c, x, y, w, h, isDark, accent) {
+    c.save();
+    migrRoundPath(c, x, y, w, h, 8);
+    c.shadowColor = isDark ? 'rgba(0,0,0,0.55)' : 'rgba(15,23,42,0.20)';
+    c.shadowBlur = 10;
+    c.shadowOffsetY = 2;
+    c.fillStyle = isDark ? 'rgba(2,6,23,0.86)' : 'rgba(255,255,255,0.94)';
+    c.fill();
+    c.shadowColor = 'transparent'; c.shadowBlur = 0; c.shadowOffsetY = 0;
+    c.strokeStyle = isDark ? 'rgba(148,163,184,0.30)' : 'rgba(148,163,184,0.50)';
+    c.lineWidth = 1;
+    c.stroke();
+    if (accent) {
+      c.save();
+      migrRoundPath(c, x, y, w, h, 8);
+      c.clip();
+      c.fillStyle = accent;
+      c.fillRect(x, y, 3, h);
+      c.restore();
+    }
+    c.restore();
+  }
+
+  // Annotated force/flow vector with a solid head — used by the aerodynamics
+  // free-body diagram, the wind field and the navigation panel.
+  function migrArrow(c, x1, y1, x2, y2, color, width, head) {
+    var ang = Math.atan2(y2 - y1, x2 - x1);
+    var hs = head || Math.max(6, (width || 2) * 3);
+    var bx = x2 - Math.cos(ang) * hs * 0.85;
+    var by = y2 - Math.sin(ang) * hs * 0.85;
+    c.save();
+    c.strokeStyle = color;
+    c.lineWidth = width || 2;
+    c.lineCap = 'round';
+    c.beginPath();
+    c.moveTo(x1, y1);
+    c.lineTo(bx, by);
+    c.stroke();
+    c.beginPath();
+    c.moveTo(x2, y2);
+    c.lineTo(x2 - Math.cos(ang - 0.42) * hs, y2 - Math.sin(ang - 0.42) * hs);
+    c.lineTo(x2 - Math.cos(ang + 0.42) * hs, y2 - Math.sin(ang + 0.42) * hs);
+    c.closePath();
+    c.fillStyle = color;
+    c.fill();
+    c.restore();
+  }
+
+  // Pill-shaped caption that stays readable over sky, map or ocean fills.
+  function migrChip(c, x, y, text, fg, bgCol, font) {
+    c.save();
+    c.font = font || 'bold 9px system-ui';
+    var w = c.measureText(text).width + 12;
+    var hgt = 15;
+    migrRoundPath(c, x - w / 2, y - hgt / 2, w, hgt, hgt / 2);
+    c.fillStyle = bgCol;
+    c.fill();
+    c.fillStyle = fg;
+    c.textAlign = 'center';
+    c.textBaseline = 'middle';
+    c.fillText(text, x, y + 0.5);
+    c.restore();
+  }
+
+  // ── Bird silhouettes ───────────────────────────────────────────────────────
+  // Plan view, nose at +x. `span`/`chord` scale the wing, `sweep` rakes it
+  // rearward, `slots` cuts the emarginated primary "fingers" a soaring bird
+  // shows, `forked` splits the tail and `legs` trails them past it.
+  var BIRD_SHAPES = {
+    generic:   { neck: 0.30, bill: 0.34, tail: 0.90, span: 1.55, chord: 1.00, sweep: 0.18, slots: 2, forked: 0, legs: 0 },
+    goose:     { neck: 0.62, bill: 0.28, tail: 0.70, span: 1.60, chord: 1.00, sweep: 0.14, slots: 2, forked: 0, legs: 0 },
+    crane:     { neck: 0.88, bill: 0.50, tail: 0.60, span: 1.88, chord: 1.05, sweep: 0.06, slots: 4, forked: 0, legs: 1.15 },
+    tern:      { neck: 0.20, bill: 0.44, tail: 1.00, span: 2.00, chord: 0.58, sweep: 0.46, slots: 0, forked: 0.9, legs: 0 },
+    raptor:    { neck: 0.16, bill: 0.26, tail: 0.95, span: 1.55, chord: 1.22, sweep: 0.22, slots: 4, forked: 0, legs: 0 },
+    falcon:    { neck: 0.14, bill: 0.24, tail: 0.95, span: 1.62, chord: 0.66, sweep: 0.60, slots: 0, forked: 0, legs: 0 },
+    shorebird: { neck: 0.34, bill: 0.72, tail: 0.70, span: 1.74, chord: 0.64, sweep: 0.48, slots: 0, forked: 0, legs: 0.75 },
+    hummer:    { neck: 0.12, bill: 0.92, tail: 0.60, span: 0.95, chord: 0.52, sweep: 0.10, slots: 0, forked: 0, legs: 0, blur: 1 }
+  };
+
+  // Maps the SPECIES table onto the silhouettes above.
+  var SPECIES_SILHOUETTE = {
+    canada_goose: 'goose',
+    snow_goose: 'goose',
+    arctic_tern: 'tern',
+    ruby_hummingbird: 'hummer',
+    peregrine: 'falcon',
+    sandhill_crane: 'crane',
+    monarch: 'butterfly',
+    bartailed_godwit: 'shorebird'
+  };
+
+  function drawButterfly(c, x, y, size, flapPhase, facing, color, isDark) {
+    var u = size;
+    var wingCol = color || '#f97316';
+    var edge = migrShade(wingCol, -0.62);
+    var inner = migrShade(wingCol, 0.16);
+    // A butterfly's wings clap over its back, so the flap reads as the pair
+    // closing toward the body rather than a bird's up-and-down stroke.
+    var open = 0.30 + 0.70 * Math.abs(Math.cos(flapPhase * 0.5));
+    var detail = u >= 7;
     c.save();
     c.translate(x, y);
-    c.scale(facing, 1);
-    var wa = Math.sin(flapPhase) * 0.4;
-    // Body
-    c.fillStyle = color || (isDark ? '#94a3b8' : '#475569');
+    c.scale(facing < 0 ? -1 : 1, 1);
+    for (var s = -1; s <= 1; s += 2) {
+      c.save();
+      c.scale(1, s * open);
+      // Hindwing first so the forewing overlaps it, as in a real monarch.
+      c.beginPath();
+      c.moveTo(-0.12 * u, 0.02 * u);
+      c.bezierCurveTo(-0.80 * u, 0.28 * u, -0.72 * u, 1.00 * u, -0.04 * u, 0.90 * u);
+      c.bezierCurveTo(0.06 * u, 0.52 * u, 0.02 * u, 0.16 * u, -0.12 * u, 0.02 * u);
+      c.closePath();
+      c.fillStyle = migrShade(wingCol, -0.10);
+      c.fill();
+      c.strokeStyle = edge; c.lineWidth = Math.max(0.6, u * 0.10); c.stroke();
+      // Forewing
+      c.beginPath();
+      c.moveTo(0.10 * u, 0.02 * u);
+      c.bezierCurveTo(0.92 * u, 0.14 * u, 0.98 * u, 1.02 * u, 0.14 * u, 1.10 * u);
+      c.bezierCurveTo(-0.06 * u, 0.62 * u, -0.02 * u, 0.20 * u, 0.10 * u, 0.02 * u);
+      c.closePath();
+      c.fillStyle = wingCol;
+      c.fill();
+      c.strokeStyle = edge; c.lineWidth = Math.max(0.6, u * 0.10); c.stroke();
+      if (detail) {
+        // Black venation and the white marginal spots that identify a monarch.
+        c.strokeStyle = migrAlpha(edge, 0.8);
+        c.lineWidth = Math.max(0.4, u * 0.05);
+        for (var v = 0; v < 3; v++) {
+          c.beginPath();
+          c.moveTo(0.08 * u, 0.08 * u);
+          c.quadraticCurveTo(0.45 * u, (0.30 + v * 0.22) * u, 0.62 * u - v * 0.20 * u, (0.82 + v * 0.10) * u);
+          c.stroke();
+        }
+        c.fillStyle = '#f8fafc';
+        for (var sp3 = 0; sp3 < 3; sp3++) {
+          c.beginPath();
+          c.arc((0.62 - sp3 * 0.20) * u, (0.90 - sp3 * 0.04) * u, Math.max(0.5, u * 0.055), 0, Math.PI * 2);
+          c.fill();
+        }
+        c.fillStyle = inner;
+        c.beginPath();
+        c.ellipse(0.34 * u, 0.44 * u, 0.20 * u, 0.26 * u, 0.3, 0, Math.PI * 2);
+        c.fill();
+      }
+      c.restore();
+    }
+    // Abdomen + thorax
+    c.fillStyle = isDark ? '#1e293b' : '#111827';
     c.beginPath();
-    c.ellipse(0, 0, size * 1.2, size * 0.4, 0, 0, Math.PI * 2);
+    c.ellipse(-0.10 * u, 0, 0.62 * u, 0.13 * u, 0, 0, Math.PI * 2);
     c.fill();
-    // Head
     c.beginPath();
-    c.arc(size, -size * 0.1, size * 0.25, 0, Math.PI * 2);
+    c.arc(0.34 * u, 0, 0.17 * u, 0, Math.PI * 2);
     c.fill();
-    // Beak
-    c.fillStyle = '#f59e0b';
+    if (detail) {
+      // Clubbed antennae
+      c.strokeStyle = isDark ? '#334155' : '#111827';
+      c.lineWidth = Math.max(0.4, u * 0.055);
+      for (var an = -1; an <= 1; an += 2) {
+        c.beginPath();
+        c.moveTo(0.42 * u, an * 0.06 * u);
+        c.quadraticCurveTo(0.80 * u, an * 0.30 * u, 0.92 * u, an * 0.62 * u);
+        c.stroke();
+        c.beginPath();
+        c.arc(0.92 * u, an * 0.62 * u, Math.max(0.5, u * 0.07), 0, Math.PI * 2);
+        c.fillStyle = isDark ? '#334155' : '#111827';
+        c.fill();
+      }
+    }
+    c.restore();
+  }
+
+  // Module-scoped bird drawing. `variant` keys into BIRD_SHAPES (or the string
+  // 'butterfly'); omitting it keeps the previous generic silhouette.
+  function drawBird(c, x, y, size, flapPhase, facing, color, isDark, variant) {
+    if (variant === 'butterfly') { drawButterfly(c, x, y, size, flapPhase, facing, color, isDark); return; }
+    var shape = BIRD_SHAPES[variant] || BIRD_SHAPES.generic;
+    var u = size;
+    var base = color || (isDark ? '#9aa8bd' : '#475569');
+    var detail = u >= 7;
+    var dark = migrShade(base, isDark ? -0.32 : -0.42);
+    var light = migrShade(base, isDark ? 0.22 : 0.30);
+
+    // Flap as seen from above/below: the wing swings through a dihedral arc, so
+    // its projected span foreshortens toward the top and bottom of the stroke
+    // and rakes rearward on the upstroke. That reads as depth, where the old
+    // symmetric fore/aft sweep read as a flat kite.
+    var dihedral = Math.sin(flapPhase) * 1.15;
+    var span = (0.42 + 0.58 * Math.cos(dihedral)) * shape.span;
+    var upstroke = Math.max(0, Math.sin(flapPhase));
+    var sweep = shape.sweep + upstroke * 0.20;
+    var ch = shape.chord;
+
+    c.save();
+    c.translate(x, y - Math.cos(flapPhase) * u * 0.05);
+    c.scale(facing < 0 ? -1 : 1, 1);
+
+    // ── Wings (behind the body) ──
+    if (shape.blur) {
+      // A hummingbird beats 50-80 times a second: far faster than the eye can
+      // freeze, so paint the swept arc instead of a static wing.
+      for (var hb = -1; hb <= 1; hb += 2) {
+        c.save();
+        c.translate(0.1 * u, hb * 0.30 * u);
+        c.rotate(hb * (0.35 + Math.sin(flapPhase) * 0.30));
+        c.beginPath();
+        c.ellipse(-0.35 * u, hb * 0.55 * u, 0.95 * u, 0.34 * u, hb * 0.5, 0, Math.PI * 2);
+        c.fillStyle = migrAlpha(base, 0.30);
+        c.fill();
+        c.restore();
+      }
+    } else {
+      for (var s2 = -1; s2 <= 1; s2 += 2) {
+        c.save();
+        c.translate(0.18 * u, 0);
+        // Mirror first, then rotate: rotating inside a reflection keeps the
+        // sweep rearward on both wings without shearing the outline.
+        c.scale(1, s2);
+        c.rotate(sweep);
+        c.beginPath();
+        c.moveTo(0.20 * u, 0.06 * u);
+        c.quadraticCurveTo(0.02 * u, 0.62 * u * span, -0.22 * u * ch, 1.00 * u * span);
+        c.quadraticCurveTo(-0.55 * u * ch, 1.42 * u * span, -0.98 * u * ch, 1.58 * u * span);
+        c.quadraticCurveTo(-1.04 * u * ch, 1.32 * u * span, -0.72 * u * ch, 1.02 * u * span);
+        c.quadraticCurveTo(-0.66 * u * ch, 0.52 * u * span, -0.46 * u * ch, 0.08 * u);
+        c.closePath();
+        c.fillStyle = base;
+        c.fill();
+        // The "hand" (primaries) is darker than the arm, as on a real wing.
+        c.beginPath();
+        c.moveTo(-0.22 * u * ch, 1.00 * u * span);
+        c.quadraticCurveTo(-0.55 * u * ch, 1.42 * u * span, -0.98 * u * ch, 1.58 * u * span);
+        c.quadraticCurveTo(-1.04 * u * ch, 1.32 * u * span, -0.72 * u * ch, 1.02 * u * span);
+        c.closePath();
+        c.fillStyle = migrAlpha(dark, 0.55);
+        c.fill();
+        if (detail && shape.slots) {
+          c.strokeStyle = migrAlpha(dark, 0.85);
+          c.lineWidth = Math.max(0.5, u * 0.055);
+          for (var f = 0; f < shape.slots; f++) {
+            var ft = (f + 1) / (shape.slots + 1);
+            c.beginPath();
+            c.moveTo(-0.58 * u * ch, (0.98 + ft * 0.08) * u * span);
+            c.lineTo(lerp(-0.98, -1.04, ft) * u * ch, lerp(1.56, 1.30, ft) * u * span);
+            c.stroke();
+          }
+        }
+        c.restore();
+      }
+    }
+
+    // ── Trailing legs (cranes and shorebirds) ──
+    if (shape.legs) {
+      c.strokeStyle = migrShade(base, -0.48);
+      c.lineWidth = Math.max(0.6, u * 0.07);
+      for (var lg = -1; lg <= 1; lg += 2) {
+        c.beginPath();
+        c.moveTo(-0.60 * u, lg * 0.12 * u);
+        c.lineTo(-(1.05 + shape.legs) * u, lg * 0.17 * u);
+        c.stroke();
+      }
+    }
+
+    // ── Tail ──
+    var tf = shape.tail;
+    var tipX = -(0.95 + tf * 0.55) * u;
     c.beginPath();
-    c.moveTo(size * 1.25, -size * 0.1);
-    c.lineTo(size * 1.5, 0);
-    c.lineTo(size * 1.25, size * 0.05);
+    c.moveTo(-0.55 * u, -0.20 * u);
+    if (shape.forked) {
+      c.lineTo(tipX - 0.35 * u * shape.forked, -0.60 * u * tf);
+      c.lineTo(-1.00 * u, 0);
+      c.lineTo(tipX - 0.35 * u * shape.forked, 0.60 * u * tf);
+    } else {
+      c.lineTo(tipX, -0.50 * u * tf);
+      c.lineTo(tipX - 0.10 * u, 0);
+      c.lineTo(tipX, 0.50 * u * tf);
+    }
+    c.lineTo(-0.55 * u, 0.20 * u);
     c.closePath();
+    c.fillStyle = migrShade(base, isDark ? -0.14 : -0.20);
     c.fill();
-    // Wings
-    c.fillStyle = color || (isDark ? '#94a3b8' : '#334155');
-    c.save(); c.rotate(-wa);
+
+    // ── Body ──
     c.beginPath();
-    c.moveTo(-size * 0.2, 0);
-    c.quadraticCurveTo(-size * 0.5, -size * 1.2, -size * 1.5, -size * 0.3);
-    c.quadraticCurveTo(-size * 0.8, -size * 0.1, -size * 0.2, 0);
-    c.fill(); c.restore();
-    c.save(); c.rotate(wa);
+    c.moveTo(1.05 * u, 0);
+    c.bezierCurveTo(0.72 * u, -0.40 * u, -0.30 * u, -0.36 * u, -0.92 * u, 0);
+    c.bezierCurveTo(-0.30 * u, 0.36 * u, 0.72 * u, 0.40 * u, 1.05 * u, 0);
+    c.closePath();
+    c.fillStyle = base;
+    c.fill();
+    if (detail) {
+      c.beginPath();
+      c.ellipse(0.15 * u, -0.10 * u, 0.60 * u, 0.12 * u, 0, 0, Math.PI * 2);
+      c.fillStyle = migrAlpha(light, 0.55);
+      c.fill();
+    }
+
+    // ── Neck, head and bill ──
+    var headX = (1.00 + shape.neck) * u;
+    if (shape.neck > 0.28) {
+      c.beginPath();
+      c.moveTo(0.85 * u, -0.20 * u);
+      c.quadraticCurveTo(headX - 0.10 * u, -0.17 * u, headX, -0.06 * u);
+      c.lineTo(headX, 0.06 * u);
+      c.quadraticCurveTo(headX - 0.10 * u, 0.17 * u, 0.85 * u, 0.20 * u);
+      c.closePath();
+      c.fillStyle = migrShade(base, -0.08);
+      c.fill();
+    }
     c.beginPath();
-    c.moveTo(-size * 0.2, 0);
-    c.quadraticCurveTo(-size * 0.5, size * 1.2, -size * 1.5, size * 0.3);
-    c.quadraticCurveTo(-size * 0.8, size * 0.1, -size * 0.2, 0);
-    c.fill(); c.restore();
+    c.arc(headX, 0, 0.26 * u, 0, Math.PI * 2);
+    c.fillStyle = migrShade(base, isDark ? 0.08 : -0.06);
+    c.fill();
+    var billHalf = shape.blur ? 0.05 * u : 0.10 * u;
+    c.beginPath();
+    c.moveTo(headX + 0.18 * u, -billHalf);
+    c.lineTo(headX + (0.26 + shape.bill) * u, 0);
+    c.lineTo(headX + 0.18 * u, billHalf);
+    c.closePath();
+    c.fillStyle = shape.blur ? migrShade(base, -0.60) : '#f59e0b';
+    c.fill();
+    if (detail) {
+      c.fillStyle = isDark ? '#0b1220' : '#111827';
+      for (var ey = -1; ey <= 1; ey += 2) {
+        c.beginPath();
+        c.arc(headX + 0.06 * u, ey * 0.15 * u, Math.max(0.6, u * 0.07), 0, Math.PI * 2);
+        c.fill();
+      }
+    }
     c.restore();
   }
 
@@ -242,51 +578,317 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
     { threat: 'Cat Predation', emoji: '\uD83D\uDC08', desc: 'Domestic and feral cats kill an estimated 1.3-4 billion birds per year in the US. Keeping cats indoors is one of the simplest conservation actions for birds.' }
   ];
 
-  // ── Draw a simple compass rose ──
+  // ── Compass rose with a bezel, a 16-point tick ring and a wind vane ──
+  // `windAngle` is in degrees with 0 = East, matching the wind-field maths, and
+  // the vane points the way the air is going.
   function drawCompassRose(c, cx, cy, radius, windAngle, isDark) {
+    var R = radius;
     c.save();
     c.translate(cx, cy);
 
-    // Outer ring
+    // Bezel
     c.beginPath();
-    c.arc(0, 0, radius, 0, Math.PI * 2);
-    c.fillStyle = isDark ? 'rgba(15,23,42,0.8)' : 'rgba(255,255,255,0.85)';
+    c.arc(0, 0, R, 0, Math.PI * 2);
+    c.shadowColor = isDark ? 'rgba(0,0,0,0.60)' : 'rgba(15,23,42,0.22)';
+    c.shadowBlur = 8;
+    c.shadowOffsetY = 2;
+    c.fillStyle = isDark ? 'rgba(2,6,23,0.90)' : 'rgba(255,255,255,0.95)';
     c.fill();
+    c.shadowColor = 'transparent'; c.shadowBlur = 0; c.shadowOffsetY = 0;
     c.strokeStyle = isDark ? '#475569' : '#cbd5e1';
     c.lineWidth = 1.5;
     c.stroke();
+    c.beginPath();
+    c.arc(0, 0, R - 4, 0, Math.PI * 2);
+    c.strokeStyle = isDark ? 'rgba(71,85,105,0.65)' : 'rgba(203,213,225,0.95)';
+    c.lineWidth = 1;
+    c.stroke();
 
-    // Cardinal tick marks
+    // 16-point tick ring, cardinals long
+    for (var i = 0; i < 16; i++) {
+      var a3 = i * Math.PI / 8;
+      var major = i % 4 === 0;
+      var inner = R - (major ? 10 : 6);
+      c.beginPath();
+      c.moveTo(Math.cos(a3) * inner, Math.sin(a3) * inner);
+      c.lineTo(Math.cos(a3) * (R - 4), Math.sin(a3) * (R - 4));
+      c.strokeStyle = major ? (isDark ? '#cbd5e1' : '#334155') : (isDark ? 'rgba(148,163,184,0.5)' : 'rgba(100,116,139,0.45)');
+      c.lineWidth = major ? 1.4 : 0.8;
+      c.stroke();
+    }
+
+    // Four-point star, north tinted red as on a real rose
+    var star = R * 0.42;
+    for (var q = 0; q < 4; q++) {
+      var qa = -Math.PI / 2 + q * Math.PI / 2; // screen N, E, S, W
+      for (var half = -1; half <= 1; half += 2) {
+        c.beginPath();
+        c.moveTo(Math.cos(qa) * star, Math.sin(qa) * star);
+        c.lineTo(Math.cos(qa + half * Math.PI / 2) * star * 0.22, Math.sin(qa + half * Math.PI / 2) * star * 0.22);
+        c.lineTo(0, 0);
+        c.closePath();
+        if (q === 0) c.fillStyle = half < 0 ? '#ef4444' : '#f87171';
+        else c.fillStyle = half < 0 ? (isDark ? '#334155' : '#cbd5e1') : (isDark ? '#475569' : '#e2e8f0');
+        c.fill();
+      }
+    }
+
+    // Cardinal labels
     var dirs = ['E', 'N', 'W', 'S'];
     var angles = [0, Math.PI / 2, Math.PI, Math.PI * 1.5];
-    c.font = 'bold 8px system-ui';
+    c.font = 'bold ' + Math.max(7, Math.round(R * 0.27)) + 'px system-ui';
     c.textAlign = 'center';
     c.textBaseline = 'middle';
     for (var di = 0; di < 4; di++) {
       var a = -angles[di];
-      // Tick
-      c.beginPath();
-      c.moveTo(Math.cos(a) * (radius - 6), Math.sin(a) * (radius - 6));
-      c.lineTo(Math.cos(a) * (radius - 1), Math.sin(a) * (radius - 1));
-      c.strokeStyle = isDark ? '#94a3b8' : '#475569';
-      c.lineWidth = 1;
-      c.stroke();
-      // Label
-      c.fillStyle = isDark ? '#94a3b8' : '#475569';
-      c.fillText(dirs[di], Math.cos(a) * (radius - 12), Math.sin(a) * (radius - 12));
+      c.fillStyle = di === 1 ? '#ef4444' : (isDark ? '#cbd5e1' : '#334155');
+      c.fillText(dirs[di], Math.cos(a) * (R - 13), Math.sin(a) * (R - 13));
     }
 
-    // Wind arrow
+    // Wind vane
     c.rotate(-windAngle * Math.PI / 180);
+    var vg = c.createLinearGradient(-R * 0.6, 0, R * 0.72, 0);
+    vg.addColorStop(0, '#0369a1');
+    vg.addColorStop(1, '#38bdf8');
     c.beginPath();
-    c.moveTo(radius * 0.65, 0);
-    c.lineTo(-radius * 0.3, -radius * 0.2);
-    c.lineTo(-radius * 0.15, 0);
-    c.lineTo(-radius * 0.3, radius * 0.2);
+    c.moveTo(R * 0.74, 0);
+    c.lineTo(R * 0.20, -R * 0.26);
+    c.lineTo(R * 0.08, 0);
+    c.lineTo(R * 0.20, R * 0.26);
     c.closePath();
-    c.fillStyle = '#0ea5e9';
+    c.fillStyle = vg;
+    c.fill();
+    c.strokeStyle = isDark ? 'rgba(2,6,23,0.75)' : 'rgba(255,255,255,0.9)';
+    c.lineWidth = 1;
+    c.stroke();
+    // Tail feather, so the vane reads as a direction rather than a blob
+    c.beginPath();
+    c.moveTo(R * 0.08, 0);
+    c.lineTo(-R * 0.48, -R * 0.15);
+    c.lineTo(-R * 0.60, 0);
+    c.lineTo(-R * 0.48, R * 0.15);
+    c.closePath();
+    c.fillStyle = isDark ? 'rgba(148,163,184,0.9)' : 'rgba(100,116,139,0.9)';
+    c.fill();
+    // Hub
+    c.beginPath();
+    c.arc(0, 0, R * 0.09, 0, Math.PI * 2);
+    c.fillStyle = isDark ? '#e2e8f0' : '#334155';
     c.fill();
 
+    c.restore();
+  }
+
+  // ── Flyway map geometry ───────────────────────────────────────────────────
+  // Authored in the same 620x400 design space the flyway paths and stopover
+  // markers already use, so the coastline can gain detail without moving any of
+  // the pedagogy that was pinned to the old outline. The projection is a
+  // deliberately squashed schematic, not a survey chart.
+  var MAP_COAST = [
+    // Arctic rim, west to east, with the Foxe Basin notch broken into it
+    [128, 34], [146, 24], [168, 17], [192, 13], [214, 19], [236, 12], [258, 9], [280, 16],
+    [300, 10], [316, 23], [328, 14], [342, 11], [354, 22], [366, 13], [386, 15], [406, 12],
+    [421, 23], [435, 18], [449, 31], [459, 45],
+    // Labrador, the Gulf of St Lawrence and Nova Scotia
+    [468, 59], [474, 74], [470, 88], [462, 98], [452, 105],
+    [459, 113], [452, 123], [445, 129], [453, 135], [457, 143], [448, 147],
+    // Maine, Cape Cod, then the mid-Atlantic bights
+    [443, 153], [450, 159], [443, 167], [449, 173], [441, 178], [439, 185],
+    [434, 191], [441, 195], [433, 201], [440, 207],
+    // Hatteras down to the Florida tip
+    [444, 215], [440, 223], [444, 231], [448, 241], [450, 253], [445, 263],
+    // Back up the Florida Gulf coast
+    [437, 255], [431, 241], [427, 227], [422, 217],
+    // Gulf of Mexico: panhandle, the delta lobe, then Texas
+    [408, 217], [392, 221], [377, 225], [363, 233], [357, 241], [351, 235],
+    [339, 241], [329, 251], [322, 263],
+    // Mexico's east coast and the Yucatan
+    [320, 277], [325, 289], [335, 297], [349, 299], [355, 293], [351, 307], [339, 309],
+    // Southward taper into Central America
+    [329, 313], [320, 321], [308, 333], [294, 345], [278, 355], [260, 363], [242, 371], [224, 378], [208, 385],
+    // Pacific coast, south to north: Baja gulf, the California bight, Cape
+    // Mendocino, then the fjord-cut British Columbia shore
+    [198, 377], [190, 363], [182, 349], [174, 335], [165, 319], [157, 303],
+    [150, 287], [144, 269], [139, 251], [134, 233], [131, 215], [126, 197],
+    [123, 179], [121, 161], [120, 143], [124, 125], [119, 109], [123, 93], [118, 75], [124, 57], [126, 44]
+  ];
+  var MAP_ALASKA = [[54, 24], [76, 14], [100, 12], [118, 19], [127, 31], [120, 43], [104, 54], [84, 58], [66, 54], [52, 44], [46, 33]];
+  var MAP_ALEUTIANS = [[52, 62], [42, 68], [30, 72], [20, 74]];
+  var MAP_HUDSON = [[304, 40], [328, 34], [350, 40], [358, 56], [352, 74], [334, 86], [314, 82], [302, 66], [298, 52]];
+  var MAP_BAJA = [[133, 304], [142, 302], [150, 318], [158, 334], [164, 350], [158, 354], [148, 338], [139, 320]];
+  var MAP_NEWFOUNDLAND = [[468, 108], [482, 104], [491, 114], [483, 126], [470, 123]];
+  var MAP_VANCOUVER = [[104, 126], [112, 119], [117, 132], [107, 142]];
+  var MAP_CUBA = [[450, 273], [474, 278], [496, 287], [499, 294], [477, 288], [456, 282]];
+  var MAP_HISPANIOLA = [[513, 291], [532, 294], [539, 301], [519, 300], [509, 296]];
+  // Ridge lines migrating raptors ride for lift; drawn as relief hatching.
+  var MAP_RANGES = [
+    { pts: [[168, 60], [172, 96], [176, 132], [181, 168], [187, 204], [196, 238], [208, 272], [221, 304]], step: 7, hgt: 3 },
+    { pts: [[142, 112], [146, 150], [153, 188], [161, 224], [171, 256]], step: 7, hgt: 2.4 },
+    { pts: [[420, 132], [412, 158], [403, 182], [395, 204]], step: 7, hgt: 2.4 },
+    { pts: [[250, 320], [264, 336], [278, 350]], step: 6, hgt: 2.2 }
+  ];
+
+  // Catmull-Rom through the given points, emitted as beziers so a 20-point
+  // coastline reads as a coastline rather than a polygon.
+  function migrSmoothPath(c, pts, sx, sy, closed, tension) {
+    var n = pts.length;
+    if (n < 2) return;
+    var k = typeof tension === 'number' ? tension : 1 / 6;
+    function P(i) {
+      var j = closed ? ((i % n) + n) % n : (i < 0 ? 0 : (i > n - 1 ? n - 1 : i));
+      return pts[j];
+    }
+    c.beginPath();
+    c.moveTo(P(0)[0] * sx, P(0)[1] * sy);
+    var last = closed ? n : n - 1;
+    for (var i = 0; i < last; i++) {
+      var p0 = P(i - 1), p1 = P(i), p2 = P(i + 1), p3 = P(i + 2);
+      c.bezierCurveTo(
+        (p1[0] + (p2[0] - p0[0]) * k) * sx, (p1[1] + (p2[1] - p0[1]) * k) * sy,
+        (p2[0] - (p3[0] - p1[0]) * k) * sx, (p2[1] - (p3[1] - p1[1]) * k) * sy,
+        p2[0] * sx, p2[1] * sy
+      );
+    }
+    if (closed) c.closePath();
+  }
+
+  // Small landmass: smooth outline, fill, coast stroke.
+  function migrDrawLand(c, pts, sx, sy, fill, stroke, lw) {
+    migrSmoothPath(c, pts, sx, sy, true, 0.10);
+    c.fillStyle = fill;
+    c.fill();
+    c.strokeStyle = stroke;
+    c.lineWidth = lw;
+    c.stroke();
+  }
+
+  // ── Wind-field terrain ────────────────────────────────────────────────────
+  // These were emoji glyphs, which rendered at whatever size and style the
+  // platform font chose and carried no windward side, no height and no sense of
+  // scale — the three things the wind model is actually about. Drawn geometry
+  // lets the picture agree with getWindAt().
+  function migrDrawTerrain(c, type, x, y, time, isDark) {
+    c.save();
+    c.translate(x, y);
+    c.lineJoin = 'round';
+
+    if (type === 'mountain') {
+      var rockL = isDark ? '#52606f' : '#a3aebd';
+      var rockD = isDark ? '#333e4d' : '#6b7a8d';
+      // Back ridge
+      c.beginPath();
+      c.moveTo(6, 22); c.lineTo(30, -16); c.lineTo(52, 22); c.closePath();
+      c.fillStyle = rockD; c.fill();
+      // Main peak, windward face lit
+      c.beginPath();
+      c.moveTo(-38, 22); c.lineTo(-2, -32); c.lineTo(30, 22); c.closePath();
+      c.fillStyle = rockL; c.fill();
+      // Lee face in shadow — the side the downdraft and rotor roll off
+      c.beginPath();
+      c.moveTo(-2, -32); c.lineTo(30, 22); c.lineTo(3, 22); c.closePath();
+      c.fillStyle = rockD; c.fill();
+      // Snowline
+      c.beginPath();
+      c.moveTo(-2, -32); c.lineTo(12, -11); c.lineTo(6, -7); c.lineTo(0, -13);
+      c.lineTo(-6, -7); c.lineTo(-11, -13); c.lineTo(-15, -9); c.closePath();
+      c.fillStyle = isDark ? '#cbd5e1' : '#f8fafc'; c.fill();
+      c.strokeStyle = isDark ? 'rgba(2,6,23,0.55)' : 'rgba(51,65,85,0.35)';
+      c.lineWidth = 1;
+      c.beginPath(); c.moveTo(-38, 22); c.lineTo(-2, -32); c.lineTo(30, 22); c.stroke();
+
+    } else if (type === 'building') {
+      var wall = isDark ? '#3f4550' : '#cbd5e1';
+      var side = isDark ? '#272c34' : '#94a3b8';
+      c.fillStyle = wall; c.fillRect(-17, -34, 27, 56);
+      c.fillStyle = side; c.fillRect(10, -30, 9, 52);
+      c.fillStyle = isDark ? '#525a67' : '#e2e8f0';
+      c.fillRect(-19, -38, 31, 4);
+      c.fillRect(12, -34, 9, 4);
+      // Lit windows at night, reflective by day
+      var lit = isDark ? '#fbbf24' : '#93c5fd';
+      for (var wr = 0; wr < 6; wr++) {
+        for (var wq = 0; wq < 3; wq++) {
+          var on = (((wr * 3 + wq + 1) * 7) % 5) > 1;
+          c.fillStyle = on ? lit : (isDark ? '#161a20' : '#64748b');
+          c.fillRect(-13 + wq * 7, -29 + wr * 8, 5, 5);
+        }
+      }
+      c.strokeStyle = isDark ? 'rgba(2,6,23,0.6)' : 'rgba(71,85,105,0.4)';
+      c.lineWidth = 1;
+      c.strokeRect(-17, -34, 27, 56);
+
+    } else if (type === 'lake') {
+      c.beginPath();
+      c.ellipse(0, 10, 42, 14, 0, 0, Math.PI * 2);
+      c.fillStyle = isDark ? '#0f4c5c' : '#7dd3fc';
+      c.fill();
+      c.strokeStyle = isDark ? '#0e7490' : '#38bdf8';
+      c.lineWidth = 1.5; c.stroke();
+      c.strokeStyle = isDark ? 'rgba(125,211,252,0.55)' : 'rgba(255,255,255,0.85)';
+      c.lineWidth = 1.2;
+      for (var sh = 0; sh < 3; sh++) {
+        var sy2 = 5 + sh * 6;
+        var swid = 26 - sh * 8 + Math.sin(time * 1.6 + sh) * 4;
+        c.beginPath(); c.moveTo(-swid / 2, sy2); c.lineTo(swid / 2, sy2); c.stroke();
+      }
+      // Convection wisps: the warm, moist air the lake sends up
+      c.strokeStyle = isDark ? 'rgba(148,233,255,0.32)' : 'rgba(56,189,248,0.40)';
+      c.lineWidth = 1.4;
+      for (var ev = -1; ev <= 1; ev++) {
+        c.beginPath();
+        c.moveTo(ev * 17, -2);
+        c.quadraticCurveTo(ev * 17 + Math.sin(time * 2 + ev) * 8, -18, ev * 17 + Math.sin(time * 2 + ev * 2) * 4, -34);
+        c.stroke();
+      }
+
+    } else if (type === 'thermal') {
+      // A column of rising warm air, widening as it climbs
+      var g5 = c.createLinearGradient(0, 26, 0, -48);
+      g5.addColorStop(0, isDark ? 'rgba(251,191,36,0.32)' : 'rgba(249,115,22,0.28)');
+      g5.addColorStop(1, isDark ? 'rgba(251,191,36,0)' : 'rgba(249,115,22,0)');
+      c.fillStyle = g5;
+      c.beginPath();
+      c.moveTo(-20, 26); c.lineTo(20, 26); c.lineTo(32, -48); c.lineTo(-32, -48);
+      c.closePath(); c.fill();
+      // Helical updraft — the spiral a soaring bird circles inside
+      c.strokeStyle = isDark ? 'rgba(253,224,71,0.85)' : 'rgba(234,88,12,0.78)';
+      c.lineWidth = 1.6;
+      c.beginPath();
+      for (var hy = 26; hy > -48; hy -= 2) {
+        var hp = hy * 0.16 + time * 3;
+        var hr = 8 + (26 - hy) * 0.17;
+        if (hy === 26) c.moveTo(Math.sin(hp) * hr, hy);
+        else c.lineTo(Math.sin(hp) * hr, hy);
+      }
+      c.stroke();
+      migrArrow(c, 0, 22, 0, -34, isDark ? '#facc15' : '#ea580c', 2, 7);
+
+    } else if (type === 'forest') {
+      var trunk = isDark ? '#3b2a1c' : '#7c4a21';
+      var leafD = isDark ? '#14532d' : '#15803d';
+      var leafL = isDark ? '#166534' : '#22c55e';
+      var TREES = [[-27, 0.82], [-14, 1.02], [0, 0.76], [13, 1.06], [26, 0.84]];
+      for (var tr2 = 0; tr2 < TREES.length; tr2++) {
+        var tx2 = TREES[tr2][0];
+        var ts = TREES[tr2][1];
+        // Canopy sway, strongest at the crown
+        var swayBase = Math.sin(time * 1.4 + tr2) * 1.4;
+        c.fillStyle = trunk;
+        c.fillRect(tx2 - 1.7, 13, 3.4, 9);
+        for (var tier = 0; tier < 3; tier++) {
+          var ty2 = 15 - tier * 9 * ts;
+          var tw2 = (11 - tier * 2.6) * ts;
+          var swy = swayBase * (tier + 1) * 0.5;
+          c.beginPath();
+          c.moveTo(tx2 + swy, ty2 - 15 * ts);
+          c.lineTo(tx2 - tw2, ty2);
+          c.lineTo(tx2 + tw2, ty2);
+          c.closePath();
+          c.fillStyle = tier === 2 ? leafL : leafD;
+          c.fill();
+        }
+      }
+    }
     c.restore();
   }
 
@@ -381,7 +983,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       var _vfBirdsRef = useRef(null);
       var _vfDragRef = useRef({ active: false, idx: -1, offX: 0, offY: 0 });
       var _vfTimeRef = useRef(0);
-      // Synchronous gate for "perfect V" XP award \u2014 prevents animation frames from
+      // Synchronous gate for "perfect V" XP award — prevents animation frames from
       // re-firing awardXP while the async toolData write propagates.
       var _vfPerfectRef = useRef(false);
       var _f3dHostRef = useRef(null);
@@ -481,14 +1083,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         _f3dHostRef.current = null;
       }
 
+      // A wing planform: root chord, wrist, then a tapered tip, with a little
+      // upward camber so vertex normals give the surface some form. The previous
+      // version was a single flat triangle with a spur pointing forward, which
+      // read as a paper dart rather than a wing at every camera angle.
+      // `reach` scales span, `sweep` scales chord — same meaning as before, so
+      // the monarch's inner/outer wing calls still work.
       function createMigrationWingGeometry(THREE, side, reach, sweep) {
+        var s = side;
+        var k = sweep;
         var geometry = new THREE.BufferGeometry();
         geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array([
-          0, 0, 0,
-          side * reach, 0, sweep * 0.35,
-          side * reach * 0.42, 0, -sweep
+          0.04 * s, 0.000, -0.46 * k,          // 0 root, leading edge
+          0.04 * s, 0.000, 0.44 * k,           // 1 root, trailing edge
+          0.50 * reach * s, 0.055, -0.40 * k,  // 2 wrist, leading
+          0.48 * reach * s, 0.045, 0.33 * k,   // 3 wrist, trailing
+          0.78 * reach * s, 0.085, -0.24 * k,  // 4 outer, leading
+          1.00 * reach * s, 0.115, 0.05 * k,   // 5 tip
+          0.90 * reach * s, 0.100, 0.27 * k    // 6 tip, trailing
         ]), 3));
-        geometry.setIndex([0, 1, 2]);
+        geometry.setIndex([0, 2, 1, 2, 3, 1, 2, 4, 3, 4, 6, 3, 4, 5, 6]);
         geometry.computeVertexNormals();
         return geometry;
       }
@@ -496,18 +1110,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       function createMigrationFlyer(THREE, species, index) {
         var flyer = new THREE.Group();
         var isMonarch = species.id === 'monarch';
+        // One flat colour per species turned every bird into a grey capsule with
+        // grey wings. Each entry now carries the markings that identify the
+        // species in the air: back, belly, head/neck and wingtip.
         var palette = {
-          canada_goose: 0x64748b,
-          snow_goose: 0xf1f5f9,
-          arctic_tern: 0xe2e8f0,
-          ruby_hummingbird: 0x16a34a,
-          peregrine: 0x475569,
-          sandhill_crane: 0xa16207,
-          bartailed_godwit: 0x92400e
+          canada_goose:     { body: 0x6b7583, belly: 0xd6cfc2, head: 0x111a24, cheek: 0xf8fafc, wing: 0x5a6472, tip: 0x2b323c, bill: 0x1f2937 },
+          snow_goose:       { body: 0xf3f6fa, belly: 0xffffff, head: 0xf3f6fa, cheek: null,     wing: 0xe8edf3, tip: 0x1f2937, bill: 0xf472b6 },
+          arctic_tern:      { body: 0xeef2f7, belly: 0xffffff, head: 0x111827, cheek: null,     wing: 0xd7dee7, tip: 0x475569, bill: 0xdc2626 },
+          ruby_hummingbird: { body: 0x15803d, belly: 0xe7e5e4, head: 0x14532d, cheek: 0xb91c1c, wing: 0x166534, tip: 0x14532d, bill: 0x1f2937 },
+          peregrine:        { body: 0x3f4a5a, belly: 0xe4e0d6, head: 0x1e293b, cheek: null,     wing: 0x36404e, tip: 0x1e293b, bill: 0xfbbf24 },
+          sandhill_crane:   { body: 0x9aa0a6, belly: 0xb9b2a4, head: 0x9aa0a6, cheek: 0xb91c1c, wing: 0x8d939a, tip: 0x4b5563, bill: 0x44403c },
+          bartailed_godwit: { body: 0xa9793f, belly: 0xe8dcc6, head: 0x8b5e2f, cheek: null,     wing: 0x96682f, tip: 0x57432a, bill: 0x1f2937 }
         };
-        var bodyColor = palette[species.id] || 0x64748b;
+        var sp3d = palette[species.id] || palette.canada_goose;
+        var bodyColor = isMonarch ? 0x111827 : sp3d.body;
         var bodyMat = new THREE.MeshStandardMaterial({
-          color: isMonarch ? 0x111827 : bodyColor,
+          color: bodyColor,
           roughness: 0.68,
           metalness: 0.04
         });
@@ -519,22 +1137,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         body.castShadow = true;
         flyer.add(body);
 
+        if (!isMonarch) {
+          // Pale underside: countershading is what makes a bird read as a solid
+          // form against the sky instead of a flat capsule.
+          var belly = new THREE.Mesh(
+            new THREE.SphereGeometry(0.27, 12, 8),
+            new THREE.MeshStandardMaterial({ color: sp3d.belly, roughness: 0.78 })
+          );
+          belly.scale.set(0.92, 0.62, 2.05);
+          belly.position.y = -0.10;
+          flyer.add(belly);
+
+          // Neck, so a goose or crane is not just a head stuck to a tube
+          var neckLen = species.id === 'sandhill_crane' ? 0.78 : (species.id === 'canada_goose' || species.id === 'snow_goose' ? 0.52 : 0.22);
+          var neck = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.10, 0.15, neckLen + 0.3, 8),
+            new THREE.MeshStandardMaterial({ color: sp3d.head, roughness: 0.7 })
+          );
+          neck.rotation.x = Math.PI / 2;
+          neck.position.z = -0.62 - neckLen * 0.5;
+          flyer.add(neck);
+        }
+
         var head = new THREE.Mesh(
-          new THREE.SphereGeometry(isMonarch ? 0.13 : 0.24, 12, 8),
-          bodyMat
+          new THREE.SphereGeometry(isMonarch ? 0.13 : 0.2, 12, 8),
+          isMonarch ? bodyMat : new THREE.MeshStandardMaterial({ color: sp3d.head, roughness: 0.66 })
         );
-        head.position.z = isMonarch ? -0.39 : -0.72;
+        var headZ = isMonarch ? -0.39 : -0.72 - (species.id === 'sandhill_crane' ? 0.78 : (species.id === 'canada_goose' || species.id === 'snow_goose' ? 0.52 : 0.22));
+        head.position.z = headZ;
         head.castShadow = true;
         flyer.add(head);
 
         if (!isMonarch) {
+          if (sp3d.cheek) {
+            // The Canada Goose's white chinstrap and the crane's red crown —
+            // the field marks a student would actually use to name the bird.
+            var cheekMat = new THREE.MeshStandardMaterial({ color: sp3d.cheek, roughness: 0.7 });
+            for (var ck = -1; ck <= 1; ck += 2) {
+              var cheek = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 6), cheekMat);
+              cheek.scale.set(0.45, 1, 0.85);
+              cheek.position.set(ck * 0.16, species.id === 'sandhill_crane' ? 0.13 : -0.02, headZ + 0.03);
+              flyer.add(cheek);
+            }
+          }
           var beak = new THREE.Mesh(
-            new THREE.ConeGeometry(0.11, 0.34, 10),
-            new THREE.MeshStandardMaterial({ color: 0xfbbf24, roughness: 0.6 })
+            new THREE.ConeGeometry(0.085, species.id === 'bartailed_godwit' ? 0.62 : 0.32, 10),
+            new THREE.MeshStandardMaterial({ color: sp3d.bill, roughness: 0.55 })
           );
           beak.rotation.x = -Math.PI / 2;
-          beak.position.z = -0.98;
+          beak.position.z = headZ - (species.id === 'bartailed_godwit' ? 0.34 : 0.2);
           flyer.add(beak);
+
+          // Fanned tail
+          var tail3d = new THREE.Mesh(
+            new THREE.ConeGeometry(0.34, 0.62, 5),
+            new THREE.MeshStandardMaterial({ color: sp3d.tip, roughness: 0.75, flatShading: true })
+          );
+          tail3d.rotation.x = Math.PI / 2;
+          tail3d.scale.set(1, 1, 0.34);
+          tail3d.position.z = 0.78;
+          flyer.add(tail3d);
         }
 
         var leftPivot = new THREE.Group();
@@ -542,7 +1204,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         var reach = isMonarch ? 0.82 : 1.38;
         var sweep = isMonarch ? 0.62 : 0.86;
         var outerMat = new THREE.MeshStandardMaterial({
-          color: isMonarch ? 0x111827 : bodyColor,
+          color: isMonarch ? 0x111827 : sp3d.wing,
           roughness: 0.72,
           side: THREE.DoubleSide
         });
@@ -630,9 +1292,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           host.insertBefore(renderer.domElement, host.firstChild);
 
           var scene = new THREE.Scene();
-          scene.background = new THREE.Color(0x075985);
-          scene.fog = new THREE.FogExp2(0x0c4a6e, 0.0125);
-          var camera = new THREE.PerspectiveCamera(54, 1, 0.1, 500);
+          // Horizon haze colour, shared by the sky dome's lowest stop, the fog
+          // and the clear colour, so distance fades into one continuous sky
+          // instead of hitting a flat teal wall.
+          var HAZE = 0xbcd9e6;
+          scene.background = new THREE.Color(HAZE);
+          scene.fog = new THREE.FogExp2(HAZE, 0.0042);
+          var camera = new THREE.PerspectiveCamera(54, 1, 0.1, 900);
           camera.position.set(0, 5, 18);
 
           var engine = {
@@ -654,9 +1320,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           _f3dEngineRef.current = engine;
           _f3dHostRef.current = host;
 
-          var hemi = new THREE.HemisphereLight(0xdbeafe, 0x14532d, 1.28);
+          // ── Sky dome ──
+          // A flat background colour gave the corridor no horizon and nothing to
+          // read altitude against. A vertical gradient dome supplies both, and
+          // is excluded from fog so it stays a sky rather than a fog wall.
+          var skyCanvas = document.createElement('canvas');
+          skyCanvas.width = 4;
+          skyCanvas.height = 256;
+          var skyCtx = skyCanvas.getContext('2d');
+          var skyGrad3d = skyCtx.createLinearGradient(0, 0, 0, 256);
+          skyGrad3d.addColorStop(0, '#0c3f6b');
+          skyGrad3d.addColorStop(0.40, '#1f74a6');
+          skyGrad3d.addColorStop(0.72, '#79bcd8');
+          skyGrad3d.addColorStop(1, '#bcd9e6');
+          skyCtx.fillStyle = skyGrad3d;
+          skyCtx.fillRect(0, 0, 4, 256);
+          var skyTex = new THREE.CanvasTexture(skyCanvas);
+          skyTex.minFilter = THREE.LinearFilter;
+          skyTex.magFilter = THREE.LinearFilter;
+          var skyDome = new THREE.Mesh(
+            new THREE.SphereGeometry(420, 24, 18),
+            new THREE.MeshBasicMaterial({ map: skyTex, side: THREE.BackSide, fog: false })
+          );
+          // disposeMigrationObject walks the scene and disposes mat.map, so the
+          // canvas texture is released with the dome on teardown.
+          scene.add(skyDome);
+
+          // Lighting was hot enough to blow every surface toward white: a slate
+          // goose read as a paper plane and the dark green ground as pale mint.
+          var hemi = new THREE.HemisphereLight(0xcfe6f5, 0x2f4a2c, 0.72);
           scene.add(hemi);
-          var sun = new THREE.DirectionalLight(0xfff7d6, 1.55);
+          var sun = new THREE.DirectionalLight(0xfff2d0, 1.05);
           sun.position.set(-28, 34, 18);
           sun.castShadow = true;
           sun.shadow.mapSize.set(1024, 1024);
@@ -665,17 +1359,62 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           sun.shadow.camera.top = 35;
           sun.shadow.camera.bottom = -35;
           scene.add(sun);
+          // Cool bounce from the sky behind the flock, so a bird's far side is
+          // separated from the ground rather than sinking into it.
+          var rim = new THREE.DirectionalLight(0x9fd0ec, 0.42);
+          rim.position.set(22, 12, -40);
+          scene.add(rim);
 
           var sunDisc = new THREE.Mesh(
             new THREE.SphereGeometry(3.2, 24, 16),
-            new THREE.MeshBasicMaterial({ color: 0xfef3c7 })
+            new THREE.MeshBasicMaterial({ color: 0xfff9e0, fog: false })
           );
           sunDisc.position.set(-38, 34, -115);
           scene.add(sunDisc);
+          var sunGlow = new THREE.Mesh(
+            new THREE.SphereGeometry(9.5, 20, 14),
+            new THREE.MeshBasicMaterial({ color: 0xfff2c4, transparent: true, opacity: 0.18, fog: false, depthWrite: false })
+          );
+          sunGlow.position.copy(sunDisc.position);
+          scene.add(sunGlow);
 
+          // ── Ground ──
+          // One flat quad read as a painted backdrop. Gentle relief plus
+          // per-vertex biome colour gives the corridor a floor with depth, while
+          // the flight lane itself stays level so the route ribbon and beacons
+          // are never buried.
+          var groundGeo = new THREE.PlaneGeometry(220, 400, 64, 116);
+          var gPos = groundGeo.attributes.position;
+          var gColors = new Float32Array(gPos.count * 3);
+          var gTint = new THREE.Color();
+          for (var gvi = 0; gvi < gPos.count; gvi++) {
+            var gx = gPos.getX(gvi);
+            var gy = gPos.getY(gvi);
+            var flank = clamp((Math.abs(gx) - 7) / 12, 0, 1);
+            var hgt3 = (Math.sin(gx * 0.075) * 1.35 + Math.cos(gy * 0.052) * 1.75 + Math.sin((gx + gy) * 0.031) * 1.05) * flank;
+            // Carve the river channel the water plane sits in
+            var riverD = Math.abs(gx - 31);
+            if (riverD < 13) hgt3 = lerp(hgt3, -1.15, Math.pow(1 - riverD / 13, 0.7));
+            gPos.setZ(gvi, hgt3);
+            // Field patchwork: a cheap hash per cell so the plain reads as
+            // farmland and woodlot rather than one flat green.
+            var cellSeed = Math.sin(Math.floor(gx / 11) * 12.9898 + Math.floor(gy / 13) * 78.233) * 43758.5453;
+            var patch = cellSeed - Math.floor(cellSeed);
+            var alt = clamp((hgt3 + 2.2) / 5.2, 0, 1);
+            if (riverD < 10) {
+              gTint.setHSL(0.53, 0.40, 0.30);
+            } else {
+              gTint.setHSL(0.28 - alt * 0.06 + patch * 0.055, 0.42 - alt * 0.13 + patch * 0.16, 0.17 + alt * 0.13 + patch * 0.08);
+            }
+            gColors[gvi * 3] = gTint.r;
+            gColors[gvi * 3 + 1] = gTint.g;
+            gColors[gvi * 3 + 2] = gTint.b;
+          }
+          groundGeo.setAttribute('color', new THREE.BufferAttribute(gColors, 3));
+          groundGeo.computeVertexNormals();
           var ground = new THREE.Mesh(
-            new THREE.PlaneGeometry(180, 360, 1, 1),
-            new THREE.MeshStandardMaterial({ color: 0x315f3b, roughness: 0.96 })
+            groundGeo,
+            new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.97, metalness: 0 })
           );
           ground.rotation.x = -Math.PI / 2;
           ground.position.set(0, -6, -125);
@@ -687,9 +1426,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             new THREE.MeshStandardMaterial({
               color: 0x38bdf8,
               emissive: 0x082f49,
-              emissiveIntensity: 0.42,
+              emissiveIntensity: 0.30,
               transparent: true,
-              opacity: 0.58,
+              opacity: 0.34,
               roughness: 0.7
             })
           );
@@ -699,61 +1438,147 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           engine.routeRibbon = routeRibbon;
 
           var river = new THREE.Mesh(
-            new THREE.PlaneGeometry(18, 300),
+            new THREE.PlaneGeometry(15, 300),
             new THREE.MeshStandardMaterial({
-              color: 0x0ea5e9,
-              roughness: 0.32,
-              metalness: 0.08,
+              color: 0x2f86b8,
+              roughness: 0.52,
+              metalness: 0.02,
               transparent: true,
-              opacity: 0.72
+              opacity: 0.88
             })
           );
           river.rotation.x = -Math.PI / 2;
           river.rotation.z = -0.08;
-          river.position.set(31, -5.82, -125);
+          river.position.set(31, -6.62, -125);
           scene.add(river);
 
-          var mountainMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.92 });
-          for (var mi = 0; mi < 18; mi++) {
-            var height = 7 + (mi % 5) * 2.8;
-            var mountain = new THREE.Mesh(
-              new THREE.ConeGeometry(5.5 + (mi % 3) * 1.7, height, 7),
-              mountainMat
-            );
+          // ── Ridges ──
+          // Pushed out past the river (they used to stand in it) and capped, so
+          // the ridge line reads as the terrain raptors ride rather than as grey
+          // cones scattered over the floor.
+          var mountainMat = new THREE.MeshStandardMaterial({ color: 0x54606f, roughness: 0.94, flatShading: true });
+          var snowMat = new THREE.MeshStandardMaterial({ color: 0xeef4f8, roughness: 0.86, flatShading: true });
+          for (var mi = 0; mi < 22; mi++) {
+            var height = 8 + (mi % 5) * 3.4;
+            var radius = 5.5 + (mi % 3) * 1.9;
             var side = mi % 2 ? -1 : 1;
-            mountain.position.set(side * (24 + (mi % 4) * 7), -6 + height / 2, -25 - mi * 12);
+            var mx = side * (44 + (mi % 4) * 9);
+            var mz = -25 - mi * 11;
+            var mountain = new THREE.Mesh(new THREE.ConeGeometry(radius, height, 7), mountainMat);
+            mountain.position.set(mx, -6 + height / 2, mz);
             mountain.rotation.y = mi * 0.61;
             mountain.castShadow = true;
             mountain.receiveShadow = true;
             scene.add(mountain);
+            if (height > 13) {
+              var cap = new THREE.Mesh(new THREE.ConeGeometry(radius * 0.34, height * 0.3, 7), snowMat);
+              cap.position.set(mx, -6 + height - height * 0.15, mz);
+              cap.rotation.y = mi * 0.61;
+              scene.add(cap);
+            }
           }
 
+          // ── Woodland ──
+          // Bare relief gave the eye nothing to measure forward motion against.
+          // Two InstancedMeshes (trunk + canopy) cost two draw calls for ~150
+          // trees, so this is affordable on the software rasteriser too.
+          var TREE_N = 150;
+          var trunkMesh = new THREE.InstancedMesh(
+            new THREE.CylinderGeometry(0.22, 0.3, 1.5, 5),
+            new THREE.MeshStandardMaterial({ color: 0x4a3423, roughness: 0.95 }),
+            TREE_N
+          );
+          var canopyMesh = new THREE.InstancedMesh(
+            new THREE.ConeGeometry(1.5, 4.4, 6),
+            new THREE.MeshStandardMaterial({ color: 0x27502f, roughness: 0.94, flatShading: true }),
+            TREE_N
+          );
+          var treeM = new THREE.Matrix4();
+          var treeQ = new THREE.Quaternion();
+          var treeP = new THREE.Vector3();
+          var treeS = new THREE.Vector3();
+          var placed = 0;
+          for (var ti3 = 0; ti3 < TREE_N * 3 && placed < TREE_N; ti3++) {
+            var tSeed = Math.sin(ti3 * 41.7) * 43758.5453;
+            tSeed = tSeed - Math.floor(tSeed);
+            var tSeed2 = Math.sin(ti3 * 97.3 + 11.1) * 24634.6345;
+            tSeed2 = tSeed2 - Math.floor(tSeed2);
+            var tx3 = (tSeed - 0.5) * 190;
+            var tz3 = -12 - tSeed2 * 300;
+            // Keep the flight lane and the river channel clear
+            if (Math.abs(tx3) < 11 || Math.abs(tx3 - 31) < 12) continue;
+            // Follow the same relief the ground vertices use
+            var tFlank = clamp((Math.abs(tx3) - 7) / 12, 0, 1);
+            var tGy = -(tz3 + 125);
+            var tH = (Math.sin(tx3 * 0.075) * 1.35 + Math.cos(tGy * 0.052) * 1.75 + Math.sin((tx3 + tGy) * 0.031) * 1.05) * tFlank;
+            var tScale = 0.7 + tSeed2 * 0.9;
+            treeP.set(tx3, -6 + tH + 0.75 * tScale, tz3);
+            treeQ.set(0, 0, 0, 1);
+            treeS.set(tScale, tScale, tScale);
+            treeM.compose(treeP, treeQ, treeS);
+            trunkMesh.setMatrixAt(placed, treeM);
+            treeP.set(tx3, -6 + tH + 3.1 * tScale, tz3);
+            treeM.compose(treeP, treeQ, treeS);
+            canopyMesh.setMatrixAt(placed, treeM);
+            placed++;
+          }
+          trunkMesh.count = placed;
+          canopyMesh.count = placed;
+          trunkMesh.instanceMatrix.needsUpdate = true;
+          canopyMesh.instanceMatrix.needsUpdate = true;
+          canopyMesh.castShadow = true;
+          scene.add(trunkMesh);
+          scene.add(canopyMesh);
+
+          // ── Cloud decks ──
+          // The old deck sat at y=4..14 with one cloud dead ahead at z=-18, so
+          // white spheres filled the middle of the frame and hid the flock.
+          // Clouds now belong above the corridor and out to the flanks, and are
+          // flattened into cumulus rather than left as spheres.
           var cloudMat = new THREE.MeshStandardMaterial({
-            color: 0xf8fafc,
+            color: 0xf6fbff,
             transparent: true,
-            opacity: 0.78,
+            opacity: 0.72,
             roughness: 1,
             depthWrite: false
           });
-          for (var ci = 0; ci < 12; ci++) {
+          for (var ci = 0; ci < 14; ci++) {
             var cloud = new THREE.Group();
-            for (var puff = 0; puff < 4; puff++) {
+            var puffs = 4 + (ci % 3);
+            for (var puff = 0; puff < puffs; puff++) {
               var ball = new THREE.Mesh(
-                new THREE.SphereGeometry(1.6 + (puff % 2) * 0.7, 12, 8),
+                new THREE.SphereGeometry(1.5 + (puff % 3) * 0.6, 10, 8),
                 cloudMat
               );
-              ball.position.set((puff - 1.5) * 1.8, Math.sin(puff) * 0.55, Math.cos(puff) * 0.7);
+              ball.position.set((puff - (puffs - 1) / 2) * 1.85, Math.sin(puff * 1.7) * 0.5, Math.cos(puff * 1.3) * 0.85);
               cloud.add(ball);
             }
+            cloud.scale.set(1.5 + (ci % 3) * 0.45, 0.6, 1.15);
+            var cSide = ci % 2 ? -1 : 1;
             cloud.position.set(
-              Math.sin(ci * 2.1) * (18 + (ci % 3) * 6),
-              4 + (ci % 4) * 3.2,
-              -18 - ci * 14
+              cSide * (17 + (ci % 5) * 8),
+              13 + (ci % 4) * 4.5,
+              -46 - ci * 15
             );
             cloud.userData.baseZ = cloud.position.z;
             cloud.userData.drift = 0.32 + (ci % 4) * 0.08;
             scene.add(cloud);
             engine.movers.push(cloud);
+          }
+
+          // High cirrus: a slow second layer, the strongest parallax cue in the
+          // frame and the one thing that made altitude legible.
+          var cirrusMat = new THREE.MeshBasicMaterial({
+            color: 0xffffff, transparent: true, opacity: 0.20, depthWrite: false, side: THREE.DoubleSide
+          });
+          for (var xi = 0; xi < 7; xi++) {
+            var cirrus = new THREE.Mesh(new THREE.PlaneGeometry(46 + (xi % 3) * 22, 13), cirrusMat);
+            cirrus.rotation.x = -Math.PI / 2;
+            cirrus.position.set((xi % 2 ? -1 : 1) * (10 + (xi % 4) * 13), 34 + (xi % 3) * 5, -60 - xi * 34);
+            cirrus.userData.baseZ = cirrus.position.z;
+            cirrus.userData.drift = 0.12 + (xi % 3) * 0.03;
+            scene.add(cirrus);
+            engine.movers.push(cirrus);
           }
 
           var beaconMat = new THREE.MeshBasicMaterial({ color: 0x7dd3fc, transparent: true, opacity: 0.84 });
@@ -884,8 +1709,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
           var cameraTargets = {
             chase: [0, 5.5, 18],
-            aerial: [0, 27, 12],
-            side: [25, 5, 4]
+            // High oblique, not straight down: at y=27/z=12 the horizon left the
+            // frame entirely and the aerial view lost all sense of the corridor.
+            aerial: [0, 21, 25],
+            side: [24, 5.5, 5]
           };
           var target = cameraTargets[live.flightCamera] || cameraTargets.chase;
           var desired = new THREE.Vector3(target[0], target[1], target[2]);
@@ -1385,75 +2212,153 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             }
             c.restore();
 
-            // Show upwash zones (faint cones behind each bird)
-            c.globalAlpha = 0.06;
+            // ── Wake structure behind each bird ──
+            // Flat 6%-alpha triangles read as smudges. Gradient cones that fade
+            // downstream, plus chevrons that point the way the air is actually
+            // moving, make the upwash a student can aim for and the downwash one
+            // they can see they are stuck in.
             for (var uzi = 0; uzi < birds.length; uzi++) {
               var uzb = birds[uzi];
-              // Draw two upwash cones (one per wing)
+              // Downwash directly astern: the air the leader pushes DOWN
+              var dwGrad = c.createLinearGradient(uzb.x - 5, uzb.y, uzb.x - 66, uzb.y);
+              dwGrad.addColorStop(0, 'rgba(239,68,68,0.20)');
+              dwGrad.addColorStop(1, 'rgba(239,68,68,0)');
+              c.fillStyle = dwGrad;
+              c.beginPath();
+              c.moveTo(uzb.x - 4, uzb.y - 8);
+              c.lineTo(uzb.x - 66, uzb.y - 15);
+              c.lineTo(uzb.x - 66, uzb.y + 15);
+              c.lineTo(uzb.x - 4, uzb.y + 8);
+              c.closePath();
+              c.fill();
+              // Upwash off each wingtip, at roughly 30 degrees to the side
               for (var side2 = -1; side2 <= 1; side2 += 2) {
+                var uwGrad = c.createLinearGradient(uzb.x - 5, uzb.y, uzb.x - 74, uzb.y + side2 * 34);
+                uwGrad.addColorStop(0, 'rgba(34,197,94,0.30)');
+                uwGrad.addColorStop(1, 'rgba(34,197,94,0)');
+                c.fillStyle = uwGrad;
                 c.beginPath();
                 c.moveTo(uzb.x - 5, uzb.y + side2 * 10);
-                c.lineTo(uzb.x - 70, uzb.y + side2 * 35);
-                c.lineTo(uzb.x - 70, uzb.y + side2 * 15);
+                c.lineTo(uzb.x - 74, uzb.y + side2 * 40);
+                c.lineTo(uzb.x - 74, uzb.y + side2 * 14);
                 c.closePath();
-                c.fillStyle = '#22c55e';
                 c.fill();
+                // Rising chevrons drifting down the upwash sheet
+                c.strokeStyle = 'rgba(22,163,74,0.6)';
+                c.lineWidth = 1.5;
+                c.lineCap = 'round';
+                for (var uc = 0; uc < 2; uc++) {
+                  var uu = 0.18 + ((time * 0.42 + uc * 0.5 + uzi * 0.13) % 1) * 0.78;
+                  var ux = uzb.x - 14 - uu * 54;
+                  var uy = uzb.y + side2 * (13 + uu * 26);
+                  var ufade = Math.sin(Math.PI * uu);
+                  c.globalAlpha = 0.35 + ufade * 0.55;
+                  c.beginPath();
+                  c.moveTo(ux - 6, uy + 4.5);
+                  c.lineTo(ux, uy - 4.5);
+                  c.lineTo(ux + 6, uy + 4.5);
+                  c.stroke();
+                  c.globalAlpha = 1;
+                }
+                c.lineCap = 'butt';
               }
-              // Draw downwash zone (directly behind, red)
-              c.beginPath();
-              c.moveTo(uzb.x - 5, uzb.y - 8);
-              c.lineTo(uzb.x - 60, uzb.y - 12);
-              c.lineTo(uzb.x - 60, uzb.y + 12);
-              c.lineTo(uzb.x - 5, uzb.y + 8);
-              c.closePath();
-              c.fillStyle = '#ef4444';
-              c.fill();
             }
-            c.globalAlpha = 1;
 
             // Draw birds
             for (var di = 0; di < birds.length; di++) {
               var db = birds[di];
-              var birdColor = db.role === 'leader' ? (isDark ? '#fbbf24' : '#d97706') : null;
-              drawBird(c, db.x, db.y, 10, db.flapPhase, -1, birdColor, isDark);
+              var isLead = db.role === 'leader';
+              var birdColor = isLead ? (isDark ? '#fbbf24' : '#d97706') : null;
+              // Soft shadow disc so a dozen birds do not flatten into the sky
+              c.save();
+              c.globalAlpha = isDark ? 0.20 : 0.12;
+              c.fillStyle = '#0f172a';
+              c.beginPath();
+              c.ellipse(db.x + 3, db.y + 12, 13, 3.4, 0, 0, Math.PI * 2);
+              c.fill();
+              c.restore();
+              if (isLead) {
+                // Halo marks who is paying the full cost of the front position
+                var lg2 = c.createRadialGradient(db.x, db.y, 3, db.x, db.y, 26);
+                lg2.addColorStop(0, 'rgba(251,191,36,0.32)');
+                lg2.addColorStop(1, 'rgba(251,191,36,0)');
+                c.fillStyle = lg2;
+                c.beginPath();
+                c.arc(db.x, db.y, 26, 0, Math.PI * 2);
+                c.fill();
+              }
+              drawBird(c, db.x, db.y, 11, db.flapPhase, 1, birdColor, isDark, 'goose');
 
               // Energy bar
-              var barW = 24, barH = 3;
+              var barW = 22, barH = 3.5;
               var barX = db.x - barW / 2;
-              var barY = db.y - 18;
-              c.fillStyle = 'rgba(0,0,0,0.3)';
-              c.fillRect(barX, barY, barW, barH);
+              var barY = db.y - 22;
               var ePct = db.energy / 100;
               var eColor = ePct > 0.6 ? '#22c55e' : ePct > 0.3 ? '#eab308' : '#ef4444';
-              c.fillStyle = eColor;
-              c.fillRect(barX, barY, barW * ePct, barH);
+              if (ePct < 0.99 || isLead) {
+                migrRoundPath(c, barX - 1, barY - 1, barW + 2, barH + 2, 3);
+                c.fillStyle = isDark ? 'rgba(2,6,23,0.55)' : 'rgba(15,23,42,0.28)';
+                c.fill();
+                if (ePct > 0.02) {
+                  migrRoundPath(c, barX, barY, barW * ePct, barH, 2);
+                  c.fillStyle = eColor;
+                  c.globalAlpha = 0.9;
+                  c.fill();
+                  c.globalAlpha = 1;
+                }
+              }
 
               // Leader star
-              if (db.role === 'leader') {
-                c.fillStyle = isDark ? '#fbbf24' : '#92400e';
-                c.font = '10px system-ui';
+              if (isLead) {
+                c.fillStyle = isDark ? '#fbbf24' : '#b45309';
+                c.font = 'bold 11px system-ui';
                 c.textAlign = 'center';
-                c.fillText('\u2605', db.x, db.y - 22);
+                c.textBaseline = 'middle';
+                c.fillText('\u2605', db.x + barW / 2 + 8, barY + barH / 2);
+                c.textBaseline = 'alphabetic';
               }
             }
 
-            // Efficiency display
+            // ── Instrument panel ──
             var eff = calcFormationEfficiency(birds);
-            c.fillStyle = isDark ? 'rgba(15,23,42,0.8)' : 'rgba(255,255,255,0.85)';
-            c.fillRect(8, 8, 170, 46);
-            c.strokeStyle = isDark ? '#334155' : '#cbd5e1';
-            c.lineWidth = 1;
-            c.strokeRect(8, 8, 170, 46);
-            c.fillStyle = isDark ? '#e2e8f0' : '#1e293b';
-            c.font = 'bold 12px system-ui';
+            var effCol = eff >= 85 ? '#22c55e' : eff >= 55 ? '#eab308' : '#ef4444';
+            migrPanel(c, 8, 8, 186, 72, isDark, effCol);
             c.textAlign = 'left';
-            c.fillText('Formation Efficiency: ' + eff + '%', 14, 26);
-            c.font = '10px system-ui';
+            c.textBaseline = 'alphabetic';
             c.fillStyle = isDark ? '#94a3b8' : '#475569';
-            c.fillText('Energy Savings: ' + Math.round(eff * 0.65) + '%', 14, 40);
-            c.fillText('Leader Rotations: ' + (leaderRotations || 0), 14, 52);
+            c.font = 'bold 8px system-ui';
+            c.fillText(t('stem.migration.formation_efficiency_label', 'FORMATION EFFICIENCY').toUpperCase(), 18, 23);
+            c.fillStyle = isDark ? '#f1f5f9' : '#0f172a';
+            c.font = 'bold 20px system-ui';
+            c.fillText(eff + '%', 18, 43);
+            // Meter, so the number has a scale behind it
+            migrRoundPath(c, 18, 50, 160, 6, 3);
+            c.fillStyle = isDark ? 'rgba(148,163,184,0.25)' : 'rgba(148,163,184,0.35)';
+            c.fill();
+            if (eff > 1) {
+              migrRoundPath(c, 18, 50, 160 * clamp(eff / 100, 0, 1), 6, 3);
+              c.fillStyle = effCol;
+              c.fill();
+            }
+            c.font = '9px system-ui';
+            c.fillStyle = isDark ? '#94a3b8' : '#475569';
+            c.fillText(t('stem.migration.energy_saved_short', 'Energy saved') + ' ' + Math.round(eff * 0.3) + '%  ·  ' +
+              t('stem.migration.rotations_short', 'rotations') + ' ' + (leaderRotations || 0), 18, 70);
 
-            // Check for perfect V \u2014 synchronous ref prevents per-frame re-award
+            // Wake key — the two colours behind the birds mean opposite things,
+            // and nothing on screen said which was which.
+            migrPanel(c, W - 128, 8, 120, 42, isDark, null);
+            c.fillStyle = 'rgba(34,197,94,0.75)';
+            c.fillRect(W - 120, 18, 12, 7);
+            c.fillStyle = 'rgba(239,68,68,0.6)';
+            c.fillRect(W - 120, 32, 12, 7);
+            c.font = '9px system-ui';
+            c.textAlign = 'left';
+            c.fillStyle = isDark ? '#cbd5e1' : '#334155';
+            c.fillText(t('stem.migration.upwash_lift', 'upwash · free lift'), W - 104, 25);
+            c.fillText(t('stem.migration.downwash_cost', 'downwash · costly'), W - 104, 39);
+
+            // Check for perfect V — synchronous ref prevents per-frame re-award
             // while the async setToolData write propagates (previous bug: ~60 XP/sec).
             if (eff >= 85 && !_vfPerfectRef.current) {
               _vfPerfectRef.current = true;
@@ -1976,45 +2881,120 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             var windRad = (lv.windDir || 0) * Math.PI / 180;
             c.clearRect(0, 0, W, H);
 
-            // Background
+            // Sky: a real gradient with a haze band at the horizon, so height
+            // in the frame reads as height in the air column.
             var bgGrad = c.createLinearGradient(0, 0, 0, H);
             if (isDark) {
-              bgGrad.addColorStop(0, '#0c4a6e');
-              bgGrad.addColorStop(1, '#082f49');
+              bgGrad.addColorStop(0, '#082f49');
+              bgGrad.addColorStop(0.55, '#0c4a6e');
+              bgGrad.addColorStop(1, '#155e75');
             } else {
-              bgGrad.addColorStop(0, '#e0f2fe');
-              bgGrad.addColorStop(1, '#f0f9ff');
+              bgGrad.addColorStop(0, '#bae6fd');
+              bgGrad.addColorStop(0.55, '#e0f2fe');
+              bgGrad.addColorStop(1, '#f4fbff');
             }
             c.fillStyle = bgGrad;
             c.fillRect(0, 0, W, H);
 
-            // Ground
-            c.fillStyle = isDark ? '#1e3a2f' : '#86efac';
-            c.fillRect(0, H - 30, W, 30);
-            c.fillStyle = isDark ? '#15803d' : '#4ade80';
-            c.fillRect(0, H - 30, W, 2);
+            // Drifting cloud deck at altitude — parallax that makes the wind
+            // direction legible even where no particle happens to be.
+            c.save();
+            c.globalAlpha = isDark ? 0.10 : 0.34;
+            c.fillStyle = isDark ? '#94a3b8' : '#ffffff';
+            var cloudDrift = (timeRef.current * (lv.windSpeed || 15) * 0.35) % (W + 260);
+            for (var cd = 0; cd < 4; cd++) {
+              var ccx = ((cd * 210 + cloudDrift) % (W + 260)) - 130;
+              var ccy = 26 + cd * 27 + Math.sin(cd * 2.3) * 12;
+              c.beginPath();
+              c.ellipse(ccx, ccy, 58 + cd * 9, 13 + cd * 2, 0, 0, Math.PI * 2);
+              c.fill();
+              c.beginPath();
+              c.ellipse(ccx + 32, ccy - 7, 36, 11, 0, 0, Math.PI * 2);
+              c.fill();
+            }
+            c.restore();
 
-            // Draw objects
+            // Distant ridgeline, then the ground plane
+            c.beginPath();
+            c.moveTo(0, H - 30);
+            for (var hx = 0; hx <= W; hx += 40) {
+              c.lineTo(hx, H - 34 - Math.sin(hx * 0.011) * 9 - Math.sin(hx * 0.027) * 5);
+            }
+            c.lineTo(W, H - 30);
+            c.closePath();
+            c.fillStyle = isDark ? 'rgba(30,41,59,0.75)' : 'rgba(148,163,184,0.35)';
+            c.fill();
+            var groundGrad = c.createLinearGradient(0, H - 30, 0, H);
+            if (isDark) {
+              groundGrad.addColorStop(0, '#1e3a2f');
+              groundGrad.addColorStop(1, '#132620');
+            } else {
+              groundGrad.addColorStop(0, '#86efac');
+              groundGrad.addColorStop(1, '#4ea86e');
+            }
+            c.fillStyle = groundGrad;
+            c.fillRect(0, H - 30, W, 30);
+            c.fillStyle = isDark ? '#15803d' : '#3fbb6a';
+            c.fillRect(0, H - 30, W, 2);
+            // Grass tufts, spaced so the ground plane reads as a surface
+            c.strokeStyle = isDark ? 'rgba(21,128,61,0.7)' : 'rgba(22,101,52,0.35)';
+            c.lineWidth = 1;
+            for (var gt = 6; gt < W; gt += 17) {
+              var gh = 3 + ((gt * 7) % 5);
+              c.beginPath();
+              c.moveTo(gt, H - 28);
+              c.lineTo(gt + 2, H - 28 - gh);
+              c.stroke();
+            }
+
+            // ── Terrain objects ──
             var objs = objectsRef.current || [];
             for (var oi = 0; oi < objs.length; oi++) {
               var obj = objs[oi];
-              c.font = '28px system-ui';
-              c.textAlign = 'center';
-              c.textBaseline = 'middle';
-              var emoji = '';
-              for (var pi2 = 0; pi2 < PLACEABLE.length; pi2++) {
-                if (PLACEABLE[pi2].id === obj.type) { emoji = PLACEABLE[pi2].emoji; break; }
-              }
-              c.fillText(emoji, obj.x, obj.y);
-              // Influence radius hint
-              c.beginPath();
               var rad = obj.type === 'mountain' ? 80 : obj.type === 'building' ? 60 : obj.type === 'forest' ? 50 : obj.type === 'thermal' ? 60 : 70;
+              // Influence field: the radius getWindAt() actually uses, shown as
+              // a soft tint plus a dashed edge rather than a bare hairline.
+              var ig = c.createRadialGradient(obj.x, obj.y, rad * 0.25, obj.x, obj.y, rad);
+              ig.addColorStop(0, obj.type === 'thermal'
+                ? (isDark ? 'rgba(251,191,36,0.13)' : 'rgba(249,115,22,0.10)')
+                : (isDark ? 'rgba(125,211,252,0.11)' : 'rgba(14,165,233,0.08)'));
+              ig.addColorStop(1, 'rgba(0,0,0,0)');
+              c.fillStyle = ig;
+              c.beginPath();
               c.arc(obj.x, obj.y, rad, 0, Math.PI * 2);
-              c.strokeStyle = isDark ? 'rgba(125,211,252,0.15)' : 'rgba(14,165,233,0.1)';
+              c.fill();
+              c.beginPath();
+              c.arc(obj.x, obj.y, rad, 0, Math.PI * 2);
+              c.strokeStyle = isDark ? 'rgba(125,211,252,0.22)' : 'rgba(14,165,233,0.18)';
               c.lineWidth = 1;
-              c.setLineDash([4, 4]);
+              c.setLineDash([4, 5]);
               c.stroke();
               c.setLineDash([]);
+
+              // Contact shadow only when the object is sitting on the ground —
+              // objects can be placed anywhere in the air column, and a shadow
+              // under a floating mountain reads as a mistake.
+              if (obj.y > H - 90) {
+                c.save();
+                c.globalAlpha = isDark ? 0.35 : 0.18;
+                c.fillStyle = '#0f172a';
+                c.beginPath();
+                c.ellipse(obj.x, Math.min(H - 26, obj.y + 22), 34, 5, 0, 0, Math.PI * 2);
+                c.fill();
+                c.restore();
+              }
+              migrDrawTerrain(c, obj.type, obj.x, obj.y, timeRef.current, isDark);
+
+              // Name it, so the influence field is attributable
+              var oLabel = '';
+              for (var pi2 = 0; pi2 < PLACEABLE.length; pi2++) {
+                if (PLACEABLE[pi2].id === obj.type) { oLabel = PLACEABLE[pi2].label; break; }
+              }
+              if (oLabel) {
+                migrChip(c, obj.x, obj.y + 34, oLabel,
+                  isDark ? '#e2e8f0' : '#0f172a',
+                  isDark ? 'rgba(2,6,23,0.72)' : 'rgba(255,255,255,0.85)', 'bold 8px system-ui');
+              }
             }
 
             // Update & draw particles
@@ -2034,37 +3014,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               if (pp.y < 0) pp.y += H;
               if (pp.y > H - 30) pp.y -= (H - 30);
 
-              // Color by speed
+              // Colour by speed. The ramp has to run against the sky it is
+              // drawn on: the old light-blue/white/yellow ramp is legible on a
+              // night sky and nearly invisible on the light theme's pale one.
               var spd = Math.sqrt(pp.vx * pp.vx + pp.vy * pp.vy);
               var speedNorm = Math.min(1, spd / 3);
               var r2, g2, b2;
-              if (speedNorm < 0.4) {
-                // slow = light blue
-                r2 = 125; g2 = 211; b2 = 252;
-              } else if (speedNorm < 0.7) {
-                // medium = white
-                r2 = lerp(125, 255, (speedNorm - 0.4) / 0.3);
-                g2 = lerp(211, 255, (speedNorm - 0.4) / 0.3);
-                b2 = 255;
+              if (isDark) {
+                if (speedNorm < 0.4) { r2 = 125; g2 = 211; b2 = 252; }
+                else if (speedNorm < 0.7) {
+                  r2 = lerp(125, 255, (speedNorm - 0.4) / 0.3);
+                  g2 = lerp(211, 255, (speedNorm - 0.4) / 0.3);
+                  b2 = 255;
+                } else {
+                  r2 = 255;
+                  g2 = lerp(255, 230, (speedNorm - 0.7) / 0.3);
+                  b2 = lerp(255, 50, (speedNorm - 0.7) / 0.3);
+                }
               } else {
-                // fast = yellow
-                r2 = 255;
-                g2 = lerp(255, 230, (speedNorm - 0.7) / 0.3);
-                b2 = lerp(255, 50, (speedNorm - 0.7) / 0.3);
+                if (speedNorm < 0.4) { r2 = 2; g2 = 132; b2 = 199; }
+                else if (speedNorm < 0.7) {
+                  r2 = lerp(2, 13, (speedNorm - 0.4) / 0.3);
+                  g2 = lerp(132, 148, (speedNorm - 0.4) / 0.3);
+                  b2 = lerp(199, 136, (speedNorm - 0.4) / 0.3);
+                } else {
+                  r2 = lerp(13, 234, (speedNorm - 0.7) / 0.3);
+                  g2 = lerp(148, 88, (speedNorm - 0.7) / 0.3);
+                  b2 = lerp(136, 12, (speedNorm - 0.7) / 0.3);
+                }
               }
+              var pCol = 'rgba(' + Math.round(r2) + ',' + Math.round(g2) + ',' + Math.round(b2) + ',';
 
-              if (showStreamlines) {
-                // Draw short lines
+              // Every particle carries a tail along its own velocity, so the
+              // field reads as flow rather than as speckle. "Lines" simply makes
+              // the tail long enough to merge into continuous streamlines.
+              var tail = showStreamlines ? 22 : 9;
+              var tg = c.createLinearGradient(pp.x, pp.y, pp.x - pp.vx * tail, pp.y - pp.vy * tail);
+              tg.addColorStop(0, pCol + (showStreamlines ? 0.75 : 0.62) + ')');
+              tg.addColorStop(1, pCol + '0)');
+              c.beginPath();
+              c.moveTo(pp.x, pp.y);
+              c.lineTo(pp.x - pp.vx * tail, pp.y - pp.vy * tail);
+              c.strokeStyle = tg;
+              c.lineWidth = showStreamlines ? 1.8 : 1.4;
+              c.lineCap = 'round';
+              c.stroke();
+              if (!showStreamlines) {
+                c.fillStyle = pCol + '0.9)';
                 c.beginPath();
-                c.moveTo(pp.x, pp.y);
-                c.lineTo(pp.x - pp.vx * 4, pp.y - pp.vy * 4);
-                c.strokeStyle = 'rgba(' + Math.round(r2) + ',' + Math.round(g2) + ',' + Math.round(b2) + ',0.6)';
-                c.lineWidth = 1.5;
-                c.stroke();
-              } else {
-                c.fillStyle = 'rgba(' + Math.round(r2) + ',' + Math.round(g2) + ',' + Math.round(b2) + ',0.7)';
-                c.beginPath();
-                c.arc(pp.x, pp.y, 1.5 + speedNorm, 0, Math.PI * 2);
+                c.arc(pp.x, pp.y, 1.1 + speedNorm * 1.3, 0, Math.PI * 2);
                 c.fill();
               }
             }
@@ -2099,39 +3097,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 }
               }
 
-              var faceDir = wb.vx >= 0 ? -1 : 1;
-              drawBird(c, wb.x, wb.y, 8, wb.phase, faceDir, null, isDark);
+              var faceDir = wb.vx >= 0 ? 1 : -1;
+              drawBird(c, wb.x, wb.y, 9, wb.phase, faceDir, null, isDark, 'goose');
             }
 
-            // Wind direction indicator
-            c.save();
-            c.translate(W - 40, 40);
-            c.beginPath();
-            c.arc(0, 0, 22, 0, Math.PI * 2);
-            c.fillStyle = isDark ? 'rgba(15,23,42,0.7)' : 'rgba(255,255,255,0.8)';
-            c.fill();
-            c.strokeStyle = isDark ? '#475569' : '#94a3b8';
-            c.lineWidth = 1;
-            c.stroke();
-            // Arrow
-            c.rotate(-windRad);
-            c.beginPath();
-            c.moveTo(16, 0);
-            c.lineTo(-8, -6);
-            c.lineTo(-4, 0);
-            c.lineTo(-8, 6);
-            c.closePath();
-            c.fillStyle = '#0ea5e9';
-            c.fill();
-            c.restore();
+            // ── Wind readout ──
+            drawCompassRose(c, W - 44, 44, 30, lv.windDir || 0, isDark);
+            migrPanel(c, W - 132, 82, 124, 40, isDark, '#0ea5e9');
+            c.textAlign = 'left';
+            c.textBaseline = 'alphabetic';
+            c.fillStyle = isDark ? '#f1f5f9' : '#0f172a';
+            c.font = 'bold 15px system-ui';
+            c.fillText(windSpeed + ' mph', W - 122, 101);
+            c.fillStyle = isDark ? '#94a3b8' : '#475569';
+            c.font = '9px system-ui';
+            c.fillText(getBeaufort(windSpeed) + ' · ' + Math.round(lv.windDir || 0) + '°', W - 122, 114);
 
-            // Speed label
-            c.fillStyle = isDark ? 'rgba(15,23,42,0.7)' : 'rgba(255,255,255,0.8)';
-            c.fillRect(W - 80, 68, 76, 18);
-            c.fillStyle = isDark ? '#e2e8f0' : '#334155';
-            c.font = '10px system-ui';
-            c.textAlign = 'center';
-            c.fillText(windSpeed + ' mph \u2022 ' + getBeaufort(windSpeed), W - 42, 80);
+            // Speed key for the particle colour ramp
+            var keyW = 108;
+            migrPanel(c, 8, 8, keyW + 16, 34, isDark, null);
+            for (var kx = 0; kx < keyW; kx++) {
+              var kn = kx / keyW;
+              var kr, kg, kb;
+              if (isDark) {
+                if (kn < 0.4) { kr = 125; kg = 211; kb = 252; }
+                else if (kn < 0.7) { kr = lerp(125, 255, (kn - 0.4) / 0.3); kg = lerp(211, 255, (kn - 0.4) / 0.3); kb = 255; }
+                else { kr = 255; kg = lerp(255, 230, (kn - 0.7) / 0.3); kb = lerp(255, 50, (kn - 0.7) / 0.3); }
+              } else {
+                if (kn < 0.4) { kr = 2; kg = 132; kb = 199; }
+                else if (kn < 0.7) { kr = lerp(2, 13, (kn - 0.4) / 0.3); kg = lerp(132, 148, (kn - 0.4) / 0.3); kb = lerp(199, 136, (kn - 0.4) / 0.3); }
+                else { kr = lerp(13, 234, (kn - 0.7) / 0.3); kg = lerp(148, 88, (kn - 0.7) / 0.3); kb = lerp(136, 12, (kn - 0.7) / 0.3); }
+              }
+              c.fillStyle = 'rgb(' + Math.round(kr) + ',' + Math.round(kg) + ',' + Math.round(kb) + ')';
+              c.fillRect(16 + kx, 16, 1.4, 7);
+            }
+            c.font = '8px system-ui';
+            c.textAlign = 'left';
+            c.fillStyle = isDark ? '#94a3b8' : '#475569';
+            c.fillText(t('stem.migration.slow_air', 'slow'), 16, 34);
+            c.textAlign = 'right';
+            c.fillText(t('stem.migration.fast_air', 'fast'), 16 + keyW, 34);
+            c.textAlign = 'left';
 
             animRef.current = requestAnimationFrame(frame);
           }
@@ -2392,12 +3398,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
         // Stopover markers
         var STOPOVERS = [
-          { name: t('stem.migration.delaware_bay', 'Delaware Bay'), x: 430, y: 185, flyway: 'atlantic', fact: t('stem.migration.over_1_million_shorebirds_stop_here_to', 'Over 1 million shorebirds stop here to feast on horseshoe crab eggs') },
-          { name: t('stem.migration.gulf_coast', 'Gulf Coast'), x: 350, y: 280, flyway: 'atlantic', fact: t('stem.migration.critical_rest_stop_after_the_500_mile_', 'Critical rest stop after the 500-mile Gulf of Mexico crossing') },
+          { name: t('stem.migration.delaware_bay', 'Delaware Bay'), x: 437, y: 176, labelDy: -13, flyway: 'atlantic', fact: t('stem.migration.over_1_million_shorebirds_stop_here_to', 'Over 1 million shorebirds stop here to feast on horseshoe crab eggs') },
+          { name: t('stem.migration.gulf_coast', 'Gulf Coast'), x: 383, y: 214, flyway: 'atlantic', fact: t('stem.migration.critical_rest_stop_after_the_500_mile_', 'Critical rest stop after the 500-mile Gulf of Mexico crossing') },
           { name: t('stem.migration.platte_river_ne', 'Platte River, NE'), x: 290, y: 170, flyway: 'central', fact: t('stem.migration.600_000_sandhill_cranes_gather_here_ea', '600,000 Sandhill Cranes gather here each spring \u2014 one of nature\'s greatest spectacles') },
           { name: t('stem.migration.great_salt_lake', 'Great Salt Lake'), x: 200, y: 170, flyway: 'pacific', fact: t('stem.migration.5_million_migratory_birds_depend_on_th', '5 million migratory birds depend on this inland sea as a refueling station') },
-          { name: t('stem.migration.mississippi_delta', 'Mississippi Delta'), x: 330, y: 275, flyway: 'mississippi', fact: t('stem.migration.wetlands_here_support_40_of_north_amer', 'Wetlands here support 40% of North America\'s migratory waterfowl') },
-          { name: t('stem.migration.chesapeake_bay', 'Chesapeake Bay'), x: 430, y: 200, flyway: 'atlantic', fact: t('stem.migration.largest_estuary_in_the_us_critical_win', 'Largest estuary in the US \u2014 critical wintering habitat for ducks and geese') }
+          { name: t('stem.migration.mississippi_delta', 'Mississippi Delta'), x: 349, y: 228, flyway: 'mississippi', fact: t('stem.migration.wetlands_here_support_40_of_north_amer', 'Wetlands here support 40% of North America\'s migratory waterfowl') },
+          { name: t('stem.migration.chesapeake_bay', 'Chesapeake Bay'), x: 432, y: 199, labelDy: 15, flyway: 'atlantic', fact: t('stem.migration.largest_estuary_in_the_us_critical_win', 'Largest estuary in the US \u2014 critical wintering habitat for ducks and geese') }
         ];
 
         var _rtInitCanvas = function(canvas) {
@@ -2408,15 +3414,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           var c = canvas.getContext('2d');
           var dpr = window.devicePixelRatio || 1;
           var W = canvas.parentElement ? canvas.parentElement.clientWidth : 620;
-          var H = 400;
+          var H = Math.max(320, Math.min(500, Math.round(W * 0.645)));
           canvas.width = W * dpr;
           canvas.height = H * dpr;
           canvas.style.width = W + 'px';
           canvas.style.height = H + 'px';
           c.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-          var scaleX = W / 620;
-          var scaleY = H / 400;
+          // Uniform fit of the 620x400 design box, centred; mapX/mapY are the
+          // letterbox offsets applied via a translate around the map drawing.
+          var mapScale = Math.min(W / 620, H / 400);
+          var mapX = (W - 620 * mapScale) / 2;
+          var mapY = (H - 400 * mapScale) / 2;
+          var scaleX = mapScale;
+          var scaleY = mapScale;
 
           var _flyDrawn = false;
           function frame() {
@@ -2429,233 +3440,441 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             timeRef.current += 0.016;
             c.clearRect(0, 0, W, H);
 
-            // Ocean background
-            c.fillStyle = isDark ? '#0c4a6e' : '#bae6fd';
+            // ── Ocean ──
+            var oceanGrad = c.createLinearGradient(0, 0, 0, H);
+            if (isDark) {
+              oceanGrad.addColorStop(0, '#082f49');
+              oceanGrad.addColorStop(0.55, '#0c4a6e');
+              oceanGrad.addColorStop(1, '#075985');
+            } else {
+              oceanGrad.addColorStop(0, '#c7e9fb');
+              oceanGrad.addColorStop(0.55, '#a5daf6');
+              oceanGrad.addColorStop(1, '#8ccdf0');
+            }
+            c.fillStyle = oceanGrad;
             c.fillRect(0, 0, W, H);
 
-            // ── Simplified North America ──
-            // Main continent
-            c.beginPath();
-            c.moveTo(140 * scaleX, 10 * scaleY);
-            c.lineTo(420 * scaleX, 10 * scaleY);
-            c.lineTo(460 * scaleX, 50 * scaleY);
-            c.lineTo(470 * scaleX, 100 * scaleY);
-            c.lineTo(460 * scaleX, 140 * scaleY);
-            c.lineTo(450 * scaleX, 180 * scaleY);
-            c.lineTo(440 * scaleX, 210 * scaleY);
-            c.lineTo(420 * scaleX, 230 * scaleY);
-            c.lineTo(400 * scaleX, 250 * scaleY);
-            c.lineTo(380 * scaleX, 260 * scaleY);
-            c.lineTo(360 * scaleX, 275 * scaleY);
-            c.lineTo(330 * scaleX, 295 * scaleY);
-            c.lineTo(310 * scaleX, 310 * scaleY);
-            c.lineTo(280 * scaleX, 330 * scaleY);
-            c.lineTo(250 * scaleX, 350 * scaleY);
-            c.lineTo(230 * scaleX, 370 * scaleY);
-            c.lineTo(210 * scaleX, 380 * scaleY);
-            c.lineTo(200 * scaleX, 370 * scaleY);
-            c.lineTo(190 * scaleX, 350 * scaleY);
-            c.lineTo(170 * scaleX, 330 * scaleY);
-            c.lineTo(160 * scaleX, 310 * scaleY);
-            c.lineTo(145 * scaleX, 280 * scaleY);
-            c.lineTo(130 * scaleX, 250 * scaleY);
-            c.lineTo(120 * scaleX, 210 * scaleY);
-            c.lineTo(115 * scaleX, 170 * scaleY);
-            c.lineTo(120 * scaleX, 130 * scaleY);
-            c.lineTo(125 * scaleX, 90 * scaleY);
-            c.lineTo(130 * scaleX, 50 * scaleY);
-            c.closePath();
-            c.fillStyle = isDark ? '#1e293b' : '#e2e8f0';
-            c.fill();
-            c.strokeStyle = isDark ? '#475569' : '#94a3b8';
-            c.lineWidth = 1.5;
-            c.stroke();
+            c.save();
+            c.translate(mapX, mapY);
 
-            // Alaska (simplified)
-            c.beginPath();
-            c.moveTo(60 * scaleX, 20 * scaleY);
-            c.lineTo(100 * scaleX, 15 * scaleY);
-            c.lineTo(120 * scaleX, 30 * scaleY);
-            c.lineTo(115 * scaleX, 55 * scaleY);
-            c.lineTo(90 * scaleX, 65 * scaleY);
-            c.lineTo(60 * scaleX, 55 * scaleY);
-            c.closePath();
-            c.fillStyle = isDark ? '#1e293b' : '#e2e8f0';
-            c.fill();
-            c.strokeStyle = isDark ? '#475569' : '#94a3b8';
-            c.lineWidth = 1;
-            c.stroke();
-
-            // Central America (narrow strip)
-            c.beginPath();
-            c.moveTo(230 * scaleX, 370 * scaleY);
-            c.lineTo(250 * scaleX, 375 * scaleY);
-            c.lineTo(270 * scaleX, 380 * scaleY);
-            c.lineTo(285 * scaleX, 390 * scaleY);
-            c.lineTo(275 * scaleX, 395 * scaleY);
-            c.lineTo(260 * scaleX, 390 * scaleY);
-            c.lineTo(240 * scaleX, 385 * scaleY);
-            c.lineTo(220 * scaleX, 378 * scaleY);
-            c.closePath();
-            c.fillStyle = isDark ? '#1e293b' : '#e2e8f0';
-            c.fill();
-            c.strokeStyle = isDark ? '#475569' : '#94a3b8';
-            c.lineWidth = 1;
-            c.stroke();
-
-            // Great Lakes (simplified outlines)
-            c.fillStyle = isDark ? '#0c4a6e' : '#bae6fd';
-            // Lake Superior
-            c.beginPath();
-            c.ellipse(335 * scaleX, 108 * scaleY, 22 * scaleX, 10 * scaleY, -0.2, 0, Math.PI * 2);
-            c.fill();
-            // Lake Michigan
-            c.beginPath();
-            c.ellipse(345 * scaleX, 135 * scaleY, 8 * scaleX, 18 * scaleY, 0.1, 0, Math.PI * 2);
-            c.fill();
-            // Lake Huron
-            c.beginPath();
-            c.ellipse(365 * scaleX, 120 * scaleY, 12 * scaleX, 15 * scaleY, 0.2, 0, Math.PI * 2);
-            c.fill();
-            // Lake Erie
-            c.beginPath();
-            c.ellipse(380 * scaleX, 145 * scaleY, 18 * scaleX, 5 * scaleY, -0.1, 0, Math.PI * 2);
-            c.fill();
-            // Lake Ontario
-            c.beginPath();
-            c.ellipse(400 * scaleX, 135 * scaleY, 12 * scaleX, 4 * scaleY, -0.15, 0, Math.PI * 2);
-            c.fill();
-
-            // Geographic labels (subtle)
-            c.fillStyle = isDark ? 'rgba(148,163,184,0.4)' : 'rgba(100,116,139,0.3)';
-            c.font = '8px system-ui';
-            c.textAlign = 'center';
-            c.fillText('CANADA', 290 * scaleX, 70 * scaleY);
-            c.fillText('UNITED STATES', 300 * scaleX, 200 * scaleY);
-            c.fillText('MEXICO', 240 * scaleX, 340 * scaleY);
-            c.fillText('ALASKA', 85 * scaleX, 40 * scaleY);
-            c.fillText('Gulf of Mexico', 340 * scaleX, 310 * scaleY);
+            // Graticule: parallels the land will paint over, so only the ocean
+            // carries them — enough to read as a chart without adding clutter.
+            c.strokeStyle = isDark ? 'rgba(186,230,253,0.10)' : 'rgba(3,105,161,0.10)';
+            c.lineWidth = 0.7;
+            var PARALLELS = [[80, '60°N'], [170, '45°N'], [260, '30°N'], [350, '15°N']];
+            for (var gi = 0; gi < PARALLELS.length; gi++) {
+              c.beginPath();
+              c.moveTo(-mapX, PARALLELS[gi][0] * scaleY);
+              c.lineTo(W - mapX, PARALLELS[gi][0] * scaleY);
+              c.stroke();
+            }
+            for (var gx = 60; gx < 620; gx += 60) {
+              c.beginPath();
+              c.moveTo(gx * scaleX, -mapY);
+              c.lineTo(gx * scaleX, H - mapY);
+              c.stroke();
+            }
             c.font = '7px system-ui';
-            c.fillText('Atlantic', 480 * scaleX, 200 * scaleY);
-            c.fillText('Ocean', 480 * scaleX, 210 * scaleY);
-            c.fillText('Pacific', 100 * scaleX, 200 * scaleY);
-            c.fillText('Ocean', 100 * scaleX, 210 * scaleY);
-
-            // Map legend
-            c.fillStyle = isDark ? 'rgba(15,23,42,0.85)' : 'rgba(255,255,255,0.9)';
-            c.fillRect(W - 130, H - 70, 125, 65);
-            c.strokeStyle = isDark ? '#334155' : '#cbd5e1';
-            c.lineWidth = 0.5;
-            c.strokeRect(W - 130, H - 70, 125, 65);
-            c.font = 'bold 8px system-ui';
-            c.fillStyle = isDark ? '#e2e8f0' : '#1e293b';
             c.textAlign = 'left';
-            c.fillText('Flyways', W - 125, H - 57);
+            c.textBaseline = 'alphabetic';
+            c.fillStyle = isDark ? 'rgba(186,230,253,0.42)' : 'rgba(3,105,161,0.42)';
+            for (var gj = 0; gj < PARALLELS.length; gj++) {
+              c.fillText(PARALLELS[gj][1], 4 - mapX, PARALLELS[gj][0] * scaleY - 3);
+            }
+
+            // ── North America ──
+            // Biome tint: tundra grey at the pole, boreal and temperate green
+            // through the mid-latitudes, arid tan toward the tropics.
+            var landGrad = c.createLinearGradient(0, 0, 0, H);
+            if (isDark) {
+              landGrad.addColorStop(0, '#1e293b');
+              landGrad.addColorStop(0.30, '#1f3030');
+              landGrad.addColorStop(0.58, '#26332a');
+              landGrad.addColorStop(0.82, '#2f3228');
+              landGrad.addColorStop(1, '#382f24');
+            } else {
+              landGrad.addColorStop(0, '#dde5ec');
+              landGrad.addColorStop(0.30, '#d8e6d3');
+              landGrad.addColorStop(0.58, '#e2ecd6');
+              landGrad.addColorStop(0.82, '#edead1');
+              landGrad.addColorStop(1, '#f0e2c8');
+            }
+            var coastStroke = isDark ? '#64748b' : '#7c8ba1';
+
+            // Soft surf halo so the coastline separates from the ocean.
+            c.save();
+            migrSmoothPath(c, MAP_COAST, scaleX, scaleY, true, 0.10);
+            c.strokeStyle = isDark ? 'rgba(125,211,252,0.16)' : 'rgba(255,255,255,0.70)';
+            c.lineWidth = 6;
+            c.stroke();
+            c.restore();
+
+            migrSmoothPath(c, MAP_COAST, scaleX, scaleY, true, 0.10);
+            c.fillStyle = landGrad;
+            c.fill();
+            c.strokeStyle = coastStroke;
+            c.lineWidth = 1.4;
+            c.stroke();
+
+            // Relief: the cordilleras that funnel raptor migration. Clipped to
+            // the mainland so no ridge mark spills into the ocean.
+            c.save();
+            migrSmoothPath(c, MAP_COAST, scaleX, scaleY, true, 0.10);
+            c.clip();
+            c.lineCap = 'round';
+            var RELIEF_W = [5.0, 4.0, 3.1, 2.3, 1.5, 0.8];
+            for (var mr = 0; mr < MAP_RANGES.length; mr++) {
+              var rng = MAP_RANGES[mr];
+              c.strokeStyle = isDark ? 'rgba(150,136,124,0.055)' : 'rgba(124,109,95,0.05)';
+              for (var rw = 0; rw < RELIEF_W.length; rw++) {
+                migrSmoothPath(c, rng.pts, scaleX, scaleY, false, 0.16);
+                c.lineWidth = rng.hgt * RELIEF_W[rw] * scaleX;
+                c.stroke();
+              }
+              // Sunlit north-west flank, offset and just as soft
+              c.save();
+              c.translate(-rng.hgt * 0.8 * scaleX, -rng.hgt * 0.6 * scaleY);
+              c.strokeStyle = isDark ? 'rgba(226,220,214,0.045)' : 'rgba(255,255,255,0.11)';
+              for (var rw2 = 2; rw2 < RELIEF_W.length; rw2++) {
+                migrSmoothPath(c, rng.pts, scaleX, scaleY, false, 0.16);
+                c.lineWidth = rng.hgt * RELIEF_W[rw2] * scaleX;
+                c.stroke();
+              }
+              c.restore();
+            }
+            c.lineCap = 'butt';
+            c.restore();
+
+            // Offshore land: Alaska, the islands and the Antillean arc.
+            migrDrawLand(c, MAP_ALASKA, scaleX, scaleY, landGrad, coastStroke, 1.1);
+            migrDrawLand(c, MAP_NEWFOUNDLAND, scaleX, scaleY, landGrad, coastStroke, 1);
+            migrDrawLand(c, MAP_VANCOUVER, scaleX, scaleY, landGrad, coastStroke, 1);
+            migrDrawLand(c, MAP_BAJA, scaleX, scaleY, landGrad, coastStroke, 1);
+            migrDrawLand(c, MAP_CUBA, scaleX, scaleY, landGrad, coastStroke, 1);
+            migrDrawLand(c, MAP_HISPANIOLA, scaleX, scaleY, landGrad, coastStroke, 1);
+            // Aleutian chain as a dotted arc
+            c.fillStyle = isDark ? '#334155' : '#c7d2dc';
+            for (var al = 0; al < MAP_ALEUTIANS.length; al++) {
+              c.beginPath();
+              c.arc(MAP_ALEUTIANS[al][0] * scaleX, MAP_ALEUTIANS[al][1] * scaleY, Math.max(1.2, 2.6 - al * 0.4), 0, Math.PI * 2);
+              c.fill();
+            }
+
+            // Hudson Bay — an inland sea, painted in the ocean colour.
+            migrSmoothPath(c, MAP_HUDSON, scaleX, scaleY, true, 0.12);
+            c.fillStyle = isDark ? '#0c4a6e' : '#a5daf6';
+            c.fill();
+            c.strokeStyle = isDark ? 'rgba(100,116,139,0.7)' : 'rgba(124,139,161,0.7)';
+            c.lineWidth = 0.9;
+            c.stroke();
+
+            // Great Lakes
+            var LAKES = [
+              [336, 110, 18, 7.5, -0.2], [346, 134, 6, 14, 0.1], [364, 122, 9, 12, 0.2],
+              [379, 144, 14, 4, -0.1], [398, 136, 9.5, 3.2, -0.15]
+            ];
+            for (var lk = 0; lk < LAKES.length; lk++) {
+              c.beginPath();
+              c.ellipse(LAKES[lk][0] * scaleX, LAKES[lk][1] * scaleY, LAKES[lk][2] * scaleX, LAKES[lk][3] * scaleY, LAKES[lk][4], 0, Math.PI * 2);
+              c.fillStyle = isDark ? '#0c4a6e' : '#a5daf6';
+              c.fill();
+              c.strokeStyle = isDark ? 'rgba(100,116,139,0.6)' : 'rgba(124,139,161,0.6)';
+              c.lineWidth = 0.7;
+              c.stroke();
+            }
+
+            // The Mississippi — the north-south corridor the flyway is named for
+            c.beginPath();
+            migrSmoothPath(c, [[348, 158], [342, 182], [346, 206], [340, 228], [345, 247]], scaleX, scaleY, false, 0.16);
+            c.strokeStyle = isDark ? 'rgba(56,189,248,0.40)' : 'rgba(56,141,199,0.34)';
+            c.lineWidth = 1.1;
+            c.stroke();
+
+            // ── Place names ──
+            c.textAlign = 'center';
+            c.textBaseline = 'alphabetic';
+            c.font = 'bold 8px system-ui';
+            c.fillStyle = isDark ? 'rgba(203,213,225,0.50)' : 'rgba(71,85,105,0.48)';
+            c.fillText('CANADA', 250 * scaleX, 120 * scaleY);
+            c.fillText('UNITED STATES', 290 * scaleX, 208 * scaleY);
+            c.fillText('MEXICO', 268 * scaleX, 322 * scaleY);
+            c.fillText('ALASKA', 88 * scaleX, 40 * scaleY);
+            c.font = 'italic 7.5px system-ui';
+            c.fillStyle = isDark ? 'rgba(125,211,252,0.55)' : 'rgba(3,105,161,0.50)';
+            c.fillText('Gulf of Mexico', 384 * scaleX, 262 * scaleY);
+            c.fillText('Hudson Bay', 328 * scaleX, 62 * scaleY);
+            c.fillText('Atlantic Ocean', 530 * scaleX, 180 * scaleY);
+            c.fillText('Pacific Ocean', 62 * scaleX, 200 * scaleY);
+
+            // Arc-length sample along a flyway polyline. u in [0,1] returns the
+            // point plus the local heading, so chevrons and the animated bird
+            // travel at a constant speed instead of accelerating through the
+            // shorter segments the way a per-segment lerp does.
+            function flywayPoint(pts, u) {
+              var lens = [];
+              var total = 0;
+              for (var q = 0; q < pts.length - 1; q++) {
+                var L = dist(pts[q].x, pts[q].y, pts[q + 1].x, pts[q + 1].y);
+                lens.push(L);
+                total += L;
+              }
+              var want = clamp(u, 0, 1) * total;
+              var acc = 0;
+              for (var q2 = 0; q2 < lens.length; q2++) {
+                if (acc + lens[q2] >= want || q2 === lens.length - 1) {
+                  var tt2 = lens[q2] > 0 ? clamp((want - acc) / lens[q2], 0, 1) : 0;
+                  var pa = pts[q2], pb = pts[q2 + 1];
+                  return {
+                    x: lerp(pa.x, pb.x, tt2) * scaleX,
+                    y: lerp(pa.y, pb.y, tt2) * scaleY,
+                    ang: Math.atan2((pb.y - pa.y) * scaleY, (pb.x - pa.x) * scaleX)
+                  };
+                }
+                acc += lens[q2];
+              }
+              return { x: pts[0].x * scaleX, y: pts[0].y * scaleY, ang: 0 };
+            }
+
+            function flywayStroke(pts) {
+              c.beginPath();
+              c.moveTo(pts[0].x * scaleX, pts[0].y * scaleY);
+              for (var pi3 = 1; pi3 < pts.length; pi3++) {
+                var prev = pts[pi3 - 1];
+                var curr = pts[pi3];
+                c.quadraticCurveTo(prev.x * scaleX, prev.y * scaleY, (prev.x + curr.x) / 2 * scaleX, (prev.y + curr.y) / 2 * scaleY);
+              }
+              c.quadraticCurveTo(pts[pts.length - 2].x * scaleX, pts[pts.length - 2].y * scaleY, pts[pts.length - 1].x * scaleX, pts[pts.length - 1].y * scaleY);
+            }
+
+            // ── Flyways: a translucent corridor, a centreline, and chevrons
+            // that show which way the birds are actually travelling ──
+            var flyways = ['atlantic', 'mississippi', 'central', 'pacific'];
+            var activeFlyway = selectedSpecies ? getSpeciesById(selectedSpecies).flyway : null;
+            for (var fi = 0; fi < flyways.length; fi++) {
+              var fw = flyways[fi];
+              var pts = FLYWAY_PATHS[fw];
+              var col = FLYWAY_COLORS[fw];
+              var isActive = activeFlyway === fw;
+
+              c.save();
+              c.lineCap = 'round';
+              c.lineJoin = 'round';
+              // Corridor band — a flyway is a broad region, not a wire
+              flywayStroke(pts);
+              c.strokeStyle = migrAlpha(col.stroke, isActive ? 0.20 : 0.09);
+              c.lineWidth = isActive ? 20 : 11;
+              c.stroke();
+              // Centreline
+              flywayStroke(pts);
+              if (isActive) {
+                c.shadowColor = migrAlpha(col.stroke, 0.85);
+                c.shadowBlur = 9;
+              }
+              c.strokeStyle = migrAlpha(col.stroke, isActive ? 0.98 : 0.5);
+              c.lineWidth = isActive ? 3.4 : 1.6;
+              c.stroke();
+              c.shadowColor = 'transparent';
+              c.shadowBlur = 0;
+              c.restore();
+
+              // Direction chevrons drifting south along the corridor
+              var CHEV = 8;
+              var flow = (timeRef.current * 0.05) % (1 / CHEV);
+              c.save();
+              c.strokeStyle = migrAlpha(col.stroke, isActive ? 0.95 : 0.42);
+              c.lineWidth = isActive ? 1.8 : 1.2;
+              c.lineCap = 'round';
+              for (var ck = 0; ck < CHEV; ck++) {
+                var cu = ck / CHEV + flow;
+                if (cu > 0.97) continue;
+                var cp = flywayPoint(pts, cu);
+                var chs = isActive ? 5 : 3.4;
+                c.save();
+                c.translate(cp.x, cp.y);
+                c.rotate(cp.ang);
+                c.beginPath();
+                c.moveTo(-chs, -chs * 0.8);
+                c.lineTo(chs * 0.5, 0);
+                c.lineTo(-chs, chs * 0.8);
+                c.stroke();
+                c.restore();
+              }
+              c.restore();
+
+              // Flyway name, set at a different depth on each corridor so the
+              // four labels never stack, and kept legible over land or water.
+              var lp = flywayPoint(pts, 0.24 + fi * 0.055);
+              migrChip(c, lp.x, lp.y,
+                fw.charAt(0).toUpperCase() + fw.slice(1),
+                isDark ? '#f8fafc' : '#0f172a',
+                migrAlpha(col.stroke, isActive ? 0.62 : 0.30),
+                'bold ' + (isActive ? 9 : 8) + 'px system-ui');
+            }
+
+            // Breeding and wintering ranges for the selected species: soft
+            // haloes at the two ends of its corridor.
+            if (selectedSpecies) {
+              var spR = getSpeciesById(selectedSpecies);
+              var ptsR = FLYWAY_PATHS[spR.flyway];
+              var colR = FLYWAY_COLORS[spR.flyway].stroke;
+              var ends = [
+                { u: 0.03, r: 42, dy: 22, label: t('stem.migration.breeding', 'Breeding'), tint: '#22c55e' },
+                { u: 0.97, r: 42, dy: -22, label: t('stem.migration.wintering', 'Wintering'), tint: '#f59e0b' }
+              ];
+              for (var en = 0; en < ends.length; en++) {
+                var ep = flywayPoint(ptsR, ends[en].u);
+                var rg = c.createRadialGradient(ep.x, ep.y, 2, ep.x, ep.y, ends[en].r);
+                rg.addColorStop(0, migrAlpha(ends[en].tint, 0.34));
+                rg.addColorStop(1, migrAlpha(ends[en].tint, 0));
+                c.fillStyle = rg;
+                c.beginPath();
+                c.arc(ep.x, ep.y, ends[en].r, 0, Math.PI * 2);
+                c.fill();
+                migrChip(c, ep.x, ep.y + ends[en].dy, ends[en].label,
+                  isDark ? '#f8fafc' : '#0f172a', migrAlpha(ends[en].tint, 0.55), 'bold 8px system-ui');
+              }
+              void colR;
+            }
+
+            // ── Stopover pins ──
+            for (var si = 0; si < STOPOVERS.length; si++) {
+              var sp = STOPOVERS[si];
+              var spActive = activeFlyway === sp.flyway;
+              var px2 = sp.x * scaleX;
+              var py2 = sp.y * scaleY;
+              var pr = spActive ? 5 : 3.4;
+              if (spActive) {
+                // Radar pulse marks the sites the selected species depends on
+                var pulse = (timeRef.current * 0.6) % 1;
+                c.beginPath();
+                c.arc(px2, py2, 6 + pulse * 16, 0, Math.PI * 2);
+                c.strokeStyle = 'rgba(251,191,36,' + (0.5 * (1 - pulse)).toFixed(3) + ')';
+                c.lineWidth = 1.6;
+                c.stroke();
+              }
+              var pinFill = spActive ? '#fbbf24' : (isDark ? '#64748b' : '#94a3b8');
+              c.save();
+              c.shadowColor = 'rgba(15,23,42,0.35)';
+              c.shadowBlur = 4;
+              c.shadowOffsetY = 1;
+              c.beginPath();
+              c.moveTo(px2, py2);
+              c.lineTo(px2 - pr * 0.76, py2 - pr * 1.95);
+              c.lineTo(px2 + pr * 0.76, py2 - pr * 1.95);
+              c.closePath();
+              c.fillStyle = pinFill;
+              c.fill();
+              c.beginPath();
+              c.arc(px2, py2 - pr * 2.3, pr, 0, Math.PI * 2);
+              c.fill();
+              c.restore();
+              c.strokeStyle = spActive ? '#b45309' : (isDark ? '#334155' : '#64748b');
+              c.lineWidth = 0.9;
+              c.stroke();
+              c.beginPath();
+              c.arc(px2, py2 - pr * 2.3, pr * 0.38, 0, Math.PI * 2);
+              c.fillStyle = spActive ? '#7c2d12' : (isDark ? '#0f172a' : '#f8fafc');
+              c.fill();
+              if (spActive) {
+                migrChip(c, px2, py2 - pr * 2.3 + (sp.labelDy != null ? sp.labelDy : -13), sp.name,
+                  isDark ? '#fef3c7' : '#78350f',
+                  isDark ? 'rgba(2,6,23,0.85)' : 'rgba(254,243,199,0.95)', 'bold 8px system-ui');
+              }
+            }
+
+            // ── The species itself, flying its route ──
+            if (selectedSpecies) {
+              var sp2 = getSpeciesById(selectedSpecies);
+              var pts2 = FLYWAY_PATHS[sp2.flyway];
+              if (pts2 && pts2.length > 1) {
+                var prog = (timeRef.current * 0.09) % 1;
+                var here = flywayPoint(pts2, prog);
+                var trailCol = FLYWAY_COLORS[sp2.flyway].stroke;
+                // Fading track behind the bird: the distance already flown
+                c.save();
+                c.lineCap = 'round';
+                for (var tr = 1; tr <= 10; tr++) {
+                  var tu = prog - tr * 0.012;
+                  if (tu < 0) break;
+                  var tp = flywayPoint(pts2, tu);
+                  c.beginPath();
+                  c.arc(tp.x, tp.y, 2.6 - tr * 0.2, 0, Math.PI * 2);
+                  c.fillStyle = migrAlpha(trailCol, 0.42 * (1 - tr / 11));
+                  c.fill();
+                }
+                c.restore();
+
+                // Heading down-route: the silhouette is drawn nose-first along
+                // the local tangent rather than always pointing left.
+                c.save();
+                c.translate(here.x, here.y);
+                c.rotate(here.ang);
+                drawBird(c, 0, 0, sp2.id === 'ruby_hummingbird' ? 7 : 9, timeRef.current * 5, 1,
+                  migrShade(trailCol, isDark ? 0.10 : -0.05), isDark,
+                  SPECIES_SILHOUETTE[sp2.id] || 'generic');
+                c.restore();
+                migrChip(c, here.x, here.y - 20, sp2.name,
+                  isDark ? '#f8fafc' : '#0f172a',
+                  migrAlpha(trailCol, 0.55), 'bold 8px system-ui');
+              }
+            }
+
+            // ── Legend ──
+            c.restore(); // end map transform - the HUD below is in canvas pixels
+
             var legendItems = [
               { color: '#3b82f6', label: t('stem.migration.atlantic', 'Atlantic') },
               { color: '#22c55e', label: t('stem.migration.mississippi', 'Mississippi') },
               { color: '#f59e0b', label: t('stem.migration.central', 'Central') },
               { color: '#ef4444', label: t('stem.migration.pacific', 'Pacific') }
             ];
+            var lgW = 128;
+            var lgH = 26 + legendItems.length * 12 + 14;
+            var lgX = W - lgW - 8;
+            var lgY = H - lgH - 8;
+            migrPanel(c, lgX, lgY, lgW, lgH, isDark, '#0ea5e9');
+            c.textAlign = 'left';
+            c.textBaseline = 'alphabetic';
+            c.font = 'bold 9px system-ui';
+            c.fillStyle = isDark ? '#e2e8f0' : '#0f172a';
+            c.fillText(t('stem.migration.flyways_legend', 'Flyways'), lgX + 10, lgY + 15);
             for (var li2 = 0; li2 < legendItems.length; li2++) {
-              var ly = H - 46 + li2 * 12;
+              var ly = lgY + 27 + li2 * 12;
               c.beginPath();
-              c.moveTo(W - 125, ly);
-              c.lineTo(W - 110, ly);
+              c.moveTo(lgX + 10, ly);
+              c.lineTo(lgX + 26, ly);
               c.strokeStyle = legendItems[li2].color;
-              c.lineWidth = 2.5;
+              c.lineWidth = 3;
+              c.lineCap = 'round';
               c.stroke();
-              c.fillStyle = isDark ? '#94a3b8' : '#475569';
-              c.font = '7px system-ui';
-              c.fillText(legendItems[li2].label, W - 106, ly + 3);
+              c.lineCap = 'butt';
+              c.fillStyle = isDark ? '#cbd5e1' : '#334155';
+              c.font = '8px system-ui';
+              c.fillText(legendItems[li2].label, lgX + 32, ly + 3);
             }
-            // Stopover marker legend
+            // Stopover swatch, drawn as the same pin used on the map
+            var swY = lgY + lgH - 8;
             c.beginPath();
-            c.arc(W - 118, H - 9, 3, 0, Math.PI * 2);
+            c.moveTo(lgX + 17, swY);
+            c.lineTo(lgX + 14, swY - 6);
+            c.lineTo(lgX + 20, swY - 6);
+            c.closePath();
             c.fillStyle = '#fbbf24';
             c.fill();
-            c.fillStyle = isDark ? '#94a3b8' : '#475569';
-            c.font = '7px system-ui';
-            c.fillText('Stopover site', W - 112, H - 6);
+            c.beginPath();
+            c.arc(lgX + 17, swY - 7.5, 3, 0, Math.PI * 2);
+            c.fill();
+            c.fillStyle = isDark ? '#cbd5e1' : '#334155';
+            c.font = '8px system-ui';
+            c.fillText(t('stem.migration.stopover_site', 'Stopover site'), lgX + 32, swY - 2);
 
-            // Draw all flyways
-            var flyways = ['atlantic', 'mississippi', 'central', 'pacific'];
-            for (var fi = 0; fi < flyways.length; fi++) {
-              var fw = flyways[fi];
-              var pts = FLYWAY_PATHS[fw];
-              var col = FLYWAY_COLORS[fw];
-              var isActive = selectedSpecies && getSpeciesById(selectedSpecies).flyway === fw;
-
-              c.beginPath();
-              c.moveTo(pts[0].x * scaleX, pts[0].y * scaleY);
-              for (var pi3 = 1; pi3 < pts.length; pi3++) {
-                var prev = pts[pi3 - 1];
-                var curr = pts[pi3];
-                var cpx = (prev.x + curr.x) / 2 * scaleX;
-                var cpy = (prev.y + curr.y) / 2 * scaleY;
-                c.quadraticCurveTo(prev.x * scaleX, prev.y * scaleY, cpx, cpy);
-              }
-              c.quadraticCurveTo(pts[pts.length - 2].x * scaleX, pts[pts.length - 2].y * scaleY, pts[pts.length - 1].x * scaleX, pts[pts.length - 1].y * scaleY);
-              c.strokeStyle = col.stroke;
-              c.lineWidth = isActive ? 4 : 2;
-              c.globalAlpha = isActive ? 1 : 0.4;
-              c.stroke();
-              c.globalAlpha = 1;
-
-              // Flyway label
-              c.fillStyle = col.stroke;
-              c.font = 'bold 9px system-ui';
-              c.textAlign = 'left';
-              c.fillText(fw.charAt(0).toUpperCase() + fw.slice(1), pts[0].x * scaleX + 8, pts[0].y * scaleY + 4);
-            }
-
-            // Draw stopovers
-            for (var si = 0; si < STOPOVERS.length; si++) {
-              var sp = STOPOVERS[si];
-              var spActive = selectedSpecies && getSpeciesById(selectedSpecies).flyway === sp.flyway;
-              c.beginPath();
-              c.arc(sp.x * scaleX, sp.y * scaleY, spActive ? 5 : 3, 0, Math.PI * 2);
-              c.fillStyle = spActive ? '#fbbf24' : (isDark ? '#475569' : '#94a3b8');
-              c.fill();
-              if (spActive) {
-                c.strokeStyle = '#f59e0b';
-                c.lineWidth = 1;
-                c.stroke();
-                c.fillStyle = isDark ? '#fde68a' : '#92400e';
-                c.font = '8px system-ui';
-                c.textAlign = 'center';
-                c.fillText(sp.name, sp.x * scaleX, sp.y * scaleY - 8);
-              }
-            }
-
-            // Animate bird along route
-            if (selectedSpecies) {
-              var sp2 = getSpeciesById(selectedSpecies);
-              var pts2 = FLYWAY_PATHS[sp2.flyway];
-              if (pts2 && pts2.length > 1) {
-                var prog = (timeRef.current * 0.15) % 1;
-                var totalPts = pts2.length - 1;
-                var segIdx = Math.floor(prog * totalPts);
-                var segT = (prog * totalPts) - segIdx;
-                if (segIdx >= totalPts) { segIdx = totalPts - 1; segT = 1; }
-                var ax = lerp(pts2[segIdx].x, pts2[Math.min(segIdx + 1, pts2.length - 1)].x, segT) * scaleX;
-                var ay = lerp(pts2[segIdx].y, pts2[Math.min(segIdx + 1, pts2.length - 1)].y, segT) * scaleY;
-
-                drawBird(c, ax, ay, 8, timeRef.current * 4, -1, FLYWAY_COLORS[sp2.flyway].stroke, isDark);
-                // Species emoji
-                c.font = '14px system-ui';
-                c.textAlign = 'center';
-                c.fillText(sp2.emoji, ax, ay - 16);
-              }
-            }
-
-            // Title
-            c.fillStyle = isDark ? 'rgba(15,23,42,0.8)' : 'rgba(255,255,255,0.85)';
-            c.fillRect(8, 8, 200, 22);
-            c.fillStyle = isDark ? '#e2e8f0' : '#1e293b';
+            // ── Title (bottom-left: the top-left corner is Alaska) ──
+            migrPanel(c, 8, H - 34, 208, 26, isDark, '#0ea5e9');
+            c.fillStyle = isDark ? '#e2e8f0' : '#0f172a';
             c.font = 'bold 11px system-ui';
             c.textAlign = 'left';
-            c.fillText('\uD83D\uDDFA\uFE0F North American Flyways', 14, 24);
+            c.textBaseline = 'alphabetic';
+            c.fillText('\uD83D\uDDFA\uFE0F North American Flyways', 17, H - 17);
 
             animRef.current = requestAnimationFrame(frame);
           }
@@ -3005,161 +4224,287 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             c.fillStyle = lv.isDark ? '#0f172a' : '#f8fafc';
             c.fillRect(0, 0, W, H);
 
-            var cx = W * 0.35;
-            var cy = H * 0.45;
-            var chordLen = Math.min(W * 0.3, 160);
+            var cx = W * 0.32;
+            var cy = H * 0.48;
+            var chordLen = clamp(W * 0.32, 140, 250);
+            var halfC = chordLen * 0.5;
 
-            // Draw airfoil
+            // The section is drawn with the leading edge to the LEFT and the
+            // free stream arriving from the left, so a positive angle of attack
+            // must pitch the nose UP. Canvas y grows downward, so that is a
+            // positive rotation; the previous -aoaRad pitched it nose-down and
+            // the picture contradicted the lift arrow it was drawn beside.
+            function airfoilPath(ctx2) {
+              ctx2.beginPath();
+              ctx2.moveTo(-halfC, 0);
+              // Upper surface: rounded leading edge, peak camber near 30% chord
+              ctx2.bezierCurveTo(-halfC * 0.94, -chordLen * 0.15, -halfC * 0.10, -chordLen * 0.115, halfC, -chordLen * 0.004);
+              // Lower surface: much flatter, closing at a sharp trailing edge
+              ctx2.bezierCurveTo(halfC * 0.2, chordLen * 0.045, -halfC * 0.45, chordLen * 0.045, -halfC, 0);
+              ctx2.closePath();
+            }
+
+            // Point on the mean line at chord fraction f (0 = LE, 1 = TE), in
+            // canvas space, so annotations can be pinned to the real section.
+            function chordPt(f, above) {
+              var lx = -halfC + f * chordLen;
+              var ly = (above || 0);
+              return {
+                x: cx + lx * Math.cos(aoaRad) + ly * Math.sin(aoaRad),
+                y: cy + lx * Math.sin(aoaRad) - ly * Math.cos(aoaRad)
+              };
+            }
+
             c.save();
             c.translate(cx, cy);
-            c.rotate(-aoaRad);
+            c.rotate(aoaRad);
 
-            // Pressure coloring around airfoil
-            // Low pressure top (blue)
-            var topGrad = c.createLinearGradient(0, -chordLen * 0.3, 0, 0);
+            // Pressure fields: suction above, compression below. Both fade to
+            // nothing once the flow separates.
+            var sucA = isStalling ? 0.05 : 0.22;
+            var topGrad = c.createLinearGradient(0, -chordLen * 0.34, 0, 0);
             topGrad.addColorStop(0, 'rgba(59,130,246,0)');
-            topGrad.addColorStop(1, isStalling ? 'rgba(59,130,246,0.05)' : 'rgba(59,130,246,0.2)');
+            topGrad.addColorStop(1, 'rgba(59,130,246,' + sucA + ')');
             c.fillStyle = topGrad;
             c.beginPath();
-            c.ellipse(0, -chordLen * 0.05, chordLen * 0.55, chordLen * 0.25, 0, Math.PI, 0);
+            c.ellipse(-chordLen * 0.06, -chordLen * 0.05, halfC * 1.08, chordLen * 0.27, 0, Math.PI, 0);
             c.fill();
 
-            // High pressure bottom (red)
-            var botGrad = c.createLinearGradient(0, 0, 0, chordLen * 0.25);
-            botGrad.addColorStop(0, 'rgba(239,68,68,0.2)');
+            var botGrad = c.createLinearGradient(0, 0, 0, chordLen * 0.26);
+            botGrad.addColorStop(0, 'rgba(239,68,68,0.22)');
             botGrad.addColorStop(1, 'rgba(239,68,68,0)');
             c.fillStyle = botGrad;
             c.beginPath();
-            c.ellipse(0, chordLen * 0.02, chordLen * 0.55, chordLen * 0.15, 0, 0, Math.PI);
+            c.ellipse(0, chordLen * 0.02, halfC * 1.02, chordLen * 0.16, 0, 0, Math.PI);
             c.fill();
 
-            // Airfoil shape
+            // Chord line, so the angle of attack has something to be measured from
+            c.save();
+            c.setLineDash([4, 4]);
+            c.strokeStyle = isDark ? 'rgba(203,213,225,0.55)' : 'rgba(71,85,105,0.5)';
+            c.lineWidth = 1;
             c.beginPath();
-            c.moveTo(-chordLen * 0.5, 0);
-            // Upper surface (more curved)
-            c.bezierCurveTo(
-              -chordLen * 0.3, -chordLen * 0.15,
-              chordLen * 0.1, -chordLen * 0.12,
-              chordLen * 0.5, 0
-            );
-            // Lower surface (flatter)
-            c.bezierCurveTo(
-              chordLen * 0.1, chordLen * 0.04,
-              -chordLen * 0.3, chordLen * 0.03,
-              -chordLen * 0.5, 0
-            );
-            c.closePath();
-            c.fillStyle = isDark ? '#475569' : '#94a3b8';
-            c.fill();
-            c.strokeStyle = isDark ? '#94a3b8' : '#475569';
-            c.lineWidth = 1.5;
+            c.moveTo(-halfC - 10, 0);
+            c.lineTo(halfC + 26, 0);
             c.stroke();
+            c.restore();
+
+            // Section
+            airfoilPath(c);
+            var foilGrad = c.createLinearGradient(0, -chordLen * 0.14, 0, chordLen * 0.06);
+            foilGrad.addColorStop(0, isDark ? '#94a3b8' : '#cbd5e1');
+            foilGrad.addColorStop(1, isDark ? '#334155' : '#64748b');
+            c.fillStyle = foilGrad;
+            c.fill();
+            c.strokeStyle = isDark ? '#cbd5e1' : '#334155';
+            c.lineWidth = 1.4;
+            c.stroke();
+
+            // Surface pressure arrows: outward where the flow pulls (suction),
+            // inward where it pushes. This is what actually makes the lift, and
+            // the diagram never showed it.
+            if (!isStalling) {
+              for (var cp = 0; cp < 9; cp++) {
+                var f2 = 0.08 + cp * 0.10;
+                var xs = -halfC + f2 * chordLen;
+                // Suction peaks just behind the leading edge and recovers aft
+                var suction = Math.exp(-Math.pow((f2 - 0.16) * 2.6, 2)) * (0.55 + _cl * 0.55);
+                var upY = -chordLen * 0.115 * Math.sin(Math.PI * Math.min(1, f2 * 1.05));
+                var aLen = 6 + suction * 34;
+                migrArrow(c, xs, upY - 5, xs, upY - 5 - aLen, 'rgba(37,99,235,0.8)', 1.3, 4.5);
+                var press = Math.max(0, Math.sin(aoaRad) * 1.5 + 0.18) * (1 - f2 * 0.55);
+                var loY = chordLen * 0.04 * Math.sin(Math.PI * Math.min(1, f2 * 1.05));
+                var bLen = 4 + press * 34;
+                migrArrow(c, xs, loY + 5 + bLen, xs, loY + 5, 'rgba(239,68,68,0.7)', 1.3, 4.5);
+              }
+            }
 
             c.restore();
 
-            // Streamlines
-            var streamCount = 12;
-            for (var si2 = 0; si2 < streamCount; si2++) {
-              var sy = cy - chordLen * 0.6 + (si2 / (streamCount - 1)) * chordLen * 1.2;
-              var isAbove = sy < cy - 5;
-              var isBelow = sy > cy + 5;
-              var nearWing = Math.abs(sy - cy) < chordLen * 0.25;
-
+            // Angle of attack, opened ahead of the nose where there is room:
+            // the angle between the extended chord line and the free stream.
+            var lePt = chordPt(0, 0);
+            if (_aoa > 0.5) {
+              var aoaR2 = Math.max(34, Math.min(72, chordLen * 0.34));
+              c.save();
+              c.translate(lePt.x, lePt.y);
+              c.setLineDash([3, 3]);
+              c.lineWidth = 1;
+              c.strokeStyle = isDark ? 'rgba(251,191,36,0.65)' : 'rgba(180,83,9,0.6)';
+              // Free-stream reference, straight ahead
               c.beginPath();
+              c.moveTo(0, 0);
+              c.lineTo(-aoaR2 - 20, 0);
+              c.stroke();
+              // Chord line, extended forward
+              c.beginPath();
+              c.moveTo(0, 0);
+              c.lineTo(-(aoaR2 + 20) * Math.cos(aoaRad), -(aoaR2 + 20) * Math.sin(aoaRad));
+              c.stroke();
+              c.setLineDash([]);
+              c.strokeStyle = isDark ? '#fbbf24' : '#b45309';
+              c.lineWidth = 1.6;
+              c.beginPath();
+              c.arc(0, 0, aoaR2, Math.PI, Math.PI + aoaRad);
+              c.stroke();
+              c.restore();
+              migrChip(c,
+                lePt.x + Math.cos(Math.PI + aoaRad / 2) * (aoaR2 + 20),
+                lePt.y + Math.sin(Math.PI + aoaRad / 2) * (aoaR2 + 20),
+                'α = ' + Math.round(_aoa) + '°',
+                '#fff', 'rgba(180,83,9,0.92)', 'bold 10px system-ui');
+            }
+
+            // Free-stream velocity, labelled where the flow enters. Clamped
+            // into the frame: at a long chord it used to sit off the top edge.
+            var vInfY = clamp(cy - chordLen * 0.62, isStalling ? 52 : 22, H - 22);
+            migrArrow(c, 14, vInfY, 66, vInfY, isDark ? '#94a3b8' : '#475569', 2, 7);
+            c.fillStyle = isDark ? '#cbd5e1' : '#334155';
+            c.font = 'bold 10px system-ui';
+            c.textAlign = 'left';
+            c.textBaseline = 'alphabetic';
+            c.fillText('V∞', 16, vInfY - 6);
+
+            // ── Streamlines ──
+            // The old version nudged each line by distance-to-centre alone, so
+            // the flow never actually bent around the section: it drew twelve
+            // near-straight lines, blue above and red below. This displaces each
+            // line by a thickness term (pushed away from the body) plus a
+            // circulation term (upwash ahead, downwash behind), which is the
+            // shape a lifting section really produces.
+            var streamCount = 15;
+            var circK = _cl * chordLen * 0.20;
+            var thickK = chordLen * 0.26;
+            var streamRight = W * 0.655;
+            var sepStart = 0.30;
+            for (var si2 = 0; si2 < streamCount; si2++) {
+              var sy = 10 + (si2 / (streamCount - 1)) * (H - 20);
+              var dy0 = (sy - cy) / chordLen;
+              var isAbove = dy0 < -0.02;
+              // Only the lines close enough to be deflected get tinted
+              var working = Math.abs(dy0) < 0.40;
+              // A separated line detaches over the rear of the section and never
+              // closes back down — that is what "stalled" looks like.
+              var separated = isStalling && isAbove && Math.abs(dy0) < 0.75;
+
               var pts = [];
-              for (var sx = 0; sx < W; sx += 4) {
-                var px = sx;
+              for (var sx = -6; sx < streamRight; sx += 5) {
+                var dxn = (sx - cx) / chordLen;
+                var dyn = dy0;
+                var rr = Math.sqrt(dxn * dxn + dyn * dyn * 2.4) + 0.30;
+                var decay = Math.exp(-rr * rr * 1.15);
+                var side = dyn < 0 ? -1 : 1;
                 var py = sy;
-
-                // Deflect around airfoil
-                var distToCenter = dist(px, py, cx, cy);
-                if (distToCenter < chordLen * 0.8) {
-                  var deflectStr = Math.max(0, 1 - distToCenter / (chordLen * 0.8));
-
-                  if (isAbove) {
-                    // Speed up over top (Bernoulli)
-                    py -= deflectStr * chordLen * 0.15 * Math.sin(aoaRad + 0.2);
-                  } else if (isBelow) {
-                    py += deflectStr * chordLen * 0.08;
-                  }
-
-                  // Stall: flow separation on top at high AoA
-                  if (isStalling && isAbove && px > cx) {
-                    py += (Math.random() - 0.3) * deflectStr * 20;
-                  }
+                // Thickness pushes the line clear of the body
+                py += side * thickK * decay * 0.72;
+                // Circulation: air rises ahead of the wing and is left with a
+                // downwash behind it
+                py += -circK * decay * Math.tanh(-dxn * 1.7);
+                // Persistent downwash in the wake
+                if (dxn > 0) py += circK * 0.35 * Math.exp(-dyn * dyn * 5) * Math.min(1, dxn * 0.7);
+                if (separated && dxn > sepStart) {
+                  // Detached shear layer: lifts away and breaks into eddies
+                  var t3 = Math.min(1.6, dxn - sepStart);
+                  py -= t3 * chordLen * 0.10;
+                  py += Math.sin(dxn * 5.5 - timeRef.current * 4 + si2) * t3 * chordLen * 0.075;
                 }
-
-                // Add time-based flow animation
-                var flowOff = Math.sin((sx * 0.02 - timeRef.current * 3 + si2) * 0.5) * 1;
-                py += flowOff;
-
-                pts.push({ x: px, y: py });
+                pts.push({ x: sx, y: py });
               }
 
-              // Draw streamline
-              if (pts.length > 1) {
+              c.beginPath();
+              c.moveTo(pts[0].x, pts[0].y);
+              for (var pk2 = 1; pk2 < pts.length; pk2++) c.lineTo(pts[pk2].x, pts[pk2].y);
+              if (separated) c.strokeStyle = 'rgba(239,68,68,0.60)';
+              else if (!working) c.strokeStyle = isDark ? 'rgba(148,163,184,0.28)' : 'rgba(100,116,139,0.22)';
+              else if (isAbove) c.strokeStyle = isDark ? 'rgba(125,211,252,0.60)' : 'rgba(37,99,235,0.45)';
+              else c.strokeStyle = isDark ? 'rgba(248,180,180,0.45)' : 'rgba(220,38,38,0.33)';
+              c.lineWidth = 1;
+              c.stroke();
+
+              // Tracer beads: motion cue, faster over the suction side, which is
+              // the whole Bernoulli point of the picture.
+              var spd = isAbove && working && !separated ? 1.55 : 1.0;
+              var beadU = ((timeRef.current * 0.26 * spd) + si2 * 0.137) % 1;
+              var bi3 = Math.floor(beadU * (pts.length - 1));
+              c.beginPath();
+              c.arc(pts[bi3].x, pts[bi3].y, 1.8, 0, Math.PI * 2);
+              c.fillStyle = separated ? '#ef4444' : (!working ? (isDark ? '#94a3b8' : '#64748b') : (isAbove ? '#0ea5e9' : '#f87171'));
+              c.fill();
+            }
+
+            // Separation bubble and the vortices shed off the trailing edge
+            if (isStalling) {
+              var sepX = cx - halfC + chordLen * sepStart;
+              c.save();
+              c.strokeStyle = 'rgba(239,68,68,0.85)';
+              c.lineWidth = 1.6;
+              var tePt = chordPt(1, chordLen * 0.05);
+              for (var vz = 0; vz < 3; vz++) {
+                var vzPhase = ((timeRef.current * 0.30 + vz * 0.34) % 1);
+                var vzx = tePt.x + 14 + vzPhase * chordLen * 0.95;
+                var vzy = tePt.y - chordLen * 0.08 - vzPhase * chordLen * 0.10;
+                var vzr = 7 + vzPhase * 9;
                 c.beginPath();
-                c.moveTo(pts[0].x, pts[0].y);
-                for (var pk2 = 1; pk2 < pts.length; pk2++) {
-                  c.lineTo(pts[pk2].x, pts[pk2].y);
+                for (var sp5 = 0; sp5 < 22; sp5++) {
+                  var sa = sp5 * 0.42 + timeRef.current * 3;
+                  var srr = vzr * (1 - sp5 / 26);
+                  var vxp = vzx + Math.cos(sa) * srr;
+                  var vyp = vzy + Math.sin(sa) * srr;
+                  if (sp5 === 0) c.moveTo(vxp, vyp); else c.lineTo(vxp, vyp);
                 }
-                if (isStalling && isAbove) {
-                  c.strokeStyle = 'rgba(239,68,68,0.4)';
-                } else if (isAbove) {
-                  c.strokeStyle = isDark ? 'rgba(96,165,250,0.4)' : 'rgba(59,130,246,0.3)';
-                } else {
-                  c.strokeStyle = isDark ? 'rgba(239,68,68,0.25)' : 'rgba(239,68,68,0.2)';
-                }
-                c.lineWidth = 1;
                 c.stroke();
               }
+              // Mark where the boundary layer lets go
+              var sepPt = chordPt(sepStart, chordLen * 0.13);
+              c.beginPath();
+              c.arc(sepPt.x, sepPt.y, 3.5, 0, Math.PI * 2);
+              c.fillStyle = '#ef4444';
+              c.fill();
+              c.restore();
+              migrChip(c, sepPt.x, sepPt.y - 15, t('stem.migration.separation_point', 'separation'),
+                '#fff', 'rgba(220,38,38,0.92)', 'bold 8px system-ui');
             }
 
-            // Force arrows
-            // Lift arrow (up from center)
-            if (cl > 0.01) {
-              var liftLen = Math.min(80, cl * 50);
-              c.beginPath();
-              c.moveTo(cx, cy);
-              c.lineTo(cx, cy - liftLen);
-              c.strokeStyle = '#3b82f6';
-              c.lineWidth = 3;
-              c.stroke();
-              // Arrowhead
-              c.beginPath();
-              c.moveTo(cx, cy - liftLen - 6);
-              c.lineTo(cx - 5, cy - liftLen + 2);
-              c.lineTo(cx + 5, cy - liftLen + 2);
-              c.closePath();
-              c.fillStyle = '#3b82f6';
-              c.fill();
-              c.fillStyle = '#3b82f6';
+            // ── Free-body diagram ──
+            // The forces act at the centre of pressure, roughly the quarter
+            // chord, not at the middle of the canvas.
+            var copPt = chordPt(0.27, 0);
+            var liftLen = Math.min(120, 30 + Math.abs(_cl) * 70);
+            var dragLen = Math.min(78, 9 + _cd * 300);
+            if (_cl > 0.01) {
+              migrArrow(c, copPt.x, copPt.y, copPt.x, copPt.y - liftLen, '#2563eb', 3, 9);
+              c.fillStyle = '#2563eb';
               c.font = 'bold 10px system-ui';
               c.textAlign = 'center';
-              c.fillText('LIFT', cx, cy - liftLen - 10);
+              c.textBaseline = 'alphabetic';
+              c.fillText(t('stem.migration.lift_arrow', 'LIFT'), copPt.x, copPt.y - liftLen - 12);
             }
-
-            // Drag arrow (opposite to motion = rightward)
-            if (cd > 0.001) {
-              var dragLen = Math.min(60, cd * 400);
-              c.beginPath();
-              c.moveTo(cx, cy);
-              c.lineTo(cx + dragLen, cy);
-              c.strokeStyle = '#ef4444';
-              c.lineWidth = 3;
-              c.stroke();
-              c.beginPath();
-              c.moveTo(cx + dragLen + 6, cy);
-              c.lineTo(cx + dragLen - 2, cy - 5);
-              c.lineTo(cx + dragLen - 2, cy + 5);
-              c.closePath();
-              c.fillStyle = '#ef4444';
-              c.fill();
-              c.fillStyle = '#ef4444';
+            if (_cd > 0.001) {
+              migrArrow(c, copPt.x, copPt.y, copPt.x + dragLen, copPt.y, '#dc2626', 3, 9);
+              c.fillStyle = '#dc2626';
               c.font = 'bold 10px system-ui';
               c.textAlign = 'left';
-              c.fillText('DRAG', cx + dragLen + 8, cy + 4);
+              c.fillText(t('stem.migration.drag_arrow', 'DRAG'), copPt.x + dragLen + 8, copPt.y + 4);
             }
+            // Resultant, so lift and drag read as components of one force
+            if (_cl > 0.01 && _cd > 0.001) {
+              c.save();
+              c.setLineDash([3, 3]);
+              c.strokeStyle = isDark ? 'rgba(168,85,247,0.5)' : 'rgba(147,51,234,0.45)';
+              c.lineWidth = 1;
+              c.beginPath();
+              c.moveTo(copPt.x, copPt.y - liftLen);
+              c.lineTo(copPt.x + dragLen, copPt.y - liftLen);
+              c.lineTo(copPt.x + dragLen, copPt.y);
+              c.stroke();
+              c.restore();
+              migrArrow(c, copPt.x, copPt.y, copPt.x + dragLen, copPt.y - liftLen, '#9333ea', 2, 8);
+            }
+            // Centre-of-pressure hub, drawn last so the arrows spring from it
+            c.beginPath();
+            c.arc(copPt.x, copPt.y, 3.2, 0, Math.PI * 2);
+            c.fillStyle = isDark ? '#f8fafc' : '#0f172a';
+            c.fill();
 
             // Stall warning (enhanced with flashing border + red overlay)
             if (isStalling) {
@@ -3180,14 +4525,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               c.strokeRect(1, 1, W - 2, H - 2);
             }
 
-            // Pressure labels
+            // Pressure labels, set as chips so they stay readable on top of the
+            // streamlines rather than dissolving into them
             if (!isStalling) {
-              c.font = '9px system-ui';
-              c.textAlign = 'center';
-              c.fillStyle = '#3b82f6';
-              c.fillText('Low pressure (fast air)', cx, cy - chordLen * 0.32);
-              c.fillStyle = '#ef4444';
-              c.fillText('High pressure (slow air)', cx, cy + chordLen * 0.28);
+              migrChip(c, cx - chordLen * 0.14, cy - chordLen * 0.52,
+                t('stem.migration.low_pressure_fast_air', 'Low pressure — fast air'),
+                '#fff', 'rgba(37,99,235,0.88)', 'bold 9px system-ui');
+              migrChip(c, cx - chordLen * 0.14, cy + chordLen * 0.42,
+                t('stem.migration.high_pressure_slow_air', 'High pressure — slow air'),
+                '#fff', 'rgba(220,38,38,0.88)', 'bold 9px system-ui');
             }
 
             // L/D curve on right side
@@ -3220,7 +4566,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             var firstPt = true;
             for (var plotAoa = 0; plotAoa <= 20; plotAoa += 0.5) {
               var plotRad = plotAoa * Math.PI / 180;
-              var plotCl = plotAoa <= wing.stallAngle ? wing.liftCoeff * Math.sin(2 * plotRad) : wing.liftCoeff * 0.5 * Math.sin(2 * plotRad) * (0.4 + 0.6 * Math.exp(-(plotAoa - wing.stallAngle) * 0.3));
+              var plotCl = plotAoa <= _wing.stallAngle ? _wing.liftCoeff * Math.sin(2 * plotRad) : _wing.liftCoeff * 0.5 * Math.sin(2 * plotRad) * (0.4 + 0.6 * Math.exp(-(plotAoa - _wing.stallAngle) * 0.3));
               var plotX = graphX + (plotAoa / 20) * graphW;
               var plotY = graphY + graphH - (plotCl / 2) * graphH;
               if (firstPt) { c.moveTo(plotX, plotY); firstPt = false; }
@@ -3235,8 +4581,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             firstPt = true;
             for (var plotAoa2 = 0; plotAoa2 <= 20; plotAoa2 += 0.5) {
               var plotRad2 = plotAoa2 * Math.PI / 180;
-              var plotCl2 = wing.liftCoeff * Math.sin(2 * plotRad2);
-              var plotCd2 = wing.dragCoeff + (plotCl2 * plotCl2) / (Math.PI * 5 * 0.85);
+              var plotCl2 = _wing.liftCoeff * Math.sin(2 * plotRad2);
+              var plotCd2 = _wing.dragCoeff + (plotCl2 * plotCl2) / (Math.PI * 5 * 0.85);
               var plotX2 = graphX + (plotAoa2 / 20) * graphW;
               var plotY2 = graphY + graphH - (plotCd2 * 5) * graphH;
               if (firstPt) { c.moveTo(plotX2, plotY2); firstPt = false; }
@@ -3247,7 +4593,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             c.stroke();
 
             // Current AoA marker
-            var markerX = graphX + (aoa / 20) * graphW;
+            var markerX = graphX + (clamp(_aoa, 0, 20) / 20) * graphW;
             c.beginPath();
             c.setLineDash([3, 3]);
             c.moveTo(markerX, graphY);
@@ -3256,6 +4602,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             c.lineWidth = 1;
             c.stroke();
             c.setLineDash([]);
+
+            // Axis ticks: an unnumbered plot cannot be read off, only admired.
+            c.font = '7px system-ui';
+            c.textAlign = 'center';
+            c.fillStyle = isDark ? '#94a3b8' : '#475569';
+            c.strokeStyle = isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.25)';
+            c.lineWidth = 0.7;
+            for (var xt = 0; xt <= 20; xt += 5) {
+              var xtp = graphX + (xt / 20) * graphW;
+              c.beginPath();
+              c.moveTo(xtp, graphY + graphH);
+              c.lineTo(xtp, graphY + graphH + 3);
+              c.stroke();
+              c.fillText(String(xt), xtp, graphY + graphH + 12);
+            }
+            c.textAlign = 'right';
+            for (var yt = 0; yt <= 2; yt += 0.5) {
+              var ytp = graphY + graphH - (yt / 2) * graphH;
+              c.beginPath();
+              c.moveTo(graphX - 3, ytp);
+              c.lineTo(graphX, ytp);
+              c.stroke();
+              if (yt > 0) {
+                c.beginPath();
+                c.moveTo(graphX, ytp);
+                c.lineTo(graphX + graphW, ytp);
+                c.strokeStyle = isDark ? 'rgba(148,163,184,0.12)' : 'rgba(100,116,139,0.10)';
+                c.stroke();
+                c.strokeStyle = isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.25)';
+              }
+              c.fillText(yt.toFixed(1), graphX - 5, ytp + 2.5);
+            }
 
             // Graph labels
             c.fillStyle = isDark ? '#94a3b8' : '#475569';
@@ -3278,10 +4656,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             c.fillStyle = '#ef4444';
             c.fillRect(graphX + 4, graphY + 16, 8, 2);
             c.fillStyle = isDark ? '#94a3b8' : '#475569';
-            c.fillText('Drag (C\u2091)', graphX + 16, graphY + 20);
+            // \u2091 is subscript e: the legend read "C_e" for the drag
+            // coefficient, which is C_d. Unicode has no subscript d.
+            c.fillText('Drag (Cd \u00D7 10)', graphX + 16, graphY + 20);
 
             // Best L/D marker
-            var bestAoa = wing.bestAngle;
+            var bestAoa = _wing.bestAngle;
             var bestX = graphX + (bestAoa / 20) * graphW;
             c.beginPath();
             c.arc(bestX, graphY + graphH - 10, 3, 0, Math.PI * 2);
@@ -3486,7 +4866,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           var c = canvas.getContext('2d');
           var dpr = window.devicePixelRatio || 1;
           var W = canvas.parentElement ? canvas.parentElement.clientWidth : 620;
-          var H = 180;
+          var H = 220;
           canvas.width = W * dpr;
           canvas.height = H * dpr;
           canvas.style.width = W + 'px';
@@ -3550,75 +4930,166 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             }
             c.globalAlpha = 1;
 
-            // Polaris (bright, labeled)
-            var polarisX = W * 0.75;
-            var polarisY = H * 0.12;
-            c.fillStyle = '#fde68a';
-            c.beginPath();
-            c.arc(polarisX, polarisY, 3, 0, Math.PI * 2);
-            c.fill();
-            c.beginPath();
-            c.arc(polarisX, polarisY, 6, 0, Math.PI * 2);
-            c.strokeStyle = 'rgba(253,230,138,0.3)';
-            c.lineWidth = 1;
-            c.stroke();
-            c.fillStyle = '#fde68a';
-            c.font = '8px system-ui';
-            c.textAlign = 'center';
-            c.fillText('Polaris', polarisX, polarisY - 10);
-
-            // Star rotation lines (showing how stars circle Polaris)
-            c.globalAlpha = 0.15;
-            for (var ri = 1; ri <= 3; ri++) {
-              c.beginPath();
-              c.arc(polarisX, polarisY, ri * 25, 0, Math.PI * 2);
-              c.strokeStyle = '#94a3b8';
-              c.lineWidth = 0.5;
-              c.setLineDash([2, 4]);
-              c.stroke();
-              c.setLineDash([]);
-            }
-            c.globalAlpha = 1;
-
-            // Magnetic field lines (curved, subtle)
-            c.globalAlpha = 0.08;
+            // ── Magnetic field lines ──
+            // These were drawn at 8% alpha, which is invisible on a night sky:
+            // one of the three navigation cues the panel is about simply was not
+            // on screen. Now they read, and they carry direction arrows.
             for (var fli = 0; fli < fieldLines.length; fli++) {
               var fl2 = fieldLines[fli];
               c.beginPath();
               c.moveTo(0, fl2.startY);
               c.bezierCurveTo(
-                W * 0.3, fl2.startY - 20 * fl2.curve,
-                W * 0.7, fl2.startY + 15 * fl2.curve,
-                W, fl2.startY - 5
+                W * 0.3, fl2.startY - 62 * fl2.curve,
+                W * 0.7, fl2.startY + 48 * fl2.curve,
+                W, fl2.startY - 18
               );
-              c.strokeStyle = '#60a5fa';
+              c.strokeStyle = 'rgba(96,165,250,0.30)';
               c.lineWidth = 1;
               c.stroke();
-            }
-            c.globalAlpha = 1;
-
-            // Compass in corner
-            drawCompassRose(c, 50, H - 45, 28, ((t2 * 3) % 360), isDark);
-
-            // Migrating flock
-            for (var mbi = 0; mbi < navBirds.length; mbi++) {
-              var nb = navBirds[mbi];
-              nb.x += 0.3;
-              nb.y += Math.sin(t2 * 2 + mbi) * 0.2;
-              nb.phase += 0.07;
-              if (nb.x > W + 20) nb.x = -20;
-              drawBird(c, nb.x, nb.y, 5, nb.phase, -1, '#94a3b8', true);
+              // A pulse travelling along the line shows the field's direction
+              var fu = ((t2 * 0.16) + fli * 0.13) % 1;
+              var fx = fu * W;
+              var fy = fl2.startY * Math.pow(1 - fu, 3)
+                + (fl2.startY - 62 * fl2.curve) * 3 * fu * Math.pow(1 - fu, 2)
+                + (fl2.startY + 48 * fl2.curve) * 3 * fu * fu * (1 - fu)
+                + (fl2.startY - 18) * fu * fu * fu;
+              c.beginPath();
+              c.arc(fx, fy, 1.7, 0, Math.PI * 2);
+              c.fillStyle = 'rgba(147,197,253,0.85)';
+              c.fill();
             }
 
-            // Moon
+            // ── Polaris and the celestial pole ──
+            var polarisX = W * 0.74;
+            var polarisY = H * 0.16;
+            // Trails: stars wheel about the pole through the night, which is
+            // the cue a young bird actually learns
+            for (var ri = 1; ri <= 4; ri++) {
+              var trailR = ri * 22;
+              c.beginPath();
+              c.arc(polarisX, polarisY, trailR, 0, Math.PI * 2);
+              c.strokeStyle = 'rgba(148,163,184,0.16)';
+              c.lineWidth = 0.6;
+              c.setLineDash([2, 5]);
+              c.stroke();
+              c.setLineDash([]);
+              // A star riding each trail makes the rotation visible
+              var sa2 = t2 * 0.28 / ri + ri * 1.7;
+              c.beginPath();
+              c.arc(polarisX + Math.cos(sa2) * trailR, polarisY + Math.sin(sa2) * trailR, 1.4, 0, Math.PI * 2);
+              c.fillStyle = 'rgba(226,232,240,0.9)';
+              c.fill();
+            }
+
+            // The Big Dipper, with its pointer stars aimed at Polaris — the
+            // asterism that actually finds the pole.
+            var DIPPER = [[-96, 62], [-78, 54], [-60, 50], [-46, 56], [-34, 44], [-16, 38], [-2, 46]];
+            c.strokeStyle = 'rgba(191,219,254,0.45)';
+            c.lineWidth = 1;
+            c.beginPath();
+            for (var dp = 0; dp < DIPPER.length; dp++) {
+              var dpx = polarisX + DIPPER[dp][0];
+              var dpy = polarisY + DIPPER[dp][1];
+              if (dp === 0) c.moveTo(dpx, dpy); else c.lineTo(dpx, dpy);
+            }
+            c.stroke();
+            for (var dp2 = 0; dp2 < DIPPER.length; dp2++) {
+              c.beginPath();
+              c.arc(polarisX + DIPPER[dp2][0], polarisY + DIPPER[dp2][1], dp2 === 5 || dp2 === 6 ? 2.2 : 1.6, 0, Math.PI * 2);
+              c.fillStyle = '#e0f2fe';
+              c.fill();
+            }
+            // Pointer line from the bowl to Polaris
+            c.save();
+            c.setLineDash([3, 4]);
+            c.strokeStyle = 'rgba(253,230,138,0.45)';
+            c.lineWidth = 1;
+            c.beginPath();
+            c.moveTo(polarisX + DIPPER[6][0], polarisY + DIPPER[6][1]);
+            c.lineTo(polarisX - 3, polarisY + 5);
+            c.stroke();
+            c.restore();
+
+            // Polaris itself, with a small glow
+            var pg2 = c.createRadialGradient(polarisX, polarisY, 0, polarisX, polarisY, 12);
+            pg2.addColorStop(0, 'rgba(253,230,138,0.75)');
+            pg2.addColorStop(1, 'rgba(253,230,138,0)');
+            c.fillStyle = pg2;
+            c.beginPath();
+            c.arc(polarisX, polarisY, 12, 0, Math.PI * 2);
+            c.fill();
+            c.fillStyle = '#fef3c7';
+            c.beginPath();
+            c.arc(polarisX, polarisY, 3, 0, Math.PI * 2);
+            c.fill();
+            migrChip(c, polarisX, polarisY - 15, 'Polaris', '#0f172a', 'rgba(253,230,138,0.92)', 'bold 8px system-ui');
+
+            // ── Moon ──
+            var moonX = W * 0.9;
+            var moonY = H * 0.24;
+            var mg = c.createRadialGradient(moonX, moonY, 6, moonX, moonY, 30);
+            mg.addColorStop(0, 'rgba(226,232,240,0.28)');
+            mg.addColorStop(1, 'rgba(226,232,240,0)');
+            c.fillStyle = mg;
+            c.beginPath();
+            c.arc(moonX, moonY, 30, 0, Math.PI * 2);
+            c.fill();
+            // Gibbous disc clipped against the terminator, so the dark limb is
+            // sky rather than a slightly-wrong dark circle painted on top
+            c.save();
+            c.beginPath();
+            c.arc(moonX, moonY, 12, 0, Math.PI * 2);
+            c.clip();
             c.fillStyle = '#e2e8f0';
             c.beginPath();
-            c.arc(W * 0.9, H * 0.25, 12, 0, Math.PI * 2);
+            c.arc(moonX, moonY, 12, 0, Math.PI * 2);
             c.fill();
-            c.fillStyle = '#020617';
+            c.globalCompositeOperation = 'destination-out';
             c.beginPath();
-            c.arc(W * 0.9 + 4, H * 0.25 - 2, 10, 0, Math.PI * 2);
+            c.arc(moonX + 5, moonY - 2, 10.5, 0, Math.PI * 2);
             c.fill();
+            c.globalCompositeOperation = 'source-over';
+            // Maria
+            c.fillStyle = 'rgba(148,163,184,0.55)';
+            c.beginPath(); c.arc(moonX - 5, moonY + 2, 3, 0, Math.PI * 2); c.fill();
+            c.beginPath(); c.arc(moonX - 8, moonY - 4, 2, 0, Math.PI * 2); c.fill();
+            c.restore();
+
+            // Compass in the corner
+            drawCompassRose(c, 50, H - 52, 30, ((t2 * 3) % 360), true);
+
+            // Migrating flock, in the V they actually hold
+            for (var mbi = 0; mbi < navBirds.length; mbi++) {
+              var nb = navBirds[mbi];
+              nb.x += 0.35;
+              nb.y += Math.sin(t2 * 2 + mbi) * 0.2;
+              nb.phase += 0.09;
+              if (nb.x > W + 24) nb.x = -24;
+              drawBird(c, nb.x, nb.y, 7, nb.phase, 1, '#cbd5e1', true, 'goose');
+            }
+
+            // Cue key: the panel shows three navigation systems at once, and
+            // nothing named them.
+            var CUES = [
+              { col: 'rgba(96,165,250,0.85)', label: t('stem.migration.cue_magnetic', 'magnetic field') },
+              { col: 'rgba(253,230,138,0.9)', label: t('stem.migration.cue_star', 'star compass') },
+              { col: 'rgba(203,213,225,0.9)', label: t('stem.migration.cue_moon', 'moonlight') }
+            ];
+            var cueTop = H - 26 - CUES.length * 13;
+            migrPanel(c, W - 132, cueTop, 124, 12 + CUES.length * 13, true, null);
+            c.textAlign = 'left';
+            c.textBaseline = 'middle';
+            c.font = '9px system-ui';
+            for (var cu2 = 0; cu2 < CUES.length; cu2++) {
+              var cuy = cueTop + 12 + cu2 * 13;
+              c.fillStyle = CUES[cu2].col;
+              c.beginPath();
+              c.arc(W - 122, cuy, 3, 0, Math.PI * 2);
+              c.fill();
+              c.fillStyle = '#cbd5e1';
+              c.fillText(CUES[cu2].label, W - 114, cuy);
+            }
+            c.textBaseline = 'alphabetic';
 
             // Horizon line
             c.fillStyle = '#1e293b';
@@ -4133,8 +5604,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           comfortable: { label: t('stem.migration.comfortable', 'Comfortable'), color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: t('stem.migration.distance_is_well_within_energy_budget_', 'Distance is well within energy budget. Bar-tailed godwit-class endurance.') },
           easy: { label: t('stem.migration.easy', 'Easy'), color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: t('stem.migration.3_reserve_either_short_distance_or_ove', '3×+ reserve. Either short distance or oversized fat stores.') }
         })[state];
-        // SVG energy budget bar
-        var pct = Math.min(1, totalKJ / fatBurnKJ);
+        // Energy budget chart. The old bar clamped at 100%, so a bird needing
+        // three times its fat reserve drew exactly the same picture as one that
+        // just made it — the failure the whole tab is about was invisible.
+        // Scale so 100% of the reserve sits at a fixed gridline and the deficit
+        // runs past it into a marked overspend zone.
+        var demandPct = totalKJ / Math.max(1, fatBurnKJ);
+        var BAR_X = 12;
+        var BAR_FULL = 200;            // x-offset of the "reserve exhausted" line
+        var BAR_MAX = 296;             // hard right edge of the plot
+        var demandW = Math.min(BAR_MAX - BAR_X, demandPct * BAR_FULL);
+        var overspends = demandPct > 1;
+        var rangeKm = energyPerKm > 0 ? fatBurnKJ / energyPerKm : 0;
+        var rangeScale = Math.max(rangeKm, iq.distance, 1);
+        var rangeBarW = Math.max(2, (rangeKm / rangeScale) * (BAR_MAX - BAR_X));
+        var needBarW = Math.max(2, (iq.distance / rangeScale) * (BAR_MAX - BAR_X));
         return h('div', { style: { padding: 14, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
           h('h3', { style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, t('stem.migration.energy_inquiry_can_the_bird_make_it', '🔬 Energy Inquiry — Can the bird make it?')),
           h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, t('stem.migration.pick_wingspan_mass_headwind_formation_', 'Pick wingspan, mass, headwind, formation, and distance. Predict the energy state. No score, no reveal.')),
@@ -4152,12 +5636,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               );
             })
           ),
-          h('svg', { width: '100%', height: 80, viewBox: '0 0 320 80', role: 'img', 'aria-label': t('stem.migration.fat_reserve_chart', 'Fat reserve chart showing the energy needed for the current flight.'), style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10 } },
-            h('text', { x: 10, y: 18, fill: '#94a3b8', fontSize: 10 }, t('stem.migration.fat_reserve_kj', 'Fat reserve (kJ)')),
-            h('rect', { x: 10, y: 24, width: 300, height: 22, fill: '#0f172a', stroke: '#1e293b' }),
-            h('rect', { x: 10, y: 24, width: Math.min(300, pct * 300), height: 22, fill: sm.color, opacity: 0.85 }),
-            h('text', { x: 160, y: 39, fill: '#fff', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, 'flight needs ' + (pct * 100).toFixed(0) + '% of fat'),
-            h('text', { x: 10, y: 68, fill: '#94a3b8', fontSize: 9 }, 'distance ' + iq.distance + ' km · headwind ' + iq.headwind + ' m/s · fmt ' + iq.vMode + ' (saves ' + Math.round((1 - fmtSave) * 100) + '%)')
+          h('svg', {
+            width: '100%', viewBox: '0 0 320 148', preserveAspectRatio: 'xMidYMid meet', role: 'img',
+            'aria-label': t('stem.migration.fat_reserve_chart', 'Fat reserve chart showing the energy needed for the current flight.') +
+              ' This flight needs ' + Math.round(demandPct * 100) + ' percent of the available fat reserve. ' +
+              'Range on this fat is ' + Math.round(rangeKm) + ' kilometres against a required ' + iq.distance + ' kilometres.',
+            style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10, display: 'block', width: '100%', maxWidth: 560, height: 'auto' }
+          },
+            h('defs', null,
+              h('pattern', { id: 'migrDeficitHatch', width: 6, height: 6, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' },
+                h('rect', { width: 6, height: 6, fill: '#1b0a0a' }),
+                h('rect', { width: 2, height: 6, fill: '#7f1d1d' })
+              )
+            ),
+            // ── Energy demand against the fat reserve ──
+            h('text', { x: BAR_X, y: 16, fill: '#94a3b8', fontSize: 10 }, t('stem.migration.energy_demand_vs_fat', 'Energy demand vs fat reserve')),
+            // Overspend zone beyond the reserve line
+            h('rect', { x: BAR_X + BAR_FULL, y: 24, width: BAR_MAX - BAR_X - BAR_FULL, height: 24, fill: 'url(#migrDeficitHatch)' }),
+            h('rect', { x: BAR_X, y: 24, width: BAR_FULL, height: 24, fill: '#0f172a', stroke: '#1e293b' }),
+            // Quarter gridlines, so the bar can be read without a number
+            [0.25, 0.5, 0.75].map(function(g) {
+              return h('line', { key: g, x1: BAR_X + BAR_FULL * g, y1: 24, x2: BAR_X + BAR_FULL * g, y2: 48, stroke: '#1e293b', strokeWidth: 1 });
+            }),
+            h('rect', { x: BAR_X, y: 24, width: Math.min(BAR_FULL, demandW), height: 24, fill: sm.color, opacity: 0.85 }),
+            // Whatever the flight needs beyond the reserve, drawn in the red
+            overspends && h('rect', { x: BAR_X + BAR_FULL, y: 24, width: Math.max(2, demandW - BAR_FULL), height: 24, fill: '#dc2626', opacity: 0.9 }),
+            // The line the bird cannot cross
+            h('line', { x1: BAR_X + BAR_FULL, y1: 20, x2: BAR_X + BAR_FULL, y2: 52, stroke: '#f8fafc', strokeWidth: 1.5 }),
+            h('text', { x: BAR_X + BAR_FULL - 3, y: 60, fill: '#cbd5e1', fontSize: 8, textAnchor: 'end' }, t('stem.migration.fat_exhausted', 'fat exhausted (100%)')),
+            h('text', { x: BAR_X + 5, y: 41, fill: '#0a0a1a', fontSize: 10, fontWeight: 700 }, Math.round(demandPct * 100) + '%'),
+            demandPct > 1.48 && h('text', { x: BAR_MAX + 2, y: 41, fill: '#f87171', fontSize: 11, fontWeight: 700 }, '»'),
+
+            // ── Range achievable against the distance asked for ──
+            h('text', { x: BAR_X, y: 82, fill: '#94a3b8', fontSize: 10 }, t('stem.migration.range_vs_distance', 'Range on this fat vs distance asked')),
+            h('rect', { x: BAR_X, y: 88, width: rangeBarW, height: 12, fill: '#38bdf8', opacity: 0.85 }),
+            h('text', {
+              x: rangeBarW > 90 ? BAR_X + 4 : BAR_X + rangeBarW + 5, y: 98,
+              fill: rangeBarW > 90 ? '#03212e' : '#7dd3fc', fontSize: 8, fontWeight: 700
+            }, t('stem.migration.range_label', 'range') + ' ' + Math.round(rangeKm).toLocaleString() + ' km'),
+            h('rect', { x: BAR_X, y: 104, width: needBarW, height: 12, fill: overspends ? '#dc2626' : '#4ade80', opacity: 0.85 }),
+            h('text', {
+              x: needBarW > 90 ? BAR_X + 4 : BAR_X + needBarW + 5, y: 114,
+              fill: needBarW > 90 ? '#0a0a1a' : '#cbd5e1', fontSize: 8, fontWeight: 700
+            }, t('stem.migration.needed_label', 'needed') + ' ' + iq.distance.toLocaleString() + ' km'),
+
+            h('text', { x: BAR_X, y: 138, fill: '#94a3b8', fontSize: 9 },
+              'headwind ' + iq.headwind + ' m/s · ' + iq.vMode + ' (saves ' + Math.round((1 - fmtSave) * 100) + '%) · ' + energyPerKm.toFixed(2) + ' kJ/km')
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
             h('label', null,

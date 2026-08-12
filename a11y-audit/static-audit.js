@@ -428,9 +428,39 @@ const CHECKS = [
       const context = lines.slice(lineNum - 1, lineNum + 120).join(' ');
       // A draggable native button with an onClick handler already provides the
       // same result through keyboard activation and a single tap/click.
+      //
+      // This asks WHICH ELEMENT THE PROP BELONGS TO, rather than whether a
+      // button appears somewhere nearby. Two reasons it has to be that precise:
+      //
+      //   - Searching a window for `createElement("button"` missed the real
+      //     thing. word_sounds writes the call across lines (`createElement(`
+      //     then `"button",` on its own line), putting the tag 5 lines above
+      //     `draggable` — outside the -4 reach — so four correctly-built native
+      //     buttons were reported as drag-only for months.
+      //   - Simply widening that reach would be worse than the bug. A Save
+      //     button sitting a few lines above a drag-only div would then excuse
+      //     it. Relaxing this check on a nearby-match heuristic is exactly what
+      //     previously hid the Assessment Builder's drag-only reorder.
+      //
+      // The nearest tag opened at or above the prop is the element that owns it.
+      const above = lines.slice(Math.max(0, lineNum - 14), lineNum + 1).join('\n');
+      const tagMatches = [...above.matchAll(
+        /(?:createElement|(?:^|[\s,(])(?:e|h))\(\s*['"]([a-zA-Z][\w-]*)['"]|<([a-zA-Z][\w-]*)[\s>]/g)];
+      const lastTag = tagMatches.length ? tagMatches[tagMatches.length - 1] : null;
+      const ownTag = lastTag ? (lastTag[1] || lastTag[2]) : null;
+      // The draggable node can also sit INSIDE a native button:
+      //   <button onClick={insert}><img draggable="true" /></button>
+      // view_pdf_audit does exactly that — clicking inserts the image into the
+      // first open slot, dragging aims it at a specific one. The own-tag test
+      // alone sees `img` and misses the button wrapping it, so an unclosed
+      // <button> above the prop counts too. A CLOSED one does not, which is what
+      // keeps a Save button above a drag-only div from excusing it.
+      const lastOpen = above.lastIndexOf('<button');
+      const lastClose = above.lastIndexOf('</button>');
+      const insideNativeButton = lastOpen !== -1 && lastOpen > lastClose;
       const nativeButtonClickAlternative =
-        /(?:createElement\(\s*['"]button['"]|(?:^|[\s,(])(?:e|h)\(\s*['"]button['"])/.test(localContext) &&
-        /onClick/.test(localContext);
+        (ownTag === 'button' || ownTag === 'a' || insideNativeButton)
+        && /onClick/.test(above + ' ' + localContext);
       if (nativeButtonClickAlternative) return false;
       // The ARIA button pattern is equivalent to a native <button>: focusable
       // via tabIndex, exposed as a button, and activated by Enter/Space. All
@@ -457,8 +487,21 @@ const CHECKS = [
         /(?:move|reorder)/i.test(context);
       // A draggable row with explicit Move Up/Down (or reorder) buttons has a
       // keyboard-usable alternative even when the row itself is not key-draggable.
+      // Matches hyperscript/createElement buttons too, not just JSX `<button`.
+      // geologyexplorer builds its Select / "Place here" / Cancel controls with
+      // h('button', ...) and was credited only by accident before, through a
+      // loose scan for the word "button" anywhere nearby.
+      //
+      // The vocabulary test now uses word boundaries. Without them "Remove"
+      // contains "move" and "dropdown" contains "down", so a row with a Remove
+      // button and no reorder path at all counted as having one — which is
+      // precisely the Assessment Builder defect this check failed to report.
+      // \bmove\b does not match "Remove" or the `moved` local in a splice.
       const buttonMoveAlternative =
-        /<button\b/.test(context) && /onClick/.test(context) && /(?:move|reorder|up|down)/i.test(context);
+        (/<button\b/.test(context)
+          || /(?:createElement|(?:^|[\s,(])(?:e|h))\(\s*['"]button['"]/.test(context))
+        && /onClick/.test(context)
+        && /\b(?:move|reorder|swap)\b/i.test(context);
       if (documentedKeyboardReorder || buttonMoveAlternative || /keyboard/.test(localContext)) return false;
       return true;
     },

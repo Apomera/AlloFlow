@@ -120,6 +120,21 @@ describe('solar system vehicle mode reachability', () => {
     });
   });
 
+  it('keeps both starfield gates in agreement, and off worlds with a bright sky', () => {
+    eachSource((source, path) => {
+      // Stars are drawn TWICE: painted into the sky-dome canvas texture, and
+      // again as a twinkle Points layer. Editing one and not the other is the
+      // trap — Mars would keep 200 painted stars in a daylit orange sky and
+      // merely lose the sparkle, which is worse than either state. Every one of
+      // these scenes is in daylight (sun disc up, shadows cast), so only the
+      // airless worlds, whose sky stays black, should have any.
+      const gates = source.match(/sel\.terrainType === 'cratered' \|\| sel\.terrainType === 'iceworld'\)/g) || [];
+      expect(gates.length, `${path}: expected both star gates to read the same pair`).toBe(2);
+      expect(source, `${path}: a bright-sky world crept back into a star gate`)
+        .not.toContain("cratered' || sel.terrainType === 'iceworld' || sel.terrainType === 'desert'");
+    });
+  });
+
   it('derives shadows from the atmosphere rather than switching them on globally', () => {
     eachSource((source, path) => {
       // Shadow hardness is the same atmospheric fact the lights are built from,

@@ -13,7 +13,8 @@
     "!app-build/**",
     "!schoolbox/**",
     "!build-resources/**",
-    "!dist/**"
+    "!dist/**",
+    "!web-app/**"
   ],
   "extraResources": [
     {

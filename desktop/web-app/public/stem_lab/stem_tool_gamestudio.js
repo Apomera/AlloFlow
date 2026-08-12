@@ -1042,7 +1042,7 @@ window.StemLab = window.StemLab || {
                 // Color picker
                 h('div', { className: 'p-3 rounded-xl border border-rose-200 bg-white' },
                   h('div', { className: 'text-xs font-bold text-rose-700 mb-2' }, __alloT('stem.gamestudio.color', 'Color')),
-                  h('input', { type: 'color', value: spriteColor, onChange: function(e) { upd({ spriteColor: e.target.value }); }, className: 'w-full h-8 rounded cursor-pointer' }),
+                  h('input', { 'aria-label': __alloT('stem.gamestudio.color', 'Color'), type: 'color', value: spriteColor, onChange: function(e) { upd({ spriteColor: e.target.value }); }, className: 'w-full h-8 rounded cursor-pointer' }),
                   h('div', { className: 'flex gap-1 mt-2 flex-wrap' },
                     ['#e74c3c','#f39c12','#f1c40f','#2ecc71','#3498db','#9b59b6','#1abc9c','#ecf0f1','#34495e','#000000','#ffffff','#e67e22'].map(function(c) {
                       return h('button', { 'aria-label': __alloT('stem.gamestudio.mirror', 'Mirror'),
@@ -1178,7 +1178,7 @@ window.StemLab = window.StemLab || {
                   return h('div', { key: ri, className: 'p-3 rounded-xl border border-rose-200 bg-white' },
                     h('div', { className: 'flex gap-2 items-center flex-wrap' },
                       h('span', { className: 'text-xs font-bold text-slate-600' }, __alloT('stem.gamestudio.when', 'When')),
-                      h('select', {
+                      h('select', { 'aria-label': __alloT('stem.gamestudio.when', 'When'),
                         value: rule.trigger || 'onKey',
                         onChange: function(e) {
                           var ne = Object.assign({}, events);
@@ -1204,6 +1204,12 @@ window.StemLab = window.StemLab || {
                       })(),
                       h('span', { className: 'text-xs font-bold text-slate-600' }, '\u2192'),
                       h('select', {
+                        // Named by hand. The only thing preceding this select is
+                        // a span holding an arrow glyph, which is a visual
+                        // separator in the "When [event] -> [action]" rule row,
+                        // not a caption. Borrowing it would have named the
+                        // control "arrow".
+                        'aria-label': 'Action',
                         value: rule.action || 'move',
                         onChange: function(e) {
                           var ne = Object.assign({}, events); var arr = (ne[activeSprite] || []).slice();
@@ -1639,7 +1645,7 @@ window.StemLab = window.StemLab || {
             // Project name
             h('div', { className: 'p-3 rounded-xl border border-rose-200 bg-white' },
               h('label', { className: 'text-xs font-bold text-rose-700 mb-1 block' }, __alloT('stem.gamestudio.project_name', 'Project Name')),
-              h('input', {
+              h('input', { 'aria-label': __alloT('stem.gamestudio.project_name', 'Project Name'),
                 type: 'text', value: projectName,
                 onChange: function(e) { upd({ projectName: e.target.value }); },
                 className: 'w-full text-sm border border-rose-600 rounded-lg px-3 py-2 font-bold'
@@ -1869,7 +1875,7 @@ window.StemLab = window.StemLab || {
                 (iq.log || []).length > 0 && h('div', { className: 'overflow-x-auto' },
                   h('table', { className: 'text-[10px] w-full border-collapse text-slate-700' },
                     h('thead', null, h('tr', { className: 'bg-slate-100' },
-                      ['enemies', 'patrol', 'hazards', 'coins', 'health', 'score', 'tier'].map(function(c, i) { return h('th', { key: 'h' + i, className: 'px-1 border border-slate-200 text-left' }, c); }))),
+                      ['enemies', 'patrol', 'hazards', 'coins', 'health', 'score', 'tier'].map(function(c, i) { return h('th', { scope: 'col', key: 'h' + i, className: 'px-1 border border-slate-200 text-left' }, c); }))),
                     h('tbody', null, iq.log.map(function(o, idx) {
                       return h('tr', { key: 'lr' + idx },
                         h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.e),

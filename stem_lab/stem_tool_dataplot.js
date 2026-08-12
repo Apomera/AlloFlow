@@ -1611,7 +1611,7 @@ window.StemLab = window.StemLab || {
               kernelResult.provenance && h('div', { className: 'text-[10px] text-slate-500 mb-2' }, 'Source: ' + kernelResult.provenance.rowCount + ' rows · ' + (kernelResult.provenance.columns || []).join(', ') + ' · query kept read-only'),
               kernelResult.rows.length > 0 && h('div', { className: 'overflow-x-auto' },
                 h('table', { className: 'w-full text-[11px] border-collapse' },
-                  h('thead', null, h('tr', null, kernelResult.columns.map(function(column) { return h('th', { key: column, className: 'text-left px-2 py-1 bg-indigo-50 border border-indigo-100 font-bold text-indigo-800' }, column); }))),
+                  h('thead', null, h('tr', null, kernelResult.columns.map(function(column) { return h('th', { scope: 'col', key: column, className: 'text-left px-2 py-1 bg-indigo-50 border border-indigo-100 font-bold text-indigo-800' }, column); }))),
                   h('tbody', null, kernelResult.rows.map(function(row, ri) { return h('tr', { key: ri }, kernelResult.columns.map(function(column) { return h('td', { key: column, className: 'px-2 py-1 border border-indigo-100 font-mono text-slate-700' }, row[column] == null ? '—' : String(row[column])); })); }))
                 )
               ),

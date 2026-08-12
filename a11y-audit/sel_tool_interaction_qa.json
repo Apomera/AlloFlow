@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-03T00:27:07.882Z",
+  "generatedAt": "2026-08-11T21:20:11.288Z",
   "scope": [
     "zones",
     "coping",
@@ -70,7 +70,7 @@
               "pass": true,
               "activeAfterTabs": {
                 "tag": "button",
-                "id": "",
+                "id": "zones-tab-checkin",
                 "text": "🚦 Check-In",
                 "aria": "🚦 Check-In",
                 "toolCardId": "",
@@ -95,7 +95,7 @@
                 "tag": "button",
                 "id": "",
                 "text": "🚦Emotion Zones•Identify your zone (blue, green, yellow, red) and explore strategies to se",
-                "aria": "Emotion Zones (Grades K-12). Identify your zone (blue, green, yellow, red) and explore strategies to self-regulate.. Teacher cue: 5-8 min, Solo or group. Useful first check-in before any sharing.",
+                "aria": "Emotion Zones (Grades K-12). Identify your zone (blue, green, yellow, red) and explore strategies to self-regulate.. Best for: Start here. Name what is happening before choosing a strategy.. Teacher cue: 5-8 min, Solo or group. Useful first check-in before any sharing.",
                 "toolCardId": "zones",
                 "inSelDialog": true
               }
@@ -170,7 +170,7 @@
                 "tag": "button",
                 "id": "",
                 "text": "🧨Coping Toolkit•Explore and practice coping strategies — breathing, grounding, movement, ",
-                "aria": "Coping Toolkit (Grades K-12). Explore and practice coping strategies — breathing, grounding, movement, and more.. Teacher cue: 3-10 min, Solo or group. Best for a regulation reset.",
+                "aria": "Coping Toolkit (Grades K-12). Explore and practice coping strategies — breathing, grounding, movement, and more.. Best for: Calm now. Try one body or grounding strategy, then notice what changed.. Teacher cue: 3-10 min, Solo or group. Best for a regulation reset.",
                 "toolCardId": "coping",
                 "inSelDialog": true
               }
@@ -273,9 +273,9 @@
               "id": "tool-readable-interactive",
               "pass": true,
               "details": {
-                "textLength": 1873,
+                "textLength": 1886,
                 "hasHeading": true,
-                "controlCount": 46,
+                "controlCount": 47,
                 "selectedToolText": "Opened Emotion Explorer ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 😊 Self awareness Emotions Explorer 4-8 min Private checkpoint Share Packet eligible Exp"
               }
             },
@@ -320,7 +320,7 @@
                 "tag": "button",
                 "id": "",
                 "text": "😊Emotion Explorer•Build emotional vocabulary — identify, name, and rate the intensity of ",
-                "aria": "Emotion Explorer (Grades K-8). Build emotional vocabulary — identify, name, and rate the intensity of feelings.. Teacher cue: 5-8 min, Solo or pair. Good vocabulary warm-up.",
+                "aria": "Emotion Explorer (Grades K-8). Build emotional vocabulary — identify, name, and rate the intensity of feelings.. Best for: Name it. Build precise feeling words and notice intensity.. Teacher cue: 5-8 min, Solo or pair. Good vocabulary warm-up.",
                 "toolCardId": "emotions",
                 "inSelDialog": true
               }
@@ -470,7 +470,7 @@
                 "tag": "button",
                 "id": "",
                 "text": "🫧Anxiety Toolkit•CBT-based skills for working with anxiety: psychoeducation, the worry tr",
-                "aria": "Anxiety Toolkit (Grades 5-12). CBT-based skills for working with anxiety: psychoeducation, the worry tree (productive vs unproductive worry), scheduled worry time,...",
+                "aria": "Anxiety Toolkit (Grades 5-12). CBT-based skills for working with anxiety: psychoeducation, the worry tree (productive vs unproductive worry), scheduled worry time,.... Best for: Make a plan. Sort worry from action and choose one practical next step.",
                 "toolCardId": "anxietyToolkit",
                 "inSelDialog": true
               }
@@ -498,7 +498,7 @@
               "id": "tool-readable-interactive",
               "pass": true,
               "details": {
-                "textLength": 2473,
+                "textLength": 2605,
                 "hasHeading": true,
                 "controlCount": 23,
                 "selectedToolText": "Opened Safety & Boundaries ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 🛡️ Responsible decision making Safety & Boundaries 8-15 min Private checkpoint Share"
@@ -520,9 +520,9 @@
               "pass": true,
               "activeAfterTabs": {
                 "tag": "button",
-                "id": "",
+                "id": "safety-tab-learn",
                 "text": "📚 Learn",
-                "aria": "",
+                "aria": "📚 Learn",
                 "toolCardId": "",
                 "inSelDialog": true
               }
@@ -544,8 +544,8 @@
               "activeAfterBack": {
                 "tag": "button",
                 "id": "",
-                "text": "🛡️Safety & Boundaries•Learn about personal boundaries, trusted adults, and safe vs.8-15 m",
-                "aria": "Safety & Boundaries (Grades K-8). Learn about personal boundaries, trusted adults, and safe vs.. Teacher cue: 8-15 min, Solo. Preview first; avoid forced disclosure.",
+                "text": "🛡️Safety & Boundaries•Learn about personal boundaries, trusted adults, and safe vs.Get su",
+                "aria": "Safety & Boundaries (Grades K-8). Learn about personal boundaries, trusted adults, and safe vs.. Best for: Get support. Learn boundaries and trusted-adult steps; this is not a test of whether a situation is safe.. Use with care: If you are in immediate danger or someone is hurting you, stop and contact a trusted adult or emergency support now.. Teacher cue: 8-15 min, Solo. Preview first; avoid forced disclosure.",
                 "toolCardId": "safety",
                 "inSelDialog": true
               }
@@ -573,7 +573,7 @@
               "id": "tool-readable-interactive",
               "pass": true,
               "details": {
-                "textLength": 1723,
+                "textLength": 1882,
                 "hasHeading": true,
                 "controlCount": 27,
                 "selectedToolText": "Opened Conflict Resolution ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 🤝 Relationship skills Conflict Resolution Lab 6-12 min Private checkpoint Share Pack"
@@ -619,8 +619,8 @@
               "activeAfterBack": {
                 "tag": "button",
                 "id": "",
-                "text": "⚖️Conflict Resolution•Practice resolving conflicts with role-play scenarios and I-statemen",
-                "aria": "Conflict Resolution (Grades 2-12). Practice resolving conflicts with role-play scenarios and I-statements.. Teacher cue: 8-12 min, Pair or small group. Preview norms before role-play.",
+                "text": "⚖️Conflict Resolution•Practice a low-stakes or hypothetical conflict with perspective-taki",
+                "aria": "Conflict Resolution (Grades 2-12). Practice a low-stakes or hypothetical conflict with perspective-taking, I-statements, de-escalation, and repair choices.. Best for: Practice repair. Best for low-stakes or hypothetical conflict practice.. Use with care: If there are threats, coercion, bullying, abuse, or an unsafe power difference, pause and involve a trusted adult instead of negotiating alone.. Teacher cue: 8-12 min, Pair or small group. Preview norms before role-play.",
                 "toolCardId": "conflict",
                 "inSelDialog": true
               }
@@ -648,10 +648,10 @@
               "id": "tool-readable-interactive",
               "pass": true,
               "details": {
-                "textLength": 1328,
+                "textLength": 1354,
                 "hasHeading": true,
                 "controlCount": 45,
-                "selectedToolText": "Opened Strengths Finder ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← ⭐ Self awareness Strengths Finder SEL practice Private checkpoint Share Packet eligible "
+                "selectedToolText": "Opened Strengths Finder ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← ⭐ Self awareness Strengths Finder 5-10 min Private checkpoint Share Packet eligible Expo"
               }
             },
             {
@@ -695,7 +695,7 @@
                 "tag": "button",
                 "id": "",
                 "text": "⭐Strengths Finder•Discover and reflect on personal strengths, talents, and growth areas.Re",
-                "aria": "Strengths Finder (Grades K-12). Discover and reflect on personal strengths, talents, and growth areas.",
+                "aria": "Strengths Finder (Grades K-12). Discover and reflect on personal strengths, talents, and growth areas.. Best for: Reflect. Open-ended strengths reflection with no score, rank, or diagnosis.",
                 "toolCardId": "strengths",
                 "inSelDialog": true
               }
@@ -906,7 +906,7 @@
               "pass": true,
               "activeAfterTabs": {
                 "tag": "button",
-                "id": "",
+                "id": "zones-tab-checkin",
                 "text": "🚦 Check-In",
                 "aria": "🚦 Check-In",
                 "toolCardId": "",
@@ -931,7 +931,7 @@
                 "tag": "button",
                 "id": "",
                 "text": "🚦Emotion Zones•Identify your zone (blue, green, yellow, red) and explore strategies to se",
-                "aria": "Emotion Zones (Grades K-12). Identify your zone (blue, green, yellow, red) and explore strategies to self-regulate.. Teacher cue: 5-8 min, Solo or group. Useful first check-in before any sharing.",
+                "aria": "Emotion Zones (Grades K-12). Identify your zone (blue, green, yellow, red) and explore strategies to self-regulate.. Best for: Start here. Name what is happening before choosing a strategy.. Teacher cue: 5-8 min, Solo or group. Useful first check-in before any sharing.",
                 "toolCardId": "zones",
                 "inSelDialog": true
               }
@@ -1081,7 +1081,7 @@
                 "tag": "button",
                 "id": "",
                 "text": "🫧Anxiety Toolkit•CBT-based skills for working with anxiety: psychoeducation, the worry tr",
-                "aria": "Anxiety Toolkit (Grades 5-12). CBT-based skills for working with anxiety: psychoeducation, the worry tree (productive vs unproductive worry), scheduled worry time,...",
+                "aria": "Anxiety Toolkit (Grades 5-12). CBT-based skills for working with anxiety: psychoeducation, the worry tree (productive vs unproductive worry), scheduled worry time,.... Best for: Make a plan. Sort worry from action and choose one practical next step.",
                 "toolCardId": "anxietyToolkit",
                 "inSelDialog": true
               }
@@ -1109,7 +1109,7 @@
               "id": "tool-readable-interactive",
               "pass": true,
               "details": {
-                "textLength": 2442,
+                "textLength": 2574,
                 "hasHeading": true,
                 "controlCount": 23,
                 "selectedToolText": "Opened Safety & Boundaries ❤️‍🔥 SEL Hub Unsaved 🎓 👁 ✨ 0 XP ← 🛡️ Responsible decision making Safety & Boundaries 8-15 min Private checkpoint Share Packet eligible Export now Pur"
@@ -1131,9 +1131,9 @@
               "pass": true,
               "activeAfterTabs": {
                 "tag": "button",
-                "id": "",
+                "id": "safety-tab-learn",
                 "text": "📚 Learn",
-                "aria": "",
+                "aria": "📚 Learn",
                 "toolCardId": "",
                 "inSelDialog": true
               }
@@ -1155,8 +1155,8 @@
               "activeAfterBack": {
                 "tag": "button",
                 "id": "",
-                "text": "🛡️Safety & Boundaries•Learn about personal boundaries, trusted adults, and safe vs.8-15 m",
-                "aria": "Safety & Boundaries (Grades K-8). Learn about personal boundaries, trusted adults, and safe vs.. Teacher cue: 8-15 min, Solo. Preview first; avoid forced disclosure.",
+                "text": "🛡️Safety & Boundaries•Learn about personal boundaries, trusted adults, and safe vs.Get su",
+                "aria": "Safety & Boundaries (Grades K-8). Learn about personal boundaries, trusted adults, and safe vs.. Best for: Get support. Learn boundaries and trusted-adult steps; this is not a test of whether a situation is safe.. Use with care: If you are in immediate danger or someone is hurting you, stop and contact a trusted adult or emergency support now.. Teacher cue: 8-15 min, Solo. Preview first; avoid forced disclosure.",
                 "toolCardId": "safety",
                 "inSelDialog": true
               }

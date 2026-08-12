@@ -21279,6 +21279,9 @@ var d = labToolData.cell || {};
                   React.createElement('input', {
                     type: 'text',
                     placeholder: 'Search modes...',
+                    // Named by hand: what precedes this field is the breadcrumb
+                    // trail ("Hub" / category), not a caption for it.
+                    'aria-label': 'Search modes',
                     value: d._cellSearch || '',
                     onChange: function(e) { upd('_cellSearch', e.target.value); upd('_cellCategory', null); },
                     className: 'ml-auto px-2 py-1 text-xs border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600'
@@ -22570,8 +22573,37 @@ var d = labToolData.cell || {};
                   return Object.assign({}, p, { cell: restored, cellProgress: imported, _cellProgressHydrated: true });
                 });
               }
-              function resetAllCellProgress() {
-                var confirmed = typeof window.confirm !== 'function' || window.confirm('Reset all cell-studio learning progress for animal, plant, and bacterial cells?');
+              async function resetAllCellProgress() {
+                // The old guard read:
+                //   typeof window.confirm !== 'function' || window.confirm(...)
+                // which FAILED OPEN. Wherever confirm was unavailable the `||`
+                // short-circuited to true and every cell type's progress was
+                // wiped with no confirmation at all — the opposite of what the
+                // guard looks like it does. This fails closed instead, and uses
+                // the accessible dialog because window.confirm is not reliably
+                // operable with a screen reader.
+                //
+                // addToast is not in scope here, so the tool's own
+                // interiorProgressNotice carries the explanation.
+                var confirmApi = typeof window !== 'undefined' && window.AlloFlowUX && window.AlloFlowUX.confirm;
+                var notice = function(msg) {
+                  setLabToolData(function(prev) {
+                    var p = prev || {};
+                    return Object.assign({}, p, {
+                      cell: Object.assign({}, p.cell || {}, { interiorProgressNotice: msg })
+                    });
+                  });
+                };
+                var unavailable = 'Reset is unavailable right now, so your progress was kept.';
+                if (typeof confirmApi !== 'function') { notice(unavailable); return; }
+                var confirmed = false;
+                try {
+                  confirmed = await confirmApi(
+                    'Reset all cell-studio learning progress for animal, plant, and bacterial cells?',
+                    { title: 'Reset cell-studio progress', confirmText: 'Reset progress',
+                      cancelText: 'Keep my progress', tone: 'warning' }
+                  );
+                } catch (e) { notice(unavailable); return; }
                 if (!confirmed) return;
                 setLabToolData(function(prev) {
                   var p = prev || {}, current = Object.assign({}, p.cell || {}), type = CELL_PROGRESS_TYPES.indexOf(current.interiorCellType) >= 0 ? current.interiorCellType : 'animal', reset = createEmptyCellProgress();
@@ -23896,13 +23928,13 @@ var d = labToolData.cell || {};
                 React.createElement('div', { className: 'grid grid-cols-2 gap-3 mb-4' },
                   React.createElement('div', null,
                     React.createElement('label', { className: 'text-[10px] font-black text-purple-700 uppercase' }, 'Organism A'),
-                    React.createElement('select', { value: aIdx, onChange: function(e) { upd('_cmpA', parseInt(e.target.value)); }, className: 'w-full px-2 py-1.5 text-xs border-2 border-purple-500 rounded-lg mt-1 font-bold bg-purple-50 text-purple-800 outline-none' },
+                    React.createElement('select', { 'aria-label': "Organism A", value: aIdx, onChange: function(e) { upd('_cmpA', parseInt(e.target.value)); }, className: 'w-full px-2 py-1.5 text-xs border-2 border-purple-500 rounded-lg mt-1 font-bold bg-purple-50 text-purple-800 outline-none' },
                       ORGANISM_DB.map(function(o, i) { return React.createElement('option', { key: i, value: i }, o.name); })
                     )
                   ),
                   React.createElement('div', null,
                     React.createElement('label', { className: 'text-[10px] font-black text-purple-700 uppercase' }, 'Organism B'),
-                    React.createElement('select', { value: bIdx, onChange: function(e) { upd('_cmpB', parseInt(e.target.value)); }, className: 'w-full px-2 py-1.5 text-xs border-2 border-purple-500 rounded-lg mt-1 font-bold bg-purple-50 text-purple-800 outline-none' },
+                    React.createElement('select', { 'aria-label': "Organism B", value: bIdx, onChange: function(e) { upd('_cmpB', parseInt(e.target.value)); }, className: 'w-full px-2 py-1.5 text-xs border-2 border-purple-500 rounded-lg mt-1 font-bold bg-purple-50 text-purple-800 outline-none' },
                       ORGANISM_DB.map(function(o, i) { return React.createElement('option', { key: i, value: i }, o.name); })
                     )
                   )
@@ -24061,7 +24093,7 @@ var d = labToolData.cell || {};
               var filtered = search ? CELL_GLOSSARY.filter(function(g) { return g.term.toLowerCase().indexOf(search.toLowerCase()) !== -1 || g.definition.toLowerCase().indexOf(search.toLowerCase()) !== -1; }) : CELL_GLOSSARY;
               return React.createElement('div', { className: 'mt-4 bg-white rounded-xl border-2 border-indigo-300 p-4' },
                 React.createElement('h3', { className: 'text-base font-bold text-indigo-700 mb-3' }, 'Cell Biology Glossary'),
-                React.createElement('input', { type: 'text', placeholder: 'Search terms...', value: search, onChange: function(e) { upd('_glossSearch', e.target.value); }, className: 'w-full px-2 py-1 text-xs border-2 border-indigo-200 rounded mb-3' }),
+                React.createElement('input', { 'aria-label': 'Search glossary terms', type: 'text', placeholder: 'Search terms...', value: search, onChange: function(e) { upd('_glossSearch', e.target.value); }, className: 'w-full px-2 py-1 text-xs border-2 border-indigo-200 rounded mb-3' }),
                 React.createElement('div', { className: 'grid md:grid-cols-2 gap-1' },
                   filtered.map(function(g) {
                     return React.createElement('div', { key: g.id, className: 'bg-indigo-50 border border-indigo-200 rounded p-2 text-xs' },
@@ -24269,7 +24301,7 @@ var d = labToolData.cell || {};
                   (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
                 ),
                 (iq.log || []).length > 0 && h('table', { className: 'text-[10px] w-full border-collapse text-slate-700' },
-                  h('thead', null, h('tr', { className: 'bg-slate-100' }, ['inside', 'outside', 'perm', 'state'].map(function(c, i) { return h('th', { key: 'h' + i, className: 'px-1 border border-slate-200 text-left' }, c); }))),
+                  h('thead', null, h('tr', { className: 'bg-slate-100' }, ['inside', 'outside', 'perm', 'state'].map(function(c, i) { return h('th', { scope: 'col', key: 'h' + i, className: 'px-1 border border-slate-200 text-left' }, c); }))),
                   h('tbody', null, iq.log.map(function(o, idx) {
                     return h('tr', { key: 'lr' + idx },
                       h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.i),

@@ -3791,7 +3791,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'grid grid-cols-2 gap-3' },
           h('div', { className: 'bg-rose-50 rounded-lg p-3 border border-rose-100' },
             h('label', { className: 'block text-xs text-rose-700 mb-1 font-bold' }, __alloT('stem.fractions.numerator', 'Numerator')),
-            h('input', {
+            h('input', { 'aria-label': __alloT('stem.fractions.numerator', 'Numerator'),
               type: 'range', min: '0', max: String(pieces.denominator), value: pieces.numerator,
               onChange: function(e) { sfxClick(); upd({ pieces: { denominator: pieces.denominator, numerator: parseInt(e.target.value) } }); },
               className: 'w-full accent-rose-600'
@@ -3800,7 +3800,7 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { className: 'bg-rose-50 rounded-lg p-3 border border-rose-100' },
             h('label', { className: 'block text-xs text-rose-700 mb-1 font-bold' }, __alloT('stem.fractions.denominator', 'Denominator')),
-            h('input', {
+            h('input', { 'aria-label': __alloT('stem.fractions.denominator', 'Denominator'),
               type: 'range', min: '2', max: '20', value: pieces.denominator,
               onChange: function(e) { var v = parseInt(e.target.value); sfxClick(); upd({ pieces: { denominator: v, numerator: Math.min(pieces.numerator, v) } }); },
               className: 'w-full accent-rose-600'
@@ -3930,7 +3930,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'grid grid-cols-2 gap-3' },
           h('div', { className: 'bg-slate-50 rounded-lg p-3 border border-slate-200' },
             h('label', { className: 'block text-xs text-slate-700 mb-1 font-bold' }, __alloT('stem.fractions.numerator_2', 'Numerator')),
-            h('input', { type: 'range', min: '1', max: String(craD), value: craN,
+            h('input', { 'aria-label': __alloT('stem.fractions.numerator_2', 'Numerator'), type: 'range', min: '1', max: String(craD), value: craN,
               onChange: function(e) { upd({ craN: parseInt(e.target.value) }); },
               className: 'w-full accent-slate-600'
             }),
@@ -3938,7 +3938,7 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { className: 'bg-slate-50 rounded-lg p-3 border border-slate-200' },
             h('label', { className: 'block text-xs text-slate-700 mb-1 font-bold' }, __alloT('stem.fractions.denominator_2', 'Denominator')),
-            h('input', { type: 'range', min: '2', max: '12', value: craD,
+            h('input', { 'aria-label': __alloT('stem.fractions.denominator_2', 'Denominator'), type: 'range', min: '2', max: '12', value: craD,
               onChange: function(e) { var v = parseInt(e.target.value); upd({ craD: v, craN: Math.min(craN, v) }); },
               className: 'w-full accent-slate-600'
             }),
@@ -6707,7 +6707,7 @@ window.StemLab = window.StemLab || {
         ),
         h('div', { className: 'bg-white rounded-xl border-2 border-amber-200 p-3 space-y-3' },
           h('label', { className: 'block text-xs font-bold text-amber-700' }, __alloT('stem.fractions.topic_2', 'Topic')),
-          h('select', { value: etTopic,
+          h('select', { 'aria-label': __alloT('stem.fractions.topic_2', 'Topic'), value: etTopic,
             onChange: function(e) { upd({ etTopic: e.target.value }); },
             className: 'w-full px-3 py-2 rounded border border-amber-300 text-sm' },
             ETICKET_TOPICS.map(function(t) { return h('option', { key: 'et-' + t.id, value: t.id }, t.label); })
@@ -6920,8 +6920,8 @@ window.StemLab = window.StemLab || {
             h('table', { className: 'w-full text-xs' },
               h('thead', null,
                 h('tr', { className: 'border-b-2 border-purple-300' },
-                  h('th', { className: 'text-left py-1 text-purple-800' }, __alloT('stem.fractions.feature', 'Feature')),
-                  h('th', { className: 'text-left py-1 pl-2 text-purple-800' }, __alloT('stem.fractions.udl_principle', 'UDL principle'))
+                  h('th', { scope: 'col', className: 'text-left py-1 text-purple-800' }, __alloT('stem.fractions.feature', 'Feature')),
+                  h('th', { scope: 'col', className: 'text-left py-1 pl-2 text-purple-800' }, __alloT('stem.fractions.udl_principle', 'UDL principle'))
                 )
               ),
               h('tbody', null,
@@ -7271,7 +7271,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'grid grid-cols-2 gap-3' },
           h('div', { className: 'bg-white rounded-lg p-3 border border-violet-200' },
             h('label', { className: 'block text-xs font-bold text-violet-700 mb-1' }, __alloT('stem.fractions.daily_target_problems', 'Daily target (problems)')),
-            h('input', {
+            h('input', { 'aria-label': __alloT('stem.fractions.daily_target_problems', 'Daily target (problems)'),
               type: 'number', min: 1, max: 50, value: dailyGoal,
               onChange: function(e) { upd({ dailyGoal: parseInt(e.target.value) || 5 }); },
               className: 'w-full px-3 py-2 rounded border border-violet-300 text-sm'
@@ -7279,7 +7279,7 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { className: 'bg-white rounded-lg p-3 border border-violet-200' },
             h('label', { className: 'block text-xs font-bold text-violet-700 mb-1' }, __alloT('stem.fractions.weekly_target_problems', 'Weekly target (problems)')),
-            h('input', {
+            h('input', { 'aria-label': __alloT('stem.fractions.weekly_target_problems', 'Weekly target (problems)'),
               type: 'number', min: 5, max: 300, value: weeklyGoal,
               onChange: function(e) { upd({ weeklyGoal: parseInt(e.target.value) || 30 }); },
               className: 'w-full px-3 py-2 rounded border border-violet-300 text-sm'
@@ -8067,10 +8067,10 @@ window.StemLab = window.StemLab || {
           h('table', { className: 'w-full text-sm' },
             h('thead', { className: 'sticky top-0 bg-white' },
               h('tr', { className: 'border-b-2 border-cyan-300' },
-                h('th', { className: 'text-left py-1 px-2 text-cyan-800 font-bold' }, __alloT('stem.fractions.fraction_4', 'Fraction')),
-                h('th', { className: 'text-left py-1 px-2 text-cyan-800 font-bold' }, __alloT('stem.fractions.simplified_2', 'Simplified')),
-                h('th', { className: 'text-left py-1 px-2 text-cyan-800 font-bold' }, __alloT('stem.fractions.decimal_3', 'Decimal')),
-                h('th', { className: 'text-left py-1 px-2 text-cyan-800 font-bold' }, __alloT('stem.fractions.percent_4', 'Percent'))
+                h('th', { scope: 'col', className: 'text-left py-1 px-2 text-cyan-800 font-bold' }, __alloT('stem.fractions.fraction_4', 'Fraction')),
+                h('th', { scope: 'col', className: 'text-left py-1 px-2 text-cyan-800 font-bold' }, __alloT('stem.fractions.simplified_2', 'Simplified')),
+                h('th', { scope: 'col', className: 'text-left py-1 px-2 text-cyan-800 font-bold' }, __alloT('stem.fractions.decimal_3', 'Decimal')),
+                h('th', { scope: 'col', className: 'text-left py-1 px-2 text-cyan-800 font-bold' }, __alloT('stem.fractions.percent_4', 'Percent'))
               )
             ),
             h('tbody', null,
@@ -8337,9 +8337,9 @@ window.StemLab = window.StemLab || {
           h('table', { className: 'w-full text-sm' },
             h('thead', null,
               h('tr', { className: 'border-b border-cyan-300' },
-                h('th', { className: 'text-left py-1' }, __alloT('stem.fractions.fraction_5', 'Fraction')),
-                h('th', { className: 'text-left py-1' }, __alloT('stem.fractions.decimal_4', 'Decimal')),
-                h('th', { className: 'text-left py-1' }, __alloT('stem.fractions.percent_5', 'Percent'))
+                h('th', { scope: 'col', className: 'text-left py-1' }, __alloT('stem.fractions.fraction_5', 'Fraction')),
+                h('th', { scope: 'col', className: 'text-left py-1' }, __alloT('stem.fractions.decimal_4', 'Decimal')),
+                h('th', { scope: 'col', className: 'text-left py-1' }, __alloT('stem.fractions.percent_5', 'Percent'))
               )
             ),
             h('tbody', null,
@@ -8874,7 +8874,7 @@ window.StemLab = window.StemLab || {
         ),
         h('div', { className: 'flex gap-2' },
           h('label', { className: 'text-xs font-bold text-blue-700 self-center' }, 'Grade:'),
-          h('select', { value: examGrade,
+          h('select', { 'aria-label': "Grade", value: examGrade,
             onChange: function(e) { upd({ examGrade: parseInt(e.target.value), examQs: null, examFinished: false }); },
             className: 'px-2 py-1 rounded border border-blue-300 text-xs' },
             [3, 4, 5, 6].map(function(g) { return h('option', { key: 'eg-' + g, value: g }, 'Grade ' + g); })
@@ -9931,14 +9931,14 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'grid grid-cols-2 gap-3' },
           h('div', { className: 'bg-pink-50 rounded-lg p-3 border border-pink-200' },
             h('label', { className: 'block text-xs font-bold text-pink-700 mb-1' }, __alloT('stem.fractions.favorable_outcomes', 'Favorable outcomes')),
-            h('input', { type: 'range', min: 0, max: pTotal, value: pFav,
+            h('input', { 'aria-label': __alloT('stem.fractions.favorable_outcomes', 'Favorable outcomes'), type: 'range', min: 0, max: pTotal, value: pFav,
               onChange: function(e) { upd({ probFav: parseInt(e.target.value) }); },
               className: 'w-full accent-pink-600' }),
             h('div', { className: 'text-center text-lg font-bold text-pink-800' }, pFav)
           ),
           h('div', { className: 'bg-pink-50 rounded-lg p-3 border border-pink-200' },
             h('label', { className: 'block text-xs font-bold text-pink-700 mb-1' }, __alloT('stem.fractions.total_outcomes', 'Total outcomes')),
-            h('input', { type: 'range', min: 2, max: 20, value: pTotal,
+            h('input', { 'aria-label': __alloT('stem.fractions.total_outcomes', 'Total outcomes'), type: 'range', min: 2, max: 20, value: pTotal,
               onChange: function(e) { var v = parseInt(e.target.value); upd({ probTotal: v, probFav: Math.min(pFav, v) }); },
               className: 'w-full accent-pink-600' }),
             h('div', { className: 'text-center text-lg font-bold text-pink-800' }, pTotal)
@@ -10013,8 +10013,8 @@ window.StemLab = window.StemLab || {
           h('table', { className: 'w-full text-sm' },
             h('thead', null,
               h('tr', { className: 'border-b border-cyan-300' },
-                h('th', { className: 'text-left py-2 text-cyan-800 font-bold' }, __alloT('stem.fractions.english', 'English')),
-                h('th', { className: 'text-left py-2 text-cyan-800 font-bold capitalize' }, mlLang)
+                h('th', { scope: 'col', className: 'text-left py-2 text-cyan-800 font-bold' }, __alloT('stem.fractions.english', 'English')),
+                h('th', { scope: 'col', className: 'text-left py-2 text-cyan-800 font-bold capitalize' }, mlLang)
               )
             ),
             h('tbody', null,
@@ -10283,7 +10283,7 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { className: 'flex items-center gap-2' },
             h('span', { className: 'text-xs font-bold text-fuchsia-700' }, __alloT('stem.fractions.grid_size', 'Grid size:')),
-            h('input', { type: 'range', min: 4, max: 16, value: artSize,
+            h('input', { 'aria-label': __alloT('stem.fractions.grid_size', 'Grid size:'), type: 'range', min: 4, max: 16, value: artSize,
               onChange: function(e) { upd({ artSize: parseInt(e.target.value) }); },
               className: 'flex-1 accent-fuchsia-600' }),
             h('span', { className: 'text-sm font-bold text-fuchsia-800' }, artSize)
@@ -10297,14 +10297,14 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'grid grid-cols-2 gap-2' },
             h('div', null,
               h('label', { className: 'block text-xs font-bold text-fuchsia-700' }, __alloT('stem.fractions.lit_slices', 'Lit slices')),
-              h('input', { type: 'range', min: 0, max: wheelD, value: wheelN,
+              h('input', { 'aria-label': __alloT('stem.fractions.lit_slices', 'Lit slices'), type: 'range', min: 0, max: wheelD, value: wheelN,
                 onChange: function(e) { upd({ wheelN: parseInt(e.target.value) }); },
                 className: 'w-full accent-fuchsia-600' }),
               h('div', { className: 'text-center text-sm font-bold text-fuchsia-800' }, wheelN)
             ),
             h('div', null,
               h('label', { className: 'block text-xs font-bold text-fuchsia-700' }, __alloT('stem.fractions.total_slices', 'Total slices')),
-              h('input', { type: 'range', min: 2, max: 24, value: wheelD,
+              h('input', { 'aria-label': __alloT('stem.fractions.total_slices', 'Total slices'), type: 'range', min: 2, max: 24, value: wheelD,
                 onChange: function(e) { var v = parseInt(e.target.value); upd({ wheelD: v, wheelN: Math.min(wheelN, v) }); },
                 className: 'w-full accent-fuchsia-600' }),
               h('div', { className: 'text-center text-sm font-bold text-fuchsia-800' }, wheelD)
@@ -10464,10 +10464,10 @@ window.StemLab = window.StemLab || {
           h('table', { className: 'w-full text-xs' },
             h('thead', null,
               h('tr', { className: 'border-b border-amber-300' },
-                h('th', { className: 'text-left py-1 text-amber-800' }, __alloT('stem.fractions.ingredient', 'Ingredient')),
-                h('th', { className: 'text-right py-1 text-amber-800' }, __alloT('stem.fractions.original', 'Original')),
-                h('th', { className: 'text-right py-1 text-amber-800' }, __alloT('stem.fractions.scaled', 'Scaled')),
-                h('th', { className: 'text-left py-1 pl-2 text-amber-800' }, __alloT('stem.fractions.unit', 'Unit'))
+                h('th', { scope: 'col', className: 'text-left py-1 text-amber-800' }, __alloT('stem.fractions.ingredient', 'Ingredient')),
+                h('th', { scope: 'col', className: 'text-right py-1 text-amber-800' }, __alloT('stem.fractions.original', 'Original')),
+                h('th', { scope: 'col', className: 'text-right py-1 text-amber-800' }, __alloT('stem.fractions.scaled', 'Scaled')),
+                h('th', { scope: 'col', className: 'text-left py-1 pl-2 text-amber-800' }, __alloT('stem.fractions.unit', 'Unit'))
               )
             ),
             h('tbody', null,

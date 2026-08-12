@@ -8562,7 +8562,7 @@
           worldActive && el('button', {
             type: 'button', className: 'gw-focusable', 'aria-label': 'Clear my placed blocks',
             style: { background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#fca5a5', fontWeight: 700, cursor: 'pointer', backdropFilter: 'blur(4px)' },
-            onClick: function() {
+            onClick: async function() {
               if (!engine || !engine.clearPlayerBlocks) return;
               var count = 0;
               Object.keys(engine.blocks || {}).forEach(function(k) {
@@ -8573,7 +8573,20 @@
                 if (addToast) addToast('Nothing to clear — you haven\'t placed any blocks.', 'info');
                 return;
               }
-              if (window.confirm('Clear all ' + count + ' of your placed blocks? The lesson\'s structures and NPCs will stay. This cannot be undone.')) {
+              // Accessible dialog rather than window.confirm, and fails CLOSED:
+              // with no dialog service the blocks are kept, not silently cleared.
+              var confirmApi = typeof window !== 'undefined' && window.AlloFlowUX && window.AlloFlowUX.confirm;
+              var unavailable = 'Clearing is unavailable right now, so your blocks were kept.';
+              if (typeof confirmApi !== 'function') { if (addToast) addToast(unavailable, 'warning'); return; }
+              var okToClear = false;
+              try {
+                okToClear = await confirmApi(
+                  'Clear all ' + count + ' of your placed blocks? The lesson\'s structures and NPCs will stay. This cannot be undone.',
+                  { title: 'Clear your placed blocks', confirmText: 'Clear ' + count + ' block' + (count === 1 ? '' : 's'),
+                    cancelText: 'Keep my blocks', tone: 'warning' }
+                );
+              } catch (e) { if (addToast) addToast(unavailable, 'warning'); return; }
+              if (okToClear) {
                 var cleared = engine.clearPlayerBlocks();
                 upd('blocksPlaced', 0);
                 if (addToast) addToast('🗑️ Cleared ' + cleared + ' block' + (cleared === 1 ? '' : 's') + '. Lesson structures preserved.', 'success');

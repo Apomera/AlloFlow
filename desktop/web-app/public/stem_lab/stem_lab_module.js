@@ -2789,8 +2789,65 @@
 
       // ── WCAG Auto-Fixer: Runs after tool renders to catch unlabeled interactive elements ──
       // This is a safety net — tools should be accessible by default, but this catches gaps.
+      //
+      // AS OF 2026-08-11 THIS REPORTS; IT NO LONGER REWRITES THE DOM.
+      //
+      // It shipped on 2026-04-10 (0efbd93bb) as a silent auto-fixer and stamped
+      // aria-label/alt/role onto anything it judged unlabelled, every 2 seconds.
+      // Two problems made that worse than the gaps it covered:
+      //
+      //   1. It silenced the audits used to FIND those gaps. An unlabelled
+      //      select, an unlabelled input, a missing alt -- each became a pass, so
+      //      runtime results read cleaner than the source deserved and disagreed
+      //      with static ones for no visible reason.
+      //   2. The names it added were intermittent. React owns this DOM; every
+      //      re-render drops the attributes and the loop restores them up to two
+      //      seconds later, so a name blinks in and out. Assistive tech landing
+      //      in that window gets nothing, and no test can assert on it.
+      //
+      // What remains: the "x" -> "Close" button mapping, which fixes something
+      // real. Everything else collects into window.__stemA11yFindings and warns
+      // once per element. Call window.__stemA11yReport() for a grouped summary.
+      // Fix what it lists AT SOURCE -- persistent, correctly worded,
+      // translatable -- and when the list stays empty this loop can be deleted.
       if (!window._stemA11yFixerActive) {
         window._stemA11yFixerActive = true;
+
+        // Findings accumulate across lab open/close. The signature dedupe is what
+        // makes a 2-second loop usable as a reporter: without it every element
+        // would reprint 30 times a minute and the console would be unreadable.
+        window.__stemA11yFindings = window.__stemA11yFindings || [];
+        var _a11ySeen = window.__stemA11ySeen || (window.__stemA11ySeen = {});
+        var _a11yReport = function (rule, el, detail) {
+          try {
+            var sig = rule + '|' + el.tagName + '|' + String(el.className || '').slice(0, 40)
+              + '|' + (el.textContent || '').trim().slice(0, 40);
+            if (_a11ySeen[sig]) return;
+            _a11ySeen[sig] = true;
+            var entry = {
+              rule: rule,
+              detail: detail,
+              html: String(el.outerHTML || '').slice(0, 160).replace(/\s+/g, ' ')
+            };
+            window.__stemA11yFindings.push(entry);
+            console.warn('[a11y] ' + rule + ' - ' + detail + '\n  ' + entry.html);
+          } catch (e) { /* a reporter must never break the page it reports on */ }
+        };
+
+        // Grouped summary on demand, for working through the list:
+        //   window.__stemA11yReport()
+        window.__stemA11yReport = function () {
+          var byRule = {};
+          window.__stemA11yFindings.forEach(function (f) {
+            (byRule[f.rule] = byRule[f.rule] || []).push(f);
+          });
+          Object.keys(byRule).sort().forEach(function (r) {
+            console.warn(r + ': ' + byRule[r].length);
+            byRule[r].forEach(function (f) { console.warn('   ' + f.html); });
+          });
+          return window.__stemA11yFindings.length;
+        };
+
         window._stemA11yFixerInterval = setInterval(function() {
           try {
             var modal = document.querySelector('.stem-lab-modal');
@@ -2801,11 +2858,18 @@
               window._stemA11yFixerActive = false;
               return;
             }
-            // 1. Auto-label role=button elements that lack aria-label
-            var roleButtons = modal.querySelectorAll('[role="button"]:not([aria-label])');
-            roleButtons.forEach(function(el) {
-              var text = (el.textContent || '').trim().substring(0, 50);
-              if (text) el.setAttribute('aria-label', text);
+            // 1. REPORT ONLY. This used to copy textContent into aria-label,
+            //    which changed nothing for a screen reader: role=button already
+            //    computes its accessible name from its own content. The single
+            //    genuinely broken case is a control with NO text -- and the old
+            //    rule skipped exactly that one, because its `if (text)` guard was
+            //    false precisely when the element needed help. What it did
+            //    accomplish was making dead unnamed controls look named to any
+            //    check that tests for the attribute's presence.
+            modal.querySelectorAll('[role="button"]:not([aria-label])').forEach(function(el) {
+              if (!(el.textContent || '').trim()) {
+                _a11yReport('role-button-unnamed', el, 'role=button with no text and no aria-label');
+              }
             });
             // 2. Auto-label close buttons (×) that lack aria-label
             var closeBtns = modal.querySelectorAll('button:not([aria-label])');
@@ -2813,36 +2877,55 @@
               var text = (el.textContent || '').trim();
               if (text === '\u00d7' || text === 'X' || text === '\u2715' || text === '\u2716') {
                 el.setAttribute('aria-label', 'Close');
-              } else if (text && text.length <= 60) {
-                el.setAttribute('aria-label', text);
               }
+              // The `else if` that used to sit here copied a button's own text
+              // into aria-label, which a native <button> already announces from
+              // its content. Dropped: it changed nothing for a user and inflated
+              // the count of elements that look labelled.
+              //
+              // The "x" -> "Close" mapping above is kept deliberately. A
+              // multiplication sign is not a name, and this is the one rule in
+              // the loop that fixes something real.
             });
-            // 3. Auto-label canvas elements that lack aria-label
-            var canvases = modal.querySelectorAll('canvas:not([aria-label])');
-            canvases.forEach(function(el) {
-              el.setAttribute('role', 'img');
-              el.setAttribute('aria-label', 'Interactive visualization. Use controls above and below to interact.');
-              if (!el.getAttribute('tabindex')) el.setAttribute('tabindex', '0');
+            // 3. REPORT ONLY. This used to stamp role="img", one fixed label
+            //    ("Interactive visualization. Use controls above and below to
+            //    interact.") and tabindex="0" onto every unlabelled canvas.
+            //    All three were wrong: a live simulation is not an image and
+            //    role="img" makes its children presentational; one identical
+            //    label across every canvas in the app distinguishes nothing; and
+            //    tabindex="0" on an element with no key handling manufactures
+            //    exactly the focusable-but-dead control this codebase has been
+            //    removing everywhere else.
+            modal.querySelectorAll('canvas:not([aria-label])').forEach(function(el) {
+              _a11yReport('canvas-unnamed', el, 'canvas has no aria-label; needs a description of what it shows');
             });
-            // 4. Auto-label select elements that lack aria-label
-            var selects = modal.querySelectorAll('select:not([aria-label]):not([aria-labelledby])');
-            selects.forEach(function(el) {
-              var prev = el.previousElementSibling;
-              if (prev && prev.textContent) {
-                el.setAttribute('aria-label', prev.textContent.trim().substring(0, 50));
-              } else {
-                el.setAttribute('aria-label', 'Selection menu');
-              }
+            // 4. REPORT ONLY. This used to guess a name from the previous DOM
+            //    sibling's text, falling back to "Selection menu". Adjacency is
+            //    not a label relationship: the sibling is often a bare number, a
+            //    unit, or another control entirely, and the fallback says nothing
+            //    at all. Either way it silenced a genuine axe violation.
+            modal.querySelectorAll('select:not([aria-label]):not([aria-labelledby])').forEach(function(el) {
+              _a11yReport('select-unlabelled', el, 'select has no aria-label, aria-labelledby or associated label');
             });
-            // 5. Auto-label inputs without labels
-            var inputs = modal.querySelectorAll('input:not([aria-label]):not([aria-labelledby]):not([id])');
-            inputs.forEach(function(el) {
-              var placeholder = el.getAttribute('placeholder');
-              if (placeholder) el.setAttribute('aria-label', placeholder);
+            // 5. REPORT ONLY. This used to copy the placeholder into aria-label.
+            //    That is a real improvement over a placeholder alone -- an
+            //    aria-label survives typing where the visual placeholder does not
+            //    -- but it hid the defect from every runtime audit, and a
+            //    placeholder is written as a hint ("e.g. Division with
+            //    remainders...") rather than as a name. Fix these at source.
+            modal.querySelectorAll('input:not([aria-label]):not([aria-labelledby]):not([id])').forEach(function(el) {
+              _a11yReport('input-unlabelled', el,
+                'input named only by its placeholder: "' + (el.getAttribute('placeholder') || '(none)') + '"');
             });
-            // 6. Ensure all images in tool have alt text
-            var imgs = modal.querySelectorAll('img:not([alt])');
-            imgs.forEach(function(el) { el.setAttribute('alt', 'Illustration'); });
+            // 6. REPORT ONLY. This used to write alt="Illustration", which is
+            //    wrong in both directions: a decorative image needs alt="" so a
+            //    screen reader skips it, and a meaningful one needs a real
+            //    description. It satisfied the automated check while telling the
+            //    user nothing either way. Deciding WHICH kind an image is cannot
+            //    be done from the DOM, which is why this one can only report.
+            modal.querySelectorAll('img:not([alt])').forEach(function(el) {
+              _a11yReport('img-no-alt', el, 'img has no alt; needs alt="" if decorative, a description if not');
+            });
           } catch(e) { /* safety net — never crash the app */ }
         }, 2000); // Run every 2 seconds
       }
@@ -4154,11 +4237,30 @@
           title: _narrationOn ? 'Canvas narration ON — click to disable' : 'Canvas narration OFF — click to enable spoken descriptions'
         }, _narrationOn ? '\uD83D\uDD0A' : '\uD83D\uDD07', /*#__PURE__*/React.createElement("span", { className: "text-[10px] font-bold" }, _narrationOn ? 'TTS' : 'Mute')),
         isTeacherMode && /*#__PURE__*/React.createElement("button", {
-          onClick: () => {
+          onClick: async () => {
             if (!_aiHintsOn) {
-              var ok = (typeof window !== 'undefined' && typeof window.confirm === 'function')
-                ? window.confirm('Enable AI hints for students?\n\nWhen ON, a stuck student (after a couple of tries) can request a hint. The question, the student\'s answer, and the correct answer are sent to the AI to generate a short guiding hint. No names or IDs are sent.\n\nHints are AI-generated and may be imperfect. Keep this OFF during graded / assessment work.')
-                : true;
+              // This previously read `... ? window.confirm(...) : true`, which
+              // FAILED OPEN: with no confirm available `ok` was true and AI
+              // hints switched on for students without the teacher ever seeing
+              // the disclosure about what gets sent to the model. That is a
+              // consent decision, so it now fails CLOSED — no dialog, no change.
+              var confirmApi = typeof window !== 'undefined' && window.AlloFlowUX && window.AlloFlowUX.confirm;
+              var unavailable = 'The confirmation dialog is unavailable right now, so AI hints stayed OFF.';
+              if (typeof confirmApi !== 'function') {
+                if (typeof addToast === 'function') addToast(unavailable, 'warning');
+                return;
+              }
+              var ok = false;
+              try {
+                ok = await confirmApi(
+                  'Enable AI hints for students?\n\nWhen ON, a stuck student (after a couple of tries) can request a hint. The question, the student\'s answer, and the correct answer are sent to the AI to generate a short guiding hint. No names or IDs are sent.\n\nHints are AI-generated and may be imperfect. Keep this OFF during graded / assessment work.',
+                  { title: 'Enable AI hints', confirmText: 'Turn hints ON',
+                    cancelText: 'Keep hints OFF', tone: 'warning' }
+                );
+              } catch (e) {
+                if (typeof addToast === 'function') addToast(unavailable, 'warning');
+                return;
+              }
               if (!ok) return;
               try { localStorage.setItem('alloflow_stem_ai_hints', 'on'); } catch(e) {}
               _setAiHintsOn(true);
@@ -4495,6 +4597,9 @@
           max: "20",
           value: mathQuantity,
           onChange: e => setMathQuantity(parseInt(e.target.value)),
+          // The visible "Quantity:" caption beside this slider is a <span>, which
+          // names nothing. An unnamed range input announces only a bare number.
+          "aria-label": "Quantity",
           className: "flex-1 h-1.5 bg-indigo-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
         }), /*#__PURE__*/React.createElement("span", {
           className: "text-sm font-bold text-indigo-700 w-8 text-center"
@@ -4576,10 +4681,55 @@
             setAssessmentBlocks(newBlocks);
           }
         }, /*#__PURE__*/React.createElement("div", {
-          className: "text-slate-500 cursor-grab active:cursor-grabbing pt-1 group-hover:text-slate-600"
-        }, /*#__PURE__*/React.createElement(GripVertical, {
-          size: 16
-        })), /*#__PURE__*/React.createElement("div", {
+          // Reordering used to be drag-only: this column held nothing but a
+          // GripVertical in a plain div, so a keyboard or touch user could not
+          // change block order at all (WCAG 2.5.7 dragging movements, 2.1.1
+          // keyboard). The drag handlers above are kept — they still work for a
+          // mouse — and these two native buttons are the equivalent path, the
+          // same shape stem_tool_geologyexplorer.js already uses for its
+          // reorderable list.
+          //
+          // The labels carry the POSITION rather than the block type, because
+          // block.type is a machine value ('word_problems') and several blocks
+          // commonly share one type — "Move block 2 up" is the only phrasing
+          // that identifies which row is about to move.
+          className: "flex flex-col items-center pt-1 text-slate-500 group-hover:text-slate-600"
+        }, /*#__PURE__*/React.createElement("button", {
+          type: "button",
+          onClick: () => {
+            if (idx === 0) return;
+            const nb = [...assessmentBlocks];
+            const [moved] = nb.splice(idx, 1);
+            nb.splice(idx - 1, 0, moved);
+            setAssessmentBlocks(nb);
+            // Focus stays on this button, and its label silently becomes the
+            // block's NEW position — a change a screen reader will not reliably
+            // report on its own, so the move would be invisible to the user who
+            // most needs confirming. stem_tool_coding.js announces its reorders
+            // for exactly this reason.
+            announceToSR('Block moved up to position ' + idx + ' of ' + assessmentBlocks.length + '.');
+          },
+          disabled: idx === 0,
+          className: "px-1 leading-none text-xs rounded outline-none hover:text-indigo-600 focus:ring-2 focus:ring-indigo-400 disabled:opacity-30 disabled:hover:text-slate-500",
+          "aria-label": "Move block " + (idx + 1) + " up"
+        }, "▲"), /*#__PURE__*/React.createElement(GripVertical, {
+          size: 16,
+          className: "cursor-grab active:cursor-grabbing",
+          "aria-hidden": "true"
+        }), /*#__PURE__*/React.createElement("button", {
+          type: "button",
+          onClick: () => {
+            if (idx >= assessmentBlocks.length - 1) return;
+            const nb = [...assessmentBlocks];
+            const [moved] = nb.splice(idx, 1);
+            nb.splice(idx + 1, 0, moved);
+            setAssessmentBlocks(nb);
+            announceToSR('Block moved down to position ' + (idx + 2) + ' of ' + assessmentBlocks.length + '.');
+          },
+          disabled: idx >= assessmentBlocks.length - 1,
+          className: "px-1 leading-none text-xs rounded outline-none hover:text-indigo-600 focus:ring-2 focus:ring-indigo-400 disabled:opacity-30 disabled:hover:text-slate-500",
+          "aria-label": "Move block " + (idx + 1) + " down"
+        }, "▼")), /*#__PURE__*/React.createElement("div", {
           className: "flex-1 space-y-2"
         }, /*#__PURE__*/React.createElement("div", {
           className: "flex items-center gap-2"
@@ -4639,6 +4789,10 @@
             setAssessmentBlocks(nb);
           },
           placeholder: "Directive (e.g. 'Single-digit multiplication', 'Division with remainders')...",
+          // The placeholder was the only name this field had, and a placeholder
+          // is gone the moment the user types — so anyone returning to a filled
+          // form got an unlabelled text box (WCAG 3.3.2).
+          "aria-label": "Block " + (idx + 1) + " directive",
           className: "w-full px-3 py-1.5 text-xs border border-slate-100 rounded-lg focus:ring-2 focus:ring-indigo-300 outline-none placeholder-slate-300"
         })), /*#__PURE__*/React.createElement("button", {
           onClick: () => setAssessmentBlocks(assessmentBlocks.filter((_, i) => i !== idx)),
@@ -4771,7 +4925,19 @@
           },
           className: "py-3 px-5 bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-bold rounded-xl text-sm hover:from-emerald-700 hover:to-teal-700 transition-all shadow-lg shadow-emerald-200 flex items-center justify-center gap-2"
         }, "\uD83D\uDCBE Save to Resources"),
-          toolSnapshots.length > 0 && /*#__PURE__*/React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+          toolSnapshots.length > 0 && /*#__PURE__*/React.createElement("div", {
+            // This is a section wrapper, and it used to carry role="button" +
+            // tabIndex=0 + an e.target.click() key shim with NO onClick — so it
+            // took focus, announced as an unnamed button, and did nothing when
+            // activated. Worse, it wrapped the "Clear all" and "Open ..."
+            // buttons in a button role, whose children ARIA treats as
+            // presentational: the shim meant to improve access was putting the
+            // controls that DID work at risk of being flattened out of the
+            // accessibility tree. A plain div is correct here.
+            //
+            // The same e.target.click() shim elsewhere (companionplanting,
+            // universe, galaxy) is paired with a real onClick and does work —
+            // this was the only instance with nothing behind it.
             className: "mt-4 pt-4 border-t border-slate-200"
           }, /*#__PURE__*/React.createElement("div", {
             className: "flex items-center gap-2 mb-3"
@@ -4809,6 +4975,11 @@
               if (snap.tool === 'coordinate' && snap.data) setGridPoints(snap.data.points || []);
               if (snap.tool === 'protractor' && snap.data) setAngleValue(snap.data.angle || 45);
               if (snap.tool === 'codingPlayground' && snap.data) setLabToolData(function (prev) { return Object.assign({}, prev, { _codingPlayground: snap.data }); });
+              // Machine Lab saves a curated design payload (the machine and its
+              // conditions, not transient shot or wall state). It fills any key
+              // it is missing from its own defaults on render, so a partial
+              // payload restores cleanly rather than blanking the tool.
+              if (snap.tool === 'machineLab' && snap.data) setLabToolData(function (prev) { return Object.assign({}, prev, { machineLab: Object.assign({}, prev.machineLab, snap.data) }); });
             },
             className: "text-[10px] font-bold text-indigo-500 hover:text-indigo-700 transition-colors"
           }, "\u21A9 Load"), /*#__PURE__*/React.createElement("button", { "aria-label": "Set Tool Snapshots",
@@ -5280,6 +5451,16 @@
                 id: 'archStudio', icon: '\uD83C\uDFD7\uFE0F', label: 'Architecture Studio',
                 desc: '3D building with blocks, columns, arches, and ramps. Snap to grid, measure, and export STL.',
                 color: 'amber', ready: true
+              },
+              {
+                // @tool cityLab. Architecture Studio stops at one building and GIS Studio
+                // analyses places that already exist, so nothing in the catalog let a
+                // student design a settlement under constraints that genuinely conflict.
+                // Indicators are tiered: measured, modelled, and a contested tier that is
+                // deliberately never produced as a number. See docs/city_planning_lab_design.md
+                id: 'cityLab', icon: '\uD83C\uDFD9\uFE0F', label: 'City Planning Lab',
+                desc: 'NGSS MS-ETS1 + HS-ETS1-3 + MS-ESS3-3. Design a town on a 144-parcel grid against requirements that conflict: 1,200 new homes, no new housing in the floodplain, a stormwater ceiling, a fixed bond, park access on foot, and farmland. Rational-method runoff, network walk distance, and a costed road network. The Assumption Lab reruns one plan under two published parameter sets so students can see which conclusions survive both. No score and no answer key.',
+                color: 'teal', ready: true
               },
               { id: '_cat_ComputingAI', icon: '', label: '\uD83D\uDCBB Computing, AI & Digital Literacy', desc: '', color: 'slate', chip: 'engineering', category: true },
               {
@@ -6072,6 +6253,9 @@
             ) : null,
             // Saved stations dropdown
             _savedStations.length > 0 && !_activeStation ? React.createElement("select", {
+              // No caption at all next to this one — its only clue was the first
+              // option's text, which a screen reader reads as a value, not a name.
+              "aria-label": "Load a saved station",
               value: _activeStationId || '',
               onChange: function(e) {
                 var sid = e.target.value;
@@ -6252,6 +6436,13 @@
             React.createElement("div", { className: "mb-3" },
               React.createElement("label", { className: "text-[10px] font-bold text-indigo-600 uppercase tracking-wider block mb-1" }, "Station Name"),
               React.createElement("input", {
+                // The "Station Name" caption above is a <label> with no htmlFor,
+                // and this input has no id — so they are not associated and the
+                // caption is decoration. Same pattern on the two selects and the
+                // prompt field below. Naming each control directly is the smaller
+                // change here; pairing htmlFor with generated ids would risk
+                // collisions, since this panel renders inside a shared modal.
+                "aria-label": "Station Name",
                 type: "text", value: _stationName, placeholder: "e.g. Water Cycle Exploration",
                 onChange: function(e) { _setStationName(e.target.value); },
                 className: "w-full px-3 py-2 text-sm border border-indigo-500 rounded-lg bg-white focus:ring-2 focus:ring-indigo-400 outline-none"
@@ -6263,6 +6454,7 @@
               React.createElement("div", null,
                 React.createElement("label", { className: "text-[10px] font-bold text-indigo-600 uppercase tracking-wider block mb-1" }, "Grade Level"),
                 React.createElement("select", {
+                  "aria-label": "Grade Level",
                   value: _stationGrade,
                   onChange: function(e) { _setStationGrade(e.target.value); },
                   className: "w-full px-3 py-2 text-sm border border-indigo-500 rounded-lg bg-white"
@@ -6276,6 +6468,7 @@
               React.createElement("div", null,
                 React.createElement("label", { className: "text-[10px] font-bold text-indigo-600 uppercase tracking-wider block mb-1" }, "Time Estimate"),
                 React.createElement("select", {
+                  "aria-label": "Time Estimate",
                   value: _stationTimeEst,
                   onChange: function(e) { _setStationTimeEst(e.target.value); },
                   className: "w-full px-3 py-2 text-sm border border-indigo-500 rounded-lg bg-white"
@@ -6487,6 +6680,7 @@
                           React.createElement("label", { className: "text-[10px] text-slate-500 block mb-0.5" }, "Prompt for student"),
                           React.createElement("input", {
                             type: "text",
+                            "aria-label": "Prompt for student",
                             value: d._questBuilderPrompt || '',
                             onChange: function(e) { upd('_questBuilderPrompt', e.target.value); },
                             placeholder: "e.g. What was the most interesting thing you learned?",
@@ -6957,6 +7151,9 @@
             // Engineering & CS
             archStudio: true, bridgeLab: true, circuit: true, codingPlayground: true,
             cyberDefense: true, magnetism: true, semiconductor: true,
+            // Aug 2026: City Planning Lab — settlement-scale design under conflicting
+            // constraints, with a deliberately un-modelled contested tier.
+            cityLab: true,
             // Art & Music
             artStudio: true, creative: true, gameStudio: true, freeForms: true,
             // Earth & Space

@@ -7594,7 +7594,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               // Reset link
               visitedCount > 0 && h('div', { className: 'text-right mt-2' },
                 h('button', {
-                  onClick: function() { if (typeof window !== 'undefined' && window.confirm && window.confirm('Reset visit history?')) setRH({ visited: {} }); },
+                  // Fails CLOSED: with no dialog service the visit history is
+                  // kept. There is no toast channel in this tool, so rhAnnounce
+                  // (the live region, line 134) carries the explanation rather
+                  // than the reset failing silently.
+                  onClick: async function() {
+                    var confirmApi = typeof window !== 'undefined' && window.AlloFlowUX && window.AlloFlowUX.confirm;
+                    var unavailable = 'Reset is unavailable right now, so your visit history was kept.';
+                    if (typeof confirmApi !== 'function') { rhAnnounce(unavailable); return; }
+                    var ok = false;
+                    try {
+                      ok = await confirmApi('Reset visit history?', {
+                        title: 'Reset visit history', confirmText: 'Reset history',
+                        cancelText: 'Keep history', tone: 'warning'
+                      });
+                    } catch (e) { rhAnnounce(unavailable); return; }
+                    if (ok) { setRH({ visited: {} }); rhAnnounce('Visit history reset.'); }
+                  },
                   className: 'transition-colors text-[10px] text-slate-500 hover:text-amber-300 italic underline',
                   'aria-label': __alloT('stem.raptorhunt.reset_visit_history', 'Reset visit history')
                 }, __alloT('stem.raptorhunt.reset_progress', 'Reset progress'))
@@ -12538,7 +12554,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         function statusHeader(key, label) {
           var active = sortBy === key;
           var arrow = active ? (sortDir === 'asc' ? ' ↑' : ' ↓') : '';
-          return h('th', { onClick: function() { setStatusSort(key); }, className: 'pb-2 px-2 text-left cursor-pointer ' + (active ? 'text-amber-300 font-bold' : 'transition-colors text-slate-400 hover:text-slate-200') }, label + arrow);
+          // scope set by hand. This helper is defined ~4,700 lines from any
+          // table, so the automated pass could not tell which axis it heads and
+          // correctly refused to guess. Its call sites (12576+) are all inside
+          // h('thead', ...), so these are column headers.
+          return h('th', { scope: 'col', onClick: function() { setStatusSort(key); }, className: 'pb-2 px-2 text-left cursor-pointer ' + (active ? 'text-amber-300 font-bold' : 'transition-colors text-slate-400 hover:text-slate-200') }, label + arrow);
         }
         function iucnColor(code) {
           return code === 'LC' ? 'emerald' : code === 'NT' ? 'cyan' : code === 'VU' ? 'amber' : code === 'EN' ? 'orange' : code === 'CR' ? 'red' : 'slate';
@@ -14836,11 +14856,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('table', { className: 'w-full text-xs' },
                 h('thead', null,
                   h('tr', { className: 'text-left text-slate-400 border-b border-slate-700' },
-                    h('th', { className: 'pb-2 pr-2' }, __alloT('stem.raptorhunt.species_6', 'Species')),
-                    h('th', { className: 'pb-2 px-2' }, __alloT('stem.raptorhunt.1st_yr_mort', '1st-yr mort')),
-                    h('th', { className: 'pb-2 px-2' }, __alloT('stem.raptorhunt.adult_ann_surv', 'Adult ann. surv')),
-                    h('th', { className: 'pb-2 px-2' }, __alloT('stem.raptorhunt.mean_wild_lifespan', 'Mean wild lifespan')),
-                    h('th', { className: 'pb-2 px-2' }, __alloT('stem.raptorhunt.record_wild', 'Record (wild)'))
+                    h('th', { scope: 'col', className: 'pb-2 pr-2' }, __alloT('stem.raptorhunt.species_6', 'Species')),
+                    h('th', { scope: 'col', className: 'pb-2 px-2' }, __alloT('stem.raptorhunt.1st_yr_mort', '1st-yr mort')),
+                    h('th', { scope: 'col', className: 'pb-2 px-2' }, __alloT('stem.raptorhunt.adult_ann_surv', 'Adult ann. surv')),
+                    h('th', { scope: 'col', className: 'pb-2 px-2' }, __alloT('stem.raptorhunt.mean_wild_lifespan', 'Mean wild lifespan')),
+                    h('th', { scope: 'col', className: 'pb-2 px-2' }, __alloT('stem.raptorhunt.record_wild', 'Record (wild)'))
                   )
                 ),
                 h('tbody', null,
@@ -17969,14 +17989,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('table', { className: 'w-full text-xs', role: 'table' },
               h('thead', null,
                 h('tr', { className: 'bg-slate-900/60 border-b border-teal-700/40' },
-                  h('th', { className: 'p-2 text-left text-teal-300' }, __alloT('stem.raptorhunt.species_8', 'Species')),
-                  h('th', { className: 'p-2 text-left text-teal-300' }, __alloT('stem.raptorhunt.lifespan', 'Lifespan')),
-                  h('th', { className: 'p-2 text-left text-teal-300' }, __alloT('stem.raptorhunt.maturity', 'Maturity')),
-                  h('th', { className: 'p-2 text-left text-teal-300' }, __alloT('stem.raptorhunt.clutch', 'Clutch')),
-                  h('th', { className: 'p-2 text-left text-teal-300' }, __alloT('stem.raptorhunt.fledging_rate', 'Fledging Rate')),
-                  h('th', { className: 'p-2 text-left text-teal-300' }, __alloT('stem.raptorhunt.1st_yr_mortality', '1st Yr Mortality')),
-                  h('th', { className: 'p-2 text-left text-teal-300' }, __alloT('stem.raptorhunt.density', 'Density')),
-                  h('th', { className: 'p-2 text-left text-teal-300' }, __alloT('stem.raptorhunt.notes_2', 'Notes'))
+                  h('th', { scope: 'col', className: 'p-2 text-left text-teal-300' }, __alloT('stem.raptorhunt.species_8', 'Species')),
+                  h('th', { scope: 'col', className: 'p-2 text-left text-teal-300' }, __alloT('stem.raptorhunt.lifespan', 'Lifespan')),
+                  h('th', { scope: 'col', className: 'p-2 text-left text-teal-300' }, __alloT('stem.raptorhunt.maturity', 'Maturity')),
+                  h('th', { scope: 'col', className: 'p-2 text-left text-teal-300' }, __alloT('stem.raptorhunt.clutch', 'Clutch')),
+                  h('th', { scope: 'col', className: 'p-2 text-left text-teal-300' }, __alloT('stem.raptorhunt.fledging_rate', 'Fledging Rate')),
+                  h('th', { scope: 'col', className: 'p-2 text-left text-teal-300' }, __alloT('stem.raptorhunt.1st_yr_mortality', '1st Yr Mortality')),
+                  h('th', { scope: 'col', className: 'p-2 text-left text-teal-300' }, __alloT('stem.raptorhunt.density', 'Density')),
+                  h('th', { scope: 'col', className: 'p-2 text-left text-teal-300' }, __alloT('stem.raptorhunt.notes_2', 'Notes'))
                 )
               ),
               h('tbody', null,
@@ -18695,9 +18715,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('table', { className: 'w-full text-xs' },
               h('thead', null,
                 h('tr', { className: 'border-b border-pink-700/40' },
-                  h('th', { className: 'p-2 text-left text-pink-300' }, __alloT('stem.raptorhunt.feature', 'Feature')),
-                  h('th', { className: 'p-2 text-left text-amber-300' }, p.a),
-                  h('th', { className: 'p-2 text-left text-cyan-300' }, p.b)
+                  h('th', { scope: 'col', className: 'p-2 text-left text-pink-300' }, __alloT('stem.raptorhunt.feature', 'Feature')),
+                  h('th', { scope: 'col', className: 'p-2 text-left text-amber-300' }, p.a),
+                  h('th', { scope: 'col', className: 'p-2 text-left text-cyan-300' }, p.b)
                 )
               ),
               h('tbody', null,
@@ -19348,10 +19368,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('table', { className: 'w-full text-xs' },
               h('thead', null,
                 h('tr', { className: 'border-b border-blue-700/40' },
-                  h('th', { className: 'p-2 text-left text-blue-300' }, __alloT('stem.raptorhunt.species_10', 'Species')),
-                  h('th', { className: 'p-2 text-left text-blue-300' }, __alloT('stem.raptorhunt.formula', 'Formula')),
-                  h('th', { className: 'p-2 text-left text-blue-300' }, __alloT('stem.raptorhunt.high_aspect_ratio', 'High Aspect Ratio?')),
-                  h('th', { className: 'p-2 text-left text-blue-300' }, __alloT('stem.raptorhunt.notes_3', 'Notes'))
+                  h('th', { scope: 'col', className: 'p-2 text-left text-blue-300' }, __alloT('stem.raptorhunt.species_10', 'Species')),
+                  h('th', { scope: 'col', className: 'p-2 text-left text-blue-300' }, __alloT('stem.raptorhunt.formula', 'Formula')),
+                  h('th', { scope: 'col', className: 'p-2 text-left text-blue-300' }, __alloT('stem.raptorhunt.high_aspect_ratio', 'High Aspect Ratio?')),
+                  h('th', { scope: 'col', className: 'p-2 text-left text-blue-300' }, __alloT('stem.raptorhunt.notes_3', 'Notes'))
                 )
               ),
               h('tbody', null,
@@ -19403,7 +19423,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('thead', null,
                 h('tr', { className: 'border-b border-slate-600/40' },
                   t.columns.map(function(c, i) {
-                    return h('th', { key: i, className: 'p-2 text-left text-amber-300 font-bold' }, c);
+                    return h('th', { scope: 'col', key: i, className: 'p-2 text-left text-amber-300 font-bold' }, c);
                   })
                 )
               ),
@@ -21418,10 +21438,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   h('table', { className: 'w-full text-xs border border-slate-400' },
                     h('thead', null,
                       h('tr', { className: 'bg-slate-100' },
-                        h('th', { className: 'border border-slate-400 p-1 text-left' }, __alloT('stem.raptorhunt.species_12', 'Species')),
-                        h('th', { className: 'border border-slate-400 p-1 text-left' }, __alloT('stem.raptorhunt.count', 'Count')),
-                        h('th', { className: 'border border-slate-400 p-1 text-left' }, __alloT('stem.raptorhunt.diagnostic_features_observed', 'Diagnostic features observed')),
-                        h('th', { className: 'border border-slate-400 p-1 text-left' }, __alloT('stem.raptorhunt.biomass_est_g', 'Biomass est. (g)'))
+                        h('th', { scope: 'col', className: 'border border-slate-400 p-1 text-left' }, __alloT('stem.raptorhunt.species_12', 'Species')),
+                        h('th', { scope: 'col', className: 'border border-slate-400 p-1 text-left' }, __alloT('stem.raptorhunt.count', 'Count')),
+                        h('th', { scope: 'col', className: 'border border-slate-400 p-1 text-left' }, __alloT('stem.raptorhunt.diagnostic_features_observed', 'Diagnostic features observed')),
+                        h('th', { scope: 'col', className: 'border border-slate-400 p-1 text-left' }, __alloT('stem.raptorhunt.biomass_est_g', 'Biomass est. (g)'))
                       )
                     ),
                     h('tbody', null,

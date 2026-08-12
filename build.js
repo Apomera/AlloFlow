@@ -1160,6 +1160,7 @@ const PLUGIN_FILES = [
     // atcTower entry moved to the catch-up batch below; the on-disk + git filename is LOWERCASE
     // stem_tool_atctower.js (a camelCase entry 404s on case-sensitive CDNs — audit B5, 2026-06-28).
     'stem_lab/stem_tool_music.js',
+    'stem_lab/stem_tool_citylab.js',
     'stem_lab/stem_tool_climateExplorer.js',
     'stem_lab/stem_tool_renewables.js',
     'stem_lab/stem_tool_pets.js',

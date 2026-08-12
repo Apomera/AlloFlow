@@ -10272,7 +10272,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 14 } },
             h('thead', null, h('tr', { style: { background: 'rgba(20,184,166,0.15)' } },
               ['Item', 'Cost', 'Annual recurring'].map(function(c, ci) {
-                return h('th', { key: ci, style: { padding: '6px 8px', textAlign: 'left', color: '#a7f3d0', fontWeight: 700 } }, c);
+                return h('th', { scope: 'col', key: ci, style: { padding: '6px 8px', textAlign: 'left', color: '#a7f3d0', fontWeight: 700 } }, c);
               }))),
             h('tbody', null,
               ECONOMICS.startup.map(function(item, i) {
@@ -12012,12 +12012,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           'Approximate 13-year wholesale price history. Oyster prices nearly doubled; mussel + kelp grew steadily. Salmon peaked 2023 then softened. 2020 COVID dip was sharp but short-lived. All prices in US$ for high-quality grade Maine product. Sources: USDA, MAA, ASF reports.'),
         h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)' } },
           h('thead', null, h('tr', { style: { background: 'rgba(15,23,42,0.7)' } },
-            h('th', { style: { padding: 8, textAlign: 'left', borderBottom: '1px solid rgba(100,116,139,0.4)' } }, 'Year'),
-            h('th', { style: { padding: 8, textAlign: 'right', borderBottom: '1px solid rgba(100,116,139,0.4)' } }, 'Oyster $/ea'),
-            h('th', { style: { padding: 8, textAlign: 'right', borderBottom: '1px solid rgba(100,116,139,0.4)' } }, 'Mussel $/lb'),
-            h('th', { style: { padding: 8, textAlign: 'right', borderBottom: '1px solid rgba(100,116,139,0.4)' } }, 'Kelp $/lb wet'),
-            h('th', { style: { padding: 8, textAlign: 'right', borderBottom: '1px solid rgba(100,116,139,0.4)' } }, 'Salmon $/lb'),
-            h('th', { style: { padding: 8, textAlign: 'left', borderBottom: '1px solid rgba(100,116,139,0.4)' } }, 'Note'))),
+            h('th', { scope: 'col', style: { padding: 8, textAlign: 'left', borderBottom: '1px solid rgba(100,116,139,0.4)' } }, 'Year'),
+            h('th', { scope: 'col', style: { padding: 8, textAlign: 'right', borderBottom: '1px solid rgba(100,116,139,0.4)' } }, 'Oyster $/ea'),
+            h('th', { scope: 'col', style: { padding: 8, textAlign: 'right', borderBottom: '1px solid rgba(100,116,139,0.4)' } }, 'Mussel $/lb'),
+            h('th', { scope: 'col', style: { padding: 8, textAlign: 'right', borderBottom: '1px solid rgba(100,116,139,0.4)' } }, 'Kelp $/lb wet'),
+            h('th', { scope: 'col', style: { padding: 8, textAlign: 'right', borderBottom: '1px solid rgba(100,116,139,0.4)' } }, 'Salmon $/lb'),
+            h('th', { scope: 'col', style: { padding: 8, textAlign: 'left', borderBottom: '1px solid rgba(100,116,139,0.4)' } }, 'Note'))),
           h('tbody', null, PRICE_HISTORY.map(function(p, i) {
             return h('tr', { key: i, style: { background: i % 2 ? 'rgba(15,23,42,0.4)' : 'rgba(15,23,42,0.6)' } },
               h('td', { style: { padding: 6, fontWeight: 900, color: '#fde68a' } }, p.year),
@@ -22318,7 +22318,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           h('table', { style: { fontSize: 10, width: '100%', borderCollapse: 'collapse', color: '#cbd5e1' } },
             h('thead', null, h('tr', { style: { background: '#1e293b' } },
               ['density', 'exchange %', 'feed g', 'DO mg/L', 'state'].map(function(c, i) {
-                return h('th', { key: 'h' + i, style: { padding: '4px 8px', borderBottom: '1px solid rgba(100,116,139,0.4)', textAlign: 'left' } }, c);
+                return h('th', { scope: 'col', key: 'h' + i, style: { padding: '4px 8px', borderBottom: '1px solid rgba(100,116,139,0.4)', textAlign: 'left' } }, c);
               })
             )),
             h('tbody', null, sh.log.map(function(o, idx) {

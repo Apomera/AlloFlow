@@ -2679,7 +2679,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 React.createElement("div", { className: "grid grid-cols-2 gap-3" },
                   React.createElement("div", null,
                     React.createElement("label", { className: "text-[11px] font-bold text-amber-700" }, "Mod Ratio: " + (d.fmRatio || 2) + ":1"),
-                    React.createElement("input", { type: "range", 'aria-valuetext': ((d.fmRatio || 2) + ' to 1 ratio'), min: "0.5", max: "8", step: "0.5", value: d.fmRatio || 2, onChange: function(e) { upd('fmRatio', parseFloat(e.target.value)); }, className: "w-full accent-amber-600" }),
+                    React.createElement("input", { 'aria-label': "Mod Ratio", type: "range", 'aria-valuetext': ((d.fmRatio || 2) + ' to 1 ratio'), min: "0.5", max: "8", step: "0.5", value: d.fmRatio || 2, onChange: function(e) { upd('fmRatio', parseFloat(e.target.value)); }, className: "w-full accent-amber-600" }),
                     React.createElement("div", { className: "flex justify-between text-[11px] text-amber-500" }, React.createElement("span", null, "Sub-harmonic"), React.createElement("span", null, __alloT('stem.music.bright', "Bright")))
                   ),
                   React.createElement("div", null,
@@ -3092,6 +3092,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 // Live waveform visualization
                 React.createElement("div", { className: "rounded-xl overflow-hidden border border-rose-200", style: { height: '100px' } },
                   React.createElement("canvas", {
+                    // Found by hand, not by the scan: this canvas's props object
+                    // is too large to parse, so it sat in the "unjudged" bucket
+                    // and never appeared in a total. It is live feedback from the
+                    // microphone, not decoration, so it is named rather than
+                    // hidden.
+                    role: 'img',
+                    'aria-label': __alloT('stem.music.live_mic_waveform',
+                      "Live waveform of the microphone input"),
                     style: { width: '100%', height: '100%', display: 'block', background: '#1a0a1e' },
                     ref: function(canvas) {
                       if (!canvas || canvas._micVizInit) return;
@@ -3645,14 +3653,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 // Tap Tempo
                 React.createElement("button", { "aria-label": __alloT('stem.music.tap_2', "Tap"), onClick: tapTempo, className: "px-2 py-1.5 rounded-lg text-[11px] font-bold bg-amber-100 text-amber-800 hover:bg-amber-200 transition-all border border-amber-600" }, __alloT('stem.music.tap', "\uD83E\uDD4A Tap")),
                 // Pattern Length
-                React.createElement("select", { value: String(d.bpPatternLen || 16), onChange: function (e) { upd('bpPatternLen', parseInt(e.target.value)); }, className: "px-2 py-1 rounded text-[11px] font-bold bg-white border border-slate-500", title: __alloT('stem.music.pattern_length_in_steps', "Pattern length in steps") },
+                React.createElement("select", { "aria-label": __alloT('stem.music.pattern_length', "Pattern length"), value: String(d.bpPatternLen || 16), onChange: function (e) { upd('bpPatternLen', parseInt(e.target.value)); }, className: "px-2 py-1 rounded text-[11px] font-bold bg-white border border-slate-500", title: __alloT('stem.music.pattern_length_in_steps', "Pattern length in steps") },
                   React.createElement("option", { value: '8' }, __alloT('stem.music.8_steps', "8 steps")),
                   React.createElement("option", { value: '16' }, __alloT('stem.music.16_steps', "16 steps")),
                   React.createElement("option", { value: '32' }, __alloT('stem.music.32_steps', "32 steps")),
                   React.createElement("option", { value: '64' }, __alloT('stem.music.64_steps', "64 steps"))
                 ),
                 // Swing
-                React.createElement("select", { value: d.seqSwing || '0', onChange: function (e) { upd('seqSwing', e.target.value); }, className: "px-2 py-1 rounded text-[11px] font-bold bg-white border border-slate-500" },
+                React.createElement("select", { "aria-label": __alloT('stem.music.swing', "Swing"), value: d.seqSwing || '0', onChange: function (e) { upd('seqSwing', e.target.value); }, className: "px-2 py-1 rounded text-[11px] font-bold bg-white border border-slate-500" },
                   React.createElement("option", { value: '0' }, __alloT('stem.music.no_swing', "No Swing")),
                   React.createElement("option", { value: '15' }, __alloT('stem.music.swing_15', "Swing 15%")),
                   React.createElement("option", { value: '30' }, __alloT('stem.music.swing_30', "Swing 30%")),
@@ -4618,6 +4626,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                               React.createElement("div", { className: "text-[11px] font-bold text-purple-700 mb-1" }, __alloT('stem.music.waveform_harmonics', "\u223F Waveform & Harmonics")),
                               // Canvas that draws the instrument's waveform shape
                               React.createElement("canvas", {
+                                role: 'img',
+                                'aria-label': __alloT('stem.music.instrument_waveform_shape',
+                                  "Waveform shape of the selected instrument"),
                                 style: { width: '100%', height: '60px', display: 'block', borderRadius: '6px', background: '#1a0a2e' },
                                 ref: function(canvas) {
                                   if (!canvas) return;
@@ -4813,6 +4824,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 // Visual waveform builder — shows how active harmonics combine
                 React.createElement("div", { className: "mt-3 rounded-xl overflow-hidden border border-indigo-200", style: { height: '80px' } },
                   React.createElement("canvas", {
+                    // Unlike the other STEM canvases, this one is NOT decorative
+                    // and carries no aria-hidden: it is the only feedback showing
+                    // what the harmonic sliders are building. A static name is
+                    // the honest minimum — it identifies the region rather than
+                    // describing the current wave. Live per-change description
+                    // would need the drawing code to report its own state.
+                    role: 'img',
+                    'aria-label': __alloT('stem.music.waveform_preview',
+                      "Waveform preview showing how the active harmonics combine"),
                     style: { width: '100%', height: '100%', display: 'block', background: '#0f0a1e' },
                     key: 'harmCanvas_' + (d.activeHarmonics || [1]).join('_'),
                     ref: function(canvas) {
@@ -5241,7 +5261,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
                 ),
                 (iq.log || []).length > 0 && h('table', { className: 'text-[10px] w-full border-collapse text-slate-700 mb-3' },
-                  h('thead', null, h('tr', { className: 'bg-slate-100' }, ['F', 'M', 'H', 'timbre'].map(function(c, i) { return h('th', { key: 'h' + i, className: 'px-1 border border-slate-200 text-left' }, c); }))),
+                  h('thead', null, h('tr', { className: 'bg-slate-100' }, ['F', 'M', 'H', 'timbre'].map(function(c, i) { return h('th', { scope: 'col', key: 'h' + i, className: 'px-1 border border-slate-200 text-left' }, c); }))),
                   h('tbody', null, iq.log.map(function(o, idx) {
                     return h('tr', { key: 'lr' + idx },
                       h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.f),

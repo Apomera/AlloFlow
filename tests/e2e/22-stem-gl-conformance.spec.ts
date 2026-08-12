@@ -105,6 +105,18 @@ const MANIFEST: ToolEntry[] = [
     preScripts: ['stem_lab/stem_lab_module.js'],
     note: 'reaches 3D on a default mount; also mounts 3 2D canvases',
   },
+  // Migration opens on its 3D Flight tab, so the corridor builds with no state.
+  // NOT a bay-viewer tool: it constructs its own WebGLRenderer and only uses
+  // StemLab.ensureThree to fetch three, so no preScripts are needed. Its GL
+  // canvas carries role="presentation" + aria-hidden while the keyboard
+  // handlers live on the focusable stage wrapper, so the focusable-app check
+  // passes by having no role="application" canvas at all — which is the right
+  // shape, not a gap.
+  {
+    id: 'migration',
+    file: 'stem_lab/stem_tool_migration.js',
+    note: '3D flight corridor on the default tab; other tabs mount 2D canvases',
+  },
 ];
 
 // Still uncovered, with what a probe actually showed — so the next attempt

@@ -19918,7 +19918,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                               className: 'transition-colors px-2 py-1 rounded text-amber-700 hover:bg-amber-100 hover:text-amber-900 text-sm font-bold focus:outline-none focus:ring-2 ring-amber-500/40 active:scale-[0.97]'
                             }, '✏'),
                             h('button', {
-                              onClick: function() { if (window.confirm('Delete this observation?')) deleteEntry(entry.id); },
+                              // Routed through the shared accessible dialog, and
+                              // fails CLOSED: with no dialog service the entry is
+                              // kept rather than deleted unconfirmed.
+                              onClick: async function() {
+                                var confirmApi = typeof window !== 'undefined' && window.AlloFlowUX && window.AlloFlowUX.confirm;
+                                var unavailable = 'Delete is unavailable right now, so the observation was kept.';
+                                if (typeof confirmApi !== 'function') { if (addToast) addToast(unavailable, 'warning'); return; }
+                                var ok = false;
+                                try {
+                                  ok = await confirmApi('Delete this observation?', {
+                                    title: 'Delete observation', confirmText: 'Delete observation',
+                                    cancelText: 'Keep observation', tone: 'warning'
+                                  });
+                                } catch (e) { if (addToast) addToast(unavailable, 'warning'); return; }
+                                if (ok) deleteEntry(entry.id);
+                              },
                               'aria-label': 'Delete entry from ' + dt,
                               title: __alloT('stem.birdlab.delete', 'Delete'),
                               className: 'transition-colors px-2 py-1 rounded text-rose-600 hover:bg-rose-100 hover:text-rose-800 text-sm font-bold focus:outline-none focus:ring-2 ring-rose-500/40 active:scale-[0.97]'
@@ -22901,10 +22916,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'w-full text-sm' },
               h('thead', null, h('tr', { className: 'bg-stone-700 text-white' },
-                h('th', { className: 'p-2 text-left' }, __alloT('stem.birdlab.species_5', 'Species')),
-                h('th', { className: 'p-2 text-left' }, __alloT('stem.birdlab.season_2', 'Season')),
-                h('th', { className: 'p-2 text-left' }, __alloT('stem.birdlab.visit_frequency', 'Visit Frequency')),
-                h('th', { className: 'p-2 text-left' }, __alloT('stem.birdlab.recommended_feeder', 'Recommended Feeder')))),
+                h('th', { scope: 'col', className: 'p-2 text-left' }, __alloT('stem.birdlab.species_5', 'Species')),
+                h('th', { scope: 'col', className: 'p-2 text-left' }, __alloT('stem.birdlab.season_2', 'Season')),
+                h('th', { scope: 'col', className: 'p-2 text-left' }, __alloT('stem.birdlab.visit_frequency', 'Visit Frequency')),
+                h('th', { scope: 'col', className: 'p-2 text-left' }, __alloT('stem.birdlab.recommended_feeder', 'Recommended Feeder')))),
               h('tbody', null,
                 BACKYARD_30.map(function(b, i) {
                   return h('tr', { key: i, className: i % 2 === 0 ? 'bg-amber-50' : 'bg-white' },
@@ -23218,9 +23233,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'w-full text-sm' },
               h('thead', null, h('tr', { className: 'bg-emerald-700 text-white' },
-                h('th', { className: 'p-2 text-left' }, __alloT('stem.birdlab.species_7', 'Species')),
-                h('th', { className: 'p-2 text-left' }, __alloT('stem.birdlab.arrival_2', 'Arrival')),
-                h('th', { className: 'p-2 text-left' }, __alloT('stem.birdlab.notes_3', 'Notes')))),
+                h('th', { scope: 'col', className: 'p-2 text-left' }, __alloT('stem.birdlab.species_7', 'Species')),
+                h('th', { scope: 'col', className: 'p-2 text-left' }, __alloT('stem.birdlab.arrival_2', 'Arrival')),
+                h('th', { scope: 'col', className: 'p-2 text-left' }, __alloT('stem.birdlab.notes_3', 'Notes')))),
               h('tbody', null,
                 SPRING_ARRIVALS.map(function(s, i) {
                   return h('tr', { key: i, className: i % 2 === 0 ? 'bg-emerald-50' : 'bg-white' },

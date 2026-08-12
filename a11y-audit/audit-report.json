@@ -1,14 +1,14 @@
 {
-  "timestamp": "2026-08-11T02:01:02.919Z",
+  "timestamp": "2026-08-11T22:50:58.538Z",
   "summary": {
-    "total": 389,
-    "actionable": 145,
-    "coveredByGlobalBaseline": 148,
-    "notInAccessibilityTree": 96,
+    "total": 282,
+    "actionable": 46,
+    "coveredByGlobalBaseline": 149,
+    "notInAccessibilityTree": 87,
     "critical": 10,
-    "major": 49,
-    "minor": 86,
-    "filesScanned": 473,
+    "major": 36,
+    "minor": 0,
+    "filesScanned": 475,
     "checksRun": 15
   },
   "byCheck": [
@@ -17,10 +17,10 @@
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
       "severity": "critical",
-      "count": 72,
+      "count": 69,
       "actionable": 1,
       "coveredByGlobalBaseline": 0,
-      "notInAccessibilityTree": 71,
+      "notInAccessibilityTree": 68,
       "files": [
         "AlloFlowANTI.txt",
         "allohaven_module.js",
@@ -35,7 +35,6 @@
         "stem_lab\\stem_tool_echolocation.js",
         "stem_lab\\stem_tool_flightsim.js",
         "stem_lab\\stem_tool_geometryworld.js",
-        "stem_lab\\stem_tool_music.js",
         "stem_lab\\stem_tool_particlelab3d.js",
         "stem_lab\\stem_tool_raptorhunt.js",
         "stem_lab\\stem_tool_spacestation.js",
@@ -47,10 +46,10 @@
       "name": "Input without programmatic label",
       "wcag": "3.3.2 Labels or Instructions",
       "severity": "major",
-      "count": 26,
+      "count": 20,
       "actionable": 1,
       "coveredByGlobalBaseline": 0,
-      "notInAccessibilityTree": 25,
+      "notInAccessibilityTree": 19,
       "files": [
         "AlloFlowANTI.txt",
         "allohaven_module.js",
@@ -60,8 +59,6 @@
         "student_analytics_module.js",
         "view_pdf_audit_source.jsx",
         "view_simplified_source.jsx",
-        "stem_lab\\stem_tool_aquarium.js",
-        "stem_lab\\stem_tool_cell.js",
         "stem_lab\\stem_tool_datastudio.js",
         "stem_lab\\stem_tool_gamestudio.js",
         "stem_lab\\stem_tool_geometryworld.js",
@@ -74,24 +71,17 @@
       "name": "window.confirm() for data operations",
       "wcag": "3.3.4 Error Prevention",
       "severity": "major",
-      "count": 23,
-      "actionable": 23,
+      "count": 11,
+      "actionable": 11,
       "coveredByGlobalBaseline": 0,
       "notInAccessibilityTree": 0,
       "files": [
         "AlloFlowANTI.txt",
         "arcade_mode_modelun.js",
         "phase_k_helpers_source.jsx",
-        "poet_tree_module.js",
         "udl_walkthrough_source.jsx",
         "view_misc_modals_source.jsx",
-        "stem_lab\\stem_tool_a11yauditor.js",
-        "stem_lab\\stem_tool_applab.js",
-        "stem_lab\\stem_tool_birdlab.js",
-        "stem_lab\\stem_tool_cell.js",
-        "stem_lab\\stem_tool_geometryworld.js",
-        "stem_lab\\stem_tool_manipulatives.js",
-        "stem_lab\\stem_tool_raptorhunt.js"
+        "stem_lab\\stem_tool_applab.js"
       ]
     },
     {
@@ -151,9 +141,9 @@
       "name": "outline:none without visible focus replacement",
       "wcag": "2.4.7 Focus Visible",
       "severity": "critical",
-      "count": 38,
+      "count": 39,
       "actionable": 0,
-      "coveredByGlobalBaseline": 38,
+      "coveredByGlobalBaseline": 39,
       "notInAccessibilityTree": 0,
       "files": [
         "allohaven_module.js",
@@ -164,6 +154,7 @@
         "view_export_preview_source.jsx",
         "view_header_source.jsx",
         "view_info_modal_source.jsx",
+        "view_misc_modals_source.jsx",
         "view_pdf_audit_source.jsx",
         "view_video_library_source.jsx",
         "stem_lab\\stem_tool_a11yauditor.js",
@@ -201,15 +192,15 @@
       "name": "Drag-and-drop without keyboard alternative",
       "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
       "severity": "major",
-      "count": 5,
-      "actionable": 5,
+      "count": 4,
+      "actionable": 4,
       "coveredByGlobalBaseline": 0,
       "notInAccessibilityTree": 0,
       "files": [
         "allohaven_module.js",
+        "games_source.jsx",
         "math_fluency_module.js",
-        "word_sounds_module.js",
-        "stem_lab\\stem_tool_coding.js"
+        "view_misc_panels_source.jsx"
       ]
     },
     {
@@ -247,37 +238,12 @@
         "stem_lab\\stem_tool_aquaculture.js",
         "stem_lab\\stem_tool_coasterlab.js"
       ]
-    },
-    {
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "count": 86,
-      "actionable": 86,
-      "coveredByGlobalBaseline": 0,
-      "notInAccessibilityTree": 0,
-      "files": [
-        "stem_lab\\stem_tool_aquaculture.js",
-        "stem_lab\\stem_tool_birdlab.js",
-        "stem_lab\\stem_tool_cell.js",
-        "stem_lab\\stem_tool_dataplot.js",
-        "stem_lab\\stem_tool_datastudio.js",
-        "stem_lab\\stem_tool_flightsim.js",
-        "stem_lab\\stem_tool_fractions.js",
-        "stem_lab\\stem_tool_gamestudio.js",
-        "stem_lab\\stem_tool_manipulatives.js",
-        "stem_lab\\stem_tool_music.js",
-        "stem_lab\\stem_tool_raptorhunt.js",
-        "stem_lab\\stem_tool_statslab.js",
-        "stem_lab\\stem_tool_weldlab.js"
-      ]
     }
   ],
   "findings": [
     {
       "file": "AlloFlowANTI.txt",
-      "line": 31098,
+      "line": 31194,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -288,7 +254,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 18190,
+      "line": 18213,
       "checkId": "INPUT-001",
       "name": "Input without programmatic label",
       "wcag": "3.3.2 Labels or Instructions",
@@ -299,7 +265,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 19861,
+      "line": 19921,
       "checkId": "INPUT-001",
       "name": "Input without programmatic label",
       "wcag": "3.3.2 Labels or Instructions",
@@ -310,7 +276,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 26645,
+      "line": 26705,
       "checkId": "INPUT-001",
       "name": "Input without programmatic label",
       "wcag": "3.3.2 Labels or Instructions",
@@ -321,7 +287,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 19702,
+      "line": 19762,
       "checkId": "CONFIRM-001",
       "name": "window.confirm() for data operations",
       "wcag": "3.3.4 Error Prevention",
@@ -331,7 +297,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 36279,
+      "line": 36375,
       "checkId": "CONFIRM-001",
       "name": "window.confirm() for data operations",
       "wcag": "3.3.4 Error Prevention",
@@ -341,7 +307,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 54164,
+      "line": 54261,
       "checkId": "CONFIRM-001",
       "name": "window.confirm() for data operations",
       "wcag": "3.3.4 Error Prevention",
@@ -351,7 +317,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 7178,
+      "line": 7186,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -362,7 +328,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 7466,
+      "line": 7474,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -373,7 +339,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 7480,
+      "line": 7488,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -384,7 +350,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 11367,
+      "line": 11375,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -395,7 +361,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 11445,
+      "line": 11453,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -406,7 +372,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 43996,
+      "line": 44093,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -417,7 +383,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 45770,
+      "line": 45867,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -428,7 +394,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 46757,
+      "line": 46854,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -439,7 +405,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 46758,
+      "line": 46855,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -450,7 +416,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 46759,
+      "line": 46856,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -461,7 +427,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 46914,
+      "line": 47011,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -472,7 +438,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 46986,
+      "line": 47083,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -483,7 +449,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 47774,
+      "line": 47871,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -494,7 +460,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 47965,
+      "line": 48062,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -505,7 +471,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 47981,
+      "line": 48078,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -516,7 +482,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 48074,
+      "line": 48171,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -527,7 +493,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 48135,
+      "line": 48232,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -538,7 +504,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 48421,
+      "line": 48518,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -549,7 +515,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 48423,
+      "line": 48520,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -560,7 +526,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 48426,
+      "line": 48523,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -571,7 +537,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 48447,
+      "line": 48544,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -582,7 +548,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 48472,
+      "line": 48569,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -593,7 +559,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 49412,
+      "line": 49509,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -604,7 +570,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 49609,
+      "line": 49706,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -615,7 +581,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 52162,
+      "line": 52259,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -626,7 +592,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 7514,
+      "line": 7522,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
       "wcag": "4.1.2 Name/Role/Value, 2.4.3 Focus Order",
@@ -636,7 +602,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 8490,
+      "line": 8498,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
       "wcag": "4.1.2 Name/Role/Value, 2.4.3 Focus Order",
@@ -646,7 +612,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 11513,
+      "line": 11521,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
       "wcag": "4.1.2 Name/Role/Value, 2.4.3 Focus Order",
@@ -656,7 +622,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 11589,
+      "line": 11597,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
       "wcag": "4.1.2 Name/Role/Value, 2.4.3 Focus Order",
@@ -666,22 +632,12 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 11604,
+      "line": 11612,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
       "wcag": "4.1.2 Name/Role/Value, 2.4.3 Focus Order",
       "severity": "major",
       "snippet": "<div className=\"fixed inset-0 z-[300] bg-slate-900/90 flex items-center justify-center p-4 animate-in fade-in duration-3",
-      "fix": "Add role=\"dialog\" or role=\"alertdialog\", aria-modal=\"true\", aria-labelledby, focus trap, and Escape key handler."
-    },
-    {
-      "file": "AlloFlowANTI.txt",
-      "line": 11618,
-      "checkId": "DIALOG-001",
-      "name": "Modal overlay without dialog semantics",
-      "wcag": "4.1.2 Name/Role/Value, 2.4.3 Focus Order",
-      "severity": "major",
-      "snippet": "return <div className=\"fixed inset-0 z-[300] bg-black/80 flex items-center justify-center text-white text-lg\">{t('common",
       "fix": "Add role=\"dialog\" or role=\"alertdialog\", aria-modal=\"true\", aria-labelledby, focus trap, and Escape key handler."
     },
     {
@@ -696,7 +652,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 11632,
+      "line": 11634,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
       "wcag": "4.1.2 Name/Role/Value, 2.4.3 Focus Order",
@@ -706,7 +662,17 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 48656,
+      "line": 11640,
+      "checkId": "DIALOG-001",
+      "name": "Modal overlay without dialog semantics",
+      "wcag": "4.1.2 Name/Role/Value, 2.4.3 Focus Order",
+      "severity": "major",
+      "snippet": "return <div className=\"fixed inset-0 z-[300] bg-black/80 flex items-center justify-center text-white text-lg\">{t('common",
+      "fix": "Add role=\"dialog\" or role=\"alertdialog\", aria-modal=\"true\", aria-labelledby, focus trap, and Escape key handler."
+    },
+    {
+      "file": "AlloFlowANTI.txt",
+      "line": 48753,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
       "wcag": "4.1.2 Name/Role/Value, 2.4.3 Focus Order",
@@ -716,7 +682,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 50033,
+      "line": 50130,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
       "wcag": "4.1.2 Name/Role/Value, 2.4.3 Focus Order",
@@ -801,7 +767,7 @@
     },
     {
       "file": "allo_commands_source.jsx",
-      "line": 2843,
+      "line": 2832,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
       "wcag": "2.4.7 Focus Visible",
@@ -812,7 +778,7 @@
     },
     {
       "file": "allo_commands_source.jsx",
-      "line": 2964,
+      "line": 2953,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -855,7 +821,7 @@
     },
     {
       "file": "doc_pipeline_source.jsx",
-      "line": 18727,
+      "line": 18860,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -973,6 +939,16 @@
       "snippet": "h('div', { className: 'px-3 py-1.5 rounded-lg flex items-center gap-2 ' + (escapeTimeLeft <= 60 ? 'bg-red-900/50 animate",
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce).",
       "coveredByGlobalBaseline": true
+    },
+    {
+      "file": "games_source.jsx",
+      "line": 1496,
+      "checkId": "DRAGDROP-001",
+      "name": "Drag-and-drop without keyboard alternative",
+      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
+      "severity": "major",
+      "snippet": "onDragStart={(e) => handleDragStart(e, idx)}",
+      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
     },
     {
       "file": "immersive_reader_source.jsx",
@@ -1179,56 +1155,6 @@
       "fix": "Replace with custom accessible modal with focus management."
     },
     {
-      "file": "poet_tree_module.js",
-      "line": 1344,
-      "checkId": "CONFIRM-001",
-      "name": "window.confirm() for data operations",
-      "wcag": "3.3.4 Error Prevention",
-      "severity": "major",
-      "snippet": "if (typeof window !== 'undefined' && typeof window.confirm === 'function' && !window.confirm(question)) return;",
-      "fix": "Replace with custom accessible modal with focus management."
-    },
-    {
-      "file": "poet_tree_module.js",
-      "line": 1507,
-      "checkId": "CONFIRM-001",
-      "name": "window.confirm() for data operations",
-      "wcag": "3.3.4 Error Prevention",
-      "severity": "major",
-      "snippet": "if (poemText.trim() && typeof window !== 'undefined' && typeof window.confirm === 'function' && !window.confirm('Start a",
-      "fix": "Replace with custom accessible modal with focus management."
-    },
-    {
-      "file": "poet_tree_module.js",
-      "line": 1557,
-      "checkId": "CONFIRM-001",
-      "name": "window.confirm() for data operations",
-      "wcag": "3.3.4 Error Prevention",
-      "severity": "major",
-      "snippet": "if (typeof window !== 'undefined' && typeof window.confirm === 'function' && !window.confirm('Delete workspace \"' + targ",
-      "fix": "Replace with custom accessible modal with focus management."
-    },
-    {
-      "file": "poet_tree_module.js",
-      "line": 1658,
-      "checkId": "CONFIRM-001",
-      "name": "window.confirm() for data operations",
-      "wcag": "3.3.4 Error Prevention",
-      "severity": "major",
-      "snippet": "if (typeof window !== 'undefined' && typeof window.confirm === 'function' && !window.confirm('Erase all local Poet Tree ",
-      "fix": "Replace with custom accessible modal with focus management."
-    },
-    {
-      "file": "poet_tree_module.js",
-      "line": 2609,
-      "checkId": "CONFIRM-001",
-      "name": "window.confirm() for data operations",
-      "wcag": "3.3.4 Error Prevention",
-      "severity": "major",
-      "snippet": "if (typeof window !== 'undefined' && typeof window.confirm === 'function' && !window.confirm('Clear all local PoetTree r",
-      "fix": "Replace with custom accessible modal with focus management."
-    },
-    {
       "file": "pyodide_runtime_module.js",
       "line": null,
       "checkId": "TIMER-001",
@@ -1282,7 +1208,7 @@
     },
     {
       "file": "student_analytics_module.js",
-      "line": 5975,
+      "line": 5979,
       "checkId": "INPUT-001",
       "name": "Input without programmatic label",
       "wcag": "3.3.2 Labels or Instructions",
@@ -1293,7 +1219,7 @@
     },
     {
       "file": "student_analytics_module.js",
-      "line": 6326,
+      "line": 6330,
       "checkId": "INPUT-001",
       "name": "Input without programmatic label",
       "wcag": "3.3.2 Labels or Instructions",
@@ -1348,7 +1274,7 @@
     },
     {
       "file": "student_analytics_module.js",
-      "line": 6040,
+      "line": 6044,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1359,7 +1285,7 @@
     },
     {
       "file": "student_analytics_module.js",
-      "line": 6065,
+      "line": 6069,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1370,7 +1296,7 @@
     },
     {
       "file": "student_analytics_module.js",
-      "line": 6067,
+      "line": 6071,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1381,7 +1307,7 @@
     },
     {
       "file": "student_analytics_module.js",
-      "line": 6737,
+      "line": 6741,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1392,7 +1318,7 @@
     },
     {
       "file": "student_analytics_module.js",
-      "line": 6920,
+      "line": 6924,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1403,7 +1329,7 @@
     },
     {
       "file": "student_analytics_module.js",
-      "line": 7294,
+      "line": 7298,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1414,7 +1340,7 @@
     },
     {
       "file": "student_analytics_module.js",
-      "line": 7566,
+      "line": 7570,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1425,7 +1351,7 @@
     },
     {
       "file": "student_analytics_module.js",
-      "line": 7810,
+      "line": 7814,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1521,7 +1447,7 @@
     },
     {
       "file": "view_header_source.jsx",
-      "line": 1213,
+      "line": 1220,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
       "wcag": "2.4.7 Focus Visible",
@@ -1532,7 +1458,7 @@
     },
     {
       "file": "view_header_source.jsx",
-      "line": 343,
+      "line": 349,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1543,7 +1469,7 @@
     },
     {
       "file": "view_header_source.jsx",
-      "line": 815,
+      "line": 821,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1554,7 +1480,7 @@
     },
     {
       "file": "view_header_source.jsx",
-      "line": 959,
+      "line": 965,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1565,7 +1491,7 @@
     },
     {
       "file": "view_header_source.jsx",
-      "line": 971,
+      "line": 977,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1576,7 +1502,7 @@
     },
     {
       "file": "view_header_source.jsx",
-      "line": 1114,
+      "line": 1120,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1626,6 +1552,17 @@
       "wcag": "2.4.7 Focus Visible",
       "severity": "critical",
       "snippet": "<div ref={dialogRef} tabIndex={-1} className=\"bg-white rounded-none sm:rounded-2xl shadow-2xl max-w-4xl w-full h-[100dvh",
+      "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus.",
+      "coveredByGlobalBaseline": true
+    },
+    {
+      "file": "view_misc_modals_source.jsx",
+      "line": 1593,
+      "checkId": "FOCUS-001",
+      "name": "outline:none without visible focus replacement",
+      "wcag": "2.4.7 Focus Visible",
+      "severity": "critical",
+      "snippet": "<p ref={guidedHeadingRef} tabIndex={-1} role=\"status\" aria-live=\"polite\" className=\"text-[11px] font-black text-violet-7",
       "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus.",
       "coveredByGlobalBaseline": true
     },
@@ -1726,8 +1663,18 @@
       "coveredByGlobalBaseline": true
     },
     {
+      "file": "view_misc_panels_source.jsx",
+      "line": 2947,
+      "checkId": "DRAGDROP-001",
+      "name": "Drag-and-drop without keyboard alternative",
+      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
+      "severity": "major",
+      "snippet": "onMouseDown={(e) => { cubeDragRef.current = { x: e.clientX, y: e.clientY }; window.addEventListener('mousemove', handleC",
+      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
+    },
+    {
       "file": "view_pdf_audit_source.jsx",
-      "line": 13902,
+      "line": 13914,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
       "wcag": "2.4.7 Focus Visible",
@@ -1738,7 +1685,7 @@
     },
     {
       "file": "view_pdf_audit_source.jsx",
-      "line": 13950,
+      "line": 13962,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
       "wcag": "2.4.7 Focus Visible",
@@ -1749,7 +1696,7 @@
     },
     {
       "file": "view_pdf_audit_source.jsx",
-      "line": 14020,
+      "line": 14032,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
       "wcag": "2.4.7 Focus Visible",
@@ -1760,7 +1707,7 @@
     },
     {
       "file": "view_pdf_audit_source.jsx",
-      "line": 13258,
+      "line": 13270,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -1771,7 +1718,7 @@
     },
     {
       "file": "view_pdf_audit_source.jsx",
-      "line": 15104,
+      "line": 15116,
       "checkId": "INPUT-001",
       "name": "Input without programmatic label",
       "wcag": "3.3.2 Labels or Instructions",
@@ -1782,7 +1729,7 @@
     },
     {
       "file": "view_pdf_audit_source.jsx",
-      "line": 7286,
+      "line": 7298,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1793,7 +1740,7 @@
     },
     {
       "file": "view_pdf_audit_source.jsx",
-      "line": 7339,
+      "line": 7351,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1804,7 +1751,7 @@
     },
     {
       "file": "view_pdf_audit_source.jsx",
-      "line": 8822,
+      "line": 8834,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1815,7 +1762,7 @@
     },
     {
       "file": "view_pdf_audit_source.jsx",
-      "line": 9748,
+      "line": 9760,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1826,7 +1773,7 @@
     },
     {
       "file": "view_pdf_audit_source.jsx",
-      "line": 10015,
+      "line": 10027,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1837,7 +1784,7 @@
     },
     {
       "file": "view_pdf_audit_source.jsx",
-      "line": 10031,
+      "line": 10043,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1848,7 +1795,7 @@
     },
     {
       "file": "view_pdf_audit_source.jsx",
-      "line": 10132,
+      "line": 10144,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1859,7 +1806,7 @@
     },
     {
       "file": "view_pdf_audit_source.jsx",
-      "line": 10197,
+      "line": 10209,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1870,7 +1817,7 @@
     },
     {
       "file": "view_pdf_audit_source.jsx",
-      "line": 10289,
+      "line": 10301,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1881,7 +1828,7 @@
     },
     {
       "file": "view_pdf_audit_source.jsx",
-      "line": 10645,
+      "line": 10657,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1892,7 +1839,7 @@
     },
     {
       "file": "view_pdf_audit_source.jsx",
-      "line": 11452,
+      "line": 11464,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1903,7 +1850,7 @@
     },
     {
       "file": "view_pdf_audit_source.jsx",
-      "line": 11453,
+      "line": 11465,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1914,7 +1861,7 @@
     },
     {
       "file": "view_pdf_audit_source.jsx",
-      "line": 11459,
+      "line": 11471,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1925,7 +1872,7 @@
     },
     {
       "file": "view_pdf_audit_source.jsx",
-      "line": 12688,
+      "line": 12700,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1936,7 +1883,7 @@
     },
     {
       "file": "view_pdf_audit_source.jsx",
-      "line": 14971,
+      "line": 14983,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1947,7 +1894,7 @@
     },
     {
       "file": "view_pdf_audit_source.jsx",
-      "line": 16167,
+      "line": 16179,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1979,28 +1926,8 @@
       "coveredByGlobalBaseline": true
     },
     {
-      "file": "word_sounds_module.js",
-      "line": 16013,
-      "checkId": "DRAGDROP-001",
-      "name": "Drag-and-drop without keyboard alternative",
-      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
-      "severity": "major",
-      "snippet": "draggable: true,",
-      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
-    },
-    {
-      "file": "word_sounds_module.js",
-      "line": 16014,
-      "checkId": "DRAGDROP-001",
-      "name": "Drag-and-drop without keyboard alternative",
-      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
-      "severity": "major",
-      "snippet": "onDragStart: (e) => { e.dataTransfer.setData(\"text/plain\", w); e.dataTransfer.effectAllowed = \"move\"; },",
-      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
-    },
-    {
       "file": "stem_lab\\stem_tool_a11yauditor.js",
-      "line": 915,
+      "line": 932,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
       "wcag": "2.4.7 Focus Visible",
@@ -2008,26 +1935,6 @@
       "snippet": "h('button', { type: 'button', className: 'px-4 py-2 rounded-lg bg-slate-600 text-white font-bold text-xs hover:bg-slate-",
       "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus.",
       "coveredByGlobalBaseline": true
-    },
-    {
-      "file": "stem_lab\\stem_tool_a11yauditor.js",
-      "line": 812,
-      "checkId": "CONFIRM-001",
-      "name": "window.confirm() for data operations",
-      "wcag": "3.3.4 Error Prevention",
-      "severity": "major",
-      "snippet": "h('button', { 'aria-label': t('stem.a11yauditor.file_complaint_about_findings', 'File complaint about findings'), onClic",
-      "fix": "Replace with custom accessible modal with focus management."
-    },
-    {
-      "file": "stem_lab\\stem_tool_a11yauditor.js",
-      "line": 1072,
-      "checkId": "CONFIRM-001",
-      "name": "window.confirm() for data operations",
-      "wcag": "3.3.4 Error Prevention",
-      "severity": "major",
-      "snippet": "if (!window.confirm('These findings are AI-generated guesses, not a verified audit. Only continue if you have independen",
-      "fix": "Replace with custom accessible modal with focus management."
     },
     {
       "file": "stem_lab\\stem_tool_a11yauditor.js",
@@ -2106,86 +2013,6 @@
     },
     {
       "file": "stem_lab\\stem_tool_aquaculture.js",
-      "line": 10267,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "return h('th', { key: ci, style: { padding: '6px 8px', textAlign: 'left', color: '#a7f3d0', fontWeight: 700 } }, c);",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_aquaculture.js",
-      "line": 12007,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { style: { padding: 8, textAlign: 'left', borderBottom: '1px solid rgba(100,116,139,0.4)' } }, 'Year'),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_aquaculture.js",
-      "line": 12008,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { style: { padding: 8, textAlign: 'right', borderBottom: '1px solid rgba(100,116,139,0.4)' } }, 'Oyster $/ea'),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_aquaculture.js",
-      "line": 12009,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { style: { padding: 8, textAlign: 'right', borderBottom: '1px solid rgba(100,116,139,0.4)' } }, 'Mussel $/lb'),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_aquaculture.js",
-      "line": 12010,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { style: { padding: 8, textAlign: 'right', borderBottom: '1px solid rgba(100,116,139,0.4)' } }, 'Kelp $/lb wet')",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_aquaculture.js",
-      "line": 12011,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { style: { padding: 8, textAlign: 'right', borderBottom: '1px solid rgba(100,116,139,0.4)' } }, 'Salmon $/lb'),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_aquaculture.js",
-      "line": 12012,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { style: { padding: 8, textAlign: 'left', borderBottom: '1px solid rgba(100,116,139,0.4)' } }, 'Note'))),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_aquaculture.js",
-      "line": 22313,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "return h('th', { key: 'h' + i, style: { padding: '4px 8px', borderBottom: '1px solid rgba(100,116,139,0.4)', textAlign: ",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_aquaculture.js",
       "line": null,
       "checkId": "TABS-001",
       "name": "Tab interface without ARIA tab roles",
@@ -2193,28 +2020,6 @@
       "severity": "major",
       "snippet": "(file-level check)",
       "fix": "Add role=\"tablist\" to container, role=\"tab\" + aria-selected to buttons, role=\"tabpanel\" to content."
-    },
-    {
-      "file": "stem_lab\\stem_tool_aquarium.js",
-      "line": 24573,
-      "checkId": "INPUT-001",
-      "name": "Input without programmatic label",
-      "wcag": "3.3.2 Labels or Instructions",
-      "severity": "major",
-      "snippet": "React.createElement(\"input\", {",
-      "fix": "Add aria-label with descriptive text, or wrap in <label> with htmlFor/id association.",
-      "notInAccessibilityTree": true
-    },
-    {
-      "file": "stem_lab\\stem_tool_aquarium.js",
-      "line": 24599,
-      "checkId": "INPUT-001",
-      "name": "Input without programmatic label",
-      "wcag": "3.3.2 Labels or Instructions",
-      "severity": "major",
-      "snippet": "React.createElement(\"input\", {",
-      "fix": "Add aria-label with descriptive text, or wrap in <label> with htmlFor/id association.",
-      "notInAccessibilityTree": true
     },
     {
       "file": "stem_lab\\stem_tool_aquarium.js",
@@ -2240,7 +2045,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_beehive.js",
-      "line": 24509,
+      "line": 25631,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -2272,7 +2077,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_birdlab.js",
-      "line": 13199,
+      "line": 13379,
       "checkId": "SVG-001",
       "name": "SVG element without accessible name",
       "wcag": "1.1.1 Non-text Content",
@@ -2282,7 +2087,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_birdlab.js",
-      "line": 20915,
+      "line": 21110,
       "checkId": "SVG-001",
       "name": "SVG element without accessible name",
       "wcag": "1.1.1 Non-text Content",
@@ -2292,7 +2097,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_birdlab.js",
-      "line": 21828,
+      "line": 21983,
       "checkId": "SVG-001",
       "name": "SVG element without accessible name",
       "wcag": "1.1.1 Non-text Content",
@@ -2302,17 +2107,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_birdlab.js",
-      "line": 19741,
-      "checkId": "CONFIRM-001",
-      "name": "window.confirm() for data operations",
-      "wcag": "3.3.4 Error Prevention",
-      "severity": "major",
-      "snippet": "onClick: function() { if (window.confirm('Delete this observation?')) deleteEntry(entry.id); },",
-      "fix": "Replace with custom accessible modal with focus management."
-    },
-    {
-      "file": "stem_lab\\stem_tool_birdlab.js",
-      "line": 20110,
+      "line": 20305,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -2320,76 +2115,6 @@
       "snippet": "h('div', { className: 'text-2xl mb-1 animate-pulse' }, '🔬'),",
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce).",
       "coveredByGlobalBaseline": true
-    },
-    {
-      "file": "stem_lab\\stem_tool_birdlab.js",
-      "line": 22754,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'p-2 text-left' }, __alloT('stem.birdlab.species_5', 'Species')),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_birdlab.js",
-      "line": 22755,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'p-2 text-left' }, __alloT('stem.birdlab.season_2', 'Season')),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_birdlab.js",
-      "line": 22756,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'p-2 text-left' }, __alloT('stem.birdlab.visit_frequency', 'Visit Frequency')),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_birdlab.js",
-      "line": 22757,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'p-2 text-left' }, __alloT('stem.birdlab.recommended_feeder', 'Recommended Feeder')))),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_birdlab.js",
-      "line": 23071,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'p-2 text-left' }, __alloT('stem.birdlab.species_7', 'Species')),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_birdlab.js",
-      "line": 23072,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'p-2 text-left' }, __alloT('stem.birdlab.arrival_2', 'Arrival')),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_birdlab.js",
-      "line": 23073,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'p-2 text-left' }, __alloT('stem.birdlab.notes_3', 'Notes')))),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
     },
     {
       "file": "stem_lab\\stem_tool_brainatlas.js",
@@ -2415,7 +2140,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_cell.js",
-      "line": 21467,
+      "line": 21496,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
       "wcag": "2.4.7 Focus Visible",
@@ -2426,7 +2151,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_cell.js",
-      "line": 22035,
+      "line": 22064,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
       "wcag": "2.4.7 Focus Visible",
@@ -2437,61 +2162,29 @@
     },
     {
       "file": "stem_lab\\stem_tool_cell.js",
-      "line": 23865,
+      "line": 23931,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
       "wcag": "2.4.7 Focus Visible",
       "severity": "critical",
-      "snippet": "React.createElement('select', { value: aIdx, onChange: function(e) { upd('_cmpA', parseInt(e.target.value)); }, classNam",
+      "snippet": "React.createElement('select', { 'aria-label': \"Organism A\", value: aIdx, onChange: function(e) { upd('_cmpA', parseInt(e",
       "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus.",
       "coveredByGlobalBaseline": true
     },
     {
       "file": "stem_lab\\stem_tool_cell.js",
-      "line": 23871,
+      "line": 23937,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
       "wcag": "2.4.7 Focus Visible",
       "severity": "critical",
-      "snippet": "React.createElement('select', { value: bIdx, onChange: function(e) { upd('_cmpB', parseInt(e.target.value)); }, classNam",
+      "snippet": "React.createElement('select', { 'aria-label': \"Organism B\", value: bIdx, onChange: function(e) { upd('_cmpB', parseInt(e",
       "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus.",
       "coveredByGlobalBaseline": true
     },
     {
       "file": "stem_lab\\stem_tool_cell.js",
-      "line": 21253,
-      "checkId": "INPUT-001",
-      "name": "Input without programmatic label",
-      "wcag": "3.3.2 Labels or Instructions",
-      "severity": "major",
-      "snippet": "React.createElement('input', {",
-      "fix": "Add aria-label with descriptive text, or wrap in <label> with htmlFor/id association.",
-      "notInAccessibilityTree": true
-    },
-    {
-      "file": "stem_lab\\stem_tool_cell.js",
-      "line": 24030,
-      "checkId": "INPUT-001",
-      "name": "Input without programmatic label",
-      "wcag": "3.3.2 Labels or Instructions",
-      "severity": "major",
-      "snippet": "React.createElement('input', { type: 'text', placeholder: 'Search terms...', value: search, onChange: function(e) { upd(",
-      "fix": "Add aria-label with descriptive text, or wrap in <label> with htmlFor/id association.",
-      "notInAccessibilityTree": true
-    },
-    {
-      "file": "stem_lab\\stem_tool_cell.js",
-      "line": 22540,
-      "checkId": "CONFIRM-001",
-      "name": "window.confirm() for data operations",
-      "wcag": "3.3.4 Error Prevention",
-      "severity": "major",
-      "snippet": "var confirmed = typeof window.confirm !== 'function' || window.confirm('Reset all cell-studio learning progress for anim",
-      "fix": "Replace with custom accessible modal with focus management."
-    },
-    {
-      "file": "stem_lab\\stem_tool_cell.js",
-      "line": 22241,
+      "line": 22270,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -2499,16 +2192,6 @@
       "snippet": "d.quizFeedback && React.createElement(\"div\", { role: \"status\", \"aria-live\": \"polite\", className: \"mt-3 p-3 bg-white roun",
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce).",
       "coveredByGlobalBaseline": true
-    },
-    {
-      "file": "stem_lab\\stem_tool_cell.js",
-      "line": 24099,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('thead', null, h('tr', { className: 'bg-slate-100' }, ['inside', 'outside', 'perm', 'state'].map(function(c, i) { retu",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
     },
     {
       "file": "stem_lab\\stem_tool_coasterlab.js",
@@ -2642,16 +2325,6 @@
       "fix": "Add role=\"tablist\" to container, role=\"tab\" + aria-selected to buttons, role=\"tabpanel\" to content."
     },
     {
-      "file": "stem_lab\\stem_tool_coding.js",
-      "line": 3124,
-      "checkId": "DRAGDROP-001",
-      "name": "Drag-and-drop without keyboard alternative",
-      "wcag": "2.1.1 Keyboard, 2.5.7 Dragging Movements",
-      "severity": "major",
-      "snippet": "onDragStart: function (e) { handleDragStart(e, idx); },",
-      "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
-    },
-    {
       "file": "stem_lab\\stem_tool_companionplanting.js",
       "line": 6654,
       "checkId": "FOCUS-001",
@@ -2708,23 +2381,13 @@
     },
     {
       "file": "stem_lab\\stem_tool_coordgrid.js",
-      "line": 1984,
+      "line": 1986,
       "checkId": "SVG-001",
       "name": "SVG element without accessible name",
       "wcag": "1.1.1 Non-text Content",
       "severity": "major",
       "snippet": "h('svg', { width: gridW, height: gridH, onClick: handleGridClick, onTouchStart: handleGridTouch, className: 'cursor-cros",
       "fix": "Add role=\"img\" and aria-label describing the visualization."
-    },
-    {
-      "file": "stem_lab\\stem_tool_dataplot.js",
-      "line": 1595,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('thead', null, h('tr', null, kernelResult.columns.map(function(column) { return h('th', { key: column, className: 'tex",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
     },
     {
       "file": "stem_lab\\stem_tool_datastudio.js",
@@ -2739,7 +2402,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_datastudio.js",
-      "line": 1515,
+      "line": 1519,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
       "wcag": "2.4.7 Focus Visible",
@@ -2750,29 +2413,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_datastudio.js",
-      "line": 1496,
-      "checkId": "INPUT-001",
-      "name": "Input without programmatic label",
-      "wcag": "3.3.2 Labels or Instructions",
-      "severity": "major",
-      "snippet": "React.createElement(\"input\", {",
-      "fix": "Add aria-label with descriptive text, or wrap in <label> with htmlFor/id association.",
-      "notInAccessibilityTree": true
-    },
-    {
-      "file": "stem_lab\\stem_tool_datastudio.js",
-      "line": 1519,
-      "checkId": "INPUT-001",
-      "name": "Input without programmatic label",
-      "wcag": "3.3.2 Labels or Instructions",
-      "severity": "major",
-      "snippet": "React.createElement(\"input\", {",
-      "fix": "Add aria-label with descriptive text, or wrap in <label> with htmlFor/id association.",
-      "notInAccessibilityTree": true
-    },
-    {
-      "file": "stem_lab\\stem_tool_datastudio.js",
-      "line": 1881,
+      "line": 1886,
       "checkId": "INPUT-001",
       "name": "Input without programmatic label",
       "wcag": "3.3.2 Labels or Instructions",
@@ -2782,18 +2423,8 @@
       "notInAccessibilityTree": true
     },
     {
-      "file": "stem_lab\\stem_tool_datastudio.js",
-      "line": 1473,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "React.createElement(\"thead\", null, React.createElement(\"tr\", null, kernelResult.columns.map(function(column) { return Re",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
       "file": "stem_lab\\stem_tool_dinolab.js",
-      "line": 6771,
+      "line": 6785,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -2804,7 +2435,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_dinolab.js",
-      "line": 6854,
+      "line": 6868,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -2815,7 +2446,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_dinolab.js",
-      "line": 6981,
+      "line": 6995,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -2826,7 +2457,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_dinolab.js",
-      "line": 7007,
+      "line": 7021,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -2837,7 +2468,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_dinolab.js",
-      "line": 7090,
+      "line": 7104,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -2848,7 +2479,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_dinolab.js",
-      "line": 7121,
+      "line": 7135,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -2859,7 +2490,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_dinolab.js",
-      "line": 7556,
+      "line": 7570,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -2903,7 +2534,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_flightsim.js",
-      "line": 23281,
+      "line": 23314,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
       "wcag": "2.4.7 Focus Visible",
@@ -2968,166 +2599,6 @@
       "notInAccessibilityTree": true
     },
     {
-      "file": "stem_lab\\stem_tool_flightsim.js",
-      "line": 24435,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "['airspeed kt', 'altitude ft', 'AoA°', 'state'].map(function(c, i) { return h('th', { key: 'h' + i, style: { padding: '4",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_fractions.js",
-      "line": 6910,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'text-left py-1 text-purple-800' }, __alloT('stem.fractions.feature', 'Feature')),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_fractions.js",
-      "line": 6911,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'text-left py-1 pl-2 text-purple-800' }, __alloT('stem.fractions.udl_principle', 'UDL principle'))",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_fractions.js",
-      "line": 8057,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'text-left py-1 px-2 text-cyan-800 font-bold' }, __alloT('stem.fractions.fraction_4', 'Fraction')),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_fractions.js",
-      "line": 8058,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'text-left py-1 px-2 text-cyan-800 font-bold' }, __alloT('stem.fractions.simplified_2', 'Simplified",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_fractions.js",
-      "line": 8059,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'text-left py-1 px-2 text-cyan-800 font-bold' }, __alloT('stem.fractions.decimal_3', 'Decimal')),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_fractions.js",
-      "line": 8060,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'text-left py-1 px-2 text-cyan-800 font-bold' }, __alloT('stem.fractions.percent_4', 'Percent'))",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_fractions.js",
-      "line": 8327,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'text-left py-1' }, __alloT('stem.fractions.fraction_5', 'Fraction')),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_fractions.js",
-      "line": 8328,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'text-left py-1' }, __alloT('stem.fractions.decimal_4', 'Decimal')),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_fractions.js",
-      "line": 8329,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'text-left py-1' }, __alloT('stem.fractions.percent_5', 'Percent'))",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_fractions.js",
-      "line": 9995,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'text-left py-2 text-cyan-800 font-bold' }, __alloT('stem.fractions.english', 'English')),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_fractions.js",
-      "line": 9996,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'text-left py-2 text-cyan-800 font-bold capitalize' }, mlLang)",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_fractions.js",
-      "line": 10446,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'text-left py-1 text-amber-800' }, __alloT('stem.fractions.ingredient', 'Ingredient')),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_fractions.js",
-      "line": 10447,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'text-right py-1 text-amber-800' }, __alloT('stem.fractions.original', 'Original')),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_fractions.js",
-      "line": 10448,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'text-right py-1 text-amber-800' }, __alloT('stem.fractions.scaled', 'Scaled')),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_fractions.js",
-      "line": 10449,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'text-left py-1 pl-2 text-amber-800' }, __alloT('stem.fractions.unit', 'Unit'))",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
       "file": "stem_lab\\stem_tool_fractions.js",
       "line": null,
       "checkId": "TIMER-001",
@@ -3139,7 +2610,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_gamestudio.js",
-      "line": 1667,
+      "line": 1673,
       "checkId": "INPUT-001",
       "name": "Input without programmatic label",
       "wcag": "3.3.2 Labels or Instructions",
@@ -3147,16 +2618,6 @@
       "snippet": "var inp = document.createElement('input');",
       "fix": "Add aria-label with descriptive text, or wrap in <label> with htmlFor/id association.",
       "notInAccessibilityTree": true
-    },
-    {
-      "file": "stem_lab\\stem_tool_gamestudio.js",
-      "line": 1872,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "['enemies', 'patrol', 'hazards', 'coins', 'health', 'score', 'tier'].map(function(c, i) { return h('th', { key: 'h' + i,",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
     },
     {
       "file": "stem_lab\\stem_tool_geo.js",
@@ -3346,18 +2807,8 @@
       "notInAccessibilityTree": true
     },
     {
-      "file": "stem_lab\\stem_tool_geometryworld.js",
-      "line": 8576,
-      "checkId": "CONFIRM-001",
-      "name": "window.confirm() for data operations",
-      "wcag": "3.3.4 Error Prevention",
-      "severity": "major",
-      "snippet": "if (window.confirm('Clear all ' + count + ' of your placed blocks? The lesson\\'s structures and NPCs will stay. This can",
-      "fix": "Replace with custom accessible modal with focus management."
-    },
-    {
       "file": "stem_lab\\stem_tool_lifeskills.js",
-      "line": 3499,
+      "line": 3515,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -3368,7 +2819,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_lifeskills.js",
-      "line": 7371,
+      "line": 7391,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -3411,16 +2862,6 @@
     },
     {
       "file": "stem_lab\\stem_tool_manipulatives.js",
-      "line": 3811,
-      "checkId": "CONFIRM-001",
-      "name": "window.confirm() for data operations",
-      "wcag": "3.3.4 Error Prevention",
-      "severity": "major",
-      "snippet": "if (confirm('Reset ALL progress (score, badges, streaks, solves)? This cannot be undone.')) {",
-      "fix": "Replace with custom accessible modal with focus management."
-    },
-    {
-      "file": "stem_lab\\stem_tool_manipulatives.js",
       "line": 2141,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -3431,28 +2872,8 @@
       "coveredByGlobalBaseline": true
     },
     {
-      "file": "stem_lab\\stem_tool_manipulatives.js",
-      "line": 5108,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'text-left text-green-800 font-bold py-1' }, __alloT('stem.manipulatives.manipulative', 'Manipulati",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_manipulatives.js",
-      "line": 5110,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "return h('th', { key: g, className: 'text-center text-green-800 font-bold py-1 px-2 min-w-[44px]' }, g);",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
       "file": "stem_lab\\stem_tool_money.js",
-      "line": 2382,
+      "line": 2386,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -3463,7 +2884,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_money.js",
-      "line": 3201,
+      "line": 3206,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -3474,7 +2895,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_money.js",
-      "line": 3844,
+      "line": 3849,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -3485,40 +2906,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_music.js",
-      "line": 2580,
-      "checkId": "CANVAS-001",
-      "name": "Canvas element without text alternative",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "critical",
-      "snippet": "React.createElement(\"canvas\", {",
-      "fix": "Add role=\"img\" and a descriptive aria-label, or aria-hidden=\"true\" when the canvas is only an internal/decorative buffer.",
-      "notInAccessibilityTree": true
-    },
-    {
-      "file": "stem_lab\\stem_tool_music.js",
-      "line": 4104,
-      "checkId": "CANVAS-001",
-      "name": "Canvas element without text alternative",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "critical",
-      "snippet": "React.createElement(\"canvas\", {",
-      "fix": "Add role=\"img\" and a descriptive aria-label, or aria-hidden=\"true\" when the canvas is only an internal/decorative buffer.",
-      "notInAccessibilityTree": true
-    },
-    {
-      "file": "stem_lab\\stem_tool_music.js",
-      "line": 4295,
-      "checkId": "CANVAS-001",
-      "name": "Canvas element without text alternative",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "critical",
-      "snippet": "React.createElement(\"canvas\", {",
-      "fix": "Add role=\"img\" and a descriptive aria-label, or aria-hidden=\"true\" when the canvas is only an internal/decorative buffer.",
-      "notInAccessibilityTree": true
-    },
-    {
-      "file": "stem_lab\\stem_tool_music.js",
-      "line": 2573,
+      "line": 3087,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -3529,7 +2917,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_music.js",
-      "line": 3072,
+      "line": 3594,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -3540,7 +2928,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_music.js",
-      "line": 3088,
+      "line": 3610,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -3551,7 +2939,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_music.js",
-      "line": 3151,
+      "line": 3675,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -3562,7 +2950,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_music.js",
-      "line": 3682,
+      "line": 4206,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -3573,7 +2961,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_music.js",
-      "line": 3724,
+      "line": 4248,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -3581,16 +2969,6 @@
       "snippet": "className: \"px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all shadow-sm \" + (d.songPlaying ? 'bg-red-600 text-",
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce).",
       "coveredByGlobalBaseline": true
-    },
-    {
-      "file": "stem_lab\\stem_tool_music.js",
-      "line": 4698,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('thead', null, h('tr', { className: 'bg-slate-100' }, ['F', 'M', 'H', 'timbre'].map(function(c, i) { return h('th', { ",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
     },
     {
       "file": "stem_lab\\stem_tool_nuclearlab.js",
@@ -3649,7 +3027,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 8694,
+      "line": 8733,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -3660,7 +3038,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 8785,
+      "line": 8824,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -3671,7 +3049,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 8816,
+      "line": 8855,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -3682,7 +3060,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 8880,
+      "line": 8919,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -3693,7 +3071,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 9099,
+      "line": 9138,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -3704,7 +3082,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 9422,
+      "line": 9461,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -3714,278 +3092,8 @@
       "notInAccessibilityTree": true
     },
     {
-      "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 7574,
-      "checkId": "CONFIRM-001",
-      "name": "window.confirm() for data operations",
-      "wcag": "3.3.4 Error Prevention",
-      "severity": "major",
-      "snippet": "onClick: function() { if (typeof window !== 'undefined' && window.confirm && window.confirm('Reset visit history?')) set",
-      "fix": "Replace with custom accessible modal with focus management."
-    },
-    {
-      "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 12518,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "return h('th', { onClick: function() { setStatusSort(key); }, className: 'pb-2 px-2 text-left cursor-pointer ' + (active",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 14776,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'pb-2 pr-2' }, __alloT('stem.raptorhunt.species_6', 'Species')),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 14777,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'pb-2 px-2' }, __alloT('stem.raptorhunt.1st_yr_mort', '1st-yr mort')),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 14778,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'pb-2 px-2' }, __alloT('stem.raptorhunt.adult_ann_surv', 'Adult ann. surv')),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 14779,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'pb-2 px-2' }, __alloT('stem.raptorhunt.mean_wild_lifespan', 'Mean wild lifespan')),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 14780,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'pb-2 px-2' }, __alloT('stem.raptorhunt.record_wild', 'Record (wild)'))",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 17884,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'p-2 text-left text-teal-300' }, __alloT('stem.raptorhunt.species_8', 'Species')),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 17885,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'p-2 text-left text-teal-300' }, __alloT('stem.raptorhunt.lifespan', 'Lifespan')),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 17886,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'p-2 text-left text-teal-300' }, __alloT('stem.raptorhunt.maturity', 'Maturity')),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 17887,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'p-2 text-left text-teal-300' }, __alloT('stem.raptorhunt.clutch', 'Clutch')),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 17888,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'p-2 text-left text-teal-300' }, __alloT('stem.raptorhunt.fledging_rate', 'Fledging Rate')),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 17889,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'p-2 text-left text-teal-300' }, __alloT('stem.raptorhunt.1st_yr_mortality', '1st Yr Mortality')),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 17890,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'p-2 text-left text-teal-300' }, __alloT('stem.raptorhunt.density', 'Density')),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 17891,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'p-2 text-left text-teal-300' }, __alloT('stem.raptorhunt.notes_2', 'Notes'))",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 18610,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'p-2 text-left text-pink-300' }, __alloT('stem.raptorhunt.feature', 'Feature')),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 18611,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'p-2 text-left text-amber-300' }, p.a),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 18612,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'p-2 text-left text-cyan-300' }, p.b)",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 19263,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'p-2 text-left text-blue-300' }, __alloT('stem.raptorhunt.species_10', 'Species')),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 19264,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'p-2 text-left text-blue-300' }, __alloT('stem.raptorhunt.formula', 'Formula')),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 19265,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'p-2 text-left text-blue-300' }, __alloT('stem.raptorhunt.high_aspect_ratio', 'High Aspect Ratio?')",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 19266,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'p-2 text-left text-blue-300' }, __alloT('stem.raptorhunt.notes_3', 'Notes'))",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 19318,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "return h('th', { key: i, className: 'p-2 text-left text-amber-300 font-bold' }, c);",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 21333,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'border border-slate-400 p-1 text-left' }, __alloT('stem.raptorhunt.species_12', 'Species')),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 21334,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'border border-slate-400 p-1 text-left' }, __alloT('stem.raptorhunt.count', 'Count')),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 21335,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'border border-slate-400 p-1 text-left' }, __alloT('stem.raptorhunt.diagnostic_features_observed', ",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 21336,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'border border-slate-400 p-1 text-left' }, __alloT('stem.raptorhunt.biomass_est_g', 'Biomass est. (",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
       "file": "stem_lab\\stem_tool_spaceexplorer.js",
-      "line": 2428,
+      "line": 2440,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -4027,178 +3135,8 @@
       "fix": "Add role=\"img\" and aria-label describing the visualization."
     },
     {
-      "file": "stem_lab\\stem_tool_statslab.js",
-      "line": 2446,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('thead', null, h('tr', null, kernelResult.columns.map(function(column) { return h('th', { key: column, style: { textAl",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_statslab.js",
-      "line": 2719,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { style: { padding: 6, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'left' } }, ''),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_statslab.js",
-      "line": 2721,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "return h('th', { key: ci, style: { padding: 6 } },",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_statslab.js",
-      "line": 2734,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', null,",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_statslab.js",
-      "line": 2873,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { style: { padding: 4, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'left' } }, '#'),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_statslab.js",
-      "line": 2875,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "return h('th', { key: ki, style: { padding: 4 } },",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_statslab.js",
-      "line": 2888,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { style: { padding: 4 } },",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_statslab.js",
-      "line": 2891,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', null)",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_statslab.js",
-      "line": 3465,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { style: { textAlign: 'left', padding: 6, color: 'var(--sl-warning)' } }, 'Term'),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_statslab.js",
-      "line": 3466,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { style: { textAlign: 'right', padding: 6, color: 'var(--sl-warning)' } }, 'b (coef)'),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_statslab.js",
-      "line": 3467,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { style: { textAlign: 'right', padding: 6, color: 'var(--sl-warning)' } }, 'SE'),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_statslab.js",
-      "line": 3468,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { style: { textAlign: 'right', padding: 6, color: 'var(--sl-warning)' } }, 't'),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_statslab.js",
-      "line": 3469,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { style: { textAlign: 'right', padding: 6, color: 'var(--sl-warning)' } }, 'p')",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_statslab.js",
-      "line": 3688,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { style: { textAlign: 'left', padding: 6, color: 'var(--sl-warning)' } }, 'n'),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_statslab.js",
-      "line": 3689,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { style: { textAlign: 'right', padding: 6, color: 'var(--sl-warning)' } }, 'median p'),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_statslab.js",
-      "line": 3690,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { style: { textAlign: 'right', padding: 6, color: 'var(--sl-warning)' } }, '10–90% range'),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_statslab.js",
-      "line": 3691,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { style: { textAlign: 'right', padding: 6, color: 'var(--sl-warning)' } }, '% sig (p<.05)')",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
       "file": "stem_lab\\stem_tool_watercycle.js",
-      "line": 7977,
+      "line": 8512,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -4209,7 +3147,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_watercycle.js",
-      "line": 8117,
+      "line": 8652,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -4220,7 +3158,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_watercycle.js",
-      "line": 8299,
+      "line": 8834,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -4231,7 +3169,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_watercycle.js",
-      "line": 12896,
+      "line": 13431,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -4242,7 +3180,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_weathersystems.js",
-      "line": 1980,
+      "line": 1982,
       "checkId": "INPUT-001",
       "name": "Input without programmatic label",
       "wcag": "3.3.2 Labels or Instructions",
@@ -4253,7 +3191,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_weathersystems.js",
-      "line": 9000,
+      "line": 9030,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -4264,7 +3202,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_weathersystems.js",
-      "line": 9002,
+      "line": 9032,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -4275,7 +3213,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_weldlab.js",
-      "line": 2815,
+      "line": 2865,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -4283,56 +3221,6 @@
       "snippet": "h('span', { className: 'animate-pulse' }, '🎥'),",
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce).",
       "coveredByGlobalBaseline": true
-    },
-    {
-      "file": "stem_lab\\stem_tool_weldlab.js",
-      "line": 3767,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'text-left p-2 text-xs font-bold uppercase tracking-wider text-slate-700' }, __alloT('stem.weldlab.",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_weldlab.js",
-      "line": 3768,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'p-2 text-xs font-bold uppercase tracking-wider text-orange-700' }, 'MIG'),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_weldlab.js",
-      "line": 3769,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'p-2 text-xs font-bold uppercase tracking-wider text-amber-700' }, 'TIG'),",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_weldlab.js",
-      "line": 3770,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'p-2 text-xs font-bold uppercase tracking-wider text-stone-700' }, __alloT('stem.weldlab.stick', 'S",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
-    },
-    {
-      "file": "stem_lab\\stem_tool_weldlab.js",
-      "line": 3771,
-      "checkId": "SCOPE-001",
-      "name": "Table header without scope attribute",
-      "wcag": "1.3.1 Info and Relationships",
-      "severity": "minor",
-      "snippet": "h('th', { className: 'p-2 text-xs font-bold uppercase tracking-wider text-blue-700' }, 'Oxy')",
-      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
     },
     {
       "file": "stem_lab\\stem_tool_worldbuilder.js",
@@ -4369,7 +3257,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_worldbuilder.js",
-      "line": 1663,
+      "line": 1675,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -4380,7 +3268,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_worldbuilder.js",
-      "line": 1718,
+      "line": 1730,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",

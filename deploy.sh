@@ -5,7 +5,8 @@
 #   1. Stage your source changes:    git add <files-you-want-committed>
 #   2. Run the deploy:                ./deploy.sh "Your commit message"
 #
-# What it does (10 steps plus a pre-deploy desktop artifact gate):
+# What it does (10 steps plus pre-deploy gates, incl. Step 0.8 which RUNS the
+# tests covering the change — every other pre-deploy gate is static analysis):
 #   1.  Commits staged changes (skips if nothing staged — useful for re-deploys)
 #   2.  Pushes source commit to origin (GitHub)
 #   3.  Runs `node build.js --mode=prod --force` (rewrites CDN hash refs)
@@ -145,10 +146,16 @@ if [[ "${SKIP_RENDER_CHECK:-0}" != "1" ]]; then
   echo "  ✓ curated non-STEM CDN modules render without throwing."
   node dev-tools/check_aria_handler.cjs --quiet
   echo "  ✓ no object-typed aria-labels / unguarded tool-state array-spreads."
+  node dev-tools/scan_hook_order_branches.cjs --quiet
+  echo "  ✓ no hooks in conditional view branches of inline tool renders (the minified React #310 class — a stem tool's render(ctx) runs inline in the host, so a hook that only executes on one view branch changes the host's hook count on navigation. Shipped 3x before this gate: swimlab 2026-07-23, firstresponse cprAed metronome + petsLab renderNutrition both caught 2026-08-11. Golden digests render each tool ONCE and structurally cannot see it)."
+  node dev-tools/scan_render_scoped_components.cjs --quiet
+  echo "  ✓ no per-render component identities (a component DEFINED inside render() is a new function identity every host re-render, so React remounts it and wipes its local useState on ANY toolData write — no crash, no console error, the student just loses their place. 82 stateful across 7 tools + 81 stateless fixed with the stableType() shim 2026-08-11; birdlab species browser was the proven-live case)."
   node dev-tools/scan_group_t_calls.cjs --quiet
   echo "  ✓ no group-level t() calls (an i18n group OBJECT rendered as a React child = fatal crash; the pdf_audit.fidelity regression)."
   node dev-tools/check_plugin_files.cjs --quiet
   echo "  ✓ PLUGIN_FILES ↔ git in sync (no stale-CDN plugins, duplicate entries, or casing 404s — audit B4/B5)."
+  node dev-tools/scan_inline_canvas_refs.cjs --quiet
+  echo "  ✓ no NEW unguarded inline canvas/engine ref (an INLINE \`ref: function(cv){...}\` has a new identity every render, so React re-runs its setup on EVERY re-render — and these tools push state while animating, so it loops. Shipped 3x: DNA Lab (cv.width= reallocates AND CLEARS the bitmap), Ecosystem (the sim lived in the ref scope and was rebuilt), geometryWorld (a whole THREE engine destroyed/re-created per upd()). No other gate can see it: the code parses, renders once, and only misbehaves on the SECOND render. The 2026-08-11 sweep took 23 findings to 1 — worst was molecule's orbital cloud, re-running a 120,000-attempt Monte Carlo AND starting an ADDITIONAL rAF loop every render, loops accumulating because \`!canvas.isConnected\` only stops them after unmount. Now BLOCKING and baselined (dev-tools/inline_canvas_refs_baseline.json holds the one remaining site, beehive, which already uses setTransform+clearRect so its only cost is realloc churn); a NEW one fails the deploy."
   node dev-tools/check_stem_reachability.cjs --quiet || true
   echo "  ✓ hub reachability audited (ADVISORY: registration + catalogue tile + _pluginOnlyTools entry + lazy-loader file across 3 host mirrors and 3 loader mirrors). treeLab and machineLab both shipped registered, catalogued, mirrored and DEPLOYED while rendering an empty panel, because every other gate calls renderTool() directly and never traverses the hub path that gates it (2026-08-11). ADVISORY on purpose: it also demands a byte-match between the root host module and its flat desktop copy, which drifts routinely while a concurrent session has the root open — blocking on that would stop every deploy in the repo for a condition check_deploy_mirror already reports without blocking."
   node dev-tools/check_tool_contract.cjs --quiet || true
@@ -184,6 +191,27 @@ if [[ "${SKIP_CDN_DEPLOYABLE:-0}" != "1" ]]; then
   echo "=== Step 0.7: CDN-deployability gate (asset size + npm-10 lock) ==="
   node dev-tools/check_cdn_deployable.cjs --quiet
   echo "  ✓ CDN-deployable: no ≥25MiB tracked files; root lock passes npm-10 ci."
+fi
+
+# ── Step 0.8: behavioural gate (tests affected by this change) ─────
+# Every gate above this line is STATIC — it reads source, it never RUNS it. That
+# is why two ReferenceError crashes (an undeclared __alloT in an SVG aria-label,
+# Aquaculture Lab and Logic Lab) reached the live CDN on 2026-08-11, and it is
+# the same shape as the note at the top of Step 0.6 about a vitest guard that
+# "never ran here".
+#
+# The blocking 8-shard unit job in .github/workflows/verify.yml is NOT a
+# substitute: it judges the commit AFTER the push, while this script publishes to
+# Cloudflare Pages in the same run, so the live site can update minutes before CI
+# has an opinion. This closes that window without duplicating CI — it runs only
+# the tests the change actually touches (vitest --changed + the import graph),
+# ~30s on a representative deploy versus many minutes for all 2,236 files.
+# Quarantined files are excluded, exactly as run_unit_shard.cjs excludes them.
+# Bypass: SKIP_CHANGED_TESTS=1 ./deploy.sh
+if [[ "${SKIP_CHANGED_TESTS:-0}" != "1" ]]; then
+  echo ""
+  echo "=== Step 0.8: behavioural gate (tests affected by this change) ==="
+  node dev-tools/check_changed_tests.cjs
 fi
 
 # ── Step 1: Source commit ──────────────────────────────────────────

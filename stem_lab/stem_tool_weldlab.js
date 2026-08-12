@@ -488,6 +488,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             h('span', { className: 'normal-case text-[11px] font-semibold ' + (props.valueColor || 'text-orange-700') }, props.valueText)
           ),
           h('input', {
+            // The visible caption is a <label> with no htmlFor wrapping a span,
+            // so it names nothing. Taking props.label fixes every slider built
+            // from LabeledSlider at once, and keeps whatever translation the
+            // caller already passed.
+            'aria-label': props.label,
             type: 'range',
             min: props.min, max: props.max, step: props.step || 0.01,
             value: props.value,
@@ -3809,11 +3814,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               h('table', { className: 'w-full text-sm' },
                 h('thead', null,
                   h('tr', { className: 'border-b-2 border-slate-300' },
-                    h('th', { className: 'text-left p-2 text-xs font-bold uppercase tracking-wider text-slate-700' }, __alloT('stem.weldlab.attribute', 'Attribute')),
-                    h('th', { className: 'p-2 text-xs font-bold uppercase tracking-wider text-orange-700' }, 'MIG'),
-                    h('th', { className: 'p-2 text-xs font-bold uppercase tracking-wider text-amber-700' }, 'TIG'),
-                    h('th', { className: 'p-2 text-xs font-bold uppercase tracking-wider text-stone-700' }, __alloT('stem.weldlab.stick', 'Stick')),
-                    h('th', { className: 'p-2 text-xs font-bold uppercase tracking-wider text-blue-700' }, 'Oxy')
+                    h('th', { scope: 'col', className: 'text-left p-2 text-xs font-bold uppercase tracking-wider text-slate-700' }, __alloT('stem.weldlab.attribute', 'Attribute')),
+                    h('th', { scope: 'col', className: 'p-2 text-xs font-bold uppercase tracking-wider text-orange-700' }, 'MIG'),
+                    h('th', { scope: 'col', className: 'p-2 text-xs font-bold uppercase tracking-wider text-amber-700' }, 'TIG'),
+                    h('th', { scope: 'col', className: 'p-2 text-xs font-bold uppercase tracking-wider text-stone-700' }, __alloT('stem.weldlab.stick', 'Stick')),
+                    h('th', { scope: 'col', className: 'p-2 text-xs font-bold uppercase tracking-wider text-blue-700' }, 'Oxy')
                   )
                 ),
                 h('tbody', null,

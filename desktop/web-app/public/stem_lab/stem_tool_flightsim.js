@@ -10809,6 +10809,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var dg = dCan.getContext('2d');
           dg.fillStyle = '#ffffff';
           dg.fillRect(0, 0, 512, 512);
+
           for (var dfi = 0; dfi < 90; dfi++) {
             var dfh = ((Math.sin(dfi * 127.1 + 43.7) * 43758.5453) % 1 + 1) % 1;
             var dfh2 = ((Math.sin(dfi * 269.5 + 11.3) * 28001.8384) % 1 + 1) % 1;
@@ -10826,6 +10827,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var detailTex = new THREE.CanvasTexture(dCan);
           detailTex.wrapS = detailTex.wrapT = THREE.RepeatWrapping;
           detailTex.repeat.set(10, 10); // 240,000 / 10 = 24,000 ft per tile
+          // Ground is always seen at a grazing angle from an aircraft, which is the
+          // worst case for trilinear filtering: it picks a mip based on the steepest
+          // axis and blurs the ground to mush a short way ahead. Anisotropy is the
+          // single cheapest thing that keeps texture legible out toward the horizon,
+          // which is where the sense of speed comes from. Capped at 8 (past that the
+          // cost climbs for no visible gain) and guarded — capabilities is absent on
+          // some fallback contexts and this must never be the thing that throws.
+          try {
+            var _aniso = threeRendererRef.current && threeRendererRef.current.capabilities
+              ? threeRendererRef.current.capabilities.getMaxAnisotropy() : 1;
+            if (_aniso > 1) detailTex.anisotropy = Math.min(8, _aniso);
+          } catch (e) { /* leave at default */ }
 
           var material = new THREE.MeshLambertMaterial({
             map: detailTex,
@@ -10842,6 +10855,102 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var mesh = new THREE.Mesh(geometry, material);
           mesh.rotation.x = -Math.PI / 2;
           scene.add(mesh);
+
+          // ── Close-in ground detail ──────────────────────────────────────────
+          // The field/road map above tiles once per 24,000 ft, which is right for
+          // cruise and useless near the ground: a raycast at 400 ft AGL put the
+          // terrain 122-204 ft from the camera, so the whole visible ground spans
+          // about TWO texels of that map. Measured, it read p5 = p50 = p95 = 40.7
+          // with a standard deviation of exactly 0 — a flat wash. A drone spends
+          // its entire flight in the band where that is true, and with nothing
+          // moving underneath there is no sense of speed or height at all.
+          //
+          // So: a second pass over the SAME geometry at 100x the tiling (one tile
+          // per 2,400 ft, ~4.7 ft per texel). Added as a CHILD of the terrain, so
+          // it inherits the recentre transform for free, and sharing the geometry
+          // instance means the per-frame height updates and computeVertexNormals
+          // apply to both with no second copy to keep in sync.
+          //
+          // Multiply blending, so it modulates the lit terrain instead of painting
+          // over it — an unlit overlay would wash the colour out. It also means the
+          // layer fades ITSELF: mipmaps average the speckle toward its own mean as
+          // it recedes, so by cruise it is a uniform ~4% darkening rather than
+          // visible tiling, and no altitude fade logic is needed.
+          var fCan = document.createElement('canvas');
+          fCan.width = 256; fCan.height = 256;
+          var fg = fCan.getContext('2d');
+          fg.fillStyle = '#ffffff';
+          fg.fillRect(0, 0, 256, 256);
+          // Multiply can only darken, so every value sits below white. Scattered
+          // rectangles were tried first and measured at sd 0.22 — they cover only
+          // about a fifth of the tile, so most of the ground stayed exactly as flat
+          // as before. This is full-coverage value noise instead: three octaves of
+          // a hashed lattice, bilinear with a smoothstep, so every texel carries
+          // something and it reads as ground cover rather than dots.
+          var fHash = function (x, y) {
+            var n = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
+            return ((n % 1) + 1) % 1;
+          };
+          var fOct = function (px, py, cells) {
+            var fx = px / 256 * cells, fy = py / 256 * cells;
+            var x0 = Math.floor(fx), y0 = Math.floor(fy);
+            var tx = fx - x0, ty = fy - y0;
+            tx = tx * tx * (3 - 2 * tx); ty = ty * ty * (3 - 2 * ty);
+            // Lattice coords wrap at `cells`, which is what makes the tile seamless —
+            // without it every 2,400 ft seam would show as a hard line on the ground.
+            var w = function (v) { return ((v % cells) + cells) % cells; };
+            var v00 = fHash(w(x0), w(y0)), v10 = fHash(w(x0 + 1), w(y0));
+            var v01 = fHash(w(x0), w(y0 + 1)), v11 = fHash(w(x0 + 1), w(y0 + 1));
+            var a = v00 + (v10 - v00) * tx, b = v01 + (v11 - v01) * tx;
+            return a + (b - a) * ty;
+          };
+          var fImg = fg.createImageData(256, 256);
+          for (var fpy = 0; fpy < 256; fpy++) {
+            for (var fpx = 0; fpx < 256; fpx++) {
+              // Weighted toward the COARSE octave: at a grazing angle the fine
+              // octaves are exactly what mipmapping averages away, so spending the
+              // contrast budget on them buys nothing. Measured, an even 0.6/0.3/0.1
+              // spread survived as only ~2 luma of the 6 it carried.
+              var fN = fOct(fpx, fpy, 16) * 0.7 + fOct(fpx, fpy, 48) * 0.22 + fOct(fpx, fpy, 96) * 0.08;
+              // Skewed rather than linear: most texels sit near white with a tail
+              // running down to ~0.73. That keeps the MEAN near 0.91 — so at cruise,
+              // where mipmaps have averaged this to its mean, it is a uniform ~9%
+              // darkening and not a visible pattern — while giving the near ground
+              // far more contrast than an even spread at the same mean could.
+              var fS = 255 - Math.round(Math.pow(fN, 2.2) * 70);
+              var fI = (fpy * 256 + fpx) * 4;
+              fImg.data[fI] = fS; fImg.data[fI + 1] = fS;
+              fImg.data[fI + 2] = fS - 6; fImg.data[fI + 3] = 255;
+            }
+          }
+          fg.putImageData(fImg, 0, 0);
+          var fineTex = new THREE.CanvasTexture(fCan);
+          fineTex.wrapS = fineTex.wrapT = THREE.RepeatWrapping;
+          fineTex.repeat.set(100, 100); // 240,000 / 100 = 2,400 ft per tile
+          try {
+            var _fAniso = threeRendererRef.current && threeRendererRef.current.capabilities
+              ? threeRendererRef.current.capabilities.getMaxAnisotropy() : 1;
+            if (_fAniso > 1) fineTex.anisotropy = Math.min(8, _fAniso);
+          } catch (e) { /* leave at default */ }
+          var fineMesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({
+            map: fineTex,
+            blending: THREE.MultiplyBlending,
+            transparent: true,
+            // Coincident with its parent by construction, so it needs both the
+            // depth-write suppression and the offset to stay out of a z-fight.
+            depthWrite: false,
+            polygonOffset: true,
+            polygonOffsetFactor: -1,
+            polygonOffsetUnits: -1,
+            side: THREE.DoubleSide
+          }));
+          fineMesh.renderOrder = 1;
+          // Child of the terrain, not tracked on `resources` — that object is
+          // declared in disposeThree's scope, not this one, and reaching for it
+          // here throws a ReferenceError that node --check cannot see. Disposal
+          // follows the parent anyway.
+          mesh.add(fineMesh);
+
           terrainMeshRef.current = mesh;
         }
 
@@ -10970,8 +11079,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         var acMesh = resources.aircraft;
         acMesh.position.set(playerLoc.x, playerLoc.y, playerLoc.z);
 
-        var pitchRad = (state.pitch || 0) * Math.PI / 180;
-        var bankRad = (state.bank || 0) * Math.PI / 180;
+        // ── Attitude: fall back to the CONTROL attitude ──
+        // `state` here is whatever Physics.step() returned, and none of its three
+        // branches (drone, helicopter, fixed-wing) returns pitch or bank — nor does
+        // flightRef initialise them. So state.pitch and state.bank were ALWAYS
+        // undefined, `|| 0` swallowed it, and every aircraft in the sim rendered
+        // permanently wings-level and zero-pitch: the 737 flew a turn flat, the
+        // Cessna never flared, and the quadcopter accelerated forward without ever
+        // tilting — which is the one thing this tool tells students a quadcopter
+        // must do to translate.
+        //
+        // The physics itself reads the commanded attitude straight off the controls
+        // (`var pitch = controls.pitch`), so the control values ARE the aircraft's
+        // attitude at this fidelity. Preferring state when it exists keeps the door
+        // open for a physics branch that starts returning a damped attitude later.
+        var pitchRad = (state.pitch != null ? state.pitch : (ctrl.pitch || 0)) * Math.PI / 180;
+        var bankRad = (state.bank != null ? state.bank : (ctrl.bank || 0)) * Math.PI / 180;
+        // The gear holds a parked aircraft level: ailerons deflect on the ground but
+        // the aeroplane does not roll. Caught by screenshot — a Cessna sitting on the
+        // runway at 0 kt with the "Ready for Takeoff" card still up rolled 45 degrees
+        // to aileron input, and the chase camera below rolled the whole world with
+        // it. Pitch is deliberately NOT zeroed here: rotating nose-up while the main
+        // wheels are still down is exactly what the takeoff lesson teaches.
+        if (state.onGround) bankRad = 0;
         var headingRad = (state.heading || 0) * Math.PI / 180;
 
         // Models are built nose-toward +Z, but heading 0 = north = local -Z:
@@ -11074,8 +11204,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           offset.applyEuler(new THREE.Euler(pitchRad * 0.5, -headingRad, 0, 'YXZ'));
           var targetCamPos = new THREE.Vector3().copy(acMesh.position).add(offset);
           camera.position.lerp(targetCamPos, 0.2);
+          // Roll the chase camera PARTLY with the aircraft. Held rigidly level (as
+          // this was) a hard turn reads as the aircraft sliding sideways across a
+          // pinned horizon; rolled fully it is disorienting and the ground stops
+          // working as a reference. Partial roll is what film and flight sims
+          // settle on, and it is the single strongest cue that a turn is a turn.
+          // This was dead code's twin: bankRad was permanently 0 until the attitude
+          // fix, so no amount of camera work here could have shown anything.
+          var chaseFwd = new THREE.Vector3().subVectors(acMesh.position, camera.position);
+          // Degenerate only on the frame the camera is spawned on top of the
+          // aircraft; a zero axis would put NaN straight into camera.up and blank
+          // the view.
+          if (chaseFwd.lengthSq() > 1e-4) {
+            camera.up.set(0, 1, 0).applyAxisAngle(chaseFwd.normalize(), bankRad * 0.35);
+          } else {
+            camera.up.set(0, 1, 0);
+          }
+          // up must be set BEFORE lookAt — it is an input to the look matrix, not a
+          // property applied afterwards. Setting it after (as this did) meant the
+          // first chase frame following a cockpit-view switch still used the
+          // cockpit's tilted up.
           camera.lookAt(new THREE.Vector3().copy(acMesh.position).add(new THREE.Vector3(0, 2, 0)));
-          camera.up.set(0, 1, 0);
         } else {
           var upVec = new THREE.Vector3(0, 1, 0);
           upVec.applyEuler(new THREE.Euler(pitchRad, -headingRad, -bankRad, 'YXZ'));
@@ -11103,7 +11252,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // same rules the 2D fallback renderer uses.
           resources.starPoints.position.copy(camera.position);
           var dnBright = dayNight.brightness != null ? dayNight.brightness : 1;
-          var starNight = Math.max(0, 1 - dnBright * 1.4);
+          // Fade on the tool's OWN daylight bands (getDayNight: isNight < 0.2,
+          // isDusk 0.2-0.4) instead of an independent curve. The old
+          // `1 - brightness * 1.4` disagreed with every other consumer of those
+          // bands: measured at 8AM the sky rendered fully blue (luminance 98) while
+          // this still put 600 stars on it at 0.46 opacity. Raised to a power so
+          // they are gone by the time the sky IS blue rather than lingering evenly
+          // across the whole of dusk — which is also how stars actually go out.
+          var starDusk = Math.max(0, Math.min(1, (0.4 - dnBright) / 0.2));
+          var starNight = Math.pow(starDusk, 1.6);
           var starAltF = Math.max(0, Math.min(1, ((state.altitude || 0) - 20000) / 20000)) * 0.7;
           resources.starPoints.material.opacity = Math.max(starNight, starAltF);
           resources.starPoints.visible = resources.starPoints.material.opacity > 0.03;
@@ -19885,7 +20042,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             keys['i'] = false;
             var st = flightRef.current;
             var ktsInfo = Math.round(st.speed * 0.5924838);
-            skyAnnounce('Altitude ' + Math.round(st.altitude) + ' feet. Speed ' + ktsInfo + ' knots. Heading ' + Math.round(st.heading) + ' degrees. ' + (st.stalling ? 'WARNING: Stalling! ' : '') + (st.onGround ? 'On ground. ' : '') + 'Places discovered: ' + Object.keys(geoDiscoveredRef.current).length + '.');
+            skyAnnounce('Altitude ' + Math.round(st.altitude) + ' feet. Speed ' + ktsInfo + ' knots. Heading ' + Math.round(st.heading) + ' degrees. ' + (st.stalling ? 'WARNING: Stalling! ' : '') + (st.hitCeiling ? 'Holding at the Part 107 ceiling: 400 feet is a legal limit, not a limit of the drone. ' : '') + (st.onGround ? 'On ground. ' : '') + 'Places discovered: ' + Object.keys(geoDiscoveredRef.current).length + '.');
           }
           if (pausedRef.current) {
             // Render pause overlay
@@ -21568,7 +21725,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
             // Arrival detection. Stall warning claims the banner slot (y=32..60);
             // if we drew the welcome here too they'd render on top of each other.
-            if (nearDist < 3 && state.altitude < nearWp.alt + 2000 && !state.stalling) {
+            if (nearDist < 3 && state.altitude < nearWp.alt + 2000 && !state.stalling && !state.hitCeiling) {
               gfx.fillStyle = 'rgba(34,197,94,0.3)'; gfx.fillRect(0, 32, W, 28);
               gfx.fillStyle = '#fff'; gfx.font = 'bold 13px system-ui'; gfx.textAlign = 'center';
               gfx.fillText('✈️ Welcome to ' + nearWp.name + ' (' + nearWp.code + ')  —  ' + nearWp.fact, W / 2, 50);
@@ -21583,6 +21740,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             gfx.fillText('\u26A0\uFE0F STALL WARNING \u2014 PUSH NOSE DOWN, ADD POWER', W / 2, 50);
             // Stall haptic — continuous vibration while stalling
             if (Math.floor(timeRef.current * 4) % 2 === 0 && window._alloHaptic) window._alloHaptic('bump');
+          }
+
+          // Part 107 ceiling warning. The physics has set state.hitCeiling since it
+          // was written ("triggers a flag for HUD red alert") but nothing ever read
+          // it, so the drone just stopped climbing against an invisible wall with no
+          // explanation — which teaches "my drone can't" instead of "I may not".
+          // Amber, not the stall's red: this is a legal limit, not an emergency, and
+          // colouring them alike would say a rule broken and a wing stalled are the
+          // same kind of problem. Three banners now share this 28px band and only
+          // one may draw: the airport welcome defers to this (it already deferred to
+          // the stall), and this defers to the stall. Drawn overlapping, they are
+          // both unreadable — which is exactly what the first screenshot showed.
+          //
+          // The text deliberately does NOT name a datum. The clamp is 400 ft above
+          // FIELD ELEVATION while the HUD's AGL badge reads height above the terrain
+          // underneath, so those two numbers legitimately diverge over hills; saying
+          // "400 ft AGL" here put the banner in direct contradiction with a badge
+          // reading 324 on the same frame. What a student needs from this banner is
+          // the distinction the invisible wall otherwise teaches backwards.
+          if (state.hitCeiling && !state.stalling) {
+            gfx.fillStyle = 'rgba(245,158,11,' + (0.34 + Math.sin(timeRef.current * 5) * 0.16) + ')';
+            gfx.fillRect(0, 32, W, 28);
+            gfx.fillStyle = '#fff'; gfx.font = 'bold 13px system-ui'; gfx.textAlign = 'center';
+            gfx.fillText('⚠️ PART 107 CEILING — 400 ft IS A LEGAL LIMIT, NOT A LIMIT OF THE DRONE', W / 2, 50);
           }
 
           // ── ATIS information strip ──
@@ -24481,7 +24662,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             ),
             (iq.log || []).length > 0 && h('table', { style: { fontSize: '10px', width: '100%', borderCollapse: 'collapse', color: '#cbd5e1', marginBottom: '12px' } },
               h('thead', null, h('tr', { style: { background: '#1e293b' } },
-                ['airspeed kt', 'altitude ft', 'AoA°', 'state'].map(function(c, i) { return h('th', { key: 'h' + i, style: { padding: '4px 6px', borderBottom: '1px solid rgba(100,116,139,0.4)', textAlign: 'left' } }, c); }))),
+                ['airspeed kt', 'altitude ft', 'AoA°', 'state'].map(function(c, i) { return h('th', { scope: 'col', key: 'h' + i, style: { padding: '4px 6px', borderBottom: '1px solid rgba(100,116,139,0.4)', textAlign: 'left' } }, c); }))),
               h('tbody', null, iq.log.map(function(o, idx) {
                 return h('tr', { key: 'lr' + idx },
                   h('td', { style: { padding: '4px 6px', fontFamily: 'monospace' } }, o.s),

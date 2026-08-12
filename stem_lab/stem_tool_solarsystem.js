@@ -10486,14 +10486,28 @@ const d = labToolData.solarSystem || {};
                                   : sel.terrainType === 'volcanic'
                                     ? { threshold: 0.70, strength: 0.90 }
                                     : sel.terrainType === 'iceworld'
-                                      ? { threshold: 0.90, strength: 0.45 }
+                                      // 0.66, measured. Pluto's frame runs p50 0.14 /
+                                      // p99.9 0.494 / max 0.838 — it is a dim world — so the
+                                      // 0.90 I first shipped sat ABOVE its brightest pixel
+                                      // and did nothing whatsoever. 0.66 clears the bulk and
+                                      // catches the frost glitter and sample orbs.
+                                      ? { threshold: 0.66, strength: 0.45 }
                                       // Rocky worlds are the tightest window and were set
                                       // from a screenshot, not from taste: at 0.84/0.65 the
                                       // geological sample orbs bloomed into featureless white
                                       // discs, and their colour IS their rock type — the tool
                                       // colour-codes basalt against regolith against sulfur.
-                                      // 0.88/0.42 keeps the halo and gives the colour back.
-                                      : { threshold: 0.88, strength: 0.42 };
+                                      // 0.88 then over-corrected the other way: measuring the
+                                      // rendered frame gives p50 0.334 / p99.9 0.609 /
+                                      // max 0.832, so 0.88 sat above EVERY pixel and the
+                                      // bloom was inert in normal play. 0.80 clears the bulk
+                                      // by a wide margin while still activating on the bright
+                                      // tail, and at strength 0.42 it stays gentler than the
+                                      // 0.84/0.65 pairing that blew the orbs out.
+                                      // ★Caveat: max is framing-dependent — a sample orb close
+                                      // to the camera reads far brighter than this frame's
+                                      // 0.832 — so this is tuned for typical forward framing.
+                                      : { threshold: 0.80, strength: 0.42 };
                               var c = new T.EffectComposer(renderer);
                               c.addPass(new T.RenderPass(scene, camera));
                               var bp = new T.UnrealBloomPass(

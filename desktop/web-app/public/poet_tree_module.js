@@ -1335,13 +1335,35 @@
       setMetaphorLoading(false); setStanzaBoardLoading(false); setRevisionPlanLoading(false); setLlTranslating(false);
     }
 
-    var restoreLocalBackup = useCallback(function (mode, sourceBackup, isUndo) {
+    // Shared accessible confirmation for this module's destructive actions.
+    //
+    // The five call sites previously shared this guard:
+    //   if (typeof window.confirm === 'function' && !window.confirm(msg)) return;
+    // which FAILED OPEN. With window.confirm unavailable the && chain evaluated
+    // false, the early return never ran, and the action proceeded unconfirmed —
+    // so "erase all local poems", "delete workspace" and "clear revision
+    // history" could all fire with no confirmation at all. This fails CLOSED:
+    // no dialog service means the destructive action does not happen.
+    //
+    // Declared (not assigned) so hoisting makes it available to every call site
+    // in this component regardless of definition order.
+    async function ptConfirm(message, options) {
+      var confirmApi = typeof window !== 'undefined' && window.AlloFlowUX && window.AlloFlowUX.confirm;
+      if (typeof confirmApi !== 'function') return false;
+      try {
+        return (await confirmApi(message, options || {})) === true;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    var restoreLocalBackup = useCallback(async function (mode, sourceBackup, isUndo) {
       var backup = sourceBackup || (backupPreview && backupPreview.backup);
       if (!backup) return;
       var undoing = !!isUndo;
       var merge = mode === 'merge' && !undoing;
       var question = undoing ? 'Undo the last local-data restore and return to the previous writing state?' : (merge ? 'Merge this backup into your current local data? Your current draft will stay open.' : 'Replace all current local writing data with this backup? A safety copy will download first.');
-      if (typeof window !== 'undefined' && typeof window.confirm === 'function' && !window.confirm(question)) return;
+      if (!(await ptConfirm(question))) return;
       var previousBackup = null;
       try {
         if (!undoing) previousBackup = normalizeLocalBackupPayload(getLocalBackupPayload());
@@ -1503,8 +1525,8 @@
       addToast && addToast((existing ? 'Workspace updated.' : 'Workspace saved.'), 'success');
     }, [workspaces, activeWorkspaceId, poemTitle, poemText, form, acrosticTarget, addToast]);
 
-    var startNewWorkspace = useCallback(function () {
-      if (poemText.trim() && typeof window !== 'undefined' && typeof window.confirm === 'function' && !window.confirm('Start a new workspace? Your current draft will remain only if you saved this workspace.')) return;
+    var startNewWorkspace = useCallback(async function () {
+      if (poemText.trim() && !(await ptConfirm('Start a new workspace? Your current draft will remain only if you saved this workspace.'))) return;
       setActiveWorkspaceId('');
       storeActiveWorkspaceId('');
       setPoemTitle('');
@@ -1550,11 +1572,11 @@
       announcePT('Opened workspace: ' + target.name + '.');
     }, [workspaces, activeWorkspaceId, poemTitle, poemText, form, acrosticTarget]);
 
-    var deleteActiveWorkspace = useCallback(function () {
+    var deleteActiveWorkspace = useCallback(async function () {
       if (!activeWorkspaceId) return;
       var target = workspaces.find(function (workspace) { return workspace.id === activeWorkspaceId; });
       if (!target) return;
-      if (typeof window !== 'undefined' && typeof window.confirm === 'function' && !window.confirm('Delete workspace "' + target.name + '" from this device?')) return;
+      if (!(await ptConfirm('Delete workspace "' + target.name + '" from this device?'))) return;
       var updated = workspaces.filter(function (workspace) { return workspace.id !== activeWorkspaceId; });
       setWorkspaces(updated);
       storeJson(STORAGE_WORKSPACES, updated);
@@ -1654,8 +1676,8 @@
       announcePT('Local draft discarded.');
     }, []);
 
-    var eraseAllLocalData = useCallback(function () {
-      if (typeof window !== 'undefined' && typeof window.confirm === 'function' && !window.confirm('Erase all local Poet Tree poems, drafts, revisions, and workspaces from this device?')) return;
+    var eraseAllLocalData = useCallback(async function () {
+      if (!(await ptConfirm('Erase all local Poet Tree poems, drafts, revisions, and workspaces from this device?'))) return;
       abortAllAiRequests();
       Object.keys(aiRequestSeqRef.current).forEach(function (key) { aiRequestSeqRef.current[key] += 1; });
       llReqRef.current += 1;
@@ -1674,7 +1696,7 @@
       setDraftCandidate(null);
       setDraftSavedAt('');
       setDraftStatus('');
-      setWorkspaceStatus('');
+      setWorkspaceStatus('');
       setBackupPreview(null);
       setBackupPreviewError('');
       setRestoreUndoSnapshot(null);
@@ -2604,9 +2626,9 @@
       }
     }, [revisionHistory, addToast]);
 
-    var clearRevisionHistory = useCallback(function () {
+    var clearRevisionHistory = useCallback(async function () {
       if (!revisionHistory.length) return;
-      if (typeof window !== 'undefined' && typeof window.confirm === 'function' && !window.confirm('Clear all local PoetTree revision history?')) return;
+      if (!(await ptConfirm('Clear all local PoetTree revision history?'))) return;
       setRevisionHistory([]);
       storeJson(STORAGE_VERSIONS, []);
       announcePT('Revision history cleared.');

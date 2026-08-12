@@ -24572,6 +24572,13 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   React.createElement("input", {
 
+                    // The caption sits two spans back (name, then live value),
+                    // so there is no adjacent label to associate. Reusing the
+                    // same __alloT call keeps the name translated; it carries an
+                    // emoji, which a screen reader will read aloud, but that is
+                    // the same text a sighted user sees and is better than
+                    // freezing an English string here.
+                    'aria-label': __alloT('stem.aquarium.harvest_rate_2', "🎣 Harvest Rate"),
                     type: "range", min: "0", max: "100", value: harvestRate,
 
                     onChange: function (e) { upd('harvestRate', parseInt(e.target.value)); },
@@ -24598,6 +24605,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   React.createElement("input", {
 
+                    'aria-label': __alloT('stem.aquarium.marine_protected_area', "🏝️ Marine Protected Area"),
                     type: "range", min: "0", max: "80", value: mpaPercent,
 
                     onChange: function (e) { upd('mpaPercent', parseInt(e.target.value)); },

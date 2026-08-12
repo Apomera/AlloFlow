@@ -2431,7 +2431,7 @@ var d = labToolData || {};
                 React.createElement('div', { className: 'grid grid-cols-3 gap-3 mb-3' },
                   React.createElement('div', null,
                     React.createElement('label', { className: 'text-[11px] font-bold text-red-600 block mb-0.5' }, t('stem.economicslab.amount', 'Amount ($)')),
-                    React.createElement('input', { type: 'number', value: d.inflationAmt || 100,
+                    React.createElement('input', { 'aria-label': t('stem.economicslab.amount', 'Amount ($)'), type: 'number', value: d.inflationAmt || 100,
                       onChange: function(e) { upd('inflationAmt', parseFloat(e.target.value) || 100); },
                       className: 'w-full px-2 py-1.5 border border-red-200 rounded-lg text-xs focus:border-red-400'
                     })

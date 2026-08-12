@@ -19439,6 +19439,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             world.renderer.setPixelRatio(Math.min(profile.pixelRatio, window.devicePixelRatio || 1));
             world.renderer.setSize(W, H, false);
             if (world.renderer.shadowMap) world.renderer.shadowMap.enabled = profile.shadows;
+            // The composer owns its own render targets, so a resize or a quality
+            // change that misses them leaves the scene stretched and soft. This runs
+            // on every tier switch as well as every resize, which is exactly when it
+            // is needed. (Eco skips bloom at the render site rather than tearing the
+            // composer down, so stepping back up to balanced is instant.)
+            if (world.renderer._alloComposer) {
+              try { world.renderer._alloComposer.setSize(W, H); } catch (_) {}
+              try { if (world.renderer._alloBloom && world.renderer._alloBloom.setSize) world.renderer._alloBloom.setSize(W, H); } catch (_) {}
+            }
             var objects = world.objects || {};
             (objects.horizonHills || []).forEach(function(node, index) { node.visible = tier !== 'eco' || index % profile.detailStride === 0; });
             (objects.depthMarkers || []).forEach(function(node, index) { node.visible = tier === 'high' || index % profile.detailStride === 0; });
@@ -19477,6 +19486,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 var materials = node.material ? (Array.isArray(node.material) ? node.material : [node.material]) : [];
                 materials.forEach(function(material) { if (material && disposedMaterial.indexOf(material) < 0) { disposedMaterial.push(material); try { material.dispose(); } catch (_) {} } });
               });
+            }
+            // Composer passes hold their own render targets, which renderer.dispose()
+            // does not reach — left alone they survive every flight restart.
+            if (world.renderer && world.renderer._alloComposer) {
+              try { (world.renderer._alloComposer.passes || []).forEach(function (p) { if (p && p.dispose) p.dispose(); }); } catch (_) {}
+              try { if (world.renderer._alloComposer.renderTarget1) world.renderer._alloComposer.renderTarget1.dispose(); } catch (_) {}
+              try { if (world.renderer._alloComposer.renderTarget2) world.renderer._alloComposer.renderTarget2.dispose(); } catch (_) {}
+              world.renderer._alloComposer = null; world.renderer._alloBloom = null;
             }
             if (world.renderer) { try { if (world.renderer.renderLists && world.renderer.renderLists.dispose) world.renderer.renderLists.dispose(); world.renderer.dispose(); } catch (_) {} }
             if (world.canvas && world.canvas.parentNode) world.canvas.parentNode.removeChild(world.canvas);
@@ -19527,6 +19544,104 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             rim.position.set(180, 80, -240);
             scene.add(rim);
 
+            // ── Bloom ──
+            // This was the last 3D surface in the lab with no post-processing at
+            // all, which is backwards for a scene navigated ENTIRELY by light: the
+            // DCA beacon you are flying toward, the queen signal that replaces it,
+            // the nectar blooms you refuel on, the thermal columns and the obstacle
+            // warning ring are all emissive cues, and every one of them rendered as
+            // flat paint. A student is told to "follow the golden signal" and the
+            // signal does not glow.
+            //
+            // Same guarantees as everywhere else in the lab: renders plain until the
+            // r128 addons load, every op try/caught with a fall back to the plain
+            // render so bloom can never break the flight, honours
+            // window.AlloPostFXEnabled === false, and skipped entirely on the eco
+            // quality tier (see applyThreeQuality) since that tier exists for
+            // machines already struggling.
+            //
+            // Threshold is HIGH because this meadow is bright: the clear colour
+            // alone sits at ~0.78 luma and the ground is pale green, so a low cut
+            // would bloom the whole world into milk. Tuned from screenshots, not
+            // taste — see the beacon/halo colours around 0.89-0.92.
+            // Stored ON THE RENDERER rather than in a local: the composer is built
+            // asynchronously after the CDN addons land, while the render site lives
+            // in updateThreeWorld() and the resize/quality path in
+            // applyThreeQuality(), none of which share this closure. Riding the
+            // renderer object is the pattern the rest of the lab already uses.
+            renderer._alloComposer = null;
+            renderer._alloBloom = null;
+            (function setupBeeBloom() {
+              if (window.AlloPostFXEnabled === false) return;
+              var ensure = function (cb) {
+                if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
+                var urls = [
+                  'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js',
+                  'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js',
+                  'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js',
+                  'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js',
+                  'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js',
+                  'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'
+                ];
+                var i = 0;
+                (function next() {
+                  if (i >= urls.length) { cb(); return; }
+                  var s = document.createElement('script');
+                  s.src = urls[i];
+                  s.onload = function () { i++; next(); };
+                  s.onerror = function () { i++; next(); };
+                  document.head.appendChild(s);
+                })();
+              };
+              ensure(function () {
+                try {
+                  var T = window.THREE;
+                  if (!T || !T.EffectComposer || !T.RenderPass || !T.UnrealBloomPass) return;
+                  if (!threeAlive) return;
+                  var lowPower = prefersReducedMotion
+                    || (!!navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
+                  var res = lowPower ? 0.5 : 1;
+                  // ── Colour management, and it is NOT optional here ──
+                  // This renderer sets outputEncoding = sRGBEncoding (most tools in
+                  // the lab do not, which is why they could pass a bare renderer to
+                  // EffectComposer and look right). In r128 the composer's default
+                  // render target is LINEAR, so the scene lands in it un-encoded and
+                  // then gets encoded on the way out — and the first screenshot of
+                  // this showed the result immediately: not just bloomed highlights
+                  // but the WHOLE image lifted, the meadow going to milk and the
+                  // trees ghosting out. Handing the composer a target that matches
+                  // the renderer's encoding keeps the base image identical to the
+                  // plain render, so bloom only ever ADDS light.
+                  var rt = null;
+                  try {
+                    rt = new T.WebGLRenderTarget(
+                      Math.max(1, Math.round(W)), Math.max(1, Math.round(H)),
+                      { minFilter: T.LinearFilter, magFilter: T.LinearFilter, format: T.RGBAFormat });
+                    if ('encoding' in rt.texture && T.sRGBEncoding) rt.texture.encoding = T.sRGBEncoding;
+                  } catch (_) { rt = null; }
+                  var c = rt ? new T.EffectComposer(renderer, rt) : new T.EffectComposer(renderer);
+                  c.addPass(new T.RenderPass(scene, camera));
+                  // Threshold 0.90, measured rather than guessed. Sampling the
+                  // rendered frame gives this meadow a luminance spread of
+                  // mean 0.79 / p90 0.845 / p99 0.869 / p99.9 0.916 / max 0.926, so:
+                  //   - 0.86 (first attempt) sits BELOW the 90th percentile and
+                  //     blooms most of the sky and ground — the milk-out.
+                  //   - 0.94 (second attempt) sits ABOVE the brightest pixel in the
+                  //     scene and therefore does absolutely nothing.
+                  //   - 0.90 catches roughly the top 0.4%: the beacon cores, the
+                  //     queen signal, the nectar halos and the sun when it is in
+                  //     frame, and nothing else.
+                  // Strength can be generous precisely BECAUSE so little qualifies.
+                  var bp = new T.UnrealBloomPass(
+                    new T.Vector2(Math.max(1, Math.round(W * res)), Math.max(1, Math.round(H * res))),
+                    lowPower ? 0.6 : 0.85, 0.42, 0.90);
+                  c.addPass(bp);
+                  renderer._alloBloom = bp;
+                  renderer._alloComposer = c;
+                } catch (e) { renderer._alloComposer = null; renderer._alloBloom = null; }
+              });
+            })();
+
             var mat = function(color, opts) {
               opts = opts || {};
               return new THREE.MeshStandardMaterial(Object.assign({ color: color, roughness: 0.82, metalness: 0.02 }, opts));
@@ -19555,9 +19670,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               var fieldRow = new THREE.Mesh(new THREE.PlaneGeometry(1800, fieldRowIndex % 2 ? 7 : 4), fieldRowMaterials[fieldRowIndex % 2]);
               fieldRow.rotation.x = -Math.PI / 2; fieldRow.position.set(0, -0.76, -fieldRowIndex * 140); scene.add(fieldRow);
             }
+            // ── Shadow frustum ──
+            // This used to span 1300 x 2220 units on a 1024 map, i.e. roughly TWO
+            // WORLD UNITS PER TEXEL. The bee is about two units across, so its own
+            // shadow was a texel of mush and the trees cast soft grey smears — which
+            // is presumably why a painted blob shadow exists under the player at all.
+            // It also could not cover the route: the flight runs from z=0 out past
+            // z=-1200, so everything beyond the frustum simply had no shadow.
+            //
+            // A tight box that FLIES WITH THE BEE fixes both at once: 240 units wide
+            // on the same 1024 map is 0.23 units/texel, about nine times sharper, and
+            // because it is anchored to the player it is never out of range no matter
+            // how far down the route the flight goes. Offset is the original light
+            // vector scaled 1.6x, so the sun's DIRECTION — and therefore the angle
+            // every shadow falls at — is unchanged; it just sits far enough above
+            // that the bee stays under it at DCA-band altitude.
             sun.castShadow = true; sun.shadow.mapSize.width = 1024; sun.shadow.mapSize.height = 1024;
-            sun.shadow.camera.left = -650; sun.shadow.camera.right = 650; sun.shadow.camera.top = 420; sun.shadow.camera.bottom = -1800;
-            sun.shadow.camera.near = 20; sun.shadow.camera.far = 1200;
+            sun.shadow.camera.left = -120; sun.shadow.camera.right = 120;
+            sun.shadow.camera.top = 120; sun.shadow.camera.bottom = -120;
+            sun.shadow.camera.near = 20; sun.shadow.camera.far = 900;
+            sun.shadow.bias = -0.0009;
+            sun.position.set(-192, 416, 256);
+            // The target needs to be in the scene graph for its world matrix to
+            // update; the light is already exposed as objects.sun further down.
+            scene.add(sun.target);
 
             var shared = {
               trunk: mat(0x7c4a2d), leaf: mat(0x217a3a), leafLight: mat(0x43a047),
@@ -19688,11 +19824,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             }
             var dcaBeacon = new THREE.Group();
             var dcaColumn = new THREE.Mesh(new THREE.CylinderGeometry(34, 34, 150, 24, 1, true), basic(0xfbbf24, { transparent: true, opacity: 0.075, side: THREE.DoubleSide, depthWrite: false })); dcaColumn.position.y = 75; dcaBeacon.add(dcaColumn);
-            var dcaHalo = new THREE.Mesh(new THREE.TorusGeometry(42, 1.8, 10, 48), basic(0xfde68a, { transparent: true, opacity: 0.7, side: THREE.DoubleSide, depthWrite: false })); dcaHalo.rotation.x = Math.PI / 2; dcaHalo.position.y = 100; dcaBeacon.add(dcaHalo);
+            // Bright enough to be a LIGHT, not a tint. Measured: at 0xfde68a/0.7
+            // this ring rendered DARKER than the sky behind it — toggling the whole
+            // beacon off actually raised the count of pixels above the bloom cut
+            // (54 -> 113). So the "golden signal" a student is told to follow was a
+            // translucent ring that dimmed the sky, and the bloom added for exactly
+            // this cue never touched it. Lifted past the 0.90 threshold so the
+            // primary navigation target finally glows.
+            var dcaHalo = new THREE.Mesh(new THREE.TorusGeometry(42, 1.8, 10, 48), basic(0xfff3bd, { transparent: true, opacity: 0.95, side: THREE.DoubleSide, depthWrite: false })); dcaHalo.rotation.x = Math.PI / 2; dcaHalo.position.y = 100; dcaBeacon.add(dcaHalo);
             var dcaLight = new THREE.PointLight(0xfbbf24, 1.6, 360); dcaLight.position.y = 90; dcaBeacon.add(dcaLight); dcaBeacon.position.set(0, 0, -600); scene.add(dcaBeacon); objects.dcaBeacon = dcaBeacon;
             var queenBeacon = new THREE.Group();
             var queenColumn = new THREE.Mesh(new THREE.CylinderGeometry(18, 18, 80, 20, 1, true), basic(0xa78bfa, { transparent: true, opacity: 0.08, side: THREE.DoubleSide, depthWrite: false })); queenColumn.position.y = 40; queenBeacon.add(queenColumn);
-            var queenHalo = new THREE.Mesh(new THREE.TorusGeometry(24, 1.4, 8, 36), basic(0xfef08a, { transparent: true, opacity: 0.78, side: THREE.DoubleSide, depthWrite: false })); queenHalo.rotation.x = Math.PI / 2; queenHalo.position.y = 50; queenBeacon.add(queenHalo); scene.add(queenBeacon); objects.queenBeacon = queenBeacon;
+            // Same treatment as the DCA halo above: this is the cue that REPLACES it
+            // once the congregation area is reached, so if one glows and the other
+            // does not, the handover reads as the signal getting weaker just as it
+            // becomes the thing you are chasing.
+            var queenHalo = new THREE.Mesh(new THREE.TorusGeometry(24, 1.4, 8, 36), basic(0xfff6c4, { transparent: true, opacity: 0.95, side: THREE.DoubleSide, depthWrite: false })); queenHalo.rotation.x = Math.PI / 2; queenHalo.position.y = 50; queenBeacon.add(queenHalo); scene.add(queenBeacon); objects.queenBeacon = queenBeacon;
+            // ── Mating flash ──
+            // The intercept is the goal of the entire flight, and it had no visual
+            // at all: the queen simply blinked out of existence, the beacon and the
+            // route gates vanished with her, and the world went empty. A sound and a
+            // line of text were the whole payoff.
+            //
+            // Deliberately a single soft pulse of light rather than a celebration.
+            // This tool's own reference text states that the drone which mates dies
+            // immediately afterwards, so confetti would contradict the biology it
+            // teaches on the next screen. One flash, then the sky is empty — which
+            // is, in fact, the honest ending.
+            var matingFlash = new THREE.Group();
+            var mfRing = new THREE.Mesh(
+              new THREE.TorusGeometry(7, 1.5, 10, 40),
+              basic(0xffe9a8, { transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false }));
+            mfRing.rotation.x = Math.PI / 2;
+            matingFlash.add(mfRing);
+            var mfCore = new THREE.Mesh(
+              new THREE.SphereGeometry(3.4, 14, 10),
+              basic(0xfff6d0, { transparent: true, opacity: 0, depthWrite: false }));
+            matingFlash.add(mfCore);
+            // Range 170, not 300: at 300 the pulse lit the whole meadow warm and
+            // read as a render glitch rather than a moment. Keeping it local means
+            // the light falls on the queen and the air around her, which is where
+            // the event actually happens.
+            var mfLight = new THREE.PointLight(0xffd76a, 0, 170);
+            matingFlash.add(mfLight);
+            matingFlash.visible = false;
+            scene.add(matingFlash);
+            objects.matingFlash = matingFlash;
+
             var obstacleWarn = new THREE.Group();
             var obstacleWarnRing = new THREE.Mesh(new THREE.TorusGeometry(16, 1.3, 8, 32), basic(0xfb7185, { transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false }));
             obstacleWarnRing.rotation.x = Math.PI / 2; obstacleWarnRing.position.y = 2; obstacleWarn.add(obstacleWarnRing);
@@ -19887,7 +20065,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             objects.windLines = windLines;
             var particleGeometry = new THREE.BufferGeometry();
             var particlePositions = new Float32Array(240 * 3); particleGeometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
-            objects.particlePoints = new THREE.Points(particleGeometry, new THREE.PointsMaterial({ color: 0xfacc15, size: 3.2, transparent: true, opacity: 0.85, depthWrite: false })); scene.add(objects.particlePoints);
+            // Additive, and brighter. These are the nectar-pickup sparks — the core
+            // reward beat of the flight, fired 14 at a time every time a bloom is
+            // skimmed. At 0xfacc15/0.85 they composited to ~0.79 luma against a
+            // meadow and sky already sitting at ~0.79, so the burst was the same
+            // brightness as its background: gold confetti on a pale field, invisible
+            // at any distance and nowhere near the bloom threshold.
+            //
+            // Additive blending is what a spark actually does — it ADDS light rather
+            // than tinting what is behind it — so the burst now brightens the scene
+            // where it lands, saturates, and picks up the glow the bloom pass exists
+            // to give it.
+            objects.particlePoints = new THREE.Points(particleGeometry, new THREE.PointsMaterial({ color: 0xffe98a, size: 3.2, transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.AdditiveBlending })); scene.add(objects.particlePoints);
             return { THREE: THREE, canvas: threeCanvas, renderer: renderer, scene: scene, camera: camera, objects: objects, particlePositions: particlePositions, renderedFrames: 0, flatFrameChecks: 0, frameHealth: 'warming', qualityTier: initialQualityTier, particleLimit: initialQuality.particleLimit, ready: true };
           }
           function verifyThreeFrameHealth(world) {
@@ -19949,6 +20138,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               if (o.playerDrone.userData.beacon) o.playerDrone.userData.beacon.rotation.z = prefersReducedMotion ? 0 : now * 0.002;
               dressBeeAvatar(o.playerDrone, throttleEffort, nectarLoadRatio);
             }
+            // Carry the shadow frustum with the bee. Snapped to whole shadow-map
+            // texels first: a shadow camera that slides continuously makes every
+            // shadow edge crawl and sparkle as the map re-samples, and at flight
+            // speed that reads as the whole meadow shimmering. Rounding the centre
+            // to the texel grid means the map only ever moves in whole texels, so
+            // edges stay put. (Snapped in world XZ rather than true light space —
+            // an approximation, but this sun is steep enough that it holds.)
+            if (o.sun && o.sun.target) {
+              var shadowTexel = 240 / 1024;
+              var snapX = Math.round((ds.x || 0) / shadowTexel) * shadowTexel;
+              var snapZ = Math.round((ds.z || 0) / shadowTexel) * shadowTexel;
+              o.sun.target.position.set(snapX, 0, snapZ);
+              o.sun.position.set(snapX - 192, 416, snapZ + 256);
+              o.sun.target.updateMatrixWorld();
+            }
             if (o.playerShadow) {
               // Faint and wide when high, tight and dark when low — the same
               // reading a pilot takes off their own shadow on short final.
@@ -19987,8 +20191,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             var targetFov = cameraMode === 'chase' ? 58 + Math.min(8, (ds.speed || 0) * 0.75) : 62 + Math.min(9, (ds.speed || 0) * 0.82);
             if (Math.abs(t.camera.fov - targetFov) > 0.03) { t.camera.fov += (targetFov - t.camera.fov) * (prefersReducedMotion ? 1 : 0.09); t.camera.updateProjectionMatrix(); }
             var visibilityScale = scenarioVisual.visibility || 1;
-            t.scene.fog.near = (340 + Math.min(180, (ds.y || 0) * 0.65)) * Math.max(0.76, visibilityScale);
-            t.scene.fog.far = (2350 + Math.min(520, (ds.y || 0) * 1.4)) * visibilityScale;
+            // Fog starts far enough out that "Clear field" actually looks clear.
+            // It began at 340 units in a world whose hills sit at ~980 and whose
+            // route runs past 1200, so even the scenario labelled "Clear visibility"
+            // dissolved the middle distance into flat pale blue — the trees, the
+            // obstacle towers and the whole landscape you are navigating by lost
+            // their colour a few seconds' flight ahead of the bee.
+            //
+            // 700 keeps aerial perspective on the far hills (which is what sells the
+            // distance) while letting the near and middle field hold its greens. It
+            // also spreads the SCENARIOS apart: they already carry visibility 1.0 /
+            // 0.88 / 0.78, and that multiplier only reads as three distinct
+            // conditions once the clear baseline is genuinely clear.
+            t.scene.fog.near = (700 + Math.min(180, (ds.y || 0) * 0.65)) * Math.max(0.76, visibilityScale);
+            t.scene.fog.far = (3200 + Math.min(520, (ds.y || 0) * 1.4)) * visibilityScale;
             t.camera.updateMatrixWorld();
             // Dome and sun ride the camera, so this has to follow the camera move
             // for the frame or the horizon lags a frame behind the aircraft.
@@ -20000,6 +20216,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             }
             if (o.dcaBeacon) { o.dcaBeacon.visible = !ds.reachedDca && ds.phase !== 'mating' && ds.phase !== 'end'; o.dcaBeacon.rotation.y = now * 0.00028; o.dcaBeacon.children[1].rotation.z = now * 0.00055; }
             if (o.queenBeacon && ds.nearQueens && ds.nearQueens[0]) { var signalQueen = ds.nearQueens[0]; o.queenBeacon.position.set(signalQueen.x, 0, signalQueen.z); o.queenBeacon.visible = !signalQueen.caught && (ds.phase === 'congregation' || ds.reachedDca); o.queenBeacon.rotation.y = -now * 0.0004; o.queenBeacon.children[1].rotation.z = now * 0.0007; }
+            if (o.matingFlash) {
+              var mfAge = ds.matingFlashAt ? (now - ds.matingFlashAt) / 1500 : 2;
+              if (mfAge >= 0 && mfAge < 1 && ds.matingFlashPos) {
+                o.matingFlash.visible = true;
+                o.matingFlash.position.set(ds.matingFlashPos.x, ds.matingFlashPos.y, ds.matingFlashPos.z);
+                var mfFade = 1 - mfAge;
+                // Reduced motion keeps the light but drops the expansion, so the
+                // moment still reads without anything rushing outward.
+                var mfGrow = prefersReducedMotion ? 1.4 : 1 + mfAge * 5.5;
+                o.matingFlash.children[0].scale.setScalar(mfGrow);
+                o.matingFlash.children[0].material.opacity = mfFade * 0.8;
+                o.matingFlash.children[1].scale.setScalar(prefersReducedMotion ? 1.3 : 1 + mfAge * 2.2);
+                o.matingFlash.children[1].material.opacity = mfFade * 0.9;
+                o.matingFlash.children[2].intensity = mfFade * 2.4;
+              } else if (o.matingFlash.visible) {
+                o.matingFlash.visible = false;
+                o.matingFlash.children[2].intensity = 0;
+              }
+            }
             if (o.obstacleWarn) {
               var nearbyObstacle = ds.nearestObstacle || droneNearestObstacle(ds);
               var obstacleWarningVisible = nearbyObstacle && nearbyObstacle.obstacle && nearbyObstacle.horizontalDistance < 150 && nearbyObstacle.clearance < 90 && ds.phase !== 'end';
@@ -20067,14 +20302,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             });
             o.flowers.forEach(function(item, idx) { var active = !item.flower.collected && item.flower.hasNectar !== false; item.group.visible = true; item.bloom.scale.setScalar(active ? 1 + 0.08 * Math.sin(now * 0.006 + idx) : 0.48); if (item.halo) item.halo.visible = active; });
             o.thermals.forEach(function(item, idx) { item.rotation.y = now * 0.00035 * (idx % 2 ? -1 : 1); item.children.forEach(function(child) { child.material.opacity = 0.12 + 0.05 * Math.sin(now * 0.003 + idx); }); });
-            o.drones.forEach(function(item) { var trafficDx = ds.x - item.drone.x, trafficDy = ds.y - item.drone.y, trafficDz = ds.z - item.drone.z; var trafficDistance = Math.sqrt(trafficDx * trafficDx + trafficDy * trafficDy + trafficDz * trafficDz); item.group.position.set(item.drone.x, item.drone.y, item.drone.z); item.group.rotation.y = Math.atan2(item.drone.vx, -item.drone.vz); dressBeeAvatar(item.group, 0.75, 0); if (item.alert) { item.alert.visible = trafficDistance < 110; item.alert.material.opacity = trafficDistance < 30 ? 0.95 : 0.4; item.alert.scale.setScalar(1 + 0.1 * Math.sin(now * 0.009)); } });
+            o.drones.forEach(function(item) { var trafficDx = ds.x - item.drone.x, trafficDy = ds.y - item.drone.y, trafficDz = ds.z - item.drone.z; var trafficDistance = Math.sqrt(trafficDx * trafficDx + trafficDy * trafficDy + trafficDz * trafficDz); item.group.position.set(item.drone.x, item.drone.y, item.drone.z); item.group.rotation.y = Math.atan2(item.drone.vx, -item.drone.vz); dressBeeAvatar(item.group, 0.75, 0); if (item.alert) { item.alert.visible = trafficDistance < 110; item.alert.material.opacity = trafficDistance < 30 ? 0.95 : 0.7; item.alert.scale.setScalar(1 + 0.1 * Math.sin(now * 0.009)); } });
             o.birds.forEach(function(item) { item.group.position.set(item.bird.x, item.bird.y, item.bird.z); item.group.rotation.y = Math.atan2(item.bird.vx, -item.bird.vz); var flap = Math.sin(item.bird.wingPhase) * 0.42; item.wings[0].rotation.z = -0.28 - flap; item.wings[1].rotation.z = 0.28 + flap; var hazardDx = ds.x - item.bird.x, hazardDy = ds.y - item.bird.y, hazardDz = ds.z - item.bird.z; var hazardDist = Math.sqrt(hazardDx * hazardDx + hazardDy * hazardDy + hazardDz * hazardDz); if (item.alert) { item.alert.visible = hazardDist < 120; item.alert.material.opacity = hazardDist < 45 ? 0.92 : 0.42; item.alert.scale.setScalar(1 + 0.12 * Math.sin(now * 0.01)); } });
             o.queens.forEach(function(item) { item.group.position.set(item.queen.x, item.queen.y, item.queen.z); item.group.visible = !item.queen.caught; item.group.rotation.y += 0.006; dressBeeAvatar(item.group, 0.45, 0); item.group.children[1].scale.setScalar(1 + 0.16 * Math.sin(now * 0.004)); });
             var particleLimit = t.particleLimit || 240;
             for (var pi = 0; pi < 240; pi++) { var pt = pi < particleLimit ? (ds.particles || [])[pi] : null; var off = pi * 3; t.particlePositions[off] = pt ? pt.x : 0; t.particlePositions[off + 1] = pt ? pt.y : -9999; t.particlePositions[off + 2] = pt ? pt.z : 0; }
             o.particlePoints.geometry.attributes.position.needsUpdate = true;
             if (o.particlePoints.geometry.setDrawRange) o.particlePoints.geometry.setDrawRange(0, particleLimit);
-            t.renderer.render(t.scene, t.camera);
+            // Bloom when it is available and the quality tier allows it; a plain
+            // render otherwise, and permanently after any composer throw so a single
+            // bad frame cannot leave the flight stuck in a broken pipeline.
+            var beeFx = t.renderer._alloComposer;
+            if (beeFx && t.qualityTier !== 'eco') {
+              try { beeFx.render(); }
+              catch (e) { t.renderer._alloComposer = null; t.renderer._alloBloom = null; t.renderer.render(t.scene, t.camera); }
+            } else {
+              t.renderer.render(t.scene, t.camera);
+            }
             verifyThreeFrameHealth(t);
           }
           function initThreeWorld() {
@@ -20321,6 +20565,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     q.caught = true;
                     ds.phase = 'mating';
                     ds.reachedQueen = true;
+                    // Same `now` the render pass receives, so the flash runs on wall
+                    // clock and looks identical at 20fps and 60fps.
+                    ds.matingFlashAt = now;
+                    ds.matingFlashPos = { x: q.x, y: q.y, z: q.z };
                     ds.score += 200;
                     playSfx(sfxSuccess);
                   }

@@ -2443,7 +2443,7 @@ window.StemLab = window.StemLab || {
           kernelResult.provenance && h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6 } }, 'Source: ' + kernelResult.provenance.rowCount + ' rows · ' + (kernelResult.provenance.columns || []).join(', ') + ' · query kept read-only'),
           kernelResult.rows.length > 0 && h('div', { style: { overflowX: 'auto' } },
             h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 10, fontFamily: 'monospace' } },
-              h('thead', null, h('tr', null, kernelResult.columns.map(function(column) { return h('th', { key: column, style: { textAlign: 'left', padding: '4px 6px', background: 'rgba(56,189,248,0.12)', color: 'var(--sl-info)', border: '1px solid rgba(56,189,248,0.2)' } }, column); }))),
+              h('thead', null, h('tr', null, kernelResult.columns.map(function(column) { return h('th', { scope: 'col', key: column, style: { textAlign: 'left', padding: '4px 6px', background: 'rgba(56,189,248,0.12)', color: 'var(--sl-info)', border: '1px solid rgba(56,189,248,0.2)' } }, column); }))),
               h('tbody', null, kernelResult.rows.map(function(row, ri) { return h('tr', { key: ri }, kernelResult.columns.map(function(column) { return h('td', { key: column, style: { padding: '4px 6px', color: 'var(--allo-stem-text, #cbd5e1)', border: '1px solid rgba(56,189,248,0.16)' } }, row[column] == null ? '—' : String(row[column])); })); }))
             )
           ),
@@ -2716,9 +2716,9 @@ window.StemLab = window.StemLab || {
           },
             h('thead', null,
               h('tr', null,
-                h('th', { style: { padding: 6, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'left' } }, ''),
+                h('th', { scope: 'col', style: { padding: 6, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'left' } }, ''),
                 d.chiIndepData.cols.map(function(col, ci) {
-                  return h('th', { key: ci, style: { padding: 6 } },
+                  return h('th', { scope: 'col', key: ci, style: { padding: 6 } },
                     h('input', {
                       type: 'text', value: col,
                       onChange: function(e) {
@@ -2731,7 +2731,7 @@ window.StemLab = window.StemLab || {
                     })
                   );
                 }),
-                h('th', null,
+                h('th', { scope: 'col' },
                   h('button', {
                     onClick: function() {
                       var cols = d.chiIndepData.cols.slice(); cols.push('Col ' + (cols.length + 1));
@@ -2822,7 +2822,7 @@ window.StemLab = window.StemLab || {
         h('div', { style: { display: 'flex', gap: 10, marginBottom: 10, flexWrap: 'wrap', alignItems: 'flex-end' } },
           h('div', null,
             h('label', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'block', marginBottom: 4 } }, '# of predictors:'),
-            h('input', {
+            h('input', { 'aria-label': "# of predictors",
               type: 'number', min: 1, max: 8, step: 1,
               value: (d.multiRegData.xLabels || ['X1']).length,
               onChange: function(e) {
@@ -2870,9 +2870,9 @@ window.StemLab = window.StemLab || {
           },
             h('thead', { style: { position: 'sticky', top: 0, background: 'var(--allo-stem-canvas, #0f172a)', zIndex: 1 } },
               h('tr', null,
-                h('th', { style: { padding: 4, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'left' } }, '#'),
+                h('th', { scope: 'col', style: { padding: 4, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'left' } }, '#'),
                 (d.multiRegData.xLabels || []).map(function(lbl, ki) {
-                  return h('th', { key: ki, style: { padding: 4 } },
+                  return h('th', { scope: 'col', key: ki, style: { padding: 4 } },
                     h('input', {
                       type: 'text', value: lbl,
                       onChange: function(e) {
@@ -2885,10 +2885,10 @@ window.StemLab = window.StemLab || {
                     })
                   );
                 }),
-                h('th', { style: { padding: 4 } },
+                h('th', { scope: 'col', style: { padding: 4 } },
                   h('div', { style: { width: 80, padding: 4, color: 'var(--allo-stem-text, #fef3c7)', fontSize: 11, fontWeight: 800, textAlign: 'center' } }, d.multiRegData.yLabel || 'Y')
                 ),
-                h('th', null)
+                h('th', { scope: 'col' })
               )
             ),
             h('tbody', null,
@@ -3462,11 +3462,11 @@ window.StemLab = window.StemLab || {
           },
             h('thead', null,
               h('tr', { style: { borderBottom: '1px solid var(--allo-stem-border, #475569)' } },
-                h('th', { style: { textAlign: 'left', padding: 6, color: 'var(--sl-warning)' } }, 'Term'),
-                h('th', { style: { textAlign: 'right', padding: 6, color: 'var(--sl-warning)' } }, 'b (coef)'),
-                h('th', { style: { textAlign: 'right', padding: 6, color: 'var(--sl-warning)' } }, 'SE'),
-                h('th', { style: { textAlign: 'right', padding: 6, color: 'var(--sl-warning)' } }, 't'),
-                h('th', { style: { textAlign: 'right', padding: 6, color: 'var(--sl-warning)' } }, 'p')
+                h('th', { scope: 'col', style: { textAlign: 'left', padding: 6, color: 'var(--sl-warning)' } }, 'Term'),
+                h('th', { scope: 'col', style: { textAlign: 'right', padding: 6, color: 'var(--sl-warning)' } }, 'b (coef)'),
+                h('th', { scope: 'col', style: { textAlign: 'right', padding: 6, color: 'var(--sl-warning)' } }, 'SE'),
+                h('th', { scope: 'col', style: { textAlign: 'right', padding: 6, color: 'var(--sl-warning)' } }, 't'),
+                h('th', { scope: 'col', style: { textAlign: 'right', padding: 6, color: 'var(--sl-warning)' } }, 'p')
               )
             ),
             h('tbody', null,
@@ -3685,10 +3685,10 @@ window.StemLab = window.StemLab || {
           },
             h('thead', null,
               h('tr', { style: { borderBottom: '1px solid var(--allo-stem-border, #475569)' } },
-                h('th', { style: { textAlign: 'left', padding: 6, color: 'var(--sl-warning)' } }, 'n'),
-                h('th', { style: { textAlign: 'right', padding: 6, color: 'var(--sl-warning)' } }, 'median p'),
-                h('th', { style: { textAlign: 'right', padding: 6, color: 'var(--sl-warning)' } }, '10–90% range'),
-                h('th', { style: { textAlign: 'right', padding: 6, color: 'var(--sl-warning)' } }, '% sig (p<.05)')
+                h('th', { scope: 'col', style: { textAlign: 'left', padding: 6, color: 'var(--sl-warning)' } }, 'n'),
+                h('th', { scope: 'col', style: { textAlign: 'right', padding: 6, color: 'var(--sl-warning)' } }, 'median p'),
+                h('th', { scope: 'col', style: { textAlign: 'right', padding: 6, color: 'var(--sl-warning)' } }, '10–90% range'),
+                h('th', { scope: 'col', style: { textAlign: 'right', padding: 6, color: 'var(--sl-warning)' } }, '% sig (p<.05)')
               )
             ),
             h('tbody', null,

@@ -809,7 +809,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                   );
                 })
               ),
-              h('button', { 'aria-label': t('stem.a11yauditor.file_complaint_about_findings', 'File complaint about findings'), onClick: function() { if (!window.confirm('These findings are AI-generated guesses, not a verified audit. Only continue if you have independently confirmed each issue is real. Continue?')) return; upd('tab', 'action'); }, className: 'mt-3 w-full px-3 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800 transition-colors' }, t('stem.a11yauditor.take_action_generate_complaint_letter', '\u270D\uFE0F Take Action \u2014 Generate Complaint Letter'))
+              h('button', { 'aria-label': t('stem.a11yauditor.file_complaint_about_findings', 'File complaint about findings'), onClick: async function() {
+                // Same integrity gate as the Generate button below: the point is
+                // that an AI-generated guess is never carried forward as a
+                // verified finding, so it fails CLOSED — no dialog, no navigation.
+                var confirmApi = typeof window !== 'undefined' && window.AlloFlowUX && window.AlloFlowUX.confirm;
+                var unavailable = 'The confirmation step is unavailable right now, so nothing was opened.';
+                if (typeof confirmApi !== 'function') { if (addToast) addToast(unavailable, 'warning'); return; }
+                var acknowledged = false;
+                try {
+                  acknowledged = await confirmApi(
+                    'These findings are AI-generated guesses, not a verified audit. Only continue if you have independently confirmed each issue is real. Continue?',
+                    { title: 'Confirm findings before filing', confirmText: 'I have verified these findings',
+                      cancelText: 'Go back', tone: 'warning' }
+                  );
+                } catch (e) { if (addToast) addToast(unavailable, 'warning'); return; }
+                if (!acknowledged) return;
+                upd('tab', 'action');
+              }, className: 'mt-3 w-full px-3 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800 transition-colors' }, t('stem.a11yauditor.take_action_generate_complaint_letter', '\u270D\uFE0F Take Action \u2014 Generate Complaint Letter'))
             ),
 
             // Issues
@@ -1068,8 +1085,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             h('button', {
               'aria-label': t('stem.a11yauditor.generate_complaint_letter', 'Generate complaint letter'),
               disabled: !complaintEntity.trim() || complaintLoading,
-              onClick: function() {
-                if (!window.confirm('These findings are AI-generated guesses, not a verified audit. Only continue if you have independently confirmed each issue is real. Continue?')) return;
+              onClick: async function() {
+                // This gate is a scientific-integrity guard, not a convenience:
+                // it exists so an AI-generated guess is never sent to a real
+                // organisation as a verified audit finding. So it fails CLOSED —
+                // with no dialog service available, no letter is generated.
+                var confirmApi = typeof window !== 'undefined' && window.AlloFlowUX && window.AlloFlowUX.confirm;
+                var unavailable = 'The confirmation step is unavailable right now, so no letter was generated.';
+                if (typeof confirmApi !== 'function') { if (addToast) addToast(unavailable, 'warning'); return; }
+                var acknowledged = false;
+                try {
+                  acknowledged = await confirmApi(
+                    'These findings are AI-generated guesses, not a verified audit. Only continue if you have independently confirmed each issue is real. Continue?',
+                    { title: 'Confirm findings before generating', confirmText: 'I have verified these findings',
+                      cancelText: 'Go back', tone: 'warning' }
+                  );
+                } catch (e) { if (addToast) addToast(unavailable, 'warning'); return; }
+                if (!acknowledged) return;
                 if (!callGemini) return;
                 // Request-ID guard: a multi-paragraph complaint letter for
                 // the wrong entity is high-impact confusion. Prevents stale
