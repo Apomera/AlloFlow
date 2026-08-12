@@ -706,3 +706,66 @@ describe('body 3D — uses the shared viewer shell', () => {
     expect(SRC).toContain("phase: tab === 'recovery' ? recDone.length : 0");
   });
 });
+
+// ── Airway ──────────────────────────────────────────────────────────────────
+// Added 2026-08-11. The coach's trained mode runs 30 compressions then TWO
+// BREATHS, but nothing in the tool taught how to open the airway first: "head
+// tilt" appeared only in the recovery-position copy, about letting fluid drain.
+// A breath delivered into an unopened airway largely inflates the stomach, and
+// the age difference is not a matter of degree — tilting an infant's head back
+// the way you would an adult's kinks a short, soft trachea SHUT. So the tilt is
+// modelled per age in the 3D figure and cued at the moment of the breath, and
+// both are pinned here: a wording refactor must not quietly drop them.
+describe('body 3D — airway', () => {
+  const AGES = extractArray('CPR_AGES');
+  const byId = (id) => AGES.filter((a) => a.id === id)[0];
+
+  it('gives every age an airway instruction and a modelled tilt', () => {
+    for (const age of AGES) {
+      expect(typeof age.airway, age.id + ' airway text').toBe('string');
+      expect(age.airway.length, age.id + ' airway text is substantive').toBeGreaterThan(40);
+      expect(typeof age.airwayTilt, age.id + ' airwayTilt').toBe('number');
+    }
+  });
+
+  it('tilts an adult furthest and keeps an infant nearest neutral', () => {
+    const adult = byId('adult').airwayTilt;
+    const child = byId('child').airwayTilt;
+    const infant = byId('infant').airwayTilt;
+    expect(adult).toBeGreaterThan(child);
+    expect(child).toBeGreaterThan(infant);
+    // Neutral means neutral. An infant must not read as "a slightly smaller
+    // adult tilt", which is the exact mistake this content teaches against.
+    expect(infant).toBeLessThan(0.25);
+  });
+
+  it('tells the rescuer NOT to tilt an infant back, in words and not only in numbers', () => {
+    const infant = byId('infant').airway;
+    expect(infant).toMatch(/neutral|sniffing/i);
+    expect(infant).toMatch(/not tilt|do not tilt|don't tilt/i);
+    // And the adult instruction must still name the actual maneuver.
+    expect(byId('adult').airway).toMatch(/head tilt/i);
+    expect(byId('adult').airway).toMatch(/chin lift/i);
+  });
+
+  it('holds the airway open in the 3D for the whole breath phase', () => {
+    // Not a nod that tracks one breath: the head is HELD open while breaths are
+    // being given, which is the thing the learner has to copy.
+    expect(SRC).toContain("coach.phase === 'breaths' || coach.phase === 'breathRecovery'");
+    expect(SRC).toContain('airwayHold * ageAirwayTilt * AIRWAY_TILT_MAX');
+    expect(SRC).toContain('var AIRWAY_TILT_MAX');
+  });
+
+  it('cues the airway at the moment of the breath, not only in a reference panel', () => {
+    expect(SRC).toContain('inBreathPhase && h(');
+    expect(SRC).toContain('b3d_airway_cue_infant');
+    expect(SRC).toContain('ageInfo.airway');
+  });
+
+  it('renders the airway note on the depth tab for each age', () => {
+    for (const age of ['adult', 'child', 'infant']) {
+      const html = body({ b3dTab: 'depth', b3dAge: age });
+      expect(html, age + ': airway note missing').toContain('open the airway first');
+    }
+  });
+});

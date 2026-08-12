@@ -144,6 +144,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
   // Short, screen-based rehearsal target. It deliberately scores timing and
   // sequence only; a real manikin and instructor are still required to assess
   // depth, hand force, airway seal or ventilation volume.
+  // Radians the head pivots back at a FULL adult head-tilt in the 3D figure.
+  // Each age scales this by its own airwayTilt, so the difference between an
+  // adult tilt and an infant's neutral position is visible in the model rather
+  // than only stated in text.
+  var AIRWAY_TILT_MAX = 0.38;
+
   var CPR_COACH_SPEC = {
     compressionsPerCycle: 30,
     breathsPerCycle: 2,
@@ -233,18 +239,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       hands: 'Two hands — heel of one on the breastbone, the other on top, fingers interlaced, arms locked, shoulders stacked over your hands.',
       where: 'Centre of the chest, on the lower half of the breastbone.',
       depth: 'At least 2 inches (5 cm), and no more than about 2.4 inches (6 cm).',
+      // Only relevant if you are giving breaths. A breath delivered without
+      // opening the airway mostly inflates the stomach, which then brings the
+      // stomach contents back up — so the tilt is not decoration, it is what
+      // makes the breath reach the lungs.
+      airway: 'Head tilt, chin lift: one hand on the forehead tilts the head back, two fingertips under the bony part of the chin lift it up. Tilt well back for an adult.',
+      airwayTilt: 1,
       breaths: 'For an adult who collapses suddenly, hands-only CPR is the standard advice for an untrained rescuer, and it works. If you are trained, 30 compressions to 2 breaths.',
       scale: 1 },
     { id: 'child', icon: '🧒', label: 'Child', who: 'About 1 year to puberty',
       hands: 'One hand, or two if one is not enough to reach the depth. Use whatever gets you deep enough on that particular child.',
       where: 'Same place as an adult — centre of the chest, lower half of the breastbone.',
       depth: 'About 2 inches (5 cm) — roughly one third of the depth of the chest.',
+      airway: 'Head tilt, chin lift, but less far back than an adult. A child\'s airway is softer and easy to kink if you push past the point where the chest starts to rise.',
+      airwayTilt: 0.62,
       breaths: 'Because pediatric arrest is often caused by a breathing problem, conventional CPR with breaths is recommended when you are willing and able. A single rescuer uses 30 compressions to 2 breaths; if a second trained rescuer joins, use 15:2. If you cannot or will not give breaths, compression-only CPR is still far better than nothing.',
       scale: 0.72 },
     { id: 'infant', icon: '👶', label: 'Infant', who: 'Under 1 year (not a newborn)',
       hands: 'Use the heel of one hand on the breastbone, or the two-thumb encircling-hands technique. The older two-finger method is no longer recommended because it often fails to reach adequate depth.',
       where: 'Centre of the chest, just below the nipple line.',
       depth: 'About 1.5 inches (4 cm) — again roughly one third of the depth of the chest.',
+      // The one place where copying the adult action makes things WORSE.
+      airway: 'Neutral "sniffing" position — head level, chin lifted just clear of the chest. Do NOT tilt an infant\'s head back the way you would an adult: their windpipe is soft and short, and over-extending the neck kinks it shut.',
+      airwayTilt: 0.12,
       breaths: 'Infant arrest is usually a breathing problem, so conventional CPR with breaths is recommended when you are willing and able. A single rescuer uses 30:2; if a second trained rescuer joins, use 15:2. Cover the mouth and nose and give only enough air for visible chest rise.',
       scale: 0.46 }
   ];
@@ -616,7 +633,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
     var phase = api.phase || 0;
     var roll = Math.max(0, Math.min(1, (phase - 4) / Math.max(1, RECOVERY_STEPS.length - 4)));
     var ageScale = 1;
-    for (var ai = 0; ai < CPR_AGES.length; ai++) if (CPR_AGES[ai].id === age) ageScale = CPR_AGES[ai].scale;
+    var ageAirwayTilt = 1;
+    for (var ai = 0; ai < CPR_AGES.length; ai++) {
+      if (CPR_AGES[ai].id === age) {
+        ageScale = CPR_AGES[ai].scale;
+        if (CPR_AGES[ai].airwayTilt != null) ageAirwayTilt = CPR_AGES[ai].airwayTilt;
+      }
+    }
     var profile = age === 'infant'
       ? { head: 1.40, torso: 0.86, width: 0.88, limb: 0.72 }
       : (age === 'child'
@@ -865,7 +888,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         hands.position.y = baseHandsY - compression * 0.10 + ((!reduced && (coach.phase === 'breaths' || coach.phase === 'breathRecovery')) ? 0.18 : 0);
         lungs.scale.y = 1 + breathRise * 0.24;
         heart.scale.setScalar(1 + compression * 0.10);
-        headPivot.rotation.x = breathRise * -0.10;
+        // Airway. The head does not just nod along with the breath — during the
+        // breath phase it is HELD in the position that opens the airway, and how
+        // far back that is depends entirely on age. An adult tilts well back; an
+        // infant stays near neutral, because over-extending a short soft trachea
+        // kinks it shut. Showing the same tilt for all three ages would teach the
+        // one thing that makes infant rescue breathing fail.
+        var airwayHold = 0;
+        if (mode === 'coach' && coach.running
+            && (coach.phase === 'breaths' || coach.phase === 'breathRecovery')) airwayHold = 1;
+        else if (mode === 'coach' && breathRise > 0) airwayHold = breathRise;
+        headPivot.rotation.x = (airwayHold * ageAirwayTilt * AIRWAY_TILT_MAX) + (breathRise * -0.04);
         guideRing.scale.setScalar(1 + guidePulse * 0.20);
         guideMat.opacity = reduced ? 0.55 : (0.42 + guidePulse * 0.45);
         if (heartMat.emissive) heartMat.emissive.setRGB(0.18 + compression * 0.42, 0.01, 0.04);
@@ -5206,6 +5239,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                 note('Model shown', modelTechnique),
                 note(__alloT('stem.firstresponse.b3d_breaths', 'Do breaths matter here?'), ageInfo.breaths,
                   age === 'adult' ? null : 'warn'),
+                // Only shown once breaths are on the table. An infant is flagged
+                // because copying the adult tilt is the failure mode here, not a
+                // matter of degree.
+                note(__alloT('stem.firstresponse.b3d_airway', 'If you do give breaths: open the airway first'),
+                  ageInfo.airway, age === 'infant' ? 'warn' : null),
                 note(__alloT('stem.firstresponse.b3d_rate', 'And the rate'),
                   __alloT('stem.firstresponse.b3d_rate_body', '100 to 120 compressions a minute for every age, which is faster than most people expect. The CPR + AED module has a rhythm trainer for exactly this. Keep interruptions as short as you can, and if an AED arrives, turn it on and do what it says.'))
               ),
@@ -5295,6 +5333,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                       border: '2px solid ' + (session.phase === 'resume' ? T.danger : (inBreathPhase ? '#38bdf8' : '#60a5fa')),
                       color: '#fff', fontSize: 16, fontWeight: 900, textAlign: 'center', letterSpacing: 0.7, marginBottom: 10 } },
                       'Cycle ' + session.cycle + ' / ' + session.goalCycles + ' - ' + phaseTitle),
+                    // The airway cue belongs HERE, at the moment the learner is
+                    // about to blow, not only in a reference panel. A breath into
+                    // an unopened airway inflates the stomach instead of the
+                    // lungs, and for an infant the adult tilt is actively wrong.
+                    inBreathPhase && h('div', { role: 'note', style: { padding: '8px 11px', borderRadius: 9,
+                      background: age === 'infant' ? '#78350f' : '#0c4a6e',
+                      border: '1px solid ' + (age === 'infant' ? T.warn : '#38bdf8'),
+                      color: '#fff', fontSize: 12.5, lineHeight: 1.55, marginBottom: 10 } },
+                      h('strong', null, age === 'infant'
+                        ? __alloT('stem.firstresponse.b3d_airway_cue_infant', 'Airway — neutral, do NOT tilt back: ')
+                        : __alloT('stem.firstresponse.b3d_airway_cue', 'Open the airway first: ')),
+                      ageInfo.airway),
                     session.mode === 'scenario' && (session.phase === 'assessment' || session.phase === 'call' || session.phase === 'aed') && h('div', { role: 'group', style: { padding: 10, borderRadius: 9, background: T.cardAlt, border: '1px solid ' + T.accent, marginBottom: 10 } },
                       h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.5, marginBottom: 7 } },
                         session.phase === 'assessment' ? 'Confirm the person is unresponsive and not breathing normally.' : (session.phase === 'call' ? 'Use speakerphone so dispatch can coach you while you start.' : 'Turn on the AED, attach pads, and follow every voice prompt.')),
