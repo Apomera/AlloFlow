@@ -38,17 +38,22 @@ async function mount(page: import('@playwright/test').Page, view: string, band: 
   await page.waitForFunction(() => !!(window as any).StemLab?._registry?.treeLab, null, { timeout: 30000 });
   await page.evaluate(({ view, band, theme }) => {
     const E = (window as any).__alloTreeLabEngine;
-    const sp = E.speciesById('oak');
-    let t = E.newTree('oak');
+    // Aspen for Spread: it is the only common species carrying a clonal route, and
+    // without one the map draws no stems, no root lines and no wipe.
+    const speciesId = view === 'spread' ? 'aspen' : 'oak';
+    const sp = E.speciesById(speciesId);
+    let t = E.newTree(speciesId);
     const env = { tempC: 22, light: 0.85, co2ppm: 420, soilWater: 0.75 };
     const alloc = { leaf: 0.3, root: 0.2, wood: 0.35, repro: 0.05, store: 0.1 };
     for (let i = 0; i < 55; i += 1) t = E.simulateYear(t, sp, env, alloc);
-    const data: any = { treeLab: { view, bandOverride: band, tree: t, speciesId: 'oak' } };
+    const data: any = { treeLab: { view, bandOverride: band, tree: t, speciesId } };
     if (view === 'spread') {
-      data.treeLab.lastSpread = {
-        event: 'pathogen',
-        res: E.resolveSpread({ seed_animal: 6 }, { id: 'pathogen', name: 'Root pathogen' }, E.lcg(11)),
-      };
+      const res = E.resolveSpread({ seed_wind: 6, root_sucker: 5 },
+        { id: 'pathogen', name: 'Root pathogen' }, E.lcg(11));
+      // Force the shared-root wipe so the crosses, the root lines and the fourth legend
+      // entry are all on screen for axe rather than left to a 55% dice roll.
+      for (const r of res.results) if (r.diversity === 0) { r.wiped = true; r.took = 0; }
+      data.treeLab.lastSpread = { event: 'pathogen', res };
     }
     if (view === 'quiz') data.treeLab.quizPick = 1;
     (window as any).__mount(data);
@@ -68,7 +73,10 @@ const SURFACES: Array<[string, string, string, Theme]> = [
   ['Chemistry (light)', 'chem', 'g912', 'light'],
   ['Chemistry (dark)', 'chem', 'g912', 'dark'],
   ['Transport', 'transport', 'g68', 'light'],
-  ['Spread', 'spread', 'g68', 'light'],
+  ['Spread map (light)', 'spread', 'g68', 'light'],
+  ['Spread map (dark)', 'spread', 'g68', 'dark'],
+  ['Spread map (high contrast)', 'spread', 'g68', 'contrast'],
+  ['Spread map (K-2)', 'spread', 'k2', 'light'],
   ['Knowledge check', 'quiz', 'g68', 'light'],
 ];
 

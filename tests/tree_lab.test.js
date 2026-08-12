@@ -1271,3 +1271,90 @@ describe('Tree Life Lab — season control and post-mortem', () => {
     expect(alone).not.toMatch(/not finished/);
   });
 });
+
+describe('Tree Life Lab — the spread map', () => {
+  // The map's whole claim is that it DRAWS the decade that was already resolved. If it
+  // rolled its own dice it would be a second, disagreeing simulation sitting directly
+  // above the table it contradicts.
+  function mapHtml(spend, eventId, mutate) {
+    const E = engine();
+    const sp = E.speciesById('aspen');
+    let t = E.newTree('aspen');
+    for (let i = 0; i < 60 && t.alive; i++) {
+      t = E.simulateYear(t, sp, GOOD_ENV, { leaf: 0.3, root: 0.2, wood: 0.3, repro: 0.1, store: 0.1 });
+    }
+    const res = E.resolveSpread(spend, { id: eventId, name: eventId, icon: '•', blurb: '' }, E.lcg(11));
+    if (mutate) mutate(res);
+    return {
+      res,
+      html: render({ treeLab: { view: 'spread', speciesId: 'aspen', tree: t, lastSpread: { event: eventId, res } } }),
+    };
+  }
+  // Count by data-mark, not by geometry: the LEGEND draws the same shapes at the same
+  // radii, so a geometric regex silently counts the key as part of the map.
+  const marks = (html, kind) => [...html.matchAll(new RegExp(`data-mark="${kind}"`, 'g'))].length;
+  const seedMarks = (html) => marks(html, 'seed');
+  const cloneMarks = (html) => marks(html, 'clone');
+  const failMarks = (html) => marks(html, 'fail');
+
+  it('draws exactly the descendants that were resolved, and no others', () => {
+    const { res, html } = mapHtml({ seed_wind: 8, root_sucker: 4 }, 'calm');
+    const attempts = res.results.reduce((n, r) => n + r.attempts, 0);
+    expect(attempts, 'test needs a decade small enough to draw uncapped').toBeLessThan(70);
+    expect(seedMarks(html), 'seed survivors drawn ≠ seed survivors resolved').toBe(res.diverseCount);
+    expect(cloneMarks(html), 'clonal survivors drawn ≠ clonal survivors resolved').toBe(res.clonalCount);
+    expect(seedMarks(html) + cloneMarks(html) + failMarks(html)).toBe(attempts);
+  });
+
+  it('is stable: the same resolved decade draws the same picture', () => {
+    const a = mapHtml({ seed_wind: 8, root_sucker: 4 }, 'calm').html;
+    const b = mapHtml({ seed_wind: 8, root_sucker: 4 }, 'calm').html;
+    expect(a).toBe(b);
+  });
+
+  it('puts clonal stems beside the parent and seed further out', () => {
+    // This is the entire point of drawing it. If the geometry does not carry the
+    // distance trade, the map is decoration.
+    const { html } = mapHtml({ seed_wind: 10, root_sucker: 4 }, 'calm');
+    const C = 160;
+    const dist = (x, y) => Math.hypot(x - C, y - C);
+    const clones = [...html.matchAll(/data-mark="clone"[^>]*x="([\d.]+)"[^>]*y="([\d.]+)"/g)]
+      .map((m) => dist(parseFloat(m[1]) + 4, parseFloat(m[2]) + 4));
+    const seeds = [...html.matchAll(/data-mark="seed"[^>]*cx="([\d.]+)"[^>]*cy="([\d.]+)"/g)]
+      .map((m) => dist(parseFloat(m[1]), parseFloat(m[2])));
+    expect(clones.length).toBeGreaterThan(0);
+    expect(seeds.length).toBeGreaterThan(0);
+    expect(Math.max(...clones), 'the furthest clone should not out-reach the nearest seed')
+      .toBeLessThan(Math.min(...seeds));
+    // And nothing may hide underneath the parent marker, which is what buried the root
+    // connections in the first version.
+    expect(Math.min(...clones, ...seeds)).toBeGreaterThan(13);
+  });
+
+  it('draws a shared-root wipe as struck-out stems still joined to the parent', () => {
+    const { html } = mapHtml({ seed_wind: 6, root_sucker: 5 }, 'pathogen', (res) => {
+      for (const r of res.results) if (r.diversity === 0) { r.wiped = true; r.took = 0; }
+    });
+    expect(marks(html, 'wiped'), 'no struck-out stems drawn').toBeGreaterThan(4);
+    expect(cloneMarks(html), 'a wiped clone must not also be drawn as a survivor').toBe(0);
+    expect(html, 'the legend must explain the crosses it is showing').toMatch(/Killed together/);
+    // The root lines ARE the mechanism. Without them, "killed together" is an assertion
+    // rather than something the picture shows you.
+    expect(marks(html, 'root'), 'wiped stems drawn with no root connection to the parent')
+      .toBeGreaterThan(4);
+  });
+
+  it('never claims a scale in metres it does not have', () => {
+    const { html } = mapHtml({ seed_wind: 8, root_sucker: 4 }, 'calm');
+    expect(html).toMatch(/RELATIVE/);
+  });
+
+  it('says so when it draws fewer markers than there were attempts', () => {
+    // A big mast year overruns the per-strategy cap. Silently truncating would make a
+    // heavily-committed decade look identical to a modest one.
+    const { res, html } = mapHtml({ seed_wind: 90 }, 'calm');
+    const attempts = res.results.reduce((n, r) => n + r.attempts, 0);
+    expect(attempts, 'test needs enough attempts to trip the cap').toBeGreaterThan(70);
+    expect(html, 'markers were dropped without saying so').toMatch(/Showing \d+ of \d+ attempts/);
+  });
+});

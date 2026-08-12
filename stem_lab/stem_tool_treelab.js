@@ -779,6 +779,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
   // the scatter of the distant wood — is seeded from a constant, so the same tree
   // looks the SAME on every rebuild. A scene that reshuffles itself each time the
   // season ticks is more distracting than a plain one.
+  function hashStr(str) {
+    var h = 2166136261;
+    for (var i = 0; i < str.length; i++) {
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return h >>> 0;
+  }
   function seeded(s) {
     var a = (s >>> 0) || 1;
     return function () {
@@ -3182,7 +3190,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             __alloT('stem.treelab.overcommitted', 'You have committed more carbon than the tree banked. Pull something back.')) : null
         ]));
 
-        if (last) kids.push(spreadResult(last));
+        if (last) {
+          var mapCard = spreadMap(last);
+          if (mapCard) kids.push(mapCard);
+          kids.push(spreadResult(last));
+        }
         var rec = spreadRecord();
         if (rec) kids.push(rec);
         return kids;
@@ -3273,6 +3285,158 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             ]);
           })),
           h('p', { key: 'v', style: { fontSize: 12, color: T.dim, lineHeight: 1.55, marginTop: 10 } }, verdict)
+        ]);
+      }
+
+      // ── The forest floor ────────────────────────────────────────────────────
+      // Every strategy carries a `distance`, and until now that number was printed
+      // nowhere at all: the entire spatial half of the seed-versus-clone trade was
+      // invisible. Read as a table, "72% establish, distance 0.18" and "5% establish,
+      // distance 0.9" are two pairs of numbers. Drawn, they are a tight ring of stems
+      // crowding the parent versus a scatter of failures across the whole clearing with
+      // two survivors at the edge, and the trade explains itself.
+      //
+      // The map NEVER re-rolls anything. resolveSpread has already decided how many of
+      // each strategy took; this only places that many, from a hash of the result
+      // itself, so the picture is stable across re-renders and agrees with the table.
+      function spreadMap(last) {
+        var res = last.res;
+        var ev = eventById(last.event) || { id: last.event, name: last.event };
+        var drawn = res.results.filter(function (r) { return (r.attempts || 0) > 0; });
+        if (!drawn.length) return null;
+
+        var SIZE = 320, C = SIZE / 2, R = 142;
+        var PARENT_R = 13, INNER = PARENT_R + 8;
+        var PER_STRATEGY_CAP = 70;
+        var nodes = [];
+        var dropped = 0;
+
+        drawn.forEach(function (r, si) {
+          var strat = strategyById(r.id) || { distance: 0.5, diversity: r.diversity ? 1 : 0 };
+          var show = Math.min(r.attempts, PER_STRATEGY_CAP);
+          dropped += r.attempts - show;
+          // How many of the DRAWN markers are survivors, keeping the on-screen ratio
+          // equal to the real one when the count is capped.
+          var showTook = r.wiped ? 0 : Math.round(r.took * (show / r.attempts));
+          // Seeded from the result, not from a counter: same result, same picture.
+          var rnd = seeded(hashStr(r.id + '|' + r.attempts + '|' + r.took + '|' + ev.id) + si);
+          for (var i = 0; i < show; i++) {
+            // sqrt keeps the scatter even over AREA. Without it everything crowds the
+            // rim, because a ring's area grows with its radius.
+            var frac = Math.sqrt((i + 0.35) / show);
+            var reach = clamp(strat.distance, 0.06, 1);
+            var rad = INNER + (R - INNER) * reach * (0.34 + 0.66 * frac) * (0.82 + rnd() * 0.36);
+            var ang = i * 2.39996 + si * 1.1 + rnd() * 0.5;
+            nodes.push({
+              x: C + Math.cos(ang) * rad, y: C + Math.sin(ang) * rad,
+              alive: i < showTook, wiped: !!r.wiped, clonal: strat.diversity === 0,
+              icon: r.icon
+            });
+          }
+        });
+        // Survivors last, so a live stem is never hidden under a dead one.
+        nodes.sort(function (a, b) { return (a.alive ? 1 : 0) - (b.alive ? 1 : 0); });
+
+        var diverseHex = tone('#22c55e');
+        var clonalHex = tone('#f59e0b');
+        var deadHex = tone('#94a3b8');
+        var wipedHex = tone('#dc2626');
+
+        var marks = [];
+        nodes.forEach(function (n, i) {
+          // A clonal stem is JOINED to the parent. That shared root system is the whole
+          // reason a pathogen can take every copy at once, so it is drawn, not implied.
+          if (n.clonal && (n.alive || n.wiped)) {
+            marks.push(h('line', {
+              key: 'k' + i, 'data-mark': 'root', x1: C, y1: C, x2: n.x, y2: n.y,
+              stroke: n.wiped ? wipedHex : clonalHex,
+              strokeWidth: 1.6, strokeOpacity: n.wiped ? 0.75 : 0.6
+            }));
+          }
+        });
+        nodes.forEach(function (n, i) {
+          if (n.wiped) {
+            // Killed by the event rather than simply failing to take.
+            marks.push(h('g', { key: 'm' + i, 'data-mark': 'wiped', stroke: wipedHex, strokeWidth: 1.6, strokeLinecap: 'round' }, [
+              h('line', { key: 'a', x1: n.x - 3.2, y1: n.y - 3.2, x2: n.x + 3.2, y2: n.y + 3.2 }),
+              h('line', { key: 'b', x1: n.x - 3.2, y1: n.y + 3.2, x2: n.x + 3.2, y2: n.y - 3.2 })
+            ]));
+          } else if (!n.alive) {
+            marks.push(h('circle', {
+              key: 'm' + i, 'data-mark': 'fail', cx: n.x, cy: n.y, r: 2.2,
+              fill: 'none', stroke: deadHex, strokeWidth: 1, strokeOpacity: 0.55
+            }));
+          } else if (n.clonal) {
+            // Shape carries the distinction as well as colour: in high contrast every
+            // decorative hue collapses to the same accent, and colour alone is not a
+            // channel a colour-blind student can read either.
+            marks.push(h('rect', {
+              key: 'm' + i, 'data-mark': 'clone', x: n.x - 4, y: n.y - 4, width: 8, height: 8, rx: 1.5,
+              fill: clonalHex, stroke: T.card, strokeWidth: 1
+            }));
+          } else {
+            marks.push(h('circle', {
+              key: 'm' + i, 'data-mark': 'seed', cx: n.x, cy: n.y, r: 4.4,
+              fill: diverseHex, stroke: T.card, strokeWidth: 1
+            }));
+          }
+        });
+
+        function legendItem(k, swatch, labelTxt) {
+          return h('span', { key: k, style: { display: 'inline-flex', alignItems: 'center', gap: 5, marginRight: 12, fontSize: 11, color: T.dim } }, [
+            swatch, h('span', { key: 't' }, labelTxt)
+          ]);
+        }
+        var sw = function (kind) {
+          var base = { width: 11, height: 11, viewBox: '0 0 11 11', 'aria-hidden': 'true', key: 's' };
+          if (kind === 'diverse') return h('svg', base, h('circle', { cx: 5.5, cy: 5.5, r: 4.4, fill: diverseHex }));
+          if (kind === 'clonal') return h('svg', base, h('rect', { x: 1.5, y: 1.5, width: 8, height: 8, rx: 1.5, fill: clonalHex }));
+          if (kind === 'wiped') return h('svg', base, h('g', { stroke: wipedHex, strokeWidth: 1.6, strokeLinecap: 'round' }, [
+            h('line', { key: 'a', x1: 1.8, y1: 1.8, x2: 9.2, y2: 9.2 }),
+            h('line', { key: 'b', x1: 1.8, y1: 9.2, x2: 9.2, y2: 1.8 })
+          ]));
+          return h('svg', base, h('circle', { cx: 5.5, cy: 5.5, r: 2.2, fill: 'none', stroke: deadHex, strokeWidth: 1 }));
+        };
+
+        var anyWiped = nodes.some(function (n) { return n.wiped; });
+        var alt = __alloT('stem.treelab.map_alt',
+          'Overhead map of the clearing. ' + res.established + ' descendants established: '
+          + res.diverseCount + ' grown from seed, scattered across the clearing, and '
+          + res.clonalCount + ' clonal stems joined to the parent tree by its own roots.'
+          + (anyWiped ? ' The clonal stems marked with a cross were killed together.' : ''));
+
+        return card([
+          heading(__alloT('stem.treelab.map_title', 'Where they landed'),
+            atLeast(band, 'g35')
+              ? __alloT('stem.treelab.map_sub_g35', 'The same decade, seen from above. Distance is the half of this trade the numbers do not show: a clonal stem almost always takes, and it arrives next to its parent.')
+              : __alloT('stem.treelab.map_sub_k2', 'Looking down at the ground around the tree. Each mark is one try.')),
+          h('svg', {
+            key: 'map', viewBox: '0 0 ' + SIZE + ' ' + SIZE, role: 'img', 'aria-label': alt,
+            style: { width: '100%', maxWidth: 420, height: 'auto', display: 'block', margin: '0 auto' }
+          }, [
+            h('circle', { key: 'bg', cx: C, cy: C, r: R + 6, fill: T.cardAlt, stroke: T.border }),
+            h('g', { key: 'rings' }, [0.34, 0.67, 1].map(function (f, i) {
+              return h('circle', {
+                key: 'r' + i, cx: C, cy: C, r: R * f, fill: 'none',
+                stroke: T.border, strokeWidth: 1, strokeDasharray: '3 4'
+              });
+            })),
+            h('g', { key: 'marks' }, marks),
+            // The parent, drawn last so nothing sits on top of it.
+            h('circle', { key: 'p1', cx: C, cy: C, r: PARENT_R, fill: tone('#166534'), stroke: T.card, strokeWidth: 2 }),
+            h('circle', { key: 'p2', cx: C, cy: C, r: 4, fill: tone('#78350f') })
+          ]),
+          h('div', { key: 'leg', style: { marginTop: 8, textAlign: 'center' } }, [
+            legendItem('a', sw('diverse'), __alloT('stem.treelab.map_leg_seed', 'Grew from seed')),
+            legendItem('b', sw('clonal'), __alloT('stem.treelab.map_leg_clone', 'Clonal stem')),
+            legendItem('c', sw('dead'), __alloT('stem.treelab.map_leg_failed', 'Did not take')),
+            anyWiped ? legendItem('d', sw('wiped'), __alloT('stem.treelab.map_leg_wiped', 'Killed together')) : null
+          ]),
+          dropped > 0 ? h('div', { key: 'cap', style: { fontSize: 11, color: T.dim, marginTop: 6, textAlign: 'center' } },
+            __alloT('stem.treelab.map_capped',
+              'Showing ' + (nodes.length) + ' of ' + (nodes.length + dropped) + ' attempts, in the same proportion. The table above is the full count.')) : null,
+          modelNote(__alloT('stem.treelab.map_note',
+            'Distances here are RELATIVE, not a scale in metres — what is real is the ordering, that a wind-carried seed can travel orders of magnitude further than a root sucker can push. The counts are exactly the ones resolved above; nothing is re-rolled to draw this.'))
         ]);
       }
 
