@@ -572,3 +572,77 @@ describe('Machine Lab: the headline number carries its own caveat', () => {
     expect(html).toContain('do not match any real rock');
   });
 });
+
+// The sweep stores a value per column. Anything it stores and nothing reads is
+// defect 15 all over again: computed, returned, never shown. This suite pins
+// each stored field to something on screen, so dropping a column fails here
+// rather than silently leaving dead data in state.
+describe('Machine Lab: every number the sweep stores reaches the screen', () => {
+  const FULL = {
+    density: 2717, sig: 'x',
+    results: {
+      trebuchet: { m: 2.5, dia: 0.12, range: 132.3, eta: 0.048, ke: 926, nowRange: 101.3, nowKE: 12810, nowEta: 0.34, atBound: false },
+      ballista: { m: 0.3, dia: 0.06, range: 145.1, eta: 0.122, ke: 141, nowRange: 19.8, nowKE: 2185, nowEta: 0.92, atBound: false },
+      onager: { m: 0.14, dia: 0.05, range: 256.2, eta: 0.337, ke: 96, nowRange: 11.4, nowKE: 1188, nowEta: 0.989, atBound: false }
+    }
+  };
+  const cmp = (b = 'g68') => renderTool('machineLab',
+    { machineLab: { view: 'compare', bandOverride: b, bestStones: FULL } });
+
+  it('sets your own range beside the best one, in the same cell', () => {
+    // Six columns put "Range" and "Your stone lands with" three apart, and had
+    // them comparing different quantities. Each cell now holds its own pair.
+    const html = cmp();
+    expect(html).toContain('Range (yours)');
+    // Adjacency is the point, so assert it rather than mere presence: the two
+    // figures must land within one cell of each other, not three columns apart.
+    const at = html.indexOf('256.2 m');
+    expect(at).toBeGreaterThan(-1);
+    expect(html.slice(at, at + 120)).toContain('(11.4)');
+  });
+
+  it('sets your own impact beside the best one', () => {
+    const html = cmp();
+    expect(html).toContain('Lands with (yours)');
+    expect(html).toContain('96 J');
+    expect(html).toContain('1.2 kJ');
+  });
+
+  it('uses the efficiency it stores, rather than storing it for nothing', () => {
+    // The furthest-flying stone is the least efficient one. That is the whole
+    // tension the panel exists to show, and eta was being stored unread.
+    const html = cmp('g68');
+    expect(html).toContain('the furthest of these is the Onager');
+    expect(html).toContain('33.7% of the stored energy');
+    expect(html).toContain('98.9% for the stone you are using');
+  });
+
+  it('keeps that line out of the bands that would not read it', () => {
+    expect(cmp('k2')).not.toContain('of the stored energy, against');
+    expect(cmp('g35')).not.toContain('of the stored energy, against');
+    expect(cmp('g912')).toContain('of the stored energy, against');
+  });
+
+  it('describes the columns it actually has, for a screen reader', () => {
+    // The caption is the only description a screen-reader user gets before the
+    // numbers start, so a stale one is worse than none.
+    const html = cmp();
+    expect(html).toContain('each followed in brackets by the figure for the stone you are currently using');
+    expect(html).not.toContain('Best stone mass, diameter and range for each machine');
+  });
+
+  it('survives a sweep saved before these fields existed', () => {
+    // bestStones persists in tool state, so an older result can arrive without
+    // nowRange or the efficiencies. It must render, not crash or print junk.
+    const html = renderTool('machineLab', {
+      machineLab: {
+        view: 'compare', bandOverride: 'g68',
+        bestStones: { density: 2717, sig: 'x', results: { trebuchet: { m: 2.5, dia: 0.12, range: 132.3 } } }
+      }
+    });
+    expect(html).toContain('132.3 m');
+    expect(html).not.toContain('undefined');
+    expect(html).not.toContain('NaN');
+    expect(html).not.toContain('of the stored energy, against');
+  });
+});

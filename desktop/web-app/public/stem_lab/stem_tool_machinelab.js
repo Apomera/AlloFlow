@@ -4400,9 +4400,10 @@ window.StemLab = window.StemLab || {
           var b = _machineMath.bestStone(inputsFor(mm.id), { density: rho });
           var now = _machineMath.shot(inputsFor(mm.id));
           if (b) out[mm.id] = {
-            m: b.projMass, dia: b.projDiameter, range: b.range, eta: b.eta, v: b.muzzleV,
+            m: b.projMass, dia: b.projDiameter, range: b.range, eta: b.eta,
             ke: b.impactKE, atBound: !!b.atBound,
-            nowRange: now ? now.range : null, nowKE: now ? now.impactKE : null
+            nowRange: now ? now.range : null, nowKE: now ? now.impactKE : null,
+            nowEta: now ? now.eta : null
           };
         });
         updMulti({ bestStones: { density: rho, sig: bestStoneSignature(), results: out } });
@@ -4459,14 +4460,16 @@ window.StemLab = window.StemLab || {
           kids.push(h('div', { key: 'wrap', style: { overflowX: 'auto', marginTop: 10, opacity: stale ? 0.55 : 1 } },
             h('table', { style: { width: '100%', minWidth: 420, borderCollapse: 'collapse', fontSize: 13, color: T.text } }, [
               h('caption', { key: 'c', style: srOnlyStyle },
-                __alloT('stem.machinelab.best_caption', 'Best stone mass, diameter and range for each machine')),
+                // A caption that describes columns the table no longer has is
+                // worse for a screen reader than no caption: it is the only
+                // description they get before the numbers start.
+                __alloT('stem.machinelab.best_caption2', 'For each machine: the mass and diameter of its furthest-flying stone, then that stone’s range and impact energy, each followed in brackets by the figure for the stone you are currently using')),
               h('thead', { key: 'th' }, h('tr', null, [
                 h('th', { key: '1', scope: 'col', style: { textAlign: 'left', padding: 6, borderBottom: '1px solid ' + T.border } }, __alloT('stem.machinelab.col_machine', 'Machine')),
                 h('th', { key: '2', scope: 'col', style: { textAlign: 'right', padding: 6, borderBottom: '1px solid ' + T.border } }, __alloT('stem.machinelab.col_beststone', 'Best stone')),
                 h('th', { key: '3', scope: 'col', style: { textAlign: 'right', padding: 6, borderBottom: '1px solid ' + T.border } }, __alloT('stem.machinelab.col_across', 'Across')),
-                h('th', { key: '4', scope: 'col', style: { textAlign: 'right', padding: 6, borderBottom: '1px solid ' + T.border } }, __alloT('stem.machinelab.col_range2', 'Range')),
-                h('th', { key: '5', scope: 'col', style: { textAlign: 'right', padding: 6, borderBottom: '1px solid ' + T.border } }, __alloT('stem.machinelab.col_hits', 'Lands with')),
-                h('th', { key: '6', scope: 'col', style: { textAlign: 'right', padding: 6, borderBottom: '1px solid ' + T.border } }, __alloT('stem.machinelab.col_yours', 'Your stone lands with'))
+                h('th', { key: '4', scope: 'col', style: { textAlign: 'right', padding: 6, borderBottom: '1px solid ' + T.border } }, __alloT('stem.machinelab.col_range3', 'Range (yours)')),
+                h('th', { key: '5', scope: 'col', style: { textAlign: 'right', padding: 6, borderBottom: '1px solid ' + T.border } }, __alloT('stem.machinelab.col_hits2', 'Lands with (yours)'))
               ])),
               h('tbody', { key: 'tb' }, MACHINES.map(function (mm) {
                 var r = saved.results[mm.id];
@@ -4474,7 +4477,7 @@ window.StemLab = window.StemLab || {
                   return h('tr', { key: mm.id }, [
                     h('th', { key: '1', scope: 'row', style: { textAlign: 'left', padding: 6, borderBottom: '1px solid ' + T.border } },
                       mm.icon + ' ' + machineLabel(mm.id)),
-                    h('td', { key: '2', colSpan: 5, style: { padding: 6, borderBottom: '1px solid ' + T.border, color: T.dim } },
+                    h('td', { key: '2', colSpan: 4, style: { padding: 6, borderBottom: '1px solid ' + T.border, color: T.dim } },
                       __alloT('stem.machinelab.cmp_unbuildable', 'not a working machine at these settings'))
                   ]);
                 }
@@ -4484,14 +4487,46 @@ window.StemLab = window.StemLab || {
                     mm.icon + ' ' + machineLabel(mm.id)),
                   h('td', { key: '2', style: numStyle }, fmt(r.m, 1) + ' kg'),
                   h('td', { key: '3', style: numStyle }, fmt(r.dia, 2) + ' m'),
-                  h('td', { key: '4', style: numStyle },
-                    fmt(r.range, 1) + ' m' + (r.atBound ? ' *' : '')),
-                  h('td', { key: '5', style: numStyle }, energyText(r.ke)),
-                  h('td', { key: '6', style: Object.assign({}, numStyle, { color: T.dim }) },
-                    energyText(r.nowKE))
+                  h('td', { key: '4', style: numStyle }, [
+                    fmt(r.range, 1) + ' m' + (r.atBound ? ' *' : ''),
+                    h('span', { key: 'y', style: { color: T.dim } },
+                      r.nowRange == null ? '' : ' (' + fmt(r.nowRange, 1) + ')')
+                  ]),
+                  h('td', { key: '5', style: numStyle }, [
+                    energyText(r.ke),
+                    h('span', { key: 'y', style: { color: T.dim } },
+                      r.nowKE == null ? '' : ' (' + energyText(r.nowKE) + ')')
+                  ])
                 ]);
               }))
             ])));
+          // The stone that flies furthest wastes the most. That is the sharpest
+          // statement of the range-versus-delivery tension available, and it is
+          // sitting in numbers the sweep already computed.
+          var effLine = null;
+          if (band === 'g68' || band === 'g912') {
+            var lead = null;
+            MACHINES.forEach(function (mm) {
+              var r = saved.results[mm.id];
+              if (r && r.eta != null && r.nowEta != null && (lead === null || r.range > lead.range)) {
+                lead = { id: mm.id, eta: r.eta, nowEta: r.nowEta, range: r.range };
+              }
+            });
+            if (lead) {
+              effLine = h('p', {
+                key: 'eff',
+                style: { margin: '8px 0 0', fontSize: 12, color: T.dim, lineHeight: 1.5 }
+              }, __alloT('stem.machinelab.best_eff', 'Worth noticing: the furthest of these is the ') +
+                 machineLabel(lead.id) +
+                 __alloT('stem.machinelab.best_eff2', ', and its best stone takes only ') +
+                 fmt(100 * lead.eta, 1) +
+                 __alloT('stem.machinelab.best_eff3', '% of the stored energy, against ') +
+                 fmt(100 * lead.nowEta, 1) +
+                 __alloT('stem.machinelab.best_eff4', '% for the stone you are using. Throwing furthest and wasting least are pulling in opposite directions.'));
+            }
+          }
+          if (effLine) kids.push(effLine);
+
           var anyBound = MACHINES.some(function (mm) {
             var r = saved.results[mm.id]; return r && r.atBound;
           });

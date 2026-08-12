@@ -109,9 +109,9 @@ const S = (o) => Object.assign({}, BASE, o);
 // numbers a student would actually see. The signature is the one the tool
 // builds from BASE, so this fixture renders as fresh rather than stale.
 const BEST_RESULTS = {
-  trebuchet: { m: 2.48, dia: 0.12, range: 132.3, eta: 0.048, v: 38.4, ke: 926, nowKE: 12810, atBound: false },
-  ballista: { m: 0.30, dia: 0.06, range: 145.1, eta: 0.122, v: 44.2, ke: 141, nowKE: 2185, atBound: false },
-  onager: { m: 0.14, dia: 0.05, range: 256.2, eta: 0.337, v: 76.5, ke: 96, nowKE: 1188, atBound: false }
+  trebuchet: { m: 2.48, dia: 0.12, range: 132.3, eta: 0.048, ke: 926, nowRange: 101.3, nowKE: 12810, nowEta: 0.340, atBound: false },
+  ballista: { m: 0.30, dia: 0.06, range: 145.1, eta: 0.122, ke: 141, nowRange: 19.8, nowKE: 2185, nowEta: 0.920, atBound: false },
+  onager: { m: 0.14, dia: 0.05, range: 256.2, eta: 0.337, ke: 96, nowRange: 11.4, nowKE: 1188, nowEta: 0.989, atBound: false }
 };
 const BEST_SIG = [
   9.81, true, 45, 2, 0,
