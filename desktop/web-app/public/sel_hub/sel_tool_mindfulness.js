@@ -22062,6 +22062,55 @@ window.SelHub = window.SelHub || {
       var activeTab     = d.activeTab || 'breathe';
       var soundEnabled  = d.soundEnabled != null ? d.soundEnabled : true;
 
+      // ── Fixed hook block ──
+      // render() runs inline inside the host's SelPluginBridge, so every hook
+      // here lands in the HOST's hook list. Nine effects used to live inside
+      // `activeTab === '...'` branches, so switching tabs changed the host's
+      // hook count and threw "Rendered more hooks than during the previous
+      // render" (React #310). Each branch now REGISTERS its effect on this ref
+      // and one unconditional effect per tab drains it, so the bodies keep their
+      // branch-local closures (BODY_SCAN_REGIONS, _playToneByName, pattern,
+      // phaseDur, totalSteps, pace, bt*) without any of it having to move.
+      // Gate: dev-tools/scan_hook_order_branches.cjs.
+      var _fxSlots = React.useRef({});
+      _fxSlots.current = {};
+      React.useEffect(function () {
+        var fn = _fxSlots.current["breath_studio"];
+        return fn ? fn() : undefined;
+      }, [activeTab, d.bsRunning, d.bsPhase, d.bsPattern, d.bsCount]);
+      React.useEffect(function () {
+        var fn = _fxSlots.current["body_scan_studio"];
+        return fn ? fn() : undefined;
+      }, [activeTab, d.bssRunning, d.bssStep]);
+      React.useEffect(function () {
+        var fn = _fxSlots.current["mandala"];
+        return fn ? fn() : undefined;
+      }, [activeTab, d.mdRunning]);
+      React.useEffect(function () {
+        var fn = _fxSlots.current["soundbath"];
+        return fn ? fn() : undefined;
+      }, [activeTab, d.sbPlaying, JSON.stringify(d.sbLayers || {})]);
+      React.useEffect(function () {
+        var fn = _fxSlots.current["bell_timer"];
+        return fn ? fn() : undefined;
+      }, [activeTab, d.btRunning]);
+      React.useEffect(function () {
+        var fn = _fxSlots.current["walking"];
+        return fn ? fn() : undefined;
+      }, [activeTab, d.wkRunning, d.wkPace, d.wkBellEvery]);
+      React.useEffect(function () {
+        var fn = _fxSlots.current["lovingkindness"];
+        return fn ? fn() : undefined;
+      }, [activeTab, d.lkRunning, d.lkRecipient, d.lkPhrase]);
+      React.useEffect(function () {
+        var fn = _fxSlots.current["clouds"];
+        return fn ? fn() : undefined;
+      }, [activeTab, d.clRunning]);
+      React.useEffect(function () {
+        var fn = _fxSlots.current["color_breath"];
+        return fn ? fn() : undefined;
+      }, [activeTab, d.cbRunning, d.cbPhase]);
+
       // Breathing state
       var breathPatternIdx = d.breathPatternIdx || 0;
       var breathPhase      = d.breathPhase || null; // 'inhale','hold','exhale','holdOut',null
@@ -23985,7 +24034,11 @@ if (activeTab === 'breath_studio') {
   else if (currentPhase && /hold/i.test(currentPhase.name)) circleR = /^Hold$/.test(currentPhase.name) && bsPhase === 1 ? maxR : (bsPhase === 3 ? minR : maxR);
   else circleR = minR;
   // Auto-advance via useEffect
-  React.useEffect && React.useEffect(function() {
+    // Registered, not called: a hook here would sit inside the
+  // activeTab === 'breath_studio' branch and change the HOST's hook
+  // count on tab switch (React #310). One unconditional slot effect
+  // at the top of render drains this. Body unchanged.
+  _fxSlots.current["breath_studio"] = function() {
     if (!bsRunning) return;
     var tickId = setInterval(function() {
       var nextCount = (d.bsCount || 0) + 0.1;
@@ -24004,7 +24057,7 @@ if (activeTab === 'breath_studio') {
       }
     }, 100);
     return function() { clearInterval(tickId); };
-  }, [bsRunning, bsPhase, bsPattern, d.bsCount]);
+  };
   // Layout
   breathStudioContent = h('div', { style: { padding: '0 12px 24px' } },
     h('div', { style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), marginBottom: 12 } },
@@ -24088,7 +24141,11 @@ if (activeTab === 'body_scan_studio') {
   ];
   var totalSteps = BODY_SCAN_REGIONS.length;
   var current = bssStep >= 0 && bssStep < totalSteps ? BODY_SCAN_REGIONS[bssStep] : null;
-  React.useEffect && React.useEffect(function() {
+    // Registered, not called: a hook here would sit inside the
+  // activeTab === 'body_scan_studio' branch and change the HOST's hook
+  // count on tab switch (React #310). One unconditional slot effect
+  // at the top of render drains this. Body unchanged.
+  _fxSlots.current["body_scan_studio"] = function() {
     if (!bssRunning || bssStep < 0) return;
     var step = BODY_SCAN_REGIONS[bssStep];
     if (!step) return;
@@ -24104,7 +24161,7 @@ if (activeTab === 'body_scan_studio') {
       }
     }, step.perRegionSec * 1000);
     return function() { clearTimeout(t); };
-  }, [bssRunning, bssStep]);
+  };
   bodyScanContent = h('div', { style: { padding: '0 12px 24px' } },
     h('div', { style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), marginBottom: 12 } },
       h('p', { style: { margin: 0, color: _minFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
@@ -24187,11 +24244,15 @@ if (activeTab === 'mandala') {
     { id: 'rosette',   name: 'Rosette',        desc: 'Rose-window-style pattern' }
   ];
   var palette = ['#fbbf24', '#5eead4', _minFg('#a78bfa'), '#f472b6', _minFg('#fb923c'), '#60a5fa'];
-  React.useEffect && React.useEffect(function() {
+    // Registered, not called: a hook here would sit inside the
+  // activeTab === 'mandala' branch and change the HOST's hook
+  // count on tab switch (React #310). One unconditional slot effect
+  // at the top of render drains this. Body unchanged.
+  _fxSlots.current["mandala"] = function() {
     if (!mdRunning) return;
     var t = setInterval(function() { upd({ mdElapsed: (d.mdElapsed || 0) + 1 }); }, 1000);
     return function() { clearInterval(t); };
-  }, [mdRunning]);
+  };
   // Build SVG based on style
   function _renderMandala() {
     if (mdStyle === 'lotus') {
@@ -24326,7 +24387,11 @@ if (activeTab === 'soundbath') {
   var sbLayers = d.sbLayers || { bowl: 0.4, drone: 0.3, rain: 0, ocean: 0, wind: 0, bell: 0 };
   var sbPlaying = !!d.sbPlaying;
   // Audio engine setup
-  React.useEffect && React.useEffect(function() {
+    // Registered, not called: a hook here would sit inside the
+  // activeTab === 'soundbath' branch and change the HOST's hook
+  // count on tab switch (React #310). One unconditional slot effect
+  // at the top of render drains this. Body unchanged.
+  _fxSlots.current["soundbath"] = function() {
     if (!sbPlaying) return;
     var ac = getAudioCtx(); if (!ac) return;
     var activeNodes = [];
@@ -24437,7 +24502,7 @@ if (activeTab === 'soundbath') {
         } catch (e) {}
       });
     };
-  }, [sbPlaying, JSON.stringify(sbLayers)]);
+  };
   function _layerSlider(key, label, color, desc) {
     var val = sbLayers[key] || 0;
     return h('div', { style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), marginBottom: 8 } },
@@ -24534,7 +24599,11 @@ if (activeTab === 'bell_timer') {
       }
     } catch (e) {}
   }
-  React.useEffect && React.useEffect(function() {
+    // Registered, not called: a hook here would sit inside the
+  // activeTab === 'bell_timer' branch and change the HOST's hook
+  // count on tab switch (React #310). One unconditional slot effect
+  // at the top of render drains this. Body unchanged.
+  _fxSlots.current["bell_timer"] = function() {
     if (!btRunning) return;
     var totalSec = btDuration * 60;
     var intervalSec = btInterval * 60;
@@ -24555,7 +24624,7 @@ if (activeTab === 'bell_timer') {
       upd({ btElapsed: newElapsed });
     }, 1000);
     return function() { clearInterval(t); };
-  }, [btRunning]);
+  };
   var totalSec = btDuration * 60;
   var pct = totalSec ? Math.min(100, (btElapsed / totalSec) * 100) : 0;
   var remainingSec = Math.max(0, totalSec - btElapsed);
@@ -24695,7 +24764,11 @@ if (activeTab === 'walking') {
     { id: 'brisk',  name: 'Brisk',  secPerStep: 0.6,desc: 'Brisk walking. Adds cardio benefit while staying present.' }
   ];
   var pace = PACES.find(function(p) { return p.id === wkPace; }) || PACES[0];
-  React.useEffect && React.useEffect(function() {
+    // Registered, not called: a hook here would sit inside the
+  // activeTab === 'walking' branch and change the HOST's hook
+  // count on tab switch (React #310). One unconditional slot effect
+  // at the top of render drains this. Body unchanged.
+  _fxSlots.current["walking"] = function() {
     if (!wkRunning) return;
     var ms = pace.secPerStep * 1000;
     var t = setInterval(function() {
@@ -24706,7 +24779,7 @@ if (activeTab === 'walking') {
       }
     }, ms);
     return function() { clearInterval(t); };
-  }, [wkRunning, wkPace, wkBellEvery]);
+  };
   walkingContent = h('div', { style: { padding: '0 12px 24px' } },
     h('div', { style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), marginBottom: 12 } },
       h('p', { style: { margin: 0, color: _minFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
@@ -24913,7 +24986,11 @@ if (activeTab === 'lovingkindness') {
   ];
   var recipient = LK_RECIPIENTS[lkRecipient];
   var phrase = LK_PHRASES[lkPhrase];
-  React.useEffect && React.useEffect(function() {
+    // Registered, not called: a hook here would sit inside the
+  // activeTab === 'lovingkindness' branch and change the HOST's hook
+  // count on tab switch (React #310). One unconditional slot effect
+  // at the top of render drains this. Body unchanged.
+  _fxSlots.current["lovingkindness"] = function() {
     if (!lkRunning) return;
     var t = setTimeout(function() {
       if (lkPhrase < LK_PHRASES.length - 1) {
@@ -24931,7 +25008,7 @@ if (activeTab === 'lovingkindness') {
       }
     }, 8000);
     return function() { clearTimeout(t); };
-  }, [lkRunning, lkRecipient, lkPhrase]);
+  };
   lkContent = h('div', { style: { padding: '0 12px 24px' } },
     h('div', { style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), marginBottom: 12 } },
       h('p', { style: { margin: 0, color: _minFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
@@ -24994,14 +25071,18 @@ if (activeTab === 'clouds') {
     'Some clouds are dark. Some are light. Both are clouds. Both will pass.',
     'The clouds do not stop the sky from being sky.'
   ];
-  React.useEffect && React.useEffect(function() {
+    // Registered, not called: a hook here would sit inside the
+  // activeTab === 'clouds' branch and change the HOST's hook
+  // count on tab switch (React #310). One unconditional slot effect
+  // at the top of render drains this. Body unchanged.
+  _fxSlots.current["clouds"] = function() {
     if (!clRunning) return;
     var t = setInterval(function() {
       upd({ clPromptIdx: ((d.clPromptIdx || 0) + 1) % CLOUD_PROMPTS.length });
       if (soundEnabled) sfxChime();
     }, 15000);
     return function() { clearInterval(t); };
-  }, [clRunning]);
+  };
   cloudContent = h('div', { style: { padding: '0 12px 24px' } },
     h('div', { style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), marginBottom: 12 } },
       h('p', { style: { margin: 0, color: _minFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
@@ -25691,7 +25772,11 @@ if (activeTab === 'color_breath') {
     { id: 'lavender',  name: 'Lavender',    inC: '#c4b5fd', outC: _minFg('#a78bfa'), meaning: 'Inhale soft lilac. Exhale violet. Mood: dreamy, soothing.' }
   ];
   var pair = PAIRS.find(function(p) { return p.id === cbPair; }) || PAIRS[0];
-  React.useEffect && React.useEffect(function() {
+    // Registered, not called: a hook here would sit inside the
+  // activeTab === 'color_breath' branch and change the HOST's hook
+  // count on tab switch (React #310). One unconditional slot effect
+  // at the top of render drains this. Body unchanged.
+  _fxSlots.current["color_breath"] = function() {
     if (!cbRunning) return;
     var t = setInterval(function() {
       var nc = (d.cbCount || 0) + 0.1;
@@ -25703,7 +25788,7 @@ if (activeTab === 'color_breath') {
       }
     }, 100);
     return function() { clearInterval(t); };
-  }, [cbRunning, cbPhase]);
+  };
   var alpha = Math.min(1, cbCount / 4);
   var displayColor = cbPhase === 'in' ? pair.inC : pair.outC;
   colorBreathContent = h('div', { style: { padding: '0 12px 24px' } },
