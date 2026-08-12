@@ -894,3 +894,128 @@ describe('body 3D — breathing gate animation', () => {
     expect(gateBlock()).toContain('!reduced');
   });
 });
+
+// An AED pad is a fixed piece of plastic; it does not shrink with the patient.
+// On an infant chest the adult diagonal pair ends up touching, and pads that
+// touch short the current across the skin instead of driving it through the
+// heart — so the correct layout changes SHAPE, front-and-back, not just scale.
+// The tool already taught that twice in prose (the AED rules list, and the
+// infant scenario where two front pads is marked UNSAFE) while the pad tab
+// showed the adult diagonal on whatever body the age selector had last left
+// behind, with no age control on that tab to correct it. These pin the fix.
+describe('body 3D — AED pads are age-specific, not age-scaled', () => {
+  const INFANT_PADS = extractArray('AED_PADS_INFANT');
+
+  it('gives an infant a front-and-back pair, not the adult diagonal', () => {
+    const correct = INFANT_PADS.filter((p) => p.verdict === 'correct').map((p) => p.id).sort();
+    expect(correct).toEqual(['padBack', 'padFront']);
+    // The adult targets must not survive into the infant layout: on that chest
+    // they are the wrong answer, not a differently-sized right one.
+    const ids = INFANT_PADS.map((p) => p.id);
+    expect(ids).not.toContain('padUR');
+    expect(ids).not.toContain('padLL');
+  });
+
+  it('routes each age to its own layout', () => {
+    const fn = SRC.slice(SRC.indexOf('function aedPadsForAge'));
+    expect(fn.slice(0, 220)).toMatch(/infant.*AED_PADS_INFANT.*AED_PADS/s);
+  });
+
+  it('agrees with its own scenario that two front pads on a baby is unsafe', () => {
+    const together = INFANT_PADS.find((p) => p.id === 'padTogether');
+    expect(together.verdict).toBe('unsafe');
+    // and for the physical reason, not just "wrong"
+    expect(together.why).toMatch(/touch/i);
+    expect(together.why).toMatch(/short|across the skin|burn/i);
+  });
+
+  it('says the back pad goes behind the heart and why the shape changed', () => {
+    const back = INFANT_PADS.find((p) => p.id === 'padBack');
+    expect(back.label).toMatch(/back/i);
+    expect(back.why).toMatch(/shoulder blade/i);
+    expect(back.why).toMatch(/touch/i);
+    const front = INFANT_PADS.find((p) => p.id === 'padFront');
+    expect(front.why).toMatch(/between them/i);
+  });
+
+  it('offers the infant targets on the pad tab and withdraws the adult ones', () => {
+    const infant = body({ b3dTab: 'aed', b3dAge: 'infant' });
+    for (const p of INFANT_PADS) expect(infant, 'no button for ' + p.id).toContain(p.label);
+    const adultOnly = extractArray('AED_PADS').filter((p) => p.id === 'padUR' || p.id === 'padLL');
+    for (const p of adultOnly) expect(infant, 'adult target still offered on an infant: ' + p.id).not.toContain(p.label);
+    // and the adult tab is unchanged
+    const adult = body({ b3dTab: 'aed', b3dAge: 'adult' });
+    for (const p of adultOnly) expect(adult).toContain(p.label);
+  });
+
+  it('lets the learner choose the age on the pad tab at all', () => {
+    const html = body({ b3dTab: 'aed' });
+    // The figure was already being drawn at the selected age; without the
+    // selector here a learner could not see or change which body they were
+    // placing pads on.
+    for (const label of ['Adult', 'Child', 'Infant']) {
+      expect(html, 'no age control on the AED tab: ' + label).toContain(label);
+    }
+  });
+
+  it('drops picks belonging to the other layout instead of scoring them', () => {
+    // Place the adult pair, then switch to an infant: the old ids must not read
+    // as a completed infant answer.
+    const stale = body({ b3dTab: 'aed', b3dAge: 'infant', b3dPads: ['padUR', 'padLL'], b3dPad: 'padLL' });
+    expect(stale).not.toContain('Both pads placed');
+  });
+
+  it('completes on the pair the current layout actually requires', () => {
+    const done = body({ b3dTab: 'aed', b3dAge: 'infant', b3dPads: ['padFront', 'padBack'], b3dPad: 'padBack' });
+    expect(done).toContain('Both pads placed');
+    expect(done).toMatch(/shoulder blades/);
+    const adultDone = body({ b3dTab: 'aed', b3dAge: 'adult', b3dPads: ['padUR', 'padLL'], b3dPad: 'padLL' });
+    expect(adultDone).toContain('Both pads placed');
+    expect(adultDone).toMatch(/diagonally across the heart/);
+  });
+
+  it('draws the pads at true size instead of scaling them with the body', () => {
+    // This is the whole visual argument: a pad that shrank with the patient
+    // would always fit, and the lesson would silently disappear.
+    const m = SRC.match(/var padTrueSize = mode === 'aed' \? 1 \/ Math\.max\([\d.]+, ageScale\) : 1;/);
+    expect(m, 'pads are no longer counter-scaled out of the body age scale').toBeTruthy();
+    const aedBlock = SRC.slice(SRC.indexOf("if (mode === 'aed' && age === 'infant')"),
+      SRC.indexOf("} else if (mode === 'place')"));
+    // every pad plate in both AED layouts must carry the true-size factor
+    const patches = aedBlock.match(/patch\('pad[A-Za-z]+'[^\n]*/g) || [];
+    expect(patches.length).toBe(8);
+    for (const p of patches) expect(p, 'pad not drawn at true size: ' + p).toContain('padTrueSize');
+  });
+
+  it('puts the infant back pad underneath the body, drawn through it', () => {
+    const line = (SRC.match(/patch\('padBack'[^\n]*/) || [''])[0];
+    expect(line, 'no padBack in the scene').toBeTruthy();
+    // Below the torso, not another patch sitting on the chest.
+    const y = line.match(/y:\s*(-?[\d.]+)/);
+    expect(y, 'padBack has no explicit y').toBeTruthy();
+    expect(Number(y[1])).toBeLessThan(0);
+    expect(line).toContain('behind: true');
+    // and "behind" has to actually defeat the depth buffer, or the torso hides
+    // it completely from the default overhead view
+    const patchFn = SRC.slice(SRC.indexOf('function patch(id, w, hgt, x, z, opts)'),
+      SRC.indexOf("if (mode === 'aed' && age === 'infant')"));
+    expect(patchFn).toMatch(/depthTest = false/);
+  });
+
+  it('names the infant targets in the viewer part list', () => {
+    const parts = SRC.slice(SRC.indexOf('var BODY_SCENE_PARTS'), SRC.indexOf('function buildBodySceneLegacy'));
+    expect(parts).toContain('AED_PADS_INFANT');
+    // ids shared by both layouts must not be listed twice
+    expect(parts).toMatch(/all\[j\]\.id === pad\.id/);
+  });
+
+  it('tells the learner the pads are drawn at true size, not shrunk', () => {
+    const infant = body({ b3dTab: 'aed', b3dAge: 'infant' });
+    expect(infant).toMatch(/size of the pads/i);
+    expect(infant).toMatch(/fixed piece of plastic/i);
+    // A child still uses the diagonal pair, but gets the touching caveat.
+    const child = body({ b3dTab: 'aed', b3dAge: 'child' });
+    expect(child).toMatch(/front-and-back/i);
+    expect(child).toMatch(/school-age/i);
+  });
+});

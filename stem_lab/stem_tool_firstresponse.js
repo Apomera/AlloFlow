@@ -307,6 +307,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       why: 'Too low to put the heart in the path of the current. Follow the picture printed on the pads themselves.' }
   ];
 
+  // An infant is where this stops being a matter of degree. AED pads do not
+  // shrink to fit the patient — an adult pad is the same piece of plastic on a
+  // 5 kg chest — so the diagonal front pair that works on an adult ends up with
+  // the two pads touching, and pads that touch send the current across the skin
+  // between them instead of through the heart. The placement therefore changes
+  // SHAPE: one pad on the front, one on the back, heart still in between.
+  // This tool already teaches that twice in prose (the AED rules list and the
+  // infant scenario, where two front pads is marked unsafe) and the 3D said the
+  // opposite until now.
+  var AED_PADS_INFANT = [
+    { id: 'padFront', verdict: 'correct', label: 'Centre of the chest, on the front',
+      why: 'One pad goes in the middle of the chest, over the breastbone. Paired with the pad on the back it puts the heart between them, exactly like the adult diagonal — the shape is different because the chest is small, but the goal has not changed.' },
+    { id: 'padBack', verdict: 'correct', label: 'On the back, between the shoulder blades',
+      why: 'The second pad goes behind the heart, between the shoulder blades. You have to roll the baby towards you to reach it, which feels wrong the first time and is correct. Front-and-back is the only way two adult pads fit on a chest this size without touching.' },
+    { id: 'padTogether', verdict: 'unsafe', label: 'Both pads side by side on the front',
+      why: 'They will touch. Pads that touch each other short the current across the skin instead of sending it through the chest, and can burn the baby. On a chest this small, front-and-back is the placement.' },
+    { id: 'padBelly', verdict: 'wrong', label: 'On the abdomen',
+      why: 'Too low to put the heart in the path of the current, on a baby just as on an adult.' }
+  ];
+  // An adult or a school-age child has room for the diagonal front pair. An
+  // infant chest does not, so the correct answer itself changes with the age.
+  function aedPadsForAge(ageId) {
+    return ageId === 'infant' ? AED_PADS_INFANT : AED_PADS;
+  }
+
   var AED_RULES = [
     { id: 'bare', icon: '👕', label: 'Bare skin, and dry',
       why: 'Pads have to make skin contact. Cut or tear the shirt off. If the chest is wet — sweat, rain, pool water — wipe it dry first, because water spreads the current across the skin instead of through the chest.' },
@@ -505,9 +530,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
 
   // Viewer labels include both quizzes, but the placement control list above
   // intentionally excludes AED-only targets.
-  var BODY_SCENE_PARTS = BODY_PARTS.concat(AED_PADS.map(function (pad) {
-    return { id: pad.id, label: pad.label };
-  }));
+  // Both pad layouts contribute labels: the viewer has to be able to name the
+  // infant front/back targets too, and padTogether/padBelly are shared ids.
+  var BODY_SCENE_PARTS = BODY_PARTS.concat(AED_PADS.concat(AED_PADS_INFANT)
+    .filter(function (pad, i, all) {
+      for (var j = 0; j < i; j++) if (all[j].id === pad.id) return false;
+      return true;
+    })
+    .map(function (pad) { return { id: pad.id, label: pad.label }; }));
 
   // -- Body scene content --
   // api.phase drives the recovery-position roll: 0 = flat on the back,
@@ -822,24 +852,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
     guideRing.visible = mode === 'coach';
     api.scene.add(guideRing);
 
-    function patch(id, w, hgt, x, z) {
+    // An AED pad is a fixed piece of plastic. It does not shrink when the
+    // patient does, so on the pad tab the plates are counter-scaled out of the
+    // body's age scale and drawn at true adult size against whatever chest is
+    // in front of you. That single change is what makes "two pads will not fit
+    // on a baby" a thing you can see rather than a sentence you have to trust.
+    var padTrueSize = mode === 'aed' ? 1 / Math.max(0.2, ageScale) : 1;
+    function patch(id, w, hgt, x, z, opts) {
+      var o = opts || {};
       var group = new THREE.Group();
-      var visibleMat = material(api.contrast ? 0xffffff : 0x38bdf8, 24, 0.34);
+      var visibleMat = material(api.contrast ? 0xffffff : 0x38bdf8, 24, o.behind ? 0.5 : 0.34);
       var plate = new THREE.Mesh(new THREE.CylinderGeometry(Math.max(w, hgt) * 0.48, Math.max(w, hgt) * 0.48, 0.045, 24), visibleMat);
       plate.scale.set(w / Math.max(w, hgt), 1, hgt / Math.max(w, hgt));
       plate.userData.partId = id;
+      if (o.behind) {
+        // The back pad is underneath the patient, so the torso would hide it
+        // completely from the default overhead view. Draw it through the body
+        // instead of asking the learner to rotate before the layout makes any
+        // sense — the point of the picture is the pad being BEHIND the heart.
+        plate.material.depthTest = false;
+        plate.material.depthWrite = false;
+        plate.renderOrder = 3;
+      }
       group.add(plate);
-      group.position.set(x, 0.30, z);
+      group.position.set(x, o.y != null ? o.y : 0.30, z);
       group.userData.partId = id;
       picks.push(plate);
       body.add(group);
       meshes[id] = group;
     }
-    if (mode === 'aed') {
-      patch('padUR', 0.36, 0.34, -0.30, -0.52);
-      patch('padLL', 0.36, 0.34, 0.32, 0.16);
-      patch('padTogether', 0.34, 0.30, 0.30, -0.52);
-      patch('padBelly', 0.42, 0.36, 0, 0.60);
+    if (mode === 'aed' && age === 'infant') {
+      // Front-and-back, because the diagonal front pair does not fit. The back
+      // pad sits below the torso at the level of the shoulder blades, which is
+      // where it actually goes, so the heart still ends up between the two.
+      patch('padFront', 0.36 * padTrueSize, 0.34 * padTrueSize, 0, -0.24);
+      patch('padBack', 0.36 * padTrueSize, 0.34 * padTrueSize, 0, -0.50, { y: -0.30, behind: true });
+      patch('padTogether', 0.34 * padTrueSize, 0.30 * padTrueSize, 0.30, -0.52);
+      patch('padBelly', 0.42 * padTrueSize, 0.36 * padTrueSize, 0, 0.60);
+    } else if (mode === 'aed') {
+      patch('padUR', 0.36 * padTrueSize, 0.34 * padTrueSize, -0.30, -0.52);
+      patch('padLL', 0.36 * padTrueSize, 0.34 * padTrueSize, 0.32, 0.16);
+      patch('padTogether', 0.34 * padTrueSize, 0.30 * padTrueSize, 0.30, -0.52);
+      patch('padBelly', 0.42 * padTrueSize, 0.36 * padTrueSize, 0, 0.60);
     } else if (mode === 'place') {
       patch('high', 0.34, 0.34, 0, -0.60);
       patch('correct', 0.34, 0.36, 0, -0.20);
@@ -4752,7 +4806,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         var recDone = d.b3dRec || [];
         var violations = d.b3dViolations || [];
         var st3 = (BODY3D.status() === 'failed') ? 'failed' : (d.b3dStatus || 'idle');
-        var padSelections = Array.isArray(d.b3dPads) ? d.b3dPads : (pad ? [pad] : []);
+        // The correct AED layout depends on the age, so the pad list does too.
+        var agePads = aedPadsForAge(age);
+        function padInLayout(id) {
+          for (var pi = 0; pi < agePads.length; pi++) if (agePads[pi].id === id) return true;
+          return false;
+        }
+        // Drop picks that belong to the other layout. Switching age swaps which
+        // targets exist, and a leftover padUR would otherwise sit in the list
+        // marking an infant as correctly padded with a layout that is not shown.
+        var padSelections = (Array.isArray(d.b3dPads) ? d.b3dPads : (pad ? [pad] : [])).filter(padInLayout);
+        if (pad && !padInLayout(pad)) pad = null;
         var coach = frCoachRef.current;
         var coachMode = d.b3dCoachMode === 'handsOnly' ? 'handsOnly'
           : (d.b3dCoachMode === 'scenario' ? 'scenario' : 'trained');
@@ -5015,9 +5079,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           for (var i = 0; i < CPR_ZONES.length; i++) if (CPR_ZONES[i].id === key) return CPR_ZONES[i];
           return null;
         }
+        // Resolve against the layout for the age on screen first: padTogether
+        // and padBelly exist in both sets and carry different explanations, and
+        // the infant one is the one that says "these will touch".
         function padById(id) {
-          for (var i = 0; i < AED_PADS.length; i++) if (AED_PADS[i].id === id) return AED_PADS[i];
+          for (var i = 0; i < agePads.length; i++) if (agePads[i].id === id) return agePads[i];
+          for (var j = 0; j < AED_PADS.length; j++) if (AED_PADS[j].id === id) return AED_PADS[j];
+          for (var k = 0; k < AED_PADS_INFANT.length; k++) if (AED_PADS_INFANT[k].id === id) return AED_PADS_INFANT[k];
           return null;
+        }
+        // Which correct pads this age's layout requires, so "both placed" is
+        // computed from the layout instead of hard-coding the adult pair.
+        var agePadsCorrect = agePads.filter(function (p) { return p.verdict === 'correct'; })
+          .map(function (p) { return p.id; });
+        function padPairDone(list) {
+          for (var i = 0; i < agePadsCorrect.length; i++) if (list.indexOf(agePadsCorrect[i]) === -1) return false;
+          return agePadsCorrect.length > 0;
         }
         // One pick handler for both target sets — the 3D scene only shows the
         // targets belonging to the open tab, so the id tells us which it is.
@@ -5033,8 +5110,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               if (nextPads.indexOf(p.id) === -1) nextPads.push(p.id);
             } else nextPads = [p.id];
             updMulti({ b3dPad: p.id, b3dPads: nextPads });
-            frAnnounce(nextPads.indexOf('padUR') !== -1 && nextPads.indexOf('padLL') !== -1
-              ? 'Both pads placed diagonally across the heart.'
+            frAnnounce(padPairDone(nextPads)
+              ? (age === 'infant'
+                ? 'Both pads placed, one on the front and one on the back, with the heart between them.'
+                : 'Both pads placed diagonally across the heart.')
               : p.label + '. ' + p.why);
             return;
           }
@@ -5127,13 +5206,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           ),
 
           // Age selector — only meaningful where the technique actually differs.
-          (tab === 'place' || tab === 'depth' || tab === 'coach') && h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 12, padding: 9, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
+          // The AED tab belongs here: on an infant the correct pad layout is a
+          // different SHAPE, not a smaller version of the adult one, and the
+          // figure was already being drawn at whatever age was last picked.
+          (tab === 'place' || tab === 'depth' || tab === 'coach' || tab === 'aed') && h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 12, padding: 9, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
             h('span', { style: { fontSize: 12, fontWeight: 700, color: T.muted } }, __alloT('stem.firstresponse.b3d_age', 'Who is it?')),
             CPR_AGES.map(function (a) {
               var on = age === a.id;
               return h('button', { key: a.id, 'aria-pressed': on ? 'true' : 'false',
                 'aria-label': a.label + ' — ' + a.who,
-                onClick: function () { upd('b3dAge', a.id); frAnnounce(a.label + '. ' + a.who + '. ' + a.where + ' ' + a.depth); },
+                onClick: function () {
+                  // Changing age on the pad tab swaps which targets exist, so
+                  // the picks from the old layout go with it rather than
+                  // lingering in saved state as a half-finished other answer.
+                  if (tab === 'aed') updMulti({ b3dAge: a.id, b3dPad: null, b3dPads: [] });
+                  else upd('b3dAge', a.id);
+                  frAnnounce(tab === 'aed'
+                    ? a.label + '. ' + a.who + '. ' + (a.id === 'infant'
+                      ? 'Pads go one on the front and one on the back.'
+                      : 'Pads go diagonally opposite on the front of the chest.')
+                    : a.label + '. ' + a.who + '. ' + a.where + ' ' + a.depth);
+                },
                 style: btn({ padding: '6px 11px', fontSize: 12.5, background: on ? T.accent : T.card, color: on ? '#fff' : T.text, border: '1px solid ' + (on ? T.accent : T.border) }) },
                 h('span', { 'aria-hidden': 'true' }, a.icon + ' '), a.label);
             }),
@@ -5244,9 +5337,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                 h('h2', { style: { margin: '0 0 6px', fontSize: 15, color: T.accentHi } },
                   __alloT('stem.firstresponse.b3d_aed_h', 'Where do the AED pads go?')),
                 h('p', { style: { margin: '0 0 10px', fontSize: 12.5, color: T.muted, lineHeight: 1.6 } },
-                  __alloT('stem.firstresponse.b3d_aed_p', 'The pads carry a picture showing this, and the AED talks you through it. Knowing the shape in advance means the picture makes sense when you are under pressure. Two pads, diagonally opposite, so the heart sits between them.')),
+                  age === 'infant'
+                    ? __alloT('stem.firstresponse.b3d_aed_p_infant', 'The pads carry a picture showing this, and the AED talks you through it. On a baby the picture changes: the pads are the same size they always are, and two of them will not fit side by side on a chest that small. One goes on the front and one on the back, and the heart is still between them.')
+                    : __alloT('stem.firstresponse.b3d_aed_p', 'The pads carry a picture showing this, and the AED talks you through it. Knowing the shape in advance means the picture makes sense when you are under pressure. Two pads, diagonally opposite, so the heart sits between them.')),
+                // The pads in the 3D are drawn at true size against this body,
+                // so the size mismatch on a small chest is visible rather than
+                // asserted. Say so, or it reads as a rendering glitch.
+                age !== 'adult' && note(
+                  age === 'infant'
+                    ? __alloT('stem.firstresponse.b3d_aed_size_infant', 'Look at the size of the pads')
+                    : __alloT('stem.firstresponse.b3d_aed_size_child', 'Look at the size of the pads'),
+                  age === 'infant'
+                    ? 'They are not drawn small because the patient is small — an AED pad is one fixed piece of plastic. That is the whole reason the placement changes shape on a baby.'
+                    : 'Adult pads on a child chest are relatively much bigger, but the diagonal pair still fits on a school-age child. If you are looking at a small child and the two pads would touch, use front-and-back instead, exactly as you would for a baby.',
+                  age === 'infant' ? 'warn' : null),
                 h('div', { style: { display: 'flex', flexDirection: 'column', gap: 5 } },
-                  AED_PADS.map(function (p) {
+                  agePads.map(function (p) {
                     var on = padSelections.indexOf(p.id) !== -1;
                     return h('button', { key: p.id, 'aria-pressed': on ? 'true' : 'false',
                       onClick: function () { pickZone(p.id); },
@@ -5255,12 +5361,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                 ),
                 (function () {
                   var sel = pad ? padById(pad) : null;
-                  var pairDone = padSelections.indexOf('padUR') !== -1 && padSelections.indexOf('padLL') !== -1;
-                  if (pairDone) return note('Both pads placed',
-                    'Correct pair: upper right chest and lower left side, diagonally across the heart.', 'ok');
+                  if (padPairDone(padSelections)) return note('Both pads placed',
+                    age === 'infant'
+                      ? 'Correct pair for a baby: one on the centre of the chest, one on the back between the shoulder blades, with the heart between them.'
+                      : 'Correct pair: upper right chest and lower left side, diagonally across the heart.', 'ok');
                   if (!sel) return null;
-                  if (sel.verdict !== 'correct') return note('Try a different pair', sel.why, 'warn');
-                  return note('One pad placed - add its diagonal partner',
+                  if (sel.verdict !== 'correct') return note('Try a different pair', sel.why,
+                    sel.verdict === 'unsafe' ? 'bad' : 'warn');
+                  return note(age === 'infant' ? 'One pad placed - add its partner' : 'One pad placed - add its diagonal partner',
                     sel.why + ' The task is not complete until both pads are positioned.', 'ok');
                 })(),
                 h('h3', { style: { margin: '14px 0 6px', fontSize: 13, color: T.accentHi } },
