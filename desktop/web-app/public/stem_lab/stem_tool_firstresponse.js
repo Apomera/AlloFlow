@@ -864,6 +864,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         // mechanic must change the motion without tearing the scene down, so
         // `mech` is deliberately absent from sceneKey.
         var mechDemo = nextProps.mech || null;
+        var gateDemo = nextProps.gate || null;
         var now = Date.now();
         var compression = 0;
         var breathRise = 0;
@@ -880,6 +881,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           else if (mechDemo === 'toodeep') stroke = 0.98;
           else if (mechDemo === 'lean') { stroke = 0.52; floor = 0.30; }
           compression = floor + Math.pow(Math.max(0, Math.sin(now / 720)), 6) * stroke;
+        }
+        // The breathing gate is the highest-stakes decision in this tool, and the
+        // figure used to lie perfectly still while the learner made it. Agonal
+        // gasping is not "slow breathing" — it is a few sharp, isolated gasps
+        // separated by long dead pauses, and bystanders lose people by reading
+        // that as breathing. RHYTHM is the whole lesson, so the two patterns are
+        // driven by time, not by amplitude.
+        if (!reduced && mode === 'gate' && gateDemo) {
+          if (gateDemo === 'breathing') {
+            // Regular and unmistakably continuous: about 14 breaths a minute.
+            var cyc = (now % 4300) / 4300;
+            breathRise = (1 - Math.cos(cyc * Math.PI * 2)) / 2;
+          } else if (gateDemo === 'notbreathing') {
+            // About 7 a minute, and each one is a brief snatch of air with a
+            // long flat gap after it. The gap is the tell.
+            var ag = (now % 8200) / 8200;
+            breathRise = ag < 0.16 ? Math.pow(Math.sin((ag / 0.16) * Math.PI), 3) * 0.85 : 0;
+          }
         }
         if (!reduced && mode === 'coach') {
           if (coach.running && coach.phase === 'compressions') {
@@ -898,7 +917,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           if (sinceBreath >= 0 && sinceBreath < 1000) breathRise = sinceBreath / 1000;
           else if (sinceBreath >= 1000 && sinceBreath < 1500) breathRise = 1 - (sinceBreath - 1000) / 500;
         }
-        chestRig.scale.y = 1 - compression * 0.13 + breathRise * 0.07;
+        // On the gate tab the chest IS the evidence — the internal anatomy is
+        // hidden there, exactly as a bystander sees it — so give the breath a
+        // larger excursion. Elsewhere it stays subtle so it cannot be mistaken
+        // for a compression.
+        var breathAmp = mode === 'gate' ? 0.15 : 0.07;
+        chestRig.scale.y = 1 - compression * 0.13 + breathRise * breathAmp;
         hands.position.y = baseHandsY - compression * 0.10 + ((!reduced && (coach.phase === 'breaths' || coach.phase === 'breathRecovery')) ? 0.18 : 0);
         lungs.scale.y = 1 + breathRise * 0.24;
         heart.scale.setScalar(1 + compression * 0.10);
@@ -4966,6 +4990,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             // and intentionally NOT part of sceneKey: changing it should change
             // the motion, not rebuild the figure.
             mech: tab === 'depth' ? mech : null,
+            // Which breathing pattern the figure should act out. Live-read like
+            // mech, and out of sceneKey for the same reason.
+            gate: tab === 'gate' ? gate : null,
             coach: tab === 'coach' ? {
               mode: coach.mode || coachMode,
               running: !!coach.running,
@@ -5162,6 +5189,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               tab === 'gate' && h('div', null,
                 h('h2', { style: { margin: '0 0 6px', fontSize: 15, color: T.accentHi } },
                   __alloT('stem.firstresponse.b3d_gate_h', 'Before anything else: are they breathing normally?')),
+                // Tell the learner the figure is acting out their pick, and say
+                // what to watch for. Without this the animation is just motion;
+                // the gap between gasps is the thing that has to be noticed.
+                gate && note(
+                  gate === 'notbreathing'
+                    ? __alloT('stem.firstresponse.b3d_gate_watch_agonal', 'Watch the chest: agonal gasping')
+                    : __alloT('stem.firstresponse.b3d_gate_watch_normal', 'Watch the chest: normal breathing'),
+                  gate === 'notbreathing'
+                    ? 'A few isolated snatches of air with long, still gaps between them. That pause is the tell — this is cardiac arrest, and it is what gets mistaken for breathing.'
+                    : 'A steady, continuous rise and fall, roughly every four seconds. Nothing like the gasps.',
+                  gate === 'notbreathing' ? 'warn' : 'ok'),
                 h('p', { style: { margin: '0 0 10px', fontSize: 12.5, color: T.muted, lineHeight: 1.6 } },
                   __alloT('stem.firstresponse.b3d_gate_p', 'This single question decides everything that follows. Getting it backwards is the most consequential mistake in this whole module.')),
                 h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },

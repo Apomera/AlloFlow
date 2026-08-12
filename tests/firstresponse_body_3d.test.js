@@ -826,3 +826,71 @@ describe('body 3D — mechanics demonstration', () => {
     expect(strokeBlock()).toContain("!reduced && mode === 'depth'");
   });
 });
+
+// ── Breathing gate animation ────────────────────────────────────────────────
+// Added 2026-08-11. The gate asks the single question that decides everything —
+// breathing normally, or agonal gasping? — and the figure used to lie perfectly
+// still while the learner answered it. Agonal gasping is not slow breathing: it
+// is isolated snatches of air separated by long dead pauses, and that pause is
+// exactly what bystanders read as "still breathing". The rhythm is the lesson,
+// so these tests pin the TIMING, not the wording.
+describe('body 3D — breathing gate animation', () => {
+  function gateBlock() {
+    const at = SRC.indexOf("mode === 'gate' && gateDemo");
+    expect(at, 'gate animation not found').toBeGreaterThan(-1);
+    return SRC.slice(at, at + 900);
+  }
+
+  it('passes the chosen pattern to the scene, but only on the gate tab', () => {
+    expect(SRC).toContain("gate: tab === 'gate' ? gate : null");
+    expect(SRC).toContain('var gateDemo = nextProps.gate || null');
+  });
+
+  it('keeps gate OUT of sceneKey so switching does not rebuild the figure', () => {
+    const key = SRC.match(/sceneKey: ([^\n,]+)/);
+    expect(key[1]).not.toContain('gate');
+  });
+
+  it('breathes slower when gasping than when breathing normally', () => {
+    const block = gateBlock();
+    const normalMs = Number(block.match(/now % (\d+)\) \/ \d+;\s*\n\s*breathRise = \(1 - Math\.cos/)[1]);
+    const agonalMs = Number(block.match(/var ag = \(now % (\d+)\)/)[1]);
+    // Agonal is far less frequent — that is what makes the pauses long.
+    expect(agonalMs).toBeGreaterThan(normalMs);
+    // Sanity-check both against real physiology rather than just each other:
+    // ~14/min normal, and agonal gasps are single digits per minute.
+    expect(60000 / normalMs).toBeGreaterThan(10);
+    expect(60000 / normalMs).toBeLessThan(20);
+    expect(60000 / agonalMs).toBeLessThan(10);
+  });
+
+  it('gives the gasp a long dead pause, which normal breathing never has', () => {
+    const block = gateBlock();
+    // The gasp occupies a small fraction of its cycle and the rest is FLAT at
+    // zero. Normal breathing is a continuous cosine with no flat segment.
+    const duty = Number(block.match(/ag < ([\d.]+)/)[1]);
+    expect(duty).toBeLessThan(0.25);
+    expect(block).toContain(': 0;');
+    expect(block).toContain('1 - Math.cos(');
+  });
+
+  it('makes the chest excursion large enough to read on the gate tab', () => {
+    // The internal anatomy is hidden on this tab, so the chest is the only
+    // evidence; a 7% wobble would not carry the lesson.
+    const amp = SRC.match(/var breathAmp = mode === 'gate' \? ([\d.]+) : ([\d.]+);/);
+    expect(amp, 'breathAmp not found').toBeTruthy();
+    expect(Number(amp[1])).toBeGreaterThan(Number(amp[2]));
+  });
+
+  it('tells the learner what to watch for, per pattern', () => {
+    const agonal = body({ b3dTab: 'gate', b3dGate: 'notbreathing' });
+    expect(agonal).toContain('agonal gasping');
+    expect(agonal).toMatch(/pause is the tell/i);
+    const normal = body({ b3dTab: 'gate', b3dGate: 'breathing' });
+    expect(normal).toContain('normal breathing');
+  });
+
+  it('honours reduced motion on the gate too', () => {
+    expect(gateBlock()).toContain('!reduced');
+  });
+});
