@@ -418,6 +418,35 @@ text is present rather than trusting a green run, for exactly that reason.
 The joule figures stay shared across bands on purpose, because the whole thesis of the ledger
 is that it is the same four numbers at every level.
 
+### Defect 21: the work record was vouching for an impossible shot
+
+The work record is the thing that leaves this tool and reaches a teacher. It reported
+"furthest was 301.4 m with a 1 kg stone" with no qualification, for a stone the tool had
+already flagged on screen as one no material could form. Every other surface refused to
+stand behind that number and the record stood behind it.
+
+It says so twice now, deliberately. The headline line carries its own caveat, because a
+skimming reader takes that number at face value and the counted note is several lines below
+it. Both travel with the copy-to-clipboard text.
+
+That needed a fix underneath: a logged shot kept `projMass` but not `projDiameter`, so its
+density could not be recovered after the fact. It rides along now. Rows saved before this
+carry no diameter, and an unknown density is not evidence of an impossible one, so those are
+left unremarked rather than guessed at.
+
+Running the best-stone search was also invisible in the record. It now reports what the
+search found rather than that it happened, which makes the line evidence instead of a tick.
+
+The browser harness proves the chain rather than the pieces: fire with an impossible stone,
+confirm `fire()` actually writes the diameter onto the logged row, carry that history into
+the record and read it. The SSR tests hand-build a history row, so they would not have caught
+a `fire()` that stopped logging the diameter.
+
+**A note on the perf gate.** `ml_render_cost.cjs` measures a software-rendered WebGL context
+and drifts badly under load: one run reported 143 ms for a render that measures 9.8 ms on a
+quiet machine. It now says so on failure rather than sending someone after a regression a
+second run would clear. Loosening the budget instead would defeat the point of having one.
+
 ## The reachability audit
 
 The crosswind find prompted a sweep of every field in `defaultState()` against whether a
