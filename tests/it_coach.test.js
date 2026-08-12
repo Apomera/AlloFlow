@@ -291,3 +291,79 @@ describe('request cancellation', () => {
     expect(fn).toContain('pendingRequestId = id;');
   });
 });
+
+// ─── Canvas hardening (workflow findings, 2026-08-11) ───────────────────────
+// Gemini Canvas serves the app from a real origin (confirmed: in-app dictation
+// works there, and the microphone is Permissions-Policy gated so it could not
+// be granted to an opaque origin). So the bridge DOES have an origin to use,
+// and these are the repairs that were masked while we assumed otherwise.
+describe('canvas hardening', () => {
+  const popup = readFileSync(resolve(process.cwd(), 'video_studio/video_studio.html'), 'utf-8');
+
+  // One token serves every window we opened. openStudio minted a fresh one
+  // unconditionally, rotating it out from under a live coach window.
+  it('does not rotate the shared token out from under a live coach window', () => {
+    expect(moduleText).toContain("var bridgeToken = (vsTakeStore.token && vsTakeStore.coachWin && !vsTakeStore.coachWin.closed)");
+    // And a blocked Studio popup must not clear a token the coach still holds.
+    expect(moduleText).toContain('if (!vsTakeStore.coachWin || vsTakeStore.coachWin.closed) vsTakeStore.setToken(null);');
+  });
+
+  // usercontent.goog is the origin Canvas actually serves from, and it was
+  // missing, so teachers on the primary surface were warned their own app was
+  // an unrecognised site before every first Send.
+  it('recognises the Canvas hosts the rest of the repo already knows', () => {
+    const fn = popup.slice(popup.indexOf('function openerOriginRecognised'), popup.indexOf('var unknownOriginSendApproved'));
+    for (const host of ['usercontent', 'idx.google', 'run.app', 'googleusercontent']) {
+      expect(fn, `openerOriginRecognised is missing ${host}`).toContain(host);
+    }
+    // Same set the sheet bridge enumerates.
+    const sheet = readFileSync(resolve(process.cwd(), 'allo_sheet/allo_sheet.js'), 'utf-8');
+    expect(sheet).toContain('usercontent.goog');
+  });
+
+  it('no longer treats "no destination" as consent', () => {
+    const fn = popup.slice(popup.indexOf('function confirmUnknownOriginSend'), popup.indexOf('function postToOpener'));
+    expect(fn).toContain('if (!target) return false;');
+    expect(fn).not.toContain('if (!target || openerOriginRecognised(target)');
+  });
+
+  it('does not claim to be connected when it cannot send', () => {
+    expect(popup).toContain('⚠ Opened by AlloFlow, but not connected');
+    expect(popup).not.toContain("if (!target) { $('linkState').textContent = 'Connected to AlloFlow'; return; }");
+  });
+
+  // Dead in the case it existed for, and worse than nothing if it resolved.
+  it('drops the referrer fallback in both windows', () => {
+    expect(html).not.toContain('document.referrer');
+    expect(popup).not.toContain('document.referrer');
+  });
+
+  it('names the real cause when AlloFlow opened it but the link is dead', () => {
+    const gate = html.slice(html.indexOf('var p = bridgeAvailable ? null : getProvider();'), html.indexOf('var frame = grabFrame();'));
+    expect(gate).toContain('the two windows could not connect');
+    expect(gate).toContain('if (opener && !opener.closed)');
+    // The "configure a backend" advice survives only for a genuine cold open.
+    expect(gate).toContain('No AI backend is configured');
+  });
+
+  // allostudio-ping had a handler and no sender since the popup was written.
+  it('finally sends the ping its handler was waiting for', () => {
+    expect(moduleText).toContain('function vsPingBridgeWindow(win)');
+    expect(moduleText).toContain("vsPostToStudio(win, { type: 'allostudio-ping' })");
+    expect(moduleText).toContain('if (w) vsPingBridgeWindow(w);');   // coach
+    expect(moduleText).toContain('vsPingBridgeWindow(w);');          // studio
+    expect(popup).toContain("isOpenerMessage(ev, 'allostudio-ping')");
+    // Bounded: a handshake, not a heartbeat.
+    expect(moduleText).toContain('if (attempts >= 8) return;');
+    // Guarded for the no-React helper surface, where vsPostToStudio is undefined.
+    expect(moduleText).toContain("if (typeof vsPostToStudio !== 'function') return;");
+  });
+
+  it('lets the coach learn a REAL origin from the ping, never an opaque one', () => {
+    const listener = html.slice(html.indexOf("ev.data.type !== 'allostudio-ping'") - 400, html.indexOf('// ── Backend settings'));
+    expect(listener).toContain("if (!openerOrigin && ev.origin && ev.origin !== 'null')");
+    expect(listener).toContain("ev.data.bridge !== bridgeToken");
+    // No wildcard target anywhere on this page.
+    expect(html).not.toMatch(/postMessage\([^\n]*['"]\*['"]/);
+  });
+});

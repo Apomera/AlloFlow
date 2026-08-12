@@ -4711,7 +4711,12 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       return origin && origin !== 'null' ? origin : '';
     } catch (_) { return ''; }
   }
-  var openerOrigin = originFromUrl(bridgeParams.get('allo_origin') || '') || originFromUrl(document.referrer || '');
+  // ?allo_origin= only. The referrer fallback that used to sit here was dead
+  // in the one case it existed for (a non-HTTP(S) opener sends no referrer),
+  // and actively worse than nothing if it ever did resolve: it would produce a
+  // plausible-looking target that the browser then silently drops, turning
+  // "we know we cannot send" into a timeout after the user had already acted.
+  var openerOrigin = originFromUrl(bridgeParams.get('allo_origin') || '');
   function openerTargetOrigin() { return openerOrigin || ''; }
   // openerOrigin comes from ?allo_origin= (or the referrer), both of which the
   // page that opened us controls. Any site can therefore open the genuine Studio
@@ -4730,13 +4735,30 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         || /(^|\.)pages\.dev$/.test(h)
         || /(^|\.)web\.app$/.test(h)
         || /(^|\.)firebaseapp\.com$/.test(h)
-        || /(^|\.)googleusercontent\.com$/.test(h);
+        // Gemini Canvas hosts. The list was missing usercontent.goog, which is
+        // the origin Canvas actually serves from, so a teacher working on the
+        // primary surface was warned that their own app was an unrecognised
+        // site and asked to confirm before every first Send. Host set copied
+        // from isCanvasOpenerOrigin (allo_sheet/allo_sheet.js), which already
+        // enumerates all four.
+        || /(^|\.)googleusercontent\.com$/.test(h)
+        || /(^|\.)usercontent\.goog$/.test(h)
+        || h === 'usercontent.goog'
+        || /(^|\.)idx\.google$/.test(h)
+        || h === 'idx.google'
+        || /(^|\.)run\.app$/.test(h)
+        || h === 'run.app';
     } catch (_) { return false; }
   }
   var unknownOriginSendApproved = false;
   function confirmUnknownOriginSend() {
     var target = openerTargetOrigin();
-    if (!target || openerOriginRecognised(target) || unknownOriginSendApproved) return true;
+    // An EMPTY target used to return true here, which reads as "approved".
+    // It is the opposite: with no destination we cannot name what the teacher
+    // would be agreeing to. Harmless today only because postToOpener refuses
+    // to send without a target, so this failed open behind a closed door.
+    if (!target) return false;
+    if (openerOriginRecognised(target) || unknownOriginSendApproved) return true;
     var ok = false;
     try {
       ok = window.confirm('This Studio window was opened by:\n\n  ' + target + '\n\nThat is not a recognised AlloFlow address. Sending will hand the finished video, its captions and transcript to that site.\n\nSend anyway?');
@@ -4809,7 +4831,15 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   (function () {
     if (!opener) { $('linkState').textContent = 'Standalone mode (no AlloFlow window)'; return; }
     var target = openerTargetOrigin();
-    if (!target) { $('linkState').textContent = 'Connected to AlloFlow'; return; }
+    // No target means nothing can be sent: postToOpener refuses without one.
+    // Claiming "Connected to AlloFlow" here was affirmatively wrong precisely
+    // when the link was dead, and it is the state a teacher most needs told.
+    if (!target) {
+      $('linkState').textContent = '⚠ Opened by AlloFlow, but not connected';
+      $('linkState').style.color = 'var(--warn, #f59e0b)';
+      $('linkState').title = 'This window could not work out where to send anything, so sending is disabled.';
+      return;
+    }
     var known = openerOriginRecognised(target);
     $('linkState').textContent = (known ? 'Connected to AlloFlow · ' : '⚠ Unrecognised opener · ') + target;
     if (!known) $('linkState').style.color = 'var(--warn, #f59e0b)';

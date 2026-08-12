@@ -3020,6 +3020,32 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       return u.href;
     } catch (_) { return IT_COACH_URL + '?posture=' + (posture === 'educator' ? 'educator' : 'learner'); }
   }
+  // Nudge a window we opened until it answers. The popup has handled
+  // 'allostudio-ping' since it was written and replies 'allostudio-ready',
+  // which the module already treats as the window coming alive; the type has
+  // simply never had a sender. Its unprompted 'allostudio-ready' at load is
+  // single-shot, so if our listener was not registered yet that greeting is
+  // lost and the window sits at 'stalled' for no reason. A few retries close
+  // that race with no new message type and no new receiver.
+  //
+  // Bounded on purpose: this is a handshake, not a heartbeat. Nothing in the
+  // current design needs liveness after the first answer.
+  function vsPingBridgeWindow(win) {
+    var attempts = 0;
+    var tick = function () {
+      // Reachable from the no-React helper surface, where vsPostToStudio is
+      // declared later and is hoisted-but-undefined. Same guard style as
+      // vsOpenCoachWindow's take-store check.
+      if (typeof vsPostToStudio !== 'function') return;
+      if (!win || win.closed) return;
+      if (!vsPostToStudio(win, { type: 'allostudio-ping' })) return;
+      attempts += 1;
+      if (attempts >= 8) return;
+      setTimeout(tick, attempts < 5 ? 250 : 2000);
+    };
+    tick();
+  }
+
   function vsOpenCoachWindow(posture) {
     var store = (typeof vsTakeStore !== 'undefined' && vsTakeStore) ? vsTakeStore : null;
     var existing = store && store.coachWin;
@@ -3031,6 +3057,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var w = null;
     try { w = window.open(coachUrlWithBridge(token, posture), 'alloflow-it-coach', 'width=1100,height=820'); } catch (_) { w = null; }
     if (store) store.coachWin = w || null;
+    if (w) vsPingBridgeWindow(w);
     return w;
   }
 
@@ -4486,19 +4513,29 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       }
       setStudioState('opening');
       var w = null;
-      var bridgeToken = randomBridgeToken();
+      // One token serves every window we opened. Minting unconditionally here
+      // ROTATED it out from under a live coach window, and every later coach
+      // request then died silently at the receiver's token check. Keep the
+      // current token while a coach window is still holding it.
+      var bridgeToken = (vsTakeStore.token && vsTakeStore.coachWin && !vsTakeStore.coachWin.closed)
+        ? vsTakeStore.token
+        : randomBridgeToken();
       bridgeTokenRef.current = bridgeToken;
       vsTakeStore.setToken(bridgeToken);
       try { w = window.open(studioUrlWithBridge(bridgeToken), 'alloflow-video-studio', 'width=1320,height=860'); } catch (_) { w = null; }
       if (!w) {
         bridgeTokenRef.current = null;
-        vsTakeStore.setToken(null);
+        // Same shared-token hazard as the mint above, in reverse: clearing it
+        // unconditionally because OUR window was blocked would silently cut off
+        // a coach window that is alive and holding it.
+        if (!vsTakeStore.coachWin || vsTakeStore.coachWin.closed) vsTakeStore.setToken(null);
         setStudioState('blocked');
         addToast(T('video_studio.popup_blocked', 'The Studio window was blocked. Allow pop-ups for this page, then try again.'), 'error');
         return;
       }
       studioWinRef.current = w;
       vsTakeStore.studioWin = w;
+      vsPingBridgeWindow(w);
       // Watchdog: an honest verdict, not a hopeful one. It used to flip
       // 'opening' straight to 'open' even when the ready handshake never
       // arrived, so a popup that failed to load read as healthy.
