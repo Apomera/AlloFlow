@@ -457,3 +457,43 @@ describe('Machine Lab: nothing speaks over a five-year-old', () => {
     expect(k2).not.toContain('air resistance');
   });
 });
+
+describe('Machine Lab: the last two single-register panels', () => {
+  const build = (b, o = {}) => renderTool('machineLab',
+    { machineLab: Object.assign({ view: 'build', bandOverride: b }, o) });
+
+  // The Machine Shop keeps "Mechanical advantage" at K-2 and glosses it
+  // underneath ("How it feels: Much easier"), because there the term IS the
+  // lesson. The winch panel follows that rather than renaming it away.
+  it('keeps mechanical advantage at every band and glosses it for the young ones', () => {
+    BANDS.forEach((b) => expect(build(b)).toContain('Winch mechanical advantage'));
+    expect(build('k2')).toMatch(/That means the winch pulls [\d.]+ times harder than you do/);
+    expect(build('g912')).not.toContain('times harder than you do');
+  });
+
+  it('says the crank numbers in plain words for the young bands', () => {
+    expect(build('k2')).toContain('How hard you pull:');
+    expect(build('k2')).toContain('Times you turn the handle:');
+    expect(build('g68')).toContain('Crank force:');
+    expect(build('g68')).toContain('Turns of the crank:');
+  });
+
+  it('restates the part notes rather than leaving one register for all', () => {
+    // partsOf() reads `young` from render scope. If that binding were missing
+    // this would throw, and renderTool can swallow a throw into empty output,
+    // so assert the text is actually present rather than trusting a green run.
+    const k2 = build('k2');
+    expect(k2).toContain('the long end of the beam moves much further than the short end');
+    expect(k2).toContain('your hand goes round a big circle');
+    expect(k2).toContain('each extra loop of rope makes the pull half as hard');
+    const g68 = build('g68');
+    expect(g68).toContain('long arm ÷ short arm');
+    expect(g68).toContain('a big handle circle turning a small drum');
+  });
+
+  it('restates the torsion arm note too, not just the trebuchet beam', () => {
+    const k2 = build('k2', { machine: 'ballista' });
+    expect(k2).toContain('The rope twists it back a little way');
+    expect(build('g68', { machine: 'ballista' })).toContain('trading a short powerful twist');
+  });
+});

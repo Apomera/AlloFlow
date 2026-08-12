@@ -1978,13 +1978,13 @@ window.StemLab = window.StemLab || {
     onager: ['lever', 'windlass', 'pulley', 'wedge', 'screw']
   };
 
-  // Per-machine metadata. The comparison view is the payoff of the whole tool:
-  // three different ways to store energy, judged on the same ledger.
   // The reference rock. Used to say "a stone this big would weigh about N kg",
   // which is the K-2 and grade 3-5 way of stating a density, and to pick the
   // shipped default stone. Granite runs roughly 2650-2750 kg per cubic metre.
   var GRANITE = 2700;
 
+  // Per-machine metadata. The comparison view is the payoff of the whole tool:
+  // three different ways to store energy, judged on the same ledger.
   var MACHINES = [
     { id: 'trebuchet', icon: '🏰', label: 'Trebuchet', store: 'gravity' },
     { id: 'ballista', icon: '🏹', label: 'Ballista', store: 'torsion' },
@@ -2143,6 +2143,11 @@ window.StemLab = window.StemLab || {
       };
 
       var band = resolveBand(ctx, d.bandOverride);
+      // Several panels split the same way: the two younger bands share a
+      // register and the two older ones share the technical names. One flag at
+      // render scope, so a panel cannot end up branching on a different rule
+      // from the panel beside it.
+      var young = (band === 'k2' || band === 'g35');
       var BENCHES = buildBenches(__alloT);
       var bench = null;
       for (var bi = 0; bi < BENCHES.length; bi++) {
@@ -2588,8 +2593,7 @@ window.StemLab = window.StemLab || {
         // still speaking in one register: a K-2 reader was being shown "Kinetic
         // energy at impact" in the same words as a grade 12 one. Same four
         // stages, same four numbers, restated. Only the naming changes, so the
-        // table and the bars cannot drift apart.
-        var young = (band === 'k2' || band === 'g35');
+        // table and the bars cannot drift apart. `young` is at render scope.
         var stages = [
           {
             id: 'crank',
@@ -3205,20 +3209,28 @@ window.StemLab = window.StemLab || {
             value: torsion ? null : _machineMath.leverMA(d.beamLong, d.beamShort),
             unit: '×',
             note: torsion
-              ? __alloT('stem.machinelab.part_arm_n', 'each arm is a lever turning about its bundle, trading a short powerful twist for a long fast sweep')
-              : __alloT('stem.machinelab.part_beam_n', 'long arm ÷ short arm, so the stone end travels that many times further than the counterweight end')
+              ? (young
+                ? __alloT('stem.machinelab.part_arm_n_k2', 'each arm is a lever. The rope twists it back a little way, and the arm swings the stone a long way, fast')
+                : __alloT('stem.machinelab.part_arm_n', 'each arm is a lever turning about its bundle, trading a short powerful twist for a long fast sweep'))
+              : (young
+                ? __alloT('stem.machinelab.part_beam_n_k2', 'the long end of the beam moves much further than the short end does, so the stone ends up going much faster than the weight')
+                : __alloT('stem.machinelab.part_beam_n', 'long arm ÷ short arm, so the stone end travels that many times further than the counterweight end'))
           },
           windlass: {
             icon: '🎡',
             part: __alloT('stem.machinelab.part_winch', 'the winch drum and handle'),
             value: winchMA, unit: '×',
-            note: __alloT('stem.machinelab.part_winch_n', 'a big handle circle turning a small drum, which is why one person can cock the machine')
+            note: young
+              ? __alloT('stem.machinelab.part_winch_n_k2', 'your hand goes round a big circle and the drum only goes round a small one, so one person can pull back a machine this big')
+              : __alloT('stem.machinelab.part_winch_n', 'a big handle circle turning a small drum, which is why one person can cock the machine')
           },
           pulley: {
             icon: '⛓️',
             part: __alloT('stem.machinelab.part_tackle', 'the cocking tackle'),
             value: tackle, unit: '×',
-            note: __alloT('stem.machinelab.part_tackle_n', 'every extra rope segment halves the pull again and doubles the rope to haul in')
+            note: young
+              ? __alloT('stem.machinelab.part_tackle_n_k2', 'each extra loop of rope makes the pull half as hard, but you have twice as much rope to pull in')
+              : __alloT('stem.machinelab.part_tackle_n', 'every extra rope segment halves the pull again and doubles the rope to haul in')
           },
           wedge: {
             icon: '🪓',
@@ -3226,19 +3238,25 @@ window.StemLab = window.StemLab || {
               ? __alloT('stem.machinelab.part_stop', 'the trigger and the padded stop')
               : __alloT('stem.machinelab.part_trigger', 'the trigger and the ratchet pawl'),
             value: null, unit: '',
-            note: __alloT('stem.machinelab.part_trigger_n', 'a small wedge holding an enormous force, and releasing it the instant you want it gone')
+            note: young
+              ? __alloT('stem.machinelab.part_trigger_n_k2', 'a tiny wedge holds back a huge pull, and lets go the moment you want it to')
+              : __alloT('stem.machinelab.part_trigger_n', 'a small wedge holding an enormous force, and releasing it the instant you want it gone')
           },
           screw: {
             icon: '🔩',
             part: __alloT('stem.machinelab.part_screw', 'the bundle tensioning gear'),
             value: null, unit: '',
-            note: __alloT('stem.machinelab.part_screw_n', 'tiny turns against a huge load, which is how the springs are tuned at all')
+            note: young
+              ? __alloT('stem.machinelab.part_screw_n_k2', 'small turns of a screw against a very big pull, which is how you tighten the ropes just right')
+              : __alloT('stem.machinelab.part_screw_n', 'tiny turns against a huge load, which is how the springs are tuned at all')
           },
           ramp: {
             icon: '📐',
             part: __alloT('stem.machinelab.part_ramp', 'the loading ramp'),
             value: null, unit: '',
-            note: __alloT('stem.machinelab.part_ramp_n', 'rolling a stone up a slope instead of lifting it, which is the only way a crew moves it at all')
+            note: young
+              ? __alloT('stem.machinelab.part_ramp_n_k2', 'rolling the stone up a slope instead of lifting it straight up, which is the only way people could move it')
+              : __alloT('stem.machinelab.part_ramp_n', 'rolling a stone up a slope instead of lifting it, which is the only way a crew moves it at all')
           }
         };
 
@@ -3415,22 +3433,47 @@ window.StemLab = window.StemLab || {
               h('h4', { key: 'h', style: { margin: '0 0 4px', fontSize: 14, color: T.text } },
                 __alloT('stem.machinelab.the_winch', 'The winch')),
               h('p', { key: 'p', style: { margin: '0 0 10px', fontSize: 13, color: T.muted, lineHeight: 1.5 } },
-                __alloT('stem.machinelab.winch_body', 'Gearing the winch changes how hard you crank and how many turns it takes. Watch what it does to the shot.')),
+                pick({
+                  k2: __alloT('stem.machinelab.winch_body_k2', 'The handle and the drum decide how hard you have to pull and how many times you have to turn. Change them and watch what happens to the throw.'),
+                  g35: __alloT('stem.machinelab.winch_body_g35', 'Changing the handle and the drum changes how hard you pull and how many turns it takes. See what it does to the shot, and what it does not do.'),
+                  g68: __alloT('stem.machinelab.winch_body', 'Gearing the winch changes how hard you crank and how many turns it takes. Watch what it does to the shot.'),
+                  g912: __alloT('stem.machinelab.winch_body', 'Gearing the winch changes how hard you crank and how many turns it takes. Watch what it does to the shot.')
+                }, band)),
               h('div', { key: 'ctl' }, WINCH_CONTROLS.map(slider)),
+              // The Machine Shop's own K-2 pattern is to KEEP "mechanical
+              // advantage" and put a plain reading of it directly underneath
+              // ("How it feels: Much easier"), because the term is the lesson
+              // there. This panel follows that rather than renaming it away:
+              // the term stays at every band, and the younger ones get the
+              // gloss. Newtons do not survive the trip, so those are said as
+              // how hard the pull feels.
               preview ? h('div', {
                 key: 'nums',
                 style: { display: 'grid', gap: 4, padding: 10, borderRadius: 8, background: T.bg, border: '1px solid ' + T.border }
               }, [
                 h('div', { key: 'b', style: { fontSize: 13, color: T.text } },
                   __alloT('stem.machinelab.winch_ma2', 'Winch mechanical advantage: ') + fmt(preview.winchMA, 1) + '×'),
+                young ? h('div', { key: 'b2', style: { fontSize: 12, color: T.dim } },
+                  __alloT('stem.machinelab.winch_ma_gloss', 'That means the winch pulls ') + fmt(preview.winchMA, 1) +
+                  __alloT('stem.machinelab.winch_ma_gloss2', ' times harder than you do.')) : null,
                 h('div', { key: 'c', style: { fontSize: 13, color: T.text } },
-                  __alloT('stem.machinelab.crank_force', 'Crank force: ') + fmt(preview.crankForce, 0) + ' N'),
+                  young
+                    ? __alloT('stem.machinelab.crank_force_k2', 'How hard you pull: ') + fmt(preview.crankForce, 0) +
+                      __alloT('stem.machinelab.crank_force_k2b', ' newtons')
+                    : __alloT('stem.machinelab.crank_force', 'Crank force: ') + fmt(preview.crankForce, 0) + ' N'),
                 h('div', { key: 'e', style: { fontSize: 13, color: T.text } },
-                  __alloT('stem.machinelab.crank_turns', 'Turns of the crank: ') + fmt(preview.crankTurns, 0)),
+                  young
+                    ? __alloT('stem.machinelab.crank_turns_k2', 'Times you turn the handle: ') + fmt(preview.crankTurns, 0)
+                    : __alloT('stem.machinelab.crank_turns', 'Turns of the crank: ') + fmt(preview.crankTurns, 0)),
                 h('div', { key: 'f', style: { fontSize: 13, fontWeight: 700, color: T.accent } },
                   __alloT('stem.machinelab.muzzle_unchanged', 'Launch speed: ') + fmt(preview.muzzleV, 1) + ' m/s'),
                 h('div', { key: 'g', style: { fontSize: 11, color: T.dim, marginTop: 2 } },
-                  __alloT('stem.machinelab.winch_hint', 'Change the gearing and watch: the first three numbers move, the launch speed does not.'))
+                  pick({
+                    k2: __alloT('stem.machinelab.winch_hint_k2', 'Try it: the first numbers change, but the launch speed stays the same. The winch decides how easy the work is, not how far the stone goes.'),
+                    g35: __alloT('stem.machinelab.winch_hint_g35', 'Change the gearing and watch. The first three numbers move. The launch speed does not, because gearing changes how you do the work, not how much of it there is.'),
+                    g68: __alloT('stem.machinelab.winch_hint', 'Change the gearing and watch: the first three numbers move, the launch speed does not.'),
+                    g912: __alloT('stem.machinelab.winch_hint', 'Change the gearing and watch: the first three numbers move, the launch speed does not.')
+                  }, band))
               ]) : null
             ], 'winch')
           ])

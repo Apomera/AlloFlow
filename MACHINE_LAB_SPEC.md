@@ -397,11 +397,26 @@ coincidence; `machinelab_views` and `machinelab_machines` now pin `bandOverride`
 And a test asserting `g35` contains "Transfer efficiency" had encoded the defect: the phrase
 itself is the thing that does not belong in that band.
 
-**Still single-register, deliberately left for a later pass:** the winch panel's copy and its
-"mechanical advantage / crank force" readout, and the per-part descriptions in "Simple
-machines in this engine" (its intro line does restate). The joule figures themselves are
-shared across bands on purpose, because the whole thesis of the ledger is that it is the
-same four numbers at every level.
+**The last two blocks, done in a following pass.** The winch panel and the per-part notes in
+"Simple machines in this engine" were the remainder, and finishing them turned up the rule
+that should have governed the whole job:
+
+**Where a term is the lesson, keep it and gloss it. Where it is only a label, restate it.**
+The Machine Shop already does the first: at K-2 it prints "Mechanical advantage 4×" and puts
+"How it feels: Much easier" directly beneath. So the winch panel keeps "Winch mechanical
+advantage" at every band and adds "that means the winch pulls 11.3 times harder than you do"
+for the younger two, rather than renaming it away. The ledger is the opposite case: "Kinetic
+energy at impact" is a bar label, not the subject of a lesson, and kinetic energy is not a
+K-2 idea in any framework, so there it is restated. Both are defensible; what would not be is
+choosing differently in two panels for no reason.
+
+`young` now lives at render scope beside `band`. It was briefly declared inside `ledger()`
+while the winch panel two functions away referenced it, which `node --check` cannot see and
+which `renderTool` can swallow into empty output. The test for the part notes asserts the
+text is present rather than trusting a green run, for exactly that reason.
+
+The joule figures stay shared across bands on purpose, because the whole thesis of the ledger
+is that it is the same four numbers at every level.
 
 ## The reachability audit
 
