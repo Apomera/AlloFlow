@@ -862,4 +862,22 @@ describe('AlloSheet security and deployment contracts', () => {
     expect(compose).toContain('127.0.0.1:8484:8484');
     expect(compose).toContain('GRIST_SANDBOX_FLAVOR: "gvisor"');
   });
+
+  // hostOrigin is the address the companion posts every reply to
+  // (allo_sheet.js reads it from the bootstrap hash and posts to it). It must
+  // be the DOCUMENT's origin, not the URL's: a blob: document parses to the
+  // origin embedded in its path, so new URL(href).origin can hand back a
+  // real-looking https:// string for a document whose real origin is opaque.
+  // That does not fail loudly; it produces a companion whose every reply the
+  // browser silently drops. location.origin is the document's own answer and
+  // reports 'null' when opaque, which the existing guard then catches.
+  it('takes the host origin from the document, not from parsing its URL', () => {
+    const source = read('allo_sheet/host_bridge.js');
+    expect(source).toContain('hostOrigin = window.location.origin');
+    expect(source).not.toContain('hostOrigin = new URL(window.location.href).origin');
+    // The guard that refuses to launch without a usable origin stays.
+    expect(source).toContain("!/^https?:\\/\\//i.test(hostOrigin)");
+    // Deploy mirrors carry the same file.
+    expect(read('desktop/web-app/public/allo_sheet/host_bridge.js')).toBe(source);
+  });
 });

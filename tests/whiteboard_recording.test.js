@@ -124,4 +124,18 @@ describe('whiteboard AI drawing recorder', () => {
     const mirror = readFileSync(resolve(process.cwd(), 'desktop/web-app/public/whiteboard/whiteboard.html'), 'utf-8');
     expect(mirror).toBe(html());
   });
+
+  // An opaque opener reports the string 'null' for its origin. That is not a
+  // parseable targetOrigin, so storing it made every later toOpener() throw
+  // into its own catch and go permanently silent -- worse than the documented
+  // '*' fallback, which still reaches window.opener and nothing else. Learning
+  // a REAL origin is an upgrade; learning 'null' was a downgrade to muteness.
+  it('learns the opener origin from the ack only when it is a real one', () => {
+    const source = html();
+    expect(source).toContain("if (d.type === 'allocwb-ack') { if (ev.origin && ev.origin !== 'null') openerOrigin = ev.origin; return; }");
+    expect(source).not.toContain("if (d.type === 'allocwb-ack') { openerOrigin = ev.origin; return; }");
+    // The '*' fallback stays: outbound here is the user's own drawing, and the
+    // file argues that case explicitly where openerOrigin is declared.
+    expect(source).toContain("openerOrigin || '*'");
+  });
 });

@@ -726,8 +726,17 @@
     if (!popup || popup.closed) {
       bridgeReady = false;
       issueBridgeToken();
+      // The DOCUMENT's origin, not the URL's. These differ: a blob: document
+      // parses to the origin embedded in its path, so new URL(href).origin can
+      // hand back a real-looking https:// string for a document whose actual
+      // origin is opaque. We pass this to the companion as its reply address
+      // (#hostOrigin=, read at allo_sheet.js:157 and posted to at :417), so the
+      // wrong value does not fail loudly -- it produces a companion whose every
+      // reply is silently dropped by the browser. location.origin is the
+      // document's own answer and reports 'null' when it is opaque, which the
+      // guard below then catches honestly.
       var hostOrigin = '';
-      try { hostOrigin = new URL(window.location.href).origin; } catch (_) {}
+      try { hostOrigin = window.location.origin || ''; } catch (_) {}
       if (!bridgeToken || !targetOrigin() || !/^https?:\/\//i.test(hostOrigin)) {
         bridgeReady = false;
         clearBridgeToken();
