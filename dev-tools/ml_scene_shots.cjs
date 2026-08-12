@@ -144,6 +144,18 @@ const SHOTS = [
   ['12-compare', S({ view: 'compare' }), {}, 500],
   ['12b-compare-beststone', S({ view: 'compare', bestStones: BEST_FIXTURE }), {}, 500],
   ['12c-compare-beststone-stale', S({ view: 'compare', bestStones: STALE_FIXTURE }), {}, 500],
+  // The record is what leaves the tool and reaches a teacher, so what it says
+  // about an impossible shot is worth looking at rather than only asserting.
+  ['12d-record-flagged', S({
+    view: 'learn', manualTopic: 'record',
+    shotHistory: [
+      { range: 301.4, projMass: 1, projDiameter: 0.8, muzzleV: 39, eta: 0.02 },
+      { range: 101.3, projMass: 25, projDiameter: 0.26, muzzleV: 32, eta: 0.34 }
+    ],
+    machinesFired: ['trebuchet'],
+    provenBenches: { lever: true, pulley: true },
+    bestStones: BEST_FIXTURE
+  }), {}, 500],
   ['13-manual-history', S({ view: 'learn', manualTopic: 'history' }), {}, 500],
   ['14-manual-model', S({ view: 'learn', manualTopic: 'model' }), {}, 500]
 ];

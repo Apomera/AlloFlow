@@ -2855,8 +2855,14 @@ window.StemLab = window.StemLab || {
         }
         var nextId = (d.shotId || 0) + 1;
         var hist = (d.shotHistory || []).slice(-7);
+        // The diameter rides along because without it a logged shot's density
+        // cannot be recovered afterwards, and the work record then reports a
+        // furthest throw with no way to know it was made by an object that
+        // could not exist. Rows saved before this carry no projDiameter, so
+        // anything reading it must tolerate undefined.
         hist.push({
-          range: preview.range, projMass: d.projMass, muzzleV: preview.muzzleV, eta: preview.eta,
+          range: preview.range, projMass: d.projMass, projDiameter: d.projDiameter,
+          muzzleV: preview.muzzleV, eta: preview.eta,
           path: compactPath(preview.path)
         });
         var fired = (d.machinesFired || []).slice();
@@ -4143,9 +4149,15 @@ window.StemLab = window.StemLab || {
         lines.push(__alloT('stem.machinelab.rec_l2', 'Best prediction streak: ') + (d.benchStreak || 0));
         lines.push(__alloT('stem.machinelab.rec_l3', 'Machines fired: ') +
           (fired.length ? fired.join(', ') : __alloT('stem.machinelab.rec_none', 'none yet')));
+        // If the furthest shot is itself the impossible one, say so on that
+        // line. The counted note below is four lines further down, and a
+        // skimming reader takes the headline number at face value.
+        var bestRho = best ? _machineMath.density(best.projMass, best.projDiameter) : null;
+        var bestOdd = bestRho !== null && (bestRho < 1400 || bestRho > 4200);
         lines.push(__alloT('stem.machinelab.rec_l4', 'Shots logged: ') + log.length +
           (best ? __alloT('stem.machinelab.rec_best', '; furthest was ') + fmt(best.range, 1) +
-                  __alloT('stem.machinelab.rec_best2', ' m with a ') + fmt(best.projMass, 0) + ' kg stone' : ''));
+                  __alloT('stem.machinelab.rec_best2', ' m with a ') + fmt(best.projMass, 0) + ' kg stone' +
+                  (bestOdd ? __alloT('stem.machinelab.rec_best_odd', ', which was not a real rock') : '') : ''));
         if (d.shotsFired) {
           lines.push(__alloT('stem.machinelab.rec_l5', 'Siege: ') + (d.wallPreset || 'curtain') + ', ' +
             d.shotsFired + __alloT('stem.machinelab.rec_l5b', ' shots, ') +
@@ -4153,6 +4165,39 @@ window.StemLab = window.StemLab || {
             (_machineMath.isBreached(currentWall())
               ? __alloT('stem.machinelab.rec_breached', ', breached') : __alloT('stem.machinelab.rec_held', ', wall held')));
         }
+        // Running the best-stone search is a real piece of investigation, and
+        // the record showed no sign of it. Report what it found rather than
+        // just that it happened, so the line is evidence and not a tick.
+        var sweep = d.bestStones;
+        if (sweep && sweep.results) {
+          var found = MACHINES
+            .filter(function (mm) { return !!sweep.results[mm.id]; })
+            .map(function (mm) {
+              var r = sweep.results[mm.id];
+              return machineLabel(mm.id) + ' ' + fmt(r.m, r.m < 10 ? 1 : 0) + ' kg';
+            });
+          if (found.length) {
+            lines.push(__alloT('stem.machinelab.rec_sweep', 'Best stone searched for: ') + found.join(', ') +
+              __alloT('stem.machinelab.rec_sweep2', ' (each machine wants a different one)'));
+          }
+        }
+
+        // The record is what leaves the tool and reaches a teacher. Reporting
+        // a furthest throw made by an object no material could form, with no
+        // note, is the tool vouching for a number it flagged on screen. Older
+        // rows have no diameter, so an unknown density is left unremarked
+        // rather than guessed at.
+        var impossible = log.filter(function (r) {
+          var rho = _machineMath.density(r.projMass, r.projDiameter);
+          return rho !== null && (rho < 1400 || rho > 4200);
+        }).length;
+        if (impossible) {
+          lines.push(__alloT('stem.machinelab.rec_odd', 'Note: ') + impossible +
+            (impossible === 1
+              ? __alloT('stem.machinelab.rec_odd1', ' of those shots used a stone whose weight and size do not match any real rock, so its range is not a real one.')
+              : __alloT('stem.machinelab.rec_odd2', ' of those shots used stones whose weight and size do not match any real rock, so those ranges are not real ones.')));
+        }
+
         if (d.iqHypothesis) lines.push(__alloT('stem.machinelab.rec_hyp', 'Hypothesis: ') + d.iqHypothesis);
         if (d.iqExplanation) lines.push(__alloT('stem.machinelab.rec_exp', 'Explanation: ') + d.iqExplanation);
 

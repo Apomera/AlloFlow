@@ -399,6 +399,58 @@ function check(name, cond, detail) {
     check('a real rock draws no warning in ' + v, ok.indexOf('No rock is that') === -1);
   }
 
+  // ── The work record, end to end ──
+  // The SSR tests hand-build a history row. This proves the chain: fire()
+  // actually writes projDiameter onto the logged shot, and the record reads it
+  // back and refuses to vouch for a range made by an impossible object.
+  await pg.evaluate((s) => window.__mount(s, {}), S({ view: 'range', projMass: 1, projDiameter: 0.8 }));
+  await pg.waitForTimeout(400);
+  await pg.evaluate(() => window.__click('Fire'));
+  await pg.waitForTimeout(600);
+  st = await pg.evaluate(() => window.__state());
+  const row = st && st.shotHistory && st.shotHistory[st.shotHistory.length - 1];
+  check('a fired shot logs the diameter, not just the mass',
+        row && typeof row.projDiameter === 'number', row && JSON.stringify(row.projDiameter));
+
+  // Carry that history into the record and read what it says.
+  await pg.evaluate((s) => window.__mount(s, {}), S({
+    view: 'learn', manualTopic: 'record', shotHistory: st.shotHistory
+  }));
+  await pg.waitForTimeout(400);
+  const recTxt = await pg.evaluate(() => document.body.innerText);
+  check('the work record refuses to vouch for that shot',
+        recTxt.indexOf('do not match any real rock') !== -1);
+
+  // And the same journey with a real rock leaves the record clean.
+  await pg.evaluate((s) => window.__mount(s, {}), S({ view: 'range' }));
+  await pg.waitForTimeout(400);
+  await pg.evaluate(() => window.__click('Fire'));
+  await pg.waitForTimeout(600);
+  const st2 = await pg.evaluate(() => window.__state());
+  await pg.evaluate((s) => window.__mount(s, {}), S({
+    view: 'learn', manualTopic: 'record', shotHistory: st2.shotHistory
+  }));
+  await pg.waitForTimeout(400);
+  const recOk = await pg.evaluate(() => document.body.innerText);
+  check('a real rock leaves the record unqualified',
+        recOk.indexOf('do not match any real rock') === -1);
+
+  // Running the sweep should leave evidence in the record too.
+  await pg.evaluate((s) => window.__mount(s, {}), S({ view: 'compare' }));
+  await pg.waitForTimeout(400);
+  await pg.evaluate(() => window.__click('Find the best stone'));
+  await pg.waitForTimeout(500);
+  const st3 = await pg.evaluate(() => window.__state());
+  await pg.evaluate((s) => window.__mount(s, {}), S({
+    view: 'learn', manualTopic: 'record', bestStones: st3.bestStones
+  }));
+  await pg.waitForTimeout(400);
+  const recSweep = await pg.evaluate(() => document.body.innerText);
+  check('the record shows what the best-stone search found',
+        recSweep.indexOf('Best stone searched for') !== -1);
+  check('and names a stone per machine rather than a bare tick',
+        /Best stone searched for:.*kg.*kg/.test(recSweep));
+
   check('no page errors during any interaction', errors.length === 0, errors.slice(0, 3).join(' | '));
 
   await b.close();

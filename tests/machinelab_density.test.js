@@ -497,3 +497,78 @@ describe('Machine Lab: the last two single-register panels', () => {
     expect(build('g68', { machine: 'ballista' })).toContain('trading a short powerful twist');
   });
 });
+
+describe('Machine Lab: the work record does not vouch for an impossible shot', () => {
+  const rec = (o = {}) => renderTool('machineLab',
+    { machineLab: Object.assign({ view: 'learn', manualTopic: 'record', bandOverride: 'g68' }, o) });
+
+  const shot = (mass, dia, range) => ({ range, projMass: mass, projDiameter: dia, muzzleV: 30, eta: 0.3 });
+
+  it('flags a logged shot made with a stone that could not exist', () => {
+    // The record is what leaves the tool and reaches a teacher. Reporting a
+    // furthest throw with no note would be the tool vouching for a number it
+    // had already flagged on screen.
+    const html = rec({ shotHistory: [shot(1, 0.8, 300)] });
+    expect(html).toContain('do not match any real rock');
+    expect(html).toContain('Note: 1');
+  });
+
+  it('counts them, and says it in the plural when it should', () => {
+    const html = rec({ shotHistory: [shot(1, 0.8, 300), shot(1, 0.8, 280), shot(25, 0.26, 100)] });
+    expect(html).toContain('Note: 2');
+    expect(html).toContain('those ranges are not real ones');
+  });
+
+  it('says nothing when every shot used a real rock', () => {
+    const html = rec({ shotHistory: [shot(25, 0.26, 101), shot(10, 0.19, 120)] });
+    expect(html).not.toContain('do not match any real rock');
+  });
+
+  it('leaves an older row unremarked rather than guessing its density', () => {
+    // Rows saved before the diameter was logged carry no projDiameter. An
+    // unknown density is not evidence of an impossible one.
+    const html = rec({ shotHistory: [{ range: 300, projMass: 1, muzzleV: 30, eta: 0.3 }] });
+    expect(html).not.toContain('do not match any real rock');
+  });
+
+  it('records what the best-stone search found, not merely that it ran', () => {
+    const html = rec({
+      bestStones: {
+        density: 2717, sig: 'x',
+        results: {
+          trebuchet: { m: 2.48, dia: 0.12, range: 132.3 },
+          onager: { m: 0.14, dia: 0.05, range: 256.2 }
+        }
+      }
+    });
+    expect(html).toContain('Best stone searched for:');
+    expect(html).toContain('2.5 kg');
+    expect(html).toContain('0.1 kg');
+    expect(html).toContain('each machine wants a different one');
+  });
+
+  it('stays out of the record entirely when the search never ran', () => {
+    expect(rec()).not.toContain('Best stone searched for');
+  });
+});
+
+describe('Machine Lab: the headline number carries its own caveat', () => {
+  const rec = (o = {}) => renderTool('machineLab',
+    { machineLab: Object.assign({ view: 'learn', manualTopic: 'record', bandOverride: 'g68' }, o) });
+  const shot = (mass, dia, range) => ({ range, projMass: mass, projDiameter: dia, muzzleV: 30, eta: 0.3 });
+
+  it('qualifies the furthest shot on its own line when that shot was impossible', () => {
+    // The counted note is several lines below. A reader skimming the record
+    // takes the headline range at face value unless it says otherwise there.
+    const html = rec({ shotHistory: [shot(1, 0.8, 301.4), shot(25, 0.26, 101)] });
+    expect(html).toMatch(/furthest was 301.4 m with a 1 kg stone, which was not a real rock/);
+  });
+
+  it('leaves the line alone when the furthest shot was a real rock', () => {
+    // Even when an earlier shot was not: the caveat belongs to the shot it
+    // describes, and the counted note covers the rest.
+    const html = rec({ shotHistory: [shot(1, 0.8, 90), shot(25, 0.26, 101)] });
+    expect(html).toMatch(/furthest was 101 m with a 25 kg stone(?!, which was not)/);
+    expect(html).toContain('do not match any real rock');
+  });
+});

@@ -132,6 +132,16 @@ function check(name, ok, detail) { results.push({ name, ok: !!ok, detail: String
   await b.close();
   const failed = results.filter((x) => !x.ok);
   results.forEach((x) => console.log((x.ok ? '  ok   ' : '  FAIL ') + x.name + (x.detail ? '   [' + x.detail + ']' : '')));
+  // These timings come from a software-rendered WebGL context, so they are
+  // sensitive to whatever else the machine is doing. A run under contention has
+  // reported 143 ms for a render that measures 9.8 ms on a quiet machine. Say
+  // so on failure rather than letting someone go hunting for a regression that
+  // a second run would have cleared. Loosening the budget instead would defeat
+  // the point of having one.
+  if (failed.length) {
+    console.log('\nNOTE: SwiftShader timings drift badly under load. Re-run on an idle');
+    console.log('machine before treating a failure here as a real regression.');
+  }
   console.log('\nslowest view: ' + slowest.view + ' at ' + slowest.median.toFixed(1) + 'ms (frame is ' + FRAME_MS + 'ms)');
   console.log((results.length - failed.length) + '/' + results.length + ' render-cost checks passed');
   if (failed.length) { console.error('\n' + failed.length + ' FAILED'); process.exit(2); }
