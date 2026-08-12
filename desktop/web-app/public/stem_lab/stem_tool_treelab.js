@@ -2241,6 +2241,109 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         ]);
       }
 
+      // Runs every species under the CURRENT conditions and allocation. Same weather,
+      // same budget split, so any difference on screen is the species' own strategy and
+      // not a hidden change of setup. ~500 pure-math steps, and only on this tab.
+      function compareRuns(years) {
+        return SPECIES.map(function (sp2) {
+          var t = newTree(sp2.id);
+          var track = [];
+          for (var y = 0; y < years && t.alive; y++) {
+            t = simulateYear(t, sp2, envForYear(envCfg, t.age), alloc);
+            if (y % 2 === 0) track.push(t.heightM);
+          }
+          return {
+            sp: sp2, tree: t, track: track,
+            diedAt: t.alive ? null : t.age,
+            cause: t.causeOfDeath,
+            clonal: sp2.modes.some(function (m) { var st = strategyById(m); return st && st.diversity === 0; })
+          };
+        });
+      }
+
+      function viewCompare() {
+        var years = clamp(d.compareYears || 120, 20, 400);
+        var runs = compareRuns(years);
+        var maxH = 1;
+        runs.forEach(function (r) { r.track.forEach(function (v) { if (v > maxH) maxH = v; }); });
+
+        var kids = [card([
+          heading(__alloT('stem.treelab.compare', 'Five strategies, one set of conditions'),
+            atLeast(band, 'g68')
+              ? __alloT('stem.treelab.compare_sub_g68', 'Every species below is grown under exactly the conditions and the allocation you set on the Grow tab. Nothing else differs, so what you see is the strategy each one is built around.')
+              : __alloT('stem.treelab.compare_sub_k2', 'The same weather for all five trees. They still grow differently.')),
+          h('div', { key: 'yrs', style: { marginBottom: 10 } }, [
+            h('label', { key: 'l', htmlFor: 'treelab-compare-years', style: { display: 'flex', justifyContent: 'space-between', fontSize: 12, color: T.dim, marginBottom: 4 } }, [
+              h('span', { key: 'a' }, __alloT('stem.treelab.compare_years', 'Years to run')),
+              h('span', { key: 'b', style: { fontWeight: 700, color: T.text } }, String(years))
+            ]),
+            h('input', {
+              key: 'i', id: 'treelab-compare-years', type: 'range', min: 20, max: 400, step: 10, value: years,
+              onChange: function (e) { upd('compareYears', parseInt(e.target.value, 10)); },
+              style: { width: '100%', accentColor: T.accent }
+            })
+          ])
+        ])];
+
+        runs.forEach(function (r) {
+          var isCurrent = r.sp.id === sp.id;
+          var W = 100, H = 44;
+          var span = Math.max(1, Math.ceil(years / 2));   // one sample every other year
+          var pts = r.track.map(function (v, i) {
+            var x = (i / span) * W;
+            return x.toFixed(1) + ',' + (H - (v / maxH) * (H - 2)).toFixed(1);
+          }).join(' ');
+          kids.push(card([
+            h('div', { key: 'hd', style: { display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', alignItems: 'baseline' } }, [
+              h('div', { key: 'a', style: { fontWeight: 700, color: T.text, fontSize: 14 } },
+                r.sp.emoji + ' ' + __alloT('stem.treelab.species_' + r.sp.id, r.sp.name)
+                + (isCurrent ? ' · ' + __alloT('stem.treelab.your_tree', 'your tree') : '')),
+              h('div', { key: 'b', style: { fontSize: 12, color: T.dim } },
+                r.diedAt
+                  ? __alloT('stem.treelab.died_at', 'died at ') + r.diedAt + ' ' + __alloT('stem.treelab.yr', 'yr')
+                    + ' · ' + (r.cause === 'senescence'
+                      ? __alloT('stem.treelab.of_old_age', 'old age')
+                      : __alloT('stem.treelab.starved', 'starved'))
+                  : round(r.tree.heightM, 1) + ' m · ' + round(r.tree.dbhCm, 0) + ' cm')
+            ]),
+            h('svg', {
+              key: 'spark', viewBox: '0 0 ' + W + ' ' + H, preserveAspectRatio: 'none',
+              style: { width: '100%', height: 52, marginTop: 6, background: T.cardAlt, borderRadius: 6, border: '1px solid ' + (isCurrent ? T.accent : T.border) },
+              role: 'img',
+              'aria-label': __alloT('stem.treelab.species_' + r.sp.id, r.sp.name) + ': '
+                + (r.diedAt ? __alloT('stem.treelab.died_at', 'died at ') + r.diedAt : round(r.tree.heightM, 1) + ' metres')
+                + ' ' + __alloT('stem.treelab.after_years', 'after ') + years + ' ' + __alloT('stem.treelab.yr', 'yr')
+            }, [
+              h('line', { key: 'base', x1: 0, y1: H - 1, x2: W, y2: H - 1, stroke: T.border, strokeWidth: 0.6 }),
+              pts ? h('polyline', { key: 'ln', points: pts, fill: 'none', stroke: isCurrent ? T.accent : tone('#22c55e'), strokeWidth: isCurrent ? 2 : 1.3, vectorEffect: 'non-scaling-stroke' }) : null,
+              // Mark where a run stopped, so a short life reads as a short life rather
+              // than as a line that happens to end.
+              (r.diedAt && r.track.length) ? h('line', {
+                key: 'end',
+                x1: ((r.track.length - 1) / span) * W,
+                x2: ((r.track.length - 1) / span) * W,
+                y1: Math.max(0, H - (r.track[r.track.length - 1] / maxH) * (H - 2) - 5),
+                y2: H - 1,
+                stroke: tone(r.cause === 'senescence' ? '#94a3b8' : '#dc2626'),
+                strokeWidth: 2, vectorEffect: 'non-scaling-stroke'
+              }) : null
+            ]),
+            atLeast(band, 'g35') ? h('div', { key: 'why', style: { fontSize: 11, color: T.dim, marginTop: 6, lineHeight: 1.5 } },
+              (r.clonal
+                ? __alloT('stem.treelab.cmp_clonal', 'Can copy itself without seeds. ')
+                : __alloT('stem.treelab.cmp_seed', 'Seed only — no clonal route. '))
+              + __alloT('stem.treelab.cmp_life', 'Lifespan about ') + r.sp.maxAgeYears + ' ' + __alloT('stem.treelab.yr', 'yr')
+              + ', ' + __alloT('stem.treelab.cmp_max', 'tops out near ') + r.sp.maxHeight + ' m.') : null
+          ]));
+        });
+
+        kids.push(card([
+          modelNote(__alloT('stem.treelab.compare_note',
+            'One run each, under one set of conditions. A species that loses here is not a worse tree — it is a tree built for different conditions. Change the light or the water on the Grow tab and the order can change.'))
+        ]));
+        return kids;
+      }
+
       function viewQuiz() {
         var pool = QUIZ.filter(function (q) { return bandRank(band) >= bandRank(q.band); });
         if (pool.length === 0) pool = QUIZ.slice(0, 3);
@@ -2303,6 +2406,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         { id: 'chem', label: __alloT('stem.treelab.tab_chem', 'Chemistry'), icon: '☀️' },
         { id: 'transport', label: __alloT('stem.treelab.tab_transport', 'Transport'), icon: '↕️', min: 'g35' },
         { id: 'spread', label: __alloT('stem.treelab.tab_spread', 'Spread'), icon: '🌱' },
+        { id: 'compare', label: __alloT('stem.treelab.tab_compare', 'Compare'), icon: '⚖️', min: 'g35' },
         { id: 'quiz', label: __alloT('stem.treelab.tab_quiz', 'Check'), icon: '✓' }
       ].filter(function (t) { return !t.min || atLeast(band, t.min); });
       if (!TABS.some(function (t) { return t.id === view; })) view = 'grow';
@@ -2312,6 +2416,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         case 'chem': body = viewChem(); break;
         case 'transport': body = viewTransport(); break;
         case 'spread': body = viewSpread(); break;
+        case 'compare': body = viewCompare(); break;
         case 'quiz': body = viewQuiz(); break;
         default: body = viewGrow();
       }

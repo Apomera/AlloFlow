@@ -1055,6 +1055,62 @@ describe('Tree Life Lab — banks and mirrors', () => {
     }
   });
 
+  it('compares all five species under one set of conditions', () => {
+    // A student could only ever see one species at a time, so "why are there different
+    // kinds of trees" was a question the tool could not answer. Every run uses the SAME
+    // conditions and allocation, so any difference on screen is the strategy itself.
+    const html = render({ treeLab: { view: 'compare', bandOverride: 'g68', compareYears: 150 } });
+    const E = engine();
+    for (const sp of E.SPECIES) {
+      expect(html, `${sp.name} missing from the comparison`).toContain(sp.name);
+    }
+    expect(html).toContain('Five strategies, one set of conditions');
+    // It must say the numbers are one run, not a ranking of which tree is better.
+    expect(html).toMatch(/built for different conditions/);
+  });
+
+  it('distinguishes dying of old age from starving', () => {
+    // Both used to read "died at N". Aspen hits its 120-year lifespan in ANY conditions;
+    // willow starves at 9 in shade and drought and lasts 76 in good ones. Reporting
+    // those identically hides the whole point of the comparison.
+    const E = engine();
+    const run = (spId, env, years) => {
+      const sp = E.speciesById(spId);
+      let t = E.newTree(spId);
+      for (let i = 0; i < years && t.alive; i += 1) t = E.simulateYear(t, sp, env, ALLOC);
+      return t;
+    };
+    const aspen = run('aspen', GOOD_ENV, 200);
+    expect(aspen.alive).toBe(false);
+    expect(aspen.causeOfDeath, 'aspen should reach its lifespan in good conditions').toBe('senescence');
+
+    const harsh = { tempC: 22, light: 0.25, co2ppm: 420, soilWater: 0.3 };
+    const willow = run('willow', harsh, 200);
+    expect(willow.causeOfDeath, 'willow should starve in shade and drought').toBe('carbon_starvation');
+    expect(willow.age, 'willow should die far earlier than its lifespan').toBeLessThan(40);
+
+    const html = render({ treeLab: { view: 'compare', bandOverride: 'g68', light: 0.25, soilWater: 0.3, compareYears: 150 } });
+    expect(html).toContain('starved');
+    expect(html).toContain('old age');
+  });
+
+  it('lets conditions change the ranking, as the note claims', () => {
+    // The panel tells the student a losing species is not a worse tree, and that
+    // changing the light or water can change the order. That claim has to be true.
+    const E = engine();
+    const finalHeight = (spId, env) => {
+      const sp = E.speciesById(spId);
+      let t = E.newTree(spId);
+      for (let i = 0; i < 150 && t.alive; i += 1) t = E.simulateYear(t, sp, env, ALLOC);
+      return t.heightM;
+    };
+    const harsh = { tempC: 22, light: 0.25, co2ppm: 420, soilWater: 0.3 };
+    const goodOrder = finalHeight('redwood', GOOD_ENV) > finalHeight('pine', GOOD_ENV);
+    const harshOrder = finalHeight('redwood', harsh) > finalHeight('pine', harsh);
+    expect(goodOrder, 'redwood should out-grow pine in good conditions').toBe(true);
+    expect(harshOrder, 'the order should reverse in shade and drought').toBe(false);
+  });
+
   it('leaves no user-visible string a language pack cannot reach', () => {
     // Static greps cannot answer this and never could: a string routed through a
     // module-scope data table reaches __alloT at RENDER time and looks hardcoded to a
