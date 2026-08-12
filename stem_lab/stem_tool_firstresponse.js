@@ -860,12 +860,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       anchor: ground,
       frame: function (tick, nextProps, reduced) {
         var coach = nextProps.coach || {};
+        // Read live from props, NOT from the build-time sceneProps: switching
+        // mechanic must change the motion without tearing the scene down, so
+        // `mech` is deliberately absent from sceneKey.
+        var mechDemo = nextProps.mech || null;
         var now = Date.now();
         var compression = 0;
         var breathRise = 0;
         var guidePulse = 0;
         if (!reduced && mode === 'depth') {
-          compression = Math.pow(Math.max(0, Math.sin(now / 720)), 6) * 0.72;
+          // Demonstrate the mechanic the learner actually picked, instead of
+          // always modelling perfect technique. Reading "shallow compressions
+          // do not move enough blood" is weaker than watching a chest barely
+          // move; leaning is invisible in prose and obvious the moment the
+          // chest never comes back up. Amplitudes are relative to the correct
+          // stroke, and `floor` is residual compression left at the top.
+          var stroke = 0.72, floor = 0;
+          if (mechDemo === 'shallow') stroke = 0.26;
+          else if (mechDemo === 'toodeep') stroke = 0.98;
+          else if (mechDemo === 'lean') { stroke = 0.52; floor = 0.30; }
+          compression = floor + Math.pow(Math.max(0, Math.sin(now / 720)), 6) * stroke;
         }
         if (!reduced && mode === 'coach') {
           if (coach.running && coach.phase === 'compressions') {
@@ -4948,6 +4962,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           sceneProps: {
             tab: tab,
             age: sceneAge,
+            // Which depth/recoil mechanic to demonstrate. Live-read by frame(),
+            // and intentionally NOT part of sceneKey: changing it should change
+            // the motion, not rebuild the figure.
+            mech: tab === 'depth' ? mech : null,
             coach: tab === 'coach' ? {
               mode: coach.mode || coachMode,
               running: !!coach.running,

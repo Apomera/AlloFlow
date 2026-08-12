@@ -769,3 +769,60 @@ describe('body 3D — airway', () => {
     }
   });
 });
+
+// ── Mechanics demonstration ─────────────────────────────────────────────────
+// Added 2026-08-11. CPR_MECHANICS lets the learner choose shallow / correct /
+// too deep / leaning and returns a written verdict, but the 3D figure used to
+// animate perfect technique regardless of the choice — so the one medium that
+// could actually SHOW the error never did. Leaning in particular is nearly
+// invisible in prose and unmistakable the moment the chest stops coming back
+// up. The scene now demonstrates the selected mechanic.
+describe('body 3D — mechanics demonstration', () => {
+  // Pull the amplitudes straight out of the animation so the test fails if the
+  // numbers drift, rather than asserting the prose around them.
+  function strokeBlock() {
+    const at = SRC.indexOf("if (!reduced && mode === 'depth')");
+    expect(at, 'depth animation not found').toBeGreaterThan(-1);
+    return SRC.slice(at, at + 900);
+  }
+
+  it('passes the chosen mechanic to the scene, but only on the depth tab', () => {
+    expect(SRC).toContain("mech: tab === 'depth' ? mech : null");
+  });
+
+  it('keeps mech OUT of sceneKey so switching does not rebuild the figure', () => {
+    const key = SRC.match(/sceneKey: ([^\n,]+)/);
+    expect(key, 'sceneKey not found').toBeTruthy();
+    expect(key[1]).not.toContain('mech');
+  });
+
+  it('reads the mechanic live in frame() rather than at build time', () => {
+    expect(SRC).toContain('var mechDemo = nextProps.mech || null');
+  });
+
+  it('gives each error a distinct stroke, ordered shallow < correct < too deep', () => {
+    const block = strokeBlock();
+    const shallow = Number(block.match(/mechDemo === 'shallow'\) stroke = ([\d.]+)/)[1]);
+    const tooDeep = Number(block.match(/mechDemo === 'toodeep'\) stroke = ([\d.]+)/)[1]);
+    const correct = Number(block.match(/var stroke = ([\d.]+)/)[1]);
+    expect(shallow).toBeLessThan(correct);
+    expect(correct).toBeLessThan(tooDeep);
+    // Shallow has to look shallow, not "slightly less".
+    expect(shallow).toBeLessThan(correct * 0.5);
+  });
+
+  it('models leaning as a chest that never returns to the top', () => {
+    // The defining property of leaning is residual compression between pushes,
+    // so the floor must be non-zero. Every other mechanic returns to zero.
+    const block = strokeBlock();
+    const lean = block.match(/mechDemo === 'lean'\) \{ stroke = ([\d.]+); floor = ([\d.]+); \}/);
+    expect(lean, 'lean mechanic not modelled').toBeTruthy();
+    expect(Number(lean[2])).toBeGreaterThan(0);
+    expect(block).toContain('compression = floor +');
+  });
+
+  it('still honours reduced motion', () => {
+    // The whole demonstration sits behind the same !reduced guard as before.
+    expect(strokeBlock()).toContain("!reduced && mode === 'depth'");
+  });
+});
