@@ -787,10 +787,19 @@ function buildAlloCommands(ctx, opts = {}) {
       // loaded yet we start it (for next time) and open unbridged, which the
       // page handles by falling back to its own settings.
       const VS = (window.AlloModules && window.AlloModules.VideoStudio) || null;
-      if (!VS || typeof VS.openCoachWindow !== 'function') { try { if (window.__alloLazyVideoStudio) window.__alloLazyVideoStudio(); } catch (_) {} }
-      const win = (VS && typeof VS.openCoachWindow === 'function')
-        ? VS.openCoachWindow(posture)
-        : window.open('https://alloflow-cdn.pages.dev/it_coach/it_coach.html?posture=' + posture, 'alloflow-it-coach');
+      let win;
+      if (VS && typeof VS.openCoachWindow === 'function') {
+        win = VS.openCoachWindow(posture);
+      } else {
+        // The module is lazy and window.open only works inside this click, so
+        // we cannot wait for it. Open now, unbridged, and leave the handle for
+        // the module to adopt when it arrives; it pings the window and that
+        // ping carries the token. Without this the FIRST coach of a session is
+        // permanently unbridged, which in Canvas means it cannot work at all.
+        try { if (window.__alloLazyVideoStudio) window.__alloLazyVideoStudio(); } catch (_) {}
+        win = window.open('https://alloflow-cdn.pages.dev/it_coach/it_coach.html?posture=' + posture, 'alloflow-it-coach');
+        try { if (win) window.__alloPendingCoachWin = win; } catch (_) {}
+      }
       if (!win) return t('cmd.open_it_coach_blocked', 'The browser blocked the coach window. Allow pop-ups for AlloFlow and try again.');
       return posture === 'learner'
         ? t('cmd.open_it_coach_done_learner', 'Screen Coach opened in a new window. Share the website you are stuck on and it will suggest the next step. It helps you use the site; it will not answer schoolwork.')

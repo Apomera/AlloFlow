@@ -795,13 +795,20 @@ function buildAlloCommands(ctx, opts = {}) {
     { id: "open_it_coach", icon: "\u{1F9ED}", roles: "all", when: () => typeof window !== "undefined" && typeof window.open === "function", label: t("cmd.open_it_coach", "Coach me through another website"), aliases: ["it coach", "help me use this website", "help me use another website", "guide me through a website", "walk me through this site", "how do i use this site", "stuck on a website"], hint: t("cmd.open_it_coach_hint", "Opens a coach that watches a site you share and suggests the next step \u2014 it advises, you do the clicking"), run: (c) => {
       const posture = c && c.isTeacherMode && !c.isParentMode ? "educator" : "learner";
       const VS = window.AlloModules && window.AlloModules.VideoStudio || null;
-      if (!VS || typeof VS.openCoachWindow !== "function") {
+      let win;
+      if (VS && typeof VS.openCoachWindow === "function") {
+        win = VS.openCoachWindow(posture);
+      } else {
         try {
           if (window.__alloLazyVideoStudio) window.__alloLazyVideoStudio();
         } catch (_) {
         }
+        win = window.open("https://alloflow-cdn.pages.dev/it_coach/it_coach.html?posture=" + posture, "alloflow-it-coach");
+        try {
+          if (win) window.__alloPendingCoachWin = win;
+        } catch (_) {
+        }
       }
-      const win = VS && typeof VS.openCoachWindow === "function" ? VS.openCoachWindow(posture) : window.open("https://alloflow-cdn.pages.dev/it_coach/it_coach.html?posture=" + posture, "alloflow-it-coach");
       if (!win) return t("cmd.open_it_coach_blocked", "The browser blocked the coach window. Allow pop-ups for AlloFlow and try again.");
       return posture === "learner" ? t("cmd.open_it_coach_done_learner", "Screen Coach opened in a new window. Share the website you are stuck on and it will suggest the next step. It helps you use the site; it will not answer schoolwork.") : t("cmd.open_it_coach_done", "Screen Coach opened in a new window. Share any tab or window and it will suggest the next step. Nothing is recorded.");
     } },

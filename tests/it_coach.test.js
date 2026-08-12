@@ -361,9 +361,54 @@ describe('canvas hardening', () => {
 
   it('lets the coach learn a REAL origin from the ping, never an opaque one', () => {
     const listener = html.slice(html.indexOf("ev.data.type !== 'allostudio-ping'") - 400, html.indexOf('// ── Backend settings'));
-    expect(listener).toContain("if (!openerOrigin && ev.origin && ev.origin !== 'null')");
+    expect(listener).toContain("var realOrigin = (ev.origin && ev.origin !== 'null') ? ev.origin : '';");
+    expect(listener).toContain('if (!openerOrigin && realOrigin) openerOrigin = realOrigin;');
     expect(listener).toContain("ev.data.bridge !== bridgeToken");
     // No wildcard target anywhere on this page.
     expect(html).not.toMatch(/postMessage\([^\n]*['"]\*['"]/);
+  });
+});
+
+// ─── Token handoff ──────────────────────────────────────────────────────────
+// window.open only works inside the user's click, and the VideoStudio module is
+// lazy. A command fired in a session where Video Studio was never opened cannot
+// wait for it, so it opens the coach unbridged. Without a handoff the FIRST
+// coach of a session is permanently unbridged, which in Canvas means it cannot
+// work at all. The module adopts the window when it loads and pings it, and the
+// ping already carries the token, so no new message type was needed.
+describe('token handoff', () => {
+  it('leaves the window handle for the module to adopt', () => {
+    const cmd = readFileSync(resolve(process.cwd(), 'allo_commands_module.js'), 'utf-8');
+    expect(cmd).toContain('window.__alloPendingCoachWin = win');
+    // Only on the unbridged branch: when the module is already loaded its own
+    // opener registers the window itself.
+    const run = cmd.slice(cmd.indexOf('id: "open_it_coach"'), cmd.indexOf('id: "print_page"'));
+    expect(run.indexOf('VS.openCoachWindow(posture)')).toBeLessThan(run.indexOf('__alloPendingCoachWin'));
+    const hub = readFileSync(resolve(process.cwd(), 'view_learning_hub_modal_module.js'), 'utf-8');
+    expect(hub).toContain('__alloPendingCoachWin');
+  });
+
+  it('adopts the pending window once, after the receivers are listening', () => {
+    expect(moduleText).toContain('function adoptPendingCoachWindow()');
+    expect(moduleText).toContain('window.__alloPendingCoachWin = null;');
+    expect(moduleText).toContain('vsTakeStore.coachWin = pending;');
+    expect(moduleText).toContain('vsPingBridgeWindow(pending);');
+    // Ordering: adoption must come after both receivers are registered, or a
+    // reply could arrive before anything is listening for it.
+    expect(moduleText.indexOf("window.addEventListener('message', vsAiBridgeReceiver)"))
+      .toBeLessThan(moduleText.indexOf('function adoptPendingCoachWindow()'));
+  });
+
+  it('upgrades the page from standalone to bridged, once, from a named origin', () => {
+    const listener = html.slice(html.indexOf("ev.data.type !== 'allostudio-ping'") - 300, html.indexOf('// ── Backend settings'));
+    expect(listener).toContain('if (!bridgeToken && ev.data.bridge && realOrigin) bridgeToken = String(ev.data.bridge);');
+    // An opaque sender is not a destination we will ever adopt.
+    expect(listener).toContain("var realOrigin = (ev.origin && ev.origin !== 'null') ? ev.origin : '';");
+    // Single-shot: a token already held is never replaced, and a mismatched
+    // stamp is rejected before any of this runs.
+    expect(listener).toContain('if (bridgeToken && ev.data.bridge !== bridgeToken) return;');
+    // The upgrade is visible to the user rather than silent.
+    expect(listener).toContain('Connected to AlloFlow');
+    expect(listener).toContain('paintBackendForm()');
   });
 });

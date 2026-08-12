@@ -351,7 +351,8 @@ function LearningHubModal(props) {
           if (window.__alloLazyVideoStudio) window.__alloLazyVideoStudio();
         } catch (_) {
         }
-        window.open("https://alloflow-cdn.pages.dev/it_coach/it_coach.html?posture=learner", "alloflow-it-coach");
+        const w = window.open("https://alloflow-cdn.pages.dev/it_coach/it_coach.html?posture=learner", "alloflow-it-coach");
+        if (w) window.__alloPendingCoachWin = w;
       }
     } catch (_) {
     }

@@ -198,12 +198,27 @@
     if (ev.source !== opener || !ev.data || ev.data.type !== 'allostudio-ping') return;
     if (bridgeToken && ev.data.bridge !== bridgeToken) return;
     if (openerOrigin && ev.origin && ev.origin !== openerOrigin) return;
-    if (!openerOrigin && ev.origin && ev.origin !== 'null') {
-      openerOrigin = ev.origin;
-      bridgeAvailable = !!(opener && !opener.closed && bridgeToken);
+    var realOrigin = (ev.origin && ev.origin !== 'null') ? ev.origin : '';
+    // TOKEN HANDOFF. A command fired before the lazy VideoStudio module loaded
+    // had to open this window inside the click and could not wait for it, so we
+    // arrived with no token and fell back to local settings. The module adopts
+    // the window when it loads and pings it, and vsPostToStudio stamps every
+    // message with the token, so the ping IS the handoff. No extra message type.
+    //
+    // Single-shot, and only from a named origin. This message cannot be
+    // token-authenticated, since it is the thing delivering the token; what
+    // authenticates it is that ev.source is our actual opener handle and the
+    // BROWSER attests ev.origin. That is strictly stronger than the
+    // ?allo_origin= parameter, which whoever opened us simply asserts.
+    if (!bridgeToken && ev.data.bridge && realOrigin) bridgeToken = String(ev.data.bridge);
+    if (!openerOrigin && realOrigin) openerOrigin = realOrigin;
+    var nowAvailable = !!(opener && !opener.closed && bridgeToken && openerOrigin);
+    if (nowAvailable !== bridgeAvailable) {
+      bridgeAvailable = nowAvailable;
       try { paintBackendForm(); } catch (_) {}
+      if (nowAvailable) setStatus($('coachStatus'), 'Connected to AlloFlow. Suggestions will use its AI settings.', 'ok');
     }
-    try { opener.postMessage(withBridge({ type: 'allostudio-ready' }), openerOrigin || ev.origin); } catch (_) {}
+    try { opener.postMessage(withBridge({ type: 'allostudio-ready' }), openerOrigin || realOrigin); } catch (_) {}
   });
   function withBridge(msg) {
     var payload = Object.assign({}, msg || {});

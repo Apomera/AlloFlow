@@ -4240,6 +4240,30 @@ function vsPcmToWav(pcmBytes, sampleRate) {
 
   window.addEventListener('message', vsBackgroundBridgeReceiver);
 
+  // ── Late-arriving module: adopt a coach window opened before we loaded ─────
+  // window.open() only works inside the user's click, and this module is lazy.
+  // A command fired in a session where Video Studio was never opened therefore
+  // has to open the coach window itself, unbridged, and cannot wait for us: the
+  // click is over by the time we arrive. It leaves the handle here instead.
+  //
+  // We cannot open that window, but we can adopt it. Registering it as coachWin
+  // makes the sender check recognise it, and the ping carries the token, since
+  // vsPostToStudio stamps every message with it. So the page upgrades itself
+  // from standalone to bridged without a new message type.
+  //
+  // Runs AFTER the receivers above are listening, so a reply cannot outrun us.
+  (function adoptPendingCoachWindow() {
+    try {
+      var pending = window.__alloPendingCoachWin;
+      window.__alloPendingCoachWin = null;
+      if (!pending || pending.closed) return;
+      vsTakeStore.coachWin = pending;
+      var token = vsTakeStore.token || randomBridgeToken();
+      vsTakeStore.setToken(token);
+      vsPingBridgeWindow(pending);
+    } catch (_) {}
+  })();
+
   function studioUrlWithBridge(token) {
     try {
       var u = new URL(STUDIO_URL, window.location.href);
