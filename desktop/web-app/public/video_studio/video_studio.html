@@ -4704,7 +4704,19 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   // ── Opener handshake (veraPDF pattern, reversed roles) ──
   var opener = window.opener || null;
   var bridgeParams = new URLSearchParams(window.location.search || '');
-  var bridgeToken = bridgeParams.get('allo_bridge') || '';
+  // Token from the FRAGMENT (never sent to a server), falling back to the query
+  // string for a window opened by an app build that predates the move. Once
+  // read, the fragment is scrubbed from the address bar so the token cannot be
+  // copied out of it, bookmarked, or restored with the session.
+  var bridgeToken = (function () {
+    var fromHash = '';
+    try { fromHash = new URLSearchParams(String(window.location.hash || '').replace(/^#/, '')).get('allo_bridge') || ''; } catch (_) {}
+    if (fromHash) {
+      try { history.replaceState(null, '', window.location.pathname + window.location.search); } catch (_) {}
+      return fromHash;
+    }
+    return bridgeParams.get('allo_bridge') || '';   // legacy: remove once builds have rolled
+  })();
   function originFromUrl(url) {
     try {
       var origin = new URL(url).origin;

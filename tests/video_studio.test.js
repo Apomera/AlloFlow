@@ -267,7 +267,7 @@ it('makes local captioning and filler scans cancelable and stale-safe', () => {
   it('pins the popup bridge to the opener origin and nonce', () => {
     const html = popup();
     const moduleText = readFileSync(resolve(process.cwd(), 'video_studio_module.js'), 'utf-8');
-    expect(html).toContain("bridgeParams.get('allo_bridge')");
+    expect(html).toContain("get('allo_bridge')");
     expect(html).toContain("bridgeParams.get('allo_origin')");
     expect(html).toContain('function isOpenerMessage');
     expect(html).toContain('var target = openerTargetOrigin();');
@@ -281,7 +281,10 @@ it('makes local captioning and filler scans cancelable and stale-safe', () => {
     expect(moduleText).toContain('var STUDIO_ORIGIN');
     expect(moduleText).toContain('function studioUrlWithBridge');
     expect(moduleText).toContain("u.searchParams.set('allo_origin'");
-    expect(moduleText).toContain("u.searchParams.set('allo_bridge'");
+    // The token moved to the fragment so it stops riding the request line into
+    // Cloudflare's logs. The origin stays in the query: it is not a secret.
+    expect(moduleText).toContain("u.hash = 'allo_bridge=' + encodeURIComponent(token)");
+    expect(moduleText).not.toContain("u.searchParams.set('allo_bridge'");
     expect(moduleText).toContain('ev.origin && ev.origin !== STUDIO_ORIGIN');
     expect(moduleText).toContain('ev.data.bridge !== bridgeTokenRef.current');
     expect(moduleText).toContain('win.postMessage(payload, STUDIO_ORIGIN)');

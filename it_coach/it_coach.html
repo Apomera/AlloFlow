@@ -178,7 +178,19 @@
   // from here would duplicate that branching and hand a learner the teacher's
   // key on a shared device.
   var opener = window.opener || null;
-  var bridgeToken = params.get('allo_bridge') || '';
+  // Token from the FRAGMENT (never sent to a server), falling back to the query
+  // string for a window opened by an app build that predates the move. Once
+  // read, the fragment is scrubbed from the address bar so the token cannot be
+  // copied out of it, bookmarked, or restored with the session.
+  var bridgeToken = (function () {
+    var fromHash = '';
+    try { fromHash = new URLSearchParams(String(window.location.hash || '').replace(/^#/, '')).get('allo_bridge') || ''; } catch (_) {}
+    if (fromHash) {
+      try { history.replaceState(null, '', window.location.pathname + window.location.search); } catch (_) {}
+      return fromHash;
+    }
+    return params.get('allo_bridge') || '';   // legacy: remove once builds have rolled
+  })();
   function originFromUrl(url) {
     try { var o = new URL(url).origin; return o && o !== 'null' ? o : ''; } catch (_) { return ''; }
   }

@@ -204,11 +204,11 @@ describe('Learning Hub card', () => {
 describe('bridge transport', () => {
   it('speaks the popup protocol, parameter for parameter', () => {
     const popup = readFileSync(resolve(process.cwd(), 'video_studio/video_studio.html'), 'utf-8');
-    expect(html).toContain("params.get('allo_bridge')");
+    expect(html).toContain("get('allo_bridge')");
     expect(html).toContain("type.replace('-request', '-response')");
     // The popup uses the same two URL parameters; if it ever renames them the
     // page has to follow, so pin that both still read the same names.
-    expect(popup).toContain("bridgeParams.get('allo_bridge')");
+    expect(popup).toContain("get('allo_bridge')");
     expect(popup).toContain("bridgeParams.get('allo_origin')");
     expect(html).toContain("params.get('allo_origin')");
     // Same message type the module already routes.
@@ -236,7 +236,9 @@ describe('bridge transport', () => {
   it('mints the token through the existing take store, not a new one', () => {
     expect(moduleText).toContain('function vsOpenCoachWindow(posture)');
     expect(moduleText).toContain('if (store) store.setToken(token);');
-    expect(moduleText).toContain('u.searchParams.set(\'allo_bridge\', token)');
+    // Fragment, not query: a secret in the request line reaches the CDN's logs.
+    expect(moduleText).toContain("u.hash = 'allo_bridge=' + encodeURIComponent(token)");
+    expect(moduleText).not.toContain("u.searchParams.set('allo_bridge'");
     // Sender check widened to "a window we opened", with token and origin
     // checks untouched above it.
     expect(moduleText).toContain('function vsIsKnownBridgeWindow(source)');
@@ -257,8 +259,13 @@ describe('bridge transport', () => {
     it('builds a coach URL carrying the token, origin, and posture', () => {
       const url = VS.coachUrlWithBridge('tok123', 'learner');
       expect(url).toContain('it_coach/it_coach.html');
-      expect(url).toContain('allo_bridge=tok123');
       expect(url).toContain('posture=learner');
+      // The token rides the fragment, so it never reaches a server. Assert both
+      // halves: present after the '#', and absent from everything before it.
+      const [beforeHash, afterHash] = url.split('#');
+      expect(afterHash).toContain('allo_bridge=tok123');
+      expect(beforeHash).not.toContain('allo_bridge');
+      expect(beforeHash).not.toContain('tok123');
       // Anything that is not exactly 'educator' restricts, same as the page.
       expect(VS.coachUrlWithBridge('t', 'nonsense')).toContain('posture=learner');
       expect(VS.coachUrlWithBridge('t', 'educator')).toContain('posture=educator');
@@ -410,5 +417,40 @@ describe('token handoff', () => {
     // The upgrade is visible to the user rather than silent.
     expect(listener).toContain('Connected to AlloFlow');
     expect(listener).toContain('paintBackendForm()');
+  });
+});
+
+// ─── Bridge token hygiene ───────────────────────────────────────────────────
+// A query string is part of the request line, so a token there is sent to
+// Cloudflare on every load and can settle in CDN access logs, any proxy in
+// between, and browser history. A fragment never leaves the browser. Same place
+// allo_sheet/host_bridge.js has always put its own bridge token.
+describe('bridge token stays out of the request line', () => {
+  const popup = readFileSync(resolve(process.cwd(), 'video_studio/video_studio.html'), 'utf-8');
+
+  it('is written to the fragment by both URL builders', () => {
+    const writes = moduleText.match(/u\.hash = 'allo_bridge=' \+ encodeURIComponent\(token\)/g) || [];
+    expect(writes.length).toBe(2);   // coachUrlWithBridge + studioUrlWithBridge
+    expect(moduleText).not.toContain("searchParams.set('allo_bridge'");
+  });
+
+  it('is read from the fragment by both windows, with a legacy fallback', () => {
+    for (const [name, src] of [['coach page', html], ['studio popup', popup]]) {
+      expect(src, `${name} does not read the fragment`).toContain("new URLSearchParams(String(window.location.hash || '').replace(/^#/, '')).get('allo_bridge')");
+      // A window opened by an app build that predates the move still works.
+      expect(src, `${name} dropped the legacy fallback`).toContain("get('allo_bridge') || '';   // legacy");
+    }
+  });
+
+  it('scrubs the fragment once read, in both windows', () => {
+    for (const [name, src] of [['coach page', html], ['studio popup', popup]]) {
+      expect(src, `${name} leaves the token in the address bar`)
+        .toContain("history.replaceState(null, '', window.location.pathname + window.location.search)");
+    }
+  });
+
+  it('matches the house pattern the sheet bridge already uses', () => {
+    const sheet = readFileSync(resolve(process.cwd(), 'allo_sheet/host_bridge.js'), 'utf-8');
+    expect(sheet).toContain("'#bridgeToken='");
   });
 });

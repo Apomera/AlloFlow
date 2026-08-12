@@ -3015,8 +3015,14 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       if (window.location && window.location.origin && window.location.origin !== 'null') {
         u.searchParams.set('allo_origin', window.location.origin);
       }
-      if (token) u.searchParams.set('allo_bridge', token);
       u.searchParams.set('posture', posture === 'educator' ? 'educator' : 'learner');
+      // The token goes in the FRAGMENT, which browsers never send to a server.
+      // In the query string it rode the request line to Cloudflare on every
+      // load and could settle in CDN access logs, any proxy in between, and
+      // browser history. Same place allo_sheet/host_bridge.js puts its own
+      // bridge token. The origin and posture stay in the query: neither is a
+      // secret, and both are useful when reading a log.
+      if (token) u.hash = 'allo_bridge=' + encodeURIComponent(token);
       return u.href;
     } catch (_) { return IT_COACH_URL + '?posture=' + (posture === 'educator' ? 'educator' : 'learner'); }
   }
@@ -4270,7 +4276,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       if (window.location && window.location.origin && window.location.origin !== 'null') {
         u.searchParams.set('allo_origin', window.location.origin);
       }
-      if (token) u.searchParams.set('allo_bridge', token);
+      // Fragment, not query: see coachUrlWithBridge. A secret in the request
+      // line reaches the CDN and its logs; a fragment never leaves the browser.
+      if (token) u.hash = 'allo_bridge=' + encodeURIComponent(token);
       return u.href;
     } catch (_) {
       return STUDIO_URL;
