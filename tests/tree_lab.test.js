@@ -1134,6 +1134,16 @@ describe('Tree Life Lab — banks and mirrors', () => {
       ['transport/g68', { view: 'transport', bandOverride: 'g68', tree }],
       ['transport/g912', { view: 'transport', bandOverride: 'g912', tree }],
       ['quiz', { view: 'quiz', tree, quizPick: 1 }],
+      ['dead/starved', {
+        view: 'grow', bandOverride: 'g68',
+        tree: { ...tree, alive: false, causeOfDeath: 'carbon_starvation', deficitYears: 9 },
+      }],
+      ['dead/old', {
+        view: 'grow', bandOverride: 'g68',
+        tree: { ...tree, alive: false, causeOfDeath: 'senescence' },
+        spreadTotals: { diverse: 2, clonal: 3 },
+      }],
+      ['grow/winter', { view: 'grow', bandOverride: 'g68', tree, season: 'winter' }],
       ['spread', {
         view: 'spread',
         tree,
@@ -1171,5 +1181,93 @@ describe('Tree Life Lab — banks and mirrors', () => {
     expect(/strokeStyle\s*=\s*['"]var\(/.test(src)).toBe(false);
     expect(/\bfill:\s*['"]var\(/.test(src)).toBe(false);
     expect(/new THREE\.Color\(['"]var\(/.test(src)).toBe(false);
+  });
+});
+
+describe('Tree Life Lab — season control and post-mortem', () => {
+  function grown(years, over) {
+    const E = engine();
+    const sp = E.speciesById('oak');
+    let t = E.newTree('oak');
+    for (let i = 0; i < years && t.alive; i++) t = E.simulateYear(t, sp, GOOD_ENV, ALLOC);
+    return { ...t, ...(over || {}) };
+  }
+
+  it('offers all four seasons as pressable controls on the Grow view', () => {
+    const html = render({ treeLab: { view: 'grow', tree: grown(40), season: 'autumn' } });
+    for (const s of ['Spring', 'Summer', 'Autumn', 'Winter']) {
+      expect(html, `no control for ${s}`).toContain(s);
+    }
+    // The chosen one is the pressed one. Before this existed the season was reachable
+    // only by running the clock at its slowest speed and catching the right moment.
+    const pressed = [...html.matchAll(/aria-pressed="true"[^>]*>([^<]*)/g)].map((m) => m[1]);
+    expect(pressed.join(' '), 'Autumn is selected but not marked pressed').toMatch(/Autumn/);
+  });
+
+  it('never implies the season changed a number the model did not recompute', () => {
+    const html = render({ treeLab: { view: 'grow', tree: grown(40), season: 'winter' } });
+    // simulateYear has no seasonal term. The panel has to say so, or a leafless tree
+    // sitting above a positive carbon budget reads as a modelling claim.
+    expect(html).toMatch(/whole YEAR/);
+  });
+
+  it('a season note is keyed on leaf habit, because that IS the lesson', () => {
+    const broad = render({ treeLab: { view: 'grow', speciesId: 'oak', tree: grown(40), season: 'spring' } });
+    const conifer = render({ treeLab: { view: 'grow', speciesId: 'pine', tree: grown(40), season: 'spring' } });
+    expect(broad).toMatch(/build a whole new canopy/);
+    expect(conifer).toMatch(/already built and in place/);
+    expect(broad).not.toEqual(conifer);
+  });
+
+  it('tells old age and starvation apart, and only advises about the fixable one', () => {
+    const starved = render({ treeLab: { view: 'grow', tree: grown(40, { alive: false, causeOfDeath: 'carbon_starvation', deficitYears: 9 }) } });
+    const old = render({ treeLab: { view: 'grow', tree: grown(40, { alive: false, causeOfDeath: 'senescence' }) } });
+
+    expect(starved).toMatch(/starved/i);
+    expect(starved, 'no actionable advice after a death the student caused').toMatch(/To get further next time/);
+
+    expect(old).toMatch(/old age/i);
+    // Reaching a lifespan is not a failure, so offering fixes for it teaches the wrong
+    // thing about what killed the tree.
+    expect(old, 'old age is not a mistake to correct').not.toMatch(/To get further next time/);
+    expect(old).toMatch(/Nothing went wrong/);
+  });
+
+  it('claims "passed its maximum age" only when the age actually passed it', () => {
+    // Senescence normally fires at age > maxAgeYears, so the claim is usually true. But
+    // it is read off a FLAG, and stored state can be older than the code reading it, so
+    // a 71-year-old white oak must not be told it outlived a 400-year lifespan.
+    const young = render({ treeLab: { view: 'grow', speciesId: 'oak', tree: grown(40, { alive: false, causeOfDeath: 'senescence' }) } });
+    expect(young).toMatch(/Nothing went wrong/);
+    expect(young, 'stated a lifespan it had not reached').not.toMatch(/passed the typical maximum/);
+    expect(young).toMatch(/typically lives up to/);
+
+    const E = engine();
+    const sp = E.speciesById('willow');
+    let t = E.newTree('willow');
+    for (let i = 0; i < 400 && t.alive; i++) t = E.simulateYear(t, sp, GOOD_ENV, ALLOC);
+    expect(t.alive, 'a willow should not survive 400 years').toBe(false);
+    expect(t.causeOfDeath).toBe('senescence');
+    const old = render({ treeLab: { view: 'grow', speciesId: 'willow', tree: t } });
+    expect(old, 'a genuinely over-age tree should say so').toMatch(/passed the typical maximum/);
+  });
+
+  it('says the genet outlives the stem only when there are clones to outlive it', () => {
+    const withClones = render({
+      treeLab: {
+        view: 'grow', speciesId: 'aspen',
+        tree: grown(40, { alive: false, causeOfDeath: 'senescence' }),
+        spreadTotals: { diverse: 0, clonal: 4 },
+      },
+    });
+    const alone = render({
+      treeLab: {
+        view: 'grow', speciesId: 'aspen',
+        tree: grown(40, { alive: false, causeOfDeath: 'senescence' }),
+        spreadTotals: { diverse: 0, clonal: 0 },
+      },
+    });
+    expect(withClones).toMatch(/not finished/);
+    expect(alone).not.toMatch(/not finished/);
   });
 });

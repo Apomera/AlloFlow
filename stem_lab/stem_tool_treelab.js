@@ -1166,6 +1166,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     var barkHex = BARK[sp.id] || '#6b4f2a';
     var bare = (season === 'winter' && !needle);
     var weeping = sp.id === 'willow';
+    // 0 = turgid, 1 = fully wilted. Deliberately affects ANGLE and not leaf count.
+    var wilt = clamp((dry ? 0.62 : 0) + (stressed ? 0.38 : 0), 0, 1);
 
     // ── Light direction. The sun's HEIGHT follows the light slider, so turning the
     //    light down no longer just changes a number: the sun sinks toward the
@@ -1395,12 +1397,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         var th = i * 2.39996;
         var dir = new THREE.Vector3(
           Math.sin(phi) * Math.cos(th), Math.cos(phi) * 0.85, Math.sin(phi) * Math.sin(th));
-        var p = centre.clone().addScaledVector(dir, r * (0.78 + rnd() * 0.42));
+        // Wilted foliage hangs closer to the twig as turgor goes.
+        var p = centre.clone().addScaledVector(dir, r * (0.78 + rnd() * 0.42) * (1 - wilt * 0.16));
         var dummy = new THREE.Object3D();
         dummy.position.copy(p);
         dummy.lookAt(p.clone().addScaledVector(dir, 1));   // PlaneGeometry faces +Z
         dummy.rotateZ(rnd() * 6.2832);
-        dummy.rotateX((rnd() - 0.5) * 1.1);
+        // A turgid leaf is held out to the light; a wilted one folds down. This is the
+        // only instant, honest sign of water stress the tree itself can show.
+        dummy.rotateX((rnd() - 0.5) * 1.1 + wilt * (0.55 + rnd() * 0.35));
         cardSpec.push({
           p: p, sc: r * (0.66 + rnd() * 0.40), q: dummy.quaternion.clone(),
           phase: rnd() * 6.2832, hue: hueBase + i,
@@ -1969,6 +1974,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
   }
   // Sub-year phase drives the visible season at the slow speed. Northern-hemisphere
   // ordering, starting at leaf-out.
+  // Seasons the student can choose, and what is actually going on in each. The scene
+  // could always DRAW four seasons; until now the only way to see one was to run the
+  // clock at its slowest speed and catch the right half-second.
+  //
+  // These notes describe real phenology. They are NOT engine output: simulateYear runs
+  // a whole year at a time and has no seasonal term, so the season changes what is on
+  // screen and what is described here, and nothing the model has computed. Saying so is
+  // the honest version, and the panel does say so.
+  var SEASONS = [
+    { id: 'spring', label: 'Spring', emoji: '🌱' },
+    { id: 'summer', label: 'Summer', emoji: '☀️' },
+    { id: 'autumn', label: 'Autumn', emoji: '🍂' },
+    { id: 'winter', label: 'Winter', emoji: '❄️' }
+  ];
+  var SEASON_NOTE = {
+    spring: {
+      broad: 'Bud break. A broadleaf has to build a whole new canopy out of stored sugar before it can earn anything back, so it starts the year in debt.',
+      needle: 'A conifer starts spring with its leaves already built and in place, so it can work as soon as it is warm enough instead of spending the first weeks rebuilding.'
+    },
+    summer: {
+      broad: 'Full canopy and the longest days. Most of the year’s carbon is made now, and most of the year’s water goes out through the stomata to get it.',
+      needle: 'Full light and warm soil. Conifer needles are built to lose less water, which costs them some maximum rate but keeps them working in drier air.'
+    },
+    autumn: {
+      broad: 'Before the leaves go, the tree pulls nitrogen and phosphorus back into the twigs and reuses them next spring. The yellows underneath were there all season, masked by the green.',
+      needle: 'The needles stay, but the season still closes: shortening days and falling temperatures stop growth whether or not a tree has leaves to lose.'
+    },
+    winter: {
+      broad: 'No leaves, so no photosynthesis — but the living wood goes on respiring. A dormant broadleaf runs at a loss all winter and pays for it out of reserves.',
+      needle: 'Needles stay on, but frozen ground means no water to replace what transpires, so the stomata stay shut. An evergreen in deep winter earns very little either.'
+    }
+  };
   function seasonForPhase(phase) {
     var p = phase - Math.floor(phase);
     if (p < 0.25) return 'spring';
@@ -2273,6 +2310,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           // the key — but quantised to six steps, because a rebuild is a full WebGL
           // teardown and dragging a continuous slider would fire one per pixel.
           Math.round(liveEnv.light * 5), inDrought || liveEnv.soilWater < 0.35 ? 'dry' : '-',
+          // Wilt is baked into the card angles, so carbon stress has to key the scene
+          // too — otherwise a tree that has just gone into deficit keeps its turgid
+          // canopy until something unrelated happens to force a rebuild.
+          tree.reserves < 0 ? 'stress' : '-',
           reduceMotion ? 'still' : 'anim'
         ].join('|'),
         sceneProps: {
@@ -2380,6 +2421,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
               btn('zi', '+', function () { TREE3D.zoom(-0.6); }, { small: true, ariaLabel: __alloT('stem.treelab.zoom_in', 'Zoom in') }),
               btn('zo', '−', function () { TREE3D.zoom(0.6); }, { small: true, ariaLabel: __alloT('stem.treelab.zoom_out', 'Zoom out') }),
               btn('rs', __alloT('stem.treelab.reset_view', 'Reset view'), function () { TREE3D.reset(); }, { small: true, tone: 'ghost' }),
+              // Full screen is exactly where flipping between seasons pays off, so the
+              // control comes with it rather than being left behind on the page below.
+              // Emoji only for width; the accessible name carries the season.
+              full ? SEASONS.map(function (s3) {
+                return btn('fsea-' + s3.id, s3.emoji, function () {
+                  upd('season', s3.id);
+                  srSay(s3.label + '. ' + seasonNote(s3.id));
+                }, {
+                  small: true, pressed: season === s3.id,
+                  disabled: playing && speed.seasonal,
+                  ariaLabel: __alloT('stem.treelab.season_' + s3.id, s3.label)
+                });
+              }) : null,
               full ? h('span', {
                 key: 'hint',
                 style: { fontSize: 11, color: T.dim, marginLeft: 8, marginBottom: 6 }
@@ -2387,7 +2441,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             ])
           ]),
           status === 'failed' ? h('div', { key: 'fb', style: { fontSize: 12, color: T.warn, marginTop: 8, lineHeight: 1.5 } },
-            __alloT('stem.treelab.threed_failed', 'The 3D engine could not load, which school network filters sometimes cause. Every number and control on this page still works.')) : null
+            __alloT('stem.treelab.threed_failed', 'The 3D engine could not load, which school network filters sometimes cause. Every number and control on this page still works.')) : null,
+          full ? null : seasonRow()
+        ]);
+      }
+
+      // A conifer and a broadleaf have genuinely different seasons, and that difference
+      // is the lesson the Check view already asks about, so the note is keyed on both.
+      function seasonNote(id) {
+        var kind = sp.leafType === 'needle' ? 'needle' : 'broad';
+        var table = SEASON_NOTE[id] || SEASON_NOTE.summer;
+        return __alloT('stem.treelab.season_note_' + id + '_' + kind, table[kind]);
+      }
+
+      // ── Season. The scene has always been able to draw four of them; until now the
+      //    only way to SEE one was to run the clock at its slowest speed and catch the
+      //    right half-second, which is no way to compare anything.
+      //
+      //    While the seasonal speed is running, playback owns the season — so the row
+      //    becomes a read-out rather than pretending to be a control that does nothing.
+      function seasonRow() {
+        var driven = playing && speed.seasonal;
+        var note = seasonNote(season);
+        return h('div', { key: 'seasonrow', style: { marginTop: 10, paddingTop: 10, borderTop: '1px solid ' + T.border } }, [
+          h('div', {
+            key: 'lbl', id: 'treelab-season-label',
+            style: { fontSize: 12, color: T.dim, marginBottom: 6 }
+          }, driven
+            ? __alloT('stem.treelab.season_driven', 'Season (set by playback)')
+            : __alloT('stem.treelab.season_pick', 'Season')),
+          h('div', {
+            key: 'btns', role: 'group', 'aria-labelledby': 'treelab-season-label',
+            style: { display: 'flex', flexWrap: 'wrap' }
+          }, SEASONS.map(function (s2) {
+            return btn('sea-' + s2.id, s2.emoji + ' ' + __alloT('stem.treelab.season_' + s2.id, s2.label), function () {
+              upd('season', s2.id);
+              srSay(s2.label + '. ' + seasonNote(s2.id));
+            }, { small: true, pressed: season === s2.id, disabled: driven });
+          })),
+          h('div', { key: 'note', style: { fontSize: 12, color: T.text, lineHeight: 1.55, marginTop: 4 } }, note),
+          // The tool's whole credibility rests on never letting a picture stand in for a
+          // number it did not compute. simulateYear has no seasonal term.
+          h('div', { key: 'hon', style: { fontSize: 11, color: T.dim, lineHeight: 1.5, marginTop: 6 } },
+            __alloT('stem.treelab.season_honest',
+              'The carbon budget on this page is a whole YEAR. Changing the season changes what you are looking at and what is described here, not a figure the model has recalculated.'))
         ]);
       }
 
@@ -2485,14 +2582,79 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             btn('y50', __alloT('stem.treelab.plus_50', '+50 years'), function () { stepYears(50); }, { disabled: !tree.alive }),
             btn('rst', __alloT('stem.treelab.new_seedling', 'New seedling'), function () { resetTree(); }, { tone: 'ghost' })
           ]),
-          !tree.alive ? h('div', { key: 'dead', style: { marginTop: 8, padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.bad, color: T.text, fontSize: 13, lineHeight: 1.55 } },
-            tree.causeOfDeath === 'senescence'
-              ? __alloT('stem.treelab.died_old', 'The tree reached the end of its species’ lifespan at ' + tree.age + ' years.')
-              : __alloT('stem.treelab.died_carbon', 'The tree ran its reserves down to nothing at ' + tree.age + ' years. It spent more than it made for too long.')) : null
+          !tree.alive ? postMortem() : null
         ]));
 
         if (tree.rings.length > 0) kids.push(ringPanel());
         return kids;
+      }
+
+      // ── Post-mortem. A tree dying is the most informative thing that happens in this
+      //    tool and it used to produce one sentence. Two deaths that look identical on
+      //    screen have opposite lessons: reaching the end of a lifespan is not a
+      //    failure and there is nothing to fix, while starving is a budget the student
+      //    set and can set differently. So the panel names which one it was, shows the
+      //    life it actually had, and only offers advice when advice makes sense.
+      function postMortem() {
+        var starved = tree.causeOfDeath !== 'senescence';
+        var stressRings = tree.rings.filter(function (r) { return r && r.stress; }).length;
+        var seeds = (d.spreadTotals && d.spreadTotals.diverse) || 0;
+        var clonalKids = (d.spreadTotals && d.spreadTotals.clonal) || 0;
+        function factRow(k, labelTxt, valueTxt) {
+          return h('div', { key: k, style: { display: 'flex', justifyContent: 'space-between', gap: 10, padding: '3px 0', fontSize: 12 } }, [
+            h('span', { key: 'a', style: { color: T.dim } }, labelTxt),
+            h('span', { key: 'b', style: { color: T.text, fontWeight: 700, textAlign: 'right' } }, valueTxt)
+          ]);
+        }
+        return h('div', {
+          key: 'dead', role: 'group', 'aria-label': __alloT('stem.treelab.pm_group', 'What happened to this tree'),
+          style: {
+            marginTop: 10, padding: 12, borderRadius: 8, background: T.cardAlt,
+            border: '1px solid ' + T.border, borderLeft: '4px solid ' + (starved ? T.bad : T.dim),
+            color: T.text, fontSize: 13, lineHeight: 1.55
+          }
+        }, [
+          h('div', { key: 'h', style: { fontWeight: 700, marginBottom: 6 } },
+            (starved ? '💀 ' : '🍂 ') + (starved
+              ? __alloT('stem.treelab.pm_starved_h', 'It starved at ' + tree.age + ' years')
+              : __alloT('stem.treelab.pm_old_h', 'It died of old age at ' + tree.age + ' years'))),
+          h('p', { key: 'p', style: { margin: '0 0 8px' } }, starved
+            ? __alloT('stem.treelab.pm_starved_p',
+              'It spent more carbon than it made for ' + tree.deficitYears + ' years running and ran its reserves down to nothing. A few bad years are survivable; a run of them is not.')
+            : (tree.age > (sp.maxAgeYears || 0)
+              // Claim what the NUMBERS support, not what the flag implies. Reading
+              // "it passed the typical maximum age for a white oak (400 years)" off a
+              // 71-year-old tree is the tool stating a falsehood, and stored state can
+              // always be older than the code that wrote it.
+              ? __alloT('stem.treelab.pm_old_p',
+                'Nothing went wrong here. It passed the typical maximum age for a ' + sp.name.toLowerCase() + ' (' + sp.maxAgeYears + ' years) with its budget still in credit. This is the ending a tree is aiming for.')
+              : __alloT('stem.treelab.pm_old_early_p',
+                'Nothing went wrong here. Its life ended with the carbon budget still in credit rather than by starving. A ' + sp.name.toLowerCase() + ' typically lives up to about ' + sp.maxAgeYears + ' years.'))),
+          h('div', { key: 'facts', style: { padding: '6px 0', borderTop: '1px dashed ' + T.border, borderBottom: '1px dashed ' + T.border, marginBottom: 8 } }, [
+            factRow('ht', __alloT('stem.treelab.pm_height', 'Height reached'), round(tree.heightM, 1) + ' m'),
+            factRow('db', __alloT('stem.treelab.pm_dbh', 'Trunk across'), round(tree.dbhCm, 1) + ' cm'),
+            factRow('rg', __alloT('stem.treelab.pm_rings', 'Rings laid'),
+              tree.rings.length + (stressRings
+                ? ' (' + stressRings + ' ' + __alloT('stem.treelab.pm_stressed', 'stressed') + ')'
+                : '')),
+            factRow('kd', __alloT('stem.treelab.pm_kids', 'Descendants established'),
+              (seeds + clonalKids) === 0
+                ? __alloT('stem.treelab.pm_none', 'none')
+                : (seeds + ' ' + __alloT('stem.treelab.pm_from_seed', 'from seed') + ' · ' + clonalKids + ' ' + __alloT('stem.treelab.pm_clonal', 'clonal')))
+          ]),
+          // The genet outliving the individual stem IS the clonal lesson, so it is worth
+          // saying out loud at exactly the moment the stem has died.
+          clonalKids > 0 ? h('p', { key: 'genet', style: { margin: '0 0 8px', fontSize: 12 } },
+            __alloT('stem.treelab.pm_genet',
+              'The clonal stems share this tree’s root system and its genes, so in the sense that matters to a botanist this individual is not finished. That is how an aspen clone can outlive every stem in it by thousands of years.')) : null,
+          starved ? h('div', { key: 'fix', style: { fontSize: 12, color: T.dim, lineHeight: 1.55 } }, [
+            h('strong', { key: 'a', style: { color: T.text } }, __alloT('stem.treelab.pm_try', 'To get further next time: ')),
+            __alloT('stem.treelab.pm_try_body',
+              'raise whatever the limiting-factor card kept naming, or spend less. Reproduction and stored reserves both come out of the same surplus as leaves and roots, and leaves are the only line on that list that earns any of it back.')
+          ]) : null,
+          h('div', { key: 'again', style: { marginTop: 10 } },
+            btn('pm-new', __alloT('stem.treelab.new_seedling', 'New seedling'), function () { resetTree(); }, { small: true }))
+        ]);
       }
 
       // Playback. Step buttons jump; a clock lets a student WATCH, which is the only
