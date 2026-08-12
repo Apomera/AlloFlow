@@ -5,8 +5,11 @@ const FILE = 'stem_lab/stem_tool_machinelab.js';
 
 let M;
 
+// The harness renders at g35 unless told otherwise, and much of this tool now
+// restates per band. These cases assert the grade 6-8 wording, so they pin it;
+// the per-band wording itself is covered in machinelab_density.test.js.
 function state(overrides = {}) {
-  return { machineLab: Object.assign({ view: 'build' }, overrides) };
+  return { machineLab: Object.assign({ view: 'build', bandOverride: 'g68' }, overrides) };
 }
 
 function torsion(overrides = {}) {

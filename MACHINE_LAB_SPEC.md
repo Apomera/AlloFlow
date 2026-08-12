@@ -363,6 +363,46 @@ impossible one rather than refusing. Its test checks the SOURCE, not the markup:
 collects spoken text as it renders, so a hand-written `<li>` renders identically to a
 `bullets()` entry and is silently absent from the read-aloud.
 
+### Defect 20: three panels were speaking in one register, including the ledger
+
+Section 3.6 settled that this tool serves all grades and RESTATES rather than filters, and
+the machine copy, the Field Manual and the Compare intro all do. Rendering the whole tool
+at `--band=k2` and reading it showed that three blocks never had:
+
+1. **Everything defect 18 and 19 added.** The density line said "2717 kg per cubic metre" to
+   a five-year-old, and the warning explained itself in terms of inertia and frontal area.
+2. **The Compare prompts, its note and its screen-reader caption.** "Watch what happens to
+   the share of energy that reaches the stone" was the same sentence at K-2 and grade 12.
+3. **The energy ledger.** This is the one that matters: it is where the tool teaches, and
+   every stage label, every loss cause and the efficiency line were single-register. A K-2
+   reader met "Kinetic energy at impact" and "Transfer efficiency" cold, as panel labels.
+
+All three now restate. For the younger bands a density is put as a weight that can be
+checked against a real rock ("a real stone this big would weigh about 724 kg; yours weighs
+1 kg"), which is a better statement of the same fact than the number is, and the ledger
+reads "Saved up in the lifted weight" and "Energy the stone has when it lands" over the same
+four figures. Only the naming changes: bars and screen-reader table are still built from one
+`stages` array, so they cannot drift apart. The drag toggle was relabelled to match, since
+the ledger now calls it "pushing through the air" and a control saying "Air resistance on"
+would have contradicted it.
+
+The gate is `nothing speaks over a five-year-old` in `machinelab_density.test.js`: it renders
+every view at K-2 and fails on a list of terms that carry a grade 6 definition, with a
+companion case asserting the older bands still get the proper names. That is the check that
+would have caught all three of these on the day they were written.
+
+**Two things this cost, worth knowing before the next band change.** The SSR harness renders
+at g35, so a suite full of assertions against grade 6-8 wording had been passing by
+coincidence; `machinelab_views` and `machinelab_machines` now pin `bandOverride` explicitly.
+And a test asserting `g35` contains "Transfer efficiency" had encoded the defect: the phrase
+itself is the thing that does not belong in that band.
+
+**Still single-register, deliberately left for a later pass:** the winch panel's copy and its
+"mechanical advantage / crank force" readout, and the per-part descriptions in "Simple
+machines in this engine" (its intro line does restate). The joule figures themselves are
+shared across bands on purpose, because the whole thesis of the ledger is that it is the
+same four numbers at every level.
+
 ## The reachability audit
 
 The crosswind find prompted a sweep of every field in `defaultState()` against whether a

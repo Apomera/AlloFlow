@@ -393,6 +393,14 @@ window.StemLab = window.StemLab || {
       return 2 * Math.cbrt((3 * mass) / (4 * Math.PI * density));
     },
 
+    // "A real stone this big would weigh about N kg" is the same fact as a
+    // density, said in a way a seven-year-old can check against a rock.
+    massFor: function (diameter, density) {
+      if (!pos(diameter) || !pos(density)) return null;
+      var r = diameter / 2;
+      return density * (4 / 3) * Math.PI * r * r * r;
+    },
+
     // Rough bands, for telling a student whether their stone could exist.
     // Deliberately wide: this is a plausibility check, not a materials table.
     densityNote: function (rho) {
@@ -1972,6 +1980,11 @@ window.StemLab = window.StemLab || {
 
   // Per-machine metadata. The comparison view is the payoff of the whole tool:
   // three different ways to store energy, judged on the same ledger.
+  // The reference rock. Used to say "a stone this big would weigh about N kg",
+  // which is the K-2 and grade 3-5 way of stating a density, and to pick the
+  // shipped default stone. Granite runs roughly 2650-2750 kg per cubic metre.
+  var GRANITE = 2700;
+
   var MACHINES = [
     { id: 'trebuchet', icon: '🏰', label: 'Trebuchet', store: 'gravity' },
     { id: 'ballista', icon: '🏹', label: 'Ballista', store: 'torsion' },
@@ -2571,9 +2584,18 @@ window.StemLab = window.StemLab || {
         // impact than it ever stored, because the drop adds its own.
         var drop = pos(s.dropGain) ? s.dropGain : 0;
         var total = Math.max(s.crankWork, s.muzzleKE + drop, s.impactKE);
+        // The ledger is where this tool teaches, and it was the last panel
+        // still speaking in one register: a K-2 reader was being shown "Kinetic
+        // energy at impact" in the same words as a grade 12 one. Same four
+        // stages, same four numbers, restated. Only the naming changes, so the
+        // table and the bars cannot drift apart.
+        var young = (band === 'k2' || band === 'g35');
         var stages = [
           {
-            id: 'crank', label: __alloT('stem.machinelab.stage_crank', 'Work you do at the crank'),
+            id: 'crank',
+            label: young
+              ? __alloT('stem.machinelab.stage_crank_k2', 'How hard you work at the handle')
+              : __alloT('stem.machinelab.stage_crank', 'Work you do at the crank'),
             j: s.crankWork, loss: null, cause: null, color: T.effort
           },
           {
@@ -2581,28 +2603,52 @@ window.StemLab = window.StemLab || {
             // A ballista has no counterweight. Naming the store after the
             // trebuchet's on every machine was simply wrong on two of three.
             label: (machineId === 'ballista')
-              ? __alloT('stem.machinelab.stage_stored_ball', 'Stored in the two twisted bundles')
+              ? (young
+                ? __alloT('stem.machinelab.stage_stored_ball_k2', 'Saved up in the two twisted ropes')
+                : __alloT('stem.machinelab.stage_stored_ball', 'Stored in the two twisted bundles'))
               : (machineId === 'onager')
-                ? __alloT('stem.machinelab.stage_stored_ona', 'Stored in the twisted bundle')
-                : __alloT('stem.machinelab.stage_stored', 'Stored in the raised counterweight'),
+                ? (young
+                  ? __alloT('stem.machinelab.stage_stored_ona_k2', 'Saved up in the twisted rope')
+                  : __alloT('stem.machinelab.stage_stored_ona', 'Stored in the twisted bundle'))
+                : (young
+                  ? __alloT('stem.machinelab.stage_stored_k2', 'Saved up in the lifted weight')
+                  : __alloT('stem.machinelab.stage_stored', 'Stored in the raised counterweight')),
             j: s.stored, loss: s.crankWork - s.stored,
-            cause: __alloT('stem.machinelab.cause_winch', 'winch friction'), color: T.load
+            cause: young
+              ? __alloT('stem.machinelab.cause_winch_k2', 'rubbing in the handle')
+              : __alloT('stem.machinelab.cause_winch', 'winch friction'),
+            color: T.load
           },
           {
-            id: 'muzzle', label: __alloT('stem.machinelab.stage_muzzle', 'Kinetic energy of the stone at release'),
+            id: 'muzzle',
+            label: young
+              ? __alloT('stem.machinelab.stage_muzzle_k2', 'Energy the stone has as it flies off')
+              : __alloT('stem.machinelab.stage_muzzle', 'Kinetic energy of the stone at release'),
             j: s.muzzleKE, loss: s.stored - s.muzzleKE,
             cause: (machineId === 'ballista')
-              ? __alloT('stem.machinelab.cause_arm_ball', 'energy left in the two moving arms and the string')
+              ? (young
+                ? __alloT('stem.machinelab.cause_arm_ball_k2', 'energy that stayed in the two arms and the string')
+                : __alloT('stem.machinelab.cause_arm_ball', 'energy left in the two moving arms and the string'))
               : (machineId === 'onager')
-                ? __alloT('stem.machinelab.cause_arm_ona', 'energy left in the moving arm and sling')
-                : __alloT('stem.machinelab.cause_arm', 'energy left in the moving arm and counterweight'),
+                ? (young
+                  ? __alloT('stem.machinelab.cause_arm_ona_k2', 'energy that stayed in the arm and the sling')
+                  : __alloT('stem.machinelab.cause_arm_ona', 'energy left in the moving arm and sling'))
+                : (young
+                  ? __alloT('stem.machinelab.cause_arm_k2', 'energy that stayed in the arm and the weight')
+                  : __alloT('stem.machinelab.cause_arm', 'energy left in the moving arm and counterweight')),
             color: T.ok
           },
           {
-            id: 'impact', label: __alloT('stem.machinelab.stage_impact', 'Kinetic energy at impact'),
+            id: 'impact',
+            label: young
+              ? __alloT('stem.machinelab.stage_impact_k2', 'Energy the stone has when it lands')
+              : __alloT('stem.machinelab.stage_impact', 'Kinetic energy at impact'),
             j: s.impactKE,
             loss: pos(s.dragLoss) ? s.dragLoss : Math.max(0, s.muzzleKE - s.impactKE),
-            cause: __alloT('stem.machinelab.cause_drag', 'air resistance'), color: T.hint,
+            cause: young
+              ? __alloT('stem.machinelab.cause_drag_k2', 'pushing through the air')
+              : __alloT('stem.machinelab.cause_drag', 'air resistance'),
+            color: T.hint,
             gain: drop
           }
         ];
@@ -2687,8 +2733,16 @@ window.StemLab = window.StemLab || {
           h('p', {
             key: 'eff',
             style: { margin: '8px 0 0', fontSize: 12, color: T.dim }
-          }, __alloT('stem.machinelab.transfer_eff', 'Transfer efficiency: ') + fmt(100 * s.eta, 1) + '%' +
-             __alloT('stem.machinelab.eff_tail', ' of the stored energy reached the stone.')),
+          }, pick({
+            k2: __alloT('stem.machinelab.transfer_eff_k2', 'Out of all the energy the machine saved up, ') + fmt(100 * s.eta, 0) +
+                __alloT('stem.machinelab.eff_tail_k2', ' out of every 100 parts went into the stone. The rest stayed in the machine.'),
+            g35: __alloT('stem.machinelab.transfer_eff_g35', 'The stone got ') + fmt(100 * s.eta, 1) +
+                 __alloT('stem.machinelab.eff_tail_g35', '% of the energy the machine had saved up. The rest stayed behind in the moving parts.'),
+            g68: __alloT('stem.machinelab.transfer_eff', 'Transfer efficiency: ') + fmt(100 * s.eta, 1) + '%' +
+                 __alloT('stem.machinelab.eff_tail', ' of the stored energy reached the stone.'),
+            g912: __alloT('stem.machinelab.transfer_eff', 'Transfer efficiency: ') + fmt(100 * s.eta, 1) + '%' +
+                  __alloT('stem.machinelab.eff_tail', ' of the stored energy reached the stone.')
+          }, band)),
           // The effective mass is THE quantity behind that percentage, and the
           // g9-12 copy quotes the formula it appears in. It was computed and
           // returned by shot() and then never shown, so a student could not
@@ -2996,23 +3050,58 @@ window.StemLab = window.StemLab || {
       // boulder or a 300 kg orange without noticing. Drag depends on frontal
       // area and inertia on mass, so an impossible density silently decides
       // every range comparison. Naming it turns a hidden trap into a lesson.
-      function stonePanel() {
+      // Density in kg per cubic metre is a grade 6 idea and this tool serves
+      // K-2 upward, so the same fact is restated rather than filtered out. For
+      // the younger bands it is put as a weight a child can picture: a real
+      // stone this big would weigh about this much, and yours does not.
+      function stoneFacts() {
         var rho = _machineMath.density(d.projMass, d.projDiameter);
         if (rho === null) return null;
-        var note = _machineMath.densityNote(rho);
-        var odd = rho < 1400 || rho > 4200;   // not a rock by any reading
+        return {
+          rho: rho,
+          note: _machineMath.densityNote(rho),
+          odd: rho < 1400 || rho > 4200,          // not a rock by any reading
+          real: _machineMath.massFor(d.projDiameter, GRANITE),
+          heavy: rho > 4200
+        };
+      }
+
+      function stonePanel() {
+        var f = stoneFacts();
+        if (!f) return null;
+        var realTxt = fmt(f.real, f.real < 10 ? 1 : 0);
+        var yoursTxt = fmt(d.projMass, d.projMass < 10 ? 1 : 0);
+        var line = pick({
+          k2: __alloT('stem.machinelab.stone_k2', 'A real stone this big would weigh about ') + realTxt +
+              __alloT('stem.machinelab.stone_k2b', ' kg. Yours weighs ') + yoursTxt + ' kg.',
+          g35: __alloT('stem.machinelab.stone_g35', 'A rock that size would weigh about ') + realTxt +
+               __alloT('stem.machinelab.stone_g35b', ' kg. Yours weighs ') + yoursTxt +
+               __alloT('stem.machinelab.stone_g35c', ' kg, so it is ') + f.note + '.',
+          g68: __alloT('stem.machinelab.stone_density', 'That stone works out at ') +
+               fmt(f.rho, 0) + __alloT('stem.machinelab.stone_density2', ' kg per cubic metre, ') + f.note + '.',
+          g912: __alloT('stem.machinelab.stone_density', 'That stone works out at ') +
+                fmt(f.rho, 0) + __alloT('stem.machinelab.stone_density2', ' kg per cubic metre, ') + f.note +
+                __alloT('stem.machinelab.stone_g912', '. Granite is about 2700, so a rock this size would be ') +
+                realTxt + ' kg.'
+        }, band);
+        var warn = pick({
+          k2: f.heavy
+            ? __alloT('stem.machinelab.stone_odd_k2h', 'That is far too heavy for a stone that size. Nothing is that heavy. Try a bigger stone, or a lighter one.')
+            : __alloT('stem.machinelab.stone_odd_k2', 'That is far too light for a stone that size. A rock that big could not float away. Try a heavier stone, or a smaller one.'),
+          g35: __alloT('stem.machinelab.stone_odd_g35', 'No rock weighs that for its size. The two sliders move on their own, so it is easy to build a stone that could not really exist. If the stone is not real, the throw will not be real either.'),
+          g68: __alloT('stem.machinelab.stone_odd', 'No rock is that. Mass and size are separate sliders here, so it is easy to build something that could not exist. Air resistance depends on how big it is and inertia on how heavy, so an impossible stone will give you an impossible range.'),
+          g912: __alloT('stem.machinelab.stone_odd_g912', 'No rock has that density. Because mass and diameter are set independently here, the two quantities drag depends on, frontal area and inertia, can be varied against each other in ways no material allows. Any range you read off an impossible object tells you about the model, not about a machine.')
+        }, band);
         return h('div', {
           key: 'stone',
           style: {
             marginTop: 6, padding: '7px 9px', borderRadius: 8,
-            background: T.bg, border: '1px solid ' + (odd ? T.warn : T.border)
+            background: T.bg, border: '1px solid ' + (f.odd ? T.warn : T.border)
           }
         }, [
-          h('div', { key: 'a', style: { fontSize: 12, color: T.text } },
-            __alloT('stem.machinelab.stone_density', 'That stone works out at ') +
-            fmt(rho, 0) + __alloT('stem.machinelab.stone_density2', ' kg per cubic metre, ') + note + '.'),
-          odd ? h('div', { key: 'b', style: { fontSize: 12, color: T.warn, marginTop: 3, lineHeight: 1.45 } },
-            __alloT('stem.machinelab.stone_odd', 'No rock is that. Mass and size are separate sliders here, so it is easy to build something that could not exist. Air resistance depends on how big it is and inertia on how heavy, so an impossible stone will give you an impossible range.')) : null
+          h('div', { key: 'a', style: { fontSize: 12, color: T.text } }, line),
+          f.odd ? h('div', { key: 'b', style: { fontSize: 12, color: T.warn, marginTop: 3, lineHeight: 1.45 } },
+            warn) : null
         ]);
       }
 
@@ -3022,9 +3111,25 @@ window.StemLab = window.StemLab || {
       // value is set is a warning you can walk away from, so the views that
       // consume an impossible stone say so too, briefly, and point back.
       function oddStoneNote(key) {
-        var rho = _machineMath.density(d.projMass, d.projDiameter);
-        if (rho === null) return null;
-        if (rho >= 1400 && rho <= 4200) return null;
+        var f = stoneFacts();
+        if (!f || !f.odd) return null;
+        var sizeTxt = fmt(d.projMass, d.projMass < 10 ? 1 : 0) +
+          __alloT('stem.machinelab.stone_odd_short2', ' kg and ') + fmt(d.projDiameter, 2) +
+          __alloT('stem.machinelab.stone_odd_short2b', ' m across');
+        var body = pick({
+          k2: __alloT('stem.machinelab.stone_odd_short_k2', 'Your stone is ') + sizeTxt +
+              __alloT('stem.machinelab.stone_odd_short_k2b', '. A real stone that big would weigh about ') +
+              fmt(f.real, f.real < 10 ? 1 : 0) +
+              __alloT('stem.machinelab.stone_odd_short_k2c', ' kg, so this one is not really a stone. You can change it in Build.'),
+          g35: __alloT('stem.machinelab.stone_odd_short_k2', 'Your stone is ') + sizeTxt +
+               __alloT('stem.machinelab.stone_odd_short_g35', '. No rock weighs that for its size, so these numbers describe something that could not really exist. The two sliders are in Build.'),
+          g68: __alloT('stem.machinelab.stone_odd_short', 'Your stone is ') + sizeTxt +
+               __alloT('stem.machinelab.stone_odd_short3', ', which works out at ') + fmt(f.rho, 0) +
+               __alloT('stem.machinelab.stone_odd_short4', ' kg per cubic metre. No rock is that, so treat these numbers as a story about an object that could not exist. The two sliders are in Build.'),
+          g912: __alloT('stem.machinelab.stone_odd_short', 'Your stone is ') + sizeTxt +
+                __alloT('stem.machinelab.stone_odd_short3', ', which works out at ') + fmt(f.rho, 0) +
+                __alloT('stem.machinelab.stone_odd_short_g912', ' kg per cubic metre. No rock is that, so every figure below is conditioned on an object no material could form. The two sliders are in Build.')
+        }, band);
         return h('div', {
           key: key,
           role: 'status',
@@ -3033,10 +3138,7 @@ window.StemLab = window.StemLab || {
             background: T.bg, border: '1px solid ' + T.warn,
             fontSize: 12, color: T.warn, lineHeight: 1.5
           }
-        }, __alloT('stem.machinelab.stone_odd_short', 'Your stone is ') + fmt(d.projMass, 1) +
-           __alloT('stem.machinelab.stone_odd_short2', ' kg and ') + fmt(d.projDiameter, 2) +
-           __alloT('stem.machinelab.stone_odd_short3', ' m across, which works out at ') + fmt(rho, 0) +
-           __alloT('stem.machinelab.stone_odd_short4', ' kg per cubic metre. No rock is that, so treat these numbers as a story about an object that could not exist. The two sliders are in Build.'));
+        }, body);
       }
 
       // ── Saving a design ──
@@ -3449,7 +3551,14 @@ window.StemLab = window.StemLab || {
                   key: 'cb', type: 'checkbox', checked: d.drag !== false,
                   onChange: function (e) { upd('drag', !!e.target.checked); }
                 }),
-                h('span', { key: 's' }, __alloT('stem.machinelab.air_on', 'Air resistance on'))
+                // The ledger calls this "pushing through the air" for the young
+                // bands, so the control that switches it on has to agree.
+                h('span', { key: 's' }, pick({
+                  k2: __alloT('stem.machinelab.air_on_k2', 'Let the air push back'),
+                  g35: __alloT('stem.machinelab.air_on_k2', 'Let the air push back'),
+                  g68: __alloT('stem.machinelab.air_on', 'Air resistance on'),
+                  g912: __alloT('stem.machinelab.air_on', 'Air resistance on')
+                }, band))
               ]),
               slider({ key: 'launchElevation', label: __alloT('stem.machinelab.elevation', 'Launch height'), min: 0, max: 20, step: 0.5, unit: 'm' }),
               windControl(),
@@ -4307,9 +4416,18 @@ window.StemLab = window.StemLab || {
           kids.push(h('p', {
             key: 'rho',
             style: { margin: '8px 0 0', fontSize: 12, color: T.dim, lineHeight: 1.5 }
-          }, __alloT('stem.machinelab.best_rho', 'Every stone in that table is the same rock: ') +
-             fmt(saved.density, 0) + __alloT('stem.machinelab.best_rho2', ' kg per cubic metre. Only the size changes, and the mass follows from it. Your current stone is ') +
-             fmt(d.projMass, 1) + ' kg.'));
+          }, pick({
+            k2: __alloT('stem.machinelab.best_rho_k2', 'Every stone in that table is made of the same rock. Only the size changes, and a smaller stone weighs less. Yours weighs ') +
+                fmt(d.projMass, d.projMass < 10 ? 1 : 0) + ' kg.',
+            g35: __alloT('stem.machinelab.best_rho_g35', 'Every stone in that table is the same kind of rock. Only the size changes, and the weight follows from the size. Yours weighs ') +
+                 fmt(d.projMass, d.projMass < 10 ? 1 : 0) + ' kg.',
+            g68: __alloT('stem.machinelab.best_rho', 'Every stone in that table is the same rock: ') +
+                 fmt(saved.density, 0) + __alloT('stem.machinelab.best_rho2', ' kg per cubic metre. Only the size changes, and the mass follows from it. Your current stone is ') +
+                 fmt(d.projMass, d.projMass < 10 ? 1 : 0) + ' kg.',
+            g912: __alloT('stem.machinelab.best_rho', 'Every stone in that table is the same rock: ') +
+                  fmt(saved.density, 0) + __alloT('stem.machinelab.best_rho_g912', ' kg per cubic metre. Density is held fixed and diameter derived from mass, so frontal area scales as mass to the two thirds and every candidate is a physically realisable object. Your current stone is ') +
+                  fmt(d.projMass, d.projMass < 10 ? 1 : 0) + ' kg.'
+          }, band)));
         }
         return card(kids, 'beststone');
       }
@@ -4348,8 +4466,14 @@ window.StemLab = window.StemLab || {
               }, band)),
             h('div', { key: 'wrap', style: { overflowX: 'auto' } },
               h('table', { style: { width: '100%', minWidth: 460, borderCollapse: 'collapse', fontSize: 13, color: T.text } }, [
+                // Screen-reader text is text: it follows the band like the rest.
                 h('caption', { key: 'cap', style: srOnlyStyle },
-                  __alloT('stem.machinelab.cmp_caption', 'Stored energy, transfer efficiency, launch speed and range for each machine')),
+                  pick({
+                    k2: __alloT('stem.machinelab.cmp_caption_k2', 'How much energy each machine stores, how much of it reaches the stone, how fast the stone leaves and how far it goes'),
+                    g35: __alloT('stem.machinelab.cmp_caption_k2', 'How much energy each machine stores, how much of it reaches the stone, how fast the stone leaves and how far it goes'),
+                    g68: __alloT('stem.machinelab.cmp_caption', 'Stored energy, transfer efficiency, launch speed and range for each machine'),
+                    g912: __alloT('stem.machinelab.cmp_caption', 'Stored energy, transfer efficiency, launch speed and range for each machine')
+                  }, band)),
                 h('thead', { key: 'th' }, h('tr', null, [
                   h('th', { key: '1', scope: 'col', style: { textAlign: 'left', padding: 6, borderBottom: '1px solid ' + T.border } }, __alloT('stem.machinelab.col_machine', 'Machine')),
                   h('th', { key: '2', scope: 'col', style: { textAlign: 'left', padding: 6, borderBottom: '1px solid ' + T.border } }, __alloT('stem.machinelab.col_store', 'Energy store')),
@@ -4382,28 +4506,63 @@ window.StemLab = window.StemLab || {
                 }))
               ])),
             h('p', { key: 'note', style: { margin: '10px 0 0', fontSize: 12, color: T.dim, lineHeight: 1.5 } },
-              __alloT('stem.machinelab.cmp_note', 'The highlighted cells are the best in their column. The machine that throws furthest is often not the one that wastes least, because stored energy and efficiency are two different things.')),
+              pick({
+                k2: __alloT('stem.machinelab.cmp_note_k2', 'The green numbers are the winners in their column. The machine that throws furthest is not always the one that wastes the least. Those are two different things to be good at.'),
+                g35: __alloT('stem.machinelab.cmp_note_g35', 'The highlighted cells are the best in their column. Notice that the machine throwing furthest is not the one keeping the most of its energy. Storing a lot and wasting little are two separate things.'),
+                g68: __alloT('stem.machinelab.cmp_note', 'The highlighted cells are the best in their column. The machine that throws furthest is often not the one that wastes least, because stored energy and efficiency are two different things.'),
+                g912: __alloT('stem.machinelab.cmp_note', 'The highlighted cells are the best in their column. The machine that throws furthest is often not the one that wastes least, because stored energy and efficiency are two different things.')
+              }, band)),
             // Without this the two tables on this screen tell opposite stories
             // and nothing joins them: up here the trebuchet wins by five times,
             // and below the onager reaches twice as far as the trebuchet does.
             // The difference is entirely the stone, and a fair test that holds
             // the wrong thing constant is worth naming as a lesson.
             h('p', { key: 'note2', style: { margin: '8px 0 0', fontSize: 12, color: T.dim, lineHeight: 1.5 } },
-              __alloT('stem.machinelab.cmp_note2', 'One thing to be careful about: holding the stone the same is what makes this a fair test, but it is a stone of one particular size, and it suits one of these machines far better than the other two. The panel below asks a different question, which is what each machine would rather be throwing.'))
+              pick({
+                k2: __alloT('stem.machinelab.cmp_note2_k2', 'All three machines are throwing the same stone, which is fair. But that stone is a good size for one of them and a bad size for the other two. The next part asks what stone each machine would like best.'),
+                g35: __alloT('stem.machinelab.cmp_note2_g35', 'Giving all three the same stone is what makes this a fair test. It is also one particular stone, and it suits one machine much better than the others. The next panel asks a different question: what would each machine rather throw?'),
+                g68: __alloT('stem.machinelab.cmp_note2', 'One thing to be careful about: holding the stone the same is what makes this a fair test, but it is a stone of one particular size, and it suits one of these machines far better than the other two. The panel below asks a different question, which is what each machine would rather be throwing.'),
+                g912: __alloT('stem.machinelab.cmp_note2_g912', 'A controlled comparison is only as good as its choice of what to hold constant. Fixing the payload is defensible, but it is not neutral: the fixed payload happens to sit near the trebuchet optimum and far from the torsion ones, so the ranking below is partly a statement about the stone. The panel underneath relaxes that control and optimises the payload per machine instead.')
+              }, band))
           ], 'cmptable'),
           card([
             h('h4', { key: 'h', style: { margin: '0 0 6px', fontSize: 14, color: T.text } },
               __alloT('stem.machinelab.cmp_try', 'Things worth trying')),
-            h('ul', { key: 'l', style: { margin: 0, paddingLeft: 20, fontSize: 13, color: T.muted, lineHeight: 1.7 } }, [
-              // This used to say "drop the stone mass to a fraction of a
-              // kilogram", which at a fixed 0.26 m diameter builds a stone
-              // lighter than balsa: the exact trap the density note warns
-              // about. Shrink both together, or press the button that does.
-              h('li', { key: '1' }, __alloT('stem.machinelab.cmp_try1', 'Make the stone lighter, and shrink its diameter to match so it stays a real rock. Which machine copes best, and why? The button below does this for you.')),
-              h('li', { key: '2' }, __alloT('stem.machinelab.cmp_try2', 'Make the onager arm heavier. Watch what happens to the share of energy that reaches the stone.')),
-              h('li', { key: '3' }, __alloT('stem.machinelab.cmp_try3', 'Lengthen the onager sling. It costs nothing and changes the efficiency. Why?')),
-              h('li', { key: '4' }, __alloT('stem.machinelab.cmp_try4', 'Wind more turns into the bundles. Does range grow as fast as stored energy does?'))
-            ])
+            // Four prompts, restated per band like the rest of the tool. This
+            // block was the last single-register text in the view: a K-2 reader
+            // was being asked about "the share of energy that reaches the
+            // stone" in the same words as a grade 12 one.
+            //
+            // The first prompt used to say "drop the stone mass to a fraction
+            // of a kilogram", which at a fixed 0.26 m diameter builds a stone
+            // lighter than balsa: the exact trap the density note warns about.
+            h('ul', { key: 'l', style: { margin: 0, paddingLeft: 20, fontSize: 13, color: T.muted, lineHeight: 1.7 } },
+              pick({
+                k2: [
+                  __alloT('stem.machinelab.cmp_try1_k2', 'Make the stone smaller and lighter together, so it is still a real rock. Which machine likes that best?'),
+                  __alloT('stem.machinelab.cmp_try2_k2', 'Give the onager a heavier arm. Does the stone go further or not as far?'),
+                  __alloT('stem.machinelab.cmp_try3_k2', 'Make the onager sling longer. Watch what changes.'),
+                  __alloT('stem.machinelab.cmp_try4_k2', 'Twist the ropes more times. Does the stone go much further?')
+                ],
+                g35: [
+                  __alloT('stem.machinelab.cmp_try1_g35', 'Make the stone lighter, and make it smaller too so it is still a real rock. Which machine copes best?'),
+                  __alloT('stem.machinelab.cmp_try2_g35', 'Make the onager arm heavier. How much of the energy still reaches the stone?'),
+                  __alloT('stem.machinelab.cmp_try3_g35', 'Lengthen the onager sling. It costs no energy at all, so why does the throw change?'),
+                  __alloT('stem.machinelab.cmp_try4_g35', 'Add more twists to the ropes. Does the throw grow as fast as the stored energy does?')
+                ],
+                g68: [
+                  __alloT('stem.machinelab.cmp_try1', 'Make the stone lighter, and shrink its diameter to match so it stays a real rock. Which machine copes best, and why? The button below does this for you.'),
+                  __alloT('stem.machinelab.cmp_try2', 'Make the onager arm heavier. Watch what happens to the share of energy that reaches the stone.'),
+                  __alloT('stem.machinelab.cmp_try3', 'Lengthen the onager sling. It costs nothing and changes the efficiency. Why?'),
+                  __alloT('stem.machinelab.cmp_try4', 'Wind more turns into the bundles. Does range grow as fast as stored energy does?')
+                ],
+                g912: [
+                  __alloT('stem.machinelab.cmp_try1_g912', 'Reduce payload mass with diameter derived from a fixed density, so frontal area scales as mass to the two thirds. Which machine degrades most gracefully, and which term in m_p/(m_p + m_eff) explains it?'),
+                  __alloT('stem.machinelab.cmp_try2_g912', 'Increase the onager arm mass. Transfer efficiency should fall even though stored energy is untouched, because m_eff is the arm inertia reduced to the payload radius.'),
+                  __alloT('stem.machinelab.cmp_try3_g912', 'Lengthen the onager sling. It adds no stored energy, so any change in range has to come through the effective mass. Work out which way, and why.'),
+                  __alloT('stem.machinelab.cmp_try4_g912', 'Wind more turns into the bundles. Stored energy goes as the square of the twist angle, so predict whether range should scale linearly, and then check.')
+                ]
+              }, band).map(function (txt, i) { return h('li', { key: i }, txt); }))
           ], 'cmptry'),
           bestStonePanel(),
           inquiryWidget()

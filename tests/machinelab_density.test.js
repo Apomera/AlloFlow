@@ -3,7 +3,8 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 const FILE = 'stem_lab/stem_tool_machinelab.js';
-const state = (o = {}) => ({ machineLab: Object.assign({ view: 'build' }, o) });
+const state = (o = {}) => ({ machineLab: Object.assign({ view: 'build', bandOverride: 'g68' }, o) });
+const BANDS = ['k2', 'g35', 'g68', 'g912'];
 
 let M;
 beforeEach(() => {
@@ -53,13 +54,67 @@ describe('Machine Lab: stone density', () => {
 
   it('names the density on screen', () => {
     const html = renderTool('machineLab', state());
-    expect(html).toMatch(/That stone works out at [\d.]+ kg per cubic metre, about stone\./);
+    expect(html).toMatch(/That stone works out at [\d.]+ kg per cubic metre, about stone/);
+  });
+
+  // Density in kg per cubic metre is a grade 6 idea, and this tool serves K-2
+  // upward. The house rule is restate, never filter, so the younger bands get
+  // the same fact as a weight they can picture against a real rock.
+  it('states the same fact in every band, not just the one it was written in', () => {
+    const seen = BANDS.map((b) => {
+      const html = renderTool('machineLab', state({ bandOverride: b }));
+      return { b, html };
+    });
+    seen.forEach(({ b, html }) => {
+      if (b === 'k2' || b === 'g35') {
+        expect(html).toMatch(/would weigh about [\d.]+ kg/);
+        expect(html).not.toContain('kg per cubic metre');
+      } else {
+        expect(html).toContain('kg per cubic metre');
+      }
+    });
+  });
+
+  it('does not say "cubic metre" to a five-year-old anywhere in the tool', () => {
+    ['build', 'range', 'siege', 'compare'].forEach((v) => {
+      const html = renderTool('machineLab', {
+        machineLab: { view: v, bandOverride: 'k2', projMass: 1, projDiameter: 0.8 }
+      });
+      expect(html).not.toContain('cubic metre');
+      expect(html).not.toContain('inertia');
+    });
+  });
+
+  it('tells a K-2 student which way the stone is wrong', () => {
+    const light = renderTool('machineLab', state({ bandOverride: 'k2', projMass: 1, projDiameter: 0.8 }));
+    const heavy = renderTool('machineLab', state({ bandOverride: 'k2', projMass: 300, projDiameter: 0.1 }));
+    expect(light).toContain('far too light');
+    expect(heavy).toContain('far too heavy');
+  });
+
+  it('computes the weight a real rock that size would have', () => {
+    // 0.26 m across at granite is the shipped stone, so it should come back
+    // near the 25 kg the tool ships.
+    expect(M.massFor(0.26, 2700)).toBeCloseTo(24.85, 1);
+    expect(M.massFor(0, 2700)).toBeNull();
+    expect(M.massFor(0.26, 0)).toBeNull();
+    // massFor and diameterFor must be exact inverses, or the two registers
+    // would quietly disagree about the same stone.
+    expect(M.diameterFor(M.massFor(0.4, 2700), 2700)).toBeCloseTo(0.4, 9);
   });
 
   it('warns when the stone could not exist', () => {
     const silly = renderTool('machineLab', state({ projMass: 1, projDiameter: 0.8 }));
     expect(silly).toContain('No rock is that');
     expect(silly).toContain('an impossible stone will give you an impossible range');
+  });
+
+  it('warns in every band, in that band\'s own words', () => {
+    BANDS.forEach((b) => {
+      const html = renderTool('machineLab', state({ bandOverride: b, projMass: 1, projDiameter: 0.8 }));
+      // Each band says it differently; what must not vary is that it says it.
+      expect(html).toMatch(/too light|No rock/);
+    });
   });
 
   it('stays quiet when the stone is plausible', () => {
@@ -113,7 +168,7 @@ describe('Machine Lab: the best stone for a machine', () => {
 });
 
 describe('Machine Lab: the best-stone panel in Compare', () => {
-  const cmp = (o = {}) => ({ machineLab: Object.assign({ view: 'compare' }, o) });
+  const cmp = (o = {}) => ({ machineLab: Object.assign({ view: 'compare', bandOverride: 'g68' }, o) });
 
   it('offers the search as a button, because a sweep is far too slow to render', () => {
     const html = renderTool('machineLab', cmp());
@@ -203,7 +258,7 @@ describe('Machine Lab: the peak is real, not a search artifact', () => {
 });
 
 describe('Machine Lab: the panel does not sell a pebble as the answer', () => {
-  const cmp = (o = {}) => ({ machineLab: Object.assign({ view: 'compare' }, o) });
+  const cmp = (o = {}) => ({ machineLab: Object.assign({ view: 'compare', bandOverride: 'g68' }, o) });
   const saved = (over = {}) => ({
     bestStones: {
       density: 2717, sig: 'stale',
@@ -245,7 +300,7 @@ describe('Machine Lab: the panel does not sell a pebble as the answer', () => {
 });
 
 describe('Machine Lab: an impossible stone follows you out of Build', () => {
-  const view = (v, o = {}) => ({ machineLab: Object.assign({ view: v }, o) });
+  const view = (v, o = {}) => ({ machineLab: Object.assign({ view: v, bandOverride: 'g68' }, o) });
   const SILLY = { projMass: 1, projDiameter: 0.8 };
 
   // The two sliders live in Build, but the Test Range scores a prediction
@@ -311,5 +366,94 @@ describe('Machine Lab: the Field Manual owns the limitation', () => {
     expect(closer).toBeGreaterThan(opener);
     expect(src.slice(opener, closer)).toContain('manual_x_dens');
     expect(src.slice(opener, at)).not.toContain("h('li'");
+  });
+});
+
+describe('Machine Lab: Compare restates for every band', () => {
+  const cmp = (b) => renderTool('machineLab', { machineLab: { view: 'compare', bandOverride: b } });
+
+  it('gives each band its own four prompts, not one set for all of them', () => {
+    const texts = BANDS.map(cmp);
+    // Four prompts everywhere, and no two bands identical.
+    texts.forEach((html) => {
+      const items = html.match(/<li>/g) || [];
+      expect(items.length).toBeGreaterThanOrEqual(4);
+    });
+    const firstPrompt = (html) => (html.match(/<li>([^<]+)</) || [])[1];
+    const prompts = texts.map(firstPrompt);
+    expect(new Set(prompts).size).toBe(BANDS.length);
+  });
+
+  it('keeps the technical vocabulary out of the youngest band', () => {
+    const k2 = cmp('k2');
+    ['efficiency', 'm_eff', 'diameter', 'stored energy', 'frontal area'].forEach((word) => {
+      expect(k2).not.toContain(word);
+    });
+  });
+
+  it('still asks the older bands the harder question', () => {
+    expect(cmp('g912')).toContain('m_p/(m_p + m_eff)');
+    expect(cmp('g912')).toContain('square of the twist angle');
+  });
+
+  it('never tells any band to change mass without changing size', () => {
+    // The prompt that walked into the density trap. Every band now pairs them.
+    BANDS.forEach((b) => {
+      expect(cmp(b)).not.toContain('Drop the stone mass to a fraction of a kilogram');
+    });
+  });
+});
+
+// A gate, not a spot check. Every panel in this tool is supposed to restate for
+// the selected band rather than filter, and three separate blocks had quietly
+// been written in one register: the density notes, the Compare prompts, and the
+// energy ledger itself. The failure mode is invisible unless you render at K-2
+// and read, so this renders at K-2 and reads.
+describe('Machine Lab: nothing speaks over a five-year-old', () => {
+  // Terms that carry a grade 6+ definition. A K-2 reader can be taught any of
+  // these ideas; what they cannot do is meet the word cold as a panel label.
+  const TOO_OLD = [
+    'Kinetic energy', 'Transfer efficiency', 'inertia', 'cubic metre',
+    'coefficient', 'effective mass', 'frontal area', 'proportional',
+    'monotonically', 'degrees of freedom', 'Air resistance'
+  ];
+  const VIEWS = ['machines', 'build', 'range', 'siege', 'compare'];
+
+  VIEWS.forEach((v) => {
+    it('the ' + v + ' view is readable at K-2', () => {
+      const html = renderTool('machineLab', {
+        machineLab: { view: v, bandOverride: 'k2', lastShot: null }
+      });
+      const found = TOO_OLD.filter((w) => html.includes(w));
+      expect(found).toEqual([]);
+    });
+  });
+
+  it('but keeps the real vocabulary for the bands that want it', () => {
+    // Restate, never filter: the older bands must still get the proper names.
+    const g912 = renderTool('machineLab', { machineLab: { view: 'build', bandOverride: 'g912' } });
+    expect(g912).toContain('Kinetic energy');
+    expect(g912).toContain('Transfer efficiency');
+  });
+
+  it('names the same four ledger stages in both registers', () => {
+    // The bars and the screen-reader table are built from ONE stages array, so
+    // a band that renamed only one of them would drift. Count the stages.
+    const k2 = renderTool('machineLab', { machineLab: { view: 'build', bandOverride: 'k2' } });
+    const g68 = renderTool('machineLab', { machineLab: { view: 'build', bandOverride: 'g68' } });
+    expect(k2).toContain('How hard you work at the handle');
+    expect(k2).toContain('Saved up in the lifted weight');
+    expect(k2).toContain('Energy the stone has as it flies off');
+    expect(k2).toContain('Energy the stone has when it lands');
+    expect(g68).toContain('Work you do at the crank');
+    expect(g68).toContain('Stored in the raised counterweight');
+  });
+
+  it('renames the loss causes too, not just the stage labels', () => {
+    const k2 = renderTool('machineLab', { machineLab: { view: 'build', bandOverride: 'k2' } });
+    expect(k2).toContain('rubbing in the handle');
+    expect(k2).toContain('pushing through the air');
+    expect(k2).not.toContain('winch friction');
+    expect(k2).not.toContain('air resistance');
   });
 });

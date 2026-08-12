@@ -5,8 +5,11 @@ const FILE = 'stem_lab/stem_tool_machinelab.js';
 const BANDS = ['k2', 'g35', 'g68', 'g912'];
 const VIEWS = ['machines', 'build', 'range', 'siege', 'compare', 'learn'];
 
+// The harness renders at g35 unless told otherwise, and much of this tool now
+// restates per band. These cases assert the grade 6-8 wording, so they pin it;
+// the per-band wording itself is covered in machinelab_density.test.js.
 function state(overrides = {}) {
-  return { machineLab: Object.assign({ view: 'machines' }, overrides) };
+  return { machineLab: Object.assign({ view: 'machines', bandOverride: 'g68' }, overrides) };
 }
 
 beforeEach(() => {
@@ -195,10 +198,12 @@ describe('Machine Lab: the energy ledger', () => {
     expect(g68).toMatch(/The stone is [\d.]+ kg, and the moving parts of the machine add another [\d.]+ kg/);
     expect(g68).toMatch(/= [\d.]+%\./);
 
-    // Lower bands get the percentage without the algebra behind it.
+    // Lower bands get the percentage without the algebra behind it, and in
+    // their own words: "Transfer efficiency" is itself a grade 6 phrase.
     const g35 = renderTool('machineLab', state({ view: 'build', bandOverride: 'g35' }));
-    expect(g35).toContain('Transfer efficiency');
+    expect(g35).toMatch(/The stone got [\d.]+% of the energy the machine had saved up/);
     expect(g35).not.toContain('of effective mass');
+    expect(g35).not.toContain('Transfer efficiency');
   });
 
   it('states an effective mass consistent with the efficiency it quotes', () => {
