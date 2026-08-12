@@ -989,6 +989,72 @@ describe('Tree Life Lab — banks and mirrors', () => {
     expect(g912only).toContain('Not answered yet');
   });
 
+  it('draws the trunk in cross-section from the tree’s own record', () => {
+    // Transport explained "phloem sits just inside the bark, xylem is deeper in the
+    // wood" in prose and then built the girdling lesson on that trust. The ring record
+    // and the sapwood/heartwood split have been collected since year one; this shows
+    // them rather than asserting them.
+    const E = engine();
+    const oak = E.speciesById('oak');
+    let t = E.newTree('oak');
+    for (let i = 0; i < 40; i += 1) t = E.simulateYear(t, oak, GOOD_ENV, ALLOC);
+
+    const html = render({ treeLab: { view: 'transport', tree: t, bandOverride: 'g68' } });
+    expect(html).toContain('Inside the trunk');
+    for (const layer of ['Bark', 'Phloem', 'Cambium', 'Sapwood', 'Heartwood']) {
+      expect(html, `${layer} missing from the section`).toContain(layer);
+    }
+    // One circle per drawn ring, plus the five layers.
+    const circles = (html.match(/<circle/g) || []).length;
+    expect(circles, 'rings are not being drawn').toBeGreaterThan(10);
+  });
+
+  it('scars the rings red for the years the tree ran a deficit', () => {
+    // A drought is recorded permanently in the wood. That is the whole reason a ring
+    // record is worth reading, and it should be visible in the section, not only in
+    // the bar chart on the Grow tab.
+    const E = engine();
+    const oak = E.speciesById('oak');
+    let t = E.newTree('oak');
+    // A drought only marks a ring stressed when it pushes NET carbon negative, and a
+    // small tree's respiration bill is too low for that — so this uses a mature tree,
+    // which is also the case the lesson is about.
+    const cfg = { ...GOOD_ENV, droughtYears: [45, 46, 47, 48, 49, 50] };
+    for (let i = 0; i < 70; i += 1) t = E.simulateYear(t, oak, E.envForYear(cfg, t.age), ALLOC);
+    expect(t.rings.some((r) => r.stress), 'the drought left no stressed rings').toBe(true);
+
+    const html = render({ treeLab: { view: 'transport', tree: t, bandOverride: 'g912' } });
+    expect(html, 'stressed rings are not marked in the section').toMatch(/#b91c1c/);
+  });
+
+  it('grows the dead core as the tree ages', () => {
+    // Sapwood converting to heartwood is what keeps an old tree's respiration bill from
+    // rising forever. The section should show that, not a fixed diagram.
+    const E = engine();
+    const oak = E.speciesById('oak');
+    const at = (years) => {
+      let t = E.newTree('oak');
+      for (let i = 0; i < years; i += 1) t = E.simulateYear(t, oak, GOOD_ENV, ALLOC);
+      return t;
+    };
+    const young = at(15);
+    const old = at(150);
+    const frac = (t) => t.heartwoodMass / (t.heartwoodMass + t.sapwoodMass);
+    expect(frac(old), 'heartwood share did not grow with age').toBeGreaterThan(frac(young));
+    expect(frac(young)).toBeLessThan(0.5);
+  });
+
+  it('keeps the section on the contrast ramp', () => {
+    const E = engine();
+    let t = E.newTree('oak');
+    for (let i = 0; i < 40; i += 1) t = E.simulateYear(t, E.speciesById('oak'), GOOD_ENV, ALLOC);
+    const html = render({ treeLab: { view: 'transport', tree: t, bandOverride: 'g68' } }, { isContrast: true });
+    // The wood browns and the amber phloem must not survive into high contrast.
+    for (const hex of ['#c89b62', '#6b4b2a', '#f59e0b', '#4ade80']) {
+      expect(html.includes(hex), `section leaks ${hex} into high contrast`).toBe(false);
+    }
+  });
+
   it('leaves no user-visible string a language pack cannot reach', () => {
     // Static greps cannot answer this and never could: a string routed through a
     // module-scope data table reaches __alloT at RENDER time and looks hardcoded to a

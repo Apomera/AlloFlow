@@ -1867,6 +1867,83 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         ]);
       }
 
+      // Radii come from the tree's OWN masses and rings, so a young tree shows almost
+      // all sapwood and an old one shows a wide dead core. Drawn as SVG with hex fills:
+      // a presentation attribute cannot resolve var(--token) any more than a canvas can.
+      function trunkSection() {
+        var R = 78;                       // outer bark radius, viewBox units
+        var live = Math.max(0.01, tree.sapwoodMass);
+        var dead = Math.max(0, tree.heartwoodMass);
+        // Areas are proportional to mass, so the radii go as the square root — a
+        // linear split would make the heartwood look far bigger than it is.
+        var heartFrac = Math.sqrt(dead / (dead + live));
+        var barkW = 7, phloemW = 3.5, cambiumW = 2;
+        var woodR = R - barkW - phloemW - cambiumW;
+        var heartR = Math.max(0, woodR * heartFrac);
+
+        var rings = (tree.rings || []).slice(-40);
+        var ringEls = [];
+        if (rings.length) {
+          var total = 0;
+          for (var i = 0; i < rings.length; i++) total += Math.max(0.05, rings[i].widthMm);
+          var acc = 0;
+          for (var j = rings.length - 1; j >= 0; j--) {
+            acc += Math.max(0.05, rings[j].widthMm);
+            // Across the WHOLE wood, not just the sapwood: heartwood is former rings, and
+            // confining them to the living annulus squeezed forty years into a sliver.
+            var rr = woodR * (acc / total);
+            var stressed = rings[j].stress;
+            ringEls.push(h('circle', {
+              key: 'ring' + j, cx: 0, cy: 0, r: rr,
+              fill: 'none',
+              stroke: stressed ? (isContrast ? '#ff6666' : '#b91c1c') : (isContrast ? '#ffffff' : '#5a3b1c'),
+              strokeWidth: stressed ? 1.8 : 0.6,
+              opacity: stressed ? 1 : 0.75
+            }));
+          }
+        }
+
+        var layers = [
+          ['heart', heartR, isContrast ? '#555555' : '#6b4b2a',
+            __alloT('stem.treelab.xs_heart', 'Heartwood — dead, and free to carry')],
+          ['sap', woodR, isContrast ? '#aaaaaa' : '#c89b62',
+            __alloT('stem.treelab.xs_sap', 'Sapwood — living, carries water up')],
+          ['cambium', woodR + cambiumW, tone('#4ade80'),
+            __alloT('stem.treelab.xs_cambium', 'Cambium — the one living layer that makes new wood')],
+          ['phloem', woodR + cambiumW + phloemW, tone('#f59e0b'),
+            __alloT('stem.treelab.xs_phloem', 'Phloem — carries sugar, just inside the bark')],
+          ['bark', R, isContrast ? '#ffffff' : '#4a3524',
+            __alloT('stem.treelab.xs_bark', 'Bark — the outer protection')]
+        ];
+
+        return h('div', { key: 'xs' }, [
+          h('div', { key: 'wrap', style: { display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center' } }, [
+            h('svg', {
+              key: 'svg', viewBox: '-84 -84 168 168',
+              style: { width: 172, height: 172, flex: '0 0 auto', background: T.cardAlt, borderRadius: 10, border: '1px solid ' + T.border },
+              role: 'img',
+              'aria-label': __alloT('stem.treelab.xs_alt', 'Cross-section of the trunk. From the outside in: bark, phloem, cambium, sapwood, heartwood. ')
+                + round(tree.dbhCm, 1) + ' cm across, '
+                + (tree.rings || []).length + ' growth rings, '
+                + round(tree.heartwoodMass, 1) + ' kg of carbon in dead heartwood.'
+            },
+              // Outermost first, so each inner layer paints over the one before it.
+              layers.slice().reverse().map(function (L) {
+                return h('circle', { key: L[0], cx: 0, cy: 0, r: L[1], fill: L[2] });
+              }).concat(ringEls)),
+            h('div', { key: 'key', style: { flex: '1 1 190px', minWidth: 170 } },
+              layers.slice().reverse().map(function (L) {
+                return h('div', { key: L[0], style: { display: 'flex', alignItems: 'flex-start', gap: 7, marginBottom: 5, fontSize: 11, color: T.dim, lineHeight: 1.45 } }, [
+                  h('span', { key: 's', style: { width: 10, height: 10, borderRadius: 2, background: L[2], display: 'inline-block', flex: '0 0 auto', marginTop: 2, border: '1px solid ' + T.border } }),
+                  h('span', { key: 't' }, L[3])
+                ]);
+              }))
+          ]),
+          rings.length ? h('p', { key: 'rn', style: { fontSize: 11, color: T.dim, lineHeight: 1.5, marginTop: 8 } },
+            __alloT('stem.treelab.xs_rings_note', 'The rings are this tree’s own record, newest at the outside. Red rings are years it spent more than it made.')) : null
+        ]);
+      }
+
       function viewTransport() {
         var kids = [];
         var flowUp = Math.round(aperture * 100);
@@ -1874,7 +1951,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           heading(__alloT('stem.treelab.two_pipes', 'Two separate plumbing systems'),
             __alloT('stem.treelab.two_pipes_sub', 'Water goes up one way. Sugar goes wherever it is needed by another. They run side by side and they are not the same tissue.')),
           h('div', { key: 'g', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 10 } }, [
-            h('div', { key: 'x', style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, borderLeft: '4px solid #38bdf8' } }, [
+            h('div', { key: 'x', style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, borderLeft: '4px solid ' + tone('#38bdf8') } }, [
               h('div', { key: 'h', style: { fontWeight: 700, color: T.text, marginBottom: 4 } }, '↑ ' + (atLeast(band, 'g68') ? 'Xylem' : 'Water pipes')),
               h('div', { key: 'b', style: { fontSize: 12, color: T.dim, lineHeight: 1.55 } },
                 atLeast(band, 'g912')
@@ -1887,7 +1964,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
               inDrought && atLeast(band, 'g912') ? h('div', { key: 'cav', style: { marginTop: 6, fontSize: 11, color: T.warn, lineHeight: 1.5 } },
                 __alloT('stem.treelab.tension_note', 'Under drought the column is pulled harder against a drier soil. Push the tension far enough and an air bubble breaks the thread, and that segment of xylem never carries water again.')) : null
             ]),
-            h('div', { key: 'p', style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, borderLeft: '4px solid #f59e0b' } }, [
+            h('div', { key: 'p', style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, borderLeft: '4px solid ' + tone('#f59e0b') } }, [
               h('div', { key: 'h', style: { fontWeight: 700, color: T.text, marginBottom: 4 } }, '↓ ' + (atLeast(band, 'g68') ? 'Phloem' : 'Sugar pipes')),
               h('div', { key: 'b', style: { fontSize: 12, color: T.dim, lineHeight: 1.55 } },
                 atLeast(band, 'g912')
@@ -1904,6 +1981,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             heading(__alloT('stem.treelab.where_sugar', 'Where this year’s sugar is going'),
               __alloT('stem.treelab.where_sugar_sub', 'Straight from the allocation you set on the Grow tab. Phloem has no fixed direction: it runs from wherever sugar IS to wherever it is being spent.')),
             sinkRows()
+          ]));
+
+          kids.push(card([
+            heading(__alloT('stem.treelab.xs_title', 'Inside the trunk'),
+              atLeast(band, 'g68')
+                ? __alloT('stem.treelab.xs_sub_g68', 'Cut across the trunk and the two systems are in different places: phloem in a thin band just under the bark, xylem filling the wood beneath it. The rings are this tree’s own.')
+                : __alloT('stem.treelab.xs_sub_k2', 'A slice through the trunk. Each ring is one year of growing.')),
+            trunkSection()
           ]));
 
           kids.push(card([
