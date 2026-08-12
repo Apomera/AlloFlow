@@ -104,6 +104,36 @@ test.describe('axe', () => {
   }
 });
 
+test.describe('axe: full screen', () => {
+  // The full-screen stage paints its own chrome over the whole viewport instead of
+  // sitting inside the card, so it is the one surface in this tool whose colours do
+  // not come from the surrounding page. A first version hardcoded a navy bar, which is
+  // exactly how a panel disappears in the mode whose entire purpose is being visible.
+  for (const theme of ['light', 'dark', 'contrast'] as Theme[]) {
+    test(`the full-screen bar survives ${theme}`, async ({ page }) => {
+      await mount(page, 'grow', 'g68', theme);
+      await page.locator('button[aria-label="Full screen"]').click();
+      await page.waitForTimeout(700);
+      const state = await page.evaluate(async () => {
+        const res = await (window as any).axe.run('#wrap', { resultTypes: ['violations'] });
+        return {
+          full: !!(window as any).__toolData?.treeLab?.viewerFull,
+          violations: res.violations.flatMap((v: any) => v.nodes.map((n: any) => ({
+            id: v.id, impact: v.impact,
+            why: String(n.failureSummary || '').slice(0, 220).replace(/\s+/g, ' '),
+            html: String(n.html).slice(0, 140).replace(/\s+/g, ' '),
+          }))),
+        };
+      });
+      expect(state.full, 'the full-screen toggle did nothing').toBe(true);
+      const detail = state.violations.length
+        ? '\n' + state.violations.map((v: any) => `    [${v.impact}] ${v.id}: ${v.why}\n      ${v.html}`).join('\n')
+        : '';
+      expect(state.violations, `full screen/${theme}: ${state.violations.length} violation(s)${detail}`).toEqual([]);
+    });
+  }
+});
+
 test.describe('keyboard', () => {
   test('the tab strip is a real tab pattern, not buttons wearing the role', async ({ page }) => {
     await mount(page, 'grow', 'g68', 'light');

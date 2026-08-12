@@ -709,7 +709,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       // into VIS_H and centres it on the shell's fixed lookAt target. dist follows from
       // that budget: the camera is 42 degrees VERTICAL, so fitting 2.6 units needs
       // 1.3/tan(21 deg) = 3.39, and the rest is margin for sway and a wide crown.
-      home: { yaw: 0.62, pitch: 0.42, dist: 4.3 }
+      //
+      // Pitch was 0.42 (24 degrees above horizontal), which is a specimen-on-a-bench
+      // angle: it puts the horizon near the top of the frame, fills three quarters of
+      // the picture with grass and looks DOWN at the tree. Nearer eye level the sky
+      // does most of the work and the tree reads as tall, which is the whole point of
+      // the subject. Tilt-down is still one keypress away for the root cutaway.
+      home: { yaw: 0.62, pitch: 0.20, dist: 4.3 }
     };
     function resolve() {
       if (real) return real;
@@ -740,9 +746,334 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     };
   })();
 
-  // Seasonal foliage colour. Hex only: a canvas or a THREE material cannot resolve
-  // var(--token), and a string like 'var(--x)' is silently ignored rather than
-  // erroring, which is how that class of bug hides.
+  // ── Palettes ──────────────────────────────────────────────────────────────
+  // Hex only, everywhere in this section: a THREE material cannot resolve
+  // var(--token), and a canvas fillStyle silently IGNORES one, leaving the previous
+  // fill in place rather than erroring.
+  var AUTUMN  = ['#d8930f', '#c26a05', '#a8380e', '#9c4707', '#d9a406', '#8f4715', '#e0a41c'];
+  var SPRING  = ['#79c47f', '#8ecb88', '#63b672', '#84c98c', '#9ed494'];
+  var SUMMER  = ['#227a3a', '#1c6b33', '#2a8b45', '#175f2e', '#31954d'];
+  var NEEDLES = ['#1a5c33', '#20693b', '#154e2c', '#257642'];
+  function clusterHex(season, leafType, stressed, i) {
+    if (leafType === 'needle') return stressed ? ['#6b7c2a', '#4d7c0f'][i % 2] : NEEDLES[i % NEEDLES.length];
+    if (season === 'winter') return '#7c6244';
+    if (stressed) return ['#a3541a', '#8a7a30', '#94722a'][i % 3];
+    var pal = season === 'autumn' ? AUTUMN : (season === 'spring' ? SPRING : SUMMER);
+    return pal[i % pal.length];
+  }
+  var BARK = { oak: '#6b4f2a', aspen: '#c9c6b4', willow: '#5b4636', pine: '#7a4b2a', redwood: '#8a4a2f' };
+
+  function mixHex(a, b, t) {
+    var pa = parseInt(a.slice(1), 16), pb = parseInt(b.slice(1), 16);
+    var r = Math.round(((pa >> 16) & 255) * (1 - t) + ((pb >> 16) & 255) * t);
+    var g = Math.round(((pa >> 8) & 255) * (1 - t) + ((pb >> 8) & 255) * t);
+    var bl = Math.round((pa & 255) * (1 - t) + (pb & 255) * t);
+    return '#' + ((1 << 24) | (r << 16) | (g << 8) | bl).toString(16).slice(1);
+  }
+  function rgba(hex, a) {
+    var p = parseInt(hex.slice(1), 16);
+    return 'rgba(' + ((p >> 16) & 255) + ',' + ((p >> 8) & 255) + ',' + (p & 255) + ',' + a + ')';
+  }
+
+  // Deterministic PRNG. Every procedural detail below — bark relief, cloud placement,
+  // the scatter of the distant wood — is seeded from a constant, so the same tree
+  // looks the SAME on every rebuild. A scene that reshuffles itself each time the
+  // season ticks is more distracting than a plain one.
+  function seeded(s) {
+    var a = (s >>> 0) || 1;
+    return function () {
+      a = (a + 0x6d2b79f5) >>> 0;
+      var t = a;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  // Displacement hash keyed on POSITION rather than vertex index. three's
+  // IcosahedronGeometry is NON-indexed, so one corner of the solid appears as several
+  // separate vertices; keying on the index moves them apart and the surface tears
+  // into loose flakes instead of deforming.
+  function hash3(x, y, z, seed) {
+    var h = Math.sin(x * 12.9898 + y * 78.233 + z * 37.719 + seed * 0.137) * 43758.5453;
+    return h - Math.floor(h);
+  }
+
+  // A 2D context, or null. Canvas is unavailable in the SSR render-robustness
+  // harness and can be blocked by hardened browser profiles; every texture below is
+  // optional and the scene falls back to flat colour without it.
+  function canvas2d(w, hh) {
+    try {
+      var cv = document.createElement('canvas');
+      if (!cv || typeof cv.getContext !== 'function') return null;
+      cv.width = w; cv.height = hh;
+      var ctx = cv.getContext('2d');
+      return ctx ? { cv: cv, ctx: ctx } : null;
+    } catch (e) { return null; }
+  }
+
+  // ── Sky ───────────────────────────────────────────────────────────────────
+  // A flat background colour is the single strongest "this is a 3D demo" cue there
+  // is. A real subject stands under a sky that is pale at the horizon and deep
+  // overhead, and it takes its fill light from that whole dome. This paints one,
+  // with clouds, onto a BackSide sphere. A sphere rather than scene.background
+  // because a background texture is screen-space: it would slide with the camera
+  // instead of staying put when the student orbits.
+  var SKY_DAY = {
+    spring: { hi: '#2d6fcc', mid: '#7fbdee', lo: '#e4f2e6', sun: '#fff3d0' },
+    summer: { hi: '#1a63c8', mid: '#6fb4ef', lo: '#e9f3e0', sun: '#fff6d8' },
+    autumn: { hi: '#2b62a6', mid: '#87aed4', lo: '#f7e3ba', sun: '#ffe2a8' },
+    winter: { hi: '#42699c', mid: '#9db6d2', lo: '#eef4fa', sun: '#fdf3e2' }
+  };
+  var SKY_DUSK = {
+    spring: { hi: '#101f3d', mid: '#2c4d7a', lo: '#8e6a55', sun: '#ffc46b' },
+    summer: { hi: '#0d1b36', mid: '#284873', lo: '#9c6f4e', sun: '#ffb95a' },
+    autumn: { hi: '#111a33', mid: '#33456e', lo: '#a76c3c', sun: '#ff9f45' },
+    winter: { hi: '#0e1a30', mid: '#2b3f63', lo: '#6d7d94', sun: '#ffd9a8' }
+  };
+  function skyPalette(season, dark, dry) {
+    var set = dark ? SKY_DUSK : SKY_DAY;
+    var base = set[season] || set.summer;
+    if (!dry) return base;
+    // Drought is DRAWN, not only tabulated. The limiting-factor card, the ring scars
+    // and the sky now tell one story instead of three.
+    return {
+      hi: mixHex(base.hi, '#8a6a3a', 0.30),
+      mid: mixHex(base.mid, '#c9a15a', 0.42),
+      lo: mixHex(base.lo, '#e0c187', 0.52),
+      sun: mixHex(base.sun, '#ff9d3d', 0.45)
+    };
+  }
+  function skyTexture(THREE, pal, cloudHex, cloudy) {
+    // `cloudy` is a PUFF count, not a cloud count: three or four overlapping puffs
+    // make one cloud, which is why the number is in the dozens.
+    var c = canvas2d(512, 256);
+    if (!c) return null;
+    var ctx = c.ctx;
+    // A CanvasTexture is flipY by default, so canvas ROW 0 lands at v = 1, which on a
+    // sphere is the top pole. Paint zenith first.
+    var g = ctx.createLinearGradient(0, 0, 0, 256);
+    g.addColorStop(0.00, pal.hi);
+    g.addColorStop(0.44, pal.mid);
+    g.addColorStop(0.82, pal.lo);
+    g.addColorStop(1.00, pal.lo);
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 512, 256);
+    var rnd = seeded(4211);
+    for (var i = 0; i < cloudy; i++) {
+      var cx = rnd() * 512, cy = 76 + rnd() * 54, rr = 5 + rnd() * 15;
+      var al = 0.30 + rnd() * 0.48;
+      // Drawn three times, at x-512 / x / x+512, so a puff that straddles the wrap
+      // seam continues round the dome instead of being sliced off where u returns to 0.
+      for (var w = -1; w <= 1; w++) {
+        var ox = cx + w * 512;
+        var rg = ctx.createRadialGradient(ox, cy, 0, ox, cy, rr);
+        rg.addColorStop(0.00, rgba(cloudHex, al));
+        rg.addColorStop(0.50, rgba(cloudHex, al * 0.42));
+        rg.addColorStop(1.00, rgba(cloudHex, 0));
+        ctx.fillStyle = rg;
+        ctx.fillRect(ox - rr, cy - rr, rr * 2, rr * 2);
+      }
+    }
+    return new THREE.CanvasTexture(c.cv);
+  }
+  // The sun. There is no post-processing on this shell, so the glow is PAINTED: a
+  // white core inside two falloffs, blended additively over the sky.
+  function sunTexture(THREE, hex) {
+    var c = canvas2d(128, 128);
+    if (!c) return null;
+    var ctx = c.ctx;
+    var g = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+    g.addColorStop(0.00, rgba('#ffffff', 1));
+    g.addColorStop(0.09, rgba(hex, 0.95));
+    g.addColorStop(0.22, rgba(hex, 0.36));
+    g.addColorStop(0.52, rgba(hex, 0.10));
+    g.addColorStop(1.00, rgba(hex, 0));
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 128, 128);
+    return new THREE.CanvasTexture(c.cv);
+  }
+  // A leaf-cluster card, drawn in WHITE on transparent so a per-instance colour can
+  // tint it. Alpha-TESTED rather than blended: the cards then need no depth sorting,
+  // the whole canopy costs one draw call, and they still cast real shadows, because
+  // three copies map + alphaTest onto the depth material.
+  function leafTexture(THREE, needleType) {
+    var c = canvas2d(128, 128);
+    if (!c) return null;
+    var ctx = c.ctx;
+    ctx.clearRect(0, 0, 128, 128);
+    ctx.fillStyle = '#ffffff';
+    ctx.strokeStyle = '#ffffff';
+    var rnd = seeded(1801);
+    if (needleType) {
+      // A fan of needles off one shoot.
+      ctx.lineCap = 'round';
+      ctx.lineWidth = 5.5;
+      ctx.beginPath(); ctx.moveTo(5, 64); ctx.lineTo(122, 64); ctx.stroke();
+      for (var n = 0; n < 40; n++) {
+        var xx = 7 + (n / 39) * 112;
+        var side = (n % 2) ? 1 : -1;
+        var ln = 24 + rnd() * 26;
+        ctx.lineWidth = 3.8 + rnd() * 1.8;
+        ctx.beginPath();
+        ctx.moveTo(xx, 64);
+        // Swept back toward the shoot's base, which is what gives a conifer spray its
+        // direction rather than looking like a bottle brush.
+        ctx.lineTo(xx + ln * (0.45 + rnd() * 0.4), 64 + side * ln);
+        ctx.stroke();
+      }
+    } else {
+      for (var i = 0; i < 8; i++) {
+        var cx = 26 + rnd() * 76, cy = 24 + rnd() * 80;
+        var len = 34 + rnd() * 30, wid = 10 + rnd() * 9, ang = rnd() * 6.2832;
+        ctx.save();
+        ctx.translate(cx, cy); ctx.rotate(ang);
+        ctx.beginPath();
+        ctx.moveTo(0, -len / 2);
+        ctx.quadraticCurveTo(wid, 0, 0, len / 2);
+        ctx.quadraticCurveTo(-wid, 0, 0, -len / 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+    return new THREE.CanvasTexture(c.cv);
+  }
+  // A clump of grass blades rising from the bottom edge of the card, so an upright
+  // quad reads as a tuft. Built the same alpha-tested way as the leaves.
+  function grassTexture(THREE) {
+    var c = canvas2d(64, 64);
+    if (!c) return null;
+    var ctx = c.ctx;
+    ctx.clearRect(0, 0, 64, 64);
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineCap = 'round';
+    var rnd = seeded(5507);
+    for (var i = 0; i < 11; i++) {
+      var x0 = 8 + rnd() * 48;
+      var lean = (rnd() - 0.5) * 30;
+      var top = 6 + rnd() * 26;
+      ctx.lineWidth = 2.2 + rnd() * 1.8;
+      ctx.beginPath();
+      ctx.moveTo(x0, 64);
+      ctx.quadraticCurveTo(x0 + lean * 0.4, (64 + top) / 2, x0 + lean, top);
+      ctx.stroke();
+    }
+    return new THREE.CanvasTexture(c.cv);
+  }
+  // Ground. Mottled, with a contact pool at the centre and a rim that dissolves into
+  // the far ground colour so the lawn disc has no visible edge. The speckles are kept
+  // FINE and low-contrast: a first pass used 8px blobs at 0.55 alpha and, stretched
+  // over a two-metre disc, they read as litter strewn across the lawn.
+  // ONE disc, not a detailed lawn sitting on a plain plate. That earlier arrangement
+  // left a visible ring in the grass wherever the textured disc ended, because a lit
+  // TEXTURED surface and a lit FLAT one of the nominally same colour do not resolve to
+  // the same brightness. `poolFrac` is the contact shadow's radius as a fraction of
+  // the disc, so the pool stays sized to the tree while the ground stays huge.
+  function groundTexture(THREE, near, far, poolFrac) {
+    var c = canvas2d(1024, 1024);
+    if (!c) return null;
+    var ctx = c.ctx;
+    ctx.fillStyle = near;
+    ctx.fillRect(0, 0, 1024, 1024);
+    var rnd = seeded(7717);
+    // Broad patches first, then fine mottle over them: one scale of noise alone reads
+    // as film grain rather than as ground.
+    ctx.globalAlpha = 0.5;
+    for (var j = 0; j < 90; j++) {
+      var px = rnd() * 1024, py = rnd() * 1024, pr = 30 + rnd() * 120;
+      var pg = ctx.createRadialGradient(px, py, 0, px, py, pr);
+      var ph = mixHex(near, rnd() < 0.55 ? '#000000' : far, 0.06 + rnd() * 0.14);
+      pg.addColorStop(0, rgba(ph, 0.75));
+      pg.addColorStop(1, rgba(ph, 0));
+      ctx.fillStyle = pg; ctx.fillRect(px - pr, py - pr, pr * 2, pr * 2);
+    }
+    ctx.globalAlpha = 0.30;
+    for (var i = 0; i < 9000; i++) {
+      var x = rnd() * 1024, y = rnd() * 1024, r = 1 + rnd() * 4.5;
+      ctx.fillStyle = mixHex(near, rnd() < 0.62 ? '#000000' : '#ffffff', 0.03 + rnd() * 0.13);
+      ctx.beginPath(); ctx.arc(x, y, r, 0, 6.2832); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    // CircleGeometry puts its centre at uv 0.5,0.5 — exactly where the trunk stands —
+    // so a soft dark pool here grounds the tree on the frames where the shadow map is
+    // too coarse to.
+    var pr2 = Math.max(10, 512 * poolFrac);
+    var sg = ctx.createRadialGradient(512, 512, pr2 * 0.06, 512, 512, pr2);
+    sg.addColorStop(0, 'rgba(0,0,0,0.30)');
+    sg.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = sg; ctx.fillRect(0, 0, 1024, 1024);
+    // The rim dissolves into the horizon so the world has no visible edge.
+    var eg = ctx.createRadialGradient(512, 512, 360, 512, 512, 512);
+    eg.addColorStop(0, rgba(far, 0));
+    eg.addColorStop(1, rgba(far, 1));
+    ctx.fillStyle = eg; ctx.fillRect(0, 0, 1024, 1024);
+    return new THREE.CanvasTexture(c.cv);
+  }
+
+  // ── Procedural geometry ───────────────────────────────────────────────────
+  // A straight cylinder is the single strongest "computer drawing" cue on a tree.
+  // This builds a limb as ONE cylinder whose vertices are then pushed onto a gentle
+  // curve and given a shallow bark relief: organic shape for the price of one
+  // geometry and no extra draw call.
+  function limbGeom(THREE, len, rBase, rTop, bendX, bendZ, rough, seed, radial) {
+    var seg = rough > 0 ? 7 : 4;
+    var geo = new THREE.CylinderGeometry(rTop, rBase, len, radial || 8, seg, false);
+    var pos = geo.attributes.position;
+    for (var v = 0; v < pos.count; v++) {
+      var x = pos.getX(v), y = pos.getY(v), z = pos.getZ(v);
+      var t = clamp((y + len / 2) / len, 0, 1);
+      if (rough > 0) {
+        var r = Math.sqrt(x * x + z * z);
+        if (r > 1e-6) {
+          var a = Math.atan2(z, x);
+          // Two ripple frequencies fading upward: fluted low down where real bark is
+          // deepest, smooth out toward the twigs.
+          var f = 1 + rough * (0.60 * Math.sin(a * 7 + t * 8.5 + seed)
+                             + 0.40 * Math.sin(a * 3 - t * 4.2 + seed)) * (1 - t * 0.55);
+          x *= f; z *= f;
+        }
+      }
+      // t^1.7 keeps the foot planted and lets the top wander, which is how a stem that
+      // has leaned toward the light for a century actually sits.
+      var k = Math.pow(t, 1.7);
+      pos.setXYZ(v, x + bendX * k, y, z + bendZ * k);
+    }
+    pos.needsUpdate = true;
+    geo.computeVertexNormals();
+    return geo;
+  }
+  // A foliage mass. Lumpy, flat-shaded, and never a sphere: a smooth sphere is
+  // exactly what makes a procedural canopy read as a bunch of balloons.
+  function blobGeom(THREE, r, seed) {
+    var geo = new THREE.IcosahedronGeometry(r, 1);
+    var pos = geo.attributes.position;
+    for (var v = 0; v < pos.count; v++) {
+      var x = pos.getX(v), y = pos.getY(v), z = pos.getZ(v);
+      var f = 0.72 + hash3(x / r, y / r, z / r, seed) * 0.50;
+      pos.setXYZ(v, x * f, y * f * 0.88, z * f);
+    }
+    pos.needsUpdate = true;
+    geo.computeVertexNormals();
+    return geo;
+  }
+  // A conifer tier: a cone with a ragged skirt, so the silhouette breaks up the way a
+  // whorl of branches does instead of reading as a traffic cone.
+  function tierGeom(THREE, r, hgt, seed) {
+    var geo = new THREE.ConeGeometry(r, hgt, 16, 3);
+    var pos = geo.attributes.position;
+    for (var v = 0; v < pos.count; v++) {
+      var x = pos.getX(v), y = pos.getY(v), z = pos.getZ(v);
+      var rr = Math.sqrt(x * x + z * z);
+      if (rr > 1e-6) {
+        var f = 0.80 + hash3(x / r, y / hgt, z / r, seed) * 0.42;
+        x *= f; z *= f;
+      }
+      pos.setXYZ(v, x, y, z);
+    }
+    pos.needsUpdate = true;
+    geo.computeVertexNormals();
+    return geo;
+  }
+
   // ── Scene geometry constants ──────────────────────────────────────────────
   //
   // The shell hard-codes `camera.lookAt(0, 0.30, 0)` and takes a FIXED home distance
@@ -760,38 +1091,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
   var VIS_CENTER_Y = 0.30;      // must match the shell's lookAt target
   var ROOT_FRAC = 0.16;         // share of the budget spent below ground
 
-  // Seasonal foliage. Hex only: a THREE material cannot resolve var(--token) and a
-  // canvas fillStyle silently IGNORES one, leaving the previous fill in place.
-  function foliageHex(season, leafType, stressed) {
-    if (leafType === 'needle') return stressed ? '#4d7c0f' : '#1f6b3a';
-    if (season === 'winter') return '#7c6244';
-    if (season === 'autumn') return stressed ? '#b45309' : '#e08a1e';
-    if (season === 'spring') return '#8fd694';
-    return stressed ? '#79a63a' : '#2f9e4f';
-  }
-  // Autumn does not turn a whole canopy one flat colour, and a single hue across
-  // every cluster is what makes a procedural tree read as plastic. Each cluster gets
-  // a deterministic pick so the same tree looks the same on every rebuild.
-  var AUTUMN = ['#e0a11e', '#d97706', '#c2410c', '#b45309', '#eab308', '#a3541a'];
-  var SPRING = ['#8fd694', '#a7e0a0', '#7cc98a', '#9adba2'];
-  var SUMMER = ['#2f9e4f', '#268a45', '#3aa85b', '#22803f'];
-  function clusterHex(season, leafType, stressed, i) {
-    if (leafType === 'needle') return stressed ? '#4d7c0f' : (i % 2 ? '#1f6b3a' : '#24794170'.slice(0, 7));
-    if (season === 'winter') return '#7c6244';
-    if (stressed) return i % 2 ? '#a3541a' : '#8a7a30';
-    var pal = season === 'autumn' ? AUTUMN : (season === 'spring' ? SPRING : SUMMER);
-    return pal[i % pal.length];
-  }
-  var BARK = { oak: '#6b4f2a', aspen: '#c9c6b4', willow: '#5b4636', pine: '#7a4b2a', redwood: '#8a4a2f' };
-
   function buildTreeScene(THREE, api) {
-    var sp = (api.sceneProps && api.sceneProps.species) || {};
-    var st = (api.sceneProps && api.sceneProps.tree) || {};
-    var season = (api.sceneProps && api.sceneProps.season) || 'summer';
-    var clones = (api.sceneProps && api.sceneProps.clones) || 0;
-    var stressed = !!(api.sceneProps && api.sceneProps.stressed);
+    var props = api.sceneProps || {};
+    var sp = props.species || {};
+    var st = props.tree || {};
+    var season = props.season || 'summer';
+    var clones = props.clones || 0;
+    var stressed = !!props.stressed;
+    var dry = !!props.dry;
+    var reduced = !!props.reduced;
+    var lightLevel = typeof props.light === 'number' ? clamp(props.light, 0, 1) : 0.8;
     var needle = sp.leafType === 'needle';
     var alive = st.alive !== false;
+    // High contrast exists to make every edge legible. Weather, haze and mood light
+    // all work against that, so the whole atmosphere layer is skipped there and the
+    // scene falls back to the flat, maximally readable version.
+    var flat = !!api.contrast;
 
     var meshes = {};
     var picks = [];
@@ -803,12 +1118,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     // roots into pale pink sticks.
     function mat(hex, opts) {
       var o = opts || {};
-      return new THREE.MeshPhongMaterial({
-        color: api.contrast ? 0xffffff : new THREE.Color(hex).getHex(),
-        shininess: api.contrast ? 0 : (o.shininess == null ? 4 : o.shininess),
-        specular: api.contrast ? 0x000000 : (o.specular == null ? 0x140f0a : o.specular),
-        flatShading: !!o.flat
+      var m = new THREE.MeshPhongMaterial({
+        color: flat ? 0xffffff : new THREE.Color(hex).getHex(),
+        shininess: flat ? 0 : (o.shininess == null ? 4 : o.shininess),
+        specular: flat ? 0x000000 : (o.specular == null ? 0x140f0a : o.specular),
+        flatShading: !!o.flat,
+        side: o.side || THREE.FrontSide
       });
+      // A little self-colour so foliage does not go muddy in its own shade. Leaves
+      // TRANSMIT light; a purely reflective material cannot, and that missing
+      // translucency is most of why procedural canopies look like plastic.
+      if (!flat && o.glow) m.emissive = new THREE.Color(hex).multiplyScalar(o.glow);
+      return m;
     }
 
     var heightM = Math.max(0.3, st.heightM || 1);
@@ -838,39 +1159,167 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     // Canopy fullness against a species-typical mature canopy. A seedling gets a
     // tuft; a closed mature crown gets roughly a third of tree height in radius.
     var fullness = clamp(0.55 + 0.55 * Math.pow(leafArea / 400, 0.3), 0.55, 1.15);
-    var crownR = H * (needle ? 0.26 : 0.34) * fullness * (sp.crownWidth || 1);
-    var crownBaseY = H * (needle ? 0.16 : (0.16 + 0.30 * maturity));
+    var crownR = H * (needle ? 0.26 : 0.32) * fullness * (sp.crownWidth || 1);
+    // A mature broadleaf carries a clear BOLE: several metres of bare trunk before the
+    // first limb. Starting the crown at 0.46H buried it, and the tree read as a shrub.
+    var crownBaseY = H * (needle ? 0.16 : (0.20 + 0.36 * maturity));
     var barkHex = BARK[sp.id] || '#6b4f2a';
-    var barkMat = mat(barkHex, { shininess: 2 });
     var bare = (season === 'winter' && !needle);
+    var weeping = sp.id === 'willow';
 
-    // ── Trunk: tapered, with a root flare. A straight cylinder is the single
-    //    strongest "this is a computer drawing" cue on a tree. ──
+    // ── Light direction. The sun's HEIGHT follows the light slider, so turning the
+    //    light down no longer just changes a number: the sun sinks toward the
+    //    horizon, the shadows stretch, and the whole scene goes long and orange. ──
+    var sunEl = 0.20 + 0.62 * lightLevel;                  // ~11 deg to ~47 deg
+    var sunAz = 0.85 + (season === 'winter' ? 0.45 : 0) - (season === 'summer' ? 0.18 : 0);
+    var sunDir = new THREE.Vector3(
+      Math.cos(sunEl) * Math.sin(sunAz), Math.sin(sunEl), Math.cos(sunEl) * Math.cos(sunAz)
+    ).normalize();
+    var pal = skyPalette(season, !!api.dark, dry);
+    // A low sun reddens everything, which is most of what makes late light beautiful.
+    var sunHex = mixHex(pal.sun, '#ff8a3c', clamp(1 - lightLevel, 0, 1) * 0.6);
+
+    var groundNear, groundFar;
+    if (season === 'winter') { groundNear = api.dark ? '#7b8ca6' : '#d3e0ee'; groundFar = api.dark ? '#5a6a84' : '#bccddf'; }
+    else if (dry)            { groundNear = api.dark ? '#6b5c3e' : '#c3ab6c'; groundFar = api.dark ? '#4a3f2b' : '#a28d57'; }
+    else if (season === 'autumn') { groundNear = api.dark ? '#55502c' : '#8a8b4c'; groundFar = api.dark ? '#464426' : '#7c7d44'; }
+    else { groundNear = api.dark ? '#3d5230' : '#688f4d'; groundFar = api.dark ? '#33452a' : '#5c8144'; }
+
+    // ── Sky dome, sun, fog ────────────────────────────────────────────────
+    var sky = null;
+    if (!flat) {
+      var cloudHex = api.dark ? mixHex(pal.mid, '#ffd9a8', 0.35) : '#ffffff';
+      var skyTex = skyTexture(THREE, pal, cloudHex, season === 'winter' ? 210 : 150);
+      sky = new THREE.Mesh(
+        new THREE.SphereGeometry(42, 24, 16),
+        new THREE.MeshBasicMaterial({
+          map: skyTex || null,
+          color: skyTex ? 0xffffff : new THREE.Color(pal.mid).getHex(),
+          side: THREE.BackSide, fog: false, depthTest: false, depthWrite: false
+        })
+      );
+      // Drawn first with depth off and never written to: the classic skybox setup, so
+      // every other object in the scene simply paints over it.
+      sky.renderOrder = -1000;
+      group.add(sky);
+      meshes.sky = sky;
+
+      api.scene.background = new THREE.Color(pal.lo);
+      // The shell fogs 5.2 to 11.0, tuned for a compact object on a bench. Push it
+      // out so the tree itself stays crisp and only the distant wood dissolves.
+      api.scene.fog = new THREE.Fog(new THREE.Color(mixHex(pal.lo, pal.mid, 0.30)).getHex(), 14, 62);
+
+      var sunTex = sunTexture(THREE, sunHex);
+      if (sunTex) {
+        var sunSprite = new THREE.Sprite(new THREE.SpriteMaterial({
+          map: sunTex, transparent: true, depthTest: false, depthWrite: false,
+          fog: false, blending: THREE.AdditiveBlending, opacity: api.dark ? 0.95 : 0.8
+        }));
+        sunSprite.scale.setScalar(10);
+        sunSprite.position.copy(sunDir).multiplyScalar(26);
+        sunSprite.renderOrder = -999;
+        group.add(sunSprite);
+        meshes.sun = sunSprite;
+      }
+
+      // ── Lighting. The shell lights a workbench: ambient 0.44 under a 0.92 key,
+      //    deliberately flat so no part of a diagram can hide in shadow. Outdoors
+      //    that flatness is precisely what makes foliage read as plastic. Drop the
+      //    ambient to almost nothing, aim the key at the sun we just drew, and let a
+      //    hemisphere light do the filling — which is also what tints shaded leaves
+      //    blue from the sky above and earth-brown from the ground below. ──
+      //
+      //    These four numbers have to be read TOGETHER, because MeshPhong sums them:
+      //    the first attempt left the shell's ambient in place and added a 0.85
+      //    hemisphere under a 1.5 key, which put lit surfaces past 2.5x their own
+      //    colour and turned every green in the scene fluorescent.
+      var keyLight = null;
+      api.scene.traverse(function (o) {
+        if (o.isAmbientLight) o.intensity = 0.13;
+        else if (o.isDirectionalLight) {
+          if (o.castShadow && !keyLight) keyLight = o;
+          else o.intensity *= 0.34;
+        }
+      });
+      if (keyLight) {
+        keyLight.color.set(new THREE.Color(sunHex));
+        keyLight.intensity = 0.78 + 0.40 * lightLevel;
+        keyLight.position.copy(sunDir).multiplyScalar(7);
+        // The shell sizes its shadow frustum +-3.2 to cover a whole engine bay. The
+        // tree occupies barely a third of that, so two thirds of every texel was
+        // being spent on empty grass and the leaf shadows came back as chunks.
+        if (keyLight.shadow) {
+          // Same texel budget as the shell, spent on a third of the area: 1024 over
+          // +-2.1 is half again as sharp as 1024 over +-3.2, and a 2048 map costs four
+          // times as much every frame for a shadow nobody could tell apart. The shadow
+          // pass re-renders the whole scene, and this one has ~1000 alpha-tested cards
+          // in it, so that multiplier is the single most expensive knob here.
+          keyLight.shadow.mapSize.width = 1024;
+          keyLight.shadow.mapSize.height = 1024;
+          var scam = keyLight.shadow.camera;
+          scam.left = -2.1; scam.right = 2.1; scam.top = 2.1; scam.bottom = -2.1;
+          scam.updateProjectionMatrix();
+          if (keyLight.shadow.map) { keyLight.shadow.map.dispose(); keyLight.shadow.map = null; }
+        }
+      }
+      group.add(new THREE.HemisphereLight(
+        new THREE.Color(pal.mid).getHex(),
+        new THREE.Color(mixHex(groundNear, '#4a3a24', 0.35)).getHex(),
+        api.dark ? 0.26 : 0.40
+      ));
+    }
+
+    // ── Trunk: curved, tapered, fluted, with a root flare. ──
+    var barkMat = mat(barkHex, { shininess: 2, specular: 0x1a120a });
     var trunkGroup = new THREE.Group();
-    var trunkTopR = trunkR * (needle ? 0.30 : 0.42);
-    var trunkH = needle ? H : Math.min(H, crownBaseY + crownR * 0.85);
-    var trunk = new THREE.Mesh(new THREE.CylinderGeometry(trunkTopR, trunkR, trunkH, 14, 1), barkMat);
+    var trunkTopR = trunkR * (needle ? 0.13 : 0.42);
+    var trunkH = needle ? H * 0.86 : Math.min(H, crownBaseY + crownR * 0.85);
+    var leanAmt = trunkH * (weeping ? 0.055 : 0.030);
+    var trunk = new THREE.Mesh(
+      limbGeom(THREE, trunkH, trunkR, trunkTopR, leanAmt * 0.8, -leanAmt * 0.45, 0.11, 11, 16),
+      barkMat);
     trunk.position.y = trunkH / 2;
     if (api.wantShadow) { trunk.castShadow = true; trunk.receiveShadow = true; }
     trunkGroup.add(trunk);
     picks.push(trunk);
 
     // Basal flare — a short, much wider cone buried at the foot of the trunk.
-    var flare = new THREE.Mesh(new THREE.CylinderGeometry(trunkR, trunkR * 2.1, H * 0.075, 14), barkMat);
-    flare.position.y = H * 0.036;
+    var flare = new THREE.Mesh(tierGeom(THREE, trunkR * 1.55, H * 0.065, 5),
+      mat(mixHex(barkHex, '#1d140c', 0.30), { shininess: 1, specular: 0x1a120a }));
+    flare.position.y = H * 0.031;
+    if (api.wantShadow) flare.castShadow = true;
     trunkGroup.add(flare);
 
     // ── Branches. Drawn for every tree, but they only READ on a bare winter
-    //    broadleaf; in leaf they are the armature the clusters hang from. ──
+    //    broadleaf; in leaf they are the armature the foliage hangs from. ──
     var branchTips = [];
+    var UP = new THREE.Vector3(0, 1, 0);
+    var DOWN = new THREE.Vector3(0, -1, 0);
     function branch(depth, origin, dir, len, rad) {
-      if (depth <= 0 || len < H * 0.012) return;
-      var geo = new THREE.CylinderGeometry(rad * 0.55, rad, len, 6);
-      var m = new THREE.Mesh(geo, barkMat);
-      var end = origin.clone().add(dir.clone().multiplyScalar(len));
-      m.position.copy(origin.clone().add(end).multiplyScalar(0.5));
-      m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().normalize());
+      if (depth <= 0 || len < H * (bare ? 0.006 : 0.010)) return;
+      var d = dir.clone().normalize();
+      var q = new THREE.Quaternion().setFromUnitVectors(UP, d);
+      // Every branch ARCS. It leaves the trunk steeply and levels off under its own
+      // weight, which is the difference between a tree and a candelabra. The bend has
+      // to be expressed in the limb's OWN frame, so world-down is projected
+      // perpendicular to the branch axis and then rotated back.
+      var wd = DOWN.clone().addScaledVector(d, -DOWN.dot(d));
+      if (wd.lengthSq() > 1e-8) wd.normalize(); else wd.set(0, 0, 0);
+      var lb = wd.clone().applyQuaternion(q.clone().conjugate());
+      var droop = len * (weeping ? (0.34 + 0.20 * (3 - depth)) : (0.13 + 0.08 * (3 - depth)));
+      var bx = lb.x * droop, bz = lb.z * droop;
+      var m = new THREE.Mesh(
+        limbGeom(THREE, len, rad, rad * 0.5, bx, bz, depth >= 2 ? 0.08 : 0,
+          17 + depth * 7 + Math.round(len * 997), depth >= 2 ? 8 : 5),
+        barkMat);
+      m.position.copy(origin).addScaledVector(d, len / 2);
+      m.quaternion.copy(q);
+      if (api.wantShadow) m.castShadow = true;
       trunkGroup.add(m);
+      // The tip is the far END of the curve, not of the straight axis. Hanging
+      // foliage off the axis end left every cluster floating clear of its branch.
+      var end = origin.clone().addScaledVector(d, len)
+        .add(new THREE.Vector3(bx, 0, bz).applyQuaternion(q));
       if (depth === 1) branchTips.push(end);
       var n = depth > 1 ? 3 : 0;
       for (var i = 0; i < n; i++) {
@@ -879,89 +1328,222 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         var ang = i * 2.39996 + depth * 1.7;
         var spread = 0.58 + (i % 2) * 0.22;
         // Each order rises less steeply than its parent, so the outer twigs level off
-        // and droop instead of every branch pointing at the sky. Uniform lift was
-        // what made the bare winter tree read as a candelabra.
-        var lift = Math.max(0.06, dir.y * 0.62 - 0.1);
+        // instead of every branch pointing at the sky.
+        var lift = Math.max(0.06, d.y * 0.62 - 0.1);
         var nd = new THREE.Vector3(
-          dir.x * 0.5 + Math.cos(ang) * spread,
-          lift,
-          dir.z * 0.5 + Math.sin(ang) * spread
+          d.x * 0.5 + Math.cos(ang) * spread, lift, d.z * 0.5 + Math.sin(ang) * spread
         ).normalize();
-        branch(depth - 1, end, nd, len * (0.58 + (i % 3) * 0.07), rad * 0.6);
+        branch(depth - 1, end, nd, len * (0.58 + (i % 3) * 0.07), rad * (bare ? 0.48 : 0.6));
       }
     }
     if (!needle) {
       // A bare tree IS its branch structure, so winter earns a third order of twigs.
-      // In leaf that would be 45 hidden tips and 45 spheres hung off them.
-      var orders = bare ? 3 : 2;
-      var nPrimary = bare ? 6 : 5;
+      // In leaf that would be 45 hidden tips and 45 masses hung off them.
+      var orders = bare ? 4 : 2;
+      var nPrimary = 6;
       for (var b = 0; b < nPrimary; b++) {
         var a0 = b * 2.39996;
-        // Spread the origins along the trunk rather than clustering them at one
-        // fork height, and vary reach so no two primaries are the same length.
-        var startY = crownBaseY - H * 0.06 + (b % 4) * H * 0.085;
-        var lean = 0.58 + (b % 3) * 0.12;
+        // Spread the origins along the trunk rather than clustering them at one fork
+        // height, and vary reach so no two primaries are the same length.
+        var startY = crownBaseY - H * 0.05 + (b % 5) * H * 0.105;
+        var lean = 0.50 + (b % 4) * 0.17;
         var dir0 = new THREE.Vector3(Math.cos(a0) * 0.74, lean, Math.sin(a0) * 0.74).normalize();
         branch(orders, new THREE.Vector3(0, startY, 0), dir0,
-          crownR * (0.74 + (b % 3) * 0.13), trunkR * 0.52);
+          crownR * (0.74 + (b % 3) * 0.13), trunkR * (bare ? 0.42 : 0.52));
       }
     }
     meshes.trunk = trunkGroup;
     group.add(trunkGroup);
 
-    // ── Crown ──
+    // ── Crown ─────────────────────────────────────────────────────────────
+    // Two layers, which is how a canopy is built in any game engine and the reason
+    // the first pass read as a bunch of balloons:
+    //   1. dark inner MASSES, which give the crown its body, its shadow and something
+    //      other than sky behind the gaps;
+    //   2. an outer layer of alpha-tested LEAF CARDS, which is what actually breaks
+    //      the silhouette into something the eye accepts as foliage.
+    // The cards are one InstancedMesh, so a three-hundred-card canopy is one draw call.
     var crownGroup = new THREE.Group();
     var crownTopY = crownBaseY + crownR * (needle ? 0 : 1.5);
+    var foliage = [];          // inner masses, for per-mass wind
+    var cardSpec = [];         // {p, sc, q, phase, hue}
+
+    function addMass(p, r, i) {
+      // Deliberately DARKER than the leaf layer in front of it. An inner mass painted
+      // the same green as the cards flattens the crown into one silhouette again.
+      var m = new THREE.Mesh(blobGeom(THREE, r, i * 31 + 7),
+        mat(mixHex(clusterHex(season, sp.leafType, stressed, i), '#0b2412', 0.56),
+          { shininess: 3, specular: 0x0a1f10, flat: true }));
+      m.position.copy(p);
+      if (api.wantShadow) m.castShadow = true;
+      crownGroup.add(m);
+      picks.push(m);
+      foliage.push({ m: m, base: p.clone(), phase: (i % 9) * 0.71, h: clamp(p.y / Math.max(0.001, H), 0, 1) });
+      if (p.y + r > crownTopY) crownTopY = p.y + r;
+      return m;
+    }
+    // Scatter leaf cards over the shell of a mass. Facing OUTWARD from the cluster
+    // centre with a random twist, so they catch the sun as a surface does rather than
+    // as a cloud of randomly angled flakes.
+    function scatterCards(centre, r, n, seed, hueBase) {
+      var rnd = seeded(seed);
+      for (var i = 0; i < n; i++) {
+        // Golden-angle spiral on the sphere: an even shell, where uniform random
+        // leaves visible clumps and bald patches at these counts.
+        var u = (i + 0.5) / n;
+        var phi = Math.acos(1 - 2 * u);
+        var th = i * 2.39996;
+        var dir = new THREE.Vector3(
+          Math.sin(phi) * Math.cos(th), Math.cos(phi) * 0.85, Math.sin(phi) * Math.sin(th));
+        var p = centre.clone().addScaledVector(dir, r * (0.78 + rnd() * 0.42));
+        var dummy = new THREE.Object3D();
+        dummy.position.copy(p);
+        dummy.lookAt(p.clone().addScaledVector(dir, 1));   // PlaneGeometry faces +Z
+        dummy.rotateZ(rnd() * 6.2832);
+        dummy.rotateX((rnd() - 0.5) * 1.1);
+        cardSpec.push({
+          p: p, sc: r * (0.66 + rnd() * 0.40), q: dummy.quaternion.clone(),
+          phase: rnd() * 6.2832, hue: hueBase + i,
+          // How much sky this card faces. Foliage is not one green: the top of a crown
+          // is bleached by full sun and the underside sits in its own shade, and
+          // carrying that gradient is most of what separates a canopy from a hedge.
+          up: clamp(dir.y * 0.85 + 0.15, -1, 1)
+        });
+        if (p.y + r * 0.5 > crownTopY) crownTopY = p.y + r * 0.5;
+      }
+    }
+
+    // A weeping willow's signature is not its branches, it is the long pendulous
+    // SHOOT hanging off each one. Without these the species renders as an oak with a
+    // slightly droopier limb, which is exactly what the first pass produced.
+    function hangStrands(tip, r, k, hueBase) {
+      var rnd = seeded(k * 613 + 41);
+      var reach = Math.min(crownR * 1.7, Math.max(0, tip.y - H * 0.12));
+      if (reach < r * 0.6) return;
+      for (var w = 0; w < 3; w++) {
+        var wa = (k * 2.1) + w * 2.39996;
+        var out = new THREE.Vector3(Math.cos(wa), 0, Math.sin(wa)).multiplyScalar(r * (0.3 + rnd() * 0.5));
+        var len = reach * (0.55 + rnd() * 0.45);
+        var n = 7;
+        for (var q = 0; q < n; q++) {
+          var f = (q + 0.6) / n;
+          var p = new THREE.Vector3(
+            tip.x + out.x * Math.pow(f, 0.5),
+            tip.y - len * f,
+            tip.z + out.z * Math.pow(f, 0.5));
+          var dd = new THREE.Object3D();
+          dd.position.copy(p);
+          dd.lookAt(p.clone().add(new THREE.Vector3(Math.cos(wa), 0.15, Math.sin(wa))));
+          dd.rotateZ((rnd() - 0.5) * 0.5);
+          cardSpec.push({
+            p: p, sc: r * (0.30 + rnd() * 0.16), q: dd.quaternion.clone(),
+            phase: rnd() * 6.2832, hue: hueBase + q + w,
+            up: -0.25,
+            // Whole strands swing, and they swing far more than a rigid twig does.
+            swing: 1 + f * 2.2
+          });
+        }
+      }
+    }
 
     if (needle) {
-      // Stacked tiers, narrowing upward, with the leader poking out of the top.
+      // Stacked ragged tiers, narrowing upward, with the leader poking out of the top.
       var tiers = Math.max(3, sp.tiers || 5);
-      var coneBase = H * 0.16;
+      var coneBase = H * (0.13 + 0.16 * maturity);
       var coneTop = H * 1.02;   // the top tier must CLOTHE the leader, not sit under it
-      for (var t = 0; t < tiers; t++) {
-        var f = t / tiers;
-        var y0 = coneBase + (coneTop - coneBase) * f * 0.70;
-        var ch = (coneTop - y0) * (t === tiers - 1 ? 1.0 : 0.66);
-        var cr = crownR * (1 - f * 0.66);
-        var cone = new THREE.Mesh(
-          new THREE.ConeGeometry(cr, ch, 12, 1),
-          mat(clusterHex(season, 'needle', stressed, t), { shininess: 3, flat: true })
-        );
-        cone.position.y = y0 + ch * (t === tiers - 1 ? 0.5 : 0.42);
+      for (var t2 = 0; t2 < tiers; t2++) {
+        var f2 = t2 / tiers;
+        var y0 = coneBase + (coneTop - coneBase) * f2 * 0.70;
+        var ch = (coneTop - y0) * (t2 === tiers - 1 ? 1.0 : 0.66);
+        var cr = crownR * (1 - f2 * 0.66);
+        var coneR = cr * 0.84;   // the mass sits inside the spray shell
+        var cone = new THREE.Mesh(tierGeom(THREE, coneR, ch, t2 * 13 + 3),
+          mat(mixHex(clusterHex(season, 'needle', stressed, t2), '#04180f', 0.62),
+            { shininess: 2, specular: 0x0a1f10, flat: true }));
+        cone.position.y = y0 + ch * (t2 === tiers - 1 ? 0.5 : 0.42);
         if (api.wantShadow) cone.castShadow = true;
         crownGroup.add(cone);
         picks.push(cone);
+        foliage.push({ m: cone, base: cone.position.clone(), phase: t2 * 0.8, h: clamp(cone.position.y / Math.max(0.001, H), 0, 1) });
+        // Needle sprays around the skirt of each tier, where a conifer's foliage
+        // actually is. Scattering them through the cone body would hide them inside it.
+        var rimN = Math.max(26, Math.round(96 * (cr / Math.max(0.001, crownR))));
+        var rrnd = seeded(t2 * 71 + 5);
+        for (var rc = 0; rc < rimN; rc++) {
+          var ra2 = rc * 2.39996 + t2;
+          // Anywhere on the cone's flank, not just its hem: v is the fraction of the
+          // way up the tier, and the radius narrows with it exactly as the cone does.
+          var vv = rrnd();
+          var pr = cr * (1 - vv) * (0.92 + rrnd() * 0.30);
+          var py = cone.position.y - ch * 0.46 + ch * vv * 0.98;
+          var pp = new THREE.Vector3(Math.cos(ra2) * pr, py, Math.sin(ra2) * pr);
+          var dd = new THREE.Object3D();
+          dd.position.copy(pp);
+          // Sprays hang OUT and DOWN off the branch they sit on.
+          dd.lookAt(pp.clone().add(new THREE.Vector3(Math.cos(ra2), -0.55, Math.sin(ra2))));
+          dd.rotateZ((rrnd() - 0.5) * 1.0);
+          cardSpec.push({
+            p: pp, sc: cr * (0.46 + rrnd() * 0.30), q: dd.quaternion.clone(),
+            phase: rrnd() * 6.2832, hue: t2 * 3 + rc,
+            // Sun-bleached on top, deep in shade beneath, same as a broadleaf.
+            up: clamp(vv * 1.3 - 0.35, -1, 1)
+          });
+        }
       }
       crownTopY = coneTop;
     } else if (!bare) {
-      // Clusters at branch tips plus a filling core. Four huge lobes read as
-      // broccoli; a dozen smaller masses at real branch ends reads as a canopy.
       var ci = 0;
       for (var k = 0; k < branchTips.length; k++) {
         var tip = branchTips[k];
-        var cr2 = crownR * (0.42 + ((k * 7) % 5) / 16);
-        var sph = new THREE.Mesh(
-          new THREE.SphereGeometry(cr2, 10, 8),
-          mat(clusterHex(season, sp.leafType, stressed, ci++), { shininess: 3 })
-        );
-        sph.position.copy(tip);
-        if (api.wantShadow) sph.castShadow = true;
-        crownGroup.add(sph);
-        picks.push(sph);
-        if (tip.y + cr2 > crownTopY) crownTopY = tip.y + cr2;
+        var cr2 = crownR * (0.30 + ((k * 7) % 5) / 21);
+        addMass(tip, cr2 * 0.60, ci);
+        scatterCards(tip, cr2, weeping ? 26 : 40, k * 977 + 13, ci);
+        if (weeping) hangStrands(tip, cr2, k, ci);
+        ci += 4;
       }
-      // Core mass so the canopy is not a ring of separate balls.
-      var core = new THREE.Mesh(
-        new THREE.SphereGeometry(crownR * 0.78, 12, 9),
-        mat(clusterHex(season, sp.leafType, stressed, ci++), { shininess: 3 })
-      );
-      core.position.y = crownBaseY + crownR * 0.72;
-      if (api.wantShadow) core.castShadow = true;
-      crownGroup.add(core);
-      picks.push(core);
-      if (core.position.y + crownR * 0.78 > crownTopY) crownTopY = core.position.y + crownR * 0.78;
+      // Core mass, so the canopy is not a ring of separate clumps around a hole.
+      var corePt = new THREE.Vector3(0, crownBaseY + crownR * 0.78, 0);
+      addMass(corePt, crownR * 0.64, ci);
+      scatterCards(corePt, crownR * 0.90, 96, 4441, ci);
     } else {
       crownTopY = H;   // bare winter: the branches ARE the silhouette
+    }
+
+    // ── The leaf layer itself. Alpha-TESTED, never blended: blended foliage needs a
+    //    back-to-front sort that no instanced mesh can give you, and the usual symptom
+    //    is leaves winking in and out as the camera turns. ──
+    var cards = null, cardMat = null;
+    var leafTex = cardSpec.length ? leafTexture(THREE, needle) : null;
+    if (leafTex) {
+      cardMat = new THREE.MeshPhongMaterial({
+        map: leafTex, alphaTest: 0.42, transparent: false, side: THREE.DoubleSide,
+        color: 0xffffff, shininess: flat ? 0 : 9,
+        specular: flat ? 0x000000 : 0x16331d
+      });
+      if (!flat) cardMat.emissive = new THREE.Color(0x0b1f10);
+      cards = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), cardMat, cardSpec.length);
+      if (api.wantShadow) { cards.castShadow = true; cards.receiveShadow = true; }
+      var cdummy = new THREE.Object3D();
+      var ccol = new THREE.Color();
+      for (var cs = 0; cs < cardSpec.length; cs++) {
+        var spec = cardSpec[cs];
+        cdummy.position.copy(spec.p);
+        cdummy.quaternion.copy(spec.q);
+        cdummy.scale.setScalar(spec.sc);
+        cdummy.updateMatrix();
+        cards.setMatrixAt(cs, cdummy.matrix);
+        var chex = clusterHex(season, sp.leafType, stressed, spec.hue);
+        if (!flat) {
+          var u2 = spec.up == null ? 0 : spec.up;
+          chex = u2 >= 0 ? mixHex(chex, season === 'autumn' ? '#ffd25e' : '#cdec8e', u2 * 0.48)
+                         : mixHex(chex, '#0a2413', -u2 * 0.26);
+        }
+        ccol.set(flat ? '#ffffff' : chex);
+        cards.setColorAt(cs, ccol);
+      }
+      cards.instanceMatrix.needsUpdate = true;
+      if (cards.instanceColor) cards.instanceColor.needsUpdate = true;
+      crownGroup.add(cards);
     }
     meshes.crown = crownGroup;
     group.add(crownGroup);
@@ -981,12 +1563,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     for (var ri = 0; ri < 7; ri++) {
       var ra = ri * 2.39996;
       var rl = rootDepth * (1.15 + (ri % 3) * 0.4);
-      var rg = new THREE.CylinderGeometry(trunkR * 0.10, trunkR * 0.42, rl, 6);
-      var rm = new THREE.Mesh(rg, rootMat);
-      // Steeply downward, so they descend rather than splay sideways.
       var rdir = new THREE.Vector3(Math.cos(ra) * 0.55, -0.84, Math.sin(ra) * 0.55).normalize();
-      rm.position.copy(rdir.clone().multiplyScalar(rl * 0.5));
-      rm.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), rdir);
+      var rq = new THREE.Quaternion().setFromUnitVectors(UP, rdir);
+      var rwd = new THREE.Vector3(Math.cos(ra), 0, Math.sin(ra));
+      rwd.addScaledVector(rdir, -rwd.dot(rdir)).normalize();
+      var rlb = rwd.applyQuaternion(rq.clone().conjugate()).multiplyScalar(rl * 0.35);
+      var rm = new THREE.Mesh(
+        limbGeom(THREE, rl, trunkR * 0.42, trunkR * 0.10, rlb.x, rlb.z, 0.06, 23 + ri, 6), rootMat);
+      rm.position.copy(rdir).multiplyScalar(rl * 0.5);
+      rm.quaternion.copy(rq);
       rm.renderOrder = 3;
       rootGroup.add(rm);
       picks.push(rm);
@@ -997,55 +1582,259 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     // ── Clonal offspring: separate stems joined underground. The join is drawn
     //    because it IS the lesson. ──
     var cloneGroup = new THREE.Group();
+    var cloneCards = [];
     var nClones = clamp(clones, 0, 6);
-    for (var c = 0; c < nClones; c++) {
-      var cang = c * 2.39996 + 0.6;
-      var cdist = rootSpread * (1.15 + (c % 3) * 0.3);
-      var chh = H * (0.15 + ((c * 7) % 5) / 42);
+    for (var c2 = 0; c2 < nClones; c2++) {
+      var cang = c2 * 2.39996 + 0.6;
+      var cdist = rootSpread * (1.15 + (c2 % 3) * 0.3);
+      var chh = H * (0.15 + ((c2 * 7) % 5) / 42);
       var cr3 = trunkR * 0.62;
-      var cstem = new THREE.Mesh(new THREE.CylinderGeometry(cr3 * 0.55, cr3, chh, 8), barkMat);
+      var cstem = new THREE.Mesh(
+        limbGeom(THREE, chh, cr3, cr3 * 0.55, chh * 0.05, chh * 0.03, 0.07, 31 + c2, 8), barkMat);
       cstem.position.set(Math.cos(cang) * cdist, chh / 2, Math.sin(cang) * cdist);
+      if (api.wantShadow) cstem.castShadow = true;
       cloneGroup.add(cstem);
       picks.push(cstem);
       if (!bare) {
         var ctop = new THREE.Mesh(
-          needle ? new THREE.ConeGeometry(chh * 0.52, chh * 1.15, 10)
-                 : new THREE.SphereGeometry(chh * 0.48, 10, 8),
-          mat(clusterHex(season, sp.leafType, stressed, c + 3), { shininess: 3 })
-        );
+          needle ? tierGeom(THREE, chh * 0.44, chh * 1.15, c2 * 9 + 2)
+                 : blobGeom(THREE, chh * 0.36, c2 * 17 + 5),
+          // Same rule as the parent crown: the geometry is the dark mass BEHIND the
+          // leaves, not the thing you look at. Left bright, it reads as a green crystal
+          // with a few leaves stuck on.
+          mat(mixHex(clusterHex(season, sp.leafType, stressed, c2 + 3), '#0b2412', 0.56),
+            { shininess: 3, specular: 0x0a1f10, flat: true }));
         ctop.position.set(Math.cos(cang) * cdist, chh * (needle ? 1.15 : 1.12), Math.sin(cang) * cdist);
+        if (api.wantShadow) ctop.castShadow = true;
         cloneGroup.add(ctop);
+        foliage.push({ m: ctop, base: ctop.position.clone(), phase: c2 * 1.3 + 0.4, h: 0.5 });
+        var crnd = seeded(c2 * 331 + 19);
+        var ctopR = chh * 0.52;
+        for (var cc = 0; cc < 20; cc++) {
+          var cu = (cc + 0.5) / 20;
+          var cphi = Math.acos(1 - 2 * cu);
+          var cdir = new THREE.Vector3(
+            Math.sin(cphi) * Math.cos(cc * 2.39996), Math.cos(cphi) * 0.85, Math.sin(cphi) * Math.sin(cc * 2.39996));
+          var cp = ctop.position.clone().addScaledVector(cdir, ctopR * (0.72 + crnd() * 0.44));
+          var cdd = new THREE.Object3D();
+          cdd.position.copy(cp);
+          cdd.lookAt(cp.clone().addScaledVector(cdir, 1));
+          cdd.rotateZ(crnd() * 6.2832);
+          cloneCards.push({
+            p: cp, sc: ctopR * (0.55 + crnd() * 0.35), q: cdd.quaternion.clone(),
+            hue: c2 * 3 + cc, up: clamp(cdir.y * 0.85 + 0.15, -1, 1)
+          });
+        }
       }
       // The root connection that carries a pathogen to every copy at once.
       var link = new THREE.Mesh(new THREE.CylinderGeometry(trunkR * 0.13, trunkR * 0.13, cdist, 5), rootMat);
       var ldir = new THREE.Vector3(Math.cos(cang), -0.1, Math.sin(cang)).normalize();
       link.position.set(Math.cos(cang) * cdist * 0.5, -rootDepth * 0.3, Math.sin(cang) * cdist * 0.5);
-      link.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), ldir);
+      link.quaternion.setFromUnitVectors(UP, ldir);
       link.renderOrder = 3;
       cloneGroup.add(link);
+    }
+    if (cloneCards.length && !flat) {
+      var cloneTex = leafTexture(THREE, needle);
+      if (cloneTex) {
+        var cloneMat = new THREE.MeshPhongMaterial({
+          map: cloneTex, alphaTest: 0.42, transparent: false, side: THREE.DoubleSide,
+          color: 0xffffff, shininess: 9, specular: 0x16331d
+        });
+        cloneMat.emissive = new THREE.Color(0x0b1f10);
+        var cMesh = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), cloneMat, cloneCards.length);
+        if (api.wantShadow) cMesh.castShadow = true;
+        var cdum = new THREE.Object3D();
+        var ccol2 = new THREE.Color();
+        for (var ck = 0; ck < cloneCards.length; ck++) {
+          var csp = cloneCards[ck];
+          cdum.position.copy(csp.p);
+          cdum.quaternion.copy(csp.q);
+          cdum.scale.setScalar(csp.sc);
+          cdum.updateMatrix();
+          cMesh.setMatrixAt(ck, cdum.matrix);
+          var chx = clusterHex(season, sp.leafType, stressed, csp.hue);
+          chx = csp.up >= 0 ? mixHex(chx, season === 'autumn' ? '#ffd25e' : '#cdec8e', csp.up * 0.48)
+                            : mixHex(chx, '#0a2413', -csp.up * 0.26);
+          ccol2.set(chx);
+          cMesh.setColorAt(ck, ccol2);
+        }
+        cMesh.instanceMatrix.needsUpdate = true;
+        if (cMesh.instanceColor) cMesh.instanceColor.needsUpdate = true;
+        cloneGroup.add(cMesh);
+      }
     }
     meshes.clones = cloneGroup;
     group.add(cloneGroup);
 
-    // Ground: a cutaway disc at y=0. Semi-transparent so the roots below stay
-    // legible, but opaque enough to read as a surface the tree stands ON.
-    var groundR = Math.max(rootSpread * 1.5, crownR * 1.35, trunkR * 8);
-    var ground = new THREE.Mesh(
-      new THREE.CircleGeometry(groundR, 40),
-      new THREE.MeshPhongMaterial({
-        color: api.contrast ? 0x333333 : (season === 'winter' ? (api.dark ? 0x64748b : 0xe8eef5) : (api.dark ? 0x3f3a2f : 0x9c8f6f)),
-        side: THREE.DoubleSide, shininess: 0
-      })
-    );
+    // ── Ground. A near lawn carrying the detail and the contact shading, sitting on a
+    //    far plate that runs out into the fog, so there is no disc edge hanging in
+    //    space where the world stops. ──
+    var lawnR = Math.max(rootSpread * 2.2, crownR * 2.0, trunkR * 12, 2.2);
+    var GROUND_R = 30;
+    var groundMat = new THREE.MeshPhongMaterial({
+      color: flat ? 0x333333 : 0xffffff,
+      map: flat ? null : groundTexture(THREE, groundNear, groundFar, lawnR * 0.85 / GROUND_R),
+      side: THREE.DoubleSide, shininess: 0
+    });
+    if (!groundMat.map && !flat) groundMat.color = new THREE.Color(groundNear);
+    var ground = new THREE.Mesh(new THREE.CircleGeometry(flat ? lawnR : GROUND_R, 56), groundMat);
     ground.rotation.x = -Math.PI / 2;
     if (api.wantShadow) ground.receiveShadow = true;
     group.add(ground);
+
+    if (!flat) {
+
+      // ── The wood beyond. A subject standing in a void reads as a specimen on a
+      //    table; a horizon gives it somewhere to BE. Three InstancedMeshes, so the
+      //    whole treeline costs three draw calls rather than two hundred. ──
+      //
+      // Two earlier passes got this wrong in opposite directions. Mixing the colour
+      // 40% toward the horizon to fake aerial perspective turned them into pale
+      // cut-outs floating over the grass; making every one an identical cone turned
+      // them into a Christmas tree farm. Fog does the distance properly, so the
+      // colour only wants a hint of it, and the wood needs BOTH silhouettes.
+      var farHex = mixHex('#16351f', pal.lo, 0.10);
+      if (season === 'winter') farHex = mixHex('#2c3644', pal.lo, 0.22);
+      else if (season === 'autumn') farHex = mixHex('#5c4413', pal.lo, 0.13);
+      else if (dry) farHex = mixHex('#4e4520', pal.lo, 0.14);
+      // UNLIT on purpose. A lit distant tree picks up the same key and hemisphere as
+      // the subject, comes back brighter than the thing in front of it, and reads as
+      // pale cardboard. A treeline wants to be a SILHOUETTE that only the fog lifts,
+      // which is exactly what a fogged MeshBasicMaterial gives.
+      function farMat(hex) {
+        return new THREE.MeshBasicMaterial({
+          color: flat ? 0xffffff : new THREE.Color(hex).getHex(), fog: true
+        });
+      }
+      var farTreeMat = farMat(farHex);
+      var farRoundMat = farMat(mixHex(farHex, '#000000', 0.22));
+      var farTrunkMat = farMat(mixHex('#221a12', pal.lo, 0.10));
+      var NCONE = 46, NROUND = 46;
+      var fCone = new THREE.InstancedMesh(new THREE.ConeGeometry(0.30, 1, 7), farTreeMat, NCONE);
+      var fRound = new THREE.InstancedMesh(new THREE.SphereGeometry(0.42, 14, 10), farRoundMat, NROUND);
+      var fTrunk = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.030, 0.048, 1, 5), farTrunkMat, NCONE + NROUND);
+      var dummy = new THREE.Object3D();
+      var frnd = seeded(2029);
+      function farStand(i, mesh, yFrac, hScale) {
+        var fa = frnd() * 6.2832;
+        // Two belts. A single random band leaves obvious gaps you can see the void
+        // through; a near belt backed by a taller far one reads as depth in the wood.
+        var belt = i % 3 === 0;
+        var fd = belt ? (9.5 + frnd() * 5) : (15 + frnd() * 10);
+        var fh = (belt ? 0.7 + frnd() * 1.1 : 1.2 + frnd() * 2.6);
+        var fx = Math.cos(fa) * fd, fz = Math.sin(fa) * fd;
+        dummy.position.set(fx, fh * yFrac, fz);
+        dummy.scale.set(fh * hScale, fh, fh * hScale);
+        dummy.rotation.set(0, fa, 0);
+        dummy.updateMatrix();
+        mesh.setMatrixAt(i, dummy.matrix);
+        dummy.position.set(fx, fh * 0.15, fz);
+        dummy.scale.set(1, fh * 0.34, 1);
+        dummy.rotation.set(0, 0, 0);
+        dummy.updateMatrix();
+        return dummy.matrix.clone();
+      }
+      for (var fi = 0; fi < NCONE; fi++) fTrunk.setMatrixAt(fi, farStand(fi, fCone, 0.62, 0.85));
+      for (var fj = 0; fj < NROUND; fj++) fTrunk.setMatrixAt(NCONE + fj, farStand(fj, fRound, 0.74, 0.80));
+      fCone.instanceMatrix.needsUpdate = true;
+      fRound.instanceMatrix.needsUpdate = true;
+      fTrunk.instanceMatrix.needsUpdate = true;
+      group.add(fCone);
+      group.add(fRound);
+      group.add(fTrunk);
+
+      // ── Undergrowth. A handful of grass tufts and low scrub around the foot of the
+      //    tree. They cost one draw call and they are the only thing in frame that
+      //    gives the trunk a SCALE to be read against. ──
+      // A first pass used little CONES for these and scattered what looked like a
+      // hundred toy Christmas trees over the lawn. Grass is blades, so it gets the
+      // same alpha-tested card treatment the canopy does.
+      var grassTex = grassTexture(THREE);
+      if (grassTex) {
+        var NTUFT = 150;
+        var tuftMat = new THREE.MeshPhongMaterial({
+          map: grassTex, alphaTest: 0.4, transparent: false, side: THREE.DoubleSide,
+          color: new THREE.Color(
+            season === 'winter' ? mixHex(groundNear, '#eef4fa', 0.5)
+            : season === 'autumn' ? mixHex(groundNear, '#b8a54e', 0.6)
+            : dry ? mixHex(groundNear, '#c4b070', 0.6)
+            : mixHex(groundNear, '#69a94e', 0.60)).getHex(),
+          shininess: 0
+        });
+        // A vertical card catches almost nothing from a key light overhead, so without
+        // this the tufts render as dark scribbles on a lit lawn.
+        if (!flat) tuftMat.emissive = new THREE.Color(tuftMat.color).multiplyScalar(0.11);
+        var tufts = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), tuftMat, NTUFT);
+        var trnd = seeded(3331);
+        for (var ti = 0; ti < NTUFT; ti++) {
+          var ta = trnd() * 6.2832;
+          // Nothing right at the foot: trampled bare ground under a canopy is real,
+          // and tufts there would bury the root flare the Spread view needs to show.
+          var td = lawnR * (0.30 + trnd() * 0.85);
+          var ts = 0.055 + trnd() * 0.048;
+          dummy.position.set(Math.cos(ta) * td, ts * 0.48, Math.sin(ta) * td);
+          dummy.scale.set(ts, ts, ts);
+          dummy.rotation.set(0, trnd() * 6.2832, (trnd() - 0.5) * 0.24);
+          dummy.updateMatrix();
+          tufts.setMatrixAt(ti, dummy.matrix);
+        }
+        tufts.instanceMatrix.needsUpdate = true;
+        group.add(tufts);
+      }
+    }
+
+    // ── Weather. Leaf fall in autumn, snow in winter, and NOTHING when the student
+    //    has asked for reduced motion — the system is not BUILT in that case rather
+    //    than being built and paused, because a shower frozen in mid-air is worse than
+    //    no shower at all. ──
+    var leafFall = null, leafSeeds = null, leafDummy = null, leafTop = 1, snowing = false;
+    var falling = season === 'winter' ? 'snow'
+      : (season === 'autumn' && !needle && alive ? 'leaf' : null);
+    if (!flat && !reduced && falling) {
+      snowing = falling === 'snow';
+      var NL = snowing ? 110 : 44;
+      var lgeo = new THREE.PlaneGeometry(1, 1);
+      var lmat = new THREE.MeshPhongMaterial({
+        color: 0xffffff, side: THREE.DoubleSide, shininess: snowing ? 0 : 8,
+        flatShading: true
+      });
+      // Snow is its own light source as far as the eye is concerned; without this it
+      // renders as grey confetti against a bright winter sky.
+      if (snowing) lmat.emissive = new THREE.Color(0x9fb4cc);
+      leafFall = new THREE.InstancedMesh(lgeo, lmat, NL);
+      leafDummy = new THREE.Object3D();
+      leafSeeds = [];
+      // Snow falls over the whole scene; leaves only come off the tree that dropped
+      // them, so they start inside the crown's own footprint.
+      var spread = snowing ? Math.max(lawnR * 1.3, crownR * 2.2) : crownR * 1.3;
+      leafTop = snowing ? crownTopY * 1.45 + 0.4 : crownTopY;
+      var lrnd = seeded(6151);
+      var col = new THREE.Color();
+      for (var li = 0; li < NL; li++) {
+        var lang = lrnd() * 6.2832;
+        var lrad = spread * Math.sqrt(lrnd());   // sqrt, or every flake crowds the rim
+        leafSeeds.push({
+          x: Math.cos(lang) * lrad, z: Math.sin(lang) * lrad,
+          t0: lrnd(),
+          sp: snowing ? 0.035 + lrnd() * 0.05 : 0.05 + lrnd() * 0.10,
+          sc: snowing ? 0.016 + lrnd() * 0.016 : crownR * (0.055 + lrnd() * 0.05),
+          spin: snowing ? 0.15 + lrnd() * 0.4 : 0.6 + lrnd() * 1.6,
+          sway: snowing ? 0.10 : 0.30
+        });
+        col.set(snowing ? (li % 3 ? '#ffffff' : '#e6f0fb')
+                        : clusterHex('autumn', 'broad', stressed, li));
+        leafFall.setColorAt(li, col);
+      }
+      if (leafFall.instanceColor) leafFall.instanceColor.needsUpdate = true;
+      group.add(leafFall);
+    }
 
     // Dead trees keep their frame but lose their colour, so "it died" is visible in
     // the picture and not only in the toast that has already gone.
     if (!alive) {
       crownGroup.visible = false;
-      barkMat.color.setHex(api.contrast ? 0xffffff : 0x574c40);
+      barkMat.color.setHex(flat ? 0xffffff : 0x574c40);
     }
 
     // ── Centre the tree on the point the shell actually looks at. ──
@@ -1057,13 +1846,85 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     // Scene-owned motion. The shell owns the RAF, the visibility pause and the
     // reduced-motion preference; this only nudges nodes it already built, and
     // returns immediately when motion is reduced.
-    function frame(now, sceneProps, reduced) {
-      if (reduced) return;
+    //
+    // `now` arrives as Date.now(), so it is a ~1.7e12 epoch value. Every phase below
+    // is taken RELATIVE to the first frame: feeding the raw epoch into the fall
+    // fraction would leave only microsecond resolution for the modulo.
+    var t0 = 0;
+    var cardDummy = new THREE.Object3D();
+    function frame(now, sceneProps, reducedNow) {
+      if (reducedNow) return;
+      if (!t0) t0 = now;
+      var t = (now - t0) / 1000;
       var wind = (sceneProps && sceneProps.wind) || 0.35;
-      var t = now / 1000;
-      crownGroup.rotation.z = Math.sin(t * 0.7) * 0.017 * wind;
-      crownGroup.rotation.x = Math.cos(t * 0.53) * 0.012 * wind;
-      cloneGroup.rotation.z = Math.sin(t * 0.9 + 1.2) * 0.022 * wind;
+      // Gusts. Constant-amplitude sway is exactly what gives a sine wave away as a
+      // sine wave; real wind arrives in pulses, so the amplitude is itself modulated
+      // by two slow beats that never quite line up.
+      var gust = wind * (0.5 + 0.5 * Math.abs(Math.sin(t * 0.21) * Math.sin(t * 0.37 + 1.1)));
+
+      // The whole tree bends from the base. Both groups share that origin, so they
+      // have to rotate together or the canopy shears off the trunk.
+      var bendZ = Math.sin(t * 0.52) * gust * 0.024;
+      var bendX = Math.cos(t * 0.41) * gust * 0.016;
+      trunkGroup.rotation.z = bendZ; trunkGroup.rotation.x = bendX;
+      crownGroup.rotation.z = bendZ; crownGroup.rotation.x = bendX;
+      cloneGroup.rotation.z = Math.sin(t * 0.9 + 1.2) * gust * 0.030;
+
+      // Then each mass moves on its own, more the higher it sits. A canopy that sways
+      // as one rigid lump is the second giveaway after constant amplitude.
+      for (var i = 0; i < foliage.length; i++) {
+        var f = foliage[i];
+        var amp = gust * 0.05 * (0.35 + f.h);
+        f.m.position.x = f.base.x + Math.sin(t * 1.15 + f.phase) * amp;
+        f.m.position.z = f.base.z + Math.cos(t * 0.93 + f.phase * 1.4) * amp * 0.7;
+        f.m.position.y = f.base.y + Math.sin(t * 1.6 + f.phase) * amp * 0.30;
+        f.m.rotation.z = Math.sin(t * 0.9 + f.phase) * gust * 0.10;
+      }
+
+      // Leaf cards flutter individually. This is the detail that sells wind: the
+      // masses behind them move as lumps, and only the leaf layer shimmers.
+      if (cards) {
+        for (var ci2 = 0; ci2 < cardSpec.length; ci2++) {
+          var sc2 = cardSpec[ci2];
+          // A hanging shoot is not a twig: it swings, and it swings further the
+          // further down the strand the leaf sits.
+          var sw2 = sc2.swing == null ? 1 : sc2.swing;
+          var a2 = Math.sin(t * 2.1 + sc2.phase) * gust * 0.30 * sw2;
+          cardDummy.position.set(
+            sc2.p.x + Math.sin(t * 1.5 + sc2.phase) * gust * sc2.sc * 0.16 * sw2,
+            sc2.p.y + Math.sin(t * 1.9 + sc2.phase * 1.3) * gust * sc2.sc * 0.10,
+            sc2.p.z + Math.cos(t * 1.3 + sc2.phase) * gust * sc2.sc * 0.14 * sw2
+          );
+          cardDummy.quaternion.copy(sc2.q);
+          cardDummy.rotateY(a2);
+          cardDummy.rotateX(a2 * 0.6);
+          cardDummy.scale.setScalar(sc2.sc);
+          cardDummy.updateMatrix();
+          cards.setMatrixAt(ci2, cardDummy.matrix);
+        }
+        cards.instanceMatrix.needsUpdate = true;
+      }
+
+      if (sky) sky.rotation.y = t * 0.004;    // cloud drift, slow enough to be felt
+
+      if (leafFall) {
+        for (var li = 0; li < leafSeeds.length; li++) {
+          var s = leafSeeds[li];
+          var fall = (t * s.sp + s.t0) % 1;
+          var drift = fall * 6.2832;
+          var sw = crownR * (s.sway == null ? 0.30 : s.sway);
+          leafDummy.position.set(
+            s.x + Math.sin(drift + s.t0 * 6.28) * sw,
+            leafTop - fall * (leafTop + rootDepth * 0.2),
+            s.z + Math.cos(drift * 0.8 + s.t0 * 6.28) * sw * 0.87
+          );
+          leafDummy.rotation.set(t * s.spin, t * s.spin * 1.3 + s.t0 * 6.28, fall * 6.0);
+          leafDummy.scale.setScalar(s.sc);
+          leafDummy.updateMatrix();
+          leafFall.setMatrixAt(li, leafDummy.matrix);
+        }
+        leafFall.instanceMatrix.needsUpdate = true;
+      }
     }
 
     return { meshes: meshes, picks: picks, anchor: trunk, frame: frame };
@@ -1407,16 +2268,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           // Coarser while the clock runs: a rebuild is a full scene teardown, and at
           // 25 yr/s a per-tick key would thrash WebGL for sub-pixel growth.
           playing ? Math.round(tree.heightM * 1.5) : Math.round(tree.heightM * 4),
-          Math.round(tree.dbhCm), season, cloneCount, tree.alive ? 1 : 0
+          Math.round(tree.dbhCm), season, cloneCount, tree.alive ? 1 : 0,
+          // The sun's HEIGHT is baked into the scene, so the light slider has to be in
+          // the key — but quantised to six steps, because a rebuild is a full WebGL
+          // teardown and dragging a continuous slider would fire one per pixel.
+          Math.round(liveEnv.light * 5), inDrought || liveEnv.soilWater < 0.35 ? 'dry' : '-',
+          reduceMotion ? 'still' : 'anim'
         ].join('|'),
         sceneProps: {
           species: sp, tree: tree, season: season, clones: cloneCount,
-          stressed: tree.reserves < 0, wind: reduceMotion ? 0 : 0.4
+          stressed: tree.reserves < 0, wind: reduceMotion ? 0 : 0.4,
+          light: liveEnv.light,
+          // Drought reads as a dusty amber sky and dry ground, so the picture and the
+          // limiting-factor card tell one story rather than two.
+          dry: inDrought || liveEnv.soilWater < 0.35,
+          // The falling-leaf system is NOT BUILT under reduced motion. A shower of
+          // leaves frozen in mid-air is worse than no leaves at all.
+          reduced: reduceMotion
         }
       });
 
+      // Full-screen is a STYLE change on a stage that is always in the tree, never a
+      // different tree shape. Moving the canvas div between two parents would make
+      // React unmount and remount it, and that is a full WebGL teardown and rebuild
+      // every time the student toggles.
+      function setFull(next) {
+        upd('viewerFull', next);
+        // The shell resizes off the window `resize` event and has no ResizeObserver on
+        // its node, so a purely CSS size change is invisible to it and the canvas keeps
+        // its old aspect until something else happens to fire one. Twice, because the
+        // first can land before React has committed the new layout.
+        if (typeof window !== 'undefined' && window.dispatchEvent) {
+          setTimeout(function () { try { window.dispatchEvent(new Event('resize')); } catch (e) {} }, 60);
+          setTimeout(function () { try { window.dispatchEvent(new Event('resize')); } catch (e) {} }, 280);
+        }
+        srSay(next
+          ? __alloT('stem.treelab.full_on', 'Full screen view. Press Escape to leave.')
+          : __alloT('stem.treelab.full_off', 'Left full screen view.'));
+      }
+
       function viewerPanel() {
         var status = d.viewerStatus || 'idle';
+        var full = !!d.viewerFull;
+        var stageStyle = full
+          ? {
+            // The STEAM Lab modal root carries a backdrop-filter, which makes it the
+            // containing block for fixed descendants — but it is itself `fixed inset-0`,
+            // so this still resolves to the whole viewport.
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 120,
+            display: 'flex', flexDirection: 'column',
+            background: isContrast ? T.bg : (isDark ? '#020617' : '#0f172a'), padding: 0
+          }
+          : { position: 'relative' };
         return card([
           h('div', { key: 'hd', style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, flexWrap: 'wrap', gap: 6 } }, [
             h('div', { key: 'a', style: { fontWeight: 700, color: T.text, fontSize: 14 } },
@@ -1425,29 +2328,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
               round(tree.heightM, 1) + ' m tall · ' + round(tree.dbhCm, 1) + ' cm across')
           ]),
           h('div', {
-            key: 'canvas', ref: TREE3D.attach,
-            role: 'img',
-            'aria-label': __alloT('stem.treelab.scene_alt',
-              'Three-dimensional view of the tree. ' + sp.name + ', age ' + tree.age + ' years, ' + round(tree.heightM, 1) + ' metres tall, with ' + cloneCount + ' clonal stems.'),
-            style: {
-              // A tree is a TALL subject. At 320 the box came out 842x320 (2.6:1) and
-              // the shell's 42-degree VERTICAL field of view cropped the crown off the
-              // top of every mature tree.
-              width: '100%', height: 420, borderRadius: 10, overflow: 'hidden',
-              background: isDark ? '#020617' : '#e2e8f0', border: '1px solid ' + T.border
-            }
-          }),
+            key: 'stage', style: stageStyle,
+            // Escape leaves full screen. Bound to the STAGE rather than to window: a
+            // window key listener from a tool outranks the host's own handling and
+            // keeps firing after the student has moved on to a different tool.
+            onKeyDown: full ? function (e) {
+              if (e.key === 'Escape' || e.key === 'Esc') { e.preventDefault(); e.stopPropagation(); setFull(false); }
+            } : undefined
+          }, [
+            h('div', {
+              key: 'canvas', ref: TREE3D.attach,
+              role: 'img',
+              'aria-label': __alloT('stem.treelab.scene_alt',
+                'Three-dimensional view of the tree. ' + sp.name + ', age ' + tree.age + ' years, ' + round(tree.heightM, 1) + ' metres tall, with ' + cloneCount + ' clonal stems.'),
+              style: full
+                ? { flex: '1 1 auto', minHeight: 0, width: '100%', background: isContrast ? T.bg : (isDark ? '#020617' : '#e2e8f0') }
+                : {
+                  // A tree is a TALL subject. At 320 the box came out 842x320 (2.6:1) and
+                  // the shell's 42-degree VERTICAL field of view cropped the crown off the
+                  // top of every mature tree.
+                  width: '100%', height: 420, borderRadius: 10, overflow: 'hidden',
+                  background: isDark ? '#020617' : '#e2e8f0', border: '1px solid ' + T.border
+                }
+            }),
+            h('div', {
+              key: 'ctl',
+              style: full
+                ? {
+                  flex: '0 0 auto', display: 'flex', flexWrap: 'wrap', alignItems: 'center',
+                  // The SAME surface the buttons are drawn for. A first version made
+                  // this a navy strip regardless of theme, and the one ghost button in
+                  // the row — which is transparent and inherits T.text — became dark
+                  // navy on dark navy. Every control here is themed, so the bar under
+                  // them has to be too.
+                  padding: '8px 12px 2px', background: T.card,
+                  borderTop: '1px solid ' + T.border
+                }
+                : { marginTop: 8, display: 'flex', flexWrap: 'wrap', alignItems: 'center' }
+            }, [
+              btn('fs', full
+                ? '⤡ ' + __alloT('stem.treelab.exit_full', 'Exit full screen')
+                : '⤢ ' + __alloT('stem.treelab.go_full', 'Full screen'),
+                function () { setFull(!full); },
+                { small: true, pressed: full, ariaLabel: full
+                  ? __alloT('stem.treelab.exit_full', 'Exit full screen')
+                  : __alloT('stem.treelab.go_full', 'Full screen') }),
+              btn('l', '◀', function () { TREE3D.nudge(-0.25, 0); }, { small: true, ariaLabel: __alloT('stem.treelab.rotate_left', 'Rotate view left') }),
+              btn('r', '▶', function () { TREE3D.nudge(0.25, 0); }, { small: true, ariaLabel: __alloT('stem.treelab.rotate_right', 'Rotate view right') }),
+              btn('u', '▲', function () { TREE3D.nudge(0, -0.12); }, { small: true, ariaLabel: __alloT('stem.treelab.tilt_up', 'Tilt view up') }),
+              btn('dn', '▼', function () { TREE3D.nudge(0, 0.12); }, { small: true, ariaLabel: __alloT('stem.treelab.tilt_down', 'Tilt view down') }),
+              btn('zi', '+', function () { TREE3D.zoom(-0.6); }, { small: true, ariaLabel: __alloT('stem.treelab.zoom_in', 'Zoom in') }),
+              btn('zo', '−', function () { TREE3D.zoom(0.6); }, { small: true, ariaLabel: __alloT('stem.treelab.zoom_out', 'Zoom out') }),
+              btn('rs', __alloT('stem.treelab.reset_view', 'Reset view'), function () { TREE3D.reset(); }, { small: true, tone: 'ghost' }),
+              full ? h('span', {
+                key: 'hint',
+                style: { fontSize: 11, color: T.dim, marginLeft: 8, marginBottom: 6 }
+              }, __alloT('stem.treelab.full_hint', 'Drag to orbit · Escape to leave')) : null
+            ])
+          ]),
           status === 'failed' ? h('div', { key: 'fb', style: { fontSize: 12, color: T.warn, marginTop: 8, lineHeight: 1.5 } },
-            __alloT('stem.treelab.threed_failed', 'The 3D engine could not load, which school network filters sometimes cause. Every number and control on this page still works.')) : null,
-          h('div', { key: 'ctl', style: { marginTop: 8, display: 'flex', flexWrap: 'wrap', alignItems: 'center' } }, [
-            btn('l', '◀', function () { TREE3D.nudge(-0.25, 0); }, { small: true, ariaLabel: __alloT('stem.treelab.rotate_left', 'Rotate view left') }),
-            btn('r', '▶', function () { TREE3D.nudge(0.25, 0); }, { small: true, ariaLabel: __alloT('stem.treelab.rotate_right', 'Rotate view right') }),
-            btn('u', '▲', function () { TREE3D.nudge(0, -0.12); }, { small: true, ariaLabel: __alloT('stem.treelab.tilt_up', 'Tilt view up') }),
-            btn('dn', '▼', function () { TREE3D.nudge(0, 0.12); }, { small: true, ariaLabel: __alloT('stem.treelab.tilt_down', 'Tilt view down') }),
-            btn('zi', '+', function () { TREE3D.zoom(-0.6); }, { small: true, ariaLabel: __alloT('stem.treelab.zoom_in', 'Zoom in') }),
-            btn('zo', '−', function () { TREE3D.zoom(0.6); }, { small: true, ariaLabel: __alloT('stem.treelab.zoom_out', 'Zoom out') }),
-            btn('rs', __alloT('stem.treelab.reset_view', 'Reset view'), function () { TREE3D.reset(); }, { small: true, tone: 'ghost' })
-          ])
+            __alloT('stem.treelab.threed_failed', 'The 3D engine could not load, which school network filters sometimes cause. Every number and control on this page still works.')) : null
         ]);
       }
 
