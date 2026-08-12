@@ -1766,6 +1766,20 @@ window.StemLab = window.StemLab || {
   // keystroke.
   function trebGlRef(nodeOrNull) { TREB_GL.attach(nodeOrNull); }
 
+  // ── Full screen ──
+  //
+  // The element that goes full screen is the WRAPPER around each 3D bay, not
+  // the bay itself, so the turn/tilt/zoom buttons travel with it. Sending only
+  // the canvas would leave a scene you can look at and cannot steer, and the
+  // only way out would be Escape.
+  //
+  // Held at module scope with stable callbacks for the same reason trebGlRef
+  // is: an inline ref is a new function every render, so React detaches and
+  // re-attaches on each one.
+  var FS_HOSTS = { machine: null, wall: null };
+  function machineFsRef(nodeOrNull) { FS_HOSTS.machine = nodeOrNull; }
+  function wallFsRef(nodeOrNull) { FS_HOSTS.wall = nodeOrNull; }
+
   // ═══════════════════════════════════════════════════════════════════
   // 3D TARGET WALL
   //
@@ -2135,6 +2149,18 @@ window.StemLab = window.StemLab || {
           return Object.assign({}, prev, { machineLab: next });
         });
       };
+      // upd() computes its value from the `d` captured at render time, which is
+      // wrong from inside a setTimeout: the full-screen follow-up fires ~350 ms
+      // later and would write a counter read before the click. This reads prev.
+      var bumpGl = function () {
+        setLabToolData(function (prev) {
+          var cur = (prev && prev.machineLab) || {};
+          return Object.assign({}, prev, {
+            machineLab: Object.assign({}, cur, { glTick: (cur.glTick || 0) + 1 })
+          });
+        });
+      };
+
       var updMulti = function (patch) {
         setLabToolData(function (prev) {
           var cur = (prev && prev.machineLab) || {};
@@ -2999,7 +3025,50 @@ window.StemLab = window.StemLab || {
         };
       }
 
-      function camControls(cam, label) {
+      // makeOrbitViewer redraws ONLY when push() is called: a bay with
+      // static:true parks its loop, and every bay here parks when idle. Going
+      // full screen changes the element's size but nothing tells the viewer, so
+      // without a nudge the canvas stretches to the new box while the drawing
+      // buffer stays at the old one and the camera keeps the old aspect. The
+      // result is a blurry, distorted scene. Bumping glTick re-renders, which
+      // pushes, which marks the scene dirty and wakes the loop; the loop then
+      // sees the size change and calls setSize itself.
+      //
+      // Twice, deliberately. CSS fill-frame mode resizes synchronously, so the
+      // first bump is enough. Real OS full screen resizes AFTER its promise
+      // settles, so that one needs the follow-up.
+      function toggleFullscreen(which) {
+        var el = FS_HOSTS[which];
+        if (!el || typeof window === 'undefined' || typeof window.__alloStemFS !== 'function') {
+          addToast(__alloT('stem.machinelab.fs_unavailable', 'Full screen is not available here.'));
+          return;
+        }
+        try { window.__alloStemFS(el); } catch (e) {}
+        bumpGl();
+        try { setTimeout(bumpGl, 350); } catch (e) {}
+        announceToSR(__alloT('stem.machinelab.fs_toggled', 'Full screen toggled. Press Escape to leave full screen.'));
+      }
+
+      // The label stays neutral on purpose. Escape exits full screen without
+      // going through this handler, so a label that read "Exit full screen"
+      // would be wrong from then on with nothing to correct it.
+      function fullscreenButton(which, what) {
+        return h('button', {
+          key: 'fs',
+          type: 'button',
+          onClick: function () { toggleFullscreen(which); },
+          title: __alloT('stem.machinelab.fs_title', 'Full screen (press Escape to leave)'),
+          'aria-label': __alloT('stem.machinelab.fs_aria', 'Toggle full screen for the ') + what +
+            __alloT('stem.machinelab.fs_aria2', '. Press Escape to leave full screen.'),
+          style: {
+            padding: '4px 10px', borderRadius: 8, cursor: 'pointer',
+            border: '1px solid ' + T.border, background: T.card, color: T.text,
+            fontSize: 12, fontWeight: 700, marginLeft: 'auto'
+          }
+        }, '⛶ ' + __alloT('stem.machinelab.fs_label', 'Full screen'));
+      }
+
+      function camControls(cam, label, fsWhich) {
         function btn(key, glyph, aria, fn) {
           return h('button', {
             key: key, onClick: fn, 'aria-label': aria, title: aria,
@@ -3013,7 +3082,16 @@ window.StemLab = window.StemLab || {
         return h('div', {
           key: 'cam', role: 'group',
           'aria-label': __alloT('stem.machinelab.cam_group', 'Camera for the ') + label,
-          style: { display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }
+          // The background is not decoration. In full screen the host forces
+          // #0f172a onto the wrapper with !important, so without a surface of
+          // its own this row sits on dark navy in every theme and the "View:"
+          // label goes grey-on-navy. Painting the row means it carries its own
+          // contrast wherever it ends up. Outside full screen it is T.card on
+          // T.card, so nothing changes.
+          style: {
+            display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center',
+            marginTop: 8, background: T.card, borderRadius: 8, padding: '4px 6px'
+          }
         }, [
           h('span', { key: 'l', style: { fontSize: 11, color: T.dim, marginRight: 2 } },
             __alloT('stem.machinelab.cam_view', 'View:')),
@@ -3023,7 +3101,10 @@ window.StemLab = window.StemLab || {
           btn('xd', '▼', __alloT('stem.machinelab.cam_down', 'Tilt down'), function () { cam.nudge(0, 10); }),
           btn('zi', '+', __alloT('stem.machinelab.cam_in', 'Zoom in'), function () { cam.zoomBy(1.25); }),
           btn('zo', '−', __alloT('stem.machinelab.cam_out', 'Zoom out'), function () { cam.zoomBy(0.8); }),
-          btn('rs', '⟲', __alloT('stem.machinelab.cam_reset', 'Reset the view'), function () { cam.reset(); })
+          btn('rs', '⟲', __alloT('stem.machinelab.cam_reset', 'Reset the view'), function () { cam.reset(); }),
+          // Full screen is a view control, and this row is the one thing that
+          // is guaranteed to travel into full screen alongside the bay.
+          fsWhich ? fullscreenButton(fsWhich, label) : null
         ]);
       }
 
@@ -3371,14 +3452,31 @@ window.StemLab = window.StemLab || {
         }, [
           h('div', { key: 'l' }, [
             card([
+              // The full-screen element is this wrapper, not the bay, so the
+              // camera buttons go with it: a scene you can look at and cannot
+              // steer, with Escape as the only exit, is worse than no button.
+              //
+              // Flex column with the bay on flex:1. In normal flow the wrapper
+              // is auto-height and the bay keeps its 260; in full screen the
+              // wrapper is 100vh and the bay fills it. No state is involved,
+              // which matters because Escape exits without telling React.
+              h('div', {
+                key: 'fswrap',
+                ref: machineFsRef,
+                style: { display: 'flex', flexDirection: 'column', background: T.card }
+              }, [
               h('div', {
                 key: 'gl',
                 ref: trebGlRef,
                 role: 'img',
                 'aria-label': __alloT('stem.machinelab.aria_machine3d', 'Three-dimensional view of the ') + machineLabel(machineId) + __alloT('stem.machinelab.aria_machine3d2', '. The energy ledger beside it carries the same information as numbers.'),
-                style: { width: '100%', height: 260, borderRadius: 10, background: T.bg, border: '1px solid ' + T.border }
+                style: {
+                  width: '100%', height: 260, minHeight: 180, flex: '1 1 auto',
+                  borderRadius: 10, background: T.bg, border: '1px solid ' + T.border
+                }
               }, null),
-              camControls(mCam, machineLabel(machineId)),
+              camControls(mCam, machineLabel(machineId), 'machine')
+              ]),
               // The machine's swing was animated but unreachable: the only Fire
               // control lived in the Test Range, which has no 3D view, so a
               // student could never be looking at the machine while it moved.
@@ -3959,14 +4057,25 @@ window.StemLab = window.StemLab || {
             h('div', { key: 'l' }, [
               oddStoneNote('siegeodd'),
               card([
+                // Same wrapper pattern as the machine bay: the camera row goes
+                // full screen with the wall so it stays steerable.
+                h('div', {
+                  key: 'fswrap',
+                  ref: wallFsRef,
+                  style: { display: 'flex', flexDirection: 'column', background: T.card }
+                }, [
                 h('div', {
                   key: 'gl',
                   ref: siegeGlRef,
                   role: 'img',
                   'aria-label': __alloT('stem.machinelab.aria_wall3d', 'Three-dimensional view of the target wall. The diagram and course table below carry the same information.'),
-                  style: { width: '100%', height: 220, borderRadius: 10, background: T.bg, border: '1px solid ' + T.border }
+                  style: {
+                    width: '100%', height: 220, minHeight: 160, flex: '1 1 auto',
+                    borderRadius: 10, background: T.bg, border: '1px solid ' + T.border
+                  }
                 }, null),
-                camControls(wCam, presetMeta ? presetMeta.label : 'wall'),
+                camControls(wCam, presetMeta ? presetMeta.label : 'wall', 'wall')
+                ]),
                 siegeGlStatus !== 'ready' ? h('p', {
                   key: 'st', style: { margin: '8px 0 0', fontSize: 12, color: T.dim }
                 }, siegeGlStatus === 'failed'

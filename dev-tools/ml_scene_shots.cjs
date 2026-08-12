@@ -212,6 +212,53 @@ const SHOTS = [
     console.log('shot', label);
   }
 
+  // ── Full screen ──
+  // The interaction harness already proves the drawing buffer follows the box.
+  // What a number cannot tell you is whether the scene is still FRAMED well at
+  // a completely different aspect ratio: the camera fit could leave the machine
+  // a speck in the middle of a very wide frame, and that only shows up by
+  // looking. Not a fullPage shot: fullPage re-lays-out the page and undoes the
+  // fixed positioning the whole thing depends on.
+  //
+  // Deliberately shot through the CSS fill-frame path, by making
+  // requestFullscreen reject. Two reasons. It is the path AlloFlow's primary
+  // surface actually takes, because Gemini Canvas is a sandboxed iframe. And
+  // headless Chrome composites native fullscreen oddly, leaving page content
+  // from behind the fullscreen element in the capture, which makes the shot
+  // show things that are not on a real screen.
+  await pg.evaluate(() => {
+    Element.prototype.requestFullscreen = function () {
+      return Promise.reject(new Error('Disallowed by permissions policy'));
+    };
+  });
+  for (const fsCase of [
+    ['16-fullscreen-machine', S({ view: 'build', machine: 'trebuchet' })],
+    ['17-fullscreen-wall', S({ view: 'siege', wallPreset: 'gatehouse' })]
+  ]) {
+    await pg.evaluate(([st, o]) => window.__mount(st, o), [fsCase[1], { dark: DARK || CONTRAST, contrast: CONTRAST, band: BAND }]);
+    await pg.waitForTimeout(2600);
+    const clicked = await pg.evaluate(() => {
+      const btn = Array.prototype.slice.call(document.querySelectorAll('button'))
+        .filter((b) => (b.textContent || '').indexOf('Full screen') !== -1)[0];
+      if (!btn) return false;
+      btn.click();
+      return true;
+    });
+    if (!clicked) { console.error('FAIL: no full-screen button to shoot'); await b.close(); process.exit(2); }
+    await pg.waitForTimeout(1200);
+    const file = path.join(OUT, fsCase[0] + (CONTRAST ? '-contrast' : (DARK ? '-dark' : '')) + '.png');
+    await pg.screenshot({ path: file });
+    manifest.push(fsCase[0]);
+    console.log('shot', fsCase[0]);
+    // Leave it, or the next shot inherits a full-screen page.
+    await pg.evaluate(() => {
+      const btn = Array.prototype.slice.call(document.querySelectorAll('button'))
+        .filter((b) => (b.textContent || '').indexOf('Full screen') !== -1)[0];
+      if (btn) btn.click();
+    });
+    await pg.waitForTimeout(600);
+  }
+
   // The one that matters most: a wall the tool's own rules actually knocked
   // down, so the rubble heap can be judged rather than assumed.
   for (const [preset, shots, aim, tag] of [

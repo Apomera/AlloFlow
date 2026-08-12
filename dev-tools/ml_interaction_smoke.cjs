@@ -451,6 +451,103 @@ function check(name, cond, detail) {
   check('and names a stone per machine rather than a bare tick',
         /Best stone searched for:.*kg.*kg/.test(recSweep));
 
+  // ── Full screen ──
+  //
+  // Two paths, and BOTH ship. Where the page is allowed real fullscreen the
+  // browser takes over. Inside a sandboxed iframe requestFullscreen rejects,
+  // and the host falls back to a CSS fill-frame mode. AlloFlow's primary
+  // surface is Gemini Canvas, which is sandboxed, so the fallback is not an
+  // edge case: it is the path most students will actually be on.
+  //
+  // The thing that silently breaks in either is the DRAWING BUFFER. The canvas
+  // is width/height 100% in CSS, so it fills the new box instantly. But
+  // makeOrbitViewer resizes the buffer only inside its rAF loop, and that loop
+  // is PARKED for a static bay and for any idle one. Without a nudge you get a
+  // stretched, low-resolution scene that a screenshot of the page still makes
+  // look plausible. So these read canvas.width/height, not the CSS box.
+  const fsProbe = () => pg.evaluate(() => {
+    const wrap = Array.prototype.slice.call(document.querySelectorAll('div'))
+      .filter((el) => el.style && el.style.flexDirection === 'column' && el.querySelector('canvas'))[0];
+    const cnv = wrap && wrap.querySelector('canvas');
+    if (!wrap || !cnv) return null;
+    return {
+      wrapH: Math.round(wrap.getBoundingClientRect().height),
+      bufW: cnv.width, bufH: cnv.height,
+      cssW: Math.round(cnv.getBoundingClientRect().width),
+      cssH: Math.round(cnv.getBoundingClientRect().height),
+      filling: getComputedStyle(wrap).position === 'fixed',
+      realFs: !!document.fullscreenElement,
+      cssMode: !!wrap.__alloFsOn,
+      hasCamButtons: !!wrap.querySelector('button')
+    };
+  });
+
+  for (const view of [{ v: 'build', what: 'machine' }, { v: 'siege', what: 'wall' }]) {
+    await pg.evaluate((s) => window.__mount(s, {}), S({ view: view.v }));
+    await pg.waitForTimeout(2600);
+    const before = await fsProbe();
+
+    check('the ' + view.what + ' bay offers a full-screen button',
+          (await pg.evaluate(() => window.__click('Full screen'))) === 'ok');
+    check('the ' + view.what + ' wrapper carries the camera buttons in with it',
+          before && before.hasCamButtons === true);
+
+    await pg.waitForTimeout(900);
+    const during = await fsProbe();
+    check('the ' + view.what + ' bay fills the frame',
+          during && during.filling === true && during.wrapH > before.wrapH + 100,
+          during && (before.wrapH + ' -> ' + during.wrapH + 'px'));
+    check('the ' + view.what + ' drawing buffer follows, so the scene is not stretched',
+          during && during.bufH > before.bufH,
+          during && (before.bufH + ' -> ' + during.bufH + 'px tall'));
+    check('the ' + view.what + ' buffer aspect matches its box',
+          during && Math.abs((during.bufW / during.bufH) - (during.cssW / during.cssH)) < 0.06,
+          during && ('buffer ' + (during.bufW / during.bufH).toFixed(2) + ' vs box ' + (during.cssW / during.cssH).toFixed(2)));
+
+    // Pressing it again must come back out. Escape also exits, but in real
+    // fullscreen that is browser chrome and a synthetic keypress cannot drive
+    // it, so the button is what this harness can honestly assert.
+    await pg.evaluate(() => window.__click('Full screen'));
+    await pg.waitForTimeout(900);
+    const after = await fsProbe();
+    check('the ' + view.what + ' button toggles back out',
+          after && after.filling === false, after && (after.wrapH + 'px'));
+    check('the ' + view.what + ' bay returns to its normal size',
+          after && Math.abs(after.wrapH - before.wrapH) < 40,
+          after && (before.wrapH + ' -> ' + after.wrapH + 'px'));
+    check('the ' + view.what + ' buffer shrinks back too, rather than staying huge',
+          after && after.bufH < during.bufH,
+          after && (during.bufH + ' -> ' + after.bufH + 'px'));
+  }
+
+  // ── The sandboxed-iframe path, which is what Gemini Canvas gives us ──
+  // Force requestFullscreen to reject and confirm the CSS fallback carries the
+  // same guarantees, including Escape, which in this mode IS a DOM listener the
+  // host binds and therefore is ours to get right.
+  await pg.evaluate(() => {
+    window.__realRQ = Element.prototype.requestFullscreen;
+    Element.prototype.requestFullscreen = function () { return Promise.reject(new Error('Disallowed by permissions policy')); };
+  });
+  await pg.evaluate((s) => window.__mount(s, {}), S({ view: 'build' }));
+  await pg.waitForTimeout(2600);
+  const sbBefore = await fsProbe();
+  await pg.evaluate(() => window.__click('Full screen'));
+  await pg.waitForTimeout(900);
+  const sbDuring = await fsProbe();
+  check('a sandboxed page still fills the frame, via the CSS fallback',
+        sbDuring && sbDuring.cssMode === true && sbDuring.realFs === false,
+        sbDuring && ('cssMode=' + sbDuring.cssMode + ' realFs=' + sbDuring.realFs));
+  check('the CSS fallback resizes the drawing buffer as well',
+        sbDuring && sbDuring.bufH > sbBefore.bufH,
+        sbDuring && (sbBefore.bufH + ' -> ' + sbDuring.bufH + 'px tall'));
+  await pg.keyboard.press('Escape');
+  await pg.waitForTimeout(700);
+  const sbAfter = await fsProbe();
+  check('Escape leaves the CSS fallback, which is the only exit a student has there',
+        sbAfter && sbAfter.cssMode === false && sbAfter.filling === false,
+        sbAfter && (sbAfter.wrapH + 'px'));
+  await pg.evaluate(() => { if (window.__realRQ) Element.prototype.requestFullscreen = window.__realRQ; });
+
   check('no page errors during any interaction', errors.length === 0, errors.slice(0, 3).join(' | '));
 
   await b.close();
