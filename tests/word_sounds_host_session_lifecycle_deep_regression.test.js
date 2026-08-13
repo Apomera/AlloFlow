@@ -15,7 +15,7 @@ const sliceBetween = (startMarker, endMarker) => {
 function loadWordSoundsReducer() {
   const reducerSource = sliceBetween(
     'const getWordSoundsMasteryScopeKey =',
-    'const ALLO_AAC_BOARD_FORMAT',
+    '// Live AAC bridge extracted',
   );
   return new Function(`
     ${reducerSource}

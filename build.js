@@ -1014,6 +1014,16 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'AppStyles',
+        filename: 'app_styles_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'LiveAac',
+        filename: 'live_aac_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'UIPolish',
         filename: 'ui_polish_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -1578,6 +1588,20 @@ const COMPILE_PAIRS = [
                 + '\n})();\n'
             );
         },
+    },
+    {
+        name: 'AppStyles',
+        srcPath: path.join(ROOT, 'app_styles_source.jsx'),
+        modPath: path.join(ROOT, 'app_styles_module.js'),
+        publicPath: path.join(ROOT, 'desktop/web-app', 'public', 'app_styles_module.js'),
+        wrap(src) { return require('./_build_app_styles_module.js').buildAppStylesModule(src); },
+    },
+    {
+        name: 'LiveAac',
+        srcPath: path.join(ROOT, 'live_aac_source.jsx'),
+        modPath: path.join(ROOT, 'live_aac_module.js'),
+        publicPath: path.join(ROOT, 'desktop/web-app', 'public', 'live_aac_module.js'),
+        wrap(src) { return require('./_build_live_aac_module.js').buildLiveAacModule(src); },
     },
     {
         // ── immersive_reader ── Reading overlays (Focus/Speed/Bionic/Crawl/Karaoke)

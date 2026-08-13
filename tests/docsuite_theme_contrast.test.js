@@ -2,12 +2,12 @@
 // The Document Hub builder (view_export_preview) + PDF remediation pipeline
 // (view_pdf_audit) get their dark/high-contrast skins from a GENERATED remap
 // layer (dev-tools/gen_docsuite_theme.cjs → <style data-docsuite-theme="v1">
-// in AlloFlowANTI.txt). This test keeps that layer honest:
+// in app_styles_source.jsx). This test keeps that layer honest:
 //   1. WCAG AA matrix — every dark-mode TEXT color must clear 4.5:1 against
 //      EVERY dark-mode SURFACE color the mapping can produce (worst case, so
 //      any text/panel combination in the views is safe by construction).
 //   2. High-contrast mode is binary black/yellow/green at ≥ 15:1.
-//   3. Drift — the CSS block pasted in ANTI matches a fresh generator run.
+//   3. Drift — the CSS block in the AppStyles source matches a fresh generator run.
 //   4. Scope — every fixed-overlay root in both views carries .allo-docsuite,
 //      and both views ship a theme toggle wired to window.AlloToggleTheme.
 import { describe, it, expect } from 'vitest';
@@ -77,8 +77,9 @@ describe('high-contrast mode: binary palette', () => {
 
 describe('generated CSS is live and scoped', () => {
   const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
-  it('ANTI carries the CURRENT generator output (no drift), exactly ONCE', () => {
-    const blocks = anti.match(/<style data-docsuite-theme="v1">\{`[\s\S]*?`\}<\/style>/g) || [];
+  const styleSource = readFileSync(resolve(process.cwd(), 'app_styles_source.jsx'), 'utf8');
+  it('AppStyles carries the CURRENT generator output (no drift), exactly ONCE', () => {
+    const blocks = styleSource.match(/<style data-docsuite-theme="v1">\{`[\s\S]*?`\}<\/style>/g) || [];
     expect(blocks.length, 'exactly one generated style block').toBe(1);
     const m = blocks[0].match(/<style data-docsuite-theme="v1">\{`([\s\S]*?)`\}<\/style>/);
     expect(m[1].trim()).toBe(gen.generateCss(process.cwd()).trim());

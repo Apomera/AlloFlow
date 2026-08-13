@@ -22,11 +22,11 @@
  *                    text×surface matrix)
  * .theme-contrast →  binary black / yellow / green, matching the app pattern
  *
- * The generated block lives in AlloFlowANTI.txt inside
+ * The generated block lives in app_styles_source.jsx inside
  * <style data-docsuite-theme="v1"> … </style> (exactly one copy). Regenerate:
  *
- *   node dev-tools/_apply_docsuite_theme.cjs         # re-paste into ANTI
- *   node dev-tools/gen_docsuite_theme.cjs --check    # verify ANTI is current
+ *   node dev-tools/_apply_docsuite_theme.cjs         # re-paste into AppStyles source
+ *   node dev-tools/gen_docsuite_theme.cjs --check    # verify AppStyles source is current
  *
  * Iframes (document previews / WYSIWYG surface) are separate documents —
  * page CSS cannot reach them, so student-facing document content keeps its
@@ -312,11 +312,11 @@ module.exports = { FAM, DARK, CONTRAST, SCOPES, SCOPE_CLASS, scanTokens, allToke
 if (require.main === module) {
   const css = generateCss(ROOT);
   if (process.argv.includes('--check')) {
-    const anti = fs.readFileSync(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8');
-    const blocks = anti.match(/<style data-docsuite-theme="v1">\{`([\s\S]*?)`\}<\/style>/g) || [];
-    if (blocks.length !== 1) { console.error(`✗ expected exactly 1 docsuite theme <style> block in AlloFlowANTI.txt, found ${blocks.length}`); process.exit(1); }
+    const styleSource = fs.readFileSync(path.join(ROOT, 'app_styles_source.jsx'), 'utf8');
+    const blocks = styleSource.match(/<style data-docsuite-theme="v1">\{`([\s\S]*?)`\}<\/style>/g) || [];
+    if (blocks.length !== 1) { console.error(`✗ expected exactly 1 docsuite theme <style> block in app_styles_source.jsx, found ${blocks.length}`); process.exit(1); }
     const m = blocks[0].match(/<style data-docsuite-theme="v1">\{`([\s\S]*?)`\}<\/style>/);
-    if (m[1].trim() !== css.trim()) { console.error('✗ docsuite theme CSS in AlloFlowANTI.txt is STALE — rerun dev-tools/_apply_docsuite_theme.cjs.'); process.exit(1); }
+    if (m[1].trim() !== css.trim()) { console.error('✗ docsuite theme CSS in app_styles_source.jsx is STALE — rerun dev-tools/_apply_docsuite_theme.cjs.'); process.exit(1); }
     console.log('✓ scoped theme CSS is current (' + css.split('\n').length + ' lines, ' + SCOPES.length + ' scopes).');
   } else {
     process.stdout.write(css);

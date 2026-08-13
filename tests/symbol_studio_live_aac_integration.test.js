@@ -3,14 +3,15 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const source = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
-const helperStart = source.indexOf(`const ALLO_AAC_BOARD_FORMAT = 'alloflow.aac-board';`);
-const helperEnd = source.indexOf('const LiveAacBoardDialog =', helperStart);
+const liveAacSource = readFileSync(resolve(process.cwd(), 'live_aac_source.jsx'), 'utf8');
+const helperStart = liveAacSource.indexOf(`const ALLO_AAC_BOARD_FORMAT = 'alloflow.aac-board';`);
+const helperEnd = liveAacSource.indexOf('const LiveAacBoardDialog =', helperStart);
 
 if (helperStart < 0 || helperEnd < 0) {
   throw new Error('Live AAC pure helper block was not found in AlloFlowANTI.txt');
 }
 
-const helperSource = source.slice(helperStart, helperEnd);
+const helperSource = liveAacSource.slice(helperStart, helperEnd);
 const decodeBase64 = globalThis.atob || ((value) => Buffer.from(value, 'base64').toString('binary'));
 const {
   normalizePortable,
@@ -489,9 +490,9 @@ describe('Symbol Studio live AAC source contracts', () => {
   });
 
   it('renders pages, symbols, sentence controls, keyboard input, scanning, and locale direction', () => {
-    const dialogStart = source.indexOf('const LiveAacBoardDialog =');
-    const dialogEnd = source.indexOf('const AlloFlowContent =', dialogStart);
-    const dialog = source.slice(dialogStart, dialogEnd);
+    const dialogStart = liveAacSource.indexOf('const LiveAacBoardDialog =');
+    const dialogEnd = liveAacSource.indexOf('window.AlloModules =', dialogStart);
+    const dialog = liveAacSource.slice(dialogStart, dialogEnd);
 
     for (const contract of [
       `role='dialog'`,

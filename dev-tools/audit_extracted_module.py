@@ -43,7 +43,7 @@ import sys
 import tempfile
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
-MONOLITH = os.path.join(ROOT, 'AlloFlowANTI.txt')
+MONOLITH = os.path.join(os.path.dirname(ROOT), 'AlloFlowANTI.txt')
 
 if len(sys.argv) < 2:
     print('usage: python _audit_extracted_module.py <source.jsx>', file=sys.stderr)
